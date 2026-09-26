@@ -16,7 +16,7 @@ The [Workspace registry](../../../../packages/workspace/workspace/README.md#firs
 
 The Host controller resolves the Documents location; the registry receives a directory resolver with no locale dependency. The resolver runs inside the mutation queue only for eligible creation, so repeated requests reuse the durable Workspace without another OS lookup. A durable Workspace id records successful initialization independently of that name. Renaming, changing language, restarting, or deleting the registration cannot initialize another default. The marker commits with the registration, so a failed registration can retry. Directory contents remain subject to the existing [metadata-only deletion policy](2026-07-27-workspace-registration-deletion.md).
 
-The naming half of this decision is superseded: [language-neutral default Workspace naming](2026-09-23-language-neutral-default-workspace-naming.md) fixes the directory name and stored title and localizes only the on-screen label.
+The first-use eligibility and deletion lifetime of this decision are superseded by the [permanent default Workspace](2026-09-26-permanent-default-workspace.md). The naming half of this decision is superseded: [language-neutral default Workspace naming](2026-09-23-language-neutral-default-workspace-naming.md) fixes the directory name and stored title and localizes only the on-screen label.
 
 Ineligible first use returns no Workspace without a failure dialog. Preparation failure offers the existing folder picker; startup does not retry on later list notifications. A successful registration survives Session creation or prompt failure. Selecting either the default or a manually picked Workspace never submits a message.
 

@@ -2,8 +2,13 @@
 
 import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 
-/** Locale keys the page renders. */
+import type { SearchProviderLabelKey } from './search-providers.ts'
+
+/** Locale keys the pages render. */
 export type WebSearchSettingsLocaleKey =
+  | SearchProviderLabelKey
+  | 'providerTitle' | 'providerDescription' | 'provider' | 'providerHint' | 'providerInherited'
+  | 'providerApiKey' | 'providerEnvironment' | 'providerLogin'
   | 'title' | 'description'
   | 'apiKey' | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
   | 'baseUrl' | 'baseUrlHint' | 'maxUses' | 'maxUsesHint'
@@ -12,6 +17,25 @@ export type WebSearchSettingsLocaleKey =
 
 /** English copy. */
 export const en: Record<WebSearchSettingsLocaleKey, string> = {
+  'provider.claudeCode': 'Claude Code (your sign-in, no key)',
+  'provider.claudeApi': 'Claude API',
+  'provider.deepseek': 'DeepSeek',
+  'provider.openai': 'OpenAI',
+  'provider.xai': 'xAI Grok',
+  'provider.gemini': 'Google Gemini',
+  'provider.openrouter': 'OpenRouter',
+  'provider.mistral': 'Mistral',
+  'provider.zai': 'Z.AI (GLM)',
+  'provider.perplexity': 'Perplexity',
+  'provider.exa': 'Exa',
+  providerTitle: 'Search provider',
+  providerDescription: 'Choose which service answers web searches.',
+  provider: 'Provider',
+  providerHint: 'Web searches use this provider from the next search on.',
+  providerInherited: 'Use the default',
+  providerApiKey: 'API key ({ref})',
+  providerEnvironment: 'This provider reads {variable} from the environment the application was launched in.',
+  providerLogin: 'This provider uses the Claude Code sign-in on this computer and needs no key.',
   title: 'Web search',
   description: 'Set up the DeepSeek search provider.',
   apiKey: 'API key',
@@ -34,6 +58,25 @@ export const en: Record<WebSearchSettingsLocaleKey, string> = {
 
 /** Simplified Chinese copy. */
 export const zh: Record<WebSearchSettingsLocaleKey, string> = {
+  'provider.claudeCode': 'Claude Code（使用你的登录，无需密钥）',
+  'provider.claudeApi': 'Claude API',
+  'provider.deepseek': 'DeepSeek',
+  'provider.openai': 'OpenAI',
+  'provider.xai': 'xAI Grok',
+  'provider.gemini': 'Google Gemini',
+  'provider.openrouter': 'OpenRouter',
+  'provider.mistral': 'Mistral',
+  'provider.zai': 'Z.AI（智谱 GLM）',
+  'provider.perplexity': 'Perplexity',
+  'provider.exa': 'Exa',
+  providerTitle: '搜索来源',
+  providerDescription: '选择由哪个服务回答网页搜索。',
+  provider: '提供方',
+  providerHint: '从下一次搜索起，网页搜索使用此提供方。',
+  providerInherited: '使用默认值',
+  providerApiKey: 'API Key（{ref}）',
+  providerEnvironment: '此提供方从启动应用程序的环境变量读取 {variable}。',
+  providerLogin: '此提供方使用本机的 Claude Code 登录，无需密钥。',
   title: '网页搜索',
   description: '设置 DeepSeek 的搜索提供方。',
   apiKey: 'API Key',

@@ -69,6 +69,18 @@ describe('ui-settings-web-search apply', () => {
     expect(Object.keys(face.hooks)).toEqual(['webSearchCard'])
   })
 
+  it('registers the search-provider page while the Host serves the web namespace', async () => {
+    const { ctx, slots } = await bench(['web'])
+    declareRoot(slots)
+    await ctx.plugin({ inject: [...inject], apply }).await()
+    await vi.waitFor(() => { expect(slots.entries('plugins.item')).toHaveLength(1) })
+    const entry = slots.entries('plugins.item')[0]!
+    expect(entry.options).toMatchObject({ id: 'web-search-provider', order: 39 })
+    expect(resolveSlotLabel(entry.options.label)).toBe('搜索来源')
+    const face = (entry.inject as () => Pick<WebSearchCardFace, 'hooks'>)()
+    expect(Object.keys(face.hooks)).toEqual(['searchProviderCard'])
+  })
+
   it('registers nothing while the namespace is not served', async () => {
     const { ctx, slots, describeSettings } = await bench(['shell'])
     declareRoot(slots)

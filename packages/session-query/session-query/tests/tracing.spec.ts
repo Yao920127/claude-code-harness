@@ -122,6 +122,8 @@ class TracePersistence extends SessionPersistence {
     })
   }
 
+  delete(): Promise<boolean> { return Promise.reject(new Error('this suite does not delete sessions')) }
+
   list(): Promise<readonly SessionPersistenceSnapshot[]> {
     TracePersistence.listCalls += 1
     if (TracePersistence.listFailure !== undefined) return Promise.reject(TracePersistence.listFailure)

@@ -509,6 +509,8 @@ describe('SessionObservationReader cold path', () => {
         })
       }
 
+      delete(): Promise<boolean> { return Promise.reject(new Error('this suite does not delete sessions')) }
+
       list(): Promise<readonly SessionPersistenceSnapshot[]> {
         return Promise.resolve([])
       }

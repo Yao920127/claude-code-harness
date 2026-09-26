@@ -310,6 +310,16 @@ describe('SessionProjectionCache write policy', () => {
     await expect(ctx.sessionProjectionCache.write(clean)).rejects.toThrow('not losslessly JSON-serializable')
   })
 
+  it('forget() removes a deleted session\'s record and tolerates an absent one', async () => {
+    const { ctx, root } = await harness()
+    const session = ctx.sessions.create(SessionId('forgotten'))
+    await ctx.sessionProjectionCache.write(session)
+    expect(await storedRows(root, session.id)).toBeDefined()
+    await ctx.sessionProjectionCache.forget(session.id)
+    expect(await storedRows(root, session.id)).toBeUndefined()
+    await ctx.sessionProjectionCache.forget(SessionId('never-cached'))
+  })
+
   it('plugin disposal clears armed interval timers and leaves cleaned sessions alone', async () => {
     vi.useFakeTimers()
     const { ctx, root, fiber } = await harness({ config: { writeEveryEvents: 100, writeIntervalMs: 5000 } })

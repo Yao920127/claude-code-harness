@@ -54,9 +54,9 @@ export interface IWorkspaces {
    */
   create(input: { path: string }): Promise<WorkspaceView>
   /**
-   * Initialize or reuse the default Workspace.
+   * Ensure the permanent default Workspace exists.
    * @param signal - caller lifetime.
-   * @returns the prepared Workspace, or undefined when first-use initialization is ineligible; rejects on preparation failure.
+   * @returns the default Workspace, or undefined when the Host provides none; rejects on preparation failure.
    */
   initializeDefault(signal?: AbortSignal): Promise<WorkspaceView | undefined>
   /**

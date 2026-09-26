@@ -3,3 +3,5 @@
   - menuitem "Rename"
   - menuitem "Fork session"
   - menuitem "Archive session"
+  - separator
+  - menuitem "Delete session"

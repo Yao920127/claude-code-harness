@@ -71,12 +71,17 @@ describe.skipIf(MODE === 'record')('web e2e: default Workspace', () => {
   })
 
   it('reports a startup directory conflict and opens the composed folder picker for recovery', async () => {
-    const scaffold = await launchWebScaffold({ firstUse: true })
+    const scaffold = await launchWebScaffold({
+      firstUse: true,
+      // The Host prepares the default at startup, so the occupant exists before it boots.
+      // A Chinese reader gets the same fixed directory name, so the same occupant conflicts.
+      beforeBoot: async (workspaceCwd) => {
+        const parent = join(workspaceCwd, 'Documents', 'deepseek-harness')
+        await mkdir(parent, { recursive: true })
+        await writeFile(join(parent, 'default-workspace'), 'occupied')
+      },
+    })
     onTestFinished(() => scaffold.close())
-    const parent = join(scaffold.workspaceCwd, 'Documents', 'deepseek-harness')
-    await mkdir(parent, { recursive: true })
-    // A Chinese reader gets the same fixed directory name, so the same occupant conflicts.
-    await writeFile(join(parent, 'default-workspace'), 'occupied')
     const chosen = join(scaffold.workspaceCwd, 'chosen')
     await mkdir(chosen)
     const browser = await chromium.launch()
@@ -119,7 +124,7 @@ describe.skipIf(MODE === 'record')('web e2e: default Workspace', () => {
     }
   })
 
-  it('keeps an explicitly deleted default absent on startup', async () => {
+  it('leaves the folder choice to the user when the Host provides no default', async () => {
     const scaffold = await launchWebScaffold()
     onTestFinished(() => scaffold.close())
     const browser = await chromium.launch()

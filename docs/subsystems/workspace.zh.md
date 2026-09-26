@@ -339,12 +339,12 @@ Host service backing the generated `ctx.remote.workspace` namespace.
 @Remote('create') create(request: WorkspaceCreateRequest): Promise<WorkspaceCreateValue>
 
 /**
- * Initialize or reuse the default Workspace during first-use startup. The
- * directory name is fixed, so the Host never renames or relocates an
- * existing default; its initial title is that same name, which browser
- * consumers label in the reader's language.
+ * Ensure the permanent default Workspace exists. The directory name is
+ * fixed, so the Host never renames or relocates an existing default; its
+ * initial title is that same name, which browser consumers label in the
+ * reader's language.
  * @param signal - caller lifetime; cancels native directory lookup.
- * @returns the durable Workspace, or undefined when first-use initialization is ineligible; creates no Session or message.
+ * @returns the durable default Workspace, or undefined when this Host provides none; creates no Session or message.
  */
 @Remote('initializeDefault') async initializeDefault(signal: AbortSignal): Promise<WorkspaceValue | undefined>
 
@@ -356,7 +356,8 @@ Host service backing the generated `ctx.remote.workspace` namespace.
 @Remote('rename') rename(request: WorkspaceRenameRequest): Promise<WorkspaceValue>
 
 /**
- * Remove one Workspace registration while retaining files and Sessions.
+ * Remove one Workspace registration while retaining files and Sessions. The
+ * default Workspace is refused with `workspace/default-undeletable`.
  * @param request - Workspace identity to remove.
  * @returns deletion confirmation.
  */
@@ -494,18 +495,20 @@ Durable workspace registry. Startup waits for `sessionPersistence`, builds one c
 async create(path: string, title?: string): Promise<Workspace>
 
 /**
- * Initialize the default Workspace only while both the registry and Session
- * history are empty. Repeated requests reuse its durable identity; deleting
- * that registration permanently disables automatic creation.
- * @param resolveDirectory - resolve the absolute directory; called only for
- * eligible creation, inside the registry mutation queue. Missing directories
- * are created recursively before registration, and the initial title is the
- * requested directory's own final segment — not the canonical one, so a
+ * Ensure the permanent default Workspace exists, independently of Session
+ * history and of other registrations. A registered default reuses its
+ * durable identity and recreates its directory when it is missing from
+ * disk; the registry never renames or relocates it. Otherwise the resolver
+ * names a directory, which is created recursively and registered — or, when
+ * a Workspace already owns it, adopted — as the default. The initial title is
+ * the requested directory's own final segment — not the canonical one, so a
  * symlink at that path does not retitle the Workspace after its target.
  * After resolution, caller cancellation does not roll back creation or registration.
- * @returns the initialized Workspace, or undefined when automatic creation is ineligible.
+ * @param resolveDirectory - resolve the absolute directory; called only when
+ * no default registration exists, inside the registry mutation queue.
+ * @returns the default Workspace.
  */
-initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace | undefined>
+initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace>
 
 /**
  * Look up a workspace by id.
@@ -529,6 +532,7 @@ list(): Workspace[]
  * published. Unknown ids are an idempotent no-op for domain callers.
  * @param id - Workspace registration to remove.
  * @returns `true` when a record was deleted, `false` when it was unknown.
+ * @throws {@link WorkspaceDefaultUndeletableError} when `id` is the default Workspace.
  */
 delete(id: WorkspaceId): Promise<boolean>
 
@@ -571,6 +575,17 @@ archiveSession(sessionId: SessionId, options: ArchiveSessionOptions = {}): Promi
  * @returns resolution after durability.
  */
 unarchiveSession(sessionId: SessionId): Promise<void>
+
+/**
+ * Forget one deleted session: drop it from the header index, from every
+ * workspace account, and from the archive and pin sets, durably. Call it
+ * after the session's stored artifact is gone; a still-stored session would
+ * reappear in the header index at the next startup. An id the registry
+ * does not hold resolves without writing.
+ * @param sessionId - The deleted session.
+ * @returns resolution after durability.
+ */
+forgetSession(sessionId: SessionId): Promise<void>
 
 /**
  * Pin one session durably, prepending it to the registry-global pin set.

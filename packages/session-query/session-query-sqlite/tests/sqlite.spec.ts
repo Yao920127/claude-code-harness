@@ -188,6 +188,8 @@ class TestPersistence extends SessionPersistence {
     })
   }
 
+  delete(): Promise<boolean> { return Promise.reject(new Error('this suite does not delete sessions')) }
+
   async list(options?: SessionPersistenceListOptions): Promise<readonly SessionPersistenceSnapshot[]> {
     TestPersistence.listSignals.push(options?.signal)
     TestPersistence.listStarted?.()

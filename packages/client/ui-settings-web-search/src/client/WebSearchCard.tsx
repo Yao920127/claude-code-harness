@@ -5,7 +5,8 @@
  */
 
 import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
-import { SettingsForm, SettingsSecretField, SettingsValueField } from '@deepseek-ai/dsh-client-ui-primitives'
+import { SettingsForm, SettingsValueField } from '@deepseek-ai/dsh-client-ui-primitives'
+import { CredentialField } from './CredentialField.tsx'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { formLabels } from './locales.ts'
 import type { WebSearchCardFace } from './web-search-card-controller.ts'
@@ -28,18 +29,11 @@ export function WebSearchCard(props: WebSearchCardProps) {
   const disabled = !state.writable
   return (
     <SettingsForm labels={formLabels(t)} state={state} onSave={props.save} onDiscard={props.discard}>
-      <SettingsSecretField
+      <CredentialField
         id="plugin-config-web-search-key"
         label={t('apiKey')}
-        hint={t('apiKeyHint')}
-        // The credentials domain accepts a key even when the settings document
-        // itself is read-only; they are separate stores with separate refusals.
-        // Its own writability is what disables this control — a key sourced
-        // from the process environment cannot be written from here.
-        disabled={!state.apiKeyWritable}
-        text={state.apiKey.text}
-        configured={state.apiKeyConfigured}
-        stateLabel={state.apiKeyConfigured ? t('apiKeySet') : t('apiKeyUnset')}
+        state={state}
+        t={t}
         onEdit={(text) => { props.edit('apiKey', text) }}
       />
       <SettingsValueField

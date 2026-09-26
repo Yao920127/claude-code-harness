@@ -9,7 +9,7 @@ import { RemoteStreamCarrierError } from '@deepseek-ai/dsh-api-gateway/client'
 import { SESSION_FORMAT_VERSION, SessionSeq } from '@deepseek-ai/dsh-session/types'
 import { ok, streamHandle, type RemoteMock } from '@deepseek-ai/dsh-remote-mock'
 import { createClientTest, webApp } from '@deepseek-ai/dsh-client-test-runtime/src/assembly/index.ts'
-import { ClientSessions, SessionCreateError, SessionForkError } from '../src/client/sessions/service.ts'
+import { ClientSessions, SessionCreateError, SessionDeleteError, SessionForkError } from '../src/client/sessions/service.ts'
 import { scopeOf } from '../src/client/scope.ts'
 import type {
   SessionAssistantStreamBaseline, SessionFollowFrame, SessionFollowRequest,
@@ -903,6 +903,24 @@ describe('create', () => {
       rpcError: { code: 'session/workspace-attach-failed' },
     })
     expect(b.svc.list.getSnapshot().byId[sid('published')]).toMatchObject({ id: 'published', blank: true })
+  })
+})
+
+describe('delete', () => {
+  it('drops the deleted row after the Host confirms and keeps it when the Host refuses', async ({ bench }) => {
+    const b = bench()
+    await feedList(b, [{ id: 'doomed', cwd: '/work' }, { id: 'kept', cwd: '/work' }])
+    const error = new RemoteError('session/writer-held', 'held', { sessionId: sid('kept') })
+    b.mock.remote.session.delete.mockResolvedValueOnce(err(error))
+    const failure = await b.svc.delete(sid('kept')).catch((cause: unknown) => cause)
+    expect(failure).toBeInstanceOf(SessionDeleteError)
+    expect(failure).toMatchObject({ sessionId: 'kept', rpcError: error })
+    expect(b.svc.list.getSnapshot().ids).toContain('kept')
+
+    b.mock.remote.session.delete.mockResolvedValueOnce(ok({ deleted: true }))
+    await b.svc.delete(sid('doomed'))
+    expect(b.mock.remote.session.delete).toHaveBeenLastCalledWith({ sessionId: sid('doomed') })
+    expect(b.svc.list.getSnapshot().ids).not.toContain('doomed')
   })
 })
 

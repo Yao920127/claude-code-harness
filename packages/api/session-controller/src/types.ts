@@ -329,6 +329,16 @@ export interface SessionForkValue {
   readonly sessionId: SessionId
 }
 
+/** Session permanent-deletion request. */
+export interface SessionDeleteRequest {
+  readonly sessionId: SessionId
+}
+
+/** Confirmation that a Session and its subagent descendants were deleted. */
+export interface SessionDeleteValue {
+  readonly deleted: true
+}
+
 /** Session prompt request. */
 export interface SessionPromptRequest {
   /** Client-minted identity persisted on the exact accepted user message. */

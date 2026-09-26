@@ -81,9 +81,9 @@ export class TestWorkspaces implements IWorkspaces {
   }
 
   /**
-   * Initialize the default Workspace through a test stub; defaults to an ineligible first use.
+   * Ensure the default Workspace through a test stub; defaults to a Host that provides none.
    * @param signal - caller lifetime.
-   * @returns the stubbed Workspace, or undefined when initialization is ineligible.
+   * @returns the stubbed Workspace, or undefined when the Host provides none.
    */
   async initializeDefault(signal?: AbortSignal): Promise<WorkspaceView | undefined> {
     this.calls.push({ method: 'initializeDefault', args: [signal] })

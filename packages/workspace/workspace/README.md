@@ -60,19 +60,21 @@ ctx.workspaceRegistry.list() // shows the project, newest first
 ```
 
 <a id="first-use-workspace"></a>
-### First-use Workspace
+### Default Workspace
 
-`initializeDefault(resolveDirectory)` initializes the default Workspace without creating a Session. Initial creation requires an empty Workspace registry and no live, persisted, or archived Session, including Sessions without a working directory. The registry checks persistent history directly; an empty visible sidebar is insufficient.
+`initializeDefault(resolveDirectory)` ensures the permanent default Workspace exists without creating a Session, whatever other Workspaces and Session history exist. `defaultWorkspaceId` names it once registered.
 
-The directory resolver runs inside the mutation queue only when creation is eligible. It returns an absolute path; the registry creates missing parent directories, canonicalizes the path, rechecks Session history, and commits the Workspace with its initialization marker, titled after the requested directory's final segment rather than the canonical one, so a symlink at that path does not retitle the Workspace after its target. An existing directory is reused; a file conflict or directory failure rejects initialization. The [Host controller](../../api/workspace-controller/README.md#first-use-workspace) supplies the Documents path policy.
+The directory resolver runs inside the mutation queue only when no default registration exists. It returns an absolute path; the registry creates missing parent directories, canonicalizes the path, and commits the Workspace with its default marker, titled after the requested directory's final segment rather than the canonical one, so a symlink at that path does not retitle the Workspace after its target. An existing directory is reused, and a Workspace already registered at that directory is adopted as the default; a file conflict or directory failure rejects initialization. The [Host controller](../../api/workspace-controller/README.md#first-use-workspace) supplies the Documents path policy.
 
-The first successful registration records its identity durably. Repeated calls return it without resolving a directory again; renaming keeps that identity, and deleting its registration does not permit another automatic creation. Directory or registration failure leaves initialization unset for retry. Directories created before a later failure remain on disk. Once directory resolution succeeds, caller cancellation does not roll back directory creation or registration. The [first-use decision](../../../.agents/notes/implemented/feature/2026-09-20-default-workspace.md) explains this lifetime.
+The first successful registration records its identity durably. Repeated calls return it without resolving a directory again and recreate its directory when it is missing from disk; renaming keeps that identity. `delete` refuses the default with `WorkspaceDefaultUndeletableError`. A marker whose registration an earlier build deleted is replaced by a new registration. Directory or registration failure leaves the marker unset for retry. Directories created before a later failure remain on disk. Once directory resolution succeeds, caller cancellation does not roll back directory creation or registration. The [permanent default decision](../../../.agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.md) explains this lifetime.
 
 ### Grouping sessions under a project
 
 A session joins the project of the directory it runs in: create a session in a project's directory and it appears under that project, newest first. A session can only belong to one project. A session whose directory cannot be validated — no recorded directory, or a moved or deleted folder — cannot join and stays ungrouped.
 
 ### Hiding and restoring sessions, and removing projects
+
+`forgetSession(sessionId)` drops a deleted Session from the header index, every Workspace account, and the archive and pin sets; its caller deletes the stored log first.
 
 Hide a session from the grouping when it should stop appearing there: it disappears from the visible list, while its session, history, and place in the project stay intact. A session with running work — its own turn, a running subagent, a background job, or an active reminder — is not hidden underneath that work: the registry refuses with the list of what runs, and a caller that asks to stop the work first has it stopped the way the user's own stop actions do, then hidden. Restore a hidden session when it should appear again: it returns to its recorded position under its project, or to the ungrouped sessions when it belongs to none, and continues the conversation from a regularly ended log. Remove a project when it is no longer needed: it leaves the list, and its folder, files, and session histories are never touched — those sessions become ungrouped. Adding the same directory again afterwards starts a fresh project without the old sessions.
 

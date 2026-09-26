@@ -18,9 +18,10 @@ import type {
 /**
  * Project one authoritative Workspace entity into its Remote value.
  * @param workspace - authoritative registry entity.
+ * @param defaultWorkspaceId - the registry's permanent default Workspace id, when registered.
  * @returns detached Workspace projection for Remote consumers.
  */
-export function workspaceView(workspace: Workspace): WorkspaceView {
+export function workspaceView(workspace: Workspace, defaultWorkspaceId: WorkspaceId | undefined): WorkspaceView {
   return {
     workspaceId: workspace.id,
     path: workspace.path,
@@ -28,10 +29,13 @@ export function workspaceView(workspace: Workspace): WorkspaceView {
     sessionIds: [...workspace.sessionIds],
     createdAt: workspace.createdAt,
     updatedAt: workspace.updatedAt,
+    ...workspace.id === defaultWorkspaceId ? { isDefault: true } : {},
   }
 }
 
-function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceView {
+function changedWorkspaceView(
+  workspaceId: string, value: unknown, defaultWorkspaceId: WorkspaceId | undefined,
+): WorkspaceView {
   const record: WorkspaceRecord = workspaceRecord.parse(value)
   return {
     workspaceId: WorkspaceId(workspaceId),
@@ -40,6 +44,7 @@ function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceVie
     sessionIds: [...record.sessionIds],
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
+    ...workspaceId === defaultWorkspaceId ? { isDefault: true } : {},
   }
 }
 
@@ -50,14 +55,19 @@ export class WorkspaceFeed {
   private order: readonly string[]
   private archived: readonly string[]
   private pinned: readonly string[]
+  private defaultId: WorkspaceId | undefined
 
-  /** @param ctx - Host context containing the authoritative Workspace registry. */
-  constructor(private readonly ctx: Context) {
+  /**
+   * @param ctx - Host context containing the authoritative Workspace registry.
+   * @param ready - settles once the Host's startup work that every baseline must include has finished.
+   */
+  constructor(private readonly ctx: Context, private readonly ready: () => Promise<void> = () => Promise.resolve()) {
     const baseline = ctx.workspaceRegistry.list()
     this.knownIds = new Set(baseline.map(workspace => String(workspace.id)))
     this.order = baseline.map(workspace => String(workspace.id))
     this.archived = ctx.workspaceRegistry.archivedSessionIds.map(String)
     this.pinned = ctx.workspaceRegistry.pinnedSessionIds.map(String)
+    this.defaultId = ctx.workspaceRegistry.defaultWorkspaceId
     ctx.on('domain/changed', (change: DomainChanged) => { this.changed(change) })
     ctx.effect(() => () => {
       for (const follower of this.followers) follower.close()
@@ -71,18 +81,21 @@ export class WorkspaceFeed {
    */
   baseline(): WorkspaceBaseline {
     return {
-      items: this.ctx.workspaceRegistry.list().map(workspaceView),
+      items: this.ctx.workspaceRegistry.list().map(workspace =>
+        workspaceView(workspace, this.ctx.workspaceRegistry.defaultWorkspaceId)),
       archivedSessionIds: [...this.ctx.workspaceRegistry.archivedSessionIds],
       pinnedSessionIds: [...this.ctx.workspaceRegistry.pinnedSessionIds],
     }
   }
 
   /**
-   * Open one generation beginning with a complete baseline.
+   * Open one generation beginning with a complete baseline, taken after
+   * `ready` settles so a starting Host's default Workspace is included.
    * @param signal - generation cancellation.
    * @returns baseline followed by ordered Workspace increments.
    */
   async *follow(signal: AbortSignal): AsyncIterable<WorkspaceFollowFrame> {
+    await this.ready()
     signal.throwIfAborted()
     const follower = new WorkspaceFollower()
     this.followers.add(follower)
@@ -102,6 +115,8 @@ export class WorkspaceFeed {
       const state = workspaceDomainState.parse(change.value)
       const nextOrder = state.workspaceIds.map(String)
       const orderChanged = !sameStrings(this.order, nextOrder)
+      const previousDefault = this.defaultId
+      this.defaultId = state.defaultWorkspaceId
       for (const id of state.workspaceIds) {
         if (this.knownIds.has(id)) continue
         const workspace = this.ctx.workspaceRegistry.get(id)
@@ -109,7 +124,15 @@ export class WorkspaceFeed {
           throw new Error(`committed Workspace registry references missing Workspace "${id}"`)
         }
         this.knownIds.add(id)
-        this.publish({ type: 'upsert', workspace: workspaceView(workspace) })
+        this.publish({ type: 'upsert', workspace: workspaceView(workspace, this.defaultId) })
+      }
+      // Adopting an already registered directory as the default changes no
+      // Workspace record, so the flag reaches followers as an upsert here.
+      if (previousDefault !== this.defaultId) {
+        for (const id of [previousDefault, this.defaultId]) {
+          const workspace = id === undefined ? undefined : this.ctx.workspaceRegistry.get(id)
+          if (workspace !== undefined) this.publish({ type: 'upsert', workspace: workspaceView(workspace, this.defaultId) })
+        }
       }
       this.order = nextOrder
       if (orderChanged) this.publish({ type: 'order', workspaceIds: [...state.workspaceIds] })
@@ -134,7 +157,7 @@ export class WorkspaceFeed {
     if (!this.knownIds.has(change.key)) return
     this.publish({
       type: 'upsert',
-      workspace: changedWorkspaceView(change.key, change.value),
+      workspace: changedWorkspaceView(change.key, change.value, this.defaultId),
     })
   }
 

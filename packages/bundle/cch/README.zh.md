@@ -38,6 +38,8 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `llm-deepseek`、`llm-deepseek-account` | 禁用，使模型选择器只列出 Claude 模型 |
 | `ui-brand-official` | 禁用，使 Claude 品牌在官方构建中占用侧边栏 |
 | `ui-settings-account` | 禁用，使设置中不提供 DeepSeek 账号登录 |
+| `workspace-controller` | 默认工作区位于 `<Documents>/claude-code-harness/default-workspace` |
+| `web-search-claude-code`（插入）、`web` | 网页搜索使用同一登录运行 Claude Code 的 `WebSearch`；插件页的**搜索来源**页面可选择其他提供方 |
 
 Web 应用保存到 profile 补丁中的个人设置会在本 bundle 之后生效，并覆盖这些行。
 

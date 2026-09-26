@@ -1,0 +1,58 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/web/web-search-claude-code/README.md
+/:
+  en: e766a50e962ada08
+  zh: 38e0bb431681f9f3
+/deepseek-ai-dsh-web-search-claude-code:
+  en: 91e4a9fd24cba106
+  zh: c01facd141586fcc
+/deepseek-ai-dsh-web-search-claude-code/summary:
+  en: 84421ab07d22fafc
+  zh: b971d57cd1a7871c
+/deepseek-ai-dsh-web-search-claude-code/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 09388d293f9be9cb
+/deepseek-ai-dsh-web-search-claude-code/use-this-package:
+  en: df09b0552e08bcd1
+  zh: b8833c719ab39732
+/deepseek-ai-dsh-web-search-claude-code/use-this-package/when-to-choose-it:
+  en: 8a96b36044bc0a76
+  zh: 374a35e996634cbe
+/deepseek-ai-dsh-web-search-claude-code/use-this-package/minimal-configuration:
+  en: 79e838ccce834a52
+  zh: 89a8779e8b860cac
+/deepseek-ai-dsh-web-search-claude-code/use-this-package/what-a-search-returns:
+  en: e49ef5b2b5a90cb4
+  zh: 12f4d98c92bf0db2
+/deepseek-ai-dsh-web-search-claude-code/use-this-package/failures-and-recovery:
+  en: 70a0123b9eda189c
+  zh: 0e0d665659f75494
+/deepseek-ai-dsh-web-search-claude-code/understand-the-implementation:
+  en: 9842c69ad3636bb3
+  zh: 7d7dbdaf7076ad77
+/deepseek-ai-dsh-web-search-claude-code/understand-the-implementation/design-philosophy:
+  en: 2671aaa0fcbfb69a
+  zh: 9b178def99dc9dd5
+/deepseek-ai-dsh-web-search-claude-code/understand-the-implementation/source-map:
+  en: 30b2b1e3e834b70c
+  zh: c1dd2627c7768367
+/deepseek-ai-dsh-web-search-claude-code/further-exploration:
+  en: ec62b8a471221480
+  zh: 32dad9f7fa0ffa26
+/deepseek-ai-dsh-web-search-claude-code/model-experience:
+  en: 36d782b6a6cdc3f9
+  zh: ac33d86e2d2407e4
+/deepseek-ai-dsh-web-search-claude-code/model-experience/kv-cache-effect:
+  en: 40294c1c31b74824
+  zh: 751091f575d9d135
+/deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work:
+  en: a122afe1e10cb1c3
+  zh: ac19eab504543184
+/deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work/dev-note:
+  en: 7f775cc79dbce94b
+  zh: 426439dfd3e40ab9
+/deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work/dev-note/future-a-reused-process:
+  en: 3d686190ad381e59
+  zh: 6752d95a13347063

@@ -432,3 +432,59 @@ describe('cross-process write lock', () => {
     await b.close()
   })
 })
+
+describe('session deletion', () => {
+  it('removes the session directory and leaves other sessions intact', async () => {
+    const root = await freshRoot()
+    const backend = await mount(root)
+    for (const id of ['doomed', 'kept']) {
+      const handle = await backend.create(meta(id))
+      await handle.append([...EVENTS])
+      await handle.close()
+    }
+    await expect(backend.delete(SessionId('doomed'))).resolves.toBe(true)
+    expect(existsSync(sessionDir(root, '/work', SessionId('doomed')))).toBe(false)
+    await expect(backend.stat(SessionId('doomed'))).resolves.toBeUndefined()
+    await expect(backend.open(SessionId('doomed'), 'read')).rejects.toBeInstanceOf(SessionPersistenceNotFoundError)
+    expect((await backend.list()).map(snapshot => snapshot.header.id)).toEqual([SessionId('kept')])
+    await expect(backend.delete(SessionId('doomed'))).resolves.toBe(false)
+    // The id is free again once its artifact is gone.
+    const recreated = await backend.create(meta('doomed'))
+    await recreated.append([...EVENTS])
+    await recreated.close()
+  })
+
+  it('refuses while a write handle in this or another instance owns the session', async () => {
+    const root = await freshRoot()
+    const first = await mount(root)
+    const second = await mount(root)
+    const writer = await first.create(meta('owned'))
+    await writer.append([...EVENTS])
+    await expect(first.delete(SessionId('owned'))).rejects.toBeInstanceOf(SessionAlreadyOwnedError)
+    await expect(second.delete(SessionId('owned'))).rejects.toBeInstanceOf(SessionAlreadyOwnedError)
+    await writer.close()
+    const pending = await first.create(meta('pending'))
+    await expect(first.delete(SessionId('pending'))).rejects.toBeInstanceOf(SessionAlreadyOwnedError)
+    await pending.close()
+    await expect(second.delete(SessionId('owned'))).resolves.toBe(true)
+    // A refused or completed deletion releases its claim for later writers.
+    const reopened = await first.create(meta('owned'))
+    await reopened.close()
+  })
+
+  it('keeps the session when cancelled before removal', async () => {
+    const root = await freshRoot()
+    const backend = await mount(root)
+    const handle = await backend.create(meta('kept-on-abort'))
+    await handle.append([...EVENTS])
+    await handle.close()
+    await expect(backend.delete(SessionId('kept-on-abort'), { signal: AbortSignal.abort() })).rejects.toThrow()
+    const controller = new AbortController()
+    refuse.flockBusy = false
+    const pendingDelete = backend.delete(SessionId('kept-on-abort'), { signal: controller.signal })
+    controller.abort()
+    await expect(pendingDelete).rejects.toThrow()
+    await expect(backend.stat(SessionId('kept-on-abort'))).resolves.toBeDefined()
+    await expect(backend.delete(SessionId('kept-on-abort'))).resolves.toBe(true)
+  })
+})

@@ -10,30 +10,35 @@ describe('system Documents directory', () => {
   ] as const)('uses the %s account directory and preserves spaces and Unicode', async (platform, stdout, path, command) => {
     const run = vi.fn<NativeCommandRunner>(async () => ({ stdout, stderr: '' }))
     const signal = new AbortController().signal
-    await expect(defaultWorkspaceDirectory(undefined, signal, { platform, run })).resolves.toBe(path)
+    await expect(defaultWorkspaceDirectory(undefined, 'deepseek-harness', signal, { platform, run })).resolves.toBe(path)
     expect(run).toHaveBeenCalledWith(command, expect.any(Array), signal)
   })
 
   it('uses the configured directory without a system lookup', async () => {
     const run = vi.fn<NativeCommandRunner>()
-    await expect(defaultWorkspaceDirectory('/documents', new AbortController().signal, { platform: 'linux', run }))
+    await expect(defaultWorkspaceDirectory('/documents', 'deepseek-harness', new AbortController().signal, { platform: 'linux', run }))
       .resolves.toBe('/documents/deepseek-harness/default-workspace')
     expect(run).not.toHaveBeenCalled()
   })
 
+  it('places the default Workspace under the configured product directory', async () => {
+    await expect(defaultWorkspaceDirectory('/documents', 'claude-code-harness', new AbortController().signal, { platform: 'linux' }))
+      .resolves.toBe('/documents/claude-code-harness/default-workspace')
+  })
+
   it.each(['', '\r\n', '/home/a\n'])('rejects an unavailable XDG directory %j', async (stdout) => {
     const run: NativeCommandRunner = async () => ({ stdout, stderr: '' })
-    await expect(defaultWorkspaceDirectory(undefined, new AbortController().signal, { platform: 'linux', home: '/home/a', run }))
+    await expect(defaultWorkspaceDirectory(undefined, 'deepseek-harness', new AbortController().signal, { platform: 'linux', home: '/home/a', run }))
       .rejects.toThrow('unavailable')
   })
 
   it('propagates lookup failure and cancellation', async () => {
     const run: NativeCommandRunner = async () => { throw new Error('lookup denied') }
-    await expect(defaultWorkspaceDirectory(undefined, new AbortController().signal, { platform: 'darwin', run }))
+    await expect(defaultWorkspaceDirectory(undefined, 'deepseek-harness', new AbortController().signal, { platform: 'darwin', run }))
       .rejects.toThrow('lookup denied')
-    await expect(defaultWorkspaceDirectory('/documents', AbortSignal.abort(), { platform: 'linux' }))
+    await expect(defaultWorkspaceDirectory('/documents', 'deepseek-harness', AbortSignal.abort(), { platform: 'linux' }))
       .rejects.toThrow()
-    await expect(defaultWorkspaceDirectory(undefined, new AbortController().signal, { platform: 'freebsd' }))
+    await expect(defaultWorkspaceDirectory(undefined, 'deepseek-harness', new AbortController().signal, { platform: 'freebsd' }))
       .rejects.toThrow('unavailable')
   })
 

@@ -28,14 +28,16 @@ export function validateDocumentsDirectory(directory: string, platform: NodeJS.P
 }
 
 /**
- * Resolve the first-use directory on the Host without creating files.
+ * Resolve the default Workspace directory on the Host without creating files.
  * @param documentsDirectory - explicit deployment override for the system Documents directory.
+ * @param productDirectory - directory under Documents holding the default Workspace directory.
  * @param signal - caller lifetime and lookup deadline.
  * @param internals - platform facts and native command runner.
  * @returns the absolute candidate path.
  */
 export async function defaultWorkspaceDirectory(
   documentsDirectory: string | undefined,
+  productDirectory: string,
   signal: AbortSignal,
   internals: DocumentsDirectoryInternals = {},
 ): Promise<string> {
@@ -74,5 +76,5 @@ export async function defaultWorkspaceDirectory(
   }
   directory = validateDocumentsDirectory(directory, platform)
   signal.throwIfAborted()
-  return paths.join(directory, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY)
+  return paths.join(directory, productDirectory, DEFAULT_WORKSPACE_DIRECTORY)
 }

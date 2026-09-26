@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-26-multi-vendor-web-search.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.md
+/agent-note-multi-vendor-web-search:
+  en: 046ae5d3fbddca9b
+  zh: 9b9e95a76947a774
+/agent-note-multi-vendor-web-search/problem:
+  en: 5d58d63a7f540b4e
+  zh: 306071bb23ee3bc8
+/agent-note-multi-vendor-web-search/decision:
+  en: edfd9d64d981fb88
+  zh: 034a531b5fbf2ea1
+/agent-note-multi-vendor-web-search/alternatives-considered:
+  en: 51f036b14d33b1cc
+  zh: 6531df5b2d7585d6
+/agent-note-multi-vendor-web-search/consequences:
+  en: 404a6cf50087f126
+  zh: a2a37ad52a08e701

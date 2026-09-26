@@ -224,7 +224,7 @@ export interface Config {
 ## `@deepseek-ai/dsh-api-session-controller`
 
 - `inject`: `agentDefaultModel` · `agents` · `attachments` · `fileUploads` · `fs` · `llm` · `sessions` · `sessionProjections` · `sessionQuery` · `typert` · `workspaceRegistry`
-- `source`: [`packages/api/session-controller/src/index.ts:79`](../packages/api/session-controller/src/index.ts)
+- `source`: [`packages/api/session-controller/src/index.ts:81`](../packages/api/session-controller/src/index.ts)
 
 ```ts config-catalog
 /** Session Controller deployment policy. */
@@ -306,10 +306,18 @@ export interface Config {
 - `source`: [`packages/api/workspace-controller/src/index.ts:33`](../packages/api/workspace-controller/src/index.ts)
 
 ```ts config-catalog
-/** First-use directory policy for the Host account. */
+/** Default Workspace directory policy for the Host account. */
 export interface Config {
   /** Override the system Documents directory with a fully qualified path. */
   documentsDirectory?: string
+  /** Directory under Documents that holds the default Workspace directory. */
+  productDirectory?: string
+  /**
+   * Whether this Host provides the permanent default Workspace. A Host that
+   * must not create directories under its account's Documents sets false and
+   * leaves every folder choice to the user.
+   */
+  defaultWorkspace?: boolean
   /** Maximum duration of the operating system's Documents lookup. */
   documentsLookupTimeoutMs?: number
 }
@@ -4099,19 +4107,15 @@ export type ApprovalPolicy = 'ask' | 'never'
 
 ## `@deepseek-ai/dsh-web`
 
-- `source`: [`packages/web/web/src/index.ts:55`](../packages/web/web/src/index.ts)
+- `refs`: `Volatile` (`@deepseek-ai/cordis`)
+- `source`: [`packages/web/web/src/index.ts:65`](../packages/web/web/src/index.ts)
 
 ```ts config-catalog
-/**
- * Config for the web seam. `searchProvider` / `fetchProvider` pin which provider
- * wins for each capability; both are optional (a single registered usable
- * provider auto-selects). Operational overrides such as environment variables
- * must feed these same fields rather than introduce a hidden priority chain.
- */
-export interface WebRuntimeConfig {
-  /** Explicit search provider id. Omitted = auto-select when exactly one usable. */
-  readonly searchProvider?: string
-  /** Explicit fetch provider id. Omitted = auto-select when exactly one usable. */
+/** {@link WebRuntimeConfig} after schema resolution: the search provider id is a live reference. */
+export interface ResolvedWebRuntimeConfig {
+  /** Explicit search provider id, read at each search. */
+  readonly searchProvider: Volatile<string | undefined>
+  /** Explicit fetch provider id. */
   readonly fetchProvider?: string
 }
 ```
@@ -4169,6 +4173,32 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-web-fetch-http -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-web-search-claude-code -->
+<a id="deepseek-aidsh-web-search-claude-code"></a>
+
+## `@deepseek-ai/dsh-web-search-claude-code`
+
+- `inject`: `web` · `subprocess`
+- `source`: [`packages/web/web-search-claude-code/src/index.ts:42`](../packages/web/web-search-claude-code/src/index.ts)
+
+```ts config-catalog
+/** Plugin config: every field is optional. */
+export type Config = Partial<ResolvedConfig>
+
+/** Plugin config after schema defaults. */
+export interface ResolvedConfig {
+  /** Claude Code model; empty uses the model the host's Claude Code settings select. */
+  model: string
+  /** Maximum agent turns for one search. */
+  maxTurns: number
+  /** Extra environment variables for the Claude Code process. */
+  env: Record<string, string>
+  /** Grace period in milliseconds before the process tree is force-killed at release. */
+  disposeGraceMs: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-web-search-claude-code -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-web-search-deepseek -->
 <a id="deepseek-aidsh-web-search-deepseek"></a>
@@ -4249,6 +4279,58 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-web-search-perplexity -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-web-search-vendors -->
+<a id="deepseek-aidsh-web-search-vendors"></a>
+
+## `@deepseek-ai/dsh-web-search-vendors`
+
+- `inject`: `web`
+- `source`: [`packages/web/web-search-vendors/src/index.ts:76`](../packages/web/web-search-vendors/src/index.ts)
+
+```ts config-catalog
+/** Plugin config: every section and field is optional and defaulted per vendor. */
+export interface Config {
+  /** Claude API settings. */
+  claude?: Partial<ClaudeConfig>
+  /** OpenAI settings. */
+  openai?: Partial<VendorConfig>
+  /** xAI settings. */
+  xai?: Partial<VendorConfig>
+  /** Gemini settings. */
+  gemini?: Partial<VendorConfig>
+  /** OpenRouter settings. */
+  openrouter?: Partial<VendorConfig>
+  /** Mistral settings. */
+  mistral?: Partial<VendorConfig>
+  /** Z.AI settings; `model` names the search engine. */
+  zai?: Partial<VendorConfig>
+}
+
+/** Claude API settings. */
+export interface ClaudeConfig extends VendorConfig {
+  /** `web_search` server-tool version; the basic version serves models older than Opus 4.6 and Sonnet 4.6. */
+  toolType: ClaudeWebSearchToolType
+  /** Maximum `web_search` uses per request. */
+  maxUses: number
+  /** Upper bound on generated tokens per Messages request. */
+  maxTokens: number
+}
+
+/** One vendor's endpoint, credential reference, and model (for Z.AI, the search engine). */
+export interface VendorConfig {
+  /** Credential reference resolved for each search. */
+  apiKeyEnv: string
+  /** Vendor API base. */
+  baseURL: string
+  /** Vendor model, or Z.AI search engine. */
+  model: string
+}
+
+/** `web_search` server-tool versions: dynamic filtering needs Opus 4.6+ or Sonnet 4.6+; older models take the basic one. */
+export type ClaudeWebSearchToolType = 'web_search_20260209' | 'web_search_20250305'
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-web-search-vendors -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-webhook-github -->
 <a id="deepseek-aidsh-webhook-github"></a>

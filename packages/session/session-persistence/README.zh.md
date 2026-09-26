@@ -41,6 +41,7 @@ const handle = await ctx.sessionPersistence.open(id, 'write')  // claim single-w
 const reader = await ctx.sessionPersistence.open(id, 'read')   // observe without ownership
 const snap = await ctx.sessionPersistence.stat(id)             // header + revision (+ eventCount / sizeBytes) without a log read
 const all = await ctx.sessionPersistence.list()                // one snapshot per visible stored session
+await ctx.sessionPersistence.delete(id)                        // permanently remove every stored generation; false when absent
 await ctx.sessionPersistence.flush()                           // backend-wide durability barrier over every active write handle
 ```
 

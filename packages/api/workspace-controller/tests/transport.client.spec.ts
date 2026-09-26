@@ -311,7 +311,7 @@ describe('Workspace state stream', () => {
 })
 
 describe('WorkspaceController', () => {
-  it('returns no Workspace when startup is ineligible without changing the list', async ({ mock, start }) => {
+  it('returns no Workspace when the Host provides no default, without changing the list', async ({ mock, start }) => {
     const { remote, client } = await gatewayClient(mock, start)
     const model = new ClientWorkspaceModel(remote.workspace)
     model.replaceBaseline({ items: [], archivedSessionIds: [], pinnedSessionIds: [] })

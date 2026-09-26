@@ -123,13 +123,17 @@ describe('session rename through the assembled browser', () => {
     const trigger = within(row as HTMLElement).getByLabelText('会话“Session title”的操作')
     fireEvent.click(trigger)
     expect(view.getAllByRole('menuitem').map(item => item.textContent)).toEqual([
-      '置顶会话', '重命名', '分叉会话', '归档会话', 'Export action', 'Last action',
+      '置顶会话', '重命名', '分叉会话', '归档会话', 'Export action', 'Last action', '删除会话',
     ])
-    expect(view.getAllByRole('separator')).toHaveLength(1)
+    // The plugin row's own separator and the one leading the destructive delete row.
+    expect(view.getAllByRole('separator')).toHaveLength(2)
+    const deleteRow = view.getByRole('menuitem', { name: '删除会话' })
     const last = view.getByRole('menuitem', { name: 'Last action' })
     const exportRow = view.getByRole('menuitem', { name: 'Export action' })
     trigger.focus()
     fireEvent.keyDown(trigger, { key: 'End' })
+    expect(document.activeElement).toBe(deleteRow)
+    fireEvent.keyDown(deleteRow, { key: 'ArrowUp' })
     expect(document.activeElement).toBe(last)
     fireEvent.keyDown(last, { key: 'ArrowUp' })
     expect(document.activeElement).toBe(exportRow)

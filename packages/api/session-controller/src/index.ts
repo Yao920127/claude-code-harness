@@ -40,6 +40,8 @@ import type {
   SessionCreateValue,
   SessionFollowFrame,
   SessionFollowRequest,
+  SessionDeleteRequest,
+  SessionDeleteValue,
   SessionForkRequest,
   SessionForkValue,
   SessionListRequest,
@@ -402,6 +404,20 @@ export class SessionController extends TypertRemoteService {
   @Remote('rename')
   rename(request: SessionRenameRequest): Promise<SessionRenameValue> {
     return this.commands.rename(request)
+  }
+
+  /**
+   * Permanently delete one ordinary Session and its subagent descendants.
+   * Running work is stopped the way archiving with `stopActivity` stops it,
+   * the live Agent is disposed, and each stored log, cached projection row,
+   * and Workspace account entry is removed. Forks keep their copied history;
+   * spilled output and content-addressed attachments are not removed.
+   * @param request - Session identity.
+   * @returns deletion confirmation.
+   */
+  @Remote('delete')
+  delete(request: SessionDeleteRequest): Promise<SessionDeleteValue> {
+    return this.commands.delete(request)
   }
 
   /**

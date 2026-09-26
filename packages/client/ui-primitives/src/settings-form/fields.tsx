@@ -40,6 +40,24 @@ export interface SettingsFieldProps {
 }
 
 /**
+ * The overridden badge and the reset beside a field's label, shown only while
+ * saving would leave a user-layer entry for the field.
+ * @param props - the field's override state, its copy, and the reset action.
+ * @returns the badge and reset, or nothing for an inherited field.
+ */
+function OverrideControls(props: Pick<SettingsFieldProps, 'overridden' | 'overriddenLabel' | 'resetLabel' | 'disabled' | 'onReset'>) {
+  if (!props.overridden) return null
+  return (
+    <span className={css.badges}>
+      <Tag tone="neutral">{props.overriddenLabel}</Tag>
+      <button type="button" className={css.reset} disabled={props.disabled} onClick={props.onReset}>
+        {props.resetLabel}
+      </button>
+    </span>
+  )
+}
+
+/**
  * A staged value field. `numeric` only hints the keypad: which drafts a field
  * accepts is decided by its spec, so the control never silently rewrites what
  * the user typed.
@@ -76,21 +94,7 @@ export function SettingsValueField(props: Omit<SettingsFieldProps, 'hint'> & {
             )
             : null}
         </div>
-        {props.overridden
-          ? (
-            <span className={css.badges}>
-              <Tag tone="neutral">{props.overriddenLabel}</Tag>
-              <button
-                type="button"
-                className={css.reset}
-                disabled={props.disabled}
-                onClick={props.onReset}
-              >
-                {props.resetLabel}
-              </button>
-            </span>
-          )
-          : null}
+        <OverrideControls {...props} />
       </div>
       <input
         id={props.id}
@@ -110,6 +114,51 @@ export function SettingsValueField(props: Omit<SettingsFieldProps, 'hint'> & {
       {props.help !== undefined && helpOpen
         ? <div id={helpId} className={css.help} role="region" aria-label={props.help.label}>{props.help.content}</div>
         : null}
+    </div>
+  )
+}
+
+/** One choice a {@link SettingsChoiceField} offers. */
+export interface SettingsChoice {
+  /** Stored value the choice stages. */
+  value: string
+  /** Visible, localized name of the choice. */
+  label: string
+}
+
+/**
+ * A staged choice among fixed values. The first option stages a clear, so
+ * choosing it is the same gesture as resetting the field to the composition
+ * layer; a stored value outside the choices stays selectable under its raw text.
+ * @param props - the field's copy, its staged text, the choices, and the edit actions.
+ * @returns the labelled select control.
+ */
+export function SettingsChoiceField(props: Omit<SettingsFieldProps, 'invalid' | 'invalidLabel'> & {
+  /** The values offered, in display order. */
+  choices: readonly SettingsChoice[]
+  /** Label of the first option, which inherits the composition default. */
+  inheritedLabel: string
+}) {
+  const known = props.text === '' || props.choices.some(choice => choice.value === props.text)
+  return (
+    <div className={css.field}>
+      <div className={css.head}>
+        <label className={css.label} htmlFor={props.id}>{props.label}</label>
+        <OverrideControls {...props} />
+      </div>
+      <select
+        id={props.id}
+        className={css.input}
+        aria-describedby={`${props.id}-message`}
+        value={props.text}
+        disabled={props.disabled}
+        onChange={(event) => { props.onEdit(event.target.value) }}
+      >
+        <option value="">{props.inheritedLabel}</option>
+        {props.choices.map(choice => <option key={choice.value} value={choice.value}>{choice.label}</option>)}
+        {known ? null : <option value={props.text}>{props.text}</option>}
+      </select>
+      <p id={`${props.id}-message`} className={css.hint}>{props.hint}</p>
     </div>
   )
 }

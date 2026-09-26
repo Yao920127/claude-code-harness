@@ -23,6 +23,7 @@ import { SessionTitleInvalidError } from '@deepseek-ai/dsh-session-title'
 import { canonicalClientTimeZone } from '@deepseek-ai/dsh-util-time'
 import { assertNever } from '@deepseek-ai/dsh-util-values'
 import { RemoteError, remoteErrorOf } from '@deepseek-ai/dsh-typert-protocol'
+import type {} from '@deepseek-ai/dsh-session-projection-cache'
 import type { Workspace } from '@deepseek-ai/dsh-workspace'
 import {
   ApiSessionAgentController,
@@ -41,6 +42,8 @@ import type {
   SessionCancelValue,
   SessionCreateRequest,
   SessionCreateValue,
+  SessionDeleteRequest,
+  SessionDeleteValue,
   SessionForkRequest,
   SessionForkValue,
   SessionPromptRequest,
@@ -53,6 +56,26 @@ import type {
   SessionUpdateQueueValue,
   SessionRequestId,
 } from './types.ts'
+
+/**
+ * Collect the subagent-origin Sessions below one Session, deepest first, so
+ * each child is removed before the parent that recorded it.
+ * @param rootId - Session whose descendants are collected.
+ * @param headers - every stored Session header.
+ * @returns descendant identities in removal order.
+ */
+function subagentDescendants(rootId: SessionId, headers: readonly SessionHeader[]): SessionId[] {
+  const ordered: SessionId[] = []
+  const visit = (parentId: SessionId): void => {
+    for (const header of headers) {
+      if (header.origin !== 'subagent' || header.parentSession !== parentId) continue
+      visit(header.id)
+      ordered.push(header.id)
+    }
+  }
+  visit(rootId)
+  return ordered
+}
 
 interface SessionReadState {
   readonly id: SessionId
@@ -209,6 +232,47 @@ export class SessionCommandController {
         {},
       )
     }
+  }
+
+  /**
+   * Permanently delete one ordinary Session and its subagent descendants:
+   * stop and gate their work through the archive, release the live Agent,
+   * then remove each stored log, projection-cache row, and Workspace entry.
+   * @param request - Session identity.
+   * @returns deletion confirmation after every removal.
+   */
+  async delete(request: SessionDeleteRequest): Promise<SessionDeleteValue> {
+    const { sessionId } = request
+    const header = this.ctx.sessions.get(sessionId)?.header
+      ?? (await this.ctx.sessionPersistence.stat(sessionId))?.header
+    if (header === undefined) {
+      throw new RemoteError('session/not-found', `session "${sessionId}" not found`, { sessionId })
+    }
+    if (hasApiSessionSubagentOwner(this.ctx, { header }, this.ctx.agents.get(sessionId))) {
+      throw apiSessionSubagentOwnershipError(sessionId)
+    }
+    // The archive write gates every wake the stop requests induce, so the
+    // released Agent cannot be resumed by its own jobs or reminders.
+    await this.ctx.workspaceRegistry.archiveSession(sessionId, { stopActivity: true })
+    await this.agents.release(sessionId)
+    const headers = (await this.ctx.sessionPersistence.list()).map(snapshot => snapshot.header)
+    for (const id of [...subagentDescendants(sessionId, headers), sessionId]) {
+      try {
+        await this.ctx.sessionPersistence.delete(id)
+      } catch (error) {
+        if (!(error instanceof Error && error.name === 'SessionAlreadyOwnedError')) throw error
+        throw new RemoteError(
+          'session/writer-held',
+          `session "${id}" is being written by another owner and was not deleted`,
+          { sessionId: id },
+          { cause: error },
+        )
+      }
+      await this.ctx.get('sessionProjectionCache')?.forget(id)
+      await this.ctx.workspaceRegistry.forgetSession(id)
+    }
+    this.ctx.emit('api-session/removed', sessionId)
+    return { deleted: true }
   }
 
   /**

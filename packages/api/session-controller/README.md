@@ -52,6 +52,8 @@ During uninterrupted following, transcript and steering echoes stay in Chat thro
 
 The user-invocable `skills/list` metadata includes the winning provider’s optional instruction-file `path`. The composer can preview that file without loading every skill body or activating a cold Agent.
 
+`session.delete({ sessionId })` permanently deletes an ordinary Session and its subagent-origin descendants. It archives the Session with `stopActivity`, so running work stops and wakes stay gated, disposes the live Agent this controller created, then deletes each stored log deepest descendant first, its projection-cache row, and its Workspace account, archive, and pin entries, and emits `api-session/removed`. Unknown Sessions fail with `session/not-found`, subagent-owned Sessions with `session/agent-busy`, and a writer held elsewhere with `session/writer-held`. Forks keep their copied history; spilled output and content-addressed attachments are not removed. The [deletion decision](../../../.agents/notes/implemented/feature/2026-09-26-permanent-session-deletion.md) records these limits.
+
 Fork copies the exact inclusive event prefix selected by `atSeq`, including a cut inside an open turn. The child records its inherited marker before synthetic fork results and closing events. Omitting `atSeq` selects the latest completed turn and its standalone tail, stopping before the next turn or queued input; a nonexistent event is rejected. The chat action selects a completed turn.
 
 A resume blocked by an existing write handle returns `session/writer-held` with the Session id; other resume failures retain `gateway/internal`.

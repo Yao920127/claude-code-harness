@@ -220,9 +220,11 @@ describe('sessions', () => {
     await expect(runtime.sessions.fork({
       sessionId: 's1' as SessionId, atSeq: 7, increaseTitle: true,
     })).resolves.toBe('s1')
+    await runtime.sessions.delete('s2' as SessionId)
     expect(runtime.sessions.calls).toEqual([
       { method: 'refreshProjections', args: ['s2'] },
       { method: 'fork', args: [{ sessionId: 's1', atSeq: 7, increaseTitle: true }] },
+      { method: 'delete', args: ['s2'] },
     ])
     await runtime.dispose()
   })
@@ -557,7 +559,7 @@ describe('workspaces', () => {
     expect(view.container.textContent).toContain('ws:pending')
     await runtime.dispose()
   })
-  it('skips default initialization without a fixture and forwards the caller lifetime', async () => {
+  it('provides no default Workspace without a fixture and forwards the caller lifetime', async () => {
     const runtime = await SlotTestRuntime.create()
     try {
       const signal = new AbortController().signal

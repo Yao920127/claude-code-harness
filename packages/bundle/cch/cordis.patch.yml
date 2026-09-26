@@ -26,3 +26,19 @@
 # CCH signs in only through Claude Code, so the DeepSeek account settings card is not offered.
 - id: ui-settings-account
   disabled: true
+
+# The permanent default Workspace lives under Documents/claude-code-harness.
+- id: workspace-controller
+  config:
+    productDirectory: claude-code-harness
+
+# Web search runs Claude Code's own WebSearch with the same sign-in, so it needs
+# no API key. Settings can select any other composed search provider instead.
+- insert:
+    - id: web-search-claude-code
+      name: '@deepseek-ai/dsh-web-search-claude-code'
+
+- id: web
+  config:
+    searchProvider: claude-code
+    fetchProvider: http

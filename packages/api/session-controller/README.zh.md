@@ -52,6 +52,8 @@ Session 对象还承载本地提交回显：`session.beginSubmission` 在调用�
 
 面向用户调用的 `skills/list` 元数据包含胜出提供方可选的指令文件 `path`。输入框可据此预览文件，无需加载每个 skill 的正文或激活冷态 Agent。
 
+`session.delete({ sessionId })` 永久删除一个普通 Session 及其 subagent 来源的后代。它先以 `stopActivity` 归档该 Session，使运行中的工作停止、唤醒保持被拦截，再释放本控制器创建的活跃 Agent，然后从最深的后代开始逐个删除已存储日志、其投影缓存行，以及其 Workspace 归属、归档与置顶条目，并发出 `api-session/removed`。未知 Session 以 `session/not-found` 失败，subagent 拥有的 Session 以 `session/agent-busy` 失败，其他所有者持有写入权时以 `session/writer-held` 失败。Fork 保留其复制的历史；溢出输出与按内容寻址的附件不会被删除。[删除决策](../../../.agents/notes/implemented/feature/2026-09-26-permanent-session-deletion.zh.md)记录了这些限制。
+
 Fork 复制 `atSeq` 所选的精确事件前缀，包含切点事件，允许在开放轮次内截取。子会话在合成的 fork 结果和结束事件之前记录继承标记。省略 `atSeq` 时选择最近已结束轮次及其独立尾部，在下一轮次或排队输入之前停止；不存在的事件会被拒绝。聊天操作选择已结束轮次。
 
 恢复会话时若已有写句柄占用，返回 `session/writer-held`，并携带会话 id；其他恢复失败仍返回 `gateway/internal`。

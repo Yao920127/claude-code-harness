@@ -16,7 +16,7 @@ Status: implemented
 
 Host 控制器解析 Documents 位置；注册表接收不依赖 locale 的目录解析器。解析器仅在允许创建时于变更队列内运行，因此重复请求直接复用持久化的 Workspace，无需再次查询操作系统目录。持久化 Workspace id 独立于名称记录初始化成功。改名、切换语言、重启或删除登记均不能再次初始化默认工作区。标记与登记一起提交，因此登记失败可以重试。目录内容仍遵循已有的[仅删除元数据策略](2026-07-27-workspace-registration-deletion.zh.md)。
 
-本决策中与命名相关的部分已被取代：[语言中立的默认工作区命名](2026-09-23-language-neutral-default-workspace-naming.zh.md)固定目录名与存储标题，只本地化屏幕上的标签。
+本决策中的首次使用资格与删除后的生命周期已被[永久默认工作区](2026-09-26-permanent-default-workspace.zh.md)取代。本决策中与命名相关的部分已被取代：[语言中立的默认工作区命名](2026-09-23-language-neutral-default-workspace-naming.zh.md)固定目录名与存储标题，只本地化屏幕上的标签。
 
 不符合首次使用条件时不返回 Workspace，也不显示失败弹窗。准备失败时提供现有文件夹选择器；后续列表通知不会触发启动流程重试。成功的登记会在 Session 创建或提示词发送失败后保留。选中默认或手动选择的 Workspace 均不会提交消息。
 

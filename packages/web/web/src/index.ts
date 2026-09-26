@@ -6,7 +6,7 @@
  * @module @deepseek-ai/dsh-web
  */
 
-import { Context, Service } from '@deepseek-ai/cordis'
+import { Context, Service, type Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {
   WebFetchProvider,
@@ -51,11 +51,21 @@ interface Selection<P> {
  * wins for each capability; both are optional (a single registered usable
  * provider auto-selects). Operational overrides such as environment variables
  * must feed these same fields rather than introduce a hidden priority chain.
+ * `searchProvider` is live configuration: each search reads its current value,
+ * so a settings write switches providers without reloading the service.
  */
 export interface WebRuntimeConfig {
   /** Explicit search provider id. Omitted = auto-select when exactly one usable. */
   readonly searchProvider?: string
   /** Explicit fetch provider id. Omitted = auto-select when exactly one usable. */
+  readonly fetchProvider?: string
+}
+
+/** {@link WebRuntimeConfig} after schema resolution: the search provider id is a live reference. */
+export interface ResolvedWebRuntimeConfig {
+  /** Explicit search provider id, read at each search. */
+  readonly searchProvider: Volatile<string | undefined>
+  /** Explicit fetch provider id. */
   readonly fetchProvider?: string
 }
 
@@ -77,20 +87,23 @@ export class WebRuntime extends Service {
    * `$DSH_WEB_SEARCH_PROVIDER` / `$DSH_WEB_FETCH_PROVIDER` are equivalent to
    * `searchProvider` / `fetchProvider` and are NOT a hidden priority chain.
    */
-  static Config: z<WebRuntimeConfig> = z.object({
-    searchProvider: z.string(),
+  static Config: z<WebRuntimeConfig, ResolvedWebRuntimeConfig> = z.object({
+    searchProvider: z.string().volatile(),
     fetchProvider: z.string(),
   })
 
   private searchProviders = new Map<string, WebSearchProvider>()
   private fetchProviders = new Map<string, WebFetchProvider>()
-  private readonly searchProviderId: string | undefined
   private readonly fetchProviderId: string | undefined
 
-  constructor(ctx: Context, config: WebRuntimeConfig = {}) {
+  constructor(ctx: Context, private readonly config: ResolvedWebRuntimeConfig) {
     super(ctx, 'web')
-    this.searchProviderId = config.searchProvider ?? process.env.DSH_WEB_SEARCH_PROVIDER
     this.fetchProviderId = config.fetchProvider ?? process.env.DSH_WEB_FETCH_PROVIDER
+  }
+
+  /** The search provider id in force for the next search. */
+  private get searchProviderId(): string | undefined {
+    return this.config.searchProvider.get() ?? process.env.DSH_WEB_SEARCH_PROVIDER
   }
 
   /**

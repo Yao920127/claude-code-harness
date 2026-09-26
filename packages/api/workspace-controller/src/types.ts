@@ -27,6 +27,8 @@ export interface WorkspaceView {
   readonly createdAt: string
   /** ISO-8601 last-mutation instant. */
   readonly updatedAt: string
+  /** Present only on the permanent default Workspace, which cannot be deleted. */
+  readonly isDefault?: true
 }
 
 declare module '@deepseek-ai/dsh-typert-protocol' {
@@ -35,6 +37,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
     'workspace/invalid-path': { readonly path: string }
     /** Another Workspace already uses the requested name. */
     'workspace/name-conflict': { readonly name: string }
+    /** The requested Workspace is the permanent default Workspace. */
+    'workspace/default-undeletable': { readonly workspaceId: WorkspaceId }
     /**
      * The Session still has running work — its own turn, a subagent, a
      * background job, or an active schedule — so archiving was refused

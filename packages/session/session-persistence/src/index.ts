@@ -100,6 +100,12 @@ export interface SessionPersistenceStatOptions {
   readonly signal?: AbortSignal
 }
 
+/** Options for {@link SessionPersistence.delete}. */
+export interface SessionPersistenceDeleteOptions {
+  /** Optional cancellation before the stored artifact is removed. */
+  readonly signal?: AbortSignal
+}
+
 /** Options for {@link SessionPersistence.list}. */
 export interface SessionPersistenceListOptions {
   /** Optional cancellation for backend listing work. */
@@ -199,6 +205,19 @@ export abstract class SessionPersistence extends Service {
    * @returns one snapshot per stored session.
    */
   abstract list(options?: SessionPersistenceListOptions): Promise<readonly SessionPersistenceSnapshot[]>
+
+  /**
+   * Permanently remove one stored session and every retained format
+   * generation of it. The call claims write ownership for its duration, so it
+   * rejects while any handle in this or another process writes the session;
+   * read handles opened earlier keep their already-read events. Other
+   * sessions, including forks whose logs carry a copied prefix, are untouched.
+   * @param id - the stored session to remove.
+   * @param options - optional cancellation; an abort observed before removal leaves the session intact.
+   * @returns `true` when a stored session was removed, `false` when none existed.
+   * @throws {SessionAlreadyOwnedError} when write ownership is taken or the session is created but unmaterialized.
+   */
+  abstract delete(id: SessionId, options?: SessionPersistenceDeleteOptions): Promise<boolean>
 }
 
 export default SessionPersistence

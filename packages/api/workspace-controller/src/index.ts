@@ -29,16 +29,24 @@ import type {
 export type * from './types.ts'
 export { DirectoryPickerController } from './directory-picker.ts'
 
-/** First-use directory policy for the Host account. */
+/** Default Workspace directory policy for the Host account. */
 export interface Config {
   /** Override the system Documents directory with a fully qualified path. */
   documentsDirectory?: string
+  /** Directory under Documents that holds the default Workspace directory. */
+  productDirectory?: string
+  /**
+   * Whether this Host provides the permanent default Workspace. A Host that
+   * must not create directories under its account's Documents sets false and
+   * leaves every folder choice to the user.
+   */
+  defaultWorkspace?: boolean
   /** Maximum duration of the operating system's Documents lookup. */
   documentsLookupTimeoutMs?: number
 }
 
 /** Directory policy after schema defaults have been applied. */
-type ResolvedConfig = Config & { documentsLookupTimeoutMs: number }
+type ResolvedConfig = Config & { productDirectory: string; defaultWorkspace: boolean; documentsLookupTimeoutMs: number }
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -53,6 +61,8 @@ export class WorkspaceController extends TypertRemoteService {
 
   static Config: z<Config, ResolvedConfig> = z.object({
     documentsDirectory: z.string(),
+    productDirectory: z.string().pattern(/^[^/\\]+$/).default('deepseek-harness'),
+    defaultWorkspace: z.boolean().default(true),
     documentsLookupTimeoutMs: z.natural().min(1).default(10_000),
   })
 
@@ -62,19 +72,31 @@ export class WorkspaceController extends TypertRemoteService {
 
   /**
    * @param ctx - Host context containing the Workspace registry.
-   * @param config - first-use directory policy.
+   * @param config - default Workspace directory policy.
    */
   constructor(ctx: Context, config: Config = {}) {
     super(ctx, 'workspaceController', { namespace: 'workspace' })
     this.config = WorkspaceController.Config(config)
     if (this.config.documentsDirectory !== undefined) validateDocumentsDirectory(this.config.documentsDirectory)
     this.commands = new WorkspaceCommands(ctx)
-    this.feed = new WorkspaceFeed(ctx)
+    // Settled (never rejected) once the startup ensure below finishes.
+    let defaultReady = Promise.resolve()
+    this.feed = new WorkspaceFeed(ctx, () => defaultReady)
     // This package is the Loader entry for both Remote owners it hosts: the
     // directory-picking seam is abstract and never an entry itself. The child
     // stays pending until a picking backend is composed, so a host without one
     // registers no picking namespace instead of answering an unservable verb.
     ctx.plugin(DirectoryPickerController)
+    // The default Workspace is permanent, so every Host start restores it
+    // without waiting for a browser; a failure leaves the Remote retry path.
+    // Follow baselines wait for it, so a browser's first view already holds the default.
+    if (this.config.defaultWorkspace) ctx.effect(() => {
+      const lifetime = new AbortController()
+      defaultReady = this.initializeDefault(lifetime.signal).then(() => undefined, (error: unknown) => {
+        if (!lifetime.signal.aborted) ctx.logger.warn('default Workspace initialization failed', error)
+      })
+      return () => { lifetime.abort() }
+    }, 'workspace-controller.default-workspace')
   }
 
   /**
@@ -88,22 +110,23 @@ export class WorkspaceController extends TypertRemoteService {
   }
 
   /**
-   * Initialize or reuse the default Workspace during first-use startup. The
-   * directory name is fixed, so the Host never renames or relocates an
-   * existing default; its initial title is that same name, which browser
-   * consumers label in the reader's language.
+   * Ensure the permanent default Workspace exists. The directory name is
+   * fixed, so the Host never renames or relocates an existing default; its
+   * initial title is that same name, which browser consumers label in the
+   * reader's language.
    * @param signal - caller lifetime; cancels native directory lookup.
-   * @returns the durable Workspace, or undefined when first-use initialization is ineligible; creates no Session or message.
+   * @returns the durable default Workspace, or undefined when this Host provides none; creates no Session or message.
    */
   @Remote('initializeDefault')
   async initializeDefault(signal: AbortSignal): Promise<WorkspaceValue | undefined> {
+    if (!this.config.defaultWorkspace) return undefined
     const workspace = await this.ctx.workspaceRegistry.initializeDefault(async () => {
       const timeout = AbortSignal.timeout(this.config.documentsLookupTimeoutMs)
       return await defaultWorkspaceDirectory(
-        this.config.documentsDirectory, AbortSignal.any([signal, timeout]),
+        this.config.documentsDirectory, this.config.productDirectory, AbortSignal.any([signal, timeout]),
       )
     })
-    return workspace === undefined ? undefined : { workspace: workspaceView(workspace) }
+    return { workspace: workspaceView(workspace, workspace.id) }
   }
 
   /**
@@ -117,7 +140,8 @@ export class WorkspaceController extends TypertRemoteService {
   }
 
   /**
-   * Remove one Workspace registration while retaining files and Sessions.
+   * Remove one Workspace registration while retaining files and Sessions. The
+   * default Workspace is refused with `workspace/default-undeletable`.
    * @param request - Workspace identity to remove.
    * @returns deletion confirmation.
    */

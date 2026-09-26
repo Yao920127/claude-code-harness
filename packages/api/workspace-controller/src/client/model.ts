@@ -102,7 +102,7 @@ export class ClientWorkspaceModel implements WorkspaceFollowSink {
   }
 
   /**
-   * Initialize the default Workspace and merge its authoritative row.
+   * Ensure the permanent default Workspace and merge its authoritative row.
    * @param signal - caller lifetime.
    * @returns generated Remote result.
    */

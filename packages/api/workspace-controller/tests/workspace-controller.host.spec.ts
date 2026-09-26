@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -50,7 +50,14 @@ function deferred<T>(): Deferred<T> {
   return { promise, resolve }
 }
 
-async function harness(options: { systemDocuments?: boolean } = {}) {
+interface HarnessOptions {
+  readonly systemDocuments?: boolean
+  readonly seedDefault?: (root: string) => string
+  readonly config?: (root: string) => ConstructorParameters<typeof WorkspaceController>[1]
+  readonly beforeController?: (ctx: Context) => void
+}
+
+async function harness(options: HarnessOptions = {}) {
   const root = realpathSync.native(mkdtempSync(join(tmpdir(), 'dsh-workspace-controller-')))
   tempDirs.push(root)
   const ctx = new Context()
@@ -63,13 +70,28 @@ async function harness(options: { systemDocuments?: boolean } = {}) {
   ctx.provide('storageDomain', storageDomain)
   ctx.provide('sessionPersistence', { list: () => Promise.resolve([]) } as never)
   await ctx.plugin(WorkspaceRegistry)
+  const seedDefault = options.seedDefault
+  // Registered before the controller starts, so its startup ensure performs no Documents lookup.
+  if (seedDefault !== undefined) await ctx.workspaceRegistry.initializeDefault(async () => seedDefault(root))
   const dispose = (): void => {}
   ctx.provide('typert', {
     lookups: { configure: () => dispose },
     contexts: { configureHost: () => dispose },
   } as never)
-  const controller = new WorkspaceController(ctx, options.systemDocuments === true ? {} : { documentsDirectory: root })
+  options.beforeController?.(ctx)
+  const controller = new WorkspaceController(
+    ctx, options.config?.(root) ?? (options.systemDocuments === true ? {} : { documentsDirectory: root }),
+  )
   return { controller, ctx, root, storageDomain }
+}
+
+/** A harness whose test starts after the controller's startup ensure settled. */
+async function started(options: HarnessOptions = {}) {
+  const result = await harness(options)
+  // Joins the startup ensure through the registry queue.
+  const initialized = await result.controller.initializeDefault(new AbortController().signal)
+  if (initialized === undefined) throw new Error('fixture Host provides no default Workspace')
+  return { ...result, defaultWorkspace: initialized.workspace }
 }
 
 function stageDir(root: string, name: string): string {
@@ -88,7 +110,7 @@ async function nextFrame(
 
 describe('WorkspaceController commands', () => {
   it('serializes concurrent path adoption and preserves an existing title', async () => {
-    const { controller, root } = await harness()
+    const { controller, root } = await started()
     const path = stageDir(root, 'alpha')
     const results = await Promise.all([
       controller.create({ path }),
@@ -109,7 +131,7 @@ describe('WorkspaceController commands', () => {
   })
 
   it('maps invalid paths, blank names, conflicts, and unknown ids to stable failures', async () => {
-    const { controller, root } = await harness()
+    const { controller, root } = await started()
     const first = await controller.create({ path: stageDir(root, 'first') })
     const second = await controller.create({ path: stageDir(root, 'second') })
 
@@ -128,7 +150,7 @@ describe('WorkspaceController commands', () => {
   })
 
   it('preserves Remote failures and propagates unexpected registry failures', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root } = await started()
     const remoteFailure = new RemoteError('fixture/failure', 'already mapped', {})
     const resolveByPath = vi.spyOn(ctx.workspaceRegistry, 'resolveByPath')
       .mockRejectedValueOnce(remoteFailure)
@@ -178,7 +200,7 @@ describe('WorkspaceController commands', () => {
   })
 
   it('resolves queued Workspace identities when their operation starts', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root } = await started()
     const target = await controller.create({ path: stageDir(root, 'target') })
     const blockerPath = stageDir(root, 'blocker')
     const gate = deferred<undefined>()
@@ -202,14 +224,14 @@ describe('WorkspaceController commands', () => {
   })
 
   it('reorders Workspaces and Sessions and archives only known Sessions', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root, defaultWorkspace } = await started()
     const first = await controller.create({ path: stageDir(root, 'first') })
     const second = await controller.create({ path: stageDir(root, 'second') })
     await expect(controller.insertBefore({
       workspaceId: first.workspace.workspaceId,
       beforeWorkspaceId: second.workspace.workspaceId,
     })).resolves.toEqual({
-      workspaceIds: [first.workspace.workspaceId, second.workspace.workspaceId],
+      workspaceIds: [first.workspace.workspaceId, second.workspace.workspaceId, defaultWorkspace.workspaceId],
     })
     await expect(controller.insertBefore({ workspaceId: 'missing' as WorkspaceId }))
       .rejects.toMatchObject({ code: 'workspace/not-found' })
@@ -275,7 +297,7 @@ describe('WorkspaceController commands', () => {
   })
 
   it('pins only known unarchived Sessions and unpins idempotently', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root } = await started()
     const created = await controller.create({ path: stageDir(root, 'pins') })
     const session = ctx.sessions.create(SessionId('pin-me'), {
       meta: { cwd: created.workspace.path },
@@ -304,11 +326,11 @@ describe('WorkspaceController commands', () => {
 
 describe('WorkspaceController follow', () => {
   it('seeds a new feed from existing rows and rejects an inconsistent registry commit', async () => {
-    const { ctx, root } = await harness()
+    const { ctx, root, defaultWorkspace } = await started()
     const existing = await ctx.workspaceRegistry.create(stageDir(root, 'existing'))
     const feed = new WorkspaceFeed(ctx)
     expect(feed.baseline()).toMatchObject({
-      items: [{ workspaceId: existing.id }],
+      items: [{ workspaceId: existing.id }, { workspaceId: defaultWorkspace.workspaceId, isDefault: true }],
     })
 
     expect(() => {
@@ -328,7 +350,7 @@ describe('WorkspaceController follow', () => {
   })
 
   it('starts a fresh feed with existing pins and follows their removal', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root } = await started()
     const session = ctx.sessions.create(SessionId('already-pinned'), { meta: { cwd: root } })
     await controller.pinSession({ sessionId: session.id })
     const feed = new WorkspaceFeed(ctx)
@@ -347,12 +369,13 @@ describe('WorkspaceController follow', () => {
   })
 
   it('starts with a complete baseline and emits committed increments in domain order', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root, defaultWorkspace } = await started()
+    const defaultId = defaultWorkspace.workspaceId
     const abort = new AbortController()
     const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
     await expect(nextFrame(iterator)).resolves.toEqual({
       type: 'baseline',
-      value: { items: [], archivedSessionIds: [], pinnedSessionIds: [] },
+      value: { items: [defaultWorkspace], archivedSessionIds: [], pinnedSessionIds: [] },
     })
 
     const first = await controller.create({ path: stageDir(root, 'first') })
@@ -360,7 +383,7 @@ describe('WorkspaceController follow', () => {
       type: 'upsert', workspace: { workspaceId: first.workspace.workspaceId },
     })
     await expect(nextFrame(iterator)).resolves.toEqual({
-      type: 'order', workspaceIds: [first.workspace.workspaceId],
+      type: 'order', workspaceIds: [first.workspace.workspaceId, defaultId],
     })
     await controller.rename({ workspaceId: first.workspace.workspaceId, title: 'renamed' })
     await expect(nextFrame(iterator)).resolves.toMatchObject({
@@ -372,7 +395,7 @@ describe('WorkspaceController follow', () => {
       type: 'upsert', workspace: { workspaceId: second.workspace.workspaceId },
     })
     await expect(nextFrame(iterator)).resolves.toEqual({
-      type: 'order', workspaceIds: [second.workspace.workspaceId, first.workspace.workspaceId],
+      type: 'order', workspaceIds: [second.workspace.workspaceId, first.workspace.workspaceId, defaultId],
     })
     await controller.insertBefore({
       workspaceId: first.workspace.workspaceId,
@@ -380,7 +403,7 @@ describe('WorkspaceController follow', () => {
     })
     await expect(nextFrame(iterator)).resolves.toEqual({
       type: 'order',
-      workspaceIds: [first.workspace.workspaceId, second.workspace.workspaceId],
+      workspaceIds: [first.workspace.workspaceId, second.workspace.workspaceId, defaultId],
     })
 
     const session = ctx.sessions.create(SessionId('archived'), {
@@ -406,7 +429,7 @@ describe('WorkspaceController follow', () => {
     })
     await controller.delete({ workspaceId: second.workspace.workspaceId })
     await expect(nextFrame(iterator)).resolves.toEqual({
-      type: 'order', workspaceIds: [first.workspace.workspaceId],
+      type: 'order', workspaceIds: [first.workspace.workspaceId, defaultId],
     })
     await expect(nextFrame(iterator)).resolves.toEqual({
       type: 'remove', workspaceId: second.workspace.workspaceId,
@@ -417,7 +440,7 @@ describe('WorkspaceController follow', () => {
   })
 
   it('ignores unrelated domain writes and closes active followers on disposal', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root, defaultWorkspace } = await started()
     const abort = new AbortController()
     const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
     await nextFrame(iterator)
@@ -438,7 +461,7 @@ describe('WorkspaceController follow', () => {
     await expect(pending).resolves.toMatchObject({ value: { type: 'upsert' } })
     await expect(iterator.next()).resolves.toEqual({
       done: false,
-      value: { type: 'order', workspaceIds: [created.workspace.workspaceId] },
+      value: { type: 'order', workspaceIds: [created.workspace.workspaceId, defaultWorkspace.workspaceId] },
     })
 
     const closing = iterator.next()
@@ -448,33 +471,142 @@ describe('WorkspaceController follow', () => {
   })
 })
 
-describe('first-use Remote', () => {
-  it('reuses an initialized Workspace without looking up system Documents', async () => {
-    const { controller, ctx, root } = await harness({ systemDocuments: true })
-    const workspace = await ctx.workspaceRegistry.initializeDefault(async () => root)
-    const signal = AbortSignal.abort()
-    await expect(controller.initializeDefault(signal))
-      .resolves.toMatchObject({ workspace: { workspaceId: workspace!.id, path: root, title: basename(root) } })
+describe('default Workspace Remote', () => {
+  it('reuses the registered default without looking up system Documents', async () => {
+    const { controller, root } = await started({ systemDocuments: true, seedDefault: root => root })
+    await expect(controller.initializeDefault(AbortSignal.abort()))
+      .resolves.toMatchObject({ workspace: { path: root, title: basename(root), isDefault: true } })
   })
 
   it('returns a durable Workspace named after its fixed directory without allocating a Session', async () => {
-    const { controller, ctx, root } = await harness()
+    const { controller, ctx, root, defaultWorkspace } = await started()
     const signal = new AbortController().signal
-    const result = await controller.initializeDefault(signal)
-    expect(result!.workspace.path).toBe(join(root, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY))
-    expect(result!.workspace.title).toBe(DEFAULT_WORKSPACE_DIRECTORY)
-    expect(existsSync(result!.workspace.path)).toBe(true)
+    expect(defaultWorkspace.path).toBe(join(root, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY))
+    expect(defaultWorkspace.title).toBe(DEFAULT_WORKSPACE_DIRECTORY)
+    expect(existsSync(defaultWorkspace.path)).toBe(true)
     expect(ctx.sessions.list()).toEqual([])
-    expect(await controller.initializeDefault(signal)).toEqual(result)
+    expect(await controller.initializeDefault(signal)).toEqual({ workspace: defaultWorkspace })
   })
 
-  it('skips ineligible first use and propagates preparation failures', async () => {
-    const { controller, ctx, root } = await harness()
-    await ctx.workspaceRegistry.create(root)
-    await expect(controller.initializeDefault(new AbortController().signal))
-      .resolves.toBeUndefined()
+  it('provides no default Workspace when the Host disables it', async () => {
+    const { controller, ctx, root } = await harness({ config: root => ({ documentsDirectory: root, defaultWorkspace: false }) })
+    await expect(controller.initializeDefault(new AbortController().signal)).resolves.toBeUndefined()
+    const abort = new AbortController()
+    const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
+    try {
+      await expect(nextFrame(iterator)).resolves.toMatchObject({ type: 'baseline', value: { items: [] } })
+    } finally {
+      abort.abort()
+      await iterator.return?.()
+    }
+    expect(ctx.workspaceRegistry.list()).toEqual([])
+    expect(existsSync(join(root, 'deepseek-harness'))).toBe(false)
+  })
+
+  it('places the default under the configured product directory', async () => {
+    const { defaultWorkspace, root } = await started({
+      config: root => ({ documentsDirectory: root, productDirectory: 'claude-code-harness' }),
+    })
+    expect(defaultWorkspace.path).toBe(join(root, 'claude-code-harness', DEFAULT_WORKSPACE_DIRECTORY))
+    expect(() => WorkspaceController.Config({ productDirectory: 'nested/name' })).toThrow()
+  })
+
+  it('refuses to delete the default and propagates preparation failures', async () => {
+    const { controller, ctx, defaultWorkspace } = await started()
+    await expect(controller.delete({ workspaceId: defaultWorkspace.workspaceId })).rejects.toMatchObject({
+      code: 'workspace/default-undeletable',
+      details: { workspaceId: defaultWorkspace.workspaceId },
+    })
+    const failure = new Error('permission denied')
+    vi.spyOn(ctx.workspaceRegistry, 'delete').mockRejectedValueOnce(failure)
+    await expect(controller.delete({ workspaceId: defaultWorkspace.workspaceId })).rejects.toBe(failure)
     vi.spyOn(ctx.workspaceRegistry, 'initializeDefault').mockRejectedValueOnce(new Error('permission denied'))
     await expect(controller.initializeDefault(new AbortController().signal))
       .rejects.toThrow('permission denied')
+  })
+
+  it('keeps the default flag on record changes of the default Workspace', async () => {
+    const { controller, defaultWorkspace } = await started()
+    const abort = new AbortController()
+    const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
+    try {
+      await nextFrame(iterator)
+      await controller.rename({ workspaceId: defaultWorkspace.workspaceId, title: 'Home' })
+      await expect(nextFrame(iterator)).resolves.toMatchObject({
+        type: 'upsert', workspace: { workspaceId: defaultWorkspace.workspaceId, title: 'Home', isDefault: true },
+      })
+    } finally {
+      abort.abort()
+      await iterator.return?.()
+    }
+  })
+
+  it('publishes the default flag to both rows when the default identity changes', async () => {
+    const { ctx, root, defaultWorkspace } = await started()
+    const other = await ctx.workspaceRegistry.create(stageDir(root, 'other'))
+    const feed = new WorkspaceFeed(ctx)
+    const abort = new AbortController()
+    const iterator = feed.follow(abort.signal)[Symbol.asyncIterator]()
+    try {
+      await nextFrame(iterator)
+      ctx.emit('domain/changed', {
+        domain: 'workspace', table: '', key: '', operation: 'put',
+        value: {
+          initialized: true,
+          defaultWorkspaceId: other.id,
+          workspaceIds: ctx.workspaceRegistry.list().map(workspace => workspace.id),
+          archivedSessionIds: [],
+          pinnedSessionIds: [],
+        },
+      })
+      const previous = await nextFrame(iterator)
+      expect(previous).toMatchObject({ type: 'upsert', workspace: { workspaceId: defaultWorkspace.workspaceId } })
+      expect(previous.type === 'upsert' && previous.workspace.isDefault).toBeUndefined()
+      await expect(nextFrame(iterator)).resolves.toMatchObject({
+        type: 'upsert', workspace: { workspaceId: other.id, isDefault: true },
+      })
+    } finally {
+      abort.abort()
+      await iterator.return?.()
+    }
+  })
+
+  it('includes the startup default in a baseline requested before the ensure settles', async () => {
+    const { controller, root } = await harness()
+    const abort = new AbortController()
+    const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
+    try {
+      await expect(nextFrame(iterator)).resolves.toMatchObject({
+        type: 'baseline',
+        value: { items: [{ path: join(root, 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY), isDefault: true }] },
+      })
+    } finally {
+      abort.abort()
+      await iterator.return?.()
+    }
+  })
+
+  it('logs a failed startup ensure unless the controller was disposed first', async () => {
+    const warnings: unknown[] = []
+    const occupied = (root: string): string => {
+      const path = join(root, 'occupied')
+      writeFileSync(path, 'file')
+      return path
+    }
+    await harness({
+      config: root => ({ documentsDirectory: occupied(root) }),
+      beforeController: (ctx) => { vi.spyOn(ctx.logger, 'warn').mockImplementation((...args) => { warnings.push(args) }) },
+    })
+    await vi.waitFor(() => { expect(warnings).toHaveLength(1) })
+
+    const disposed: unknown[] = []
+    const { ctx } = await harness({
+      config: root => ({ documentsDirectory: occupied(root) }),
+      beforeController: (ctx) => { vi.spyOn(ctx.logger, 'warn').mockImplementation((...args) => { disposed.push(args) }) },
+    })
+    await ctx.fiber.dispose()
+    roots.splice(roots.indexOf(ctx), 1)
+    await new Promise(resolve => setTimeout(resolve, 20))
+    expect(disposed).toEqual([])
   })
 })

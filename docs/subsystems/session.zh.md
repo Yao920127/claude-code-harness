@@ -880,6 +880,17 @@ workspaceDesktop(): { name: string; available: boolean; fileManager: 'finder' | 
 @Remote('rename') rename(request: SessionRenameRequest): Promise<SessionRenameValue>
 
 /**
+ * Permanently delete one ordinary Session and its subagent descendants.
+ * Running work is stopped the way archiving with `stopActivity` stops it,
+ * the live Agent is disposed, and each stored log, cached projection row,
+ * and Workspace account entry is removed. Forks keep their copied history;
+ * spilled output and content-addressed attachments are not removed.
+ * @param request - Session identity.
+ * @returns deletion confirmation.
+ */
+@Remote('delete') delete(request: SessionDeleteRequest): Promise<SessionDeleteValue>
+
+/**
  * Fork one cold-readable exact event prefix into a new Session. An omitted
  * boundary selects the latest completed-turn prefix; an open cut receives
  * synthetic fork closers.

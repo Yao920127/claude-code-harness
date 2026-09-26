@@ -1,0 +1,16 @@
+# Test overlay over the shipped headless profile that selects the openai search
+# provider. No vendor request or Claude Code process starts in this test.
+- id: headless-startup
+  disabled: true
+
+- id: headless-runner
+  disabled: true
+
+- insert:
+    - id: web-search-claude-code
+      name: '@deepseek-ai/dsh-web-search-claude-code'
+
+- id: web
+  config:
+    searchProvider: openai
+    fetchProvider: http

@@ -82,6 +82,17 @@ export class WorkspaceArchivedSessionPinError extends Error {
   }
 }
 
+/** A delete request named the default Workspace, whose registration the registry keeps permanently. */
+export class WorkspaceDefaultUndeletableError extends Error {
+  /**
+   * @param workspaceId - The default Workspace id.
+   */
+  constructor(readonly workspaceId: WorkspaceId) {
+    super(`cannot delete workspace '${workspaceId}': the default workspace is permanent`)
+    this.name = 'WorkspaceDefaultUndeletableError'
+  }
+}
+
 /** A workspace reorder named a source or anchor absent from the durable registry order. */
 export class WorkspaceOrderInvalidError extends Error {
   /**
@@ -242,34 +253,38 @@ export class WorkspaceRegistry extends Service {
   }
 
   /**
-   * Initialize the default Workspace only while both the registry and Session
-   * history are empty. Repeated requests reuse its durable identity; deleting
-   * that registration permanently disables automatic creation.
-   * @param resolveDirectory - resolve the absolute directory; called only for
-   * eligible creation, inside the registry mutation queue. Missing directories
-   * are created recursively before registration, and the initial title is the
-   * requested directory's own final segment — not the canonical one, so a
+   * Ensure the permanent default Workspace exists, independently of Session
+   * history and of other registrations. A registered default reuses its
+   * durable identity and recreates its directory when it is missing from
+   * disk; the registry never renames or relocates it. Otherwise the resolver
+   * names a directory, which is created recursively and registered — or, when
+   * a Workspace already owns it, adopted — as the default. The initial title is
+   * the requested directory's own final segment — not the canonical one, so a
    * symlink at that path does not retitle the Workspace after its target.
    * After resolution, caller cancellation does not roll back creation or registration.
-   * @returns the initialized Workspace, or undefined when automatic creation is ineligible.
+   * @param resolveDirectory - resolve the absolute directory; called only when
+   * no default registration exists, inside the registry mutation queue.
+   * @returns the default Workspace.
    */
-  initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace | undefined> {
+  initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace> {
     return this.enqueueOperation(async () => {
       const state = this.requireState()
-      if (state.defaultWorkspaceId !== undefined) return this.entities.get(state.defaultWorkspaceId)
-      const sessions = this.ctx.get('sessions')
-      if (sessions === undefined) throw new Error('default Workspace initialization requires the Session store')
-      if (state.workspaceIds.length > 0 || state.archivedSessionIds.length > 0
-        || sessions.list().length > 0 || (await this.listStoredHeaders()).length > 0) return undefined
-
+      const current = state.defaultWorkspaceId === undefined ? undefined : this.entities.get(state.defaultWorkspaceId)
+      if (current !== undefined) {
+        await mkdir(current.path, { recursive: true })
+        return current
+      }
       const path = await resolveDirectory()
       if (!fullyQualifiedWorkspacePath(path)) throw new TypeError(`Workspace path is not fully qualified: '${path}'`)
       await mkdir(path, { recursive: true })
       const canonical = await realpathNormalize(path)
-      // A Session can start outside the registry queue while directory preparation awaits I/O.
-      if ((await this.listStoredHeaders()).length > 0 || sessions.list().length > 0) return undefined
       return this.createCanonical(canonical, defaultWorkspaceTitle(path), true)
     })
+  }
+
+  /** The permanent default Workspace id, once {@link initializeDefault} registered it. */
+  get defaultWorkspaceId(): WorkspaceId | undefined {
+    return this.requireState().defaultWorkspaceId
   }
 
   /**
@@ -304,6 +319,7 @@ export class WorkspaceRegistry extends Service {
    * published. Unknown ids are an idempotent no-op for domain callers.
    * @param id - Workspace registration to remove.
    * @returns `true` when a record was deleted, `false` when it was unknown.
+   * @throws {@link WorkspaceDefaultUndeletableError} when `id` is the default Workspace.
    */
   delete(id: WorkspaceId): Promise<boolean> {
     return this.enqueueOperation(() => this.deleteKnown(id))
@@ -408,6 +424,31 @@ export class WorkspaceRegistry extends Service {
   }
 
   /**
+   * Forget one deleted session: drop it from the header index, from every
+   * workspace account, and from the archive and pin sets, durably. Call it
+   * after the session's stored artifact is gone; a still-stored session would
+   * reappear in the header index at the next startup. An id the registry
+   * does not hold resolves without writing.
+   * @param sessionId - The deleted session.
+   * @returns resolution after durability.
+   */
+  forgetSession(sessionId: SessionId): Promise<void> {
+    return this.enqueueOperation(async () => {
+      this.headers.delete(sessionId)
+      this.sessionPaths.delete(sessionId)
+      this.invalidSessionPaths.delete(sessionId)
+      for (const entity of this.entities.values()) await entity.detachSession(sessionId)
+      const state = this.requireState()
+      if (!state.archivedSessionIds.includes(sessionId) && !state.pinnedSessionIds.includes(sessionId)) return
+      await this.setState({
+        ...state,
+        archivedSessionIds: state.archivedSessionIds.filter(id => id !== sessionId),
+        pinnedSessionIds: state.pinnedSessionIds.filter(id => id !== sessionId),
+      })
+    })
+  }
+
+  /**
    * The registry-global pin set: sessions surfaced ahead of every unpinned
    * session on grouping surfaces. Pinning never touches workspace accounting.
    * @returns Session ids in pin order (most recently pinned first).
@@ -505,9 +546,11 @@ export class WorkspaceRegistry extends Service {
     return undefined
   }
 
-  private async createCanonical(canonical: string, title?: string, firstUse = false): Promise<WorkspaceEntity> {
+  private async createCanonical(canonical: string, title?: string, adoptAsDefault = false): Promise<WorkspaceEntity> {
     for (const entity of this.entities.values()) {
-      if (entity.path === canonical) return entity
+      if (entity.path !== canonical) continue
+      if (adoptAsDefault) await this.setState({ ...this.requireState(), defaultWorkspaceId: entity.id })
+      return entity
     }
 
     const workspaceName = title ?? defaultWorkspaceTitle(canonical)
@@ -554,7 +597,7 @@ export class WorkspaceRegistry extends Service {
         ...state,
         pendingMutation: undefined,
         initialized: true,
-        ...(firstUse ? { defaultWorkspaceId: id } : {}),
+        ...(adoptAsDefault ? { defaultWorkspaceId: id } : {}),
         workspaceIds: [id, ...state.workspaceIds],
       })
     } catch (error) {
@@ -584,6 +627,7 @@ export class WorkspaceRegistry extends Service {
     const entity = this.entities.get(id)
     if (entity === undefined) return false
     const state = this.requireState()
+    if (state.defaultWorkspaceId === id) throw new WorkspaceDefaultUndeletableError(id)
     const nextState = {
       ...state,
       pendingMutation: undefined,

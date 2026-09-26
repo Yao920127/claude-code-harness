@@ -479,6 +479,18 @@
       config:
         apiKeyEnv: DEEPSEEK_API_KEY
 
+    # Further search backends, each resolving its own key at search time; the
+    # web row's searchProvider selects one: claude-api, openai, xai, gemini,
+    # openrouter, mistral, zai, exa, or perplexity.
+    - id: web-search-vendors
+      name: '@deepseek-ai/dsh-web-search-vendors'
+
+    - id: web-search-exa
+      name: '@deepseek-ai/dsh-web-search-exa'
+
+    - id: web-search-perplexity
+      name: '@deepseek-ai/dsh-web-search-perplexity'
+
     - id: web-fetch-http
       name: '@deepseek-ai/dsh-web-fetch-http'
 

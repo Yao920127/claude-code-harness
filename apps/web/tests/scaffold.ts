@@ -397,8 +397,10 @@ export interface LaunchOptions {
   deepSeekMissingCredential?: boolean
   /** Leave the current welcome notice pending; ordinary scenarios pre-acknowledge it before browser boot. */
   welcomeNoticePending?: boolean
-  /** Leave first-use Workspace initialization eligible; ordinary scenarios start after the default was removed. */
+  /** Provide the permanent default Workspace; ordinary scenarios start from a Host that provides none. */
   firstUse?: boolean
+  /** Prepare files in the scenario's workspace root before the Host boots. */
+  beforeBoot?: (workspaceCwd: string) => Promise<void>
   /**
    * Patch the shipped DeepSeek search row to a deterministic endpoint and
    * credential reference. Browser search scenarios keep the real provider and
@@ -503,6 +505,7 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     }
   }
   const workspaceCwd = await realpath(await mkdtemp(join(tmpdir(), 'dsh-web-e2e-ws-')))
+  await options.beforeBoot?.(workspaceCwd)
   // Isolated harness home: the settings/credentials rows resolve $DSH_HOME
   // paths at load, and an in-process boot must NEVER touch the developer's
   // real ~/.dsh document or credential file.
@@ -584,7 +587,12 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     // never write the user's harness home.
     { id: 'storage-json', config: { root: join(workspaceCwd, '.dsh-storages') } },
     // First-use initialization must create directories only inside this scaffold's temporary world.
-    { id: 'workspace-controller', config: { documentsDirectory: join(workspaceCwd, 'Documents') } },
+    {
+      id: 'workspace-controller',
+      // Only the first-use lane exercises the permanent default Workspace; every
+      // other scenario starts from a Host that provides none.
+      config: { documentsDirectory: join(workspaceCwd, 'Documents'), defaultWorkspace: options.firstUse === true },
+    },
     // Skill discovery is model-visible input. Pin every host-level root inside
     // the owned temp world so ~/.dsh, ~/.agents, and a bundled-root env setting
     // cannot change replay requests or conversation goldens. Project roots stay
@@ -810,10 +818,6 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
       await ctx.settings.mutate(WELCOME_NOTICE_SETTINGS_NAMESPACE, [{
         op: 'set', path: [WELCOME_NOTICE_ACK_FIELD], value: WELCOME_NOTICE_VERSION,
       }])
-    }
-    if (options.firstUse !== true && ctx.workspaceRegistry.list().length === 0) {
-      const initial = await ctx.workspaceRegistry.initializeDefault(async () => workspaceCwd)
-      if (initial !== undefined) await ctx.workspaceRegistry.delete(initial.id)
     }
     const boundPort = ctx.get('webServer')?.port
     if (boundPort === undefined) {

@@ -5,6 +5,7 @@ import type { Workspace } from '@deepseek-ai/dsh-workspace'
 import {
   WorkspaceActiveSessionError,
   WorkspaceArchivedSessionPinError,
+  WorkspaceDefaultUndeletableError,
   WorkspaceId,
   WorkspaceMoveInvalidError,
   WorkspaceOrderInvalidError,
@@ -47,10 +48,10 @@ export class WorkspaceCommands {
       try {
         const existing = await this.ctx.workspaceRegistry.resolveByPath(request.path)
         if (existing !== undefined) {
-          return { workspace: workspaceView(existing), created: false }
+          return { workspace: workspaceView(existing, this.ctx.workspaceRegistry.defaultWorkspaceId), created: false }
         }
         const workspace = await this.ctx.workspaceRegistry.create(request.path)
-        return { workspace: workspaceView(workspace), created: true }
+        return { workspace: workspaceView(workspace, this.ctx.workspaceRegistry.defaultWorkspaceId), created: true }
       } catch (error) {
         if (remoteErrorOf(error) !== undefined) throw error
         throw new RemoteError(
@@ -86,7 +87,7 @@ export class WorkspaceCommands {
         }
         await workspace.setTitle(title)
       }
-      return { workspace: workspaceView(workspace) }
+      return { workspace: workspaceView(workspace, this.ctx.workspaceRegistry.defaultWorkspaceId) }
     })
   }
 
@@ -97,9 +98,16 @@ export class WorkspaceCommands {
    */
   delete(request: WorkspaceDeleteRequest): Promise<WorkspaceDeleteValue> {
     return this.enqueue(async () => {
-      if (!await this.ctx.workspaceRegistry.delete(WorkspaceId(request.workspaceId))) {
-        throw workspaceNotFound(request.workspaceId)
+      let deleted: boolean
+      try {
+        deleted = await this.ctx.workspaceRegistry.delete(WorkspaceId(request.workspaceId))
+      } catch (error) {
+        if (!(error instanceof WorkspaceDefaultUndeletableError)) throw error
+        throw new RemoteError(
+          'workspace/default-undeletable', error.message, { workspaceId: request.workspaceId }, { cause: error },
+        )
       }
+      if (!deleted) throw workspaceNotFound(request.workspaceId)
       return { deleted: true }
     })
   }
@@ -148,7 +156,7 @@ export class WorkspaceCommands {
         { cause: error },
       )
     }
-    return { workspace: workspaceView(workspace) }
+    return { workspace: workspaceView(workspace, this.ctx.workspaceRegistry.defaultWorkspaceId) }
   }
 
   /**

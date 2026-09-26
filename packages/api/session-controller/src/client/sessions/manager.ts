@@ -8,6 +8,7 @@ import type {
   SessionControlBaseline,
   SessionControlFrame,
   SessionProjectionHints,
+  SessionDeleteValue,
   SessionRenameValue,
   SessionSummary,
 } from '../../types.ts'
@@ -547,6 +548,18 @@ export class SessionManager {
         ...(source?.cwd !== undefined ? { cwd: source.cwd } : {}),
       } })
     }
+    return result
+  }
+
+  /**
+   * Delete a Session on the Host and drop its list row on success; the Host's
+   * own removal event may also arrive and is idempotent.
+   * @param sessionId - Session to delete.
+   * @returns the Host confirmation or the Remote failure.
+   */
+  async delete(sessionId: SessionId): Promise<RemoteResult<SessionDeleteValue>> {
+    const result = await this.remote.session.delete({ sessionId })
+    if (result.ok) this.handleSessionRemoved(sessionId)
     return result
   }
 

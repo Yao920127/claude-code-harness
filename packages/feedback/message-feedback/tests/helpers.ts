@@ -142,6 +142,8 @@ class TestPersistence extends SessionPersistence {
     return { header: stored.meta, revision: SessionPersistenceRevision(`test:${id}:${stored.events.length}`) }
   }
 
+  delete(): Promise<boolean> { return Promise.reject(new Error('this suite does not delete sessions')) }
+
   async list(): Promise<SessionPersistenceSnapshot[]> {
     return [...this.durable.entries()].map(([id, stored]) => ({
       header: stored.meta,

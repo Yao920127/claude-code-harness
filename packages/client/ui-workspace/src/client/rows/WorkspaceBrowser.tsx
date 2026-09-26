@@ -519,10 +519,15 @@ function SessionTree({
               /* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
                 if (group.workspaceId !== undefined) onRenameRequest(group.workspaceId, group.label)
               },
-              delete: () => {
-              /* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
-                if (group.workspaceId !== undefined) onDeleteRequest(group.workspaceId, group.label)
-              },
+              // The permanent default Workspace offers no delete action.
+              ...workspaces.some(workspace => workspace.workspaceId === group.workspaceId && workspace.isDefault === true)
+                ? {}
+                : {
+                  delete: () => {
+                  /* v8 ignore next -- narrowing guard: the actions object exists only for real-workspace groups. */
+                    if (group.workspaceId !== undefined) onDeleteRequest(group.workspaceId, group.label)
+                  },
+                },
             }}
         />
         {childRows.length > 0 && (

@@ -72,6 +72,12 @@ export interface UiWorkspace {
    */
   unarchiveSession(sessionId: SessionId): Promise<void>
   /**
+   * Permanently delete a Session on the Host, leaving it first when it is the
+   * current selection.
+   * @param sessionId - Session to delete.
+   */
+  deleteSession(sessionId: SessionId): Promise<void>
+  /**
    * Pin a Session on the Host, then lead it in its accounts' saved orders
    * (its Workspace group or Ungrouped, and the flat list). The order write
    * reads the memberships current at completion, so reorders that landed
@@ -246,6 +252,12 @@ class UiWorkspaceService extends Service implements UiWorkspace {
 
   async unarchiveSession(sessionId: SessionId): Promise<void> {
     await this.workspaces.unarchiveSession(sessionId)
+  }
+
+  async deleteSession(sessionId: SessionId): Promise<void> {
+    // The main view releases its reference before the Host disposes the Agent it retains.
+    if (this.mainReference?.sessionId === sessionId) this.clearMain()
+    await this.sessions.delete(sessionId)
   }
 
   async pinSession(sessionId: SessionId): Promise<void> {

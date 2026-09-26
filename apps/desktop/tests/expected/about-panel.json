@@ -1,0 +1,54 @@
+{
+  "darwin:en-US": {
+    "menu": [
+      { "label": "About Claude Code Harness", "role": "about" },
+      { "type": "separator" }
+    ],
+    "options": {
+      "applicationName": "Claude Code Harness",
+      "applicationVersion": "1.0.0",
+      "version": "",
+      "copyright": "",
+      "iconPath": "<app icon>"
+    }
+  },
+  "darwin:zh-CN": {
+    "menu": [
+      { "label": "关于 Claude Code Harness", "role": "about" },
+      { "type": "separator" }
+    ],
+    "options": {
+      "applicationName": "Claude Code Harness",
+      "applicationVersion": "1.0.0",
+      "version": "",
+      "copyright": "",
+      "iconPath": "<app icon>"
+    }
+  },
+  "win32:zh-CN": {
+    "menu": [
+      { "label": "关于 Claude Code Harness" },
+      { "type": "separator" }
+    ],
+    "options": {
+      "applicationName": "Claude Code Harness",
+      "applicationVersion": "1.0.0",
+      "version": "",
+      "copyright": "",
+      "iconPath": "<app icon>"
+    }
+  },
+  "win32:en-US": {
+    "menu": [
+      { "label": "About Claude Code Harness" },
+      { "type": "separator" }
+    ],
+    "options": {
+      "applicationName": "Claude Code Harness",
+      "applicationVersion": "1.0.0",
+      "version": "",
+      "copyright": "",
+      "iconPath": "<app icon>"
+    }
+  }
+}

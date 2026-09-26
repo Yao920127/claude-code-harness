@@ -1,0 +1,28 @@
+# CCH (Claude Code Harness) defaults, layered after dsh-base and dsh-web-app.
+# New Sessions start on the Claude Code model route, which signs in with the
+# host's own Claude Code login, and the DeepSeek model routes, account settings
+# card, and official DeepSeek brand occupants stay unmounted. A person's own settings, saved to
+# the profile patch, still override these rows.
+
+- id: agent-default-model
+  config:
+    provider: claude-code
+    model: default
+
+# The interface starts in Traditional Chinese; a language chosen in Settings overrides it.
+- id: locale
+  config:
+    preference: zh-TW
+
+- id: llm-deepseek
+  disabled: true
+
+- id: llm-deepseek-account
+  disabled: true
+
+- id: ui-brand-official
+  disabled: true
+
+# CCH signs in only through Claude Code, so the DeepSeek account settings card is not offered.
+- id: ui-settings-account
+  disabled: true

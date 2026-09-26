@@ -1,0 +1,6 @@
+# This optional Profile layer adds Traditional Chinese (Taiwan) to the Web
+# client's language selector.
+
+- insert:
+    - id: locale-zh-hant
+      name: '@deepseek-ai/dsh-client-locale-zh-hant'

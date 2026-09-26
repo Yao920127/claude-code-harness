@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write README.md
+/claude-code-harness:
+  en: 48cc65079a2691fc
+  zh: 83d1c0f3d5e9c6f9
+/claude-code-harness/what-this-fork-adds:
+  en: a88ea1e7c9c8dd4c
+  zh: a571b5e9014b8955
+/claude-code-harness/before-you-start:
+  en: bed3161d73e75967
+  zh: ee489156b4bf40ec
+/claude-code-harness/run:
+  en: 4e0248e4c6474fc6
+  zh: 8a5326f36d0c65fe
+/claude-code-harness/run/desktop-app-macos-apple-silicon:
+  en: 0df7132b98024253
+  zh: ee703fc73c49860f
+/claude-code-harness/run/run-from-source:
+  en: ec85350ea3129a34
+  zh: c30146d791d65db0
+/claude-code-harness/developer-preview:
+  en: 9de630cd02b2e8f8
+  zh: 4c96842af9c48614
+/claude-code-harness/development:
+  en: 2048827c4b81f169
+  zh: 33cd15d94169bf5b
+/claude-code-harness/credits:
+  en: 785185c19dd3e28a
+  zh: e58a0f25d3ca653b
+/claude-code-harness/trademarks-and-distribution:
+  en: 8860cec6f0caeb92
+  zh: a16b225cea01db9a
+/claude-code-harness/license:
+  en: 1f6c1ba839ec8527
+  zh: 3ecba6f6b41dace6

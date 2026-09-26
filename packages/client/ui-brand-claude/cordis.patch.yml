@@ -1,0 +1,6 @@
+# This optional Profile layer replaces the Web client's sidebar and
+# conversation brand marks, and the page icon, with the Claude mark.
+
+- insert:
+    - id: ui-brand-claude
+      name: '@deepseek-ai/dsh-client-ui-brand-claude'

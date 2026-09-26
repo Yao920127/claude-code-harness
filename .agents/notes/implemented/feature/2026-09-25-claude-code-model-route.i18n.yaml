@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-25-claude-code-model-route.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-25-claude-code-model-route.md
+/agent-note-claude-code-as-a-model-route:
+  en: 5d64dca37c0530b1
+  zh: 8737ed8d464adf83
+/agent-note-claude-code-as-a-model-route/problem:
+  en: 83f8cefad25f1607
+  zh: baf3e874e52795fb
+/agent-note-claude-code-as-a-model-route/decision:
+  en: 92ad670e46fa655f
+  zh: 7f71d022c61ee04e
+/agent-note-claude-code-as-a-model-route/alternatives-considered:
+  en: c408bfa3e6e46e8e
+  zh: 14d2d6f53bd12872
+/agent-note-claude-code-as-a-model-route/consequences:
+  en: 441f69c64311033f
+  zh: 4b9ba05da4c04327

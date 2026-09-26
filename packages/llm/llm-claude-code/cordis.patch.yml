@@ -1,0 +1,8 @@
+# This optional Profile layer registers the Claude Code model route. Select it
+# in any agent preset: Claude Code runs its own tools, so the route offers it
+# none of the preset's. No Claude Code process starts until the model list is
+# read or a model call runs.
+
+- insert:
+    - id: llm-claude-code
+      name: '@deepseek-ai/dsh-llm-claude-code'

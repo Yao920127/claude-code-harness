@@ -1,0 +1,7 @@
+# Test overlay over the shipped headless profile and this package's public
+# Bundle patch. No model or Claude Code process starts in this test.
+- id: headless-startup
+  disabled: true
+
+- id: headless-runner
+  disabled: true

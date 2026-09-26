@@ -16,7 +16,7 @@ Three tab types ship with the Sidebar: the **guide** (`ui-sidebar-right`), the *
 
 ### The guide
 
-[Default pages and close protection](2026-09-08-sidebar-default-pages.md) supersedes this section's default-guide selection; guide registration, replacement and uniqueness remain unchanged.
+[Default pages and close protection](../../../../packages/client/ui-sidebar-right/README.md) supersedes this section's default-guide selection; guide registration, replacement and uniqueness remain unchanged.
 
 The guide is what a pane shows before it holds content. Its registration is `{ id: '@deepseek-ai/dsh-client-ui-sidebar-right/guide', kind: 'guide', priority: 'builtin', title }` with no `patterns`: a guide views nothing, so it is opened by kind through `openTab` and recorded under the page address `sidebar://guide`, which is the registry's bookkeeping and never composed by a caller. The tab's title is `开始` / `Start`, captured into the layout record when the pane is seeded, so a later language change relabels the type and not tabs already open.
 

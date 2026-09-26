@@ -18,7 +18,7 @@ Status: implemented
 
 `Switch` 是双态开关，采用 `ui-settings-plugins` 确立的 36×20 轨道与 16px 滑块。`label` 必填且没有默认值，渲染点无法省略无障碍名称；`title` 在部署禁用该控件时承载锁定原因。
 
-`StateDotState` 包含 `idle`，表示一个被跟踪的对象当前没有进行中的活动。插件清单的 `pending` 与 `unloading` 相位需要这个语义成员；没有 `idle`，这两个相位会彻底失去标记。五态联合对消费方保持安全，因为每个包都从自己的闭合状态联合**产生** `StateDotState`，没有任何一个对 `StateDotState` 本身做 switch。当前的纯色点配色与旋转 `ongoing` loading 由后续的 [StateDot 视觉语言决策](../feature/2026-09-17-state-dot-visual-language.zh.md)负责。
+`StateDotState` 包含 `idle`，表示一个被跟踪的对象当前没有进行中的活动。插件清单的 `pending` 与 `unloading` 相位需要这个语义成员；没有 `idle`，这两个相位会彻底失去标记。五态联合对消费方保持安全，因为每个包都从自己的闭合状态联合**产生** `StateDotState`，没有任何一个对 `StateDotState` 本身做 switch。当前的纯色点配色与旋转 `ongoing` loading 见 [`ui-primitives` 参考](../../../../packages/client/ui-primitives/README.zh.md)。
 
 **`ui-primitives` README 里的组件目录，是这条规则得以可用的前提。** 它列出每个导出组件的用途，以及它不适用的场合，并点名三组容易混淆的配对：`Tag` 与 `Pill`、`DisclosureRow` 与卡片式折叠、包内的 `FoldToggle` 与对外导出面。`Pill` 是可选中的胶囊按钮——它接受 `active` 与 `onClick`，用于视图切换与筛选器；`Tag` 是只读徽章，两者都不接受。组件注释使用同一套区分。
 

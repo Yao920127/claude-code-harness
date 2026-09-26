@@ -39,7 +39,7 @@ Agent 产出的文件是最尖锐的案例。产出文件 chip 或 `read` 行的
 
 ### 状态
 
-[默认页](2026-09-08-sidebar-default-pages.zh.md)取代此处的默认补入引导页；[最后一个 tab 的关闭规则](2026-09-08-sidebar-last-tab-close-rules.zh.md)负责显式关闭，移动 tab 仍会处理被清空的格。
+[默认页选择与最后一个 tab 的关闭规则](../../../../packages/client/ui-sidebar-right/README.zh.md)取代此处的默认补入引导页与显式关闭，移动 tab 仍会处理被清空的格。
 
 `ui-sidebar-right` 为每个会话 id 保存一份 `SurfaceState`——布局、历史与铸造计数——住在坑位注册时声明的 store 里。每个 action 先铸造意图所需的 id，向库的 planner 索取操作，对结果跑一遍 settle planner，把整个意图记为一条历史账，再把该会话的 surface 整体赋回；没有 action 就地改布局。settle 是产品规则：最后一个 tab 被关闭、拖走或悬浮出去的停靠 pane 会被合并掉；展开且为空的根 pane 会填入当前默认页。折叠的布局可以保持为空，直到下次展开；没有单独的关闭 pane 手势。[布局持久化与 provider 恢复](../architecture/2026-09-14-sidebar-layout-provider-recovery.zh.md)负责 Session 作用域的浏览器存储和刷新。布局是呈现状态，永不进入会话日志。
 

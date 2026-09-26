@@ -39,7 +39,7 @@ The right Sidebar uses one mounted content tree in normal and fullscreen modes; 
 
 ### State
 
-[Default pages](2026-09-08-sidebar-default-pages.md) supersede default-guide reseeding here; [last-tab close rules](2026-09-08-sidebar-last-tab-close-rules.md) own explicit closing, while moving tabs still settles emptied panes.
+[Default-page selection and last-tab closing](../../../../packages/client/ui-sidebar-right/README.md) supersede default-guide reseeding and explicit closing here, while moving tabs still settles emptied panes.
 
 `ui-sidebar-right` keeps one `SurfaceState` per session id — the layout, its history, and the mint counter — in a store declared at the seat registration. Every action mints the ids its intent needs, asks a kit planner for the operations, runs the settle planner over the result, and records the whole intent as one history entry before assigning the session's surface back; no action edits a layout in place. The settle step is the product's rule: a docked pane whose last tab is closed, moved out, or floated is merged away, and an expanded empty root pane receives the current default page. A collapsed surface may remain empty until its next expansion; no separate pane-closing gesture exists. [Layout persistence and provider recovery](../architecture/2026-09-14-sidebar-layout-provider-recovery.md) owns Session-scoped browser storage and reload. Layout is presentation state and never enters the session log.
 

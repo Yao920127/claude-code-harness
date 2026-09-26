@@ -16,7 +16,7 @@ Sidebar 随包交付三个 tab 类型：**引导页**（`ui-sidebar-right`）、
 
 ### 引导页
 
-[默认页与关闭保护](2026-09-08-sidebar-default-pages.zh.md)取代本节的默认引导选择；引导页注册、替换和唯一性保持不变。
+[默认页与关闭保护](../../../../packages/client/ui-sidebar-right/README.zh.md)取代本节的默认引导选择；引导页注册、替换和唯一性保持不变。
 
 引导页是 pane 承载内容之前显示的东西。它的注册定义是 `{ id: '@deepseek-ai/dsh-client-ui-sidebar-right/guide', kind: 'guide', priority: 'builtin', title }`，没有 `patterns`：引导页不查看任何东西，所以经 `openTab` 按 kind 打开，并记在页地址 `sidebar://guide` 之下——那是注册表自己的记账，调用方从不拼它。tab 标题是 `开始` / `Start`，在 pane 播种时捕获进布局记录，于是之后切换语言只重标类型，不改已开着的 tab。
 

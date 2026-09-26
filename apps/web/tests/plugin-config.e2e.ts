@@ -88,13 +88,13 @@ describe('web e2e: plugin configuration pages', () => {
     const panel = await openPlugins()
 
     // Every page the shipped web composition exposes: the shell executor, the
-    // agent loop, subagent selection, and the DeepSeek search provider, after
+    // agent loop, subagent selection, the search-provider choice, and the DeepSeek search provider, after
     // the official bundles the installation ships switched off.
     await panel.getByRole('button', { name: '查看 网页搜索', exact: true }).waitFor({ timeout: 20_000 })
     const official = panel.locator('[data-plugin-group="official"]')
     expect(await official.locator('[data-plugin-package]').count()).toBe(OPTIONAL_BUNDLES.length)
-    expect(await official.locator('[data-plugin-item]').count()).toBe(4)
-    for (const title of ['终端', 'Agent 循环', '子智能体', '网页搜索']) {
+    expect(await official.locator('[data-plugin-item]').count()).toBe(5)
+    for (const title of ['终端', 'Agent 循环', '子智能体', '搜索来源', '网页搜索']) {
       expect(await official.getByRole('button', { name: `查看 ${title}`, exact: true }).count()).toBe(1)
     }
     // A card carries the one-liner; the fields wait for the page.

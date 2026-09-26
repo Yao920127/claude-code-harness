@@ -128,7 +128,7 @@ describe('web e2e: plugin manager', () => {
     // configuration, and its other bundles stay off the page.
     expect(await panel.locator('[data-plugin-group="bundles"] [data-plugin-package]').count()).toBe(2)
     expect(await panel.locator('[data-plugin-group="official"] [data-plugin-package]').count()).toBe(OPTIONAL_BUNDLES.length)
-    expect(await panel.locator('[data-plugin-group="official"] [data-plugin-item]').count()).toBe(4)
+    expect(await panel.locator('[data-plugin-group="official"] [data-plugin-item]').count()).toBe(5)
     expect(await panel.getByText('实验性', { exact: true }).count())
       .toBe(OPTIONAL_BUNDLES.filter(name => name.startsWith('@deepseek-ai/dsh-experimental-')).length)
     expect(await panel.locator('[data-plugin-package="@deepseek-ai/dsh-experimental-inspector"]').count()).toBe(0)

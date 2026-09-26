@@ -26,9 +26,9 @@
 /* figma 34:10411: fish + title, gap 10, centered; 26/32 wt500. */
 .headline {
   display: flex;
-  /* Overflow-driven: the fish and the title group are two wrap units sharing
-     one centered line while they fit; squeezed, the fish takes its own line
-     above the group. No breakpoint. */
+  /* Overflow-driven: the fish and the title are two wrap units sharing one
+     centered line while they fit; squeezed, the fish takes its own line above
+     the title. No breakpoint. */
   flex-wrap: wrap;
   column-gap: 10px;
   /* Wrapped, the fish sits on its own line; more air than the 10px side gap
@@ -42,14 +42,6 @@
   color: var(--dsw-alias-label-primary);
 }
 
-/* The title as one wrap unit beside the fish, whether the fallback text or a
-   slot occupant fills it. */
-.titleGroup {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 0;
-}
 
 /* Keep hover detection on a stationary box while the mark moves within it;
    hover rules target the hitbox so a slot-occupant mark swims too. */

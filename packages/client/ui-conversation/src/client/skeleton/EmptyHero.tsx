@@ -149,9 +149,7 @@ export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
               fallback: <HeroFish hovering={hovering} />,
             })}
           </span>
-          <span className={css.titleGroup}>
-            {renderSlot('conversation.hero.brand.headline', {}, { fallback: <span>{t('hero.headline')}</span> })}
-          </span>
+          {renderSlot('conversation.hero.brand.headline', {}, { fallback: <span>{t('hero.headline')}</span> })}
         </div>
         <div className={css.body}>
           {/* The composer remains mounted outside this component. */}

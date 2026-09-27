@@ -1,4 +1,4 @@
-/** The Session header's button that shows and hides the terminal panel. */
+/** The composer toolbar's button that shows and hides the terminal panel. */
 import type { ReactNode } from 'react'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -7,9 +7,9 @@ import { TerminalIcon } from './TerminalIcon.tsx'
 import type {} from './locales.ts'
 import css from './TerminalToggle.module.css'
 
-/** Session header share, panel state, shortcut catalog and copy. */
+/** Composer toolbar share, panel state, shortcut catalog and copy. */
 export type TerminalToggleProps =
-  PropsRuntime<'conversation.session.header.utilities'> & PropsLocale<'terminalPanel'> & InjectFace<TerminalToggleInjected>
+  PropsRuntime<'conversation.input.right'> & PropsLocale<'terminalPanel'> & InjectFace<TerminalToggleInjected>
 
 /**
  * Render a pressed-state toggle for the Session's terminal panel.

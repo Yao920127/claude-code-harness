@@ -20,6 +20,7 @@
 - textbox "发消息或创建任务, / 调用指令, @ 文件或对话"
 - button "添加文件或调用指令"
 - button "访问模式，当前：工作区内修改": 工作区内修改
+- button "切换终端面板"
 - button "选择模型，当前 DeepSeek-V4-Flash，推理等级 high": DeepSeek-V4-Flash high
 - button "发送消息" [disabled]
 - button "1 轮 1 步 · {{throughput}} tok/s": 1 轮 1 步{{throughput}} tok/s

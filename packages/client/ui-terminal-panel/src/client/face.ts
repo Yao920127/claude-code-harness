@@ -43,7 +43,7 @@ export interface TerminalPanelInjected extends TerminalInjected {
   readonly selectShell: (path: string) => void
 }
 
-/** The Session header's panel toggle. */
+/** The composer toolbar's panel toggle. */
 export interface TerminalToggleInjected {
   readonly hooks: {
     readonly panel: HostObservable<TerminalPanelState>

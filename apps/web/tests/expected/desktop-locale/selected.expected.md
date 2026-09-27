@@ -29,4 +29,19 @@
   - button "Edit shortcuts"
   - text: Send behavior while busy What Enter and the Send button do while the agent is running; Cmd/Ctrl+Enter uses the other behavior
   - button "Queue"
+  - text: Command line tool cch Run this command in a terminal inside the Claude Code Harness source folder, then type cch in any terminal to start it.
+  - code: pnpm install && pnpm run build && pnpm --filter @deepseek-ai/dsh link --global
+  - button "Copy"
+  - term:
+    - code: cch
+  - definition: Open the Claude Code Harness desktop app
+  - term:
+    - code: cch web
+  - definition: Open the web app in a browser
+  - term:
+    - code: cch plugin add <package>
+  - definition: Install a plugin
+  - term:
+    - code: cch config
+  - definition: Show the current configuration
   - text: "Current version: {{version}}"

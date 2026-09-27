@@ -1,6 +1,5 @@
 - banner:
   - navigation "Session hierarchy": Inline code links
-  - button "Toggle terminal panel"
   - button "More actions"
   - tablist:
     - tab "Chat" [selected]
@@ -34,6 +33,7 @@
 - textbox "Message or run a task, / commands, @ files or sessions"
 - button "Add files or run commands"
 - 'button "Access mode, current: Workspace Write"': Workspace Write
+- button "Toggle terminal panel"
 - button "Select model, current DeepSeek-V4-Flash": DeepSeek-V4-Flash
 - button "Send message" [disabled]
 - button "1 turns 1 steps"

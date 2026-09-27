@@ -1,0 +1,58 @@
+.row {
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+}
+
+.title {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.description {
+  margin-top: 4px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.install {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.command {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-bg-l2);
+  font-size: 12px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.commands {
+  display: grid;
+  gap: 4px;
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.entry {
+  display: flex;
+  gap: 12px;
+}
+
+.entry dt {
+  flex: none;
+  width: 190px;
+}
+
+.entry dd {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+}

@@ -10,7 +10,7 @@ Status: implemented
 
 ## 决定
 
-终端位于对话内容下方的每 Session 面板中。`ui-conversation` 在 `main.conversation` 下声明会话作用域的 `conversation.panel.bottom` 位置，只在选中 Session 时渲染；该位置的占用者负责自己的高度，隐藏时不渲染任何内容。`ui-terminal-panel`（由 `ui-sidebar-terminal` 改名）占用该位置，在 `conversation.session.header.utilities` 中注册带按下状态的开关，并把 `terminal.toggle` 绑定到 Control+\`。右侧栏不再注册终端页面类型。
+终端位于对话内容下方的每 Session 面板中。`ui-conversation` 在 `main.conversation` 下声明会话作用域的 `conversation.panel.bottom` 位置，只在选中 Session 时渲染；该位置的占用者负责自己的高度，隐藏时不渲染任何内容。`ui-terminal-panel`（由 `ui-sidebar-terminal` 改名）占用该位置，在输入框的 `conversation.input.right` 位置注册带按下状态的开关（该位置在会话发送第一条消息前就会渲染，而标题栏工具区不会），并把 `terminal.toggle` 绑定到 Control+\`。右侧栏不再注册终端页面类型。
 
 `TerminalPanels` 管理每个 Session 的面板状态：显示或隐藏、高度以及标签页。标签页由面板内的 key 与全局唯一的内容身份组成。[Web 终端决策](2026-09-09-web-sidebar-terminal.zh.md)仍约束终端控制器：它把每个内容身份绑定到对应的 Host 终端，因此刷新后会重连同一进程。一个浏览器存储条目保存所有 Session 的面板，读取时会校验；结构无效的条目会丢弃全部面板，而不是采用其中一部分。启动时，所有 Session 已保存的标签页都会提供给控制器的窗口持有，包括尚未打开的 Session。快捷键作用于最后挂载的面板所属 Session，因为面板位置只存在于主对话中。移除 Session 会丢弃其面板。
 

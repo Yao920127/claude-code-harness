@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用此包
 
-会话标题栏中的终端按钮或 `terminal.toggle` 命令显示和隐藏当前显示会话的面板。显示空面板时，会用记住的可用 shell 打开一个终端。Desktop 以及 Windows、macOS Web 把该命令绑定到 Control+\`；Linux Web 默认不绑定。按钮的按下状态表示面板是否显示。
+输入框工具栏中模型选择器旁的终端按钮或 `terminal.toggle` 命令显示和隐藏当前显示会话的面板。显示空面板时，会用记住的可用 shell 打开一个终端。Desktop 以及 Windows、macOS Web 把该命令绑定到 Control+\`；Linux Web 默认不绑定。按钮的按下状态表示面板是否显示；会话发送第一条消息之前也可使用。
 
 面板的 **+** 按钮用记住的 shell 再打开一个终端标签页。旁边的箭头打开已安装 shell 菜单；选择某项会记住它并打开该 shell。菜单打开时才执行发现，不会分配终端。查找失败时菜单提供重试。点击标签页，或聚焦后按 Enter 或空格键，即可切换终端。最右侧的箭头隐藏面板。拖动面板上边缘，或聚焦后按上、下方向键，即可调整高度。
 
@@ -43,7 +43,7 @@ kind: "package-reference"
 <details>
 <summary>实现细节——点击展开</summary>
 
-本插件占用对话的会话作用域 `conversation.panel.bottom` 位置（位于对话内容下方），并在 `conversation.session.header.utilities` 中注册面板开关。`TerminalPanels` 管理每个会话的面板：是否显示、高度以及标签页；每个标签页由面板内的 key 与全局唯一的内容身份组成。一个浏览器存储条目保存所有会话的面板，读取时会校验；无效条目会让所有面板从空状态开始。已挂载的面板会记录其会话，开关命令作用于最后挂载的面板所属会话。
+本插件占用对话的会话作用域 `conversation.panel.bottom` 位置（位于对话内容下方），并在输入框的 `conversation.input.right` 位置注册面板开关；该位置对每个选中的会话都会渲染，包括尚无消息的会话。`TerminalPanels` 管理每个会话的面板：是否显示、高度以及标签页；每个标签页由面板内的 key 与全局唯一的内容身份组成。一个浏览器存储条目保存所有会话的面板，读取时会校验；无效条目会让所有面板从空状态开始。已挂载的面板会记录其会话，开关命令作用于最后挂载的面板所属会话。
 
 不依赖 React 的终端模型由 `api-terminal-controller` 负责；按 key 的框架 hook 暴露其状态。`ui-primitives` 的 Menu 与 Button 提供 shell 选择器和面板控件。面板显示期间每个标签页的屏幕都保持挂载，非活动屏幕只是隐藏，因此切换标签页会保留每个模拟器的输出。终端屏幕挂载时，主体才加载包内的 `client.terminal.js` 分块，让 xterm.js 与 FitAddon 不进入启动时的 `client.js`；随后由它们渲染屏幕并测量视口。输入（包括 Tab 与控制字符）原样传到 PTY。
 

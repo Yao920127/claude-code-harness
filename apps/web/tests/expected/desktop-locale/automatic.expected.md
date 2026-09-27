@@ -29,4 +29,19 @@
   - button "编辑快捷键"
   - text: 繁忙时的发送行为 智能体运行时 Enter 键和发送按钮的行为；Cmd/Ctrl+Enter 使用另一行为
   - button "排队发送"
+  - text: 命令行工具 cch 在 Claude Code Harness 源代码目录的终端中运行下面的命令，就能在任何终端输入 cch 启动。
+  - code: pnpm install && pnpm run build && pnpm --filter @deepseek-ai/dsh link --global
+  - button "复制"
+  - term:
+    - code: cch
+  - definition: 打开 Claude Code Harness 桌面应用
+  - term:
+    - code: cch web
+  - definition: 在浏览器中打开网页版
+  - term:
+    - code: cch plugin add <package>
+  - definition: 安装插件
+  - term:
+    - code: cch config
+  - definition: 显示当前配置
   - text: 当前版本：{{version}}

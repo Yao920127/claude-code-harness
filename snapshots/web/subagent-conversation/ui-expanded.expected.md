@@ -5,7 +5,6 @@
     - 'button "Switch subagent: event-sourcing researcher"': event-sourcing researcher
     - button "1 subagent"
   - text: Standard mode
-  - button "Toggle terminal panel"
   - button "More actions"
   - button "Open right sidebar"
   - tablist:
@@ -40,6 +39,7 @@
 - textbox "Message or run a task, / commands, @ files or sessions"
 - button "Add files or run commands"
 - 'button "Access mode, current: Custom"': Custom
+- button "Toggle terminal panel"
 - button "Send message" [disabled]
 - button "2 turns 2 steps · {{throughput}} tok/s": 2 turns 2 steps{{throughput}} tok/s
 - button "15.7K tok · Cache hit 99%": 15.7K tokCache hit 99%

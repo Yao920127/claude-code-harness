@@ -69,7 +69,7 @@ async function mountPlugin() {
   ctx.provide('theme', { getTheme: () => theme } as never)
   const fiber = await ctx.plugin({ inject, apply })
   const panel = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.panel.bottom')!.inject(sessionId) as TerminalPanelInjected
-  const toggle = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.session.header.utilities')!.inject(sessionId) as TerminalToggleInjected
+  const toggle = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.input.right')!.inject(sessionId) as TerminalToggleInjected
   return {
     entries, dictionaries, terminals, model, theme, commands, removals, panel, toggle,
     emitTheme() { ctx.emit('theme/change', theme) },
@@ -84,7 +84,7 @@ it('registers the panel and its header toggle, then releases every contribution 
     expect(h.dictionaries.get('terminalPanel')).toEqual({ en, zh })
     expect(h.entries.map(entry => [entry.name, entry.component, entry.locale, entry.order])).toEqual([
       ['conversation.panel.bottom', TerminalPanel, 'terminalPanel', undefined],
-      ['conversation.session.header.utilities', TerminalToggle, 'terminalPanel', -6],
+      ['conversation.input.right', TerminalToggle, 'terminalPanel', undefined],
     ])
     const face = h.panel()
     expect(face.hooks.theme.getSnapshot()).toBe(h.theme)

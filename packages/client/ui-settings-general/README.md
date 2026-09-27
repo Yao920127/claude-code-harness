@@ -39,9 +39,11 @@ Settings visibility and section selection live in the shell owner store. The she
 
 The current release version appears at the bottom of General Settings in Web and Desktop, using the build’s `DSH_CLIENT_VERSION` metadata and the active language. Partial builds without version metadata omit the row.
 
+The Command line tool row, above Current version, shows the command that installs `cch` from a Claude Code Harness source checkout (`pnpm run build`, then `pnpm --filter @deepseek-ai/dsh link --global`) with a Copy button, and lists what `cch`, `cch web`, `cch plugin`, and `cch config` do. A refused clipboard write shows localized guidance to select the command manually; the [dsh CLI](../../../apps/cli/README.md#cch) owns the commands.
+
 The Coding Tools switch controls the shared `ui-settings.enabled` preference described by [ui-settings](../ui-settings/README.md#use-this-package). It is available in both Web and desktop, follows accepted changes immediately, and disables duplicate input while a write settles. A failed write displays localized retry guidance.
 
-The General section holds the built-in Coding Tools and Current version rows alongside rows registered into `settings.general.item` by feature packages. Each registrant owns its row copy and behavior. The Appearance row, for example, lives in ui-theme.
+The General section holds the built-in Coding Tools, Command line tool, and Current version rows alongside rows registered into `settings.general.item` by feature packages. Each registrant owns its row copy and behavior. The Appearance row, for example, lives in ui-theme.
 
 ### Opening the configuration file
 
@@ -61,7 +63,7 @@ The shell declares settings.launcher for an account-owned sidebar menu and retai
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The shell owns the chrome and the projections; it contributes the Coding Tools and Current version rows, while feature registrants own their additional content and copy.
+The shell owns the chrome and the projections; it contributes the Coding Tools, Command line tool, and Current version rows, while feature registrants own their additional content and copy.
 
 ### Ledger projections
 
@@ -112,7 +114,7 @@ None; this package neither assembles nor sends a provider request.
 
 These limits define what the shell itself provides versus what features must supply; they are current package constraints.
 
-- **Additional General rows require their feature plugins** — the shell supplies Coding Tools and Current version; feature plugins supply the remaining preferences.
+- **Additional General rows require their feature plugins** — the shell supplies Coding Tools, Command line tool, and Current version; feature plugins supply the remaining preferences.
 - **The Windows caption badge keeps a side-opening bubble** — `DesktopUpdateBadge` occupies `sidebar.toggle.badge` in the caption and requests `side="right"`, so the Desktop-owned menu text can cover its bubble while the sidebar is collapsed on Windows; the sidebar toggle and New Session bubbles open below the caption instead (#4688).
 
 <a id="dev-note"></a>

@@ -1,4 +1,4 @@
-/** Register the terminal panel below each Session's conversation, its header toggle, and its shortcut. */
+/** Register the terminal panel below each Session's conversation, its composer toggle, and its shortcut. */
 import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
 import type { Context } from '@deepseek-ai/cordis'
 import { randomUUID } from '@deepseek-ai/dsh-util-crypto'
@@ -23,7 +23,7 @@ export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
 export const inject = ['slots', 'locale', 'remote', 'webTerminals', 'theme', 'shortcuts']
 
 /**
- * Register the panel, its header toggle, the toggle shortcut and terminal retention.
+ * Register the panel, its composer toggle, the toggle shortcut and terminal retention.
  * @param ctx - Client root Context with the conversation slots and terminal service.
  */
 export function apply(ctx: Context): void {
@@ -86,10 +86,10 @@ export function apply(ctx: Context): void {
       selectShell: (path) => { ctx.webTerminals.selectShell(path) },
     }),
   }, TerminalPanel)), 'ui-terminal-panel.panel')
-  ctx.effect(() => ctx.slots.inject('conversation.session.header.utilities', () => ctx.slots.register({
-    name: 'conversation.session.header.utilities', id,
-    // Left of the Schedule catalog (-5) and the overflow menu (0).
-    order: -6,
+  // The composer toolbar shows for every selected Session, including one that
+  // has no message yet, so the panel is reachable before the first turn.
+  ctx.effect(() => ctx.slots.inject('conversation.input.right', () => ctx.slots.register({
+    name: 'conversation.input.right', id,
     locale: namespace,
     inject: (sessionId): TerminalToggleInjected => ({
       hooks: { panel: panels.panel(sessionId), shortcuts: ctx.shortcuts.catalog },

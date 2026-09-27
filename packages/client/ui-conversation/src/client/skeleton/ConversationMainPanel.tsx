@@ -4,9 +4,9 @@ import { ConversationWidthControls } from './ConversationWidthControls.tsx'
 import css from './ConversationRoot.module.css'
 
 /**
- * Render the existing main Conversation frame around the extracted content.
+ * Render the main Conversation frame around the extracted content.
  * @param props - the original `main.conversation` Slot props.
- * @returns the unchanged root, Header, content, and width-control subtree.
+ * @returns the root, Header, content, width-control subtree, and the selected Session's bottom panel.
  */
 export function ConversationMainPanel(props: ConversationSlotProps) {
   const { sessionId, useSession, useSessions, useConversation, renderSlot, renderFactorySlot } = props
@@ -50,6 +50,7 @@ export function ConversationMainPanel(props: ConversationSlotProps) {
       }, {
         slots: { widthControls: ConversationWidthControls },
       })}
+      {sessionId !== undefined && renderSlot('conversation.panel.bottom', {})}
     </div>
   )
 }

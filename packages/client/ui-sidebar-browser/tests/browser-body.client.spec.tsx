@@ -43,7 +43,8 @@ function mountBrowser(navigation?: { readonly url?: string },
   if (options.initial !== undefined) store.actions.replace(TAB, options.initial)
   const lifetime = new AbortController()
   lifetimes.add(lifetime)
-  const injected = createBrowserControllers(store.actions, options.createPage ?? createIframePage, () => true)
+  const injected = createBrowserControllers(store.actions, options.createPage ?? createIframePage, () => true,
+    () => 'https://search.example/?q=%s')
   controllers.push(injected)
   const { keyedHooks, ...commands } = injected
   const tabActions = { bindCommands: vi.fn<ReturnType<BrowserBodyProps['useTabInfo']>['tab']['actions']['bindCommands']>(() => vi.fn()), openResource: vi.fn(), openTab: vi.fn(), close: vi.fn() }

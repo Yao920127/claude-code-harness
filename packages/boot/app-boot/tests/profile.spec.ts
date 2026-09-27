@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 import {
+  CCH_PROFILE_BUNDLES,
   composeEntries,
   createRuntimeResolution,
   getDshRuntimeVersion,
@@ -351,6 +352,10 @@ describe('loadProfile', () => {
     expect(PROFILE_TEMPLATES['sdk-minimal']).toEqual({
       bundles: ['@deepseek-ai/dsh-sdk-minimal'],
     })
+    // The cch template is the Web template plus the Claude Code Harness bundles, layered last.
+    expect(PROFILE_TEMPLATES.cch).toEqual({ bundles: CCH_PROFILE_BUNDLES })
+    expect(CCH_PROFILE_BUNDLES.slice(0, 2)).toEqual(PROFILE_TEMPLATES.web?.bundles)
+    expect(CCH_PROFILE_BUNDLES.at(-1)).toBe('@deepseek-ai/dsh-cch')
     loadProfile('t', 'web', anchor, home)
     expect(readProfileManifest('t', resolveProfileDir('web', home)).dsh?.profile?.bundles)
       .toEqual([...PROFILE_TEMPLATES.web?.bundles ?? []])

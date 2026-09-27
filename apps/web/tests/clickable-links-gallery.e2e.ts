@@ -462,7 +462,7 @@ describe('web e2e: clickable links gallery', () => {
 
     // Ordinary message HTTP(S) links delegate to the right Sidebar Browser.
     await guideLink.click()
-    const browserAddress = page.locator('[data-rightbar-col]').getByRole('textbox', { name: 'Enter an HTTP(S) address' })
+    const browserAddress = page.locator('[data-rightbar-col]').getByRole('textbox', { name: 'Enter an address or search terms' })
     await expect.poll(() => browserAddress.inputValue()).toBe(GUIDE_URL)
     await markdown.locator(`a[href="${HTTP_URL}"]`).click()
     await expect.poll(() => browserAddress.inputValue()).toBe(HTTP_URL)

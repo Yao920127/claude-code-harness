@@ -132,7 +132,7 @@ describe('web e2e: Markdown inline-code links', () => {
 
     await inlineCodeLink.click()
     const browserAddress = page.locator('[data-rightbar-col]')
-      .getByRole('textbox', { name: 'Enter an HTTP(S) address' })
+      .getByRole('textbox', { name: 'Enter an address or search terms' })
     await expect.poll(() => browserAddress.inputValue()).toBe(LINK_URL)
 
     expect(await page.getByText(`curl ${LINK_URL}`, { exact: true }).locator('a').count()).toBe(0)

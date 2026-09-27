@@ -414,6 +414,7 @@ describe('ConversationRoot resident composer', () => {
     expect(b.view.container.querySelector('header')).not.toBeNull()
     expect(b.view.getByTestId('view-conversation.header.leading')).toBeTruthy()
     expect(b.slotCalls).not.toContain('conversation.session.header')
+    expect(b.slotCalls).not.toContain('conversation.panel.bottom')
     expect(b.view.queryByRole('tablist')).toBeNull()
     expect(b.view.queryByTestId('view-conversation.session.header.corner')).toBeNull()
   })
@@ -530,6 +531,7 @@ describe('ConversationRoot resident composer', () => {
     expect(b.slotCalls).toContain('conversation.session.header.actions')
     expect(b.slotCalls).toContain('conversation.session.header.utilities')
     expect(b.slotCalls).toContain('conversation.session.header.corner')
+    expect(b.slotCalls).toContain('conversation.panel.bottom')
   })
 
   it('sticky composer seat wraps the whole overlay chain, not only the fallback stack', () => {

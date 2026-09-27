@@ -168,6 +168,12 @@ describe('SearchProviderCard', () => {
     expect(screen.getByText(en.apiKeySet)).toBeTruthy()
   })
 
+  it('reports a missing key and disables the control when the reference is not writable', () => {
+    renderCard({ credential: { kind: 'credential', ref: 'XAI_API_KEY' }, apiKeyWritable: false })
+    expect(screen.getByText(en.apiKeyUnset)).toBeTruthy()
+    expect(screen.getByLabelText<HTMLInputElement>('API key (XAI_API_KEY)').disabled).toBe(true)
+  })
+
   it('offers every provider and stages a choice', () => {
     const actions = renderCard({ effectiveProvider: 'openai', credential: { kind: 'credential', ref: 'OPENAI_API_KEY' } })
     const select = screen.getByLabelText<HTMLSelectElement>('Provider')

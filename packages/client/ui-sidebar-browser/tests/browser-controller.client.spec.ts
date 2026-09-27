@@ -11,6 +11,7 @@ import { emptyBrowserFrame, type BrowserFrameState } from '../src/client/browser
 
 const TAB = 'tab' as TabId
 const APP = 'https://dsh.example'
+const SEARCH = 'https://search.example/find?q=%s'
 const lifetimes = new Set<AbortController>()
 const disposables: { dispose(): Promise<void> }[] = []
 const hosts: HTMLElement[] = []
@@ -26,7 +27,8 @@ function harness() {
   const id = `browser-controller-test-${String(++sequence)}`
   const store = createBrowserStore().create(id)
   let open = true
-  const face = createBrowserControllers(store.actions, createIframePage, () => open)
+  let searchUrl: string | undefined = SEARCH
+  const face = createBrowserControllers(store.actions, createIframePage, () => open, () => searchUrl)
   disposables.push(face)
   const host = document.createElement('div')
   host.id = id
@@ -41,7 +43,10 @@ function harness() {
     if (element === null) throw new Error('expected a mounted iframe')
     return element
   }
-  return { store, face, mount, iframe, close: () => { open = false } }
+  return {
+    store, face, mount, iframe, close: () => { open = false },
+    setSearch: (value: string | undefined) => { searchUrl = value },
+  }
 }
 
 afterEach(async () => {
@@ -54,6 +59,21 @@ afterEach(async () => {
 })
 
 describe('BrowserController', () => {
+  it('searches keywords through the configured search address and refuses them before one is known', () => {
+    const h = harness()
+    h.mount(lifetime().signal)
+    const state = h.face.keyedHooks.browserState(TAB)!
+    h.setSearch(undefined)
+    h.face.loadUrl(TAB, 'youtube')
+    expect(state.getSnapshot().addressFailure).toBe('search')
+    h.setSearch(SEARCH)
+    h.face.loadUrl(TAB, 'youtube')
+    expect(h.iframe().src).toBe('https://search.example/find?q=youtube')
+    expect(state.getSnapshot()).toMatchObject({ addressFailure: undefined, frame: { target: { title: 'youtube' } } })
+    h.face.loadUrl(TAB, 'youtube.com')
+    expect(h.iframe().src).toBe('https://youtube.com/')
+  })
+
   it('restores only on request and redirects saved checkpoints to a replacement binding', () => {
     const h = harness()
     const saved = browserAddressCheckpoint({ kind: 'https', url: 'https://saved.example/', title: 'Saved page' }, 2)
@@ -117,7 +137,7 @@ describe('BrowserController', () => {
     const store = createBrowserStore().create('provider-callbacks')
     const openTab = vi.fn()
     const controller = new BrowserController({ tabId: TAB, signal: lifetime().signal, applicationOrigin: APP,
-      actions: store.actions, initial: saved, createPage: pageFactory, openTab })
+      actions: store.actions, initial: saved, createPage: pageFactory, openTab, searchUrl: () => SEARCH })
     disposables.push(controller)
     const provider = callbacks[0]!
     provider.openRequested('file:/secret')
@@ -144,7 +164,7 @@ describe('BrowserController', () => {
     const tabLifetime = lifetime()
     const controller = new BrowserController({
       tabId: TAB, signal: tabLifetime.signal, applicationOrigin: APP, actions: store.actions,
-      initial: undefined, createPage: createIframePage, openTab: vi.fn(),
+      initial: undefined, createPage: createIframePage, openTab: vi.fn(), searchUrl: () => SEARCH,
     })
     disposables.push(controller)
     tabLifetime.abort()

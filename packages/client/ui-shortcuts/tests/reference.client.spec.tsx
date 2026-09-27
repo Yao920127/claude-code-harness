@@ -182,7 +182,7 @@ it('keeps core actions in product order across registration, remount and label c
     ['session.fork', 'Fork session'], ['session.archive', 'Archive session'],
     ['settings.open', 'Open settings'], ['workspace.openLocal', 'Open workspace locally'],
     ['sidebar.right.toggle', 'Toggle right sidebar'], ['workspace.files', 'Workspace files'],
-    ['browser.new', 'Browser'], ['terminal.new', 'New terminal'], ['pane.split', 'Split pane'],
+    ['browser.new', 'Browser'], ['terminal.toggle', 'Toggle terminal panel'], ['pane.split', 'Split pane'],
     ['pane.fullscreen.toggle', 'Toggle fullscreen'], ['page.refresh', 'Refresh page'], ['page.close', 'Close page'],
   ] as const
   const commands = core.map(([id, label]) => ({ ...template, id: id as ShortcutCommandId, label }))

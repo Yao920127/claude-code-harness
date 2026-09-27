@@ -23,25 +23,14 @@ import type { DesktopPaths } from './paths.ts'
 import type { DesktopRelease } from './release.ts'
 import { readDesktopRuntime } from './runtime-tree.ts'
 import {
-  initProfile, PROFILE_TEMPLATES, removeLinkProjections, sanitizeProfile, type ProfileTemplate,
+  CCH_PROFILE_BUNDLES, initProfile, removeLinkProjections, sanitizeProfile,
 } from '@deepseek-ai/dsh-app-boot'
 
 const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
 const DSH_PACKAGE = '@deepseek-ai/dsh'
 const CORE_BUILD_PACKAGE = '@deepseek-ai/dsh-subprocess-local'
-const WEB_PROFILE = PROFILE_TEMPLATES.web as ProfileTemplate
-/**
- * Built-in bundles of a Desktop profile: the Web template, then the CCH
- * bundles that make Claude Code the default model route with the Claude
- * brand and Traditional Chinese; `dsh-cch` layers the defaults last.
- */
-const DESKTOP_BUNDLES: readonly string[] = [
-  ...WEB_PROFILE.bundles,
-  '@deepseek-ai/dsh-llm-claude-code',
-  '@deepseek-ai/dsh-client-locale-zh-hant',
-  '@deepseek-ai/dsh-client-ui-brand-claude',
-  '@deepseek-ai/dsh-cch',
-]
+/** Built-in bundles of a Desktop profile: the same list the `cch` CLI profile composes. */
+const DESKTOP_BUNDLES: readonly string[] = CCH_PROFILE_BUNDLES
 const WORKSPACE_SETTINGS = 'nodeLinker: hoisted\nautoInstallPeers: false\n'
 function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, undefined, 2)}\n`, { mode: 0o600 })

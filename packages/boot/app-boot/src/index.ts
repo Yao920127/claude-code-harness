@@ -54,6 +54,7 @@ declare module '@deepseek-ai/cordis' {
 }
 
 export {
+  CCH_PROFILE_BUNDLES,
   composeEntries,
   createRuntimeResolution,
   DEFAULT_PROFILE_BUNDLES,

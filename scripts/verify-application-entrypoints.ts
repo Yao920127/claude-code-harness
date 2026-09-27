@@ -23,15 +23,16 @@ interface LauncherPolicy {
   readonly wrapper?: string
 }
 
-/** Public product launcher plus the build-only WebWorker packer. */
+/** Public product launchers (`dsh` and its `cch` profile shorthand) plus the build-only WebWorker packer. */
 const MANIFEST_BIN_ALLOWLIST = new Map<string, ManifestBin>([
-  ['apps/cli/package.json', { dsh: 'lib/bin.js' }],
+  ['apps/cli/package.json', { dsh: 'lib/bin.js', cch: 'lib/cch.js' }],
   ['packages/experimental/webworker-packer/package.json', { 'dsh-pack-vfs-image': './bin.js' }],
 ])
 
 /** Every JavaScript executable in an application or packaging workspace has one explicit role. */
 const EXECUTABLE_SOURCE_ALLOWLIST = new Map<string, string>([
   ['apps/cli/src/bin.ts', 'supported dsh application launcher'],
+  ['apps/cli/src/cch.ts', 'supported dsh launcher selecting the cch profile'],
   ['apps/desktop/scripts/logged-notarytool.mjs', 'build-only notarization logging wrapper'],
   ['packages/context/time-context/tests/fixtures/driver.ts', 'test-only subprocess driver'],
   ['packages/llm/llm-claude-code/tests/fixtures/loader/driver.ts', 'test-only subprocess driver'],
@@ -58,6 +59,7 @@ const EXECUTABLE_SOURCE_ALLOWLIST = new Map<string, string>([
 const ROOT_LAUNCHER_POLICIES = new Map<string, LauncherPolicy>([
   ['demo:ptc', { kind: 'dsh-wrapper', wrapper: 'scripts/demo-ptc.mjs' }],
   ['demo:inspector', { kind: 'dsh-direct' }],
+  ['cch', { kind: 'dsh-direct' }],
   ['start:web', { kind: 'dsh-direct' }],
   ['dev:web', { kind: 'dsh-wrapper', wrapper: 'scripts/dev-web.ts' }],
 ])
@@ -131,8 +133,11 @@ function executableSourceViolations(root: string): string[] {
   return failures
 }
 
+/** The dsh CLI's entries: `bin.ts` and `cch.ts`, which selects the cch profile through the same dispatch. */
+const DSH_CLI_ENTRIES = ['apps/cli/src/bin.ts', 'apps/cli/src/cch.ts']
+
 function referencesDshCli(source: string): boolean {
-  return source.includes('apps/cli/src/bin.ts')
+  return DSH_CLI_ENTRIES.some(entry => source.includes(entry))
 }
 
 function referencesPackageEntry(source: string): boolean {
@@ -154,7 +159,7 @@ function rootLauncherViolations(root: string): string[] {
     }
     const command = typeof commandValue === 'string' ? commandValue : ''
     if (policy.kind === 'dsh-direct') {
-      if (!referencesDshCli(command)) failures.push(`package.json scripts.${name}: application launcher script must launch apps/cli/src/bin.ts`)
+      if (!referencesDshCli(command)) failures.push(`package.json scripts.${name}: application launcher script must launch apps/cli/src/bin.ts or cch.ts`)
       if (referencesPackageEntry(command)) failures.push(`package.json scripts.${name}: application launcher script must not launch a package entry directly`)
       continue
     }
@@ -169,7 +174,7 @@ function rootLauncherViolations(root: string): string[] {
       continue
     }
     const source = readFileSync(wrapperPath, 'utf8')
-    if (!referencesDshCli(source)) failures.push(`${wrapper}: application launcher wrapper must launch apps/cli/src/bin.ts`)
+    if (!referencesDshCli(source)) failures.push(`${wrapper}: application launcher wrapper must launch apps/cli/src/bin.ts or cch.ts`)
     if (referencesPackageEntry(source)) failures.push(`${wrapper}: application launcher wrapper must not launch a package entry directly`)
   }
   return failures

@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh",
-  "description": "dsh CLI: profile launch, plugin management, and configuration inspection",
+  "description": "dsh and cch CLIs: profile launch, plugin management, and configuration inspection",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"
@@ -12,7 +12,8 @@
   },
   "type": "module",
   "bin": {
-    "dsh": "lib/bin.js"
+    "dsh": "lib/bin.js",
+    "cch": "lib/cch.js"
   },
   "files": [
     "lib/*.js",
@@ -30,6 +31,10 @@
     "@deepseek-ai/dsh-agent-tool-presentation": "workspace:*",
     "@deepseek-ai/dsh-app-boot": "workspace:*",
     "@deepseek-ai/dsh-base": "workspace:*",
+    "@deepseek-ai/dsh-cch": "workspace:*",
+    "@deepseek-ai/dsh-client-locale-zh-hant": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-brand-claude": "workspace:*",
+    "@deepseek-ai/dsh-llm-claude-code": "workspace:*",
     "@deepseek-ai/dsh-client-ui-agent-preset": "workspace:*",
     "@deepseek-ai/dsh-client-ui-cordis": "workspace:*",
     "@deepseek-ai/dsh-cmdline": "workspace:*",

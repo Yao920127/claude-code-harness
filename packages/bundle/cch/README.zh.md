@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-把 `dsh-cch` 叠加在 `dsh-base` 与 `dsh-web-app` 之后，即可让 profile 成为 CCH profile：新 Session 以 Claude Code 模型路由开始，该路由使用宿主机本身的 Claude Code 登录，DeepSeek 模型路由、DeepSeek 账号设置与 DeepSeek 官方品牌占位者不会挂载。本 bundle 依赖 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md)、[`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.zh.md) 与 [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.zh.md)；请把这些 bundle 列在它之前。CCH Desktop 构建会在每个新 Desktop profile 中列出全部四个。
+把 `dsh-cch` 叠加在 `dsh-base` 与 `dsh-web-app` 之后，即可让 profile 成为 CCH profile：新 Session 以 Claude Code 模型路由开始，该路由使用宿主机本身的 Claude Code 登录，DeepSeek 模型路由、DeepSeek 账号设置与 DeepSeek 官方品牌占位者不会挂载。本 bundle 依赖 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md)、[`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.zh.md) 与 [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.zh.md)；请把这些 bundle 列在它之前。CCH Desktop 构建会在每个新 Desktop profile 中列出全部四个；随附的 `cch` CLI profile 组合同一列表，因此 `cch web` 提供的 Web 应用与 Desktop 显示的相同。
 
 ## 目录
 
@@ -40,6 +40,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `ui-settings-account` | 禁用，使设置中不提供 DeepSeek 账号登录 |
 | `workspace-controller` | 默认工作区位于 `<Documents>/claude-code-harness/default-workspace` |
 | `web-search-claude-code`（插入）、`web` | 网页搜索使用同一登录运行 Claude Code 的 `WebSearch`；插件页的**搜索来源**页面可选择其他提供方 |
+| `ui-sidebar-browser` | 在每个 CCH profile 中启用，与 Desktop 相同 |
 
 Web 应用保存到 profile 补丁中的个人设置会在本 bundle 之后生效，并覆盖这些行。
 

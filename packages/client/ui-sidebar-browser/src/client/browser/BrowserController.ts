@@ -6,7 +6,7 @@ import type { BrowserFrameState } from './BrowserFrame.ts'
 import type { BrowserPage, BrowserPageFactory } from './BrowserPage.ts'
 import { currentBrowserTarget, type BrowserTabState } from './BrowserPersistence.ts'
 import type { BrowserStore } from './store.ts'
-import { parseBrowserAddress, type BrowserAddressFailure, type BrowserTarget } from './url.ts'
+import { parseBrowserAddress, resolveBrowserInput, type BrowserAddressFailure, type BrowserTarget } from './url.ts'
 
 /** Live tab state; navigation comes from its provider and draft validation stays local. */
 export interface BrowserControllerState {
@@ -26,6 +26,8 @@ export interface BrowserControllerOptions {
   readonly actions: BoundActions<BrowserStore>
   readonly createPage: BrowserPageFactory
   readonly openTab: (url: string) => void
+  /** Current search address template for keyword input; undefined while the Host has not reported one. */
+  readonly searchUrl: () => string | undefined
 }
 
 /** Owns input validation and page lifetime without inspecting the carrier type. */
@@ -104,12 +106,13 @@ export class BrowserController implements HostObservable<BrowserControllerState>
   }
 
   /**
-   * Validate an address before navigation, publishing invalid input for correction.
+   * Validate an address before navigation, publishing invalid input for
+   * correction; keywords navigate to the configured search address.
    * @param value - address-bar or typed-open input.
    */
   loadUrl(value: string): void {
     if (this.disposed) return
-    const parsed = parseBrowserAddress(value, this.options.applicationOrigin)
+    const parsed = resolveBrowserInput(value, this.options.applicationOrigin, this.options.searchUrl())
     if (!parsed.ok) { this.addressFailed(parsed.reason); return }
     this.command(() => { this.page.frame.loadUrl(parsed.target) })
   }
@@ -209,10 +212,11 @@ export interface BrowserInjected {
  * @param actions - persisted view-state writer.
  * @param createPage - composition-selected provider.
  * @param isTabOpen - authoritative layout membership, independent of mounted bodies and plugin lifetime.
+ * @param searchUrl - current search address template for keyword input.
  * @returns tab callbacks.
  */
 export function createBrowserControllers(actions: BoundActions<BrowserStore>, createPage: BrowserPageFactory,
-  isTabOpen: (tabId: TabId) => boolean): BrowserInjected {
+  isTabOpen: (tabId: TabId) => boolean, searchUrl: () => string | undefined): BrowserInjected {
   let currentActions = actions
   const controllers = new Map<TabId, {
     readonly signal: AbortSignal
@@ -231,7 +235,7 @@ export function createBrowserControllers(actions: BoundActions<BrowserStore>, cr
           held.signal.removeEventListener('abort', held.forget)
           void held.controller.dispose()
         }
-        const created = new BrowserController({ ...request, actions: currentActions, createPage })
+        const created = new BrowserController({ ...request, actions: currentActions, createPage, searchUrl })
         const forget = (): void => {
           controllers.delete(tabId)
           // Plugin unload also aborts occurrences; only layout removal deletes saved navigation.

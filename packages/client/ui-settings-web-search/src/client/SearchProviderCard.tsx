@@ -6,8 +6,7 @@
  */
 
 import type {} from '@deepseek-ai/dsh-client-ui-plugin-manager/client'
-import { SettingsChoiceField, SettingsForm } from '@deepseek-ai/dsh-client-ui-primitives'
-import { CredentialField } from './CredentialField.tsx'
+import { SettingsChoiceField, SettingsForm, SettingsSecretField } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { formLabels } from './locales.ts'
 import type { SearchProviderCardFace } from './search-provider-card-controller.ts'
@@ -46,11 +45,17 @@ export function SearchProviderCard(props: SearchProviderCardProps) {
       />
       {credential?.kind === 'credential'
         ? (
-          <CredentialField
+          // The key starts blank, reports only whether one is configured, and
+          // is disabled when the credentials domain cannot write it, which is
+          // independent of whether the settings document itself is writable.
+          <SettingsSecretField
             id="plugin-config-web-search-provider-key"
             label={t('providerApiKey', { ref: credential.ref })}
-            state={state}
-            t={t}
+            hint={t('apiKeyHint')}
+            disabled={!state.apiKeyWritable}
+            text={state.apiKey.text}
+            configured={state.apiKeyConfigured}
+            stateLabel={state.apiKeyConfigured ? t('apiKeySet') : t('apiKeyUnset')}
             onEdit={(text) => { props.edit('apiKey', text) }}
           />
         )

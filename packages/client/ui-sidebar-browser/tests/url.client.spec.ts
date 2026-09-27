@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseBrowserAddress } from '../src/client/browser/url.ts'
+import { parseBrowserAddress, resolveBrowserInput } from '../src/client/browser/url.ts'
 
 const APP = 'https://dsh.example'
 
@@ -48,5 +48,25 @@ describe('Browser address policy', () => {
     expect(parseBrowserAddress('https://example.test', 'not an origin')).toMatchObject({ ok: true })
     expect(parseBrowserAddress('https://example.test')).toMatchObject({ ok: true })
     expect(parseBrowserAddress('https://example.test', 'null')).toMatchObject({ ok: true })
+  })
+
+  it('turns keywords into a search and keeps address-like input an address', () => {
+    const search = 'https://www.google.com/search?q=%s'
+    expect(resolveBrowserInput(' youtube ', APP, search)).toEqual({
+      ok: true, target: { kind: 'https', url: 'https://www.google.com/search?q=youtube', title: 'youtube' },
+    })
+    expect(resolveBrowserInput('天氣 台北', APP, search)).toMatchObject({
+      ok: true, target: { url: `https://www.google.com/search?q=${encodeURIComponent('天氣 台北')}`, title: '天氣 台北' },
+    })
+    expect(resolveBrowserInput('c++ & rust', APP, search)).toMatchObject({
+      ok: true, target: { url: 'https://www.google.com/search?q=c%2B%2B%20%26%20rust' },
+    })
+    expect(resolveBrowserInput('youtube/watch', APP, search)).toMatchObject({ ok: true, target: { title: 'youtube/watch' } })
+    for (const address of ['youtube.com', 'localhost', 'localhost:3000/app', 'intranet:8080', '[::1]:8080', '192.168.0.1', 'https://a.test']) {
+      expect(resolveBrowserInput(address, APP, search)).toEqual(parseBrowserAddress(address, APP))
+    }
+    expect(resolveBrowserInput('', APP, search)).toEqual({ ok: false, reason: 'empty' })
+    expect(resolveBrowserInput('youtube', APP, undefined)).toEqual({ ok: false, reason: 'search' })
+    expect(resolveBrowserInput('youtube', APP, `${APP}/search?q=%s`)).toEqual({ ok: false, reason: 'application-origin' })
   })
 })

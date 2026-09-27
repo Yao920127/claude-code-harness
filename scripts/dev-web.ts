@@ -414,11 +414,11 @@ if (isMain) {
     // running vite from anywhere but apps/web silently switches which react copy
     // the bundle gets.
     spawnStage(supervisor, 'vite build --watch', 'pnpm', ['--filter', SHELL_PACKAGE, 'run', 'watch'], false)
-    // The same launch vector as the root `dsh` script, so the served Host runs
-    // from source exactly as `pnpm dsh web` would.
+    // The same launch vector as the root `cch` script, so the served Host runs
+    // from source exactly as `pnpm cch web` would, on the profile Desktop composes.
     if (options.serve) {
-      spawnStage(supervisor, 'dsh web', process.execPath, [
-        '--import', 'tsx/esm', 'apps/cli/src/bin.ts', 'web', ...options.appArgs,
+      spawnStage(supervisor, 'cch web', process.execPath, [
+        '--import', 'tsx/esm', 'apps/cli/src/cch.ts', 'web', ...options.appArgs,
       ], false)
     }
     console.log(
@@ -426,7 +426,7 @@ if (isMain) {
       + ` and ${String(libraryDirs.length)} statically linked library packages`
       + (options.pollInterval !== undefined ? ` (polling ${String(options.pollInterval)}ms)` : '')
       + `, plus tsc -b ${CLIENT_TYPE_PROGRAM} and the ${SHELL_PACKAGE} dist build`
-      + (options.serve ? ', serving through dsh web' : '')
+      + (options.serve ? ', serving through cch web' : '')
       + ':\n  '
       + [...pluginDirs, ...libraryDirs].join('\n  '),
     )

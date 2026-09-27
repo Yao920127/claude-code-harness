@@ -2,6 +2,7 @@
 
 - banner:
   - navigation "Session hierarchy": {{workspace}}
+  - button "Toggle terminal panel"
   - button "More actions"
   - button "Open right sidebar"
   - tablist:
@@ -30,6 +31,7 @@
 
 - banner:
   - navigation "Session hierarchy": {{workspace}}
+  - button "Toggle terminal panel"
   - button "More actions"
   - button "Open right sidebar"
   - tablist:
@@ -62,6 +64,7 @@
 
 - banner:
   - navigation "Session hierarchy": {{workspace}}
+  - button "Toggle terminal panel"
   - button "More actions"
   - button "Open right sidebar"
   - tablist:

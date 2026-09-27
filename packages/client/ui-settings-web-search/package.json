@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-settings-web-search",
-  "description": "Settings page of the DeepSeek web-search provider on the dsh web client's Plugins page: its API key, endpoint, and per-request search budget",
+  "description": "Search-provider settings page on the dsh web client's Plugins page: which provider answers web searches and the key it reads",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"

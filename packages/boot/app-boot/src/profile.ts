@@ -175,6 +175,21 @@ export function resolveProfileDir(name: string, home: string = resolveDshHome())
   return join(home, PROFILES_DIR, name)
 }
 
+/**
+ * Built-in bundles of a CCH (Claude Code Harness) profile: the Web template,
+ * then the bundles that make Claude Code the default model route with the
+ * Claude brand and Traditional Chinese; `dsh-cch` layers the defaults last.
+ * The `cch` template and the Desktop profile both compose this list.
+ */
+export const CCH_PROFILE_BUNDLES: readonly string[] = [
+  '@deepseek-ai/dsh-base',
+  '@deepseek-ai/dsh-web-app',
+  '@deepseek-ai/dsh-llm-claude-code',
+  '@deepseek-ai/dsh-client-locale-zh-hant',
+  '@deepseek-ai/dsh-client-ui-brand-claude',
+  '@deepseek-ai/dsh-cch',
+]
+
 /** The shipped profile templates auto-initialized on first use, by name. */
 export const PROFILE_TEMPLATES: Record<string, ProfileTemplate> = {
   acp: {
@@ -182,6 +197,9 @@ export const PROFILE_TEMPLATES: Record<string, ProfileTemplate> = {
   },
   web: {
     bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app'],
+  },
+  cch: {
+    bundles: CCH_PROFILE_BUNDLES,
   },
   headless: {
     bundles: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-headless'],

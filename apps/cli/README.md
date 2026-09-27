@@ -17,7 +17,28 @@ The `dsh` command is the sole supported Node application launcher: profiles are 
 | `dsh web` | Boot the Web profile. |
 | `dsh plugin --profile <name> <pnpm args>` | Manage a profile's plugins by forwarding to pnpm in the profile directory. |
 
-The invoking directory is the default workspace root. The `web`, `headless`, `sdk`, `sdk-minimal`, and `acp` profiles auto-initialize on first use from shipped templates. Create another profile at an unused, non-shipped name with `--from-default-profile`, or initialize a base-backed profile through `dsh plugin`. The `desktop` name is reserved for the Electron-owned profile, so the CLI rejects boot, config-dump, and plugin-management requests for it.
+The invoking directory is the default workspace root. The `web`, `cch`, `headless`, `sdk`, `sdk-minimal`, and `acp` profiles auto-initialize on first use from shipped templates. Create another profile at an unused, non-shipped name with `--from-default-profile`, or initialize a base-backed profile through `dsh plugin`. The `desktop` name is reserved for the Electron-owned profile, so the CLI rejects boot, config-dump, and plugin-management requests for it.
+
+<a id="cch"></a>
+## The cch command
+
+`cch` is the Claude Code Harness shorthand for this launcher, built from [`src/cch.ts`](src/cch.ts) with its grammar in [`src/cch-args.ts`](src/cch-args.ts). Every command except `desktop` becomes a `dsh` invocation on the `cch` profile, which composes the same bundles as the Desktop profile: the Web app with Claude Code as the default model route, the Claude brand, and Traditional Chinese.
+
+| Command | Same as |
+|---|---|
+| `cch` / `cch desktop` | Opens the installed Desktop app on macOS (`open -a`); `CCH_DESKTOP_APP` names another application name or path. |
+| `cch web [args...]` | `dsh --profile cch [args...]` |
+| `cch plugin <pnpm args>` | `dsh plugin --profile cch <pnpm args>` |
+| `cch config [--default \| --schema]` | `dsh --profile cch --dump-config`, `--dump-default-config`, or `--dump-config-schema` |
+
+```sh
+cch                        # open the Desktop app
+cch web --no-open          # serve the Web app on the cch profile
+cch plugin add <package>   # install a plugin into the cch profile
+cch config --default       # print the cch profile's bundle layers
+```
+
+The `cch` profile shares `$DSH_HOME` sessions and settings with other CLI profiles; the Desktop app keeps its own profile directory and installed plugins.
 
 ## App arguments
 
@@ -55,7 +76,7 @@ The [CLI behavior reference](reference/README.md) owns exact layer precedence, f
 
 ## Development
 
-Production runs require built package and frontend artifacts. From the repository root, run `pnpm run build` separately, then use `pnpm dsh <args...>` to run the TypeScript entry and forward every argument; the [source-execution reference](reference/README.md#source-execution) owns the module-resolution contract.
+Production runs require built package and frontend artifacts. From the repository root, run `pnpm run build` separately, then use `pnpm dsh <args...>` or `pnpm cch <args...>` to run the TypeScript entry and forward every argument. After a build, `pnpm --filter @deepseek-ai/dsh link --global` puts `dsh` and `cch` on the shell `PATH`; the [source-execution reference](reference/README.md#source-execution) owns the module-resolution contract.
 
 The `@deepseek-ai/dsh/profile-boot` export provides the shared profile lifecycle to the Desktop host. A resolved application profile supplies its own installation anchor for runtime package resolution while retaining the Harness home patch, proxy environment, telemetry switch, patch reload, and bounded shutdown.
 

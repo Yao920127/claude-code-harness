@@ -1,4 +1,4 @@
-/** Sidebar commands through the shipped Loader, real sidebar/file/terminal owners, and Web keybinding editor. */
+/** Sidebar commands through the shipped Loader, real sidebar/file/browser owners, and Web keybinding editor. */
 import { writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -7,6 +7,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { createMessage, createUserMessage } from '@deepseek-ai/dsh-llm'
 import { captureStableAria, compareOrRefreshGolden, launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold } from './scaffold.ts'
 import { connectFreshWorkspace } from './support.ts'
+
+/** The Browser address field's accessible placeholder. */
+const ADDRESS = 'Enter an address or search terms'
 
 const expected = fileURLToPath(new URL('./expected/shortcuts-panels', import.meta.url))
 const mode = webSnapshotMode()
@@ -50,7 +53,7 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
   ].flatMap(platform => (['left', 'right'] as const).map(closeFirst => ({ ...platform, closeFirst }))))('targets panes and closes $closeFirst first with $platform bindings', async ({ platform, primary, aria, closeFirst }) => {
     const scaffold: WebScaffold = await launchWebScaffold({
       extraOverlayPath: [
-        fileURLToPath(new URL('./fixtures/sidebar-terminal.patch.yml', import.meta.url)),
+        fileURLToPath(new URL('./fixtures/terminal-panel.patch.yml', import.meta.url)),
         fileURLToPath(new URL('./sidebar-browser.overlay.yml', import.meta.url)),
       ],
     })
@@ -90,14 +93,11 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
 
       for (const { label, previous } of [
         { label: 'Browser', previous: undefined },
-        { label: 'New terminal', previous: 'Browser' },
       ]) {
         await bind(page, primary, label, previous)
         await composer.click()
         await page.keyboard.press(`${primary}+Shift+,`)
-        const openedPage = label === 'Browser' ? panel.getByPlaceholder('Enter an HTTP(S) address')
-          : panel.locator('[data-sidebar-terminal]')
-        await openedPage.waitFor()
+        await panel.getByPlaceholder(ADDRESS).waitFor()
         const focusedAfterOpening = await panel.locator('[data-dockkit-pane]').evaluate(pane => pane.contains(document.activeElement))
         expect(await paneAppearance()).toEqual([plainPane])
         await page.keyboard.press(`${primary}+Alt+W`)
@@ -106,7 +106,7 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
         expect(await composer.innerText()).toBe('T5 draft remains unsent')
       }
 
-      await bind(page, primary, 'Toggle right sidebar', 'New terminal')
+      await bind(page, primary, 'Toggle right sidebar', 'Browser')
       await composer.click()
       await page.keyboard.press(`${primary}+Shift+,`)
       await panel.waitFor()
@@ -118,25 +118,14 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
       await page.keyboard.press(`${primary}+Shift+,`)
       await panel.waitFor()
 
-      const terminalGuide = panel.locator('[data-sidebar-right-guide-entry="terminal"]').getByRole('button').first()
-      await terminalGuide.hover()
+      const filesGuide = panel.locator('[data-sidebar-right-guide-entry="files"]')
+      await filesGuide.hover()
       expect(await page.getByRole('tooltip').count()).toBe(0)
       await page.mouse.move(10, 10)
-      await terminalGuide.focus()
+      await filesGuide.focus()
       expect(await page.getByRole('tooltip').count()).toBe(0)
-
-      const terminalEntry = panel.locator('[data-sidebar-right-guide-entry="terminal"]')
-      const shellMenu = terminalEntry.getByRole('button', { name: 'Choose shell', exact: true })
-      const titleBounds = await terminalEntry.getByText('New terminal', { exact: true }).boundingBox()
-      const arrowBounds = await shellMenu.boundingBox()
-      expect(arrowBounds!.x).toBeGreaterThanOrEqual(titleBounds!.x + titleBounds!.width)
-      expect(arrowBounds!.x - titleBounds!.x - titleBounds!.width).toBeLessThan(8)
-      await shellMenu.click()
-      await page.getByRole('menu').waitFor()
-      expect(await panel.locator('[data-sidebar-terminal]').count()).toBe(0)
-      await page.keyboard.press('Escape')
-      await page.getByRole('menu').waitFor({ state: 'detached' })
-      expect(await shellMenu.evaluate(element => element === document.activeElement)).toBe(true)
+      // Terminals open in the conversation's bottom panel, not as sidebar pages.
+      expect(await panel.locator('[data-sidebar-right-guide-entry="terminal"]').count()).toBe(0)
 
       await bind(page, primary, 'Browser', 'Toggle right sidebar')
       const browserGuide = panel.locator('[data-sidebar-right-guide-entry="browser"]')
@@ -152,9 +141,9 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
         return selection.toString()
       })
       await page.keyboard.press(`${primary}+Shift+,`)
-      await panel.getByPlaceholder('Enter an HTTP(S) address').waitFor()
+      await panel.getByPlaceholder(ADDRESS).waitFor()
       expect(await page.evaluate(() => document.getSelection()?.toString())).toBe(selectedDraft)
-      await panel.getByPlaceholder('Enter an HTTP(S) address').focus()
+      await panel.getByPlaceholder(ADDRESS).focus()
       await page.keyboard.press(`${primary}+Shift+,`)
       await expect.poll(() => panel.getByRole('tab', { name: /Browser/ }).count()).toBe(2)
       expect(await panel.locator('[data-dockkit-pane]').evaluate(pane => document.activeElement === pane)).toBe(true)
@@ -214,20 +203,18 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
       await page.keyboard.press(`${primary}+Shift+,`)
       expect(await right.locator('[data-dockkit-tab]').filter({ hasText: 'Files' }).count()).toBe(1)
 
-      await bind(page, primary, 'New terminal', 'Workspace files')
+      await bind(page, primary, 'Browser', 'Workspace files')
       await right.locator('[data-dockkit-tab]').filter({ hasText: 'Files' }).focus()
       await page.keyboard.press(`${primary}+Shift+,`)
-      await right.locator('[data-sidebar-terminal]').waitFor()
-      await expect.poll(() => right.locator('.xterm-rows').innerText()).toContain('bash-')
-      await right.locator('.xterm-helper-textarea').focus()
+      await right.getByPlaceholder(ADDRESS).waitFor()
+      await right.getByPlaceholder(ADDRESS).focus()
       await page.keyboard.press(`${primary}+Shift+,`)
       await expect.poll(() => right.getByRole('tab').count()).toBe(3)
-      await expect.poll(() => right.locator('.xterm-rows').innerText()).toContain('bash-')
       expect(await left.getByRole('tab').count()).toBe(1)
       await compareOrRefreshGolden(join(expected, 'panels.expected.md'),
         await captureStableAria(page, '[data-sidebar-right-panel]', scaffold.workspaceCwd), mode)
-      await bind(page, primary, 'Refresh current page', 'New terminal')
-      await right.locator('.xterm-helper-textarea').focus()
+      await bind(page, primary, 'Refresh current page', 'Browser')
+      await right.getByPlaceholder(ADDRESS).focus()
       await page.keyboard.press(`${primary}+Shift+,`)
       expect(await right.getByRole('tab').count()).toBe(3)
       await left.getByRole('tab', { name: /Files/ }).click()

@@ -4,6 +4,4 @@
   - button "Exit fullscreen"
   - button "Collapse right sidebar"
 - button "Workspace files Browse files in this session's workspace"
-- button "New terminal Run commands in the Session workspace"
-- button "Choose shell"
 - button "Browser Browse web pages"

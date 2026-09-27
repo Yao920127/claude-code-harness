@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-terminal-bottom-panel.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-27-terminal-bottom-panel.md
+/agent-note-terminal-bottom-panel:
+  en: 56273ca1a73d5160
+  zh: 67480b3b87b939c0
+/agent-note-terminal-bottom-panel/problem:
+  en: 03bd560384f13d87
+  zh: bcee79b67a61019c
+/agent-note-terminal-bottom-panel/decision:
+  en: c208b0de6a4972b0
+  zh: 44452924a1b44fc0
+/agent-note-terminal-bottom-panel/alternatives-considered:
+  en: 20f6695575b56740
+  zh: 6df429d27a8e212b
+/agent-note-terminal-bottom-panel/consequences:
+  en: 0f09e2dfea8c8c02
+  zh: d89575f342feebe4

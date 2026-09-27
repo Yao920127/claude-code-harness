@@ -40,8 +40,8 @@
         - button "修改工作区文件快捷键"
         - text: 工作区文件 ⌥ ⌘ P
       - listitem:
-        - button "修改新建终端快捷键"
-        - text: "新建终端 ⌃ `"
+        - button "修改切换终端面板快捷键"
+        - text: "切换终端面板 ⌃ `"
       - listitem:
         - button "修改分栏快捷键"
         - text: 分栏 ⌘ \

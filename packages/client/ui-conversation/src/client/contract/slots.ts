@@ -135,6 +135,12 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
       scope: 'session'
       owner: { view?: string }
     }
+    /**
+     * Full-width seat below the selected Session's conversation content, such
+     * as a terminal panel. Its occupant takes a fixed height and renders
+     * nothing while it has nothing to show.
+     */
+    'conversation.panel.bottom': { kind: 'single'; scope: 'session' }
     /** Resident navigation container, including when no Session is selected. */
     'conversation.header': { kind: 'single'; scope: 'session-maybe' }
     /** Strict per-Session title, actions, and View navigation. */
@@ -461,7 +467,7 @@ export interface HeroBrandMarkOwnerProps {
 /** Full props of the resident optional-Session Conversation shell. */
 export type ConversationSlotProps =
   PropsRuntime<'main.conversation'>
-  & PropsRenderSlots<'conversation.header'>
+  & PropsRenderSlots<'conversation.header' | 'conversation.panel.bottom'>
   & PropsRenderFactories
 
 /** Inputs shared by main and embedded Conversation content occurrences. */

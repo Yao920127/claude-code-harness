@@ -26,7 +26,7 @@ function header(id: string, lineage: Partial<Pick<SessionHeader, 'parentSession'
   return { version: SESSION_FORMAT_VERSION, id: sid(id), createdAt: 1, cwd: '/proj', isSeeded: false, ...lineage }
 }
 
-async function composed(stored: SessionHeader[], options: { projectionCache?: boolean } = {}) {
+async function composed(stored: SessionHeader[], options: { projectionCache?: boolean; persistence?: boolean } = {}) {
   const cwd = mkdtempSync(join(tmpdir(), 'dsh-session-delete-'))
   roots.push(cwd)
   const ctx = new Context()
@@ -56,7 +56,7 @@ async function composed(stored: SessionHeader[], options: { projectionCache?: bo
       return true
     }),
   }
-  ctx.provide('sessionPersistence', persistence as never)
+  if (options.persistence !== false) ctx.provide('sessionPersistence', persistence as never)
   const projectionCache = { forget: vi.fn(async (id: SessionId) => { order.push(`cache:${id}`) }) }
   if (options.projectionCache !== false) ctx.provide('sessionProjectionCache', projectionCache as never)
   const disposals: SessionId[] = []
@@ -136,6 +136,14 @@ describe('sessions.delete', () => {
     expect(h.disposals).toEqual([])
     expect(h.order).toEqual(['archive:cold:true', 'delete:cold', 'forget:cold'])
     expect(h.removed).toEqual(['cold'])
+  })
+
+  it('refuses deletion when no session store is composed', async () => {
+    const h = await composed([header('cold')], { persistence: false })
+    await expect(h.controller.delete({ sessionId: sid('cold') })).rejects.toMatchObject({
+      code: 'session/delete-unavailable', details: { sessionId: 'cold' },
+    })
+    expect(h.order).toEqual([])
   })
 
   it('rejects unknown and subagent-owned Sessions without deleting anything', async () => {

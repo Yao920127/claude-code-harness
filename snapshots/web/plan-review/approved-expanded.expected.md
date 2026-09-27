@@ -1,6 +1,7 @@
 - banner:
   - navigation "Session hierarchy": "Plan a small change: add"
   - text: Standard mode
+  - button "Toggle terminal panel"
   - button "More actions"
   - tablist:
     - tab "Chat" [selected]

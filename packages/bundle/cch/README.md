@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Stack `dsh-cch` after `dsh-base` and `dsh-web-app` to make a profile a CCH profile: new Sessions start on the Claude Code model route, which signs in with the host's own Claude Code login, and the DeepSeek model routes, DeepSeek account settings, and official DeepSeek brand occupants stay unmounted. The bundle depends on [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.md), [`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.md), and [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.md); list those bundles before it. The CCH Desktop build lists all four in every new Desktop profile.
+Stack `dsh-cch` after `dsh-base` and `dsh-web-app` to make a profile a CCH profile: new Sessions start on the Claude Code model route, which signs in with the host's own Claude Code login, and the DeepSeek model routes, DeepSeek account settings, and official DeepSeek brand occupants stay unmounted. The bundle depends on [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.md), [`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.md), and [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.md); list those bundles before it. The CCH Desktop build lists all four in every new Desktop profile, and the shipped `cch` CLI profile composes the same list, so `cch web` serves the Web application Desktop shows.
 
 ## Table of Contents
 
@@ -40,6 +40,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `ui-settings-account` | Disabled, so Settings offers no DeepSeek account sign-in |
 | `workspace-controller` | Default Workspace under `<Documents>/claude-code-harness/default-workspace` |
 | `web-search-claude-code` (inserted), `web` | Web search runs Claude Code's `WebSearch` with the same sign-in; the Plugins page's **Search provider** page selects another provider |
+| `ui-sidebar-browser` | Enabled in every CCH profile, as on Desktop |
 
 Your own settings, which the Web application saves to the profile patch, apply after this bundle and override these rows.
 

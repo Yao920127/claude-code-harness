@@ -194,8 +194,8 @@ it.skipIf(MODE === 'record').each(['en-US', 'zh-CN'])('fills the spreadsheet pan
     ])
     await page.getByText('LIGHTHOUSE', { exact: true }).waitFor()
     const column = page.locator('[data-rightbar-col]')
+    // Files is the Web profile's only page kind, so the sidebar opens it directly.
     await page.locator('[data-sidebar-right-expand]').click()
-    await column.locator('[data-sidebar-right-guide-entry="files"]').click()
     await column.locator('[data-files-state="tree"]').waitFor({ state: 'visible' })
     await column.locator('[data-files-entry="file"]').getByRole('button', { name: 'budget.xlsx', exact: true }).click()
     const excel = column.locator('[data-excel-preview]')
@@ -434,8 +434,8 @@ it.skipIf(MODE === 'record').each([1, 2])('keeps frozen headings without divider
     await writeFile(join(cwd, 'freeze.xlsx'), await excelFreezeFixture())
     await page.getByText('LIGHTHOUSE', { exact: true }).waitFor()
     const column = page.locator('[data-rightbar-col]')
+    // Files is the Web profile's only page kind, so the sidebar opens it directly.
     await page.locator('[data-sidebar-right-expand]').click()
-    await column.locator('[data-sidebar-right-guide-entry="files"]').click()
     await column.locator('[data-files-entry="file"]').getByRole('button', { name: 'freeze.xlsx', exact: true }).click()
     const excel = column.locator('[data-excel-preview]')
     const selectTopLeft = async () => {
@@ -688,8 +688,8 @@ else process.exit(1);
     ])
 
     const column = page.locator('[data-rightbar-col]')
+    // Files is the Web profile's only page kind, so the sidebar opens it directly.
     await page.locator('[data-sidebar-right-expand]').click()
-    await column.locator('[data-sidebar-right-guide-entry="files"]').click()
     await column.locator('[data-files-state="tree"]').waitFor({ state: 'visible' })
     await column.locator('[data-files-reload]').click()
     const filesTab = column.locator('[data-dockkit-tab]').filter({ has: page.getByText('Files', { exact: true }) })
@@ -1540,8 +1540,8 @@ describe.skipIf(MODE === 'record')('web e2e: Host Office preview', () => {
     })
     try {
       const column = page.locator('[data-rightbar-col]')
+      // Files is the Web profile's only page kind, so the sidebar opens it directly.
       await page.locator('[data-sidebar-right-expand]').click()
-      await column.locator('[data-sidebar-right-guide-entry="files"]').click()
       await column.locator('[data-files-state="tree"]').waitFor({ state: 'visible' })
       await column.locator('[data-files-reload]').click()
       const filesTab = column.locator('[data-dockkit-tab]').filter({ has: page.getByText('Files', { exact: true }) })

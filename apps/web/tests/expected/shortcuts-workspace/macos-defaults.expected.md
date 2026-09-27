@@ -40,8 +40,8 @@
         - button "Edit shortcut for Workspace files"
         - text: Workspace files ⌥ ⌘ P
       - listitem:
-        - button "Edit shortcut for New terminal"
-        - text: "New terminal ⌃ `"
+        - button "Edit shortcut for Toggle terminal panel"
+        - text: "Toggle terminal panel ⌃ `"
       - listitem:
         - button "Edit shortcut for Split"
         - text: Split ⌘ \

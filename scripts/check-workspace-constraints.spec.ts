@@ -336,7 +336,7 @@ describe('package payload constraints', () => {
 
   it.each([
     'packages/client/ui-sidebar-documentpreview',
-    'packages/client/ui-sidebar-terminal',
+    'packages/client/ui-terminal-panel',
   ])('accepts package-local Client chunks from %s', (dir) => {
     const manifest = JSON.parse(readFileSync(new URL(`../${dir}/package.json`, import.meta.url), 'utf8')) as WorkspaceManifest['manifest']
     expect(checkWorkspaceManifest({ dir, manifest })).toEqual([])

@@ -1,5 +1,5 @@
 ---
-description: "The DeepSeek web-search provider's settings page on the dsh web client's Plugins page: its API key, endpoint, and per-request search budget."
+description: "The search-provider settings page on the dsh web client's Plugins page: which provider answers web searches and the key it reads."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Open **Plugins** in the sidebar and select **Web search** in the Official group to set the provider's key, endpoint, and how many times one request may search. The page stages what is typed and writes it only on save; the key is written through the credentials domain rather than the settings document, so its literal never rides a response. The page exists while the Host serves the `web-search-deepseek` namespace. A second page, **Search provider**, chooses which provider answers web searches and stores the chosen provider's key; it exists while the Host serves the `web` namespace.
+Open **Plugins** in the sidebar and select **Search provider** in the Official group to choose which provider answers web searches and to store the key that provider reads. The page stages what is typed and writes it only on save; the key is written through the credentials domain rather than the settings document, so its literal never rides a response. The page exists while the Host serves the `web` namespace.
 
 ## Table of Contents
 
@@ -25,9 +25,7 @@ Open **Plugins** in the sidebar and select **Web search** in the Official group 
 <a id="use-this-package"></a>
 ## Use this package
 
-The **Web search** card in the Official group opens the page. **API key** starts blank on every load and reports only whether a key is configured; a blank draft keeps the stored key, and the control is disabled when the credential cannot be written from here, such as a key the process environment supplies. **Endpoint** and **Max searches per request** render the effective value, carry an **Overridden** badge with **Reset to default** once overridden, and save as a reset when emptied. Nothing is written until **Save**; leaving the page drops the drafts.
-
-The **Search provider** page lists every shipped provider; its first option returns to the composition default. A provider that reads a stored key shows an **API key** control addressed by that provider's shipped reference, such as `OPENAI_API_KEY`, and one save writes both the choice and the key. Exa and Perplexity read their keys from the launch environment and say so; Claude Code uses the host's sign-in and needs no key. The choice takes effect from the next search.
+The **Search provider** page lists every shipped provider; its first option returns to the composition default, and an overridden choice carries an **Overridden** badge with **Reset to default**. A provider that reads a stored key shows an **API key** control addressed by that provider's shipped reference, such as `OPENAI_API_KEY`, and one save writes both the choice and the key. The key starts blank on every load and reports only whether a key is configured; a blank draft keeps the stored key, and the control is disabled when the credential cannot be written from here. Exa and Perplexity read their keys from the launch environment and say so; Claude Code uses the host's sign-in and needs no key. Nothing is written until **Save**; leaving the page drops the drafts. The choice takes effect from the next search.
 
 -----
 
@@ -37,7 +35,7 @@ The **Search provider** page lists every shipped provider; its first option retu
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-The Host half is an empty `apply`, present only so the package holds a Loader row the client module system serves the browser half for. The browser half binds the `web-search-deepseek` namespace through `ctx.configForms.get` and keeps the staged form in `WebSearchCardController` over the shared `SettingsFormModel` of `ui-primitives`, with the key as the form's one secret control: its write goes to `remote.credentials.set` under the reference the section's `apiKeyEnv` names (`DEEPSEEK_API_KEY` when it names none), and success is read back from `remote.credentials.describe`. The controller re-reads the credential when the scope changes and when the Host reports `credentials/reference-updated` for the watched reference, since a key written on the Models page changes no settings section. The page registers `WebSearchCard` into the Plugins page's `plugins.item` slot through `ctx.configForms.whileServed`. The search-provider page binds the `web` namespace the same way: `SearchProviderCardController` stages `searchProvider` and the key of the chosen provider, whose reference comes from the shipped provider table in `search-providers.ts`. Both controllers share `CredentialCardController`, which owns the credential read, its stale-answer fence, and the key write.
+The Host half is an empty `apply`, present only so the package holds a Loader row the client module system serves the browser half for. The browser half binds the `web` namespace through `ctx.configForms.get` and keeps the staged form in `SearchProviderCardController` over the shared `SettingsFormModel` of `ui-primitives`. It stages `searchProvider` and, as the form's one secret control, the key of the effective provider, whose reference comes from the shipped provider table in `search-providers.ts`: the write goes to `remote.credentials.set` under that reference, and success is read back from `remote.credentials.describe`, whose answer is dropped when the reference changed while it was in flight. The controller re-reads the credential when the scope changes and when the Host reports `credentials/reference-updated` for the watched reference, since a key written on the Models page changes no settings section. The page registers `SearchProviderCard` into the Plugins page's `plugins.item` slot through `ctx.configForms.whileServed`.
 
 </details>
 
@@ -50,7 +48,7 @@ The Host half is an empty `apply`, present only so the package holds a Loader ro
 - [ui-settings](../ui-settings/README.md) — the settings scope and the served-namespace watch the page rides.
 - [ui-primitives](../ui-primitives/README.md) — the settings form model and fields the page renders.
 - [credentials](../../credentials/README.md) — the credential-reference seam the key writes through.
-- [web-search-deepseek](../../web/web-search-deepseek/README.md) — the provider that registers the namespace.
+- [web](../../web/web/README.md) — the web service that registers the `web` namespace and selects the search provider.
 
 -----
 
@@ -67,7 +65,7 @@ None; this package neither assembles nor sends a provider request.
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **Three fields of the namespace** — the provider's model, API version, and token budget stay at their composed values; the page edits the key, the endpoint, and the search budget only.
+- **Provider-specific fields** — each provider's own namespace, such as the DeepSeek provider's endpoint and per-request search budget in `web-search-deepseek`, stays at its composed value and is changed in `cordis.yml`; the page edits only the provider choice and its key.
 - **Runtime invariant:** No companion is published. The page holds no owned relationship of its own: what it shows derives from the settings mirror and the credentials domain, and what it writes the Host validates.
 
 <a id="dev-note"></a>

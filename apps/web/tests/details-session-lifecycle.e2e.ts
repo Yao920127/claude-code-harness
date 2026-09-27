@@ -144,7 +144,11 @@ describe.skipIf(MODE === 'record')('web e2e: details panel follows the current S
   beforeAll(async () => {
     const fixture = await readFile(FIXTURE, 'utf8')
     expect(fixtureUserPrompts(fixture)).toEqual([PROMPT])
-    scaffold = await launchWebScaffold({ replayFixture: FIXTURE, paceMs: 5, compareReplaySession: false })
+    // Browser keeps a second page kind composed, so new panes start on the guide.
+    scaffold = await launchWebScaffold({
+      replayFixture: FIXTURE, paceMs: 5, compareReplaySession: false,
+      extraOverlayPath: fileURLToPath(new URL('./sidebar-browser.overlay.yml', import.meta.url)),
+    })
     await seedSession(scaffold, await readFile(SEED_FIXTURE, 'utf8'), 'details-session-lifecycle-seed')
     scaffold.ctx.on('session/event', (_session, event) => { sessionEvents.push(event.type) })
     browser = await chromium.launch()
@@ -204,34 +208,15 @@ describe.skipIf(MODE === 'record')('web e2e: details panel follows the current S
     }
     await expect.poll(() => columns(page)).toEqual([280, blankViewport.width - 280, 0])
     await page.locator('[data-sidebar-right-expand]').click()
-    await blankColumn.locator('[data-dockkit-add-tab]').click()
-    await blankColumn.locator('[data-sidebar-right-guide-entry="terminal"]')
-      .getByRole('button', { name: /^New terminal/u }).click()
-    const agent = scaffold.ctx.agents.list().find(agent => agent.session.header.cwd === workspace)
-    if (agent === undefined) throw new Error('Blank Session has no workspace Agent')
-    await expect.poll(() => scaffold.ctx.terminalController.list(agent.id).map(terminal => terminal.state)).toEqual(['running'])
-    await page.locator('.xterm-helper-textarea:visible').click()
-    await page.keyboard.insertText('node -e "require(\'fs\').writeFileSync(\'before-chat-terminal.txt\',\'READY\')"')
-    await page.keyboard.press('Enter')
-    await expect.poll(() => readFile(join(workspace, 'before-chat-terminal.txt'), 'utf8')).toBe('READY')
     expect(sessionEvents).not.toContain('turn/start')
     expect(sessionEvents).not.toContain('user/message')
-    await blankColumn.locator('[data-dockkit-tab][aria-selected="true"]').hover()
-    // The tab disappears before the Host finishes process cleanup; close responds after quiescence.
-    const [closed] = await Promise.all([
-      page.waitForResponse('**/api/terminal/close'),
-      blankColumn.locator('[data-dockkit-tab][aria-selected="true"] [data-dockkit-tab-close]').click(),
-    ])
-    expect(await closed.json()).toMatchObject({ result: { ok: true } })
-    expect(scaffold.ctx.terminalController.list(agent.id)).toEqual([])
     await blankColumn.locator('[data-dockkit-tab]').filter({ hasText: 'before-chat.md' }).click()
     await compareOrRefreshGolden(BLANK_EXPECTED, [
       '# Blank Session workspace sidebar', '',
       '- No selected Session: expand control absent',
       '- Selected workspace before first message: expand control visible',
       '- Files: before-chat.md opens as a Markdown preview',
-      '- Narrow viewport: reopened preview fills the viewport',
-      '- Terminal: writes a file in the selected workspace before any user message or turn', '',
+      '- Narrow viewport: reopened preview fills the viewport', '',
       `\`\`\`json\n${JSON.stringify(await paneSnapshot(page), null, 2)}\n\`\`\``,
     ].join('\n'), MODE)
 

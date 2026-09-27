@@ -8,16 +8,19 @@ import { RemoteError, TestRemote } from '@deepseek-ai/dsh-client-test-runtime'
 import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import { apply as settingsApply, inject as settingsInject } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { apply, inject, NS } from '../src/client/index.ts'
-import type { WebSearchCardFace } from '../src/client/index.ts'
+import type { SearchProviderCardFace } from '../src/client/index.ts'
 import { apply as hostApply } from '../src/index.ts'
 
 /** One Host view of a served namespace. */
-function view(ns: string, revision = 0) {
-  return { ns, schema: {}, value: {}, applies: 'live', secrets: [], revision }
+function view(ns: string, value: Record<string, unknown> = {}, revision = 0) {
+  return { ns, schema: {}, value, base: value, applies: 'live', secrets: [], revision }
 }
 
-/** @param served - namespaces the Host describes; omitted answers a failed read. */
-async function bench(served?: string[]) {
+/**
+ * @param served - namespaces the Host describes; omitted answers a failed read.
+ * @param value - the value every served namespace reports.
+ */
+async function bench(served?: string[], value: Record<string, unknown> = {}) {
   const ctx = new Context()
   await ctx.plugin(SlotRegistry).await()
   const locale = new LocaleRuntime(ctx)
@@ -28,7 +31,7 @@ async function bench(served?: string[]) {
   }))
   const describeSettings = vi.fn(() => Promise.resolve(served === undefined
     ? { ok: false, error: new RemoteError('gateway/internal', 'no provider', {}) }
-    : { ok: true, value: { writable: true, hasDocument: true, namespaces: served.map(ns => view(ns)) } }))
+    : { ok: true, value: { writable: true, hasDocument: true, namespaces: served.map(ns => view(ns, value)) } }))
   const remote = new TestRemote(ctx, {
     credentials: { describe: describeCredentials, set: vi.fn() },
     settings: { describe: describeSettings },
@@ -54,30 +57,16 @@ describe('ui-settings-web-search apply', () => {
     expect(inject).toEqual(['slots', 'locale', 'remote', 'remote.credentials', 'configForms'])
   })
 
-  it('registers the page while the Host serves the namespace, titled in the active locale', async () => {
-    const { ctx, slots } = await bench(['web-search-deepseek'])
-    declareRoot(slots)
-
-    await ctx.plugin({ inject: [...inject], apply }).await()
-
-    await vi.waitFor(() => { expect(slots.entries('plugins.item')).toHaveLength(1) })
-    const entry = slots.entries('plugins.item')[0]!
-    expect(entry.options).toMatchObject({ id: 'web-search', order: 40 })
-    expect(resolveSlotLabel(entry.options.label)).toBe('网页搜索')
-    expect(entry.locale).toBe(NS)
-    const face = (entry.inject as () => Pick<WebSearchCardFace, 'hooks'>)()
-    expect(Object.keys(face.hooks)).toEqual(['webSearchCard'])
-  })
-
-  it('registers the search-provider page while the Host serves the web namespace', async () => {
-    const { ctx, slots } = await bench(['web'])
+  it('registers only the search-provider page while the Host serves the web namespace, titled in the active locale', async () => {
+    const { ctx, slots } = await bench(['web', 'web-search-deepseek'])
     declareRoot(slots)
     await ctx.plugin({ inject: [...inject], apply }).await()
     await vi.waitFor(() => { expect(slots.entries('plugins.item')).toHaveLength(1) })
     const entry = slots.entries('plugins.item')[0]!
     expect(entry.options).toMatchObject({ id: 'web-search-provider', order: 39 })
     expect(resolveSlotLabel(entry.options.label)).toBe('搜索来源')
-    const face = (entry.inject as () => Pick<WebSearchCardFace, 'hooks'>)()
+    expect(entry.locale).toBe(NS)
+    const face = (entry.inject as () => Pick<SearchProviderCardFace, 'hooks'>)()
     expect(Object.keys(face.hooks)).toEqual(['searchProviderCard'])
   })
 
@@ -91,10 +80,10 @@ describe('ui-settings-web-search apply', () => {
   })
 
   it('re-reads the credential when the Host reports the watched reference changed, and ignores another', async () => {
-    const { ctx, slots, describeCredentials, remote } = await bench()
+    const { ctx, slots, describeCredentials, remote } = await bench(['web'], { searchProvider: 'deepseek-official' })
     declareRoot(slots)
     await ctx.plugin({ inject: [...inject], apply }).await()
-    await vi.waitFor(() => { expect(describeCredentials).toHaveBeenCalled() })
+    await vi.waitFor(() => { expect(describeCredentials).toHaveBeenCalledWith(['DEEPSEEK_API_KEY']) })
     describeCredentials.mockClear()
 
     remote.emit('credentials/reference-updated', ['SOME_OTHER_KEY'])
@@ -108,7 +97,7 @@ describe('ui-settings-web-search apply', () => {
   })
 
   it('collapses the page on teardown', async () => {
-    const { ctx, slots } = await bench(['web-search-deepseek'])
+    const { ctx, slots } = await bench(['web'])
     declareRoot(slots)
     const fiber = ctx.plugin({ inject: [...inject], apply })
     await fiber.await()

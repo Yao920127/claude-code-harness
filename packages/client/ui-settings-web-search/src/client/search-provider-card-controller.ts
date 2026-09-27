@@ -1,9 +1,10 @@
 /**
  * The search-provider page's staged form over the `web` settings namespace:
  * which provider serves `web_search`, and — for a provider that reads a
- * stored key — that key, written through the credentials domain under the
- * provider's reference. Both are staged together, so one save covers the
- * choice and the key it needs.
+ * stored key — that key. The key's literal never rides a response, so the
+ * page learns only whether one is configured and writes it through the
+ * credentials domain under the provider's reference. Both are staged
+ * together, so one save covers the choice and the key it needs.
  */
 
 import type { Context as ClientContext } from '@deepseek-ai/cordis'
@@ -11,9 +12,9 @@ import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type { SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import {
-  settingsTextField, type SettingsFieldState, type SettingsFormActions, type SettingsFormShell, type SettingsFormScope,
+  SettingsFormModel, settingsTextField,
+  type SettingsFieldState, type SettingsFormActions, type SettingsFormShell, type SettingsFormScope,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import { API_KEY_FIELD, CredentialCardController } from './credential-card-controller.ts'
 import { searchProviderEntry, type SearchProviderCredential } from './search-providers.ts'
 
 /** Namespace of the web service, spelled here because a client package must not depend on a Host package. */
@@ -21,6 +22,9 @@ export const WEB_NS = 'web'
 
 /** Form field the provider choice stages under. */
 const PROVIDER_FIELD = 'searchProvider'
+
+/** Form field the credential control stages under. */
+const API_KEY_FIELD = 'apiKey'
 
 /** The web-service field this page edits. */
 export interface SearchProviderSettings {
@@ -52,14 +56,34 @@ export interface SearchProviderCardFace extends SettingsFormActions {
   }
 }
 
+/** What the credentials domain last reported, and for which reference. */
+interface CredentialState {
+  /** Reference this answer describes; a stale response for another one is dropped. */
+  readonly ref: string
+  /** Whether any layer supplies a value for it. */
+  readonly configured: boolean
+  /** Whether `credentials/set` can affect it; false disables the control. */
+  readonly writable: boolean
+}
+
 /** Bridges the `web` scope and the credentials domain onto the page. */
-export class SearchProviderCardController extends CredentialCardController<SearchProviderSettings, SearchProviderCardState> {
+export class SearchProviderCardController {
+  private readonly form: SettingsFormModel<SearchProviderSettings>
+  private readonly store: SnapshotStore<SearchProviderCardState>
+  private credential: CredentialState = { ref: '', configured: false, writable: true }
+  private readonly unsubscribe: () => void
+
   /**
    * @param scope - the bound settings scope for the `web` namespace.
    * @param ctx - the page plugin's context, whose `remote.credentials` namespace answers for stored keys.
    */
-  constructor(scope: SettingsFormScope<SearchProviderSettings>, ctx: ClientContext) {
-    super(scope, ctx, [settingsTextField(PROVIDER_FIELD)])
+  constructor(private readonly scope: SettingsFormScope<SearchProviderSettings>, private readonly ctx: ClientContext) {
+    this.form = new SettingsFormModel(scope, [settingsTextField(PROVIDER_FIELD)], [
+      { field: API_KEY_FIELD, write: text => this.writeKey(text) },
+    ])
+    this.store = this.form.bind(() => this.projection())
+    this.unsubscribe = scope.subscribe(() => { void this.readCredential() })
+    void this.readCredential()
   }
 
   /**
@@ -75,12 +99,12 @@ export class SearchProviderCardController extends CredentialCardController<Searc
   }
 
   /** @returns the stored-key reference of the effective provider, when it reads one. */
-  protected credentialRef(): string | undefined {
+  private credentialRef(): string | undefined {
     const credential = searchProviderEntry(this.effectiveProvider())?.credential
     return credential?.kind === 'credential' ? credential.ref : undefined
   }
 
-  protected projection(): SearchProviderCardState {
+  private projection(): SearchProviderCardState {
     const effectiveProvider = this.effectiveProvider()
     const matches = this.credential.ref === this.credentialRef()
     return {
@@ -92,6 +116,57 @@ export class SearchProviderCardController extends CredentialCardController<Searc
       apiKeyConfigured: matches && this.credential.configured,
       apiKeyWritable: !matches || this.credential.writable,
     }
+  }
+
+  /**
+   * Ask the credentials domain about the reference in force. The answer is
+   * stored with the reference it describes: the reference can change between
+   * the request and its response, and two reads can settle out of order, so a
+   * response is published only while it still answers for the reference in force.
+   */
+  private async readCredential(): Promise<void> {
+    const ref = this.credentialRef()
+    if (ref === undefined) return
+    if (ref !== this.credential.ref) {
+      // A new reference knows nothing yet; keeping the old answer would claim
+      // the key is configured under a name nobody has checked.
+      this.credential = { ref, configured: false, writable: true }
+      this.store.set(this.projection())
+    }
+    const response = await this.ctx.remote.credentials.describe([ref])
+    if (!response.ok || ref !== this.credentialRef()) return
+    // An unknown reference is treated as writable: the control stays usable
+    // and the Host is what refuses, rather than the page guessing a refusal.
+    const view = response.value[ref] ?? { configured: false, writable: true }
+    if (view.configured === this.credential.configured && view.writable === this.credential.writable) return
+    this.credential = { ref, configured: view.configured, writable: view.writable }
+    this.store.set(this.projection())
+  }
+
+  /**
+   * Re-read after the Host reports a change to the reference this page watches.
+   * A key written on another surface changes no settings section, so this is
+   * the only signal that reaches the page.
+   * @param ref - the reference the Host reports as changed.
+   */
+  refreshCredential(ref: string): void {
+    if (ref !== this.credentialRef()) return
+    void this.readCredential()
+  }
+
+  /**
+   * Write the staged key under the reference in force, then re-read whether the Host now holds one.
+   * @param value - the staged credential literal.
+   * @returns whether the Host reports a configured credential afterwards.
+   */
+  private async writeKey(value: string): Promise<boolean> {
+    const ref = this.credentialRef()
+    if (ref === undefined) return false
+    // Refusals surface through the re-read below: the Host is the only
+    // authority on whether the key now exists.
+    await this.ctx.remote.credentials.set(ref, value)
+    await this.readCredential()
+    return this.credential.configured
   }
 
   /**
@@ -115,4 +190,7 @@ export class SearchProviderCardController extends CredentialCardController<Searc
       },
     }
   }
+
+  /** Release configuration subscriptions. */
+  dispose(): void { this.unsubscribe(); this.form.dispose() }
 }

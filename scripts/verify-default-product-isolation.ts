@@ -358,6 +358,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function profilePackages(source: string): { packages: string[]; webBundles: string[]; optionalBundles: string[] } {
   const file = ts.createSourceFile(PROFILE_SOURCE, source, ts.ScriptTarget.Latest, true)
   const required = new Set(['PROFILE_TEMPLATES', 'DEFAULT_PROFILE_BUNDLES'])
+  // Shared bundle lists a template names by reference; each is scanned as its own declaration.
+  const referenced = new Set(['CCH_PROFILE_BUNDLES'])
   const found = new Set<string>()
   const packages: string[] = []
   const webBundles: string[] = []
@@ -377,6 +379,8 @@ function profilePackages(source: string): { packages: string[]; webBundles: stri
     }
     else if (ts.isAsExpression(node) || ts.isSatisfiesExpression(node) || ts.isParenthesizedExpression(node)) {
       literals(node.expression, path)
+    } else if (ts.isIdentifier(node) && referenced.has(node.text)) {
+      // Scanned where it is declared.
     } else throw new Error(`${PROFILE_SOURCE}: default profile packages must use static literal lists`)
   }
   for (const statement of file.statements) {
@@ -384,7 +388,7 @@ function profilePackages(source: string): { packages: string[]; webBundles: stri
     for (const declaration of statement.declarationList.declarations) {
       if (!ts.isIdentifier(declaration.name)
         || !required.has(declaration.name.text) && declaration.name.text !== 'INSTALLATION_OWNED_PROFILE_TUPLES'
-        && declaration.name.text !== 'OPTIONAL_BUNDLES') continue
+        && declaration.name.text !== 'OPTIONAL_BUNDLES' && !referenced.has(declaration.name.text)) continue
       if (declaration.initializer === undefined) continue
       if (required.has(declaration.name.text)) found.add(declaration.name.text)
       const before = packages.length

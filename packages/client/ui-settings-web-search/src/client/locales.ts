@@ -1,19 +1,17 @@
-/** Locale bundles for the web-search provider's settings page. */
+/** Locale bundles for the search-provider settings page. */
 
 import type { SettingsFormLabels } from '@deepseek-ai/dsh-client-ui-primitives'
 
 import type { SearchProviderLabelKey } from './search-providers.ts'
 
-/** Locale keys the pages render. */
+/** Locale keys the page renders. */
 export type WebSearchSettingsLocaleKey =
   | SearchProviderLabelKey
   | 'providerTitle' | 'providerDescription' | 'provider' | 'providerHint' | 'providerInherited'
   | 'providerApiKey' | 'providerEnvironment' | 'providerLogin'
-  | 'title' | 'description'
-  | 'apiKey' | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
-  | 'baseUrl' | 'baseUrlHint' | 'maxUses' | 'maxUsesHint'
+  | 'apiKeyHint' | 'apiKeySet' | 'apiKeyUnset'
   | 'overridden' | 'reset' | 'readOnly' | 'unavailable'
-  | 'save' | 'saving' | 'saveFailed' | 'invalidNumber'
+  | 'save' | 'saving' | 'saveFailed'
 
 /** English copy. */
 export const en: Record<WebSearchSettingsLocaleKey, string> = {
@@ -36,16 +34,9 @@ export const en: Record<WebSearchSettingsLocaleKey, string> = {
   providerApiKey: 'API key ({ref})',
   providerEnvironment: 'This provider reads {variable} from the environment the application was launched in.',
   providerLogin: 'This provider uses the Claude Code sign-in on this computer and needs no key.',
-  title: 'Web search',
-  description: 'Set up the DeepSeek search provider.',
-  apiKey: 'API key',
   apiKeyHint: 'Stored outside the settings file. Leave blank to keep the current key.',
   apiKeySet: 'A key is configured.',
   apiKeyUnset: 'No key is configured; search is unavailable until one is.',
-  baseUrl: 'Endpoint',
-  baseUrlHint: 'Leave blank to use the provider default.',
-  maxUses: 'Max searches per request',
-  maxUsesHint: 'How many times one request may search before it must answer.',
   overridden: 'Overridden',
   reset: 'Reset to default',
   readOnly: 'This deployment stores settings read-only.',
@@ -53,7 +44,6 @@ export const en: Record<WebSearchSettingsLocaleKey, string> = {
   save: 'Save',
   saving: 'Saving…',
   saveFailed: 'The deployment did not accept these values; they were left for you to correct.',
-  invalidNumber: 'Enter a number, or leave blank to use the default.',
 }
 
 /** Simplified Chinese copy. */
@@ -77,16 +67,9 @@ export const zh: Record<WebSearchSettingsLocaleKey, string> = {
   providerApiKey: 'API Key（{ref}）',
   providerEnvironment: '此提供方从启动应用程序的环境变量读取 {variable}。',
   providerLogin: '此提供方使用本机的 Claude Code 登录，无需密钥。',
-  title: '网页搜索',
-  description: '设置 DeepSeek 的搜索提供方。',
-  apiKey: 'API Key',
   apiKeyHint: '不写入设置文件。留空表示保持当前密钥。',
   apiKeySet: '已配置密钥。',
   apiKeyUnset: '未配置密钥；配置之前搜索不可用。',
-  baseUrl: '接口地址',
-  baseUrlHint: '留空则使用提供方默认地址。',
-  maxUses: '单次请求最多搜索次数',
-  maxUsesHint: '一次请求在必须作答前最多可以搜索多少次。',
   overridden: '已覆盖',
   reset: '恢复默认',
   readOnly: '本部署的设置为只读。',
@@ -94,7 +77,6 @@ export const zh: Record<WebSearchSettingsLocaleKey, string> = {
   save: '保存',
   saving: '保存中…',
   saveFailed: '本部署没有接受这些值，已保留供你修改。',
-  invalidNumber: '请填数字；留空表示使用默认值。',
 }
 
 /**

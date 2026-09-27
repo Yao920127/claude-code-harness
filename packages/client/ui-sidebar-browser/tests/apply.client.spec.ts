@@ -64,6 +64,7 @@ async function boot(platform: ShortcutPlatform = 'macos', runtime: 'desktop' | '
   ctx.provide('workspaces', { list: createSnapshotStore({ phase: 'ready', items: [] }) } as never)
   ctx.provide('slots', slots as never)
   ctx.provide('locale', locale as never)
+  ctx.provide('configForms', { get: vi.fn(() => ({ getSnapshot: () => ({ value: { searchUrl: 'https://search.example/?q=%s' } }) })) } as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()
   return { tabs, registered, dictionaries, fiber, openTabs, registry, sidebar, target }

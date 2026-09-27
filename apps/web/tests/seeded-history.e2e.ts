@@ -236,7 +236,7 @@ describe('web e2e: seeded history renders through cold resume', () => {
     // Session-header split button stays out of every golden.
     scaffold = await launchWebScaffold({
       extraOverlayPath: [
-        ...process.platform === 'win32' ? [] : [fileURLToPath(new URL('./fixtures/sidebar-terminal.patch.yml', import.meta.url))],
+        ...process.platform === 'win32' ? [] : [fileURLToPath(new URL('./fixtures/terminal-panel.patch.yml', import.meta.url))],
         fileURLToPath(new URL('./fixtures/native-open-on.patch.yml', import.meta.url)),
       ],
       openInAppEnvironment: createLaunchEnvironmentSnapshot([{ source: 'process', values: { SSH_CONNECTION: '10.0.0.2 55000 10.0.0.9 22' } }]),
@@ -823,8 +823,7 @@ describe('web e2e: seeded history renders through cold resume', () => {
 
   it.skipIf(MODE === 'record' || process.platform === 'win32')('offers explicit terminal replacement after restoring the recorded Session', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-seeded-terminal-unavailable'))
-    await page.locator('[data-dockkit-add-tab]').click()
-    await page.locator('[data-sidebar-right-guide-entry="terminal"]').getByRole('button', { name: /^New terminal/u }).click()
+    await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).click()
     const sessionId = SessionId(SEED_ID)
     const terminals = () => scaffold.ctx.terminalController.list(sessionId)
     await expect.poll(() => terminals().length).toBe(1)
@@ -835,10 +834,10 @@ describe('web e2e: seeded history renders through cold resume', () => {
     const warningStart = tripwire.warnings.length
     await page.reload({ waitUntil: 'load' })
     acknowledgeReloadConnectionLoss(tripwire, warningStart)
-    const terminal = page.locator('[data-sidebar-terminal]')
+    const terminal = page.locator('[data-terminal-panel-body]:visible')
     await expect.poll(() => terminal.getByRole('alert').innerText()).toContain('no longer exists')
     expect(terminals()).toEqual([])
-    const expected = fileURLToPath(new URL('./expected/sidebar-terminal/unavailable.expected.md', import.meta.url))
+    const expected = fileURLToPath(new URL('./expected/terminal-panel/unavailable.expected.md', import.meta.url))
     await compareOrRefreshGolden(expected, await terminal.ariaSnapshot(), MODE)
     await terminal.getByRole('button', { name: 'New terminal', exact: true }).click()
     await expect.poll(() => terminals().length).toBe(1)

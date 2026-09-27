@@ -42,3 +42,8 @@
   config:
     searchProvider: claude-code
     fetchProvider: http
+
+# Browser tabs are on in every CCH profile, as on Desktop, so `cch web` and the
+# Desktop app offer the same right-Sidebar pages.
+- id: ui-sidebar-browser
+  disabled: false

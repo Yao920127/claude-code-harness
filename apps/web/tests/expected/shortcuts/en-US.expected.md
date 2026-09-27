@@ -40,8 +40,8 @@
         - button "Edit shortcut for Workspace files"
         - text: Workspace files Ctrl + Alt + P
       - listitem:
-        - button "Edit shortcut for New terminal"
-        - text: "New terminal Ctrl + `"
+        - button "Edit shortcut for Toggle terminal panel"
+        - text: "Toggle terminal panel Ctrl + `"
       - listitem:
         - button "Edit shortcut for Split"
         - text: Split Ctrl + \

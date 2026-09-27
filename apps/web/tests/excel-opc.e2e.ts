@@ -50,8 +50,8 @@ describe.skipIf(mode === 'record')('web e2e: independent-writer Excel previews',
     for (const name of excelXmlCases) await writeFile(join(cwd, `${name}.xlsx`), await excelXmlFixture(name))
 
     const column = page.locator('[data-rightbar-col]')
+    // Files is the Web profile's only page kind, so the sidebar opens it directly.
     await page.locator('[data-sidebar-right-expand]').click()
-    await column.locator('[data-sidebar-right-guide-entry="files"]').click()
     await column.locator('[data-files-state="tree"]').waitFor()
     await column.locator('[data-files-reload]').click()
     const files = column.locator('[data-dockkit-tab]').filter({ has: page.getByText('Files', { exact: true }) })

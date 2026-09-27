@@ -6,6 +6,9 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-controller/client'
+// Type-only: the ctx.configForms Context merge.
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
+import { SIDEBAR_BROWSER_NAMESPACE, type SidebarBrowserSettings } from '../browser-settings.ts'
 import { BrowserBody, type BrowserBodyProps } from './view/BrowserBody.tsx'
 import { BrowserTitle } from './view/BrowserTitle.tsx'
 import { createBrowserControllers } from './browser/BrowserController.ts'
@@ -37,7 +40,7 @@ declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
 }
 
 /** Required Browser services. */
-export const inject = ['slots', 'locale', 'sidebarRight', 'sidebarRightTabs']
+export const inject = ['slots', 'locale', 'sidebarRight', 'sidebarRightTabs', 'configForms']
 
 /** Register the Browser type, localized guide entry, body, and title. */
 export function apply(ctx: Context): void {
@@ -65,6 +68,8 @@ export function apply(ctx: Context): void {
     }), 'ui-sidebar-browser: shortcut')
   })
   const store = createBrowserStore()
+  const settings = ctx.configForms.get<SidebarBrowserSettings>(SIDEBAR_BROWSER_NAMESPACE)
+  const searchUrl = (): string | undefined => settings.getSnapshot().value?.searchUrl
   const openTabs = ctx.sidebarRight.openTabs
   const carrier = (globalThis as typeof globalThis & {
     dshDesktop?: { readonly protocolVersion: number; readonly browser?: DesktopBrowserBridge }
@@ -88,7 +93,7 @@ export function apply(ctx: Context): void {
           return existing
         }
         const controller = createBrowserControllers(actions, factory(sessionId), tabId =>
-          openTabs.getSnapshot().some(tab => tab.sessionId === sessionId && tab.tabId === tabId))
+          openTabs.getSnapshot().some(tab => tab.sessionId === sessionId && tab.tabId === tabId), searchUrl)
         controllers.set(sessionId, controller)
         return controller
       },

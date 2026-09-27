@@ -2,14 +2,20 @@
   - tab "Files Close":
     - text: Files
     - button "Close"
-  - tab "bash Close" [selected]:
-    - text: bash
+  - tab "Browser Close" [selected]:
+    - text: Browser
     - button "Close"
   - button "New tab"
   - button "Split" [disabled]
   - button "Fullscreen"
   - button "Collapse right sidebar"
-- textbox "Terminal"
+- button "Back" [disabled]
+- button "Forward" [disabled]
+- button "Reload" [disabled]
+- textbox "Enter an address or search terms"
+- button "Open in system browser" [disabled]
+- button "Disable sandbox restrictions"
+- text: Enter an address or search terms to start browsing
 - tablist:
   - tab "Files Close" [selected]:
     - text: Files

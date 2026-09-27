@@ -75,7 +75,7 @@ describe('web e2e: current sandbox policy reaches the model before tools', () =>
     scaffold = await launchWebScaffold({
       ...MODE === 'record' ? {} : { replayFixture: FIXTURE, compareReplaySession: true },
       ...process.platform === 'win32' ? {} : {
-        extraOverlayPath: fileURLToPath(new URL('./fixtures/sidebar-terminal.patch.yml', import.meta.url)),
+        extraOverlayPath: fileURLToPath(new URL('./fixtures/terminal-panel.patch.yml', import.meta.url)),
       },
     })
     outsideWorkspace = await mkdtemp(join(tmpdir(), 'dsh-user-terminal-'))
@@ -105,9 +105,7 @@ describe('web e2e: current sandbox policy reaches the model before tools', () =>
     // The pinned interactive Bash profile is POSIX-only; Windows still replays every Agent policy assertion.
     if (process.platform === 'win32') return
     if (terminalId === undefined) {
-      const expand = page.locator('[data-sidebar-right-expand]')
-      if (await expand.isVisible()) await expand.click()
-      await page.locator('[data-sidebar-right-guide-entry="terminal"]').getByRole('button', { name: /^New terminal/u }).click()
+      await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).click()
       await expect.poll(() => page.locator('.xterm-rows:visible').innerText()).toContain('bash-')
     }
     const agent = scaffold.ctx.agents.list()[0]

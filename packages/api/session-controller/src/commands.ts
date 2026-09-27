@@ -243,8 +243,12 @@ export class SessionCommandController {
    */
   async delete(request: SessionDeleteRequest): Promise<SessionDeleteValue> {
     const { sessionId } = request
+    const persistence = this.ctx.get('sessionPersistence')
+    if (persistence === undefined) {
+      throw new RemoteError('session/delete-unavailable', 'no session store is composed to delete from', { sessionId })
+    }
     const header = this.ctx.sessions.get(sessionId)?.header
-      ?? (await this.ctx.sessionPersistence.stat(sessionId))?.header
+      ?? (await persistence.stat(sessionId))?.header
     if (header === undefined) {
       throw new RemoteError('session/not-found', `session "${sessionId}" not found`, { sessionId })
     }
@@ -255,10 +259,10 @@ export class SessionCommandController {
     // released Agent cannot be resumed by its own jobs or reminders.
     await this.ctx.workspaceRegistry.archiveSession(sessionId, { stopActivity: true })
     await this.agents.release(sessionId)
-    const headers = (await this.ctx.sessionPersistence.list()).map(snapshot => snapshot.header)
+    const headers = (await persistence.list()).map(snapshot => snapshot.header)
     for (const id of [...subagentDescendants(sessionId, headers), sessionId]) {
       try {
-        await this.ctx.sessionPersistence.delete(id)
+        await persistence.delete(id)
       } catch (error) {
         if (!(error instanceof Error && error.name === 'SessionAlreadyOwnedError')) throw error
         throw new RemoteError(

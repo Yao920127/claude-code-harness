@@ -68,7 +68,7 @@ describe.skipIf(MODE === 'record')('web e2e: Sidebar Browser', () => {
     const column = page.locator('[data-rightbar-col]')
     await page.locator('[data-sidebar-right-expand]').click()
     await column.locator('[data-sidebar-right-guide-entry="browser"]').click()
-    const input = column.getByRole('textbox', { name: 'Enter an HTTP(S) address' })
+    const input = column.getByRole('textbox', { name: 'Enter an address or search terms' })
     await input.fill('https://browser.test/one')
     await input.press('Enter')
     const frame = column.locator('[data-sidebar-browser-frame]')

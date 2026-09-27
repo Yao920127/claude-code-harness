@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用户可通过 profile patch 启用随附条目。可以从右侧 Sidebar guide 打开 **浏览器**并输入 HTTP(S) URL。Chat 的[链接偏好](../ui-chat/README.zh.md)选择**应用内侧边栏**时，HTTP(S) 链接会在此打开。不带 scheme 的主机名会补全为 HTTPS。公共目标与 loopback 目标使用相同的默认 sandbox。每次 guide 操作或委托到此的消息链接操作都会创建一个新的 Browser tab。
+Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用户可通过 profile patch 启用随附条目。可以从右侧 Sidebar guide 打开 **浏览器**并输入 HTTP(S) URL 或搜索关键词。Chat 的[链接偏好](../ui-chat/README.zh.md)选择**应用内侧边栏**时，HTTP(S) 链接会在此打开。不带 scheme 的主机名会补全为 HTTPS。不带 scheme 且包含空白、或主机名既无点也无端口且不是 `localhost` 的输入视为搜索：`youtube` 会搜索，而 `youtube.com` 与 `localhost:3000` 会导航。公共目标与 loopback 目标使用相同的默认 sandbox。每次 guide 操作或委托到此的消息链接操作都会创建一个新的 Browser tab。
 
 ### 何时选择
 
@@ -33,11 +33,13 @@ Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用�
 
 ### 最小配置
 
-本包没有插件配置字段。Web profile 通过其 profile patch 启用随附条目：
+`searchUrl` 是关键词使用的 HTTPS 搜索地址，`%s` 接收编码后的查询；默认是 Google 搜索，修改后即时生效。Web profile 通过其 profile patch 启用随附条目，也可在其中设置搜索地址：
 
 ```yaml
 - id: ui-sidebar-browser
   disabled: false
+  config:
+    searchUrl: https://duckduckgo.com/?q=%s
 ```
 
 Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url } })` 打开 tab。可选 URL 会在导航前接受与地址栏输入相同的校验。
@@ -56,7 +58,7 @@ Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url }
 
 ### 协议策略
 
-地址解析器接受 HTTP 与 HTTPS，包括 loopback 目标。`file:` URL、脚本/data/blob 输入、内嵌凭据、DSH 应用自身 origin 和畸形地址会被拒绝。本地文件由 Document Preview 负责渲染。
+地址解析器接受 HTTP 与 HTTPS，包括 loopback 目标。`file:` URL、脚本/data/blob 输入、内嵌凭据、DSH 应用自身 origin 和畸形地址会被拒绝。本地文件由 Document Preview 负责渲染。地址栏与 typed-open 输入先经过关键词规则；搜索目标是配置的搜索地址，按同一策略解析，并以查询作为标题。Host 尚未报告搜索地址时输入的关键词会以可修正的提示被拒绝。页面发起的打开请求从不变成搜索。
 
 ### Iframe 载体
 
@@ -107,6 +109,7 @@ Desktop 主进程批准 guest 租约，并执行挂载、导航和权限策略�
 - 出于安全原因，浏览器会隐藏很多 iframe 失败：DNS、TLS、mixed-content、CSP 与 `X-Frame-Options` 失败可能触发 `load`，也可能不提供可操作 event，而不是触发 `error`。加载失败 notice 只能作为 best-effort 提示。
 - 只要 tab 仍在 Sidebar 布局中，保存的标题和 URL 就会跨刷新与插件卸载保留。关闭 tab 会删除其检查点。重启恢复不恢复页面内存、未保存的表单或 Chromium history 栈。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
+- Google 与多数搜索引擎拒绝 iframe 嵌入，因此在 Web 中关键词搜索会显示被阻止的 frame 提示；可在系统浏览器中打开，或使用由 `<webview>` 渲染的 Desktop。把 `searchUrl` 设为允许嵌入的搜索引擎可避免此问题。
 - Desktop 按规范化的工作区 CWD 共享进程内存储分区；没有解析到 Workspace 的 Session 单独隔离。Cookie 与 Web storage 不跨应用重启保留。guest 权限、下载与原生 popup 均被拒绝；通过检查的 HTTP(S) popup 请求会打开 Sidebar tab。Host 地址过滤不是通用私网或 DNS-rebinding 防火墙。
 
 <a id="dev-note"></a>

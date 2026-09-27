@@ -12,7 +12,7 @@
 - button "Back" [disabled]
 - button "Forward" [disabled]
 - button "Reload" [disabled]
-- textbox "Enter an HTTP(S) address"
+- textbox "Enter an address or search terms"
 - button "Open in system browser" [disabled]
 - button "Disable sandbox restrictions"
-- text: Enter an HTTP(S) address to start browsing
+- text: Enter an address or search terms to start browsing

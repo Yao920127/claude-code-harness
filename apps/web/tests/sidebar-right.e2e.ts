@@ -261,7 +261,8 @@ describe('web e2e: shipped right Sidebar', () => {
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold()
+    // Browser keeps a second page kind composed, so a new pane starts on the guide.
+    scaffold = await launchWebScaffold({ extraOverlayPath: fileURLToPath(new URL('./sidebar-browser.overlay.yml', import.meta.url)) })
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
@@ -459,7 +460,7 @@ describe('web e2e: shipped right Sidebar', () => {
       await expect.poll(async () => await tabTitles(column)).toEqual(['Start'])
       await expectTitleAlignment(column.locator('[data-dockkit-tab-title]'))
       await expect.poll(async () => await column.locator('[data-sidebar-right-guide-entry]').count()).toBe(2)
-      expect(await column.locator('[data-sidebar-right-guide-entry="browser"]').count()).toBe(0)
+      expect(await column.locator('[data-sidebar-right-guide-entry="browser"]').count()).toBe(1)
       await column.locator('[data-sidebar-right-guide-entry="files"]').click()
 
       // A manual guide is closable beside Files and suppresses another add
@@ -1170,19 +1171,10 @@ describe('web e2e: shipped right Sidebar', () => {
         await expect.poll(async () => await guide.locator('[data-sidebar-right-guide-entry="files"]').innerText())
           .toBe('工作区文件\n浏览会话工作区的文件\n⌥\n⌘\nP')
         const fileEntry = guide.locator('[data-sidebar-right-guide-entry="files"]')
-        const terminalEntry = guide.locator('[data-sidebar-right-guide-entry="terminal"]')
-        for (const entry of [fileEntry, terminalEntry]) {
-          expect(await entry.evaluate(node => getComputedStyle(node).borderRadius)).toBe('20px')
-        }
-        expect(await terminalEntry.evaluate(node => getComputedStyle(node).overflow)).toBe('hidden')
-        const terminalActions = terminalEntry.getByRole('button')
-        const terminalButtons = await terminalActions.all()
-        for (const [index, action] of terminalButtons.entries()) {
-          expect(await action.evaluate(node => getComputedStyle(node).borderRadius)).toBe(index === 0 ? '0px' : '4px')
-          await action.hover()
-          expect(await action.evaluate(node => getComputedStyle(node).backgroundColor)).not.toBe('rgba(0, 0, 0, 0)')
-        }
-        await terminalActions.first().hover()
+        expect(await fileEntry.evaluate(node => getComputedStyle(node).borderRadius)).toBe('20px')
+        // Terminals live in the bottom panel, not the sidebar guide.
+        expect(await guide.locator('[data-sidebar-right-guide-entry="terminal"]').count()).toBe(0)
+        await fileEntry.hover()
         await shot(zhPage, '05-guide-copy-zh')
 
         expect(zhTripwire.pageErrors).toEqual([])

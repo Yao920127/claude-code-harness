@@ -37,7 +37,7 @@ const coreActionOrder = new Map<string, number>([
   'sidebar.right.toggle',
   'workspace.files',
   'browser.new',
-  'terminal.new',
+  'terminal.toggle',
   'pane.split',
   'pane.fullscreen.toggle',
   'page.refresh',

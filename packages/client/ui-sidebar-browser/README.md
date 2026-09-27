@@ -25,7 +25,7 @@ Browse HTTP(S) pages, including loopback services, inside independent right-Side
 <a id="use-this-package"></a>
 ## Use this package
 
-Browser is disabled by default in Web profiles and enabled on Desktop. Enable the shipped entry through the Web profile patch to use it. Open **Browser** from the right-Sidebar guide and enter an HTTP(S) URL. Chat HTTP(S) links open here when the [link preference](../ui-chat/README.md) selects **In-App Sidebar**. A host name without a scheme becomes HTTPS. Public and loopback targets use the same default sandbox. Each guide action or delegated message-link activation creates another Browser tab.
+Browser is disabled by default in Web profiles and enabled on Desktop. Enable the shipped entry through the Web profile patch to use it. Open **Browser** from the right-Sidebar guide and enter an HTTP(S) URL or search terms. Chat HTTP(S) links open here when the [link preference](../ui-chat/README.md) selects **In-App Sidebar**. A host name without a scheme becomes HTTPS. Input without a scheme that contains whitespace, or names a host with no dot or port other than `localhost`, is a search: `youtube` searches, while `youtube.com` and `localhost:3000` navigate. Public and loopback targets use the same default sandbox. Each guide action or delegated message-link activation creates another Browser tab.
 
 ### When to choose it
 
@@ -33,11 +33,13 @@ Choose Browser for a Web page that should remain beside the current Session. Cho
 
 ### Minimal configuration
 
-The package has no plugin configuration. A Web profile enables the shipped entry through its profile patch:
+`searchUrl` is the HTTPS search address for keywords, where `%s` receives the encoded query; it defaults to Google search and changes live. A Web profile enables the shipped entry through its profile patch, which can also set the search address:
 
 ```yaml
 - id: ui-sidebar-browser
   disabled: false
+  config:
+    searchUrl: https://duckduckgo.com/?q=%s
 ```
 
 Client plugins can open a tab through `ctx.sidebarRight.openTab('browser', { params: { url } })`. The optional URL passes the same validation as address-bar input before navigation.
@@ -56,7 +58,7 @@ The toolbar provides Back, Forward, Reload, Go, and Open in system browser. Web 
 
 ### Protocol policy
 
-The address parser accepts HTTP and HTTPS, including loopback targets. It rejects `file:` URLs, script/data/blob input, embedded credentials, the DSH application origin, and malformed addresses. Document Preview owns local-file rendering.
+The address parser accepts HTTP and HTTPS, including loopback targets. It rejects `file:` URLs, script/data/blob input, embedded credentials, the DSH application origin, and malformed addresses. Document Preview owns local-file rendering. Address-bar and typed-open input first passes the keyword rule; a search target is the configured search address, parsed by the same policy, titled with the query. Keywords entered before the Host reports the search address are refused with a correctable message. Page-initiated opens never become searches.
 
 ### Iframe carrier
 
@@ -107,6 +109,7 @@ The isolation policy deliberately gives up some browser compatibility:
 - Browsers conceal many iframe failures for security: DNS, TLS, mixed-content, CSP, and `X-Frame-Options` failures may emit `load` or no actionable event instead of `error`. The load-failure notice is best-effort.
 - Saved title and URL survive reloads and plugin unload while the tab remains in Sidebar's layout. Closing the tab removes its checkpoint. Restart restoration does not recover page memory, unsaved forms or Chromium's history stack.
 - Local files are rejected and remain owned by Document Preview.
+- Google and most search engines refuse iframe embedding, so in Web a keyword search shows the blocked-frame notice; open it externally or use Desktop, whose `<webview>` renders it. Setting `searchUrl` to an engine that allows embedding avoids this.
 - Desktop shares process-local storage partitions by canonical workspace CWD; Sessions without a resolved Workspace are isolated separately. Cookies and Web storage do not survive application restart. Guest permissions, downloads and native popups are denied; approved HTTP(S) popup requests open Sidebar tabs. Host-address filtering is not a general private-network or DNS-rebinding firewall.
 
 <a id="dev-note"></a>

@@ -7,6 +7,7 @@
   },
   "include": [
     "src/client",
+    "src/browser-settings.ts",
     "src/types.ts",
     "src/css-modules.d.ts"
   ],
@@ -21,6 +22,7 @@
     { "path": "../ui-primitives" },
     { "path": "../ui-renderer" },
     { "path": "../ui-session" },
+    { "path": "../ui-settings/tsconfig.client.json" },
     { "path": "../ui-sidebar-right" },
     { "path": "../ui-slots" }
   ]

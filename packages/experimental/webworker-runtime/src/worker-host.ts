@@ -406,6 +406,12 @@ function bootPatches(
   if (jsonl !== undefined) {
     patches.push({ id: 'session-persistence-jsonl', config: { ...configOf(jsonl), compression: 'none' } })
   }
+  // The VFS has no Documents directory to hold a permanent default Workspace;
+  // the preview's Workspace is the image root it opens at.
+  const workspaces = find(rows, 'workspace-controller')
+  if (workspaces !== undefined) {
+    patches.push({ id: 'workspace-controller', config: { ...configOf(workspaces), defaultWorkspace: false } })
+  }
   const dir = join(root, IMAGE_HOME_DIRECTORY, 'profiles/preview')
   const profile: ProfileContext = {
     name: 'preview', dir, patchPath: join(dir, 'cordis.patch.yml'),

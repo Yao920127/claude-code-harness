@@ -28,7 +28,8 @@ function harness() {
   const store = createBrowserStore().create(id)
   let open = true
   let searchUrl: string | undefined = SEARCH
-  const face = createBrowserControllers(store.actions, createIframePage, () => open, () => searchUrl)
+  let homeUrl: string | undefined
+  const face = createBrowserControllers(store.actions, createIframePage, () => open, () => searchUrl, () => homeUrl)
   disposables.push(face)
   const host = document.createElement('div')
   host.id = id
@@ -46,6 +47,7 @@ function harness() {
   return {
     store, face, mount, iframe, close: () => { open = false },
     setSearch: (value: string | undefined) => { searchUrl = value },
+    setHome: (value: string | undefined) => { homeUrl = value },
   }
 }
 
@@ -72,6 +74,26 @@ describe('BrowserController', () => {
     expect(state.getSnapshot()).toMatchObject({ addressFailure: undefined, frame: { target: { title: 'youtube' } } })
     h.face.loadUrl(TAB, 'youtube.com')
     expect(h.iframe().src).toBe('https://youtube.com/')
+  })
+
+  it('opens the home address in a new tab that has neither its own address nor a saved page', () => {
+    const fresh = harness()
+    fresh.setHome('https://home.example/')
+    fresh.mount(lifetime().signal)
+    expect(fresh.iframe().src).toBe('https://home.example/')
+
+    const disabled = harness()
+    disabled.setHome('')
+    disabled.mount(lifetime().signal)
+    expect(disabled.face.keyedHooks.browserState(TAB)!.getSnapshot().frame.target).toBeUndefined()
+
+    const saved = harness()
+    saved.setHome('https://home.example/')
+    saved.store.actions.replace(TAB, browserAddressCheckpoint({ kind: 'https', url: 'https://saved.example/', title: 'Saved' }, 1))
+    saved.mount(lifetime().signal)
+    const state = saved.face.keyedHooks.browserState(TAB)!.getSnapshot()
+    expect(state.frame.target).toBeUndefined()
+    expect(state.restoreTarget?.url).toBe('https://saved.example/')
   })
 
   it('restores only on request and redirects saved checkpoints to a replacement binding', () => {
@@ -137,7 +159,7 @@ describe('BrowserController', () => {
     const store = createBrowserStore().create('provider-callbacks')
     const openTab = vi.fn()
     const controller = new BrowserController({ tabId: TAB, signal: lifetime().signal, applicationOrigin: APP,
-      actions: store.actions, initial: saved, createPage: pageFactory, openTab, searchUrl: () => SEARCH })
+      actions: store.actions, initial: saved, createPage: pageFactory, openTab, searchUrl: () => SEARCH, homeUrl: () => undefined })
     disposables.push(controller)
     const provider = callbacks[0]!
     provider.openRequested('file:/secret')
@@ -164,7 +186,7 @@ describe('BrowserController', () => {
     const tabLifetime = lifetime()
     const controller = new BrowserController({
       tabId: TAB, signal: tabLifetime.signal, applicationOrigin: APP, actions: store.actions,
-      initial: undefined, createPage: createIframePage, openTab: vi.fn(), searchUrl: () => SEARCH,
+      initial: undefined, createPage: createIframePage, openTab: vi.fn(), searchUrl: () => SEARCH, homeUrl: () => undefined,
     })
     disposables.push(controller)
     tabLifetime.abort()

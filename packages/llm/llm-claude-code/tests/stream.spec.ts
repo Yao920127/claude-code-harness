@@ -27,13 +27,21 @@ function success(extra: object = {}): SDKMessage {
   return { type: 'result', subtype: 'success', is_error: false, result: 'done', session_id: SESSION, ...extra } as never
 }
 
+function toolResults(content: object[], uuid = 'results-uuid'): SDKMessage {
+  return { type: 'user', message: { role: 'user', content }, parent_tool_use_id: null, uuid, session_id: SESSION } as never
+}
+
+function reasoningTexts(chunks: StreamChunk[]): string[] {
+  return chunks.flatMap(chunk => chunk.type === 'block-end' && chunk.block.type === 'reasoning' ? [chunk.block.text] : [])
+}
+
 function run(messages: SDKMessage[]): StreamChunk[] {
   const translator = new ClaudeCodeStreamTranslator()
   return [...messages.flatMap(message => translator.accept(message)), ...translator.finish()]
 }
 
 describe('ClaudeCodeStreamTranslator', () => {
-  it('streams text and thinking, renders tool activity, and finishes with usage and the resume cursor', () => {
+  it('streams text, thinking, and live tool activity, reports failed results, and finishes with usage and the resume cursor', () => {
     const chunks = run([
       { type: 'system', subtype: 'init', session_id: SESSION } as never,
       event({ type: 'message_start', message: { usage: { input_tokens: 10, output_tokens: 1, cache_read_input_tokens: 5, cache_creation_input_tokens: 2 } } }),
@@ -45,13 +53,14 @@ describe('ClaudeCodeStreamTranslator', () => {
       event({ type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'Hel' } }),
       event({ type: 'content_block_delta', index: 1, delta: { type: 'text_delta', text: 'lo' } }),
       event({ type: 'content_block_stop', index: 1 }),
-      event({ type: 'content_block_start', index: 2, content_block: { type: 'tool_use' } }),
-      event({ type: 'content_block_delta', index: 2, delta: { type: 'input_json_delta', partial_json: '{}' } }),
+      event({ type: 'content_block_start', index: 2, content_block: { type: 'tool_use', id: 'tool-1', name: 'Bash' } }),
+      event({ type: 'content_block_delta', index: 2, delta: { type: 'input_json_delta', partial_json: '{"command":' } }),
+      event({ type: 'content_block_delta', index: 2, delta: { type: 'input_json_delta', partial_json: '"ls"}' } }),
       event({ type: 'content_block_stop', index: 2 }),
       event({ type: 'message_delta', usage: { output_tokens: 7 } }),
       event({ type: 'message_stop' }),
-      assistant([{ type: 'text', text: 'Hello' }, { type: 'tool_use', name: 'Bash', input: { command: 'ls' } }]),
-      { type: 'user', message: { role: 'user', content: [] }, parent_tool_use_id: null, uuid: 'tool-result-uuid', session_id: SESSION } as never,
+      assistant([{ type: 'text', text: 'Hello' }, { type: 'tool_use', id: 'tool-1', name: 'Bash', input: { command: 'ls' } }]),
+      toolResults([{ type: 'tool_result', tool_use_id: 'tool-1', is_error: true, content: 'The user rejected this operation.' }], 'tool-result-uuid'),
       success(),
     ])
     expect(chunks).toEqual([
@@ -63,8 +72,12 @@ describe('ClaudeCodeStreamTranslator', () => {
       { type: 'text-delta', index: 1, text: 'lo' },
       { type: 'block-end', index: 1, block: { type: 'text', text: 'Hello' } },
       { type: 'block-start', index: 2, blockType: 'reasoning' },
-      { type: 'reasoning-delta', index: 2, text: 'Claude Code ran Bash: ls\n' },
+      { type: 'reasoning-delta', index: 2, text: 'Claude Code ran Bash' },
+      { type: 'reasoning-delta', index: 2, text: ': ls\n' },
       { type: 'block-end', index: 2, block: { type: 'reasoning', text: 'Claude Code ran Bash: ls\n' } },
+      { type: 'block-start', index: 3, blockType: 'reasoning' },
+      { type: 'reasoning-delta', index: 3, text: 'Claude Code\'s Bash failed: The user rejected this operation.\n' },
+      { type: 'block-end', index: 3, block: { type: 'reasoning', text: 'Claude Code\'s Bash failed: The user rejected this operation.\n' } },
       { type: 'usage', usage: { inputTokens: 17, outputTokens: 7, totalTokens: 24, cacheReadTokens: 5, cacheWriteTokens: 2 } },
       {
         type: 'finish',
@@ -110,13 +123,51 @@ describe('ClaudeCodeStreamTranslator', () => {
     const chunks = run([
       event({ type: 'content_block_delta', index: 9, delta: { type: 'text_delta', text: 'x' } }),
       event({ type: 'content_block_stop', index: 9 }),
-      assistant([{ type: 'tool_use', name: 'Mystery', input: null }]),
+      assistant([{ type: 'tool_use', id: 'tool-m', name: 'Mystery', input: null }]),
       success(),
     ])
     expect(chunks.slice(0, 3)).toEqual([
       { type: 'block-start', index: 0, blockType: 'reasoning' },
       { type: 'reasoning-delta', index: 0, text: 'Claude Code ran Mystery\n' },
       { type: 'block-end', index: 0, block: { type: 'reasoning', text: 'Claude Code ran Mystery\n' } },
+    ])
+  })
+
+  it('names a failure by its first text line, bounded, and ignores successful results', () => {
+    const long = 'x'.repeat(250)
+    const chunks = run([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'server_tool_use', id: 'srv', name: 'web_search' } }),
+      event({ type: 'content_block_stop', index: 0 }),
+      assistant([{ type: 'tool_use', id: 'tool-e', name: 'Edit', input: { file_path: 'a.py' } }]),
+      toolResults('a string prompt' as never),
+      toolResults([
+        { type: 'tool_result', tool_use_id: 'tool-e', content: 'ok' },
+        { type: 'tool_result', tool_use_id: 'tool-e', is_error: true, content: [{ type: 'image' }, { type: 'text', text: '\n  first line \nsecond' }] },
+        { type: 'tool_result', tool_use_id: 'unknown', is_error: true },
+        { type: 'tool_result', tool_use_id: 'tool-e', is_error: true, content: long },
+        { type: 'text', text: 'not a result' },
+      ]),
+      success(),
+    ])
+    expect(reasoningTexts(chunks)).toEqual([
+      'Claude Code ran Edit: a.py\n',
+      'Claude Code\'s Edit failed: first line\n',
+      'Claude Code\'s tool failed\n',
+      `Claude Code's Edit failed: ${'x'.repeat(199)}…\n`,
+    ])
+  })
+
+  it('keeps a streamed tool line to its name when the input never completes', () => {
+    const chunks = run([
+      event({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tool-w', name: 'Write' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"file_path":"a' } }),
+      event({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'ignored' } }),
+    ])
+    expect(chunks.slice(0, 4)).toEqual([
+      { type: 'block-start', index: 0, blockType: 'reasoning' },
+      { type: 'reasoning-delta', index: 0, text: 'Claude Code ran Write' },
+      { type: 'reasoning-delta', index: 0, text: '\n' },
+      { type: 'block-end', index: 0, block: { type: 'reasoning', text: 'Claude Code ran Write\n' } },
     ])
   })
 

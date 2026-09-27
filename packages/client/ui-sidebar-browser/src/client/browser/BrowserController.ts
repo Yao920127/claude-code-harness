@@ -28,6 +28,8 @@ export interface BrowserControllerOptions {
   readonly openTab: (url: string) => void
   /** Current search address template for keyword input; undefined while the Host has not reported one. */
   readonly searchUrl: () => string | undefined
+  /** Current home address a new tab opens without its own address; undefined or empty opens none. */
+  readonly homeUrl: () => string | undefined
 }
 
 /** Owns input validation and page lifetime without inspecting the carrier type. */
@@ -90,13 +92,21 @@ export class BrowserController implements HostObservable<BrowserControllerState>
   }
 
   /**
-   * Consume initial navigation once; a saved checkpoint alone never starts a page.
+   * Consume initial navigation once: an explicit address loads, a saved
+   * checkpoint waits for restoration, and a tab with neither opens the home
+   * address when one is configured.
    * @param initialUrl - explicit typed-open address, or absence.
    */
   start(initialUrl: string | undefined): void {
     if (this.started || this.disposed) return
     this.started = true
-    if (initialUrl !== undefined) this.loadUrl(initialUrl)
+    if (initialUrl !== undefined) {
+      this.loadUrl(initialUrl)
+      return
+    }
+    if (this.store.getSnapshot().restoreTarget !== undefined) return
+    const home = this.options.homeUrl()
+    if (home !== undefined && home !== '') this.loadUrl(home)
   }
 
   /** Load the saved address only after an explicit restore action. */
@@ -213,10 +223,12 @@ export interface BrowserInjected {
  * @param createPage - composition-selected provider.
  * @param isTabOpen - authoritative layout membership, independent of mounted bodies and plugin lifetime.
  * @param searchUrl - current search address template for keyword input.
+ * @param homeUrl - current home address a new tab opens without its own address.
  * @returns tab callbacks.
  */
 export function createBrowserControllers(actions: BoundActions<BrowserStore>, createPage: BrowserPageFactory,
-  isTabOpen: (tabId: TabId) => boolean, searchUrl: () => string | undefined): BrowserInjected {
+  isTabOpen: (tabId: TabId) => boolean, searchUrl: () => string | undefined,
+  homeUrl: () => string | undefined): BrowserInjected {
   let currentActions = actions
   const controllers = new Map<TabId, {
     readonly signal: AbortSignal
@@ -235,7 +247,7 @@ export function createBrowserControllers(actions: BoundActions<BrowserStore>, cr
           held.signal.removeEventListener('abort', held.forget)
           void held.controller.dispose()
         }
-        const created = new BrowserController({ ...request, actions: currentActions, createPage, searchUrl })
+        const created = new BrowserController({ ...request, actions: currentActions, createPage, searchUrl, homeUrl })
         const forget = (): void => {
           controllers.delete(tabId)
           // Plugin unload also aborts occurrences; only layout removal deletes saved navigation.

@@ -12,7 +12,7 @@
 
 import { query as officialQuery, type Options, type Query } from '@anthropic-ai/claude-agent-sdk'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import type { SessionId } from '@deepseek-ai/dsh-session'
+import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { LlmAdapter, LlmError } from '@deepseek-ai/dsh-llm'
 import type {
   GenerateOptions,
@@ -27,20 +27,9 @@ import { scrubbedParentEnv, type SubprocessHandle, type SubprocessSpawnSpec } fr
 import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
 import { approvalCallback } from './approval.ts'
 import { modelEntries, NATIVE_MODEL_ID, type ClaudeCodeModelEntry } from './models.ts'
+import { resolvePermissionMode, type ClaudeCodeRoutePermissionMode, type SessionPermissions } from './permissions.ts'
 import { planTurn, type ClaudeCodeTurnPlan } from './request.ts'
 import { ClaudeCodeStreamTranslator } from './stream.ts'
-
-/** Native permission modes a route may select. */
-export const CLAUDE_CODE_ROUTE_PERMISSION_MODES = [
-  'default',
-  'acceptEdits',
-  'auto',
-  'plan',
-  'bypassPermissions',
-] as const satisfies readonly NonNullable<Options['permissionMode']>[]
-
-/** Route-selected native permission mode. */
-export type ClaudeCodeRoutePermissionMode = typeof CLAUDE_CODE_ROUTE_PERMISSION_MODES[number]
 
 /** Resolved deployment choices and host hooks for one route. */
 export interface ClaudeCodeAdapterOptions {
@@ -54,7 +43,7 @@ export interface ClaudeCodeAdapterOptions {
   readonly discoveryCwd: string
   /** Reports a failed model discovery; the selector then offers only the native default. */
   readonly onDiscoveryError: (error: Error) => void
-  /** Native permission mode fixed for every turn. */
+  /** Permission setting: `session` derives each turn's native mode from the Session; any other value pins it. */
   readonly permissionMode: ClaudeCodeRoutePermissionMode
   /** Explicit environment layered over the credential-scrubbed parent environment. */
   readonly env: Readonly<Record<string, string>>
@@ -68,8 +57,10 @@ export interface ClaudeCodeAdapterOptions {
   readonly approval: () => ApprovalService | undefined
   /** The Agent whose model call is running, when an Agent initiated it. */
   readonly initiator: () => Agent | undefined
-  /** Working directory of one live Session, when it is loaded and has one. */
-  readonly sessionCwd: (sessionId: SessionId) => string | undefined
+  /** One live Session, when it is loaded. */
+  readonly session: (sessionId: SessionId) => Session | undefined
+  /** A Session's effective permission knobs, when the composition mounts sandbox and approval services. */
+  readonly sessionPermissions: (session: Session) => SessionPermissions | undefined
 }
 
 /** Claude Code turns as model calls on one or more harness provider routes. */
@@ -163,10 +154,9 @@ export class ClaudeCodeAdapter extends LlmAdapter {
   async * stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
     const plan = planTurn(options)
     const agent = this.options.initiator()
-    const cwd = options.sessionId === undefined
-      ? agent?.session.header.cwd
-      : this.options.sessionCwd(options.sessionId)
-    if (cwd === undefined) {
+    const session = options.sessionId === undefined ? agent?.session : this.options.session(options.sessionId)
+    const cwd = session?.header.cwd
+    if (session === undefined || cwd === undefined) {
       throw new LlmError(
         'llm-claude-code: a Claude Code turn runs in its Session\'s workspace; call this route for a loaded Session that has a working directory',
         'NO_WORKSPACE',
@@ -183,7 +173,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
     try {
       query = officialQuery({
         prompt: plan.prompt,
-        options: this.queryOptions(options, plan, cwd, controller, agent, (handle) => { child = handle }),
+        options: this.queryOptions(options, plan, session, cwd, controller, agent, (handle) => { child = handle }),
       })
       for await (const message of query) yield * translator.accept(message)
       yield * translator.finish()
@@ -207,12 +197,13 @@ export class ClaudeCodeAdapter extends LlmAdapter {
   private queryOptions(
     request: GenerateOptions,
     plan: ClaudeCodeTurnPlan,
+    session: Session,
     cwd: string,
     controller: AbortController,
     agent: Agent | undefined,
     capture: (child: SubprocessHandle) => void,
   ): Options {
-    const { permissionMode } = this.options
+    const permissionMode = resolvePermissionMode(this.options.permissionMode, this.options.sessionPermissions(session))
     const auxiliary = request.purpose !== undefined
     return {
       abortController: controller,

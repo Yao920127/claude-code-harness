@@ -27,26 +27,33 @@ export interface ClaudeCodeModelEntry {
 /** Separator between the model name and its notes in a Claude Code model description. */
 const DESCRIPTION_SEPARATOR = ' · '
 
+/** Selector label of the native default entry, whose model the host's Claude Code settings choose. */
+export const NATIVE_MODEL_NAME = 'Claude (Claude Code settings)'
+
 /**
  * Project Claude Code's model list onto selector entries. The native default
- * entry names the model it resolves to, and an alias resolving to that same
- * model is dropped so the selector lists each model once.
+ * entry sends no model, so the host's Claude Code settings (for example
+ * `"model": "opus"`) choose it; its label therefore names no model, and its
+ * description names the account's recommended model that applies only when
+ * no setting selects one. Every alias stays listed so each model can be
+ * selected explicitly.
  * @param models - the list Claude Code reported, in its preferred order.
- * @returns selector entries such as `Claude Sonnet 5 (default)` and `Claude Fable 5.1`.
+ * @returns selector entries such as `Claude (Claude Code settings)`, `Claude Sonnet 5`, and `Claude Fable 5.1`.
  */
 export function modelEntries(models: readonly ModelInfo[]): ClaudeCodeModelEntry[] {
-  const nativeDefault = models.find(model => model.value === NATIVE_MODEL_ID)
-  const entries: ClaudeCodeModelEntry[] = []
-  for (const model of models) {
-    if (model !== nativeDefault && nativeDefault?.resolvedModel !== undefined && model.resolvedModel === nativeDefault.resolvedModel) {
-      continue
-    }
+  return models.map((model) => {
     const [label = model.displayName, ...notes] = model.description.split(DESCRIPTION_SEPARATOR)
-    entries.push({
+    if (model.value === NATIVE_MODEL_ID) {
+      return {
+        id: model.value,
+        name: NATIVE_MODEL_NAME,
+        description: `The model your Claude Code settings select; ${label} without a setting`,
+      }
+    }
+    return {
       id: model.value,
-      name: model === nativeDefault ? `Claude ${label} (default)` : `Claude ${label}`,
+      name: `Claude ${label}`,
       ...notes.length === 0 ? {} : { description: notes.join(DESCRIPTION_SEPARATOR) },
-    })
-  }
-  return entries
+    }
+  })
 }

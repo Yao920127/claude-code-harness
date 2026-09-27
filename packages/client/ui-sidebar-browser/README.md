@@ -33,7 +33,7 @@ Choose Browser for a Web page that should remain beside the current Session. Cho
 
 ### Minimal configuration
 
-`searchUrl` is the HTTPS search address for keywords, where `%s` receives the encoded query; it defaults to Google search and changes live. A Web profile enables the shipped entry through its profile patch, which can also set the search address:
+`searchUrl` is the HTTPS search address for keywords, where `%s` receives the encoded query; it defaults to Google search and changes live. `homeUrl` is the HTTPS page a new tab opens when it has neither an address of its own nor a saved page to restore; it defaults to `https://www.google.com`, and an empty value opens no page. A Web profile enables the shipped entry through its profile patch, which can also set the search address:
 
 ```yaml
 - id: ui-sidebar-browser
@@ -109,7 +109,7 @@ The isolation policy deliberately gives up some browser compatibility:
 - Browsers conceal many iframe failures for security: DNS, TLS, mixed-content, CSP, and `X-Frame-Options` failures may emit `load` or no actionable event instead of `error`. The load-failure notice is best-effort.
 - Saved title and URL survive reloads and plugin unload while the tab remains in Sidebar's layout. Closing the tab removes its checkpoint. Restart restoration does not recover page memory, unsaved forms or Chromium's history stack.
 - Local files are rejected and remain owned by Document Preview.
-- Google and most search engines refuse iframe embedding, so in Web a keyword search shows the blocked-frame notice; open it externally or use Desktop, whose `<webview>` renders it. Setting `searchUrl` to an engine that allows embedding avoids this.
+- Google and most search engines refuse iframe embedding, so in Web a keyword search and the default Google home page stay blank: browsers report a refused frame as an ordinary load, so no failure notice appears. Open the page externally or use Desktop, whose `<webview>` renders it. Setting `searchUrl` and `homeUrl` to sites that allow embedding avoids this.
 - Desktop shares process-local storage partitions by canonical workspace CWD; Sessions without a resolved Workspace are isolated separately. Cookies and Web storage do not survive application restart. Guest permissions, downloads and native popups are denied; approved HTTP(S) popup requests open Sidebar tabs. Host-address filtering is not a general private-network or DNS-rebinding firewall.
 
 <a id="dev-note"></a>

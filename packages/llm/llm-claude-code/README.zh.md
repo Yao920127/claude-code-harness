@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agent preset 下在输入框的模型选择器里选择 Claude 模型；把它设为默认模型选择后，每个新 Session 都会以 Claude Code 开始。选择器列出 Claude Code 为你的账号报告的模型——例如 `Claude Sonnet 5 (default)`，即你的 Claude 设置所选的模型，以及 `Claude Fable 5.1`——并在选择器首次请求时从一个短暂的 Claude Code 进程读取该列表。
+Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agent preset 下在输入框的模型选择器里选择 Claude 模型；把它设为默认模型选择后，每个新 Session 都会以 Claude Code 开始。选择器列出 Claude Code 为你的账号报告的模型——例如 `Claude (Claude Code settings)`（不发送模型，由你的 Claude Code 设置决定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——并在选择器首次请求时从一个短暂的 Claude Code 进程读取该列表。设置项的说明写出账号的推荐模型，它只在没有设置选择模型时生效。
 
 ### 配置
 
@@ -47,7 +47,7 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 | `provider` | `claude-code` | 注册到 `ctx.llm` 的路由名；每个挂载实例需要唯一值 |
 | `displayName` | `Claude Code` | 模型选择器显示的路由名称 |
 | `models` | 自动发现 | 可选模型；缺省或为空时列出账号的模型。id `default` 不发送模型，由你的 Claude 设置决定，其他 id 原样传给 Claude Code |
-| `permissionMode` | `default` | 每个回合的原生权限模式（`default`、`acceptEdits`、`auto`、`plan` 或 `bypassPermissions`） |
+| `permissionMode` | `session` | `session` 跟随每个 Session 的权限预设；原生模式（`default`、`acceptEdits`、`auto`、`plan` 或 `bypassPermissions`）固定每个回合 |
 | `env` | `{}` | 叠加在已清除凭据的父环境之上的显式环境 |
 | `disposeGraceMs` | `3000` | 受管进程各终止层级之间的宽限时间 |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | 模型请求重试策略；默认从不重试，因为失败的回合可能已经修改了文件 |
@@ -56,11 +56,11 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 
 ### 权限
 
-Claude Code 先应用你的用户、项目和本地 Claude 权限规则。对于这些规则未决定的操作，路由会代表发起该回合模型调用的 Agent 向 `ctx.approval` 询问：Web 审批卡片显示原生提示标题，或工具名称及其命令、文件或 URL。`allowed-once` 允许这一次操作；其他所有结果都会拒绝，拒绝原因会传给 Claude Code。`bypassPermissions` 跳过所有检查，从不询问。
+在默认的 `session` 设置下，每个回合的原生权限模式跟随 Session 的沙箱模式与审批策略。完全权限（`danger-full-access` 搭配 `never` 策略）以 `bypassPermissions` 运行 Claude Code，因为 `never` 策略会拒绝每一个提示；`workspace-write` 使用 `acceptEdits`，文件编辑无需询问即可进行；其他所有组合，以及没有沙箱或审批服务的组合，使用 `default`。Claude Code 先应用你的用户、项目和本地 Claude 权限规则。对于这些规则未决定的操作，路由会代表发起该回合模型调用的 Agent 向 `ctx.approval` 询问：Web 审批卡片显示原生提示标题，或工具名称及其命令、文件或 URL。`allowed-once` 允许这一次操作；其他所有结果都会拒绝，拒绝原因会传给 Claude Code。`bypassPermissions` 跳过所有检查，从不询问。
 
 ### 你会看到什么
 
-助手消息包含作为推理内容的 Claude Code 思考过程、作为文本的回答，以及每个顶层工具调用一行形如 `Claude Code ran <tool>: <subject>` 的推理内容。嵌套的 Claude Code subagent 通信、工具结果、hooks 和状态消息都留在 Claude Code 内部。
+助手消息包含作为推理内容的 Claude Code 思考过程、作为文本的回答，以及每个顶层工具调用一行形如 `Claude Code ran <tool>: <subject>` 的推理内容。Claude Code 一开始调用工具，该行就带着工具名称出现，因此整份文件写入这类较长的工具输入也能显示正在进行的工具；输入完整后再补上对象。失败的工具结果（包括权限拒绝）会增加一行形如 `Claude Code's <tool> failed: <错误的第一行>` 的内容。嵌套的 Claude Code subagent 通信、成功的工具结果、hooks 和状态消息都留在 Claude Code 内部。
 
 ### 失败与恢复
 
@@ -98,18 +98,19 @@ Claude Code 先应用你的用户、项目和本地 Claude 权限规则。对于
 | [`src/request.ts`](src/request.ts) | 请求校验、续接游标选择与提示渲染 |
 | [`src/stream.ts`](src/stream.ts) | SDK 消息到流块的转换、用量与终止映射 |
 | [`src/approval.ts`](src/approval.ts) | 基于 `ctx.approval` 的原生权限回调 |
+| [`src/permissions.ts`](src/permissions.ts) | 由路由设置与 Session 权限旋钮得出的原生权限模式 |
 | [`src/replay.ts`](src/replay.ts) | 保存原生续接游标的带版本 replay 状态 |
 | [`cordis.patch.yml`](cordis.patch.yml) | 插入路由的 Profile 补丁层 |
 
 ### 请求流程
 
-`planTurn()` 拒绝 temperature、停止序列、推理强度、图片，以及对话请求中的 `maxTokens`，并忽略 harness 工具 schema。它找到本构建可读取 replay 状态的最新助手消息，并把其后结尾用户消息中由人撰写的文本作为提示发送；插件插入的用户消息（例如 runtime-context 快照）会被舍弃，除非结尾消息中没有其他内容。从该位置到结尾用户消息之间的消息——没有 replay 状态时则为全部消息——会在提示前的 `<conversation_history>` 块中引用一次。辅助调用（设置了 `purpose`，例如 Session 标题）发送所有消息、附加其系统提示、从不续接，并以无工具、单回合且不持久化原生记录的方式运行。[`src/models.ts`](src/models.ts) 为发现的模型命名：原生默认项显示其解析到的模型，解析到同一模型的别名会被省略。
+`planTurn()` 拒绝 temperature、停止序列、推理强度、图片，以及对话请求中的 `maxTokens`，并忽略 harness 工具 schema。它找到本构建可读取 replay 状态的最新助手消息，并把其后结尾用户消息中由人撰写的文本作为提示发送；插件插入的用户消息（例如 runtime-context 快照）会被舍弃，除非结尾消息中没有其他内容。从该位置到结尾用户消息之间的消息——没有 replay 状态时则为全部消息——会在提示前的 `<conversation_history>` 块中引用一次。辅助调用（设置了 `purpose`，例如 Session 标题）发送所有消息、附加其系统提示、从不续接，并以无工具、单回合且不持久化原生记录的方式运行。[`src/models.ts`](src/models.ts) 为发现的模型命名：原生默认项以决定它的 Claude Code 设置命名，所有别名都保留在列表中。
 
 adapter 从请求的 Session 解析工作区；请求未指定 Session 时则从发起调用的 Agent 解析，两者都没有工作区时，会在启动 Claude Code 之前以 `NO_WORKSPACE` 失败。SDK 的自定义 spawn 钩子把平台 CLI 置于 `ctx.subprocess` 之下；流的 `finally` 会关闭查询、终止受管范围，并等待整个进程树退出。
 
 ### 流转换
 
-部分消息事件流式传输顶层文本和思考增量。工具调用只有在组装完成的助手消息上才完整，因此每个工具调用成为一个推理块。最后一个顶层助手或用户链条目成为续接游标。用量取自回合中最后一次原生模型调用：输入 token 包含缓存读写，用以衡量 Claude Code 当前携带的上下文。SDK 结果成为唯一的终止 `finish` 块；没有可续接条目的成功结果视为失败。
+部分消息事件流式传输顶层文本和思考增量。顶层工具调用在 `content_block_start` 时以其名称开启一个推理块，累积其输入 JSON 增量，并在 `content_block_stop` 时补上对象；组装完成的助手消息只渲染未经流式传输的工具调用。顶层用户消息中带 `is_error` 的工具结果成为一个推理块，内容为结果的第一行文本，上限 200 个字符。最后一个顶层助手或用户链条目成为续接游标。用量取自回合中最后一次原生模型调用：输入 token 包含缓存读写，用以衡量 Claude Code 当前携带的上下文。SDK 结果成为唯一的终止 `finish` 块；没有可续接条目的成功结果视为失败。
 
 </details>
 
@@ -160,7 +161,7 @@ Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系统提示、�
 
 - **harness 工具不会被使用**——路由忽略 preset 的工具 schema；由 Claude Code 自己的工具、MCP 服务器和其设置中的技能取代。
 - **仅支持文本输入**——图片附件会以 `UNSUPPORTED_CONTENT` 失败；路由向模型选择器声明仅接受文本输入。
-- **工具活动是一行文本**——顶层工具调用渲染为推理行而非工具卡片，工具结果留在 Claude Code 内部。
+- **工具活动是一行文本**——顶层工具调用与失败结果渲染为推理行而非工具卡片，成功的工具结果留在 Claude Code 内部。
 - **没有提问通道**——由于不存在 harness 提问桥接，`AskUserQuestion` 被禁用；Claude Code 改为在回答文本中提问。
 - **辅助调用的输出上限仅供参考**——Session 标题或压缩调用的 `maxTokens` 会被接受，但由 Claude Code 执行自己的输出上限。
 - **harness 压缩衡量的是另一份上下文**——preset 的压缩会通过单回合 Claude Code 调用总结 harness 历史；下一回合随后从该摘要开始新的原生对话，而 Claude Code 也会自行压缩其记录。

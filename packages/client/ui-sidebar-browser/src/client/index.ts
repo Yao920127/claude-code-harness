@@ -70,6 +70,7 @@ export function apply(ctx: Context): void {
   const store = createBrowserStore()
   const settings = ctx.configForms.get<SidebarBrowserSettings>(SIDEBAR_BROWSER_NAMESPACE)
   const searchUrl = (): string | undefined => settings.getSnapshot().value?.searchUrl
+  const homeUrl = (): string | undefined => settings.getSnapshot().value?.homeUrl
   const openTabs = ctx.sidebarRight.openTabs
   const carrier = (globalThis as typeof globalThis & {
     dshDesktop?: { readonly protocolVersion: number; readonly browser?: DesktopBrowserBridge }
@@ -93,7 +94,7 @@ export function apply(ctx: Context): void {
           return existing
         }
         const controller = createBrowserControllers(actions, factory(sessionId), tabId =>
-          openTabs.getSnapshot().some(tab => tab.sessionId === sessionId && tab.tabId === tabId), searchUrl)
+          openTabs.getSnapshot().some(tab => tab.sessionId === sessionId && tab.tabId === tabId), searchUrl, homeUrl)
         controllers.set(sessionId, controller)
         return controller
       },

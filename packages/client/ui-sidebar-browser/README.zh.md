@@ -33,7 +33,7 @@ Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用�
 
 ### 最小配置
 
-`searchUrl` 是关键词使用的 HTTPS 搜索地址，`%s` 接收编码后的查询；默认是 Google 搜索，修改后即时生效。Web profile 通过其 profile patch 启用随附条目，也可在其中设置搜索地址：
+`searchUrl` 是关键词使用的 HTTPS 搜索地址，`%s` 接收编码后的查询；默认是 Google 搜索，修改后即时生效。`homeUrl` 是新 tab 既没有自己的地址、也没有可恢复的已保存页面时打开的 HTTPS 页面；默认是 `https://www.google.com`，设为空值则不打开页面。Web profile 通过其 profile patch 启用随附条目，也可在其中设置搜索地址：
 
 ```yaml
 - id: ui-sidebar-browser
@@ -109,7 +109,7 @@ Desktop 主进程批准 guest 租约，并执行挂载、导航和权限策略�
 - 出于安全原因，浏览器会隐藏很多 iframe 失败：DNS、TLS、mixed-content、CSP 与 `X-Frame-Options` 失败可能触发 `load`，也可能不提供可操作 event，而不是触发 `error`。加载失败 notice 只能作为 best-effort 提示。
 - 只要 tab 仍在 Sidebar 布局中，保存的标题和 URL 就会跨刷新与插件卸载保留。关闭 tab 会删除其检查点。重启恢复不恢复页面内存、未保存的表单或 Chromium history 栈。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
-- Google 与多数搜索引擎拒绝 iframe 嵌入，因此在 Web 中关键词搜索会显示被阻止的 frame 提示；可在系统浏览器中打开，或使用由 `<webview>` 渲染的 Desktop。把 `searchUrl` 设为允许嵌入的搜索引擎可避免此问题。
+- Google 与多数搜索引擎拒绝 iframe 嵌入，因此在 Web 中关键词搜索与默认的 Google 首页会保持空白：浏览器把被拒绝的 frame 报告为普通加载，所以不会出现失败提示。可在系统浏览器中打开，或使用由 `<webview>` 渲染的 Desktop。把 `searchUrl` 与 `homeUrl` 设为允许嵌入的网站可避免此问题。
 - Desktop 按规范化的工作区 CWD 共享进程内存储分区；没有解析到 Workspace 的 Session 单独隔离。Cookie 与 Web storage 不跨应用重启保留。guest 权限、下载与原生 popup 均被拒绝；通过检查的 HTTP(S) popup 请求会打开 Sidebar tab。Host 地址过滤不是通用私网或 DNS-rebinding 防火墙。
 
 <a id="dev-note"></a>

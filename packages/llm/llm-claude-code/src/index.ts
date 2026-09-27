@@ -15,16 +15,25 @@ import type {} from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-subprocess'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import type {} from '@deepseek-ai/dsh-user-approval'
+import type {} from '@deepseek-ai/dsh-sandbox-policy'
+import { ClaudeCodeAdapter } from './adapter.ts'
+import type { ClaudeCodeModelEntry } from './models.ts'
 import {
   CLAUDE_CODE_ROUTE_PERMISSION_MODES,
-  ClaudeCodeAdapter,
+  SESSION_PERMISSION_MODE,
   type ClaudeCodeRoutePermissionMode,
-} from './adapter.ts'
-import type { ClaudeCodeModelEntry } from './models.ts'
+} from './permissions.ts'
 
 export { ClaudeCodeAdapter } from './adapter.ts'
-export type { ClaudeCodeAdapterOptions, ClaudeCodeRoutePermissionMode } from './adapter.ts'
-export { modelEntries, NATIVE_MODEL_ID } from './models.ts'
+export type { ClaudeCodeAdapterOptions } from './adapter.ts'
+export { modelEntries, NATIVE_MODEL_ID, NATIVE_MODEL_NAME } from './models.ts'
+export {
+  CLAUDE_CODE_NATIVE_PERMISSION_MODES,
+  CLAUDE_CODE_ROUTE_PERMISSION_MODES,
+  resolvePermissionMode,
+  SESSION_PERMISSION_MODE,
+} from './permissions.ts'
+export type { ClaudeCodeNativePermissionMode, ClaudeCodeRoutePermissionMode, SessionPermissions } from './permissions.ts'
 export type { ClaudeCodeModelEntry } from './models.ts'
 export { readReplay, replayEnvelope } from './replay.ts'
 export type { ClaudeCodeChainEntryId, ClaudeCodeReplay, ClaudeCodeSessionId } from './replay.ts'
@@ -45,9 +54,14 @@ export interface Config {
    */
   models?: ClaudeCodeModelEntry[]
   /**
-   * Native permission mode for every turn (default `default`). Operations the
-   * host's Claude permission rules leave undecided are asked through
-   * `ctx.approval`; `bypassPermissions` skips every check.
+   * Permission setting (default `session`). `session` derives each turn's
+   * native mode from the Session's sandbox mode and approval policy: full
+   * access with the `never` policy skips every native check, `workspace-write`
+   * accepts file edits without asking, and anything else asks. A native mode
+   * (`default`, `acceptEdits`, `auto`, `plan`, or `bypassPermissions`) pins
+   * every turn instead. Operations the host's Claude permission rules leave
+   * undecided are asked through `ctx.approval`; `bypassPermissions` skips
+   * every check.
    */
   permissionMode?: ClaudeCodeRoutePermissionMode
   /** Explicit environment entries layered over the credential-scrubbed parent environment. */
@@ -69,7 +83,7 @@ export const Config: z<Config> = z.object({
     name: z.string().min(1).required(),
     description: z.string(),
   })),
-  permissionMode: z.union([...CLAUDE_CODE_ROUTE_PERMISSION_MODES]).default('default'),
+  permissionMode: z.union([...CLAUDE_CODE_ROUTE_PERMISSION_MODES]).default(SESSION_PERMISSION_MODE),
   env: z.dict(z.string()).default({}),
   disposeGraceMs: z.number().default(3_000),
   retryPolicy: RetryPolicySchema.default({ mode: 'normal', maxRetries: 0 }),
@@ -101,7 +115,13 @@ export function apply(ctx: Context, config: Config): void {
     spawn: spec => ctx.subprocess.spawn(spec),
     approval: () => ctx.get('approval'),
     initiator: () => ctx.agents.currentInitiator(),
-    sessionCwd: sessionId => ctx.sessions.get(sessionId)?.header.cwd,
+    session: sessionId => ctx.sessions.get(sessionId),
+    sessionPermissions: (session) => {
+      const sandboxPolicy = ctx.get('sandboxPolicy')
+      const approval = ctx.get('approval')
+      if (sandboxPolicy === undefined || approval === undefined) return undefined
+      return { sandbox: sandboxPolicy.resolve({ session }).mode, approval: approval.effectivePolicy(session) }
+    },
   })
   ctx.llm.registerAdapter([provider], adapter)
 }

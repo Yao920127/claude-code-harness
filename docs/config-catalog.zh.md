@@ -1556,7 +1556,7 @@ export interface Config {
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
 - `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:36`](../packages/llm/llm-claude-code/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:45`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */
@@ -1572,9 +1572,14 @@ export interface Config {
    */
   models?: ClaudeCodeModelEntry[]
   /**
-   * Native permission mode for every turn (default `default`). Operations the
-   * host's Claude permission rules leave undecided are asked through
-   * `ctx.approval`; `bypassPermissions` skips every check.
+   * Permission setting (default `session`). `session` derives each turn's
+   * native mode from the Session's sandbox mode and approval policy: full
+   * access with the `never` policy skips every native check, `workspace-write`
+   * accepts file edits without asking, and anything else asks. A native mode
+   * (`default`, `acceptEdits`, `auto`, `plan`, or `bypassPermissions`) pins
+   * every turn instead. Operations the host's Claude permission rules leave
+   * undecided are asked through `ctx.approval`; `bypassPermissions` skips
+   * every check.
    */
   permissionMode?: ClaudeCodeRoutePermissionMode
   /** Explicit environment entries layered over the credential-scrubbed parent environment. */
@@ -1598,7 +1603,7 @@ export interface ClaudeCodeModelEntry {
   readonly description?: string
 }
 
-/** Route-selected native permission mode. */
+/** Route-selected permission setting. */
 export type ClaudeCodeRoutePermissionMode = typeof CLAUDE_CODE_ROUTE_PERMISSION_MODES[number]
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-llm-claude-code -->

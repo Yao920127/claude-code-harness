@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pick a Claude model in the composer's model selector under any agent preset; making it the default model selection starts every new Session with Claude Code. The selector lists the models Claude Code reports for your account — for example `Claude Sonnet 5 (default)`, the model your Claude settings select, and `Claude Fable 5.1` — and reads that list from a short-lived Claude Code process the first time a selector asks.
+The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pick a Claude model in the composer's model selector under any agent preset; making it the default model selection starts every new Session with Claude Code. The selector lists the models Claude Code reports for your account — for example `Claude (Claude Code settings)`, which sends no model so your Claude Code settings (such as `"model": "opus"`) choose it, `Claude Sonnet 5`, and `Claude Fable 5.1` — and reads that list from a short-lived Claude Code process the first time a selector asks. The settings entry's description names the account's recommended model, which applies only when no setting selects one.
 
 ### Configuration
 
@@ -47,7 +47,7 @@ The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pic
 | `provider` | `claude-code` | Route name registered on `ctx.llm`; each mounted instance needs a unique value |
 | `displayName` | `Claude Code` | Route label shown by model selectors |
 | `models` | discovered | Selectable models; absent or empty lists the account's models. The id `default` sends no model, so your Claude settings choose it, and any other id passes to Claude Code unchanged |
-| `permissionMode` | `default` | Native permission mode for every turn (`default`, `acceptEdits`, `auto`, `plan`, or `bypassPermissions`) |
+| `permissionMode` | `session` | `session` follows each Session's permission preset; a native mode (`default`, `acceptEdits`, `auto`, `plan`, or `bypassPermissions`) pins every turn |
 | `env` | `{}` | Explicit environment layered over the credential-scrubbed parent environment |
 | `disposeGraceMs` | `3000` | Grace between the managed process's termination tiers |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | Model-request retry policy; the default never retries, because a failed turn may already have changed files |
@@ -56,11 +56,11 @@ The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-a
 
 ### Permissions
 
-Claude Code applies your user, project, and local Claude permission rules first. For an operation they leave undecided, the route asks `ctx.approval` on behalf of the Agent whose model call started the turn: the Web approval card shows the native prompt title, or the tool name and its command, file, or URL. `allowed-once` allows that one operation; every other outcome denies it, and the denial reason reaches Claude Code. `bypassPermissions` skips every check and never asks.
+Under the default `session` setting, each turn's native permission mode follows the Session's sandbox mode and approval policy. Full access (`danger-full-access` with the `never` policy) runs Claude Code with `bypassPermissions`, because the `never` policy would reject every prompt; `workspace-write` uses `acceptEdits`, so file edits proceed without asking; every other combination, and a composition without sandbox or approval services, uses `default`. Claude Code applies your user, project, and local Claude permission rules first. For an operation they leave undecided, the route asks `ctx.approval` on behalf of the Agent whose model call started the turn: the Web approval card shows the native prompt title, or the tool name and its command, file, or URL. `allowed-once` allows that one operation; every other outcome denies it, and the denial reason reaches Claude Code. `bypassPermissions` skips every check and never asks.
 
 ### What you see
 
-The assistant message holds Claude Code's thinking as reasoning, its text as text, and one reasoning line of the form `Claude Code ran <tool>: <subject>` for each top-level tool call. Nested Claude Code subagent traffic, tool results, hooks, and status messages stay inside Claude Code.
+The assistant message holds Claude Code's thinking as reasoning, its text as text, and one reasoning line of the form `Claude Code ran <tool>: <subject>` for each top-level tool call. The line appears with the tool name as soon as Claude Code starts the call, so a long tool input such as a whole-file write shows which tool is in progress, and gains its subject when the input is complete. A failed tool result, including a permission denial, adds a line of the form `Claude Code's <tool> failed: <first line of the error>`. Nested Claude Code subagent traffic, successful tool results, hooks, and status messages stay inside Claude Code.
 
 ### Failure and recovery
 
@@ -98,18 +98,19 @@ Cancelling the harness turn aborts the Claude Code turn and waits for its proces
 | [`src/request.ts`](src/request.ts) | Request validation, resume-cursor selection, and prompt rendering |
 | [`src/stream.ts`](src/stream.ts) | SDK message to stream-chunk translation, usage, and terminal mapping |
 | [`src/approval.ts`](src/approval.ts) | Native permission callback over `ctx.approval` |
+| [`src/permissions.ts`](src/permissions.ts) | Native permission mode from the route setting and the Session's permission knobs |
 | [`src/replay.ts`](src/replay.ts) | Versioned replay state holding the native resume cursor |
 | [`cordis.patch.yml`](cordis.patch.yml) | The Profile patch layer inserting the route |
 
 ### Request flow
 
-`planTurn()` refuses temperature, stop sequences, reasoning effort, images, and a conversation-request `maxTokens`, and ignores harness tool schemas. It finds the newest assistant message whose replay state this build reads and sends the person-authored text of the trailing user messages after it as the prompt; plugin-inserted user messages such as runtime-context snapshots are dropped, unless the trailing messages hold nothing else. Messages between that point and the trailing user messages — all of them when no replay state exists — are quoted once in a `<conversation_history>` block ahead of the prompt. An auxiliary call (`purpose` set, such as a Session title) sends every message, appends its system prompt, never resumes, and runs with no tools, one turn, and no persisted native transcript. [`src/models.ts`](src/models.ts) names the discovered models: the native default shows the model it resolves to, and an alias resolving to that same model is dropped.
+`planTurn()` refuses temperature, stop sequences, reasoning effort, images, and a conversation-request `maxTokens`, and ignores harness tool schemas. It finds the newest assistant message whose replay state this build reads and sends the person-authored text of the trailing user messages after it as the prompt; plugin-inserted user messages such as runtime-context snapshots are dropped, unless the trailing messages hold nothing else. Messages between that point and the trailing user messages — all of them when no replay state exists — are quoted once in a `<conversation_history>` block ahead of the prompt. An auxiliary call (`purpose` set, such as a Session title) sends every message, appends its system prompt, never resumes, and runs with no tools, one turn, and no persisted native transcript. [`src/models.ts`](src/models.ts) names the discovered models: the native default is labeled by the Claude Code settings that choose it, and every alias stays listed.
 
 The adapter resolves the workspace from the request's Session, or from the initiating Agent when the request names none, and fails with `NO_WORKSPACE` before starting Claude Code when neither has one. The SDK's custom spawn hook places the platform CLI under `ctx.subprocess`; the stream's `finally` closes the query, terminates the managed range, and waits for whole-tree exit.
 
 ### Stream translation
 
-Partial-message events stream top-level text and thinking deltas. Tool calls are complete only on assembled assistant messages, so each becomes one reasoning block. The last top-level assistant or user chain entry becomes the resume cursor. Usage comes from the turn's last native model call: input tokens include cache reads and writes, which measures the context Claude Code currently carries. The SDK result becomes the one terminal `finish` chunk; success without a resumable entry is a failure.
+Partial-message events stream top-level text and thinking deltas. A top-level tool call opens a reasoning block with its name at `content_block_start`, accumulates its input JSON deltas, and appends the subject at `content_block_stop`; the assembled assistant message renders only tool calls that did not stream. An `is_error` tool result in a top-level user message becomes one reasoning block with the result's first text line, bounded to 200 characters. The last top-level assistant or user chain entry becomes the resume cursor. Usage comes from the turn's last native model call: input tokens include cache reads and writes, which measures the context Claude Code currently carries. The SDK result becomes the one terminal `finish` chunk; success without a resumable entry is a failure.
 
 </details>
 
@@ -160,7 +161,7 @@ Append-only: each turn adds one assistant message after the reusable prefix and 
 
 - **Harness tools stay unused** — the route ignores the preset's tool schemas; Claude Code's own tools, MCP servers, and skills from its settings replace them.
 - **Text-only input** — image attachments fail with `UNSUPPORTED_CONTENT`; the route declares text-only input to model selectors.
-- **Tool activity is a text line** — top-level tool calls render as reasoning lines, not as tool cards, and tool results stay inside Claude Code.
+- **Tool activity is a text line** — top-level tool calls and failed results render as reasoning lines, not as tool cards, and successful tool results stay inside Claude Code.
 - **No question channel** — `AskUserQuestion` is disabled because no harness question bridge exists; Claude Code asks in its answer text instead.
 - **Auxiliary output caps are advisory** — a Session-title or compaction call's `maxTokens` is accepted, but Claude Code enforces its own output cap.
 - **Harness compaction measures a different context** — a preset's compaction summarizes the harness history through a one-turn Claude Code call; the next turn then starts a new native conversation from the summary, while Claude Code also compacts its own transcript.

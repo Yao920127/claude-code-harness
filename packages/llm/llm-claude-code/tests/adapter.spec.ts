@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, type Mock, vi } from 'vitest'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import LlmRuntime, { createAssistantMessage, createUserMessage, LlmError, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
-import type { SessionId } from '@deepseek-ai/dsh-session'
+import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import type { SubprocessHandle, SubprocessOutcome, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
 import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
 import * as plugin from '../src/index.ts'
@@ -23,7 +23,8 @@ vi.mock('@anthropic-ai/claude-agent-sdk', async importOriginal => ({
 
 const SESSION = 'native-session'
 const CWD = '/work/project'
-const agent = { id: 'agent', session: { header: { cwd: CWD } } } as Agent
+const session = { header: { cwd: CWD } } as Session
+const agent = { id: 'agent', session } as Agent
 
 interface FakeChild {
   readonly handle: SubprocessHandle
@@ -94,7 +95,7 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     provider: 'claude-code',
     displayName: 'Claude Code',
     ...configuredModels ? { models: [{ id: 'default', name: 'Claude Code', description: 'native' }, { id: 'opus', name: 'Opus' }] } : {},
-    permissionMode: 'default',
+    permissionMode: 'session',
     env: { EXTRA: '1' },
     disposeGraceMs: 1_000,
     retryPolicy: resolveRetryPolicy({ mode: 'normal', maxRetries: 0 }, 'test'),
@@ -103,7 +104,8 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     onDiscoveryError: vi.fn(),
     approval: () => undefined,
     initiator: () => agent,
-    sessionCwd: () => CWD,
+    session: () => session,
+    sessionPermissions: () => undefined,
     ...overrides,
   }
   return { adapter: new ClaudeCodeAdapter(options), child, spawn, options }
@@ -151,13 +153,14 @@ describe('ClaudeCodeAdapter metadata', () => {
 })
 
 describe('ClaudeCodeAdapter model discovery', () => {
-  it('lists the account models once, naming the native default and dropping its duplicate alias', async () => {
+  it('lists every account model once, labeling the native default by the settings that choose it', async () => {
     const { adapter: route, child, spawn } = adapter({}, false)
     queryMock.mockImplementation(discoveryQuery(accountModels))
     await expect(route.resolveModel('claude-code', 'default')).resolves.toMatchObject({ name: 'default' })
     const listed = await route.listModels('claude-code')
     expect(listed.map(model => [model.id, model.name, model.description])).toEqual([
-      ['default', 'Claude Sonnet 5 (default)', 'Efficient for routine tasks'],
+      ['default', 'Claude (Claude Code settings)', 'The model your Claude Code settings select; Sonnet 5 without a setting'],
+      ['sonnet', 'Claude Sonnet 5', 'Efficient for routine tasks'],
       ['claude-fable-5-1[1m]', 'Claude Fable 5.1', 'Most capable · Requires usage credits'],
       ['haiku', 'Claude Haiku', undefined],
     ])
@@ -184,7 +187,7 @@ describe('ClaudeCodeAdapter model discovery', () => {
     expect(options.onDiscoveryError).toHaveBeenLastCalledWith(expect.objectContaining({ message: 'spawn refused' }))
 
     queryMock.mockImplementation(discoveryQuery(accountModels))
-    await expect(route.listModels('claude-code')).resolves.toHaveLength(3)
+    await expect(route.listModels('claude-code')).resolves.toHaveLength(4)
   })
 })
 
@@ -263,6 +266,22 @@ describe('ClaudeCodeAdapter.stream', () => {
     expect(lastOptions()).not.toHaveProperty('canUseTool')
   })
 
+  it('derives the native mode from the permissions of the Session the request names', async () => {
+    const named = { header: { cwd: '/named' } } as Session
+    const sessionPermissions = vi.fn(() => ({ sandbox: 'danger-full-access' as const, approval: 'never' as const }))
+    const { adapter: route } = adapter({ session: () => named, sessionPermissions })
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(route.stream(request({ sessionId: 's' as SessionId })))
+    expect(sessionPermissions).toHaveBeenCalledWith(named)
+    expect(lastOptions()).toMatchObject({ cwd: '/named', permissionMode: 'bypassPermissions', allowDangerouslySkipPermissions: true })
+    expect(lastOptions()).not.toHaveProperty('canUseTool')
+
+    sessionPermissions.mockReturnValue({ sandbox: 'workspace-write', approval: 'ask' } as never)
+    await collect(route.stream(request({ sessionId: 's' as SessionId })))
+    expect(lastOptions()).toMatchObject({ permissionMode: 'acceptEdits' })
+    expect(typeof lastOptions().canUseTool).toBe('function')
+  })
+
   it('asks the approval service through the native permission callback', async () => {
     const approvalRequest = vi.fn(() => Promise.resolve('allowed-once' as const))
     const approval = { request: approvalRequest } as Pick<ApprovalService, 'request'> as ApprovalService
@@ -276,18 +295,20 @@ describe('ClaudeCodeAdapter.stream', () => {
   })
 
   it('uses the initiating Agent workspace when the request names no Session', async () => {
-    const sessionCwd = vi.fn(() => '/elsewhere')
-    const { adapter: route } = adapter({ sessionCwd })
+    const lookup = vi.fn(() => ({ header: { cwd: '/elsewhere' } }) as Session)
+    const { adapter: route } = adapter({ session: lookup })
     queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
     await collect(route.stream(request()))
     expect(lastOptions().cwd).toBe(CWD)
-    expect(sessionCwd).not.toHaveBeenCalled()
+    expect(lookup).not.toHaveBeenCalled()
   })
 
   it('refuses a turn with no workspace before starting Claude Code', async () => {
-    const { adapter: route } = adapter({ sessionCwd: () => undefined, initiator: () => undefined })
+    const { adapter: route } = adapter({ session: () => undefined, initiator: () => undefined })
     await expect(collect(route.stream(request({ sessionId: 's' as SessionId })))).rejects.toMatchObject({ code: 'NO_WORKSPACE' })
     await expect(collect(route.stream(request()))).rejects.toMatchObject({ code: 'NO_WORKSPACE' })
+    const cwdless = adapter({ session: () => ({ header: {} }) as Session }).adapter
+    await expect(collect(cwdless.stream(request({ sessionId: 's' as SessionId })))).rejects.toMatchObject({ code: 'NO_WORKSPACE' })
     expect(queryMock).not.toHaveBeenCalled()
   })
 
@@ -337,7 +358,7 @@ describe('llm-claude-code plugin', () => {
     await ctx.plugin(LlmRuntime)
     // Partial service doubles expose only the members the route calls.
     ctx.provide('subprocess', { spawn } as never)
-    ctx.provide('sessions', { get: () => ({ header: { cwd: CWD } }) } as never)
+    ctx.provide('sessions', { get: () => session } as never)
     ctx.provide('agents', { currentInitiator: () => agent } as never)
     return ctx
   }
@@ -358,8 +379,22 @@ describe('llm-claude-code plugin', () => {
     queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
     const chunks = await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
     expect(chunks.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
-    expect(lastOptions().cwd).toBe(CWD)
+    expect(lastOptions()).toMatchObject({ cwd: CWD, permissionMode: 'default' })
     expect(spawn).toHaveBeenCalled()
+  })
+
+  it('follows the Session\'s sandbox mode and approval policy when both services are mounted', async () => {
+    const ctx = await host()
+    const resolve = vi.fn(() => ({ mode: 'danger-full-access', workspaceRoot: CWD }))
+    const effectivePolicy = vi.fn(() => 'never')
+    ctx.provide('sandboxPolicy', { resolve } as never)
+    ctx.provide('approval', { effectivePolicy } as never)
+    await ctx.plugin(plugin, plugin.Config({}))
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
+    expect(resolve).toHaveBeenCalledWith({ session })
+    expect(effectivePolicy).toHaveBeenCalledWith(session)
+    expect(lastOptions()).toMatchObject({ permissionMode: 'bypassPermissions' })
   })
 
   it('refuses an unusable disposal grace and serves configured models without discovery', async () => {

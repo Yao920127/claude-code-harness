@@ -21,17 +21,17 @@
   en: 311c7fb42e4c5508
   zh: 857ab270370c84b9
 /deepseek-ai-dsh-llm-claude-code/use-this-package/installing-the-bundle:
-  en: 02babd15d7837231
-  zh: 7f37ac925e5929ae
+  en: 815aa534fd20f461
+  zh: 6c7de7ac6856c53b
 /deepseek-ai-dsh-llm-claude-code/use-this-package/configuration:
-  en: e64c06b21943d9fe
-  zh: 921ab5870c479f89
+  en: 51f58377aeed172c
+  zh: 2fd8626c51eb369f
 /deepseek-ai-dsh-llm-claude-code/use-this-package/permissions:
-  en: 82b9ba7d5b672f0b
-  zh: da268f90bb6c318e
+  en: 286d36ff0fd4c8ed
+  zh: 9e3306613c669717
 /deepseek-ai-dsh-llm-claude-code/use-this-package/what-you-see:
-  en: a58fe6f365e772ee
-  zh: 109960ed344f9a21
+  en: bbaf6dd6560a5625
+  zh: 6e2de2a4b3747671
 /deepseek-ai-dsh-llm-claude-code/use-this-package/failure-and-recovery:
   en: a6aa583f9ff079f4
   zh: f9979461623cf26e
@@ -42,14 +42,14 @@
   en: 935eba26d7a48cf6
   zh: 2d82d85bd592cb4f
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/source-map:
-  en: 6ffe998d2f3a84ed
-  zh: 11439a978bceed40
+  en: 4767d3dbc5c587b2
+  zh: 30b398c409532039
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/request-flow:
-  en: a918d6e16648aa18
-  zh: 6c0724ebe1751b26
+  en: 3b05b7dc248eaef4
+  zh: 072dd845ad1908a9
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/stream-translation:
-  en: 33cea9447dab767a
-  zh: f1c252024251b52b
+  en: ccc36cf088d7ea1a
+  zh: 8e97957579e1ec12
 /deepseek-ai-dsh-llm-claude-code/further-exploration:
   en: df050a102fd47f3e
   zh: f6a421556a8a0371
@@ -81,8 +81,8 @@
   en: 4da37db427d1ae65
   zh: 6bd33de04450f9d5
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work:
-  en: 2afd455f7b6030df
-  zh: db9e1cd81c41c5be
+  en: 43cf145b7adc3d98
+  zh: 7a4697fd3bae891d
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work/dev-note:
   en: 9c2341d99bdc706a
   zh: f65ed7b3aea3f81f

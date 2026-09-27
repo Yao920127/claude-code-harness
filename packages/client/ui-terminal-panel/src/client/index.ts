@@ -1,4 +1,4 @@
-/** Register the terminal panel below each Session's conversation, its composer toggle, and its shortcut. */
+/** Register the terminal panel below each Session's conversation, its Sidebar Start-page card, and its shortcut. */
 import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
 import type { Context } from '@deepseek-ai/cordis'
 import { randomUUID } from '@deepseek-ai/dsh-util-crypto'
@@ -9,12 +9,17 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
+import { PluginArtworkTerminal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TerminalView } from '@deepseek-ai/dsh-api-terminal-controller/client'
-import type { TerminalBodyInjected, TerminalPanelInjected, TerminalToggleInjected } from './face.ts'
+import type {
+  TerminalBodyInjected, TerminalGuideEntryInjected, TerminalPanelInjected, TerminalRedirectInjected,
+} from './face.ts'
 import { en, zh } from './locales.ts'
 import { TerminalPanels } from './panel-state.ts'
 import { TerminalPanel } from './TerminalPanel.tsx'
-import { TerminalToggle } from './TerminalToggle.tsx'
+import { TerminalGuideEntry } from './TerminalGuideEntry.tsx'
+import { TerminalRedirectBody } from './TerminalRedirectBody.tsx'
 // import { TerminalCleanup, type TerminalCleanupInjected } from './TerminalCleanup.tsx'
 
 export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
@@ -23,7 +28,7 @@ export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
 export const inject = ['slots', 'locale', 'remote', 'webTerminals', 'theme', 'shortcuts']
 
 /**
- * Register the panel, its composer toggle, the toggle shortcut and terminal retention.
+ * Register the panel, its Sidebar Start-page card, the toggle shortcut and terminal retention.
  * @param ctx - Client root Context with the conversation slots and terminal service.
  */
 export function apply(ctx: Context): void {
@@ -86,16 +91,31 @@ export function apply(ctx: Context): void {
       selectShell: (path) => { ctx.webTerminals.selectShell(path) },
     }),
   }, TerminalPanel)), 'ui-terminal-panel.panel')
-  // The composer toolbar shows for every selected Session, including one that
-  // has no message yet, so the panel is reachable before the first turn.
-  ctx.effect(() => ctx.slots.inject('conversation.input.right', () => ctx.slots.register({
-    name: 'conversation.input.right', id,
-    locale: namespace,
-    inject: (sessionId): TerminalToggleInjected => ({
-      hooks: { panel: panels.panel(sessionId), shortcuts: ctx.shortcuts.catalog },
-      toggle: () => { panels.toggle(sessionId) },
+  // The right Sidebar's Start page offers the panel as a card: a `terminal`
+  // page type carries the card, and a page of that type, such as one a saved
+  // layout restores, hands off to the panel. The Sidebar shows the Start page
+  // for a Session with no message yet, so the panel is reachable before the
+  // first turn.
+  ctx.inject(['sidebarRightTabs'], (scope) => {
+    scope.effect(() => scope.sidebarRightTabs.register({
+      id, kind: 'terminal', priority: 'builtin', title: () => t('title'),
+      guide: [{
+        id: 'open', order: 20, commandId: 'terminal.toggle' as ShortcutCommandId,
+        title: () => t('title'), description: () => t('guideDescription'), icon: PluginArtworkTerminal,
+      }],
+    }), 'ui-terminal-panel.guide-type')
+  })
+  ctx.effect(() => ctx.slots.inject('sidebar.right.tab.guide.entry', () => ctx.slots.register({
+    name: 'sidebar.right.tab.guide.entry', key: id, locale: namespace,
+    inject: (sessionId): TerminalGuideEntryInjected => ({
+      hooks: { shortcuts: ctx.shortcuts.catalog },
+      open: () => { panels.open(sessionId) },
     }),
-  }, TerminalToggle)), 'ui-terminal-panel.toggle')
+  }, TerminalGuideEntry)), 'ui-terminal-panel.guide-entry')
+  ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
+    name: 'sidebar.right.pane.tab', key: id, locale: namespace,
+    inject: (sessionId): TerminalRedirectInjected => ({ open: () => { panels.open(sessionId) } }),
+  }, TerminalRedirectBody)), 'ui-terminal-panel.page')
   // ctx.effect(() => ctx.slots.inject('shell.overlay', () => ctx.slots.register({
   //   name: 'shell.overlay', id, locale: namespace,
   //   inject: (): TerminalCleanupInjected => ({

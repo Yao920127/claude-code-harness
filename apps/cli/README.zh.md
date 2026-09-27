@@ -20,22 +20,13 @@
 运行命令时所在的目录将作为默认 workspace 根目录。`web`、`cch`、`headless`、`sdk`、`sdk-minimal` 和 `acp` profile 在首次使用时会从随附模板自动初始化。使用 `--from-default-profile` 可以基于这些模板之一，在尚未使用的非内置名称处创建其他 profile；通过 `dsh plugin` 则可以初始化一个以 base 为基础的 profile。`desktop` 名称保留给 Electron 持有的 profile，因此 CLI（命令行界面）会拒绝针对它的启动、配置 dump 和插件管理请求。
 
 <a id="cch"></a>
-## cch 命令
+## cch profile
 
-`cch` 是本 launcher 的 Claude Code Harness 简写，由 [`src/cch.ts`](src/cch.ts) 构建，其语法定义在 [`src/cch-args.ts`](src/cch-args.ts)。除 `desktop` 外的每个命令都会变成针对 `cch` profile 的 `dsh` 调用；该 profile 组合的组合包与 Desktop profile 相同：以 Claude Code 为默认模型路由、Claude 品牌与繁体中文的 Web 应用。
-
-| 命令 | 等同于 |
-|---|---|
-| `cch` / `cch desktop` | 在 macOS 上打开已安装的 Desktop 应用（`open -a`）；`CCH_DESKTOP_APP` 可指定其他应用名称或路径。 |
-| `cch web [args...]` | `dsh --profile cch [args...]` |
-| `cch plugin <pnpm args>` | `dsh plugin --profile cch <pnpm args>` |
-| `cch config [--default \| --schema]` | `dsh --profile cch --dump-config`、`--dump-default-config` 或 `--dump-config-schema` |
+随附的 `cch` profile 组合与 Desktop profile 相同的组合包：以 Claude Code 为默认模型路由、Claude 品牌与繁体中文的 Web 应用。它的启动方式与其他 profile 相同；仓库的 `pnpm cch web` 脚本以源码 launcher 启动它，并把后续参数交给 Web 应用。
 
 ```sh
-cch                        # open the Desktop app
-cch web --no-open          # serve the Web app on the cch profile
-cch plugin add <package>   # install a plugin into the cch profile
-cch config --default       # print the cch profile's bundle layers
+dsh cch                    # boot the cch profile
+pnpm cch web --no-open     # from the repository: the same, without opening a browser
 ```
 
 `cch` profile 与其他 CLI profile 共用 `$DSH_HOME` 中的会话与设置；Desktop 应用保留自己的 profile 目录与已安装插件。
@@ -76,7 +67,7 @@ profile 目录包含一个 `package.json`，其中记录树外插件依赖，以
 
 ## 开发
 
-生产运行需要已构建的包与前端产物。请在仓库根目录单独运行 `pnpm run build`，然后使用 `pnpm dsh <args...>` 或 `pnpm cch <args...>` 运行 TypeScript 入口并转发所有参数。构建之后，`pnpm --filter @deepseek-ai/dsh link --global` 会把 `dsh` 与 `cch` 放到 shell 的 `PATH` 上；模块解析约定以[源码执行参考](reference/README.zh.md#source-execution)为准。
+生产运行需要已构建的包与前端产物。请在仓库根目录单独运行 `pnpm run build`，然后使用 `pnpm dsh <args...>` 运行 TypeScript 入口并转发所有参数；模块解析约定以[源码执行参考](reference/README.zh.md#source-execution)为准。
 
 `@deepseek-ai/dsh/profile-boot` 导出向 Desktop Host 提供共享 profile 生命周期。已解析的应用 profile 为运行时包解析指定自己的安装锚点，同时沿用 Harness home patch、代理环境、遥测开关、patch 热重载和有界关闭。
 

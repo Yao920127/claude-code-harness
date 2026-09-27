@@ -823,7 +823,8 @@ describe('web e2e: seeded history renders through cold resume', () => {
 
   it.skipIf(MODE === 'record' || process.platform === 'win32')('offers explicit terminal replacement after restoring the recorded Session', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-seeded-terminal-unavailable'))
-    await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).click()
+    await page.locator('[data-dockkit-add-tab]').click()
+    await page.locator('[data-sidebar-right-guide-entry="terminal"]').click()
     const sessionId = SessionId(SEED_ID)
     const terminals = () => scaffold.ctx.terminalController.list(sessionId)
     await expect.poll(() => terminals().length).toBe(1)

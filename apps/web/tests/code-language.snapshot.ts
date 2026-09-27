@@ -53,8 +53,8 @@ it('replays highlighted Python stubs, PowerShell and CSV reads with their docume
     if (MODE === 'record') await recordFixture(scaffold, sessionId, FIXTURE)
 
     await expandTurnProcesses(page)
-    // Files is the Web profile's only page kind, so the sidebar opens it directly.
     await page.locator('[data-sidebar-right-expand]').click()
+    await page.locator('[data-sidebar-right-guide-entry="files"]').click()
     const filesTab = page.locator('[data-dockkit-tab]').filter({ has: page.getByText('Files', { exact: true }) })
     const preview = page.locator('[data-textpreview-url]')
     const snapshots: string[] = []

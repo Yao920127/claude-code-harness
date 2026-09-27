@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-把 `dsh-cch` 叠加在 `dsh-base` 与 `dsh-web-app` 之后，即可让 profile 成为 CCH profile：新 Session 以 Claude Code 模型路由开始，该路由使用宿主机本身的 Claude Code 登录，DeepSeek 模型路由、DeepSeek 账号设置与 DeepSeek 官方品牌占位者不会挂载。本 bundle 依赖 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md)、[`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.zh.md) 与 [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.zh.md)；请把这些 bundle 列在它之前。CCH Desktop 构建会在每个新 Desktop profile 中列出全部四个；随附的 `cch` CLI profile 组合同一列表，因此 `cch web` 提供的 Web 应用与 Desktop 显示的相同。
+把 `dsh-cch` 叠加在 `dsh-base` 与 `dsh-web-app` 之后，即可让 profile 成为 CCH profile：新 Session 以 Claude Code 模型路由开始，该路由使用宿主机本身的 Claude Code 登录，DeepSeek 模型路由、DeepSeek 账号设置与 DeepSeek 官方品牌占位者不会挂载。本 bundle 依赖 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md)、[`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.zh.md) 与 [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.zh.md)；请把这些 bundle 列在它之前。CCH Desktop 构建会在每个新 Desktop profile 中列出全部四个；随附的 `cch` CLI profile 组合同一列表，因此 `pnpm cch web` 提供的 Web 应用与 Desktop 显示的相同。
 
 ## 目录
 

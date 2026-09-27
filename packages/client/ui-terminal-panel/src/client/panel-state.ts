@@ -177,6 +177,16 @@ export class TerminalPanels {
   }
 
   /**
+   * Show the panel, opening a first terminal when it has none; a shown panel gets another terminal.
+   * @param sessionId - owning Session.
+   */
+  open(sessionId: SessionId): void {
+    const panel = this.get(sessionId)
+    if (panel.open) this.add(sessionId)
+    else this.toggle(sessionId)
+  }
+
+  /**
    * Hide the panel without ending its terminals.
    * @param sessionId - owning Session.
    */

@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-cch-profile.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-27-cch-profile.md
+/agent-note-cch-profile:
+  en: 4997e07918d2994f
+  zh: d8a12d3e32918ab6
+/agent-note-cch-profile/problem:
+  en: d54cf0b45e855e99
+  zh: 399ceb85027145ff
+/agent-note-cch-profile/decision:
+  en: 503d5624fd716d8a
+  zh: 86649670530dc529
+/agent-note-cch-profile/alternatives-considered:
+  en: 7e01ad17dc2d2b27
+  zh: 5fbd9f633cb14b39
+/agent-note-cch-profile/consequences:
+  en: 20901e9b55b2753d
+  zh: 5ddec5225df1d4d2

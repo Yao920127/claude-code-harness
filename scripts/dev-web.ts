@@ -418,7 +418,7 @@ if (isMain) {
     // from source exactly as `pnpm cch web` would, on the profile Desktop composes.
     if (options.serve) {
       spawnStage(supervisor, 'cch web', process.execPath, [
-        '--import', 'tsx/esm', 'apps/cli/src/cch.ts', 'web', ...options.appArgs,
+        '--import', 'tsx/esm', 'apps/cli/src/bin.ts', '--profile', 'cch', ...options.appArgs,
       ], false)
     }
     console.log(

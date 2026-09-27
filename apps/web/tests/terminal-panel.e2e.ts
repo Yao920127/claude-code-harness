@@ -25,8 +25,13 @@ async function openTerminal(page: Page, waitForShell = true): Promise<void> {
   if (waitForShell) await expect.poll(async () => await page.locator('.xterm-rows:visible').innerText()).toContain('bash-')
 }
 
+/** Open the panel from the right Sidebar's Start-page Terminal card. */
 async function showPanel(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).click()
+  const expand = page.locator('[data-sidebar-right-expand]')
+  if (await expand.isVisible()) await expand.click()
+  const card = page.locator('[data-sidebar-right-guide-entry="terminal"]')
+  if (!await card.isVisible()) await page.locator('[data-rightbar-col] [data-dockkit-add-tab]').click()
+  await card.click()
   await page.locator(PANEL).waitFor()
 }
 
@@ -328,7 +333,7 @@ describe.skipIf(process.platform === 'win32')('Web terminal panel', () => {
     await expect.poll(async () => await screen.innerText()).toContain('PERSIST:xterm-256color')
     await hidePanel(page)
     await page.reload({ waitUntil: 'load' })
-    await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).waitFor()
+    await page.locator('[data-sidebar-right-expand], [data-sidebar-right-guide]').first().waitFor()
     expect(await page.locator(BODY).count()).toBe(0)
     expect(terminals()).toHaveLength(2)
     await showPanel(page)
@@ -475,7 +480,7 @@ describe.skipIf(process.platform === 'win32')('Web terminal panel', () => {
     const second = await page.context().newPage()
     const transport = await controlTransport(second)
     await second.goto(page.url(), { waitUntil: 'load' })
-    await second.getByRole('button', { name: 'Toggle terminal panel', exact: true }).waitFor()
+    await second.getByText('Ready for terminal input.').waitFor()
     await expect.poll(() => retains.mock.calls.filter(call => !call[2].aborted).length).toBe(2)
     await page.close()
     page = second

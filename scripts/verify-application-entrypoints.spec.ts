@@ -99,7 +99,7 @@ describe('application entrypoints', () => {
     write(root, 'scripts/demo-ptc.mjs', "spawn('node', ['packages/example/app/src/bin.ts'])\n")
 
     expect(applicationEntrypointViolations(root)).toEqual([
-      'scripts/demo-ptc.mjs: application launcher wrapper must launch apps/cli/src/bin.ts or cch.ts',
+      'scripts/demo-ptc.mjs: application launcher wrapper must launch apps/cli/src/bin.ts',
       'scripts/demo-ptc.mjs: application launcher wrapper must not launch a package entry directly',
     ])
   })
@@ -109,19 +109,20 @@ describe('application entrypoints', () => {
     write(root, 'package.json', JSON.stringify({ scripts: { 'start:web': 'node packages/example/app/src/bin.ts web' } }))
 
     expect(applicationEntrypointViolations(root)).toEqual([
-      'package.json scripts.start:web: application launcher script must launch apps/cli/src/bin.ts or cch.ts',
+      'package.json scripts.start:web: application launcher script must launch apps/cli/src/bin.ts',
       'package.json scripts.start:web: application launcher script must not launch a package entry directly',
     ])
   })
 
-  it('accepts the cch script only through a dsh CLI entry', () => {
+  it('accepts the cch wrapper only while it launches the dsh CLI', () => {
     const root = fixture()
-    write(root, 'package.json', JSON.stringify({ scripts: { cch: 'node --import tsx/esm apps/cli/src/cch.ts' } }))
+    write(root, 'package.json', JSON.stringify({ scripts: { cch: 'node scripts/cch.mjs' } }))
+    write(root, 'scripts/cch.mjs', "spawn(process.execPath, ['--import', 'tsx/esm', 'apps/cli/src/bin.ts', '--profile', 'cch'])\n")
     expect(applicationEntrypointViolations(root)).toEqual([])
-    write(root, 'package.json', JSON.stringify({ scripts: { cch: 'node packages/example/app/src/cch.ts' } }))
+    write(root, 'scripts/cch.mjs', "spawn('node', ['packages/example/app/src/bin.ts'])\n")
     expect(applicationEntrypointViolations(root)).toEqual([
-      'package.json scripts.cch: application launcher script must launch apps/cli/src/bin.ts or cch.ts',
-      'package.json scripts.cch: application launcher script must not launch a package entry directly',
+      'scripts/cch.mjs: application launcher wrapper must launch apps/cli/src/bin.ts',
+      'scripts/cch.mjs: application launcher wrapper must not launch a package entry directly',
     ])
   })
 
@@ -131,7 +132,7 @@ describe('application entrypoints', () => {
     write(root, 'scripts/dev-web.ts', "execa('vite', ['build', '--watch'])\n")
 
     expect(applicationEntrypointViolations(root)).toEqual([
-      'scripts/dev-web.ts: application launcher wrapper must launch apps/cli/src/bin.ts or cch.ts',
+      'scripts/dev-web.ts: application launcher wrapper must launch apps/cli/src/bin.ts',
     ])
   })
 

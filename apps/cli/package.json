@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh",
-  "description": "dsh and cch CLIs: profile launch, plugin management, and configuration inspection",
+  "description": "dsh CLI: profile launch, plugin management, and configuration inspection",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"
@@ -12,8 +12,7 @@
   },
   "type": "module",
   "bin": {
-    "dsh": "lib/bin.js",
-    "cch": "lib/cch.js"
+    "dsh": "lib/bin.js"
   },
   "files": [
     "lib/*.js",

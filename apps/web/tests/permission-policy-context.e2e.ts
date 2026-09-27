@@ -105,7 +105,9 @@ describe('web e2e: current sandbox policy reaches the model before tools', () =>
     // The pinned interactive Bash profile is POSIX-only; Windows still replays every Agent policy assertion.
     if (process.platform === 'win32') return
     if (terminalId === undefined) {
-      await page.getByRole('button', { name: 'Toggle terminal panel', exact: true }).click()
+      const expand = page.locator('[data-sidebar-right-expand]')
+      if (await expand.isVisible()) await expand.click()
+      await page.locator('[data-sidebar-right-guide-entry="terminal"]').click()
       await expect.poll(() => page.locator('.xterm-rows:visible').innerText()).toContain('bash-')
     }
     const agent = scaffold.ctx.agents.list()[0]

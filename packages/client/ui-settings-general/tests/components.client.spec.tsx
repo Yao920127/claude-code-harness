@@ -24,7 +24,6 @@ function derivedDocumentStore(remote: object) {
 }
 import { en, zh } from '../src/client/locales.ts'
 import { CurrentVersionRow } from '../src/client/CurrentVersionRow.tsx'
-import { CCH_INSTALL_COMMAND, CommandLineRow } from '../src/client/CommandLineRow.tsx'
 import { DesktopUpdateBadge } from '../src/client/DesktopUpdateIndicator.tsx'
 import type { DesktopUpdateView } from '../src/types.ts'
 
@@ -245,30 +244,5 @@ describe('current version', () => {
     vi.stubEnv('DSH_CLIENT_VERSION', undefined)
     const view = render(<CurrentVersionRow {...kit} t={t} />)
     expect(view.container.textContent).toBe('')
-  })
-})
-
-describe('command line', () => {
-  it('lists the cch commands and copies the install command, reporting a refused copy', async () => {
-    const writeText = vi.fn<(text: string) => Promise<void>>().mockResolvedValueOnce().mockRejectedValueOnce(new Error('denied'))
-    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } })
-    try {
-      render(<CommandLineRow {...kit} t={t} />)
-      expect(screen.getByText(en['commandLine.title'])).toBeTruthy()
-      expect(screen.getByText(CCH_INSTALL_COMMAND)).toBeTruthy()
-      for (const command of ['cch', 'cch web', 'cch plugin add <package>', 'cch config']) {
-        expect(screen.getByText(command, { selector: 'code' })).toBeTruthy()
-      }
-      expect(screen.getByText(en['commandLine.cmd.desktop'])).toBeTruthy()
-      fireEvent.click(screen.getByRole('button', { name: en['commandLine.copy'] }))
-      await screen.findByRole('button', { name: en['commandLine.copied'] })
-      expect(writeText).toHaveBeenCalledWith(CCH_INSTALL_COMMAND)
-      expect(screen.queryByRole('alert')).toBeNull()
-      fireEvent.click(screen.getByRole('button', { name: en['commandLine.copied'] }))
-      expect((await screen.findByRole('alert')).textContent).toBe(en['commandLine.copyFailed'])
-      expect(screen.getByRole('button', { name: en['commandLine.copy'] })).toBeTruthy()
-    } finally {
-      vi.unstubAllGlobals()
-    }
   })
 })

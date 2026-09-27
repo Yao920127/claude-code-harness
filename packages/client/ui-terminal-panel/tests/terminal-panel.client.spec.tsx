@@ -7,7 +7,8 @@ import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { TerminalLaunchShells, TerminalViewState } from '@deepseek-ai/dsh-api-terminal-controller/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { TerminalPanel, type TerminalPanelProps } from '../src/client/TerminalPanel.tsx'
-import { TerminalToggle, type TerminalToggleProps } from '../src/client/TerminalToggle.tsx'
+import { TerminalGuideEntry, type TerminalGuideEntryProps } from '../src/client/TerminalGuideEntry.tsx'
+import { TerminalRedirectBody, type TerminalRedirectBodyProps } from '../src/client/TerminalRedirectBody.tsx'
 import { EMPTY_PANEL, type TerminalPanelState } from '../src/client/panel-state.ts'
 import { en } from '../src/client/locales.ts'
 
@@ -160,23 +161,41 @@ describe('TerminalPanel', () => {
   })
 })
 
-describe('TerminalToggle', () => {
-  it('reflects and flips the panel state with its effective shortcut', () => {
-    const store = createSnapshotStore<TerminalPanelState>(EMPTY_PANEL)
-    const shortcuts = createSnapshotStore([{ id: 'terminal.toggle', aria: 'Control+`' }])
-    const toggle = vi.fn()
-    const props: TerminalToggleProps = {
-      t, toggle, usePanel: bindSnapshotSelector(store), useShortcuts: bindSnapshotSelector(shortcuts),
+describe('TerminalGuideEntry', () => {
+  it('opens the panel with its effective shortcut and drops the description when the guide omits it', () => {
+    const shortcuts = createSnapshotStore([{ id: 'terminal.toggle', aria: 'Control+`', keys: ['⌃', '`'] }])
+    const open = vi.fn()
+    const props: TerminalGuideEntryProps = {
+      t, open, kind: 'terminal', entryId: 'open', title: en.title, description: en.guideDescription,
+      useShortcuts: bindSnapshotSelector(shortcuts),
     } as never
-    render(<TerminalToggle {...props} />)
-    const button = screen.getByRole('button', { name: en.toggle })
-    expect(button.getAttribute('aria-pressed')).toBe('false')
-    expect(button.getAttribute('aria-keyshortcuts')).toBe('Control+`')
-    fireEvent.click(button)
-    expect(toggle).toHaveBeenCalledOnce()
-    act(() => { store.set(shown) })
-    expect(button.getAttribute('aria-pressed')).toBe('true')
+    const view = render(<TerminalGuideEntry {...props} />)
+    const card = screen.getByRole('button', { name: /Terminal/u })
+    expect(card.dataset.sidebarRightGuideEntry).toBe('terminal')
+    expect(card.getAttribute('aria-keyshortcuts')).toBe('Control+`')
+    expect(screen.getByText(en.guideDescription)).toBeTruthy()
+    expect(card.querySelector('svg')?.getAttribute('width')).toBe('26')
+    fireEvent.click(card)
+    expect(open).toHaveBeenCalledOnce()
     act(() => { shortcuts.set([]) })
-    expect(button.hasAttribute('aria-keyshortcuts')).toBe(false)
+    const bare: TerminalGuideEntryProps = { t, open, kind: 'terminal', entryId: 'open', title: en.title, useShortcuts: bindSnapshotSelector(shortcuts) } as never
+    view.rerender(<TerminalGuideEntry {...bare} />)
+    expect(card.hasAttribute('aria-keyshortcuts')).toBe(false)
+    expect(screen.queryByText(en.guideDescription)).toBeNull()
+    expect(card.querySelector('svg')?.getAttribute('width')).toBe('22')
+  })
+})
+
+describe('TerminalRedirectBody', () => {
+  it('opens the panel and closes its Sidebar page once, across re-renders', () => {
+    const open = vi.fn()
+    const close = vi.fn()
+    const tabInfo = { tab: { actions: { close } } }
+    const props: TerminalRedirectBodyProps = { open, useTabInfo: () => tabInfo } as never
+    const view = render(<TerminalRedirectBody {...props} />)
+    expect(view.container.childElementCount).toBe(0)
+    view.rerender(<TerminalRedirectBody {...props} open={vi.fn()} />)
+    expect(open).toHaveBeenCalledOnce()
+    expect(close).toHaveBeenCalledOnce()
   })
 })

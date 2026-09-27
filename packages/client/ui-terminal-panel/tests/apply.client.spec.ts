@@ -11,8 +11,10 @@ import { apply, inject } from '../src/client/index.ts'
 import { apply as hostApply } from '../src/index.ts'
 import { LazyTerminalBody } from '../src/client/LazyTerminalBody.tsx'
 import { TerminalPanel } from '../src/client/TerminalPanel.tsx'
-import { TerminalToggle } from '../src/client/TerminalToggle.tsx'
-import type { TerminalPanelInjected, TerminalToggleInjected } from '../src/client/face.ts'
+import { TerminalGuideEntry } from '../src/client/TerminalGuideEntry.tsx'
+import { TerminalRedirectBody } from '../src/client/TerminalRedirectBody.tsx'
+import type { TerminalGuideEntryInjected, TerminalPanelInjected, TerminalRedirectInjected } from '../src/client/face.ts'
+import { SidebarRightTabRegistry } from '@deepseek-ai/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
 import { TERMINAL_PANEL_PERSISTENCE } from '../src/client/panel-state.ts'
 import { en, zh } from '../src/client/locales.ts'
 
@@ -32,6 +34,7 @@ async function mountPlugin() {
   const entries: {
     name: string
     id?: string
+    key?: string
     order?: number
     locale: string
     component: unknown
@@ -45,6 +48,8 @@ async function mountPlugin() {
   }
   const commands: ShortcutCommand[] = []
   const removals: ((sessionId: SessionId) => void)[] = []
+  const tabs = new SidebarRightTabRegistry(ctx)
+  ctx.provide('sidebarRightTabs', tabs)
   ctx.provide('webTerminals', terminals as never)
   ctx.provide('remote', {
     $on: (name: string, listener: (sessionId: SessionId) => void) => {
@@ -69,23 +74,30 @@ async function mountPlugin() {
   ctx.provide('theme', { getTheme: () => theme } as never)
   const fiber = await ctx.plugin({ inject, apply })
   const panel = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.panel.bottom')!.inject(sessionId) as TerminalPanelInjected
-  const toggle = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.input.right')!.inject(sessionId) as TerminalToggleInjected
+  const guide = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.tab.guide.entry')!.inject(sessionId) as TerminalGuideEntryInjected
+  const page = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.pane.tab')!.inject(sessionId) as TerminalRedirectInjected
   return {
-    entries, dictionaries, terminals, model, theme, commands, removals, panel, toggle,
+    entries, dictionaries, terminals, model, theme, commands, removals, panel, guide, page, tabs,
     emitTheme() { ctx.emit('theme/change', theme) },
     async dispose() { await fiber.dispose(); await ctx.fiber.dispose() },
   }
 }
 
-it('registers the panel and its header toggle, then releases every contribution on unload', async () => {
+it('registers the panel and its Sidebar Start-page card, then releases every contribution on unload', async () => {
   expect(hostApply).not.toThrow()
   const h = await mountPlugin()
   try {
     expect(h.dictionaries.get('terminalPanel')).toEqual({ en, zh })
-    expect(h.entries.map(entry => [entry.name, entry.component, entry.locale, entry.order])).toEqual([
+    expect(h.entries.map(entry => [entry.name, entry.component, entry.locale, entry.key])).toEqual([
       ['conversation.panel.bottom', TerminalPanel, 'terminalPanel', undefined],
-      ['conversation.input.right', TerminalToggle, 'terminalPanel', undefined],
+      ['sidebar.right.tab.guide.entry', TerminalGuideEntry, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
+      ['sidebar.right.pane.tab', TerminalRedirectBody, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
     ])
+    const definition = h.tabs.get('terminal')!
+    expect(definition.title('sidebar://terminal')).toBe('title')
+    expect(definition.guide?.map(entry => [entry.id, entry.order, entry.commandId, entry.title(), entry.description?.()]))
+      .toEqual([['open', 20, 'terminal.toggle', 'title', 'guideDescription']])
+    expect(definition.guide?.[0]?.icon).toBeTypeOf('function')
     const face = h.panel()
     expect(face.hooks.theme.getSnapshot()).toBe(h.theme)
     const changed = vi.fn()
@@ -100,11 +112,12 @@ it('registers the panel and its header toggle, then releases every contribution 
     expect(h.terminals.launchShells).toHaveBeenCalledWith(SESSION, signal)
     face.selectShell('/bin/zsh')
     expect(h.terminals.selectShell).toHaveBeenCalledWith('/bin/zsh')
-    expect(h.toggle().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
+    expect(h.guide().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
   } finally {
     await h.dispose()
   }
   expect(h.entries).toEqual([])
+  expect(h.tabs.get('terminal')).toBeUndefined()
   expect(h.dictionaries.size).toBe(0)
   expect(h.commands).toEqual([])
   expect(h.removals).toEqual([])
@@ -173,8 +186,11 @@ it('toggles the panel of the Session on screen and refuses while none is', async
     if (result.status !== 'handled') throw new Error('Expected the terminal command to be available')
     result.run()
     expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't1' })
-    h.toggle().toggle()
-    expect(h.toggle().hooks.panel.getSnapshot().open).toBe(false)
+    h.guide().open()
+    expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't2' })
+    h.panel().hide()
+    h.page().open()
+    expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't2' })
     detach()
     expect(command.resolve(input)).toEqual({ status: 'blocked', reason: 'shortcut.noSession' })
   } finally { await h.dispose() }

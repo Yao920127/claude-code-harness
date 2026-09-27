@@ -43,12 +43,15 @@ export interface TerminalPanelInjected extends TerminalInjected {
   readonly selectShell: (path: string) => void
 }
 
-/** The composer toolbar's panel toggle. */
-export interface TerminalToggleInjected {
-  readonly hooks: {
-    readonly panel: HostObservable<TerminalPanelState>
-    readonly shortcuts: HostObservable<readonly ShortcutCatalogEntry[]>
-  }
-  /** Show or hide this Session's panel. */
-  readonly toggle: () => void
+/** The right Sidebar Start-page card that opens the panel. */
+export interface TerminalGuideEntryInjected {
+  readonly hooks: { readonly shortcuts: HostObservable<readonly ShortcutCatalogEntry[]> }
+  /** Show this Session's panel, or add a terminal when it is already shown. */
+  readonly open: () => void
+}
+
+/** A `terminal` Sidebar page, which hands off to the panel and closes. */
+export interface TerminalRedirectInjected {
+  /** Show this Session's panel, or add a terminal when it is already shown. */
+  readonly open: () => void
 }

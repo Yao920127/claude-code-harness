@@ -8,9 +8,9 @@
 /deepseek-ai-dsh/entry-modes:
   en: ed963b4a66081f51
   zh: df1bd3780f152d9e
-/deepseek-ai-dsh/the-cch-command:
-  en: 39fd8c062f5536f3
-  zh: d4d62ef07f3c8c1b
+/deepseek-ai-dsh/the-cch-profile:
+  en: c23f4b26c0bec1f3
+  zh: e815925b2236af54
 /deepseek-ai-dsh/app-arguments:
   en: cc03e6b75206661b
   zh: 99e41f4143198352
@@ -21,5 +21,5 @@
   en: 3a40ddc44e55f79c
   zh: 8d3949132e1ef93c
 /deepseek-ai-dsh/development:
-  en: c0ea7eabb5ad6a28
-  zh: b8dd16c38c48782e
+  en: 99a36e4f7ea3f9c7
+  zh: 07ca2934de700caa

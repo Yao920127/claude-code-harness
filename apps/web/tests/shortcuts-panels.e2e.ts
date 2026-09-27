@@ -124,8 +124,6 @@ describe.skipIf(process.platform === 'win32')('Web sidebar shortcuts', () => {
       await page.mouse.move(10, 10)
       await filesGuide.focus()
       expect(await page.getByRole('tooltip').count()).toBe(0)
-      // Terminals open in the conversation's bottom panel, not as sidebar pages.
-      expect(await panel.locator('[data-sidebar-right-guide-entry="terminal"]').count()).toBe(0)
 
       await bind(page, primary, 'Browser', 'Toggle right sidebar')
       const browserGuide = panel.locator('[data-sidebar-right-guide-entry="browser"]')

@@ -41,6 +41,17 @@ describe('TerminalPanels', () => {
     expect(state.get(B)).toBe(EMPTY_PANEL)
   })
 
+  it('opens a hidden panel like the toggle and adds a terminal to a shown one', () => {
+    const state = create()
+    state.open(A)
+    expect(state.get(A)).toMatchObject({ open: true, tabs: [{ key: 't1' }] })
+    state.open(A)
+    expect(state.get(A)).toMatchObject({ open: true, active: 't2', tabs: [{ key: 't1' }, { key: 't2' }] })
+    state.hide(A)
+    state.open(A)
+    expect(state.get(A)).toMatchObject({ open: true, active: 't2', tabs: [{ key: 't1' }, { key: 't2' }] })
+  })
+
   it('adds, selects, replaces, and removes tabs, choosing a neighbour and hiding when none remain', () => {
     const state = create()
     state.add(A)

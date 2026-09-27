@@ -208,15 +208,37 @@ describe.skipIf(MODE === 'record')('web e2e: details panel follows the current S
     }
     await expect.poll(() => columns(page)).toEqual([280, blankViewport.width - 280, 0])
     await page.locator('[data-sidebar-right-expand]').click()
+    // The Start page's Terminal card opens the bottom panel before any message.
+    await blankColumn.locator('[data-dockkit-add-tab]').click()
+    await blankColumn.locator('[data-sidebar-right-guide-entry="terminal"]').click()
+    const agent = scaffold.ctx.agents.list().find(agent => agent.session.header.cwd === workspace)
+    if (agent === undefined) throw new Error('Blank Session has no workspace Agent')
+    await expect.poll(() => scaffold.ctx.terminalController.list(agent.id).map(terminal => terminal.state)).toEqual(['running'])
+    await page.locator('[data-terminal-panel] .xterm-helper-textarea:visible').click()
+    await page.keyboard.insertText('node -e "require(\'fs\').writeFileSync(\'before-chat-terminal.txt\',\'READY\')"')
+    await page.keyboard.press('Enter')
+    await expect.poll(() => readFile(join(workspace, 'before-chat-terminal.txt'), 'utf8')).toBe('READY')
     expect(sessionEvents).not.toContain('turn/start')
     expect(sessionEvents).not.toContain('user/message')
+    // The tab disappears before the Host finishes process cleanup; close responds after quiescence.
+    const [closed] = await Promise.all([
+      page.waitForResponse('**/api/terminal/close'),
+      page.locator('[data-terminal-panel] [data-terminal-tab]').getByRole('button', { name: /^Close terminal/u }).click(),
+    ])
+    expect(await closed.json()).toMatchObject({ result: { ok: true } })
+    expect(scaffold.ctx.terminalController.list(agent.id)).toEqual([])
+    await page.locator('[data-terminal-panel]').waitFor({ state: 'detached' })
+    const startTab = blankColumn.locator('[data-dockkit-tab][aria-selected="true"]')
+    await startTab.hover()
+    await startTab.locator('[data-dockkit-tab-close]').click()
     await blankColumn.locator('[data-dockkit-tab]').filter({ hasText: 'before-chat.md' }).click()
     await compareOrRefreshGolden(BLANK_EXPECTED, [
       '# Blank Session workspace sidebar', '',
       '- No selected Session: expand control absent',
       '- Selected workspace before first message: expand control visible',
       '- Files: before-chat.md opens as a Markdown preview',
-      '- Narrow viewport: reopened preview fills the viewport', '',
+      '- Narrow viewport: reopened preview fills the viewport',
+      '- Terminal: the Start page card opens the bottom panel, which writes a file in the selected workspace before any user message or turn', '',
       `\`\`\`json\n${JSON.stringify(await paneSnapshot(page), null, 2)}\n\`\`\``,
     ].join('\n'), MODE)
 

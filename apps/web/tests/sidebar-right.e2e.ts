@@ -261,8 +261,7 @@ describe('web e2e: shipped right Sidebar', () => {
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    // Browser keeps a second page kind composed, so a new pane starts on the guide.
-    scaffold = await launchWebScaffold({ extraOverlayPath: fileURLToPath(new URL('./sidebar-browser.overlay.yml', import.meta.url)) })
+    scaffold = await launchWebScaffold()
     browser = await chromium.launch()
     page = await newEnglishPage(browser)
     tripwire = watchConsole(page)
@@ -460,7 +459,7 @@ describe('web e2e: shipped right Sidebar', () => {
       await expect.poll(async () => await tabTitles(column)).toEqual(['Start'])
       await expectTitleAlignment(column.locator('[data-dockkit-tab-title]'))
       await expect.poll(async () => await column.locator('[data-sidebar-right-guide-entry]').count()).toBe(2)
-      expect(await column.locator('[data-sidebar-right-guide-entry="browser"]').count()).toBe(1)
+      expect(await column.locator('[data-sidebar-right-guide-entry="browser"]').count()).toBe(0)
       await column.locator('[data-sidebar-right-guide-entry="files"]').click()
 
       // A manual guide is closable beside Files and suppresses another add
@@ -1171,10 +1170,12 @@ describe('web e2e: shipped right Sidebar', () => {
         await expect.poll(async () => await guide.locator('[data-sidebar-right-guide-entry="files"]').innerText())
           .toBe('工作区文件\n浏览会话工作区的文件\n⌥\n⌘\nP')
         const fileEntry = guide.locator('[data-sidebar-right-guide-entry="files"]')
-        expect(await fileEntry.evaluate(node => getComputedStyle(node).borderRadius)).toBe('20px')
-        // Terminals live in the bottom panel, not the sidebar guide.
-        expect(await guide.locator('[data-sidebar-right-guide-entry="terminal"]').count()).toBe(0)
-        await fileEntry.hover()
+        // The Terminal card opens the bottom panel and keeps the Start page's card shape.
+        const terminalEntry = guide.locator('[data-sidebar-right-guide-entry="terminal"]')
+        for (const entry of [fileEntry, terminalEntry]) {
+          expect(await entry.evaluate(node => getComputedStyle(node).borderRadius)).toBe('20px')
+        }
+        await terminalEntry.hover()
         await shot(zhPage, '05-guide-copy-zh')
 
         expect(zhTripwire.pageErrors).toEqual([])

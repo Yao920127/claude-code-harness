@@ -78,22 +78,26 @@ describe('UsageMeter', () => {
     expect(resetText({ kind: 'five-hour', utilization: 1, resetsAt: '2026-09-29T03:00:00.000Z' }, t)).toMatch(/^Resets /u)
   })
 
-  it('shows loading, failure, unavailable, and one bar per window with the remaining share', async () => {
+  it('shows nothing until a read reports plan windows, then one bar per window with the remaining share', async () => {
     const answers: ((value: ClaudeCodeUsageView) => void)[] = []
     const failures: ((error: Error) => void)[] = []
     const source = new UsageSource(() => new Promise((resolve, reject) => { answers.push(resolve); failures.push(reject) }))
     const h = mount(true, source)
-    expect(screen.getByText(en.loading)).toBeDefined()
+    expect(h.view.container.childElementCount).toBe(0)
     source.load(false)
     failures[0]!(new Error('offline'))
     await settle()
-    expect(screen.getByRole('alert').textContent).toBe('Could not read usage: offline')
+    expect(h.view.container.childElementCount).toBe(0)
     source.load(false)
     answers[1]!({ ...view, available: false, windows: [] })
     await settle()
-    expect(screen.getByText(en.unavailable)).toBeDefined()
+    expect(h.view.container.childElementCount).toBe(0)
     source.load(false)
-    answers[2]!(view)
+    answers[2]!({ ...view, windows: [] })
+    await settle()
+    expect(h.view.container.childElementCount).toBe(0)
+    source.load(false)
+    answers[3]!(view)
     await settle()
     const meters = screen.getAllByRole('meter')
     expect(meters.map(meter => [meter.getAttribute('aria-label'), meter.getAttribute('aria-valuenow')]))
@@ -107,16 +111,15 @@ describe('UsageMeter', () => {
     expect(h.refresh).toHaveBeenCalledOnce()
   })
 
-  it('shows the first window on the rail and the summary as its hover text', async () => {
+  it('shows the first window on the rail and every window as its hover text', async () => {
     let answer!: (value: ClaudeCodeUsageView) => void
     const source = new UsageSource(() => new Promise((resolve) => { answer = resolve }))
     const h = mount(false, source)
-    const button = screen.getByRole('button', { name: en.refresh })
-    expect(button.querySelector('svg')).not.toBeNull()
-    expect(button.title).toBe(`${en.title}\n${en.loading}`)
+    expect(h.view.container.childElementCount).toBe(0)
     source.load(false)
     answer(view)
     await settle()
+    const button = screen.getByRole('button', { name: en.refresh })
     expect(button.textContent).toBe('13% left')
     expect(button.title.split('\n')[1]).toMatch(/^5 hours · 87% used · Resets /u)
     fireEvent.click(button)

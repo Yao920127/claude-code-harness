@@ -46,25 +46,21 @@ export function resetText(window: ClaudeCodeUsageWindow, t: Translate): string |
 }
 
 /**
- * Render every reported window as a labelled bar in the wide sidebar, or the five-hour figure on the rail.
+ * Render every reported window as a labelled bar in the wide sidebar, or the first window's remaining share on the
+ * rail. Nothing renders until a read reports plan windows, so a sign-in without a Claude plan, such as an API key
+ * or another provider's route, and a failed or pending read leave the sidebar foot unchanged.
  * @param props - sidebar width, meter state, refresh command and copy.
- * @returns the meter.
+ * @returns the meter, or null while there are no plan windows to show.
  */
 export function UsageMeter({ wide, useUsage, refresh, t }: UsageMeterProps): ReactNode {
-  const state = useUsage(value => value)
-  const windows = state.phase === 'ready' ? state.view.windows : []
-  const summary = state.phase === 'loading'
-    ? t('loading')
-    : state.phase === 'failed'
-      ? t('failed', { message: state.message })
-      : state.view.available
-        ? windows.map(window => [windowLabel(window, t), details(window, t)].join(' · ')).join('\n')
-        : t('unavailable')
+  const windows = useUsage(value => value.phase === 'ready' && value.view.available ? value.view.windows : undefined)
+  const first = windows?.[0]
+  if (windows === undefined || first === undefined) return null
   if (!wide) {
-    const first = windows[0]
+    const summary = windows.map(window => [windowLabel(window, t), details(window, t)].join(' · ')).join('\n')
     return (
       <button type="button" className={css.rail} title={`${t('title')}\n${summary}`} aria-label={t('refresh')} onClick={refresh} data-claude-code-usage="">
-        {first === undefined ? <IconRefreshOutlineRegular /> : remaining(first, t)}
+        {remaining(first, t)}
       </button>
     )
   }
@@ -76,20 +72,18 @@ export function UsageMeter({ wide, useUsage, refresh, t }: UsageMeterProps): Rea
           <IconRefreshOutlineRegular />
         </button>
       </div>
-      {state.phase !== 'ready' || !state.view.available
-        ? <p className={css.note} role={state.phase === 'failed' ? 'alert' : undefined}>{summary}</p>
-        : windows.map(window => (
-          <div key={`${window.kind}:${window.label ?? ''}`} className={css.row} title={details(window, t)}>
-            <span className={css.label}>{windowLabel(window, t)}</span>
-            <span
-              className={css.bar} role="meter" aria-label={windowLabel(window, t)}
-              aria-valuemin={0} aria-valuemax={100} aria-valuenow={window.utilization ?? undefined}
-            >
-              <span className={css.fill} style={{ width: `${clamp(window.utilization ?? 0)}%` }} data-high={(window.utilization ?? 0) >= 80 || undefined} />
-            </span>
-            <span className={css.value}>{remaining(window, t)}</span>
-          </div>
-        ))}
+      {windows.map(window => (
+        <div key={`${window.kind}:${window.label ?? ''}`} className={css.row} title={details(window, t)}>
+          <span className={css.label}>{windowLabel(window, t)}</span>
+          <span
+            className={css.bar} role="meter" aria-label={windowLabel(window, t)}
+            aria-valuemin={0} aria-valuemax={100} aria-valuenow={window.utilization ?? undefined}
+          >
+            <span className={css.fill} style={{ width: `${clamp(window.utilization ?? 0)}%` }} data-high={(window.utilization ?? 0) >= 80 || undefined} />
+          </span>
+          <span className={css.value}>{remaining(window, t)}</span>
+        </div>
+      ))}
     </section>
   )
 }

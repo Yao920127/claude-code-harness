@@ -53,6 +53,8 @@ export const zh = {
   publishPrivate: '发布到 GitHub（私有）',
   publishPublic: '发布到 GitHub（公开）',
   noRemote: '这个仓库还没有连接 GitHub。',
+  publishSignIn: '在左下角「设置」→ GitHub 登录后，即可发布到 GitHub。',
+  githubIntro: '登录 GitHub 后，可以把你的项目复制到本机，并把新项目发布到 GitHub。',
   repositories: '我的 GitHub 项目',
   repositoriesLoading: '正在读取项目…',
   repositoriesEmpty: '没有项目。',
@@ -60,7 +62,6 @@ export const zh = {
   clone: '复制到本机',
   cloned: '已在本机',
   clonedTo: '已复制到 {path}，并加入工作区',
-  open: '打开',
 } satisfies Record<string, string>
 
 /** English Source Control copy. */
@@ -109,6 +110,8 @@ export const en = {
   publishPrivate: 'Publish to GitHub (private)',
   publishPublic: 'Publish to GitHub (public)',
   noRemote: 'This repository is not connected to GitHub yet.',
+  publishSignIn: 'Sign in under Settings → GitHub at the bottom left to publish to GitHub.',
+  githubIntro: 'Sign in to GitHub to clone your projects to this computer and publish new ones to GitHub.',
   repositories: 'My GitHub projects',
   repositoriesLoading: 'Reading projects…',
   repositoriesEmpty: 'No projects.',
@@ -116,5 +119,4 @@ export const en = {
   clone: 'Clone',
   cloned: 'On this computer',
   clonedTo: 'Cloned to {path} and added as a workspace',
-  open: 'Open',
 } satisfies Record<keyof typeof zh, string>

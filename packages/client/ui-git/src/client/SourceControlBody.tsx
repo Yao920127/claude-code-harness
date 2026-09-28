@@ -1,14 +1,15 @@
-/** The Source Control page of one Session: repository changes, commit and sync controls, and GitHub. */
-import { useEffect, useState, type ReactNode } from 'react'
+/** The Source Control page of one Session: repository changes, commit and sync controls, and publishing to GitHub. */
+import { useEffect, type ReactNode } from 'react'
 import { Button, IconBranchOutlineRegular, IconRefreshOutlineRegular } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { HostObservable, InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type { GitChangeKind, GitFileChange, GitStatusView, GithubVisibility } from '../types.ts'
 import type {} from './locales.ts'
-import type { GitNotice, GithubState, RepositoryState } from './source-control.ts'
+import { Notice } from './Notice.tsx'
+import type { GithubState, RepositoryState } from './source-control.ts'
 import css from './SourceControlBody.module.css'
 
-/** One Session's repository state, the shared GitHub state, and the commands bound to that Session. */
+/** One Session's repository state, the shared GitHub sign-in, and the commands bound to that Session. */
 export interface SourceControlInjected {
   readonly hooks: {
     readonly repository: HostObservable<RepositoryState>
@@ -25,10 +26,6 @@ export interface SourceControlInjected {
   readonly sync: () => void
   readonly publish: (visibility: GithubVisibility) => void
   readonly refreshAccount: () => void
-  readonly login: () => void
-  readonly logout: () => void
-  readonly loadRepositories: () => void
-  readonly clone: (nameWithOwner: string) => void
 }
 
 /** Sidebar page share, state, commands and copy. */
@@ -49,21 +46,22 @@ const LETTERS: Readonly<Record<GitChangeKind, string>> = {
 export function SourceControlBody(props: SourceControlBodyProps): ReactNode {
   const { useRepository, useGithub, refresh, refreshAccount, t } = props
   const repository = useRepository(value => value)
-  const github = useGithub(value => value)
+  const account = useGithub(value => value.account)
   useEffect(() => {
     refresh()
-    if (github.account === undefined) refreshAccount()
+    if (account === undefined) refreshAccount()
     const focused = (): void => { refresh() }
     window.addEventListener('focus', focused)
     return () => { window.removeEventListener('focus', focused) }
     // Mount-time reads only; later reads come from focus and the controls.
   }, [])
   const view = repository.view
+  const busy = repository.busy !== null
   return (
     <div className={css.root} data-source-control="">
       <header className={css.header}>
         <span className={css.heading}>{t('title')}</span>
-        <button type="button" className={css.icon} title={t('refresh')} aria-label={t('refresh')} disabled={repository.busy !== null} onClick={refresh}>
+        <button type="button" className={css.icon} title={t('refresh')} aria-label={t('refresh')} disabled={busy} onClick={refresh}>
           <IconRefreshOutlineRegular />
         </button>
       </header>
@@ -74,13 +72,23 @@ export function SourceControlBody(props: SourceControlBodyProps): ReactNode {
           : (
             <section className={css.section}>
               <p className={css.note}>{t('notRepository')}</p>
-              <div className={css.actions}>
-                <Button variant="primary" size="sm" disabled={repository.busy !== null} onClick={props.init}>{t('init')}</Button>
-              </div>
+              <Button variant="primary" className={css.fill} disabled={busy} onClick={props.init}>{t('init')}</Button>
             </section>
           )}
       <Notice notice={repository.notice} t={t} />
-      <Github {...props} github={github} view={view} busy={repository.busy !== null} />
+      {view?.repository === true && view.remoteUrl === null && (
+        <section className={css.section} aria-label={t('github')}>
+          <p className={css.note}>{t('noRemote')}</p>
+          {account?.cli === 'ready' && account.login !== null
+            ? (
+              <div className={css.actions}>
+                <Button variant="outline" className={css.fill} disabled={busy} onClick={() => { props.publish('private') }}>{t('publishPrivate')}</Button>
+                <Button variant="outline" className={css.fill} disabled={busy} onClick={() => { props.publish('public') }}>{t('publishPublic')}</Button>
+              </div>
+            )
+            : <p className={css.hint}>{t('publishSignIn')}</p>}
+        </section>
+      )}
     </div>
   )
 }
@@ -93,6 +101,7 @@ function Repository(props: SourceControlBodyProps & {
   const busy = state.busy !== null
   const staged = view.changes.filter(change => change.staged !== undefined)
   const unstaged = view.changes.filter(change => change.unstaged !== undefined)
+  const cannotCommit = busy || state.message.trim().length === 0 || view.changes.length === 0
   return (
     <>
       <div className={css.branch}>
@@ -109,14 +118,14 @@ function Repository(props: SourceControlBodyProps & {
           }}
         />
         <div className={css.actions}>
-          <Button variant="primary" size="sm" disabled={busy || state.message.trim().length === 0 || view.changes.length === 0} onClick={() => { props.commit(false) }}>{t('commit')}</Button>
-          <Button variant="outline" size="sm" disabled={busy || state.message.trim().length === 0 || view.changes.length === 0 || view.remoteUrl === null} onClick={() => { props.commit(true) }}>{t('commitPush')}</Button>
+          <Button variant="primary" className={css.fill} disabled={cannotCommit} onClick={() => { props.commit(false) }}>{t('commit')}</Button>
+          <Button variant="outline" className={css.fill} disabled={cannotCommit || view.remoteUrl === null} onClick={() => { props.commit(true) }}>{t('commitPush')}</Button>
         </div>
         {staged.length === 0 && view.changes.length > 0 && <p className={css.hint}>{t('commitHint')}</p>}
         <div className={css.actions}>
-          <Button variant="ghost" size="sm" disabled={busy || view.upstream === null} onClick={props.pull}>{t('pull')}</Button>
-          <Button variant="ghost" size="sm" disabled={busy || view.remoteUrl === null} onClick={props.push}>{t('push')}</Button>
-          <Button variant="ghost" size="sm" disabled={busy || view.upstream === null} onClick={props.sync}>{t('sync')}</Button>
+          <Button variant="outline" className={css.fill} disabled={busy || view.upstream === null} onClick={props.pull}>{t('pull')}</Button>
+          <Button variant="outline" className={css.fill} disabled={busy || view.remoteUrl === null} onClick={props.push}>{t('push')}</Button>
+          <Button variant="outline" className={css.fill} disabled={busy || view.upstream === null} onClick={props.sync}>{t('sync')}</Button>
         </div>
       </section>
       {view.changes.length === 0
@@ -175,95 +184,4 @@ function ChangeList({ title, changes, side, busy, t, allLabel, onAll, itemLabel,
       </ul>
     </section>
   )
-}
-
-function Github(props: SourceControlBodyProps & {
-  readonly github: GithubState
-  readonly view: GitStatusView | undefined
-  readonly busy: boolean
-}): ReactNode {
-  const { github, view, t } = props
-  const [listed, setListed] = useState(false)
-  const account = github.account
-  const githubBusy = github.busy !== null
-  const signedIn = account?.cli === 'ready' && account.login !== null
-  return (
-    <section className={css.section} aria-label={t('github')}>
-      <div className={css.listHeader}><span>{t('github')}</span></div>
-      {account === undefined
-        ? <p className={css.note}>{t('loading')}</p>
-        : account.cli === 'missing'
-          ? <p className={css.note}>{t('githubMissing')}</p>
-          : account.login !== null
-            ? (
-              <div className={css.row}>
-                <span className={css.note}>{t('githubSignedIn', { login: account.login })}</span>
-                <button type="button" className={css.link} disabled={githubBusy} onClick={props.logout}>{t('githubLogout')}</button>
-              </div>
-            )
-            : account.pending !== null
-              ? (
-                <>
-                  <p className={css.note}>{t('githubCode', { code: account.pending.code })}</p>
-                  <div className={css.actions}>
-                    <Button variant="primary" size="sm" onClick={() => { window.open(account.pending?.url, '_blank', 'noopener') }}>{t('githubOpen')}</Button>
-                  </div>
-                  <p className={css.hint}>{t('githubWaiting')}</p>
-                </>
-              )
-              : (
-                <>
-                  <p className={css.note}>{t('githubSignedOut')}</p>
-                  <div className={css.actions}>
-                    <Button variant="primary" size="sm" disabled={githubBusy} onClick={props.login}>{t('githubLogin')}</Button>
-                  </div>
-                </>
-              )}
-      {signedIn && view?.repository === true && view.remoteUrl === null && (
-        <>
-          <p className={css.note}>{t('noRemote')}</p>
-          <div className={css.actions}>
-            <Button variant="outline" size="sm" disabled={props.busy} onClick={() => { props.publish('private') }}>{t('publishPrivate')}</Button>
-            <Button variant="ghost" size="sm" disabled={props.busy} onClick={() => { props.publish('public') }}>{t('publishPublic')}</Button>
-          </div>
-        </>
-      )}
-      {signedIn && (
-        <details
-          className={css.repositories}
-          onToggle={(event) => {
-            if (event.currentTarget.open && !listed) { setListed(true); props.loadRepositories() }
-          }}
-        >
-          <summary>{t('repositories')}</summary>
-          {github.repositories === undefined
-            ? <p className={css.note}>{t('repositoriesLoading')}</p>
-            : github.repositories.length === 0
-              ? <p className={css.note}>{t('repositoriesEmpty')}</p>
-              : (
-                <ul className={css.files}>
-                  {github.repositories.map(repository => (
-                    <li key={repository.nameWithOwner} className={css.repository}>
-                      <span className={css.path} title={repository.description ?? repository.url}>
-                        {repository.nameWithOwner}{repository.isPrivate ? ` · ${t('private')}` : ''}
-                      </span>
-                      {repository.localPath === null
-                        ? <button type="button" className={css.link} disabled={githubBusy} onClick={() => { props.clone(repository.nameWithOwner) }}>{t('clone')}</button>
-                        : <span className={css.hint} title={repository.localPath}>{t('cloned')}</span>}
-                    </li>
-                  ))}
-                </ul>
-              )}
-        </details>
-      )}
-      <Notice notice={github.notice} t={t} />
-    </section>
-  )
-}
-
-function Notice({ notice, t }: { readonly notice: GitNotice | null; readonly t: Translate }): ReactNode {
-  if (notice === null) return null
-  return notice.kind === 'error'
-    ? <p className={css.error} role="alert">{t('failed', { message: notice.message })}</p>
-    : <p className={css.success} role="status">{t('clonedTo', { path: notice.path })}</p>
 }

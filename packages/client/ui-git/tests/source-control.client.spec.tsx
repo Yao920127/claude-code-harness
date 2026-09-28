@@ -10,6 +10,8 @@ import { GuideArtworkSourceControl, SOURCE_CONTROL_ID, SOURCE_CONTROL_KIND, sour
 import { en, zh } from '../src/client/locales.ts'
 import { SourceControl, type GitCommands } from '../src/client/source-control.ts'
 import { SourceControlBody, type SourceControlBodyProps, type SourceControlInjected } from '../src/client/SourceControlBody.tsx'
+import { GithubSection, type GithubSectionInjected, type GithubSectionProps } from '../src/client/GithubSection.tsx'
+import { SourceControlTitle } from '../src/client/SourceControlTitle.tsx'
 import type { GitStatusView, GithubAccountView, GithubRepository } from '../src/types.ts'
 
 afterEach(() => { cleanup(); vi.useRealTimers() })
@@ -255,10 +257,6 @@ describe('SourceControlBody', () => {
       sync: () => { control.sync(SESSION) },
       publish: (visibility) => { control.publish(SESSION, visibility) },
       refreshAccount: () => { control.refreshAccount() },
-      login: () => { control.login() },
-      logout: () => { control.logout() },
-      loadRepositories: () => { control.loadRepositories() },
-      clone: (name) => { control.clone(name) },
     }
     const props = {
       ...injected, t,
@@ -268,17 +266,13 @@ describe('SourceControlBody', () => {
     return { git, view: render(<SourceControlBody {...props} />) }
   }
 
-  it('offers to initialize a folder that is not a repository and shows the missing GitHub CLI', async () => {
-    const git = commands({
-      status: vi.fn(async (): Promise<GitStatusView> => ({ repository: false, directory: '/work' })),
-      githubAccount: vi.fn(async (): Promise<GithubAccountView> => ({ cli: 'missing' })),
-    })
+  it('offers to initialize a folder that is not a repository', async () => {
+    const git = commands({ status: vi.fn(async (): Promise<GitStatusView> => ({ repository: false, directory: '/work' })) })
     const control = new SourceControl(git, 1_000, vi.fn())
     mount(control, git)
-    expect(screen.getAllByText(en.loading)).toHaveLength(2)
+    expect(screen.getByText(en.loading)).toBeDefined()
     await settle()
     expect(screen.getByText(en.notRepository)).toBeDefined()
-    expect(screen.getByText(en.githubMissing)).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: en.init }))
     expect(git.init).toHaveBeenCalledWith(SESSION)
   })
@@ -373,20 +367,61 @@ describe('SourceControlBody', () => {
     expect(screen.getByText(en.commitHint)).toBeDefined()
   })
 
-  it('signs in, publishes, lists and clones repositories, and signs out', async () => {
+  it('publishes a repository without a remote once signed in, and points to Settings otherwise', async () => {
+    const accounts: GithubAccountView[] = [{ cli: 'ready', login: null, pending: null }]
+    const git = commands({
+      status: vi.fn(async (): Promise<GitStatusView> => ({ ...clean, remoteUrl: null })),
+      githubAccount: vi.fn(async () => accounts.shift() ?? signedIn),
+      githubPublish: vi.fn(async (): Promise<GitStatusView> => ({ ...clean, remoteUrl: null })),
+    })
+    const control = new SourceControl(git, 1_000, vi.fn())
+    mount(control, git)
+    await settle()
+    expect(screen.getByText(en.noRemote)).toBeDefined()
+    expect(screen.getByText(en.publishSignIn)).toBeDefined()
+    control.refreshAccount()
+    await settle()
+    fireEvent.click(screen.getByRole('button', { name: en.publishPrivate }))
+    await settle()
+    fireEvent.click(screen.getByRole('button', { name: en.publishPublic }))
+    await settle()
+    expect(git.githubPublish).toHaveBeenLastCalledWith(SESSION, 'public')
+  })
+})
+
+describe('GithubSection', () => {
+  function mount(control: SourceControl) {
+    const face: Omit<GithubSectionInjected, 'hooks'> = {
+      refreshAccount: () => { control.refreshAccount() },
+      login: () => { control.login() },
+      logout: () => { control.logout() },
+      loadRepositories: () => { control.loadRepositories() },
+      clone: (name) => { control.clone(name) },
+    }
+    const props = { ...face, t, close: vi.fn(), useGithub: bindSnapshotSelector(control.github) } as never as GithubSectionProps
+    return render(<GithubSection {...props} />)
+  }
+
+  it('says how to install a missing GitHub CLI', async () => {
+    const git = commands({ githubAccount: vi.fn(async (): Promise<GithubAccountView> => ({ cli: 'missing' })) })
+    mount(new SourceControl(git, 1_000, vi.fn()))
+    expect(screen.getByText(en.loading)).toBeDefined()
+    await settle()
+    expect(screen.getByText(en.githubMissing)).toBeDefined()
+  })
+
+  it('signs in with the device code, lists and clones repositories, and signs out', async () => {
     const accounts: GithubAccountView[] = [
       { cli: 'ready', login: null, pending: null },
       { cli: 'ready', login: null, pending: { code: 'ABCD-1234', url: 'https://github.com/login/device' } },
     ]
     const git = commands({
-      status: vi.fn(async (): Promise<GitStatusView> => ({ ...clean, remoteUrl: null })),
       githubAccount: vi.fn(async () => accounts.shift() ?? signedIn),
       githubRepositories: vi.fn().mockResolvedValueOnce([]).mockResolvedValue(repositories),
-      githubPublish: vi.fn(async (): Promise<GitStatusView> => ({ ...clean, remoteUrl: null })),
     })
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     const control = new SourceControl(git, 1_000, vi.fn())
-    mount(control, git)
+    mount(control)
     await settle()
     expect(screen.getByText(en.githubSignedOut)).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: en.githubLogin }))
@@ -397,24 +432,9 @@ describe('SourceControlBody', () => {
     control.refreshAccount()
     await settle()
     expect(screen.getByText('Signed in as octocat')).toBeDefined()
-    expect(screen.getByText(en.noRemote)).toBeDefined()
-    fireEvent.click(screen.getByRole('button', { name: en.publishPrivate }))
-    await settle()
-    fireEvent.click(screen.getByRole('button', { name: en.publishPublic }))
-    await settle()
-    expect(git.githubPublish).toHaveBeenLastCalledWith(SESSION, 'public')
-    const details = screen.getByText(en.repositories).closest('details') as HTMLDetailsElement
-    details.open = true
-    fireEvent(details, new Event('toggle'))
-    expect(screen.getByText(en.repositoriesLoading)).toBeDefined()
-    await settle()
     expect(screen.getByText(en.repositoriesEmpty)).toBeDefined()
-    details.open = false
-    fireEvent(details, new Event('toggle'))
-    details.open = true
-    fireEvent(details, new Event('toggle'))
-    expect(git.githubRepositories).toHaveBeenCalledOnce()
     control.loadRepositories()
+    expect(screen.getByText(en.repositoriesEmpty)).toBeDefined()
     await settle()
     expect(screen.getByText('octocat/secret · Private')).toBeDefined()
     expect(screen.getByText(en.cloned).getAttribute('title')).toBe('/clones/secret')
@@ -425,6 +445,17 @@ describe('SourceControlBody', () => {
     await settle()
     expect(git.githubLogout).toHaveBeenCalledOnce()
     open.mockRestore()
+  })
+
+  it('shows repositories loading while the first listing runs', async () => {
+    let list!: (rows: GithubRepository[]) => void
+    const git = commands({ githubRepositories: vi.fn(() => new Promise<GithubRepository[]>((resolve) => { list = resolve })) })
+    mount(new SourceControl(git, 1_000, vi.fn()))
+    await settle()
+    expect(screen.getByText(en.repositoriesLoading)).toBeDefined()
+    list(repositories)
+    await settle()
+    expect(screen.getByText('octocat/hello')).toBeDefined()
   })
 })
 
@@ -437,11 +468,15 @@ describe('Source Control plugin', () => {
     render(<GuideArtworkSourceControl />)
     render(<GuideArtworkSourceControl size={20} className="x" />)
     expect(document.querySelectorAll('svg')).toHaveLength(2)
+    const titleProps = { useTabInfo: () => ({ tab: { title: 'Source Control' } }) } as never as Parameters<typeof SourceControlTitle>[0]
+    const title = render(<SourceControlTitle {...titleProps} />)
+    expect(title.container.textContent).toBe('Source Control')
+    expect(title.container.querySelector('svg')).not.toBeNull()
   })
 
   it('registers the page over the git Remote and releases it on unload', async () => {
     const ctx = new Context()
-    const entries: { name: string; key?: string; inject: (key: string) => SourceControlInjected }[] = []
+    const entries: { name: string; key?: string; id?: string; label?: () => string; inject?: (key: string) => unknown }[] = []
     const types: unknown[] = []
     const dictionaries = new Map<string, unknown>()
     ctx.provide('slots', {
@@ -466,11 +501,19 @@ describe('Source Control plugin', () => {
     await fiber.await()
     expect(dictionaries.get('sourceControl')).toEqual({ zh, en })
     expect(types).toHaveLength(1)
-    const face = entries[0]!.inject(SESSION)
+    expect(entries.map(entry => [entry.name, entry.key ?? entry.id])).toEqual([
+      ['sidebar.right.pane.tab', '@deepseek-ai/dsh-client-ui-git'],
+      ['sidebar.right.pane.tab.title', '@deepseek-ai/dsh-client-ui-git'],
+      ['settings.section', 'github'],
+    ])
+    expect(entries[2]!.label?.()).toBe('github')
+    const face = entries[0]!.inject!(SESSION) as SourceControlInjected
+    const settings = entries[2]!.inject!('') as GithubSectionInjected
     for (const call of [
       face.refresh, () => { face.setMessage('m') }, face.init, () => { face.stage([]) }, () => { face.unstage([]) },
       () => { face.commit(false) }, face.push, face.pull, face.sync, () => { face.publish('private') },
-      face.refreshAccount, face.login, face.logout, face.loadRepositories, () => { face.clone('o/r') },
+      face.refreshAccount, settings.refreshAccount, settings.login, settings.logout, settings.loadRepositories,
+      () => { settings.clone('o/r') },
     ]) {
       call()
       await settle()

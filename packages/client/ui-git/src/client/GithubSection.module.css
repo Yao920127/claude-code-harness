@@ -1,0 +1,96 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 720px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.subtitle {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+
+.intro,
+.note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-tertiary);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-settings-card-fill);
+}
+
+.row,
+.repository {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.account {
+  font-size: 14px;
+}
+
+.code {
+  margin: 0;
+  font-family: var(--dsw-font-mono, ui-monospace, monospace);
+  font-size: 22px;
+  letter-spacing: 2px;
+}
+
+.fill {
+  width: 100%;
+}
+
+.repositories {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.repository {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: var(--dsw-radius-sm);
+}
+
+.repository:hover {
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+.name {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

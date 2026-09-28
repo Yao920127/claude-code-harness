@@ -1,15 +1,18 @@
-/** Register the Source Control page type in the right Sidebar over the Host `git` Remote. */
+/** Register the Source Control page type in the right Sidebar and the GitHub Settings page over the Host `git` Remote. */
 import type { Context } from '@deepseek-ai/cordis'
 import type { RemoteResult } from '@deepseek-ai/dsh-typert-protocol'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
+import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { SOURCE_CONTROL_ID, sourceControlDefinition } from './definition.tsx'
 import { en, zh } from './locales.ts'
 import { SourceControl, type GitCommands } from './source-control.ts'
 import { SourceControlBody, type SourceControlInjected } from './SourceControlBody.tsx'
+import { SourceControlTitle } from './SourceControlTitle.tsx'
+import { GithubSection, type GithubSectionInjected } from './GithubSection.tsx'
 
 export type { GitAction, GitCommands, GitNotice, GithubState, RepositoryState } from './source-control.ts'
 export { SourceControl } from './source-control.ts'
@@ -73,10 +76,21 @@ export function apply(ctx: Context): void {
       sync: () => { control.sync(sessionId) },
       publish: (visibility) => { control.publish(sessionId, visibility) },
       refreshAccount: () => { control.refreshAccount() },
-      login: () => { control.login() },
-      logout: () => { control.logout() },
-      loadRepositories: () => { control.loadRepositories() },
-      clone: (nameWithOwner) => { control.clone(nameWithOwner) },
     }),
   }, SourceControlBody)), 'ui-git.page')
+  ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab.title', () => ctx.slots.register({
+    name: 'sidebar.right.pane.tab.title', key: SOURCE_CONTROL_ID,
+  }, SourceControlTitle)), 'ui-git.title')
+  // GitHub sign-in and cloning belong to the account, not to one Session, so they live in Settings.
+  const github: GithubSectionInjected = {
+    hooks: { github: control.github },
+    refreshAccount: () => { control.refreshAccount() },
+    login: () => { control.login() },
+    logout: () => { control.logout() },
+    loadRepositories: () => { control.loadRepositories() },
+    clone: (nameWithOwner) => { control.clone(nameWithOwner) },
+  }
+  ctx.effect(() => ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section', id: 'github', order: 15, label: () => t('github'), locale: namespace, inject: () => github,
+  }, GithubSection)), 'ui-git.settings')
 }

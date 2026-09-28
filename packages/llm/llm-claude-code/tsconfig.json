@@ -47,6 +47,9 @@
     },
     {
       "path": "../../interaction/user-approval"
+    },
+    {
+      "path": "../../client/ui-sidebar-browser/tsconfig.host.json"
     }
   ]
 }

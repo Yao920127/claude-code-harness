@@ -197,6 +197,14 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns streaming intake, durable storage, and staged receipt lifetime; the Session controller binds receipts to accepted submissions.',
   },
   {
+    key: 'sidebarBrowser',
+    pkg: 'client-ui-sidebar-browser',
+    title: 'Agent requests to open pages in the app Browser',
+    mode: 'core',
+    consumers: ['llm-claude-code'],
+    note: 'Fans live open requests out to connected app windows, which open a new Browser tab in the requesting Session.',
+  },
+  {
     key: 'llm',
     pkg: 'llm',
     title: 'LLM adapter registry',

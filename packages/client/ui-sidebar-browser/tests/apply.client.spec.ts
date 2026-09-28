@@ -15,6 +15,8 @@ import { en, zh } from '../src/client/locales.ts'
 import { createBrowserStore } from '../src/client/browser/store.ts'
 import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
 import type { DesktopBrowserBridge, DesktopBrowserLeaseId } from '../src/types.ts'
+import { TestRemote } from '@deepseek-ai/dsh-client-test-runtime'
+import { scriptedStream } from './open-request-stream.client.ts'
 
 const contexts: Context[] = []
 
@@ -56,7 +58,7 @@ async function boot(platform: ShortcutPlatform = 'macos', runtime: 'desktop' | '
   const openTabs = createSnapshotStore<readonly { sessionId: string; tabId: TabId }[]>([])
   const target = { sessionId: 'session', paneId: 'pane' }
   const sidebar = { openTabs, commandTarget: vi.fn<() => typeof target | undefined>(() => target),
-    openTabFromTarget: vi.fn() }
+    openTabFromTarget: vi.fn(), openTabIn: vi.fn() }
   const registry = new ShortcutRegistry(runtime, platform)
   ctx.provide('sidebarRight', sidebar as never)
   ctx.provide('shortcuts', { register: (command: ShortcutCommand) => registry.register(command) } as never)
@@ -67,7 +69,7 @@ async function boot(platform: ShortcutPlatform = 'macos', runtime: 'desktop' | '
   ctx.provide('configForms', { get: vi.fn(() => ({ getSnapshot: () => ({ value: { searchUrl: 'https://search.example/?q=%s' } }) })) } as never)
   const fiber = ctx.plugin({ inject: [...inject], apply })
   await fiber.await()
-  return { tabs, registered, dictionaries, fiber, openTabs, registry, sidebar, target }
+  return { ctx, tabs, registered, dictionaries, fiber, openTabs, registry, sidebar, target }
 }
 
 describe('ui-sidebar-browser apply', () => {
@@ -166,6 +168,38 @@ describe('ui-sidebar-browser apply', () => {
     const h = await boot('macos', 'web')
     try { expect(h.registry.catalog.getSnapshot()[0]?.binding).toEqual({ code: 'KeyT', modifiers: ['alt', 'meta'] }) }
     finally { await h.fiber.dispose() }
+  })
+
+  it('opens a new Browser tab in the requesting Session for each Agent open request', async () => {
+    const { ctx, sidebar } = await boot()
+    const { stream, accepted, dispose } = scriptedStream([
+      { kind: 'ready' },
+      { kind: 'open', request: { sessionId: 'session-2' as never, url: 'http://localhost:8501/' } },
+    ])
+    const watchOpenRequests = vi.fn()
+    const remote = new TestRemote(ctx, { sidebarBrowser: { watchOpenRequests } })
+    let ended: Error | undefined
+    const $stream = vi.fn((options: { open: (signal: AbortSignal) => unknown; ended: (accepted: boolean) => Error }) => {
+      options.open(new AbortController().signal)
+      ended = options.ended(true)
+      return stream
+    })
+    Object.assign(remote, { $stream })
+    await vi.waitFor(() => { expect(accepted).toEqual(['ready', 'open']) })
+    expect(watchOpenRequests).toHaveBeenCalledOnce()
+    expect(ended?.message).toBe('sidebar-browser open-request stream ended')
+    expect(sidebar.openTabIn).toHaveBeenCalledExactlyOnceWith('session-2', BROWSER_KIND, { params: { url: 'http://localhost:8501/' } })
+    await ctx.fiber.dispose()
+    expect(dispose).toHaveBeenCalledOnce()
+  })
+
+  it('reports a failed open-request stream in the log', async () => {
+    const { ctx } = await boot()
+    const warn = vi.spyOn(ctx.logger, 'warn')
+    const { stream } = scriptedStream([{ kind: 'ready' }], new Error('carrier lost'))
+    const remote = new TestRemote(ctx, { sidebarBrowser: { watchOpenRequests: vi.fn() } })
+    Object.assign(remote, { $stream: () => stream })
+    await vi.waitFor(() => { expect(warn).toHaveBeenCalledWith('ui-sidebar-browser: open-request stream failed: %o', expect.any(Error)) })
   })
 
   it('removes every registration when the plugin is disposed', async () => {

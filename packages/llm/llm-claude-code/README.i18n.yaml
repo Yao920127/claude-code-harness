@@ -30,8 +30,8 @@
   en: 286d36ff0fd4c8ed
   zh: 9e3306613c669717
 /deepseek-ai-dsh-llm-claude-code/use-this-package/what-you-see:
-  en: bbaf6dd6560a5625
-  zh: 6e2de2a4b3747671
+  en: d0f898fd8fef5282
+  zh: c0195d28577a3ef3
 /deepseek-ai-dsh-llm-claude-code/use-this-package/failure-and-recovery:
   en: a6aa583f9ff079f4
   zh: f9979461623cf26e
@@ -42,8 +42,8 @@
   en: 935eba26d7a48cf6
   zh: 2d82d85bd592cb4f
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/source-map:
-  en: 4767d3dbc5c587b2
-  zh: 30b398c409532039
+  en: 9fb70e52c1a8b86d
+  zh: 9191755cf0dfaec0
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/request-flow:
   en: 3b05b7dc248eaef4
   zh: 072dd845ad1908a9
@@ -68,6 +68,18 @@
 /deepseek-ai-dsh-llm-claude-code/model-experience/claude-code-prompt/kv-cache-effect:
   en: af32cffda01dcbab
   zh: 2d043c04f4254294
+/deepseek-ai-dsh-llm-claude-code/model-experience/app-browser-tool:
+  en: 1facc526553fc8e9
+  zh: ad9cef80f5b6d8b0
+/deepseek-ai-dsh-llm-claude-code/model-experience/app-browser-tool/what-the-model-sees:
+  en: baef6c37943c7acd
+  zh: 7b9fa5755c98dc25
+/deepseek-ai-dsh-llm-claude-code/model-experience/app-browser-tool/token-effect:
+  en: 432dd26c9add191a
+  zh: af862543224370ae
+/deepseek-ai-dsh-llm-claude-code/model-experience/app-browser-tool/kv-cache-effect:
+  en: 6a273c27d7fd29ea
+  zh: c38bb3db7eba5824
 /deepseek-ai-dsh-llm-claude-code/model-experience/harness-history:
   en: de330c6c1d237c75
   zh: 376bd3f3f6046f8e
@@ -81,8 +93,8 @@
   en: 4da37db427d1ae65
   zh: 6bd33de04450f9d5
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work:
-  en: 43cf145b7adc3d98
-  zh: 7a4697fd3bae891d
+  en: a80fd60da1fa39b6
+  zh: c93ac39ad4a13382
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work/dev-note:
   en: 9c2341d99bdc706a
   zh: f65ed7b3aea3f81f

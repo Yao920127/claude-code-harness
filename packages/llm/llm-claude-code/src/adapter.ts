@@ -26,6 +26,7 @@ import { claudeSpawnSpec, ManagedClaudeCodeProcess } from '@deepseek-ai/dsh-suba
 import { scrubbedParentEnv, type SubprocessHandle, type SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
 import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
 import { approvalCallback } from './approval.ts'
+import { BROWSER_MCP_SERVER, BROWSER_TOOL_ID, browserToolServer } from './browser-tool.ts'
 import { modelEntries, NATIVE_MODEL_ID, type ClaudeCodeModelEntry } from './models.ts'
 import { resolvePermissionMode, type ClaudeCodeRoutePermissionMode, type SessionPermissions } from './permissions.ts'
 import { planTurn, type ClaudeCodeTurnPlan } from './request.ts'
@@ -61,6 +62,11 @@ export interface ClaudeCodeAdapterOptions {
   readonly session: (sessionId: SessionId) => Session | undefined
   /** A Session's effective permission knobs, when the composition mounts sandbox and approval services. */
   readonly sessionPermissions: (session: Session) => SessionPermissions | undefined
+  /**
+   * Opens an address in a new app Browser tab of one Session and returns how many app windows received it;
+   * undefined when the composition mounts no app Browser, which leaves the browser tool out of every turn.
+   */
+  readonly appBrowser: () => ((session: Session, url: string) => number) | undefined
 }
 
 /** Claude Code turns as model calls on one or more harness provider routes. */
@@ -205,6 +211,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
   ): Options {
     const permissionMode = resolvePermissionMode(this.options.permissionMode, this.options.sessionPermissions(session))
     const auxiliary = request.purpose !== undefined
+    const appBrowser = auxiliary ? undefined : this.options.appBrowser()
     return {
       abortController: controller,
       cwd,
@@ -220,11 +227,15 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       permissionMode,
       ...permissionMode === 'bypassPermissions'
         ? { allowDangerouslySkipPermissions: true }
-        : { canUseTool: approvalCallback(this.options.approval(), agent) },
+        : { canUseTool: approvalCallback(this.options.approval(), agent, appBrowser === undefined ? [] : [BROWSER_TOOL_ID]) },
       ...plan.resume === undefined ? {} : { resume: plan.resume.sessionId, resumeSessionAt: plan.resume.resumeAt },
       // Auxiliary calls (titles, compaction summaries) answer from the prompt
       // alone and leave no native transcript behind.
       ...auxiliary ? { tools: [], maxTurns: 1, persistSession: false } : {},
+      // Conversation turns show web pages in the app's Browser; the permission callback allows the tool without asking.
+      ...appBrowser === undefined ? {} : {
+        mcpServers: { [BROWSER_MCP_SERVER]: browserToolServer(url => appBrowser(session, url)) },
+      },
       spawnClaudeCodeProcess: (spawnOptions) => {
         const handle = this.options.spawn(claudeSpawnSpec(spawnOptions, this.options.disposeGraceMs))
         capture(handle)

@@ -62,6 +62,8 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 
 助手消息包含作为推理内容的 Claude Code 思考过程、作为文本的回答，以及每个顶层工具调用一行形如 `Claude Code ran <tool>: <subject>` 的推理内容。Claude Code 一开始调用工具，该行就带着工具名称出现，因此整份文件写入这类较长的工具输入也能显示正在进行的工具；输入完整后再补上对象。失败的工具结果（包括权限拒绝）会增加一行形如 `Claude Code's <tool> failed: <错误的第一行>` 的内容。嵌套的 Claude Code subagent 通信、成功的工具结果、hooks 和状态消息都留在 Claude Code 内部。
 
+当组合挂载了应用 Browser（`ctx.sidebarBrowser`）时，每个对话回合都会给 Claude Code 一个 `open_browser_tab` 工具。Claude Code 用它展示网页（例如本地开发服务器），页面会在该 Session 右侧 Sidebar 的新 Browser tab 中打开，而不是外部浏览器。该工具无需权限提示，只接受 http 和 https URL，没有应用窗口打开时回报失败。
+
 ### 失败与恢复
 
 | 失败 | 代码 | 恢复方式 |
@@ -99,6 +101,7 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 | [`src/stream.ts`](src/stream.ts) | SDK 消息到流块的转换、用量与终止映射 |
 | [`src/approval.ts`](src/approval.ts) | 基于 `ctx.approval` 的原生权限回调 |
 | [`src/permissions.ts`](src/permissions.ts) | 由路由设置与 Session 权限旋钮得出的原生权限模式 |
+| [`src/browser-tool.ts`](src/browser-tool.ts) | 在应用 Browser 中打开页面的进程内 MCP 工具 |
 | [`src/replay.ts`](src/replay.ts) | 保存原生续接游标的带版本 replay 状态 |
 | [`cordis.patch.yml`](cordis.patch.yml) | 插入路由的 Profile 补丁层 |
 
@@ -141,6 +144,20 @@ Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系统提示、�
 
 续接的回合追加到原生记录，因此复用取决于 Claude Code 自身对其前缀的缓存。引用历史的请求会开始新的原生对话，并可能使早先原生前缀的复用失效。
 
+### 应用浏览器工具
+
+#### 模型看到的内容
+
+当组合挂载了应用 Browser 时，对话回合会增加一个 MCP 服务器 `app_browser`，其中有一个始终加载的工具 `open_browser_tab(url)`，描述为 "Open an http or https URL in a new tab of the browser the user sees in the app."，并附带服务器说明："The user works in an app that has its own browser. To show the user a web page, including a local development server, call open_browser_tab with its http or https URL. Do not open an external browser, for example with the open, xdg-open, or start commands." 辅助调用两者都不会收到。
+
+#### Token 影响
+
+每个对话回合增加工具 schema 与说明，大小固定，与对话无关；每次调用增加其 URL 和一行结果。
+
+#### KV Cache 影响
+
+工具定义与说明在每个回合都相同，因此留在 Claude Code 可复用的前缀内；加入或移除应用 Browser 会让该前缀改变一次。
+
 ### Harness 历史
 
 #### 模型看到的内容
@@ -161,6 +178,7 @@ Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系统提示、�
 
 - **harness 工具不会被使用**——路由忽略 preset 的工具 schema；由 Claude Code 自己的工具、MCP 服务器和其设置中的技能取代。
 - **仅支持文本输入**——图片附件会以 `UNSUPPORTED_CONTENT` 失败；路由向模型选择器声明仅接受文本输入。
+- **应用浏览器工具只引导、不阻止**——其说明要求 Claude Code 不要启动外部浏览器，但只要 Session 权限允许，shell 的 `open` 命令仍可执行。
 - **工具活动是一行文本**——顶层工具调用与失败结果渲染为推理行而非工具卡片，成功的工具结果留在 Claude Code 内部。
 - **没有提问通道**——由于不存在 harness 提问桥接，`AskUserQuestion` 被禁用；Claude Code 改为在回答文本中提问。
 - **辅助调用的输出上限仅供参考**——Session 标题或压缩调用的 `maxTokens` 会被接受，但由 Claude Code 执行自己的输出上限。

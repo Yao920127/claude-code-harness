@@ -44,6 +44,8 @@ Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用�
 
 Client 插件可以调用 `ctx.sidebarRight.openTab('browser', { params: { url } })` 打开 tab。可选 URL 会在导航前接受与地址栏输入相同的校验。
 
+Host 调用方（例如 Agent 工具）用 `ctx.sidebarBrowser.open(sessionId, url)` 为用户打开页面：每个已连接的应用窗口都会在该 Session 中新开一个 Browser tab，调用返回收到请求的窗口数，0 表示没有窗口连接。请求只在实时生效；之后才连接的窗口不会重放它们。[右侧 Sidebar 页面](../../../docs/subsystems/sidebar-right.zh.md#agent-open-requests)说明了这个通道。
+
 命令 `browser.new` 在焦点停靠分栏打开独立浏览器页，替换开始页并保留已有内容页。从聊天区或浮动内容页触发时，使用活动停靠分栏。桌面默认键在 macOS 上为 Cmd+T，在 Windows 上为 Ctrl+T；Windows 和 macOS Web 使用[快捷键服务的平台默认值](../shortcuts/README.zh.md)；Linux Web 默认不绑定此命令。开始页按钮使用蓝色地球图标，并在按钮内显示有效快捷键，不额外弹出重复提示。
 
 工具栏提供后退、前进、刷新、前往和在系统浏览器中打开。Web 还提供逐 tab sandbox 开关；关闭它是临时选择，并会显示警告。Desktop 显示观察到的页面标题。重启后，Browser 展示保存的标题和 URL；只有点击恢复或刷新才打开该地址。
@@ -91,7 +93,7 @@ Desktop 主进程批准 guest 租约，并执行挂载、导航和权限策略�
 <a id="model-experience"></a>
 ## 模型体验
 
-无。Browser tab 是用户侧呈现状态，不注册工具、prompt section 或 Session event。
+无。Browser tab 是用户侧呈现状态，不注册工具、prompt section 或 Session event。调用 `ctx.sidebarBrowser.open` 的 Agent 工具自行说明其模型可见内容。
 
 #### KV Cache 影响
 

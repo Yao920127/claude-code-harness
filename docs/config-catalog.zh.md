@@ -310,7 +310,9 @@ export interface Config {
 export interface Config {
   /** Override the system Documents directory with a fully qualified path. */
   documentsDirectory?: string
-  /** Directory under Documents that holds the default Workspace directory. */
+  /** Account directory holding the default Workspace: the Documents directory or the home directory. */
+  baseDirectory?: DefaultWorkspaceBase
+  /** One directory under the base directory that holds the default Workspace directory; empty places it directly in the base. */
   productDirectory?: string
   /**
    * Whether this Host provides the permanent default Workspace. A Host that
@@ -321,6 +323,9 @@ export interface Config {
   /** Maximum duration of the operating system's Documents lookup. */
   documentsLookupTimeoutMs?: number
 }
+
+/** Host account directory that holds the default Workspace. */
+export type DefaultWorkspaceBase = 'documents' | 'home'
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-api-workspace-controller -->
 
@@ -1556,7 +1561,7 @@ export interface Config {
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
 - `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:45`](../packages/llm/llm-claude-code/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:47`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */

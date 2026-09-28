@@ -144,6 +144,47 @@ Host 的 `ctx.workspaceFiles` 服务与生成的 `workspaceFiles` Remote 命名�
 - **`browser`**——可多开的 `builtin`，以 `openTab('browser', { params: { url? } })` 打开。Chat 的[链接偏好](../../packages/client/ui-chat/README.zh.md)决定 Assistant Markdown 是否在此打开 HTTP(S) 链接。它在默认 sandbox 下接受公共与 loopback HTTP(S) 目标，本地文件改用 Document Preview，并使用应用已知的 iframe history（[README](../../packages/client/ui-sidebar-browser/README.zh.md)）。
 - **`subagentchat`**——`builtin`，`dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>`。资源提供方保留一个显式寻址的 subagent Conversation，并通过共享 Conversation Factory 渲染（[README](../../packages/client/ui-subagent/README.zh.md)）。
 
+<a id="agent-open-requests"></a>
+## Agent 打开请求
+
+Host 调用方用 `ctx.sidebarBrowser.open(sessionId, url)` 为用户打开页面，返回收到请求的应用窗口数。每个已连接窗口跟随 `sidebarBrowser.watchOpenRequests` Remote 流，并通过 `openTabIn` 在该 Session 中新开一个 `browser` tab；Browser 像校验任何 typed-open 地址一样校验该地址。请求只在实时生效：之后才连接的窗口收不到先前的请求，没有窗口接管的 Session 不会打开任何页面。[Claude Code 模型路由](../../packages/llm/llm-claude-code/README.zh.md)把这个通道作为 `open_browser_tab` 工具提供给 Claude Code。
+
+<!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
+
+<a id="cordis-surface"></a>
+
+## Cordis API
+
+Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
+
+<a id="ctxsidebarbrowser--sidebarbrowseropener"></a>
+
+### `ctx.sidebarBrowser` — `SidebarBrowserOpener`
+
+Fans open requests out to the connected app windows.
+
+```ts cordis-catalog
+/**
+ * Ask every connected app window to open a page in a new Browser tab.
+ * @param sessionId - Session whose Sidebar receives the tab.
+ * @param url - HTTP(S) address; the Browser refuses any other address.
+ * @returns the number of app windows that received the request; 0 when none is connected.
+ */
+open(sessionId: SessionId, url: string): number
+
+/**
+ * Stream the open requests made while subscribed, in order, without replaying earlier ones.
+ * @param signal - stream lifetime.
+ * @returns `ready` once this window receives requests, then one `open` item per request.
+ */
+@Remote({ mode: 'stream' }) async *watchOpenRequests(signal: AbortSignal): AsyncIterable<BrowserOpenStreamItem>
+```
+
+Types: [SessionId](core.zh.md)
+
+Source: [`packages/client/ui-sidebar-browser/src/open-requests.ts`](../../packages/client/ui-sidebar-browser/src/open-requests.ts)
+<!-- END GENERATED cordis-surface -->
+
 <a id="not-built"></a>
 ## 不做
 

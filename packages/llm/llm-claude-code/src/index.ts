@@ -16,6 +16,8 @@ import type {} from '@deepseek-ai/dsh-subprocess'
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout'
 import type {} from '@deepseek-ai/dsh-user-approval'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
+// Type-only: the optional ctx.sidebarBrowser channel to the app's Browser tabs.
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-browser'
 import { ClaudeCodeAdapter } from './adapter.ts'
 import type { ClaudeCodeModelEntry } from './models.ts'
 import {
@@ -121,6 +123,10 @@ export function apply(ctx: Context, config: Config): void {
       const approval = ctx.get('approval')
       if (sandboxPolicy === undefined || approval === undefined) return undefined
       return { sandbox: sandboxPolicy.resolve({ session }).mode, approval: approval.effectivePolicy(session) }
+    },
+    appBrowser: () => {
+      const browser = ctx.get('sidebarBrowser')
+      return browser === undefined ? undefined : (session, url) => browser.open(session.id, url)
     },
   })
   ctx.llm.registerAdapter([provider], adapter)

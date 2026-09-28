@@ -1,10 +1,17 @@
-/** Host companion for the Sidebar Browser Client plugin: the search and home addresses it projects to the browser. */
+/**
+ * Host companion for the Sidebar Browser Client plugin: the search and home
+ * addresses it projects to the browser, and the channel Agents use to open pages in it.
+ */
 import type {} from '@deepseek-ai/dsh-settings'
 
 import type { Context, Volatile } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 
+import { SidebarBrowserOpener } from './open-requests.ts'
+
 export { SIDEBAR_BROWSER_NAMESPACE, type SidebarBrowserSettings } from './browser-settings.ts'
+export { SidebarBrowserOpener } from './open-requests.ts'
+export type { BrowserOpenRequest, BrowserOpenStreamItem } from './types.ts'
 
 /** Browser preferences projected to the client. */
 export interface Config {
@@ -29,9 +36,11 @@ export const Config = z.object({
 })
 
 /**
- * Serve the browser preferences through the configuration form projection without an automatic settings page.
+ * Serve the browser preferences through the configuration form projection without an automatic settings page,
+ * and provide `ctx.sidebarBrowser` for opening pages in the app's Browser tabs.
  * @param ctx - plugin context used for optional settings presentation.
  */
 export function apply(ctx: Context): void {
   ctx.inject(['settings'], (child) => { child.effect(() => child.settings.configure({ auto: false }, ctx.fiber)) })
+  ctx.plugin(SidebarBrowserOpener)
 }

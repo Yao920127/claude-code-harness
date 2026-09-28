@@ -1,9 +1,22 @@
-/** Resolve the Host account's Documents directory for first-use Workspace creation. */
+/** Resolve the Host account's default Workspace directory under its Documents or home directory. */
 
 import { homedir } from 'node:os'
 import { posix, win32 } from 'node:path'
 import { runNativeCommand, type NativeCommandRunner } from '@deepseek-ai/dsh-native-command'
 import { DEFAULT_WORKSPACE_DIRECTORY } from './default-workspace.ts'
+
+/** Host account directory that holds the default Workspace. */
+export type DefaultWorkspaceBase = 'documents' | 'home'
+
+/** Where the default Workspace directory is placed. */
+export interface DefaultWorkspaceLocation {
+  /** Account directory the path starts from. */
+  readonly baseDirectory: DefaultWorkspaceBase
+  /** Explicit Documents directory replacing the system lookup; used only under `documents`. */
+  readonly documentsDirectory: string | undefined
+  /** One path segment between the base directory and the Workspace directory; empty adds none. */
+  readonly productDirectory: string
+}
 
 /** Platform observations replaceable in directory-resolution tests. */
 interface DocumentsDirectoryInternals {
@@ -29,22 +42,21 @@ export function validateDocumentsDirectory(directory: string, platform: NodeJS.P
 
 /**
  * Resolve the default Workspace directory on the Host without creating files.
- * @param documentsDirectory - explicit deployment override for the system Documents directory.
- * @param productDirectory - directory under Documents holding the default Workspace directory.
+ * A `home` base uses the account home directory and needs no system lookup.
+ * @param location - base directory, Documents override, and product directory.
  * @param signal - caller lifetime and lookup deadline.
  * @param internals - platform facts and native command runner.
  * @returns the absolute candidate path.
  */
 export async function defaultWorkspaceDirectory(
-  documentsDirectory: string | undefined,
-  productDirectory: string,
+  location: DefaultWorkspaceLocation,
   signal: AbortSignal,
   internals: DocumentsDirectoryInternals = {},
 ): Promise<string> {
   const platform = internals.platform ?? process.platform
   const paths = platform === 'win32' ? win32 : posix
   signal.throwIfAborted()
-  let directory = documentsDirectory
+  let directory = location.baseDirectory === 'home' ? internals.home ?? homedir() : location.documentsDirectory
   if (directory === undefined) {
     const run = internals.run ?? runNativeCommand
     let stdout: string
@@ -76,5 +88,5 @@ export async function defaultWorkspaceDirectory(
   }
   directory = validateDocumentsDirectory(directory, platform)
   signal.throwIfAborted()
-  return paths.join(directory, productDirectory, DEFAULT_WORKSPACE_DIRECTORY)
+  return paths.join(directory, location.productDirectory, DEFAULT_WORKSPACE_DIRECTORY)
 }

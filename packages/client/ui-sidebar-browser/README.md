@@ -44,6 +44,8 @@ Choose Browser for a Web page that should remain beside the current Session. Cho
 
 Client plugins can open a tab through `ctx.sidebarRight.openTab('browser', { params: { url } })`. The optional URL passes the same validation as address-bar input before navigation.
 
+Host callers, such as an Agent tool, open a page for the user with `ctx.sidebarBrowser.open(sessionId, url)`: every connected app window opens a new Browser tab in that Session, and the call returns how many windows received the request, so 0 means no window is connected. Requests are live only; a window that connects later does not replay them. The [Right Sidebar page](../../../docs/subsystems/sidebar-right.md#agent-open-requests) describes the channel.
+
 The `browser.new` command opens a separate Browser page in the focused dock pane, replacing a guide and retaining existing content pages. From the conversation or a floating content page, it uses the active dock pane. Desktop defaults to Cmd+T on macOS and Ctrl+T on Windows; Windows and macOS Web use the [shortcut service’s platform defaults](../shortcuts/README.md); Linux Web leaves the command unbound. The guide button uses a blue globe and displays the effective shortcut inline without a duplicate tooltip.
 
 The toolbar provides Back, Forward, Reload, Go, and Open in system browser. Web also offers a per-tab sandbox toggle; disabling it is temporary and displays a warning. Desktop shows the observed page title. After a restart, Browser shows the saved title and URL; Restore or Reload opens that address only when requested.
@@ -91,7 +93,7 @@ The page refresh shortcut calls the same reload operation as the toolbar. Its to
 <a id="model-experience"></a>
 ## Model Experience
 
-None, as Browser tabs are user-facing presentation state and register no tool, prompt section, or Session event.
+None, as Browser tabs are user-facing presentation state and register no tool, prompt section, or Session event. Agent tools that call `ctx.sidebarBrowser.open` document their own model-visible surface.
 
 #### KV Cache effect
 

@@ -509,6 +509,9 @@ describe('default Workspace Remote', () => {
     })
     expect(defaultWorkspace.path).toBe(join(root, 'claude-code-harness', DEFAULT_WORKSPACE_DIRECTORY))
     expect(() => WorkspaceController.Config({ productDirectory: 'nested/name' })).toThrow()
+    expect(WorkspaceController.Config({})).toMatchObject({ baseDirectory: 'documents', productDirectory: 'deepseek-harness' })
+    expect(WorkspaceController.Config({ baseDirectory: 'home', productDirectory: '' })).toMatchObject({ baseDirectory: 'home', productDirectory: '' })
+    expect(() => WorkspaceController.Config({ baseDirectory: 'desktop' as never })).toThrow()
   })
 
   it('refuses to delete the default and propagates preparation failures', async () => {

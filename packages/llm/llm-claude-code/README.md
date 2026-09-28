@@ -62,6 +62,8 @@ Under the default `session` setting, each turn's native permission mode follows 
 
 The assistant message holds Claude Code's thinking as reasoning, its text as text, and one reasoning line of the form `Claude Code ran <tool>: <subject>` for each top-level tool call. The line appears with the tool name as soon as Claude Code starts the call, so a long tool input such as a whole-file write shows which tool is in progress, and gains its subject when the input is complete. A failed tool result, including a permission denial, adds a line of the form `Claude Code's <tool> failed: <first line of the error>`. Nested Claude Code subagent traffic, successful tool results, hooks, and status messages stay inside Claude Code.
 
+When the composition mounts the app Browser (`ctx.sidebarBrowser`), each conversation turn gives Claude Code an `open_browser_tab` tool. Claude Code calls it to show a web page, such as a local development server, and the page opens in a new Browser tab in the right Sidebar of the Session instead of an external browser. The tool runs without a permission prompt, accepts only http and https URLs, and reports failure when no app window is open.
+
 ### Failure and recovery
 
 | Failure | Code | Recovery |
@@ -99,6 +101,7 @@ Cancelling the harness turn aborts the Claude Code turn and waits for its proces
 | [`src/stream.ts`](src/stream.ts) | SDK message to stream-chunk translation, usage, and terminal mapping |
 | [`src/approval.ts`](src/approval.ts) | Native permission callback over `ctx.approval` |
 | [`src/permissions.ts`](src/permissions.ts) | Native permission mode from the route setting and the Session's permission knobs |
+| [`src/browser-tool.ts`](src/browser-tool.ts) | In-process MCP tool that opens pages in the app Browser |
 | [`src/replay.ts`](src/replay.ts) | Versioned replay state holding the native resume cursor |
 | [`cordis.patch.yml`](cordis.patch.yml) | The Profile patch layer inserting the route |
 
@@ -141,6 +144,20 @@ Each request adds the trailing user text. The quoted history block is sent only 
 
 Resumed turns append to the native transcript, so reuse follows Claude Code's own caching of its prefix. A request that quotes history starts a new native conversation and can invalidate reuse of the earlier native prefix.
 
+### App browser tool
+
+#### What the model sees
+
+When the composition mounts the app Browser, a conversation turn adds one MCP server, `app_browser`, with one always-loaded tool, `open_browser_tab(url)`, described as "Open an http or https URL in a new tab of the browser the user sees in the app.", and these server instructions: "The user works in an app that has its own browser. To show the user a web page, including a local development server, call open_browser_tab with its http or https URL. Do not open an external browser, for example with the open, xdg-open, or start commands." Auxiliary calls receive neither.
+
+#### Token effect
+
+Each conversation turn adds the tool schema and the instructions, a fixed size independent of the conversation; each call adds its URL and a one-line result.
+
+#### KV Cache effect
+
+The tool definition and instructions are identical on every turn, so they stay inside Claude Code's reusable prefix; composing or removing the app Browser changes that prefix once.
+
 ### Harness history
 
 #### What the model sees
@@ -161,6 +178,7 @@ Append-only: each turn adds one assistant message after the reusable prefix and 
 
 - **Harness tools stay unused** — the route ignores the preset's tool schemas; Claude Code's own tools, MCP servers, and skills from its settings replace them.
 - **Text-only input** — image attachments fail with `UNSUPPORTED_CONTENT`; the route declares text-only input to model selectors.
+- **The app browser tool steers, it does not block** — its instructions ask Claude Code not to start an external browser, but a shell `open` command is still permitted by the Session's permissions.
 - **Tool activity is a text line** — top-level tool calls and failed results render as reasoning lines, not as tool cards, and successful tool results stay inside Claude Code.
 - **No question channel** — `AskUserQuestion` is disabled because no harness question bridge exists; Claude Code asks in its answer text instead.
 - **Auxiliary output caps are advisory** — a Session-title or compaction call's `maxTokens` is accepted, but Claude Code enforces its own output cap.

@@ -6,6 +6,8 @@ import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type {} from '@deepseek-ai/dsh-api-workspace-controller/client'
+// Type-only: the generated ctx.remote.sidebarBrowser namespace.
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-browser/remote'
 // Type-only: the ctx.configForms Context merge.
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { SIDEBAR_BROWSER_NAMESPACE, type SidebarBrowserSettings } from '../browser-settings.ts'
@@ -18,9 +20,11 @@ import { createElectronPage } from './electron/pages.ts'
 import type { DesktopBrowserBridge } from '../types.ts'
 import { browserWorkspace } from './electron/workspace.ts'
 import type { BrowserPageFactory } from './browser/BrowserPage.ts'
-import { BROWSER_ID, browserDefinition } from './definition.tsx'
+import { BROWSER_ID, BROWSER_KIND, browserDefinition } from './definition.tsx'
 import { en, zh } from './locales.ts'
 import { createBrowserStore } from './browser/store.ts'
+import { followOpenRequests } from './open-requests.ts'
+import type { BrowserOpenStreamItem } from '../types.ts'
 
 export type { BrowserBodyProps } from './view/BrowserBody.tsx'
 export type { BrowserControllerState, BrowserInjected, BrowserMountRequest } from './browser/BrowserController.ts'
@@ -108,4 +112,17 @@ export function apply(ctx: Context): void {
   ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab.title', () => ctx.slots.register({
     name: 'sidebar.right.pane.tab.title', key: BROWSER_ID, store,
   }, BrowserTitle)), 'ui-sidebar-browser.title')
+  // Agent open requests become new Browser tabs in the requesting Session.
+  ctx.inject(['remote', 'remote.sidebarBrowser'], (scope) => {
+    // Read the namespace now: stream reopens run on stacks where this scope is not current.
+    const { remote } = scope
+    const { sidebarBrowser } = remote
+    scope.effect(() => followOpenRequests(remote.$stream<BrowserOpenStreamItem>({
+      name: 'sidebar-browser open requests',
+      open: signal => sidebarBrowser.watchOpenRequests(signal),
+      ended: () => new Error('sidebar-browser open-request stream ended'),
+    }), (sessionId, url) => {
+      ctx.sidebarRight.openTabIn(sessionId, BROWSER_KIND, { params: { url } })
+    }, (error) => { scope.logger.warn('ui-sidebar-browser: open-request stream failed: %o', error) }), 'ui-sidebar-browser.open-requests')
+  })
 }

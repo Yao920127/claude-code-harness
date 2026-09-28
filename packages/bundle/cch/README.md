@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `llm-deepseek`, `llm-deepseek-account` | Disabled, so the model selector lists only Claude models |
 | `ui-brand-official` | Disabled, so the Claude brand occupies the sidebar in official builds |
 | `ui-settings-account` | Disabled, so Settings offers no DeepSeek account sign-in |
-| `workspace-controller` | Default Workspace under `<Documents>/claude-code-harness/default-workspace` |
+| `workspace-controller` | Default Workspace at `~/default-workspace` in the account home directory |
 | `web-search-claude-code` (inserted), `web` | Web search runs Claude Code's `WebSearch` with the same sign-in; the Plugins page's **Search provider** page selects another provider |
 | `ui-sidebar-browser` | Enabled in every CCH profile, as on Desktop |
 

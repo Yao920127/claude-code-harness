@@ -1,5 +1,5 @@
 import { PassThrough } from 'node:stream'
-import type { ModelInfo, Options, Query, SDKMessage, SpawnOptions } from '@anthropic-ai/claude-agent-sdk'
+import type { ModelInfo, Options, Query, SDKMessage, SdkMcpToolDefinition, SpawnOptions } from '@anthropic-ai/claude-agent-sdk'
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, type Mock, vi } from 'vitest'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -19,11 +19,25 @@ const queryMock = vi.hoisted(() => vi.fn<QueryFactory>())
 vi.mock('@anthropic-ai/claude-agent-sdk', async importOriginal => ({
   ...await importOriginal<typeof import('@anthropic-ai/claude-agent-sdk')>(),
   query: queryMock,
+  // The double keeps the tool definitions reachable so a spec can call them.
+  createSdkMcpServer: (options: { name: string; tools: SdkMcpToolDefinition[] }) => ({ type: 'sdk', name: options.name, instance: options }),
 }))
+
+/**
+ * Call the app browser tool registered on the last query, as Claude Code would.
+ * @param url - tool input.
+ * @returns the tool result.
+ */
+async function callBrowserTool(url: string): Promise<unknown> {
+  const server = lastOptions().mcpServers?.app_browser as { instance: { tools: SdkMcpToolDefinition[] } } | undefined
+  const definition = server?.instance.tools[0]
+  if (definition === undefined) throw new Error('the browser tool was not offered')
+  return await definition.handler({ url }, undefined)
+}
 
 const SESSION = 'native-session'
 const CWD = '/work/project'
-const session = { header: { cwd: CWD } } as Session
+const session = { id: 'session-1', header: { cwd: CWD } } as Session
 const agent = { id: 'agent', session } as Agent
 
 interface FakeChild {
@@ -106,6 +120,7 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     initiator: () => agent,
     session: () => session,
     sessionPermissions: () => undefined,
+    appBrowser: () => undefined,
     ...overrides,
   }
   return { adapter: new ClaudeCodeAdapter(options), child, spawn, options }
@@ -248,6 +263,24 @@ describe('ClaudeCodeAdapter.stream', () => {
     expect(lastOptions().systemPrompt).not.toHaveProperty('append')
   })
 
+  it('offers the app browser tool to conversation turns only, opening tabs in the turn\'s Session', async () => {
+    const open = vi.fn((_session: Session, _url: string) => 1)
+    const { adapter: route } = adapter({ appBrowser: () => open })
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(route.stream(request()))
+    const options = lastOptions()
+    expect(options.mcpServers?.app_browser).toMatchObject({ type: 'sdk', name: 'app_browser' })
+    const signal = new AbortController().signal
+    await expect(options.canUseTool?.('mcp__app_browser__open_browser_tab', { url: 'https://example.com' }, { signal, toolUseID: 't', requestId: 'r' }))
+      .resolves.toEqual({ behavior: 'allow', updatedInput: { url: 'https://example.com' } })
+    await expect(callBrowserTool('http://localhost:8501')).resolves.toMatchObject({
+      content: [{ text: 'Opened http://localhost:8501/ in a new browser tab in the app.' }],
+    })
+    expect(open).toHaveBeenCalledWith(session, 'http://localhost:8501/')
+    await collect(route.stream(request({ purpose: 'session-title', maxTokens: 20 })))
+    expect(lastOptions()).not.toHaveProperty('mcpServers')
+  })
+
   it('runs an auxiliary call without tools or a persisted transcript', async () => {
     const { adapter: route } = adapter()
     queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
@@ -380,7 +413,19 @@ describe('llm-claude-code plugin', () => {
     const chunks = await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
     expect(chunks.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
     expect(lastOptions()).toMatchObject({ cwd: CWD, permissionMode: 'default' })
+    expect(lastOptions()).not.toHaveProperty('mcpServers')
     expect(spawn).toHaveBeenCalled()
+  })
+
+  it('opens pages through the app Browser channel when it is mounted', async () => {
+    const ctx = await host()
+    const open = vi.fn(() => 2)
+    ctx.provide('sidebarBrowser', { open } as never)
+    await ctx.plugin(plugin, plugin.Config({}))
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
+    await callBrowserTool('https://example.com')
+    expect(open).toHaveBeenCalledWith('session-1', 'https://example.com/')
   })
 
   it('follows the Session\'s sandbox mode and approval policy when both services are mounted', async () => {

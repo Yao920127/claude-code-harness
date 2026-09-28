@@ -1,5 +1,22 @@
-/** Type-only Electron bridge declarations shared by the desktop shell and browser provider. */
+/** Type-only declarations shared by the Host and browser halves: the Electron bridge and Agent open requests. */
 import type { Branded } from '@deepseek-ai/dsh-brand'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
+
+/** One request to open a page in a new Browser tab of one Session. */
+export interface BrowserOpenRequest {
+  /** Session whose right Sidebar receives the tab. */
+  readonly sessionId: SessionId
+  /** HTTP(S) address the tab opens; the Browser validates it again before navigation. */
+  readonly url: string
+}
+
+/**
+ * One item of the open-request stream: `ready` opens every stream generation
+ * once the Host is delivering requests to it, and each `open` item carries one request.
+ */
+export type BrowserOpenStreamItem =
+  | { readonly kind: 'ready' }
+  | { readonly kind: 'open'; readonly request: BrowserOpenRequest }
 
 /** Main-issued identity of one guest reservation. */
 export type DesktopBrowserLeaseId = Branded<'DesktopBrowserLeaseId'>

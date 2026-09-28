@@ -6,7 +6,7 @@ import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
 import { WorkspaceCommands } from './commands.ts'
 import { DirectoryPickerController } from './directory-picker.ts'
 import { WorkspaceFeed, workspaceView } from './feed.ts'
-import { defaultWorkspaceDirectory, validateDocumentsDirectory } from './default-directory.ts'
+import { defaultWorkspaceDirectory, validateDocumentsDirectory, type DefaultWorkspaceBase } from './default-directory.ts'
 import type {
   WorkspaceArchiveSessionRequest,
   WorkspaceArchiveValue,
@@ -33,7 +33,9 @@ export { DirectoryPickerController } from './directory-picker.ts'
 export interface Config {
   /** Override the system Documents directory with a fully qualified path. */
   documentsDirectory?: string
-  /** Directory under Documents that holds the default Workspace directory. */
+  /** Account directory holding the default Workspace: the Documents directory or the home directory. */
+  baseDirectory?: DefaultWorkspaceBase
+  /** One directory under the base directory that holds the default Workspace directory; empty places it directly in the base. */
   productDirectory?: string
   /**
    * Whether this Host provides the permanent default Workspace. A Host that
@@ -46,7 +48,12 @@ export interface Config {
 }
 
 /** Directory policy after schema defaults have been applied. */
-type ResolvedConfig = Config & { productDirectory: string; defaultWorkspace: boolean; documentsLookupTimeoutMs: number }
+type ResolvedConfig = Config & {
+  baseDirectory: DefaultWorkspaceBase
+  productDirectory: string
+  defaultWorkspace: boolean
+  documentsLookupTimeoutMs: number
+}
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -61,7 +68,8 @@ export class WorkspaceController extends TypertRemoteService {
 
   static Config: z<Config, ResolvedConfig> = z.object({
     documentsDirectory: z.string(),
-    productDirectory: z.string().pattern(/^[^/\\]+$/).default('deepseek-harness'),
+    baseDirectory: z.union(['documents', 'home'] as const).default('documents'),
+    productDirectory: z.string().pattern(/^[^/\\]*$/).default('deepseek-harness'),
     defaultWorkspace: z.boolean().default(true),
     documentsLookupTimeoutMs: z.natural().min(1).default(10_000),
   })
@@ -122,9 +130,11 @@ export class WorkspaceController extends TypertRemoteService {
     if (!this.config.defaultWorkspace) return undefined
     const workspace = await this.ctx.workspaceRegistry.initializeDefault(async () => {
       const timeout = AbortSignal.timeout(this.config.documentsLookupTimeoutMs)
-      return await defaultWorkspaceDirectory(
-        this.config.documentsDirectory, this.config.productDirectory, AbortSignal.any([signal, timeout]),
-      )
+      return await defaultWorkspaceDirectory({
+        baseDirectory: this.config.baseDirectory,
+        documentsDirectory: this.config.documentsDirectory,
+        productDirectory: this.config.productDirectory,
+      }, AbortSignal.any([signal, timeout]))
     })
     return { workspace: workspaceView(workspace, workspace.id) }
   }

@@ -144,6 +144,47 @@ The Host `ctx.workspaceFiles` service and generated `workspaceFiles` Remote name
 - **`browser`** — multi-instance `builtin`, opened as `openTab('browser', { params: { url? } })`. Chat's [link preference](../../packages/client/ui-chat/README.md) controls whether Assistant Markdown opens HTTP(S) links here. It accepts public and loopback HTTP(S) targets under the default sandbox, rejects local files in favor of Document Preview, and uses application-known iframe history ([README](../../packages/client/ui-sidebar-browser/README.md)).
 - **`subagentchat`** — `builtin`, `dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>`. An explicitly addressed subagent Conversation retained by the resource provider and rendered through the shared Conversation Factory ([README](../../packages/client/ui-subagent/README.md)).
 
+<a id="agent-open-requests"></a>
+## Agent open requests
+
+A Host caller opens a page for the user with `ctx.sidebarBrowser.open(sessionId, url)`, which returns how many app windows received the request. Each connected window follows the `sidebarBrowser.watchOpenRequests` Remote stream and opens a new `browser` tab in that Session through `openTabIn`; the Browser validates the address like any typed-open address. Requests are live only: a window that connects later receives none of the earlier ones, and a Session that no window has adopted opens nothing. The [Claude Code model route](../../packages/llm/llm-claude-code/README.md) offers this channel to Claude Code as its `open_browser_tab` tool.
+
+<!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
+
+<a id="cordis-surface"></a>
+
+## Cordis API
+
+Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
+
+<a id="ctxsidebarbrowser--sidebarbrowseropener"></a>
+
+### `ctx.sidebarBrowser` — `SidebarBrowserOpener`
+
+Fans open requests out to the connected app windows.
+
+```ts cordis-catalog
+/**
+ * Ask every connected app window to open a page in a new Browser tab.
+ * @param sessionId - Session whose Sidebar receives the tab.
+ * @param url - HTTP(S) address; the Browser refuses any other address.
+ * @returns the number of app windows that received the request; 0 when none is connected.
+ */
+open(sessionId: SessionId, url: string): number
+
+/**
+ * Stream the open requests made while subscribed, in order, without replaying earlier ones.
+ * @param signal - stream lifetime.
+ * @returns `ready` once this window receives requests, then one `open` item per request.
+ */
+@Remote({ mode: 'stream' }) async *watchOpenRequests(signal: AbortSignal): AsyncIterable<BrowserOpenStreamItem>
+```
+
+Types: [SessionId](core.md)
+
+Source: [`packages/client/ui-sidebar-browser/src/open-requests.ts`](../../packages/client/ui-sidebar-browser/src/open-requests.ts)
+<!-- END GENERATED cordis-surface -->
+
 <a id="not-built"></a>
 ## Not built
 

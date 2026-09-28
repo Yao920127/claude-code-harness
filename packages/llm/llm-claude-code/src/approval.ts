@@ -50,10 +50,16 @@ function denied(outcome: Exclude<ApprovalOutcome, 'allowed-once'>): PermissionRe
  * Build the native permission callback for one Claude Code turn.
  * @param approval - the harness approval service, when the composition mounts one.
  * @param agent - the Agent whose model call started the turn, when one initiated it.
- * @returns a callback that allows exactly what one approval grants and denies everything else.
+ * @param preApproved - tool names the route itself supplies and allows without asking.
+ * @returns a callback that allows the pre-approved tools and exactly what one approval grants, and denies everything else.
  */
-export function approvalCallback(approval: ApprovalService | undefined, agent: Agent | undefined): CanUseTool {
+export function approvalCallback(
+  approval: ApprovalService | undefined,
+  agent: Agent | undefined,
+  preApproved: readonly string[] = [],
+): CanUseTool {
   return async (toolName, input, options) => {
+    if (preApproved.includes(toolName)) return { behavior: 'allow', updatedInput: input }
     if (approval === undefined || agent === undefined) return denied('unavailable')
     const outcome = await approval.request({
       agent,

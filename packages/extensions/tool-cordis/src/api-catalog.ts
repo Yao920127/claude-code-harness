@@ -402,6 +402,12 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         throws: ['when no turn is open or either audit event fails before the session append commit point.'],
       },
       {
+        signature: 'effectivePolicy(session: Session): ApprovalPolicy',
+        description: 'The session\'s effective policy: its own `approval/policy` fold, else the configured default (the schema already defaulted an omitted policy to `\'ask\'`; the `??` only narrows the optional-input TYPE).',
+        parameters: [{ name: 'session', description: 'the exact accepted session whose policy applies.' }],
+        returns: 'the policy every ask for this session resolves under right now.',
+      },
+      {
         signature: 'overrideOf(session: Session): ApprovalPolicy | undefined',
         description: 'Read the session override without applying the configured default.',
         parameters: [{ name: 'session', description: 'session whose log supplies the override.' }],
@@ -2588,6 +2594,25 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'sidebarBrowser',
+    summary: 'Fans open requests out to the connected app windows.',
+    description: 'Fans open requests out to the connected app windows.',
+    methods: [
+      {
+        signature: 'open(sessionId: SessionId, url: string): number',
+        description: 'Ask every connected app window to open a page in a new Browser tab.',
+        parameters: [{ name: 'sessionId', description: 'Session whose Sidebar receives the tab.' }, { name: 'url', description: 'HTTP(S) address; the Browser refuses any other address.' }],
+        returns: 'the number of app windows that received the request; 0 when none is connected.',
+      },
+      {
+        signature: '@Remote({ mode: \'stream\' }) async *watchOpenRequests(signal: AbortSignal): AsyncIterable<BrowserOpenStreamItem>',
+        description: 'Stream the open requests made while subscribed, in order, without replaying earlier ones.',
+        parameters: [{ name: 'signal', description: 'stream lifetime.' }],
+        returns: '`ready` once this window receives requests, then one `open` item per request.',
+      },
+    ],
+  },
+  {
     key: 'skills',
     summary: 'Layered registry of skill providers, the host+per-scope shape the tools registry established.',
     description: 'Layered registry of skill providers, the host+per-scope shape the tools registry established. A registration files into the layer of its calling context\'s scope (scopeOf): host rows and repository plugins land in the global layer, while a plugin mounted by an agent preset\'s standing composition lands in that preset\'s layer. A read merges the global layer with the viewing scope\'s chain — the nearest layer\'s entry wins a duplicate name outright, and the rank order decides duplicates only within one layer. It exposes sorted invocation-neutral summaries and loads full skill bodies on demand.',
@@ -4650,6 +4675,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'BrandedNumber',
     declaration: 'export type BrandedNumber<B extends string> = number & {\n    readonly [BRAND]: B;\n};',
+  },
+  {
+    name: 'BrowserOpenRequest',
+    declaration: 'export interface BrowserOpenRequest {\n    readonly sessionId: SessionId;\n    readonly url: string;\n}',
+  },
+  {
+    name: 'BrowserOpenStreamItem',
+    declaration: 'export type BrowserOpenStreamItem = {\n    readonly kind: \'ready\';\n} | {\n    readonly kind: \'open\';\n    readonly request: BrowserOpenRequest;\n};',
   },
   {
     name: 'BrowserUseProviderName',

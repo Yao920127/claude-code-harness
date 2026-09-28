@@ -30,8 +30,14 @@
   en: 2b1b49dbba9cc9ee
   zh: 13d2a45224743b37
 /right-sidebar/shipped-types:
-  en: 81cc0928abeff74b
-  zh: 370fcfd5bb350ed9
+  en: 05d32027885d711e
+  zh: 0905ed46fef4b833
+/right-sidebar/agent-open-requests:
+  en: 47863624e70ef428
+  zh: 431194cd35178387
+/right-sidebar/cordis-api/ctx-sidebarbrowser-sidebarbrowseropener:
+  en: 5884db3d97e5d118
+  zh: 5884db3d97e5d118
 /right-sidebar/not-built:
   en: 65e86c293eb99242
   zh: 852dfe7713848453

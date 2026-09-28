@@ -31,6 +31,11 @@ kind: "package-reference"
 
 全局面板占据 root 作用域的 `main` keyed slot；`conversation` 是为会话界面保留的 key。`ctx.layout.selectPanel(id)` 选中已注册面板，`null` 则选中会话界面，但不改变当前会话。默认组合不注册任何全局面板。
 
+<a id="bottom-seat"></a>
+### 底部座
+
+root 作用域的 `shell.bottom` 座是中央列与右侧列下方的第二个网格行。它横跨这两列，从左侧栏边缘延伸到框架右边缘，高度由占用者决定：占用者不渲染内容时两列保持全高，渲染内容时两列都缩短其自身的高度。侧栏列横跨两行。该座叠在列宽拖动把手之上。ui-terminal-panel 以终端面板占用它。
+
 ### 窗口 chrome 座
 
 在 macOS 桌面（`html[data-platform='darwin']`，仅由桌面 preload 设置）下，收起的侧边栏整列隐藏而非保留控制栏，框架在左上角挂载 root 作用域的单一 `shell.leading` 座——位于 hiddenInset 红绿灯旁，覆盖所有主面板；ui-sidebar 以重新打开与 New Session 控件占据该座。座挂载期间框架发布 `--dsh-frame-leading-clearance`：窗口 chrome 占据的行内带宽，自框架左边缘起量；内容抵达左上角的主面板以它做内边距，避免落在红绿灯或控件之下。框架还始终在根元素上发布 `--dsh-frame-top-clearance`（48px）：窗口顶带之下的固定下沉量；主面板中的入口型页面（插件管理器等类似页面，非对话）以它做顶部内边距，浮层原语（portal 菜单、底部锚定浮层、设置面板）以它做视口顶部安全边距——放在根元素上让 portal 到 document.body 的浮层也能读到。框架自己不声明任何 darwin drag：每个 chrome 行给自身打上 `data-window-drag`，ui-web base.css 把该标记变成唯一那条 darwin drag 规则，于是行自己的盒子就是窗口的可拖几何——行的空白段可拖，控件保持可点。框架仅剩的那条 drag 规则属于 Windows 标题栏行。

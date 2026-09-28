@@ -1,0 +1,42 @@
+/* A zero-height strip along the conversation root's bottom edge, measured
+   as an inline-size container so the button can tell whether the docked
+   composer card leaves the corner free. */
+.seat {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 2;
+  height: 0;
+  container-type: inline-size;
+  pointer-events: none;
+}
+
+.launcher {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: var(--dsw-alias-label-tertiary);
+  background: var(--dsw-alias-bg-base);
+  border: 0.5px solid var(--dsw-alias-border-l3);
+  border-radius: var(--dsw-radius-sm);
+  pointer-events: auto;
+}
+
+.launcher:hover,
+.launcher:focus-visible {
+  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-interactive-bg-hover);
+}
+
+/* The docked composer card is at least 712px wide plus 16px side clearance
+   (ui-conversation ConversationRoot), so below 840px it reaches the corner.
+   The hero composer is centered vertically and never does. */
+@container (max-width: 840px) {
+  :global([data-phase='active']) .launcher {
+    display: none;
+  }
+}

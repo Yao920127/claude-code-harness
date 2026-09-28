@@ -27,6 +27,8 @@ async function openTerminal(page: Page, waitForShell = true): Promise<void> {
 
 /** Open the panel from the right Sidebar's Start-page Terminal card. */
 async function showPanel(page: Page): Promise<void> {
+  // After a reload the Sidebar restores asynchronously; wait until either entry point is on screen.
+  await page.locator('[data-sidebar-right-expand]:visible, [data-sidebar-right-guide-entry="terminal"]:visible').first().waitFor()
   const expand = page.locator('[data-sidebar-right-expand]')
   if (await expand.isVisible()) await expand.click()
   const card = page.locator('[data-sidebar-right-guide-entry="terminal"]')

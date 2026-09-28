@@ -1,7 +1,7 @@
 .frame {
   position: relative; /* anchors the drag handles, which straddle column borders */
   display: grid;
-  grid-template-rows: 100%;
+  grid-template-rows: minmax(0, 1fr) auto;
   height: 100%;
   overflow: hidden;
   background: var(--dsw-alias-bg-base);
@@ -27,7 +27,6 @@
   --dsh-windows-content-radius: 16px;
   box-sizing: border-box;
   padding-top: var(--dsh-windows-titlebar-height);
-  grid-template-rows: minmax(0, 1fr);
   background: var(--dsw-specific-sidebar-fill);
 }
 
@@ -61,6 +60,8 @@
 }
 
 .sidebarCol {
+  grid-row: 1 / -1;
+  grid-column: 1;
   min-width: 0;
   overflow: hidden;
   background: var(--dsw-specific-sidebar-fill);
@@ -68,6 +69,8 @@
 }
 
 .centerCol {
+  grid-row: 1;
+  grid-column: 2;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -136,7 +139,8 @@
   }
 }
 
-:global([data-platform='darwin']) .centerCol {
+:global([data-platform='darwin']) .centerCol,
+:global([data-platform='darwin']) .bottomSeat {
   background: var(--dsw-alias-bg-base);
   border-left: 0.5px solid var(--dsw-alias-border-l3);
 }
@@ -152,7 +156,8 @@
 
 /* The darwin closed sidebar has no rail: the centre reaches the window edge,
    where a separator would draw a seam against nothing. */
-:global([data-platform='darwin']) [data-sidebar-collapsed] .centerCol {
+:global([data-platform='darwin']) [data-sidebar-collapsed] .centerCol,
+:global([data-platform='darwin']) [data-sidebar-collapsed] .bottomSeat {
   border-left: none;
 }
 
@@ -251,9 +256,24 @@
  * where it is. The occupant draws its own left border.
  */
 .rightbarCol {
+  grid-row: 1;
+  grid-column: 3;
   position: relative;
   min-width: 0;
   overflow: visible;
+}
+
+/* The bottom seat spans the centre and right columns and sizes to its
+   occupant; an empty seat takes no height. It stacks above the column resize
+   handles (11), which run the frame's full height, so the occupant's own
+   controls stay reachable where a handle crosses it. */
+.bottomSeat {
+  grid-row: 2;
+  grid-column: 2 / -1;
+  position: relative;
+  z-index: 12;
+  min-width: 0;
+  background: var(--dsw-alias-bg-base);
 }
 
 .overlayLayer {

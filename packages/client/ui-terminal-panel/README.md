@@ -1,5 +1,5 @@
 ---
-description: "Open, switch and control interactive shell tabs in a resizable panel below the Web conversation."
+description: "Open, switch and control interactive shell tabs in a resizable panel along the bottom of the Web window."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Open a terminal panel below the conversation to run commands in the Session workspace. Each Session keeps its own terminal tabs, panel height and open state across reloads. Hide the panel to keep commands running; close a terminal tab to request process termination. Tab completion follows the shell configuration. Commands use the execution environment’s system-user permissions independently of Agent permissions; see [user-terminal execution](../../api/terminal-controller/README.md#use-this-package).
+Open a terminal panel along the bottom of the window, below the conversation and the right Sidebar, to run commands in the Session workspace. Each Session keeps its own terminal tabs, panel height and open state across reloads. Hide the panel to keep commands running; close a terminal tab to request process termination. Tab completion follows the shell configuration. Commands use the execution environment’s system-user permissions independently of Agent permissions; see [user-terminal execution](../../api/terminal-controller/README.md#use-this-package).
 
 ## Table of Contents
 
@@ -25,9 +25,9 @@ Open a terminal panel below the conversation to run commands in the Session work
 <a id="use-this-package"></a>
 ## Use this package
 
-The **Terminal** card on the right Sidebar's Start page opens the panel of its Session, including before the Session's first message: a hidden panel shows, opening a terminal in the remembered available shell when it has none, and a shown panel gets another terminal. The Start page stays in place. The `terminal.toggle` command shows and hides the panel of the Session on screen; Desktop and Windows and macOS Web bind it to Control+\`, Linux Web leaves it unbound by default, and the card displays the effective binding.
+The panel spans from the left sidebar's edge to the window's right edge, so it widens when the left sidebar collapses, and it shortens the conversation and the right Sidebar by its own height. It shows only while the conversation is the main panel. While the panel is hidden, a terminal button at the conversation's bottom-right corner shows it; the button hides while a docked composer spans the conversation's width. The **Terminal** card on the right Sidebar's Start page opens the panel of its Session, including before the Session's first message: a hidden panel shows, opening a terminal in the remembered available shell when it has none, and a shown panel gets another terminal. The Start page stays in place. The `terminal.toggle` command shows and hides the panel of the Session on screen; Desktop and Windows and macOS Web bind it to Control+\`, Linux Web leaves it unbound by default, and the card displays the effective binding.
 
-The panel's **+** button opens another terminal tab in the remembered shell. The arrow beside it opens the installed-shell menu; selecting an item remembers it and opens that shell. Discovery runs when the menu opens and does not allocate a terminal. A failed lookup offers Retry in the menu. Click a tab, or focus it and press Enter or Space, to switch terminals. The arrow at the far right hides the panel. Drag the panel's top edge, or focus it and press the Up and Down arrow keys, to change its height.
+The **+** button after the last tab opens another terminal tab in the remembered shell. The arrow beside it opens the installed-shell menu; selecting an item remembers it and opens that shell. Discovery runs when the menu opens and does not allocate a terminal. A failed lookup offers Retry in the menu. Click a tab, or focus it and press Enter or Space, to switch terminals. The arrow at the far right hides the panel. Drag the panel's top edge, or focus it and press the Up and Down arrow keys, to change its height.
 
 Double-click a terminal's tab to rename it. **Take control** makes the current attachment writable when another page owns input. A temporary disconnect preserves the screen and offers **Reconnect**, without exposing transport diagnostics. An exited shell remains visible with its exit code and offers **New terminal**, which replaces that tab in place; it never restarts automatically. Exited terminals count toward the Session limit; close unused tabs when the limit is reached.
 
@@ -43,7 +43,7 @@ The terminal background, default text, cursor, and selection follow the DSH them
 <details>
 <summary>Implementation internals — click to expand</summary>
 
-This plugin occupies the conversation's session-scoped `conversation.panel.bottom` seat, below the conversation content, and registers a `terminal` page type with the right Sidebar whose Start-page card it renders into `sidebar.right.tab.guide.entry`. A `terminal` Sidebar page, such as one a saved layout restores, opens the panel and closes itself once. `TerminalPanels` owns every Session's panel: whether it shows, its height, and its tabs, each a panel-local key plus a globally unique content identity. One browser-storage entry holds all Sessions' panels and is validated on read; an invalid entry starts every panel empty. The mounted panel records its Session, and the toggle command acts on the Session whose panel mounted last.
+This plugin occupies the frame's root-scoped `shell.bottom` seat from [ui-layout](../ui-layout/README.md#bottom-seat), where the panel follows the Session selected through `ctx.uiSession`, and the conversation's session-scoped `conversation.panel.bottom` seat, where it renders the corner button. It also registers a `terminal` page type with the right Sidebar whose Start-page card it renders into `sidebar.right.tab.guide.entry`. A `terminal` Sidebar page, such as one a saved layout restores, opens the panel and closes itself once. `TerminalPanels` owns every Session's panel: whether it shows, its height, and its tabs, each a panel-local key plus a globally unique content identity. One browser-storage entry holds all Sessions' panels and is validated on read; an invalid entry starts every panel empty. The bottom seat records the Session it shows, and the toggle command acts on the Session recorded last.
 
 The React-free terminal model belongs to `api-terminal-controller`; keyed framework hooks expose its state. `ui-primitives` Menu and Button provide the shell picker and panel controls. Every tab's screen stays mounted while the panel shows, and inactive screens are hidden, so switching tabs keeps each emulator's output. The body loads its package-local `client.terminal.js` chunk when a terminal screen mounts, keeping xterm.js and FitAddon out of the startup `client.js`; they then render the screen and measure the viewport. Input, including Tab and control characters, travels unchanged to the PTY.
 

@@ -136,9 +136,10 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
       owner: { view?: string }
     }
     /**
-     * Full-width seat below the selected Session's conversation content, such
-     * as a terminal panel. Its occupant takes a fixed height and renders
-     * nothing while it has nothing to show.
+     * Seat after the selected Session's conversation content inside the
+     * positioned conversation root, such as the terminal panel's corner
+     * button. Its occupant takes a fixed height or positions itself against
+     * the root, and renders nothing while it has nothing to show.
      */
     'conversation.panel.bottom': { kind: 'single'; scope: 'session' }
     /** Resident navigation container, including when no Session is selected. */

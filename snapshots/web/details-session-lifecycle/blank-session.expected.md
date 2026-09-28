@@ -4,6 +4,7 @@
 - Selected workspace before first message: expand control visible
 - Files: before-chat.md opens as a Markdown preview
 - Narrow viewport: reopened preview fills the viewport
+- Terminal: the Start page card opens the bottom panel, which writes a file in the selected workspace before any user message or turn
 
 ```json
 [

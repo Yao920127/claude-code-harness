@@ -269,6 +269,15 @@ describe('AppFrame', () => {
     expect(queryByTestId('shell.leading-content')).toBeNull()
   })
 
+  it('renders the bottom seat below the centre and right columns in every sidebar state', () => {
+    const { frame, instance, queryByTestId, slotCalls } = mountFrame()
+    const seat = frame.querySelector('[data-shell-bottom]')
+    expect(seat?.contains(queryByTestId('shell.bottom-content'))).toBe(true)
+    expect(slotCalls.filter(call => call.key === 'shell.bottom').map(call => call.props)).toContainEqual({})
+    act(() => { instance.actions.toggleSidebar() })
+    expect(frame.querySelector('[data-shell-bottom]')).toBe(seat)
+  })
+
   it('switches only the keyed main outlet when the active panel changes', () => {
     selectedSessionTitle = 'Session title'
     const { instance, frame, slotCalls, getByTestId } = mountFrame()

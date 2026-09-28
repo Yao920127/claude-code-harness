@@ -4,7 +4,8 @@
  * rightbar), the drag handles (pointer capture + rAF throttle), the column
  * solve (columns.ts), and the child-slot render decisions: the sidebar slot
  * receives live parameters from that solve. The root-scoped main slot selects
- * the Conversation or a global panel. Each column occupant owns its Session
+ * the Conversation or a global panel. The bottom seat is a second grid row
+ * under the centre and right columns. Each column occupant owns its Session
  * binding and reports the geometry it needs.
  *
  * The right column is a track, not a box: its occupant draws its panel anchored
@@ -27,7 +28,7 @@ import css from './AppFrame.module.css'
 /** Full composed props: runtime share + child-slot render share + store share. */
 export type AppFrameProps =
   & PropsRuntime<'root'>
-  & PropsRenderSlots<'sidebar' | 'main' | 'rightbar' | 'shell.overlay' | 'shell.leading'>
+  & PropsRenderSlots<'sidebar' | 'main' | 'rightbar' | 'shell.overlay' | 'shell.leading' | 'shell.bottom'>
   & PropsStore<ReturnType<typeof createLayoutStore>>
   & PropsLocale<'common'>
 
@@ -247,6 +248,7 @@ export function AppFrame({
     <MainPanel usePanelInfo={usePanelInfo} renderSlot={renderSlot} />
   ), [usePanelInfo, renderSlot])
   const overlays = useMemo(() => renderSlot('shell.overlay', {}), [renderSlot])
+  const bottom = useMemo(() => renderSlot('shell.bottom', {}), [renderSlot])
   // Window-chrome seat over the main panels' top-left corner: only a fully
   // hidden sidebar column on macOS desktop leaves window chrome without a
   // home — the Windows zero-width collapse keeps its controls in the caption
@@ -285,6 +287,9 @@ export function AppFrame({
         <RightbarColumn>
           {renderSlot('rightbar', { width: normal.rightbar, viewportWidth: viewport, canShow: normal.rightbar > 0 })}
         </RightbarColumn>
+        <div className={css.bottomSeat} data-shell-bottom>
+          {bottom}
+        </div>
       </>
       <div className={css.overlayLayer} data-shell-overlay>
         {overlays}

@@ -28,3 +28,4 @@
   - status
   - button "Skip"
   - button "Submit" [disabled]
+- button "Open terminal"

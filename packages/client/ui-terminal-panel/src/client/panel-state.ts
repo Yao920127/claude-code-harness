@@ -21,6 +21,26 @@ export const MAX_PANEL_HEIGHT = 1600
 /** Height of a panel that has never been resized. */
 export const DEFAULT_PANEL_HEIGHT = 280
 
+/**
+ * Address one Session's panel tab in the window-wide terminal panel.
+ * @param sessionId - owning Session.
+ * @param tabKey - panel-local tab key.
+ * @returns the key the terminal service's views and keyed hooks resolve.
+ */
+export function terminalKey(sessionId: SessionId, tabKey: string): string {
+  return `${sessionId}/${tabKey}`
+}
+
+/**
+ * Split a {@link terminalKey}.
+ * @param key - key built by {@link terminalKey}.
+ * @returns its Session and panel-local tab key.
+ */
+export function parseTerminalKey(key: string): { readonly sessionId: SessionId; readonly tabKey: string } {
+  const slash = key.lastIndexOf('/')
+  return { sessionId: key.slice(0, slash) as SessionId, tabKey: key.slice(slash + 1) }
+}
+
 /** One terminal occurrence in a Session's panel. */
 export interface TerminalPanelTab {
   /** Panel-local occurrence key. */

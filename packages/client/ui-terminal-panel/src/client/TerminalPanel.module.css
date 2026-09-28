@@ -1,12 +1,13 @@
-/* The panel sits under the conversation content and never takes more than
-   most of the column, so the transcript and composer stay usable. */
+/* The panel spans the window below the conversation and the right Sidebar
+   and never takes more than most of the window's height, so the transcript
+   and composer stay usable. */
 .root {
   position: relative;
   display: flex;
   flex: none;
   flex-direction: column;
   box-sizing: border-box;
-  max-height: 75%;
+  max-height: 70vh;
   min-height: 0;
   border-top: 0.5px solid var(--dsw-alias-border-l3);
   background: var(--dsw-alias-bg-base);
@@ -34,7 +35,7 @@
   flex: none;
   align-items: center;
   gap: 8px;
-  height: 34px;
+  height: 40px;
   padding: 0 8px;
 }
 
@@ -42,7 +43,7 @@
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -53,9 +54,11 @@
   flex: none;
   align-items: center;
   gap: 6px;
-  max-width: 200px;
-  height: 26px;
-  padding: 0 4px 0 8px;
+  box-sizing: border-box;
+  width: 240px;
+  height: 30px;
+  padding: 0 6px 0 10px;
+  border: 0.5px solid transparent;
   border-radius: var(--dsw-radius-sm);
   color: var(--dsw-alias-label-tertiary);
   font-size: 12px;
@@ -71,12 +74,14 @@
 
 .tabActive {
   color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-bg-l2);
+  background: var(--dsw-alias-bg-layer-1);
+  border-color: var(--dsw-alias-border-l3);
 }
 
 .tabClose {
   display: inline-flex;
   flex: none;
+  margin-left: auto;
   align-items: center;
   justify-content: center;
   width: 18px;

@@ -110,6 +110,14 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      * the lights or the controls.
      */
     'shell.leading': { kind: 'single'; scope: 'root' }
+    /**
+     * Frame-wide bottom seat: a row below the centre and right columns that
+     * spans both, starting at the left sidebar's edge. It has no height of its
+     * own, so an occupant that renders nothing leaves the columns full height,
+     * and a rendered occupant shortens both columns by its own height. OCCUPIED
+     * by ui-terminal-panel's terminal panel.
+     */
+    'shell.bottom': { kind: 'single'; scope: 'root' }
   }
 }
 
@@ -177,6 +185,7 @@ export function apply(ctx: ClientContext): void {
         'rightbar': { kind: 'single', scope: 'root' },
         'shell.overlay': { kind: 'list', scope: 'root' },
         'shell.leading': { kind: 'single', scope: 'root' },
+        'shell.bottom': { kind: 'single', scope: 'root' },
       },
       store,
     }, AppFrame)

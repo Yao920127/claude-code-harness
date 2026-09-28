@@ -10,12 +10,14 @@ import type { WebTerminalId } from '@deepseek-ai/dsh-api-terminal-controller/typ
 import { apply, inject } from '../src/client/index.ts'
 import { apply as hostApply } from '../src/index.ts'
 import { LazyTerminalBody } from '../src/client/LazyTerminalBody.tsx'
+import { TerminalLauncher } from '../src/client/TerminalLauncher.tsx'
 import { TerminalPanel } from '../src/client/TerminalPanel.tsx'
 import { TerminalGuideEntry } from '../src/client/TerminalGuideEntry.tsx'
 import { TerminalRedirectBody } from '../src/client/TerminalRedirectBody.tsx'
-import type { TerminalGuideEntryInjected, TerminalPanelInjected, TerminalRedirectInjected } from '../src/client/face.ts'
+import type { TerminalGuideEntryInjected, TerminalLauncherInjected, TerminalPanelInjected, TerminalRedirectInjected } from '../src/client/face.ts'
 import { SidebarRightTabRegistry } from '@deepseek-ai/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
-import { TERMINAL_PANEL_PERSISTENCE } from '../src/client/panel-state.ts'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
+import { TERMINAL_PANEL_PERSISTENCE, terminalKey } from '../src/client/panel-state.ts'
 import { en, zh } from '../src/client/locales.ts'
 
 vi.mock('@xterm/xterm', () => ({ Terminal: vi.fn() }))
@@ -28,6 +30,7 @@ beforeEach(() => { localStorage.clear() })
 afterEach(() => { cleanup(); renderedTerminal.mockClear(); localStorage.clear() })
 
 const SESSION = 'session' as SessionId
+const key = (tabKey: string, sessionId = SESSION) => terminalKey(sessionId, tabKey)
 
 async function mountPlugin() {
   const ctx = new Context()
@@ -38,7 +41,7 @@ async function mountPlugin() {
     order?: number
     locale: string
     component: unknown
-    inject: (id: SessionId) => unknown
+    inject: (id?: SessionId) => unknown
   }[] = []
   const dictionaries = new Map<string, unknown>()
   const model = { state: {} }
@@ -49,6 +52,8 @@ async function mountPlugin() {
   const commands: ShortcutCommand[] = []
   const removals: ((sessionId: SessionId) => void)[] = []
   const tabs = new SidebarRightTabRegistry(ctx)
+  const current = createSnapshotStore<{ key: string | undefined }>({ key: undefined })
+  ctx.provide('uiSession', { adapter: { current } } as never)
   ctx.provide('sidebarRightTabs', tabs)
   ctx.provide('webTerminals', terminals as never)
   ctx.provide('remote', {
@@ -73,11 +78,12 @@ async function mountPlugin() {
   const theme = { preference: 'light' as const, fontSize: 14, active: { id: 'light', colorScheme: 'light' as const, tokens: {} }, themes: [], revision: 0 }
   ctx.provide('theme', { getTheme: () => theme } as never)
   const fiber = await ctx.plugin({ inject, apply })
-  const panel = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.panel.bottom')!.inject(sessionId) as TerminalPanelInjected
+  const panel = () => entries.find(entry => entry.name === 'shell.bottom')!.inject() as TerminalPanelInjected
+  const launcher = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.panel.bottom')!.inject(sessionId) as TerminalLauncherInjected
   const guide = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.tab.guide.entry')!.inject(sessionId) as TerminalGuideEntryInjected
   const page = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.pane.tab')!.inject(sessionId) as TerminalRedirectInjected
   return {
-    entries, dictionaries, terminals, model, theme, commands, removals, panel, guide, page, tabs,
+    entries, dictionaries, terminals, model, theme, commands, removals, panel, launcher, guide, page, tabs, current,
     emitTheme() { ctx.emit('theme/change', theme) },
     async dispose() { await fiber.dispose(); await ctx.fiber.dispose() },
   }
@@ -89,7 +95,8 @@ it('registers the panel and its Sidebar Start-page card, then releases every con
   try {
     expect(h.dictionaries.get('terminalPanel')).toEqual({ en, zh })
     expect(h.entries.map(entry => [entry.name, entry.component, entry.locale, entry.key])).toEqual([
-      ['conversation.panel.bottom', TerminalPanel, 'terminalPanel', undefined],
+      ['shell.bottom', TerminalPanel, 'terminalPanel', undefined],
+      ['conversation.panel.bottom', TerminalLauncher, 'terminalPanel', undefined],
       ['sidebar.right.tab.guide.entry', TerminalGuideEntry, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
       ['sidebar.right.pane.tab', TerminalRedirectBody, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
     ])
@@ -99,6 +106,13 @@ it('registers the panel and its Sidebar Start-page card, then releases every con
       .toEqual([['open', 20, 'terminal.toggle', 'title', 'guideDescription']])
     expect(definition.guide?.[0]?.icon).toBeTypeOf('function')
     const face = h.panel()
+    expect(face.hooks.current.getSnapshot()).toBeUndefined()
+    const selected = vi.fn()
+    const unselect = face.hooks.current.subscribe(selected)
+    h.current.set({ key: SESSION })
+    expect(face.hooks.current.getSnapshot()).toBe(SESSION)
+    expect(selected).toHaveBeenCalledOnce()
+    unselect()
     expect(face.hooks.theme.getSnapshot()).toBe(h.theme)
     const changed = vi.fn()
     const unsubscribe = face.hooks.theme.subscribe(changed)
@@ -108,11 +122,12 @@ it('registers the panel and its Sidebar Start-page card, then releases every con
     h.emitTheme()
     expect(changed).toHaveBeenCalledOnce()
     const signal = new AbortController().signal
-    await face.loadShells(signal)
+    await face.loadShells(SESSION, signal)
     expect(h.terminals.launchShells).toHaveBeenCalledWith(SESSION, signal)
     face.selectShell('/bin/zsh')
     expect(h.terminals.selectShell).toHaveBeenCalledWith('/bin/zsh')
     expect(h.guide().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
+    expect(h.launcher().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
   } finally {
     await h.dispose()
   }
@@ -127,28 +142,31 @@ it('resolves terminal models from the panel tabs and ends a closed or replaced t
   const h = await mountPlugin()
   try {
     const face = h.panel()
-    expect(() => face.view('t1')).toThrow('has no tab t1')
-    face.add('/bin/bash')
-    const [first] = face.hooks.panel.getSnapshot().tabs
-    expect(face.view('t1')).toBe(h.model)
+    const state = () => face.keyedHooks.panel(SESSION).getSnapshot()
+    expect(() => face.view(key('t1'))).toThrow('has no tab t1')
+    face.add(SESSION, '/bin/bash')
+    const [first] = state().tabs
+    expect(face.view(key('t1'))).toBe(h.model)
     expect(h.terminals.view).toHaveBeenLastCalledWith(SESSION, 't1', first!.contentId, undefined, '/bin/bash')
-    expect(face.keyedHooks.terminal('t1')).toBe(h.model.state)
-    face.add()
-    face.select('t1')
-    expect(face.hooks.panel.getSnapshot().active).toBe('t1')
-    face.replace('t1')
+    expect(face.keyedHooks.terminal(key('t1'))).toBe(h.model.state)
+    face.add(SESSION)
+    face.select(SESSION, 't1')
+    expect(state().active).toBe('t1')
+    face.replace(SESSION, 't1')
     expect(h.terminals.close).toHaveBeenLastCalledWith(SESSION, 't1', first!.contentId, undefined)
-    expect(face.hooks.panel.getSnapshot().tabs.map(tab => tab.key)).toEqual(['t3', 't2'])
-    const second = face.hooks.panel.getSnapshot().tabs[1]!
-    face.close('t2')
+    expect(state().tabs.map(tab => tab.key)).toEqual(['t3', 't2'])
+    const second = state().tabs[1]!
+    face.close(SESSION, 't2')
     expect(h.terminals.close).toHaveBeenLastCalledWith(SESSION, 't2', second.contentId, undefined)
-    face.close('missing')
-    face.replace('missing')
+    face.close(SESSION, 'missing')
+    face.replace(SESSION, 'missing')
     expect(h.terminals.close).toHaveBeenCalledTimes(2)
-    face.resize(400)
-    expect(face.hooks.panel.getSnapshot().height).toBe(400)
-    face.hide()
-    expect(face.hooks.panel.getSnapshot().open).toBe(false)
+    face.resize(SESSION, 400)
+    expect(state().height).toBe(400)
+    face.hide(SESSION)
+    expect(state().open).toBe(false)
+    h.launcher().show()
+    expect(h.launcher().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't3' })
   } finally { await h.dispose() }
 })
 
@@ -158,18 +176,17 @@ it('keeps every Session’s tabs retained, forgets removed Sessions, and release
   } }))
   const h = await mountPlugin()
   expect(h.terminals.retainTabs).toHaveBeenLastCalledWith([{ sessionId: 'dormant', tabId: 't1', contentId: 'dormant-content' }])
-  const face = h.panel('dormant' as SessionId)
-  face.view('t1')
+  const face = h.panel()
+  face.view(key('t1', 'dormant' as SessionId))
   expect(h.terminals.view).toHaveBeenLastCalledWith('dormant', 't1', 'dormant-content', 'kept' as WebTerminalId, undefined)
-  const current = h.panel()
-  current.add()
+  face.add(SESSION)
   expect(h.terminals.retainTabs.mock.lastCall?.[0]).toHaveLength(2)
   for (const removed of h.removals) removed('dormant' as SessionId)
   expect(h.terminals.retainTabs.mock.lastCall?.[0]).toEqual([expect.objectContaining({ sessionId: SESSION })])
   await h.dispose()
   expect(h.terminals.retainTabs).toHaveBeenLastCalledWith([])
   const calls = h.terminals.retainTabs.mock.calls.length
-  current.add()
+  face.add(SESSION)
   expect(h.terminals.retainTabs).toHaveBeenCalledTimes(calls)
 })
 
@@ -181,16 +198,18 @@ it('toggles the panel of the Session on screen and refuses while none is', async
     expect(command.label()).toBe('toggle')
     const input = { region: 'page', modal: null, target: null } as const
     expect(command.resolve(input)).toEqual({ status: 'blocked', reason: 'shortcut.noSession' })
-    const detach = h.panel().attach()
+    const face = h.panel()
+    const state = () => face.keyedHooks.panel(SESSION).getSnapshot()
+    const detach = face.attach(SESSION)
     const result = command.resolve(input)
     if (result.status !== 'handled') throw new Error('Expected the terminal command to be available')
     result.run()
-    expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't1' })
+    expect(state()).toMatchObject({ open: true, active: 't1' })
     h.guide().open()
-    expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't2' })
-    h.panel().hide()
+    expect(state()).toMatchObject({ open: true, active: 't2' })
+    face.hide(SESSION)
     h.page().open()
-    expect(h.panel().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't2' })
+    expect(state()).toMatchObject({ open: true, active: 't2' })
     detach()
     expect(command.resolve(input)).toEqual({ status: 'blocked', reason: 'shortcut.noSession' })
   } finally { await h.dispose() }

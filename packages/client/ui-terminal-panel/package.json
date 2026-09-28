@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-terminal-panel",
-  "description": "Interactive shell tabs in a resizable panel below the conversation",
+  "description": "Interactive shell tabs in a resizable panel along the bottom of the window",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"
@@ -30,6 +30,8 @@
       "inject": [
         "@deepseek-ai/dsh-api-terminal-controller",
         "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-session",
         "@deepseek-ai/dsh-client-ui-sidebar-right",
         "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-ui-theme",

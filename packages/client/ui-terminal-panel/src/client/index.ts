@@ -1,4 +1,4 @@
-/** Register the terminal panel below each Session's conversation, its Sidebar Start-page card, and its shortcut. */
+/** Register the window's bottom terminal panel, the conversation's corner button that shows it, its Start-page card, and its shortcut. */
 import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
 import type { Context } from '@deepseek-ai/cordis'
 import { randomUUID } from '@deepseek-ai/dsh-util-crypto'
@@ -9,14 +9,18 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
+import type {} from '@deepseek-ai/dsh-client-ui-layout/client'
+import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { PluginArtworkTerminal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TerminalView } from '@deepseek-ai/dsh-api-terminal-controller/client'
+import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type {
-  TerminalBodyInjected, TerminalGuideEntryInjected, TerminalPanelInjected, TerminalRedirectInjected,
+  TerminalBodyInjected, TerminalGuideEntryInjected, TerminalLauncherInjected, TerminalPanelInjected, TerminalRedirectInjected,
 } from './face.ts'
 import { en, zh } from './locales.ts'
-import { TerminalPanels } from './panel-state.ts'
+import { parseTerminalKey, TerminalPanels } from './panel-state.ts'
+import { TerminalLauncher } from './TerminalLauncher.tsx'
 import { TerminalPanel } from './TerminalPanel.tsx'
 import { TerminalGuideEntry } from './TerminalGuideEntry.tsx'
 import { TerminalRedirectBody } from './TerminalRedirectBody.tsx'
@@ -25,11 +29,11 @@ import { TerminalRedirectBody } from './TerminalRedirectBody.tsx'
 export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
 
 /** Services needed by the panel, its toggle, and its terminal models. */
-export const inject = ['slots', 'locale', 'remote', 'webTerminals', 'theme', 'shortcuts']
+export const inject = ['slots', 'locale', 'remote', 'webTerminals', 'theme', 'shortcuts', 'uiSession']
 
 /**
- * Register the panel, its Sidebar Start-page card, the toggle shortcut and terminal retention.
- * @param ctx - Client root Context with the conversation slots and terminal service.
+ * Register the panel, its corner button, its Sidebar Start-page card, the toggle shortcut and terminal retention.
+ * @param ctx - Client root Context with the frame and conversation slots and the terminal service.
  */
 export function apply(ctx: Context): void {
   const panels = new TerminalPanels(() => randomUUID())
@@ -74,23 +78,39 @@ export function apply(ctx: Context): void {
     getSnapshot: () => ctx.theme.getTheme(),
     subscribe: listener => ctx.on('theme/change', listener),
   }
-  ctx.effect(() => ctx.slots.inject('conversation.panel.bottom', () => ctx.slots.register({
-    name: 'conversation.panel.bottom', locale: namespace,
-    inject: (sessionId): TerminalPanelInjected => ({
-      hooks: { panel: panels.panel(sessionId), theme },
-      keyedHooks: { terminal: key => view(sessionId, key).state },
-      view: key => view(sessionId, key),
-      attach: () => panels.attach(sessionId),
-      add: (shellPath) => { panels.add(sessionId, shellPath) },
-      select: (key) => { panels.select(sessionId, key) },
-      close: (key) => { close(sessionId, key, panels.remove(sessionId, key)) },
-      replace: (key) => { close(sessionId, key, panels.replace(sessionId, key)) },
-      hide: () => { panels.hide(sessionId) },
-      resize: (height) => { panels.resize(sessionId, height) },
-      loadShells: signal => ctx.webTerminals.launchShells(sessionId, signal),
+  const current: HostObservable<SessionId | undefined> = {
+    getSnapshot: () => ctx.uiSession.adapter.current.getSnapshot().key as SessionId | undefined,
+    subscribe: listener => ctx.uiSession.adapter.current.subscribe(listener),
+  }
+  // The panel spans the window below the conversation and the right Sidebar,
+  // so it lives in the frame's bottom seat and follows the selected Session.
+  ctx.effect(() => ctx.slots.inject('shell.bottom', () => ctx.slots.register({
+    name: 'shell.bottom', locale: namespace,
+    inject: (): TerminalPanelInjected => ({
+      hooks: { current, theme },
+      keyedHooks: {
+        terminal: (key) => { const { sessionId, tabKey } = parseTerminalKey(key); return view(sessionId, tabKey).state },
+        panel: sessionId => panels.panel(sessionId as SessionId),
+      },
+      view: (key) => { const { sessionId, tabKey } = parseTerminalKey(key); return view(sessionId, tabKey) },
+      attach: sessionId => panels.attach(sessionId),
+      add: (sessionId, shellPath) => { panels.add(sessionId, shellPath) },
+      select: (sessionId, key) => { panels.select(sessionId, key) },
+      close: (sessionId, key) => { close(sessionId, key, panels.remove(sessionId, key)) },
+      replace: (sessionId, key) => { close(sessionId, key, panels.replace(sessionId, key)) },
+      hide: (sessionId) => { panels.hide(sessionId) },
+      resize: (sessionId, height) => { panels.resize(sessionId, height) },
+      loadShells: (sessionId, signal) => ctx.webTerminals.launchShells(sessionId, signal),
       selectShell: (path) => { ctx.webTerminals.selectShell(path) },
     }),
   }, TerminalPanel)), 'ui-terminal-panel.panel')
+  ctx.effect(() => ctx.slots.inject('conversation.panel.bottom', () => ctx.slots.register({
+    name: 'conversation.panel.bottom', locale: namespace,
+    inject: (sessionId): TerminalLauncherInjected => ({
+      hooks: { panel: panels.panel(sessionId), shortcuts: ctx.shortcuts.catalog },
+      show: () => { panels.toggle(sessionId) },
+    }),
+  }, TerminalLauncher)), 'ui-terminal-panel.launcher')
   // The right Sidebar's Start page offers the panel as a card: a `terminal`
   // page type carries the card, and a page of that type, such as one a saved
   // layout restores, hands off to the panel. The Sidebar shows the Start page

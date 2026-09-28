@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-/** The panel's tabs, shell menu, hide control, resize handle, and header toggle as the user operates them. */
+/** The panel's tabs, shell menu, hide control, resize handle, and corner button as the user operates them. */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { bindSnapshotSelector, makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
@@ -7,6 +7,7 @@ import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { TerminalLaunchShells, TerminalViewState } from '@deepseek-ai/dsh-api-terminal-controller/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { TerminalPanel, type TerminalPanelProps } from '../src/client/TerminalPanel.tsx'
+import { TerminalLauncher, type TerminalLauncherProps } from '../src/client/TerminalLauncher.tsx'
 import { TerminalGuideEntry, type TerminalGuideEntryProps } from '../src/client/TerminalGuideEntry.tsx'
 import { TerminalRedirectBody, type TerminalRedirectBodyProps } from '../src/client/TerminalRedirectBody.tsx'
 import { EMPTY_PANEL, type TerminalPanelState } from '../src/client/panel-state.ts'
@@ -26,32 +27,44 @@ const shown: TerminalPanelState = {
   tabs: [{ key: 't1', contentId: 'c1' }, { key: 't2', contentId: 'c2' }],
 }
 
-function mount(initial: TerminalPanelState = shown, shells?: Promise<TerminalLaunchShells>) {
-  const store = createSnapshotStore(initial)
-  const states: Record<string, TerminalViewState | undefined> = { t1: { phase: 'connected', writable: true, title: 'zsh' } }
+const SESSION = 'session' as SessionId
+
+/** @param initial - stored panel, or null for a Session that has none. */
+function mount(initial: TerminalPanelState | null = shown, shells?: Promise<TerminalLaunchShells>) {
+  const store = createSnapshotStore<TerminalPanelState | undefined>(initial ?? undefined)
+  const current = createSnapshotStore<SessionId | undefined>(SESSION)
+  const panelInfo = createSnapshotStore<{ activePanelId: string | null }>({ activePanelId: null })
+  const panel = bindSnapshotSelector(store)
+  const states: Record<string, TerminalViewState | undefined> = { 'session/t1': { phase: 'connected', writable: true, title: 'zsh' } }
   const detach = vi.fn()
   const actions = {
     attach: vi.fn(() => detach), add: vi.fn(), select: vi.fn(), close: vi.fn(), replace: vi.fn(), hide: vi.fn(), resize: vi.fn(),
-    loadShells: vi.fn((_signal: AbortSignal) => shells ?? Promise.resolve({ shells: [{ path: '/bin/zsh', name: 'zsh', args: [] }], selectedShell: '/bin/zsh' })),
+    loadShells: vi.fn((_sessionId: SessionId, _signal: AbortSignal) => shells ?? Promise.resolve({ shells: [{ path: '/bin/zsh', name: 'zsh', args: [] }], selectedShell: '/bin/zsh' })),
     selectShell: vi.fn(),
   }
-  // The test supplies the owner share and hooks the panel reads; the remaining slot props are framework-owned.
+  // The test supplies the hooks the panel reads; the remaining slot props are framework-owned.
   const props: TerminalPanelProps = {
-    ...actions, t, sessionId: 'session' as SessionId,
+    ...actions, t,
     view: vi.fn(() => ({ rename: vi.fn(async () => {}) })),
-    usePanel: bindSnapshotSelector(store),
+    useCurrent: bindSnapshotSelector(current),
+    usePanelInfo: bindSnapshotSelector(panelInfo),
+    usePanel: (sessionId: SessionId, select: (value: TerminalPanelState | undefined) => unknown) => {
+      expect(sessionId).toBe(SESSION)
+      return panel(select)
+    },
     useTerminal: (key: string, select?: (value: TerminalViewState | undefined) => unknown) =>
       select === undefined ? states[key] : select(states[key]),
     useTheme: vi.fn(),
   } as never
   const view = render(<TerminalPanel {...props} />)
-  return { ...actions, detach, store, view }
+  return { ...actions, detach, store, current, panelInfo, view }
 }
 
 describe('TerminalPanel', () => {
   it('attaches while mounted and renders nothing while hidden', () => {
-    const h = mount({ ...EMPTY_PANEL, tabs: [] })
-    expect(h.attach).toHaveBeenCalledOnce()
+    // A Session without a stored panel reads as the empty panel.
+    const h = mount(null)
+    expect(h.attach).toHaveBeenCalledExactlyOnceWith(SESSION)
     expect(h.view.container.childElementCount).toBe(0)
     act(() => { h.store.set({ ...shown, open: false }) })
     expect(h.view.container.childElementCount).toBe(0)
@@ -61,34 +74,46 @@ describe('TerminalPanel', () => {
     expect(h.detach).toHaveBeenCalledOnce()
   })
 
+  it('shows the selected Session only while the conversation is the main panel', () => {
+    const h = mount()
+    act(() => { h.panelInfo.set({ activePanelId: 'plugins' }) })
+    expect(h.view.container.childElementCount).toBe(0)
+    expect(h.detach).toHaveBeenCalledOnce()
+    act(() => { h.panelInfo.set({ activePanelId: null }) })
+    expect(screen.getByRole('region', { name: en.title })).toBeDefined()
+    act(() => { h.current.set(undefined) })
+    expect(h.view.container.childElementCount).toBe(0)
+    expect(h.attach).toHaveBeenCalledTimes(2)
+  })
+
   it('shows every tab, keeps inactive screens mounted but hidden, and selects by click or key', () => {
     const h = mount()
     const tabs = screen.getAllByRole('tab')
     expect(tabs.map(tab => [tab.textContent, tab.getAttribute('aria-selected')])).toEqual([['zsh', 'false'], [en.title, 'true']])
     const bodies = screen.getAllByRole('tabpanel', { hidden: true })
     expect(bodies.map(body => [body.getAttribute('aria-labelledby'), body.hidden])).toEqual([[tabs[0]!.id, true], [tabs[1]!.id, false]])
-    expect(screen.getByText('body t1', { selector: 'button' }).dataset.visible).toBe('false')
-    expect(screen.getByText('body t2').dataset.visible).toBe('true')
+    expect(screen.getByText('body session/t1', { selector: 'button' }).dataset.visible).toBe('false')
+    expect(screen.getByText('body session/t2').dataset.visible).toBe('true')
     fireEvent.click(tabs[0]!)
-    expect(h.select).toHaveBeenLastCalledWith('t1')
+    expect(h.select).toHaveBeenLastCalledWith(SESSION, 't1')
     fireEvent.keyDown(tabs[0]!, { key: 'Enter' })
     fireEvent.keyDown(tabs[1]!, { key: ' ' })
     fireEvent.keyDown(tabs[1]!, { key: 'ArrowRight' })
     fireEvent.keyDown(tabs[1]!.querySelector('button')!, { key: 'Enter' })
-    expect(h.select.mock.calls).toEqual([['t1'], ['t1'], ['t2']])
+    expect(h.select.mock.calls).toEqual([[SESSION, 't1'], [SESSION, 't1'], [SESSION, 't2']])
   })
 
   it('closes a tab without selecting it, replaces a lost terminal, hides, and opens new terminals', () => {
     const h = mount()
     fireEvent.click(screen.getByRole('button', { name: 'Close terminal “zsh”' }))
-    expect(h.close).toHaveBeenCalledExactlyOnceWith('t1')
+    expect(h.close).toHaveBeenCalledExactlyOnceWith(SESSION, 't1')
     expect(h.select).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByText('body t2'))
-    expect(h.replace).toHaveBeenCalledExactlyOnceWith('t2')
+    fireEvent.click(screen.getByText('body session/t2'))
+    expect(h.replace).toHaveBeenCalledExactlyOnceWith(SESSION, 't2')
     fireEvent.click(screen.getByRole('button', { name: en.hide }))
-    expect(h.hide).toHaveBeenCalledOnce()
+    expect(h.hide).toHaveBeenCalledExactlyOnceWith(SESSION)
     fireEvent.click(screen.getByRole('button', { name: en.new }))
-    expect(h.add).toHaveBeenCalledExactlyOnceWith()
+    expect(h.add).toHaveBeenCalledExactlyOnceWith(SESSION)
   })
 
   it('opens a terminal in the shell chosen from the menu', async () => {
@@ -97,7 +122,7 @@ describe('TerminalPanel', () => {
     expect(screen.getByRole('menuitem', { name: en.shellLoading })).toBeDefined()
     fireEvent.click(await screen.findByRole('menuitem', { name: 'zsh' }))
     expect(h.selectShell).toHaveBeenCalledWith('/bin/zsh')
-    expect(h.add).toHaveBeenCalledWith('/bin/zsh')
+    expect(h.add).toHaveBeenCalledWith(SESSION, '/bin/zsh')
     await waitFor(() => { expect(screen.queryByRole('menu')).toBeNull() })
   })
 
@@ -151,13 +176,35 @@ describe('TerminalPanel', () => {
     fireEvent.pointerMove(handle, { pointerId: 1, clientY: 450 })
     fireEvent.pointerUp(handle, { pointerId: 1 })
     fireEvent.pointerMove(handle, { pointerId: 1, clientY: 0 })
-    expect(h.resize.mock.calls).toEqual([[350]])
+    expect(h.resize.mock.calls).toEqual([[SESSION, 350]])
     fireEvent.pointerDown(handle, { pointerId: 3, clientY: 500 })
     fireEvent.pointerCancel(handle, { pointerId: 3 })
     fireEvent.keyDown(handle, { key: 'ArrowUp' })
     fireEvent.keyDown(handle, { key: 'ArrowDown' })
     fireEvent.keyDown(handle, { key: 'Home' })
-    expect(h.resize.mock.calls).toEqual([[350], [324], [276]])
+    expect(h.resize.mock.calls).toEqual([[SESSION, 350], [SESSION, 324], [SESSION, 276]])
+  })
+})
+
+describe('TerminalLauncher', () => {
+  it('shows a hidden panel from the corner and disappears while the panel is shown', () => {
+    const panel = createSnapshotStore<TerminalPanelState>(EMPTY_PANEL)
+    const shortcuts = createSnapshotStore([{ id: 'terminal.toggle', aria: 'Control+`', keys: ['⌃', '`'] }])
+    const show = vi.fn()
+    const props: TerminalLauncherProps = {
+      t, show, usePanel: bindSnapshotSelector(panel), useShortcuts: bindSnapshotSelector(shortcuts),
+    } as never
+    const view = render(<TerminalLauncher {...props} />)
+    const button = screen.getByRole('button', { name: en.open })
+    expect(button.title).toBe(`${en.open} (⌃\`)`)
+    expect(button.getAttribute('aria-keyshortcuts')).toBe('Control+`')
+    fireEvent.click(button)
+    expect(show).toHaveBeenCalledOnce()
+    act(() => { shortcuts.set([]) })
+    expect(button.title).toBe(en.open)
+    expect(button.hasAttribute('aria-keyshortcuts')).toBe(false)
+    act(() => { panel.set({ ...shown }) })
+    expect(view.container.childElementCount).toBe(0)
   })
 })
 

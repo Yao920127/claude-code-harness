@@ -206,6 +206,42 @@ describe('ClaudeCodeAdapter model discovery', () => {
   })
 })
 
+describe('ClaudeCodeAdapter control requests', () => {
+  function controlQuery(answers: Partial<Pick<Query, 'supportedCommands' | 'usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET'>>): QueryFactory {
+    return ({ options }) => {
+      options.spawnClaudeCodeProcess?.(spawnOptions)
+      return { close: vi.fn(), ...answers } as Pick<Query, 'close'> as Query
+    }
+  }
+
+  it('lists the commands a turn in the workspace accepts, then releases the process', async () => {
+    const h = adapter()
+    const commands = [{ name: 'hello', description: 'Say hello', argumentHint: '' }]
+    queryMock.mockImplementation(controlQuery({ supportedCommands: () => Promise.resolve(commands) }))
+    await expect(h.adapter.commands('/work/other')).resolves.toBe(commands)
+    expect(lastOptions()).toMatchObject({ cwd: '/work/other', persistSession: false })
+    expect(h.child.terminate).toHaveBeenCalledOnce()
+    expect(h.child.waitForExit).toHaveBeenCalledOnce()
+  })
+
+  it('reads plan usage without the transcript scan from the discovery directory', async () => {
+    const h = adapter()
+    const answer = { rate_limits_available: false, rate_limits: null, subscription_type: null }
+    const usage = vi.fn(() => Promise.resolve(answer))
+    queryMock.mockImplementation(controlQuery({ usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET: usage as never }))
+    await expect(h.adapter.usage()).resolves.toBe(answer)
+    expect(usage).toHaveBeenCalledWith({ skipBehaviors: true })
+    expect(lastOptions()).toMatchObject({ cwd: '/home/user' })
+  })
+
+  it('releases nothing when the process never spawned', async () => {
+    const h = adapter()
+    queryMock.mockImplementation(() => ({ close: vi.fn(), supportedCommands: () => Promise.reject(new Error('no binary')) }) as never)
+    await expect(h.adapter.commands('/work')).rejects.toThrow('no binary')
+    expect(h.child.terminate).not.toHaveBeenCalled()
+  })
+})
+
 describe('ClaudeCodeAdapter.stream', () => {
   it('runs one native turn in the Session workspace and releases the process', async () => {
     const { adapter: route, child, spawn } = adapter()
@@ -440,6 +476,31 @@ describe('llm-claude-code plugin', () => {
     expect(resolve).toHaveBeenCalledWith({ session })
     expect(effectivePolicy).toHaveBeenCalledWith(session)
     expect(lastOptions()).toMatchObject({ permissionMode: 'bypassPermissions' })
+  })
+
+  it('lists Claude Code commands in the skill catalog and serves plan usage', async () => {
+    const ctx = await host()
+    let provider: { list: (options: { cwd?: string }) => Promise<unknown> } | undefined
+    const registerProvider = vi.fn((create: (control: unknown) => typeof provider) => {
+      provider = create({ signal: new AbortController().signal, invalidate: vi.fn() })
+      return () => {}
+    })
+    ctx.provide('skills', { registerProvider } as never)
+    const warn = vi.spyOn(ctx.logger, 'warn').mockImplementation(() => {})
+    await ctx.plugin(plugin, plugin.Config({}))
+    expect(registerProvider).toHaveBeenCalledOnce()
+    queryMock.mockImplementation(({ options }) => {
+      options.spawnClaudeCodeProcess?.(spawnOptions)
+      return {
+        close: vi.fn(),
+        supportedCommands: () => Promise.reject(new Error('signed out')),
+        usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET: () =>
+          Promise.resolve({ rate_limits_available: false, rate_limits: null, subscription_type: null }),
+      } as never
+    })
+    await expect(provider?.list({ cwd: CWD })).resolves.toEqual({ candidates: [], complete: false })
+    expect(warn).toHaveBeenCalledWith('llm-claude-code: listing Claude Code commands failed: %o', expect.any(Error))
+    await expect(ctx.claudeCodeUsage.get(false)).resolves.toMatchObject({ available: false, windows: [] })
   })
 
   it('refuses an unusable disposal grace and serves configured models without discovery', async () => {

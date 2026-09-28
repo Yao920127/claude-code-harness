@@ -522,6 +522,42 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-client-shortcuts -->
 
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-client-ui-git -->
+<a id="deepseek-aidsh-client-ui-git"></a>
+
+## `@deepseek-ai/dsh-client-ui-git`
+
+- `source`: [`packages/client/ui-git/src/index.ts:22`](../packages/client/ui-git/src/index.ts)
+
+```ts config-catalog
+/** Executables, clone directory, and command limits. */
+export interface Config {
+  /** `git` executable name or absolute path (default `git`). */
+  git?: string
+  /** GitHub CLI executable name or absolute path (default `gh`). */
+  gh?: string
+  /**
+   * Directories searched after `PATH` for a bare executable name. A Desktop
+   * app started from the Dock inherits a short `PATH`, so the default adds the
+   * Homebrew and `/usr/local` binary directories.
+   */
+  searchPath?: string[]
+  /** Directory GitHub repositories clone into (default `~/github`). */
+  cloneDirectory?: string
+  /** Most repositories one GitHub listing returns. */
+  repositoryLimit?: number
+  /** Milliseconds one command may run before it is terminated. */
+  commandTimeoutMs?: number
+  /** Milliseconds a GitHub sign-in waits for its one-time code to be entered. */
+  loginTimeoutMs?: number
+  /** Grace in milliseconds between termination tiers of a stopped command. */
+  graceMs?: number
+  /** Most bytes of one command output stream kept in memory. */
+  maxOutputBytes?: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-client-ui-git -->
+
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-client-ui-plugin-manager -->
 <a id="deepseek-aidsh-client-ui-plugin-manager"></a>
 
@@ -1559,7 +1595,7 @@ export interface Config {
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
 - `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:47`](../packages/llm/llm-claude-code/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:54`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */
@@ -1594,6 +1630,13 @@ export interface Config {
    * failed Claude Code turn may already have run tools with side effects.
    */
   retryPolicy?: RetryPolicyConfig
+  /**
+   * Milliseconds after the `/` menu lists Claude Code's slash commands until
+   * it asks Claude Code again, so newly installed skills and commands appear.
+   */
+  commandRefreshMs?: number
+  /** Milliseconds one plan-usage read answers app windows before Claude Code is asked again. */
+  usageFreshMs?: number
 }
 
 /** One selectable model advertised by the route. */
@@ -4440,6 +4483,7 @@ These load from a `cordis.yml` entry with no `config:` block; they declare no co
 | `@deepseek-ai/dsh-client-ui-brand-claude` | — | [`packages/client/ui-brand-claude/src/index.ts`](../packages/client/ui-brand-claude/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-brand-official` | — | [`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-chat` | — | [`packages/client/ui-chat/src/index.ts`](../packages/client/ui-chat/src/index.ts) |
+| `@deepseek-ai/dsh-client-ui-claude-code-usage` | — | [`packages/client/ui-claude-code-usage/src/index.ts`](../packages/client/ui-claude-code-usage/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-commands` | — | [`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-conversation` | — | [`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-cordis` | — | [`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts) |

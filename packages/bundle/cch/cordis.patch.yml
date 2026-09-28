@@ -27,11 +27,42 @@
 - id: ui-settings-account
   disabled: true
 
+# CCH sends nothing to DeepSeek services: session and message feedback, the
+# OTel exporter that releases a feedback-marked Session log to DeepSeek's
+# telemetry collector, and the Session-log suffix on official DeepSeek API
+# requests all stay unmounted.
+- id: command-feedback
+  disabled: true
+
+- id: message-feedback
+  disabled: true
+
+- id: ui-message-feedback
+  disabled: true
+
+- id: session-telemetry-otel
+  disabled: true
+
+- id: session-log-deepseek
+  disabled: true
+
 # Web search runs Claude Code's own WebSearch with the same sign-in, so it needs
 # no API key. Settings can select any other composed search provider instead.
 - insert:
     - id: web-search-claude-code
       name: '@deepseek-ai/dsh-web-search-claude-code'
+
+# The sidebar foot shows the Claude Code sign-in's five-hour and weekly plan usage.
+- insert:
+    - id: ui-claude-code-usage
+      name: '@deepseek-ai/dsh-client-ui-claude-code-usage'
+
+# The right Sidebar's Start page offers Source Control: commit, pull, and push
+# without Git commands, plus GitHub sign-in, cloning, and publishing through
+# the host's GitHub CLI.
+- insert:
+    - id: ui-git
+      name: '@deepseek-ai/dsh-client-ui-git'
 
 - id: web
   config:

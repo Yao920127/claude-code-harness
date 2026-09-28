@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/client/ui-claude-code-usage/README.md
+/:
+  en: a4a07886861fce7a
+  zh: 82435e3bd5e8b7d9
+/deepseek-ai-dsh-client-ui-claude-code-usage:
+  en: 8a978c06823d615f
+  zh: b8b26a0ebd7e217d
+/deepseek-ai-dsh-client-ui-claude-code-usage/summary:
+  en: ede89f8fbd3799ae
+  zh: b42bbd50b6a03d2d
+/deepseek-ai-dsh-client-ui-claude-code-usage/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: 1fa9a72d1ee045cc
+/deepseek-ai-dsh-client-ui-claude-code-usage/use-this-package:
+  en: 52ed1fa3e7a2ac71
+  zh: 538b6ddebedd52e9
+/deepseek-ai-dsh-client-ui-claude-code-usage/understand-the-implementation:
+  en: f2a3aedee007f787
+  zh: 4f7e96a6365daa04
+/deepseek-ai-dsh-client-ui-claude-code-usage/further-exploration:
+  en: af585dd890b2b656
+  zh: a4dedaa4477513c7
+/deepseek-ai-dsh-client-ui-claude-code-usage/model-experience:
+  en: c869fe3effd69221
+  zh: ae9c2f35057d1660
+/deepseek-ai-dsh-client-ui-claude-code-usage/model-experience/kv-cache-effect:
+  en: a6ad03b983357f07
+  zh: 3ab05c4814ac3884
+/deepseek-ai-dsh-client-ui-claude-code-usage/known-limitations-and-deferred-work:
+  en: 8520ce732f79a821
+  zh: 205cb2c49e6eb931
+/deepseek-ai-dsh-client-ui-claude-code-usage/known-limitations-and-deferred-work/dev-note:
+  en: b0270df0d9676602
+  zh: 81ec49875b8a1862

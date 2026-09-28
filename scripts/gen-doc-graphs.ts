@@ -324,6 +324,20 @@ const SERVICE_ROLES: ServiceRole[] = [
     note: 'Owns Workspace commands and reconnect-safe Workspace state delivery through the generated Remote namespace.',
   },
   {
+    key: 'gitController',
+    pkg: 'client-ui-git',
+    title: 'Source Control and GitHub Remote controller',
+    mode: 'core',
+    note: 'Runs git and the GitHub CLI in a Session folder through the subprocess provider and serves repository state, commits, sync, sign-in, cloning, and publishing over the generated Remote namespace.',
+  },
+  {
+    key: 'claudeCodeUsage',
+    pkg: 'llm-claude-code',
+    title: 'Claude Code plan usage Remote',
+    mode: 'core',
+    note: 'Reads the Claude Code sign-in\'s plan windows through a control request and serves one fresh answer to every app window.',
+  },
+  {
     key: 'directoryPickerController',
     pkg: 'api-workspace-controller',
     title: 'Host directory-picking Remote controller',

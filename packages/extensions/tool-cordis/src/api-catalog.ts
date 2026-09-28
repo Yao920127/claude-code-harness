@@ -562,6 +562,19 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
     ],
   },
   {
+    key: 'claudeCodeUsage',
+    summary: 'Serves plan usage, reading Claude Code at most once per freshness window.',
+    description: 'Serves plan usage, reading Claude Code at most once per freshness window.',
+    methods: [
+      {
+        signature: '@Remote get(refresh: boolean): Promise<ClaudeCodeUsageView>',
+        description: 'Read the signed-in account\'s plan usage.',
+        parameters: [{ name: 'refresh', description: 'true asks Claude Code again even when an earlier read is still fresh.' }],
+        returns: 'plan usage; a failed read rejects and is not reused.',
+      },
+    ],
+  },
+  {
     key: 'clientModules',
     summary: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows.',
     description: 'The web plugin table service: incremental `dsh.client` scan + wire composition + bundle route + index injection rows. Construction runs the activation scan synchronously — a malformed declaration or missing bundle among the already-loaded entries aggregates into one loud throw (FAILED fiber; the boot activation audit reports it).',
@@ -1134,6 +1147,91 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Atomically edit literal text. When supplied, the version guard is checked before matching so stale content reports `FS_STALE_VERSION`; omission edits the current content without a freshness precondition.',
         parameters: [{ name: 'target', description: 'the resolved target to edit.' }, { name: 'edit', description: 'the literal search/replace request.' }, { name: 'expected', description: 'the version guard; omit for an unconditional edit.' }, { name: 'signal', description: 'aborts before atomic publication takes effect.' }, { name: 'sandboxPolicy', description: 'the per-call mode and workspace root this edit runs under; a sandboxing backend fences the edit by it, the bare backend ignores it. Omit to leave the backend its own default.' }],
         returns: 'the outcome, including the version the edit produced.',
+      },
+    ],
+  },
+  {
+    key: 'gitController',
+    summary: 'Serves Source Control and GitHub operations over the `git` Remote namespace.',
+    description: 'Serves Source Control and GitHub operations over the `git` Remote namespace.',
+    methods: [
+      {
+        signature: '@Remote async status(sessionId: SessionId): Promise<GitStatusView>',
+        description: 'Read the repository state of a Session\'s working directory.',
+        parameters: [{ name: 'sessionId', description: 'Session whose working directory is inspected.' }],
+        returns: 'the state, or `repository: false` when the directory is not inside a Git repository.',
+      },
+      {
+        signature: '@Remote async init(sessionId: SessionId): Promise<GitStatusView>',
+        description: 'Create a Git repository in a Session\'s working directory.',
+        parameters: [{ name: 'sessionId', description: 'Session whose working directory becomes a repository.' }],
+        returns: 'the new repository\'s state.',
+      },
+      {
+        signature: '@Remote async stage(sessionId: SessionId, paths: readonly string[]): Promise<GitStatusView>',
+        description: 'Stage changed paths.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository changes.' }, { name: 'paths', description: 'repository-relative paths; empty stages every change.' }],
+        returns: 'the repository\'s state afterwards.',
+      },
+      {
+        signature: '@Remote async unstage(sessionId: SessionId, paths: readonly string[]): Promise<GitStatusView>',
+        description: 'Remove paths from the index, keeping their working-tree changes.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository changes.' }, { name: 'paths', description: 'repository-relative paths; empty unstages every change.' }],
+        returns: 'the repository\'s state afterwards.',
+      },
+      {
+        signature: '@Remote async commit(sessionId: SessionId, message: string): Promise<GitStatusView>',
+        description: 'Commit the staged changes, staging every change first when none is staged.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository commits.' }, { name: 'message', description: 'commit message; blank messages are refused.' }],
+        returns: 'the repository\'s state afterwards.',
+      },
+      {
+        signature: '@Remote async push(sessionId: SessionId): Promise<GitStatusView>',
+        description: 'Push the current branch, setting `origin` as its upstream when it has none.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository pushes.' }],
+        returns: 'the repository\'s state afterwards.',
+      },
+      {
+        signature: '@Remote async pull(sessionId: SessionId): Promise<GitStatusView>',
+        description: 'Fast-forward the current branch to its upstream.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository pulls.' }],
+        returns: 'the repository\'s state afterwards.',
+      },
+      {
+        signature: '@Remote async githubAccount(): Promise<GithubAccountView>',
+        description: 'Read the GitHub CLI\'s sign-in.',
+        parameters: [],
+        returns: 'whether the CLI is installed, the signed-in user, and a sign-in in progress.',
+      },
+      {
+        signature: '@Remote githubLogin(): Promise<GithubLoginPrompt>',
+        description: 'Start a GitHub device sign-in, or return the one already waiting for its code.',
+        parameters: [],
+        returns: 'the one-time code and the page to enter it on; the sign-in completes in the background.',
+      },
+      {
+        signature: '@Remote async githubLogout(): Promise<GithubAccountView>',
+        description: 'Sign the GitHub CLI out of github.com.',
+        parameters: [],
+        returns: 'the sign-in state afterwards.',
+      },
+      {
+        signature: '@Remote async githubRepositories(): Promise<GithubRepository[]>',
+        description: 'List the signed-in user\'s repositories, most recently updated first.',
+        parameters: [],
+        returns: 'the repositories and, for each, its local clone when one exists.',
+      },
+      {
+        signature: '@Remote async githubClone(nameWithOwner: string): Promise<GithubCloneResult>',
+        description: 'Clone a repository into the clone directory and add it as a Workspace; an existing clone is reused.',
+        parameters: [{ name: 'nameWithOwner', description: '`owner/name` of the repository.' }],
+        returns: 'the clone\'s local directory.',
+      },
+      {
+        signature: '@Remote async githubPublish(sessionId: SessionId, visibility: GithubVisibility): Promise<GitStatusView>',
+        description: 'Create a GitHub repository from a Session\'s repository, add it as `origin`, and push.',
+        parameters: [{ name: 'sessionId', description: 'Session whose repository is published.' }, { name: 'visibility', description: 'visibility of the new GitHub repository.' }],
+        returns: 'the repository\'s state afterwards.',
       },
     ],
   },
@@ -4701,6 +4799,18 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ChangeResult {\n    changed: boolean;\n    application: \'applied\' | \'restart-required\' | \'overridden\' | \'failed\' | \'cancelled\';\n    stage: \'install\' | \'enable\' | \'remove\';\n    target: string;\n    enabled?: boolean;\n    error?: ManagementError;\n    warnings?: string[];\n    packageResult?: PackageResult;\n    bundle?: string;\n    pendingBuilds?: string[];\n    approvedBuilds?: string[];\n    registries?: Registry[];\n    failedAt?: \'registry\' | \'spec-host\';\n}',
   },
   {
+    name: 'ClaudeCodeUsageView',
+    declaration: 'export interface ClaudeCodeUsageView {\n    readonly subscription: string | null;\n    readonly available: boolean;\n    readonly windows: readonly ClaudeCodeUsageWindow[];\n    readonly readAt: string;\n}',
+  },
+  {
+    name: 'ClaudeCodeUsageWindow',
+    declaration: 'export interface ClaudeCodeUsageWindow {\n    readonly kind: ClaudeCodeUsageWindowKind;\n    readonly label?: string;\n    readonly utilization: number | null;\n    readonly resetsAt: string | null;\n}',
+  },
+  {
+    name: 'ClaudeCodeUsageWindowKind',
+    declaration: 'export type ClaudeCodeUsageWindowKind = \'five-hour\' | \'seven-day\' | \'seven-day-opus\' | \'seven-day-sonnet\' | \'model\';',
+  },
+  {
     name: 'ClientArtifactBaseline',
     declaration: 'export interface ClientArtifactBaseline {\n    readonly path: string;\n    readonly mtimeMs: number;\n    readonly ctimeMs: number;\n    readonly size: number;\n}',
   },
@@ -5247,6 +5357,38 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'GenericResultView',
     declaration: 'export interface GenericResultView {\n    card: \'generic\';\n    title?: string;\n    content?: ContentBlock[];\n}',
+  },
+  {
+    name: 'GitChangeKind',
+    declaration: 'export type GitChangeKind = \'modified\' | \'type-changed\' | \'added\' | \'deleted\' | \'renamed\' | \'copied\' | \'untracked\' | \'conflicted\';',
+  },
+  {
+    name: 'GitFileChange',
+    declaration: 'export interface GitFileChange {\n    readonly path: string;\n    readonly originalPath?: string;\n    readonly staged?: GitChangeKind;\n    readonly unstaged?: GitChangeKind;\n}',
+  },
+  {
+    name: 'GithubAccountView',
+    declaration: 'export type GithubAccountView = {\n    readonly cli: \'missing\';\n} | {\n    readonly cli: \'ready\';\n    readonly login: string | null;\n    readonly pending: GithubLoginPrompt | null;\n};',
+  },
+  {
+    name: 'GithubCloneResult',
+    declaration: 'export interface GithubCloneResult {\n    readonly path: string;\n}',
+  },
+  {
+    name: 'GithubLoginPrompt',
+    declaration: 'export interface GithubLoginPrompt {\n    readonly code: string;\n    readonly url: string;\n}',
+  },
+  {
+    name: 'GithubRepository',
+    declaration: 'export interface GithubRepository {\n    readonly nameWithOwner: string;\n    readonly description: string | null;\n    readonly isPrivate: boolean;\n    readonly updatedAt: string;\n    readonly url: string;\n    readonly localPath: string | null;\n}',
+  },
+  {
+    name: 'GithubVisibility',
+    declaration: 'export type GithubVisibility = \'private\' | \'public\';',
+  },
+  {
+    name: 'GitStatusView',
+    declaration: 'export type GitStatusView = {\n    readonly repository: false;\n    readonly directory: string;\n} | {\n    readonly repository: true;\n    readonly directory: string;\n    readonly root: string;\n    readonly branch: string | null;\n    readonly upstream: string | null;\n    readonly ahead: number;\n    readonly behind: number;\n    readonly remoteUrl: string | null;\n    readonly changes: readonly GitFileChange[];\n};',
   },
   {
     name: 'GoalActivation',

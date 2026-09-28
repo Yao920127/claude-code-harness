@@ -38,6 +38,9 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `llm-deepseek`, `llm-deepseek-account` | Disabled, so the model selector lists only Claude models |
 | `ui-brand-official` | Disabled, so the Claude brand occupies the sidebar in official builds |
 | `ui-settings-account` | Disabled, so Settings offers no DeepSeek account sign-in |
+| `command-feedback`, `message-feedback`, `ui-message-feedback`, `session-telemetry-otel`, `session-log-deepseek` | Disabled, so no feedback control appears and nothing is sent to DeepSeek's feedback, telemetry, or Session-log endpoints |
+| `ui-claude-code-usage` (inserted) | The sidebar foot shows the Claude Code sign-in's five-hour and weekly plan usage ([details](../../client/ui-claude-code-usage/README.md)) |
+| `ui-git` (inserted) | The right Sidebar's Start page offers Source Control: commit, pull, and push without Git commands, plus GitHub sign-in, cloning, and publishing ([details](../../client/ui-git/README.md)) |
 | `web-search-claude-code` (inserted), `web` | Web search runs Claude Code's `WebSearch` with the same sign-in; the Plugins page's **Search provider** page selects another provider |
 | `ui-sidebar-browser` | Enabled in every CCH profile, as on Desktop |
 

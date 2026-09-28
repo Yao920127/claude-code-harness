@@ -38,6 +38,9 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/ds
 | `llm-deepseek`、`llm-deepseek-account` | 禁用，使模型选择器只列出 Claude 模型 |
 | `ui-brand-official` | 禁用，使 Claude 品牌在官方构建中占用侧边栏 |
 | `ui-settings-account` | 禁用，使设置中不提供 DeepSeek 账号登录 |
+| `command-feedback`、`message-feedback`、`ui-message-feedback`、`session-telemetry-otel`、`session-log-deepseek` | 已停用，因此不显示反馈控件，也不会向 DeepSeek 的反馈、遥测或会话日志端点发送任何内容 |
+| `ui-claude-code-usage`（插入） | 侧栏底部显示 Claude Code 登录账号的五小时与每周方案用量（[详情](../../client/ui-claude-code-usage/README.zh.md)） |
+| `ui-git`（插入） | 右侧栏「开始」页提供源代码管理：无需 Git 命令即可提交、拉取与推送，并支持 GitHub 登录、复制与发布（[详情](../../client/ui-git/README.zh.md)） |
 | `web-search-claude-code`（插入）、`web` | 网页搜索使用同一登录运行 Claude Code 的 `WebSearch`；插件页的**搜索来源**页面可选择其他提供方 |
 | `ui-sidebar-browser` | 在每个 CCH profile 中启用，与 Desktop 相同 |
 

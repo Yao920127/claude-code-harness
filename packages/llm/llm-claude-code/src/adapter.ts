@@ -10,7 +10,9 @@
  * @module @deepseek-ai/dsh-llm-claude-code/adapter
  */
 
-import { query as officialQuery, type Options, type Query } from '@anthropic-ai/claude-agent-sdk'
+import {
+  query as officialQuery, type Options, type Query, type SDKControlGetUsageResponse, type SlashCommand,
+} from '@anthropic-ai/claude-agent-sdk'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { LlmAdapter, LlmError } from '@deepseek-ai/dsh-llm'
@@ -120,6 +122,35 @@ export class ClaudeCodeAdapter extends LlmAdapter {
    * @returns selector entries in Claude Code's order.
    */
   private async discover(): Promise<ClaudeCodeModelEntry[]> {
+    return modelEntries(await this.control(this.options.discoveryCwd, query => query.supportedModels()))
+  }
+
+  /**
+   * List the slash commands a Claude Code turn in one directory accepts: built-in commands plus the
+   * skills, custom commands, and plugin commands its user and project settings install.
+   * @param cwd - workspace whose project settings add commands.
+   * @returns the commands in Claude Code's order.
+   */
+  async commands(cwd: string): Promise<SlashCommand[]> {
+    return await this.control(cwd, query => query.supportedCommands())
+  }
+
+  /**
+   * Read the signed-in account's plan usage without the local transcript scan.
+   * @returns Claude Code's usage data; plan windows are absent for API-key and third-party sign-ins.
+   */
+  async usage(): Promise<SDKControlGetUsageResponse> {
+    return await this.control(this.options.discoveryCwd, query =>
+      query.usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET({ skipBehaviors: true }))
+  }
+
+  /**
+   * Start a Claude Code process that runs no turn, answer one control request, and end the process.
+   * @param cwd - working directory whose settings the process loads.
+   * @param read - control request against the initialized process.
+   * @returns the control request's answer.
+   */
+  private async control<T>(cwd: string, read: (query: Query) => Promise<T>): Promise<T> {
     let release!: () => void
     const idle = new Promise<void>((resolve) => { release = resolve })
     // A prompt stream that yields nothing keeps the process initialized for
@@ -131,7 +162,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
     const query = officialQuery({
       prompt: noPrompt(),
       options: {
-        cwd: this.options.discoveryCwd,
+        cwd,
         env: { ...scrubbedParentEnv(), ...this.options.env },
         persistSession: false,
         spawnClaudeCodeProcess: (spawnOptions) => {
@@ -141,7 +172,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       },
     })
     try {
-      return modelEntries(await query.supportedModels())
+      return await read(query)
     } finally {
       release()
       query.close()

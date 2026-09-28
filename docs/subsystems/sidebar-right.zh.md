@@ -157,6 +157,109 @@ Host 调用方用 `ctx.sidebarBrowser.open(sessionId, url)` 为用户打开页�
 
 Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnpm run verify-cordis-catalog` in doc-sync; regenerate with `pnpm run gen-cordis-catalog`) — the language sides differ only in locale-specific paired document paths. Signature blocks use a `ts cordis-catalog` fence and keep the original source JSDoc; dispatch modes are defined in the [primer](../cordis-primer.zh.md#dispatch-modes), and the framework-inherited `ctx` API lives in [cordis-api/inherited.md](../cordis-api/inherited.md).
 
+<a id="ctxgitcontroller--gitcontroller"></a>
+
+### `ctx.gitController` — `GitController`
+
+Serves Source Control and GitHub operations over the `git` Remote namespace.
+
+```ts cordis-catalog
+/**
+ * Read the repository state of a Session's working directory.
+ * @param sessionId - Session whose working directory is inspected.
+ * @returns the state, or `repository: false` when the directory is not inside a Git repository.
+ */
+@Remote async status(sessionId: SessionId): Promise<GitStatusView>
+
+/**
+ * Create a Git repository in a Session's working directory.
+ * @param sessionId - Session whose working directory becomes a repository.
+ * @returns the new repository's state.
+ */
+@Remote async init(sessionId: SessionId): Promise<GitStatusView>
+
+/**
+ * Stage changed paths.
+ * @param sessionId - Session whose repository changes.
+ * @param paths - repository-relative paths; empty stages every change.
+ * @returns the repository's state afterwards.
+ */
+@Remote async stage(sessionId: SessionId, paths: readonly string[]): Promise<GitStatusView>
+
+/**
+ * Remove paths from the index, keeping their working-tree changes.
+ * @param sessionId - Session whose repository changes.
+ * @param paths - repository-relative paths; empty unstages every change.
+ * @returns the repository's state afterwards.
+ */
+@Remote async unstage(sessionId: SessionId, paths: readonly string[]): Promise<GitStatusView>
+
+/**
+ * Commit the staged changes, staging every change first when none is staged.
+ * @param sessionId - Session whose repository commits.
+ * @param message - commit message; blank messages are refused.
+ * @returns the repository's state afterwards.
+ */
+@Remote async commit(sessionId: SessionId, message: string): Promise<GitStatusView>
+
+/**
+ * Push the current branch, setting `origin` as its upstream when it has none.
+ * @param sessionId - Session whose repository pushes.
+ * @returns the repository's state afterwards.
+ */
+@Remote async push(sessionId: SessionId): Promise<GitStatusView>
+
+/**
+ * Fast-forward the current branch to its upstream.
+ * @param sessionId - Session whose repository pulls.
+ * @returns the repository's state afterwards.
+ */
+@Remote async pull(sessionId: SessionId): Promise<GitStatusView>
+
+/**
+ * Read the GitHub CLI's sign-in.
+ * @returns whether the CLI is installed, the signed-in user, and a sign-in in progress.
+ */
+@Remote async githubAccount(): Promise<GithubAccountView>
+
+/**
+ * Start a GitHub device sign-in, or return the one already waiting for its code.
+ * @returns the one-time code and the page to enter it on; the sign-in completes in the background.
+ */
+@Remote githubLogin(): Promise<GithubLoginPrompt>
+
+/**
+ * Sign the GitHub CLI out of github.com.
+ * @returns the sign-in state afterwards.
+ */
+@Remote async githubLogout(): Promise<GithubAccountView>
+
+/**
+ * List the signed-in user's repositories, most recently updated first.
+ * @returns the repositories and, for each, its local clone when one exists.
+ */
+@Remote async githubRepositories(): Promise<GithubRepository[]>
+
+/**
+ * Clone a repository into the clone directory and add it as a Workspace; an existing clone is reused.
+ * @param nameWithOwner - `owner/name` of the repository.
+ * @returns the clone's local directory.
+ */
+@Remote async githubClone(nameWithOwner: string): Promise<GithubCloneResult>
+
+/**
+ * Create a GitHub repository from a Session's repository, add it as `origin`, and push.
+ * @param sessionId - Session whose repository is published.
+ * @param visibility - visibility of the new GitHub repository.
+ * @returns the repository's state afterwards.
+ */
+@Remote async githubPublish(sessionId: SessionId, visibility: GithubVisibility): Promise<GitStatusView>
+```
+
+Types: [SessionId](core.zh.md)
+
+Source: [`packages/client/ui-git/src/git-controller.ts`](../../packages/client/ui-git/src/git-controller.ts)
+
 <a id="ctxsidebarbrowser--sidebarbrowseropener"></a>
 
 ### `ctx.sidebarBrowser` — `SidebarBrowserOpener`

@@ -51,12 +51,23 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 | `env` | `{}` | 叠加在已清除凭据的父环境之上的显式环境 |
 | `disposeGraceMs` | `3000` | 受管进程各终止层级之间的宽限时间 |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | 模型请求重试策略；默认从不重试，因为失败的回合可能已经修改了文件 |
+| `commandRefreshMs` | `300000` | `/` 菜单列出 Claude Code 命令后，再次读取前等待的毫秒数 |
+| `usageFreshMs` | `60000` | 一次方案用量读取在再次询问 Claude Code 前供应用窗口使用的毫秒数 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-claude-code)是每个可接受字段的完整来源。
 
 ### 权限
 
 在默认的 `session` 设置下，每个回合的原生权限模式跟随 Session 的沙箱模式与审批策略。完全权限（`danger-full-access` 搭配 `never` 策略）以 `bypassPermissions` 运行 Claude Code，因为 `never` 策略会拒绝每一个提示；`workspace-write` 使用 `acceptEdits`，文件编辑无需询问即可进行；其他所有组合，以及没有沙箱或审批服务的组合，使用 `default`。Claude Code 先应用你的用户、项目和本地 Claude 权限规则。对于这些规则未决定的操作，路由会代表发起该回合模型调用的 Agent 向 `ctx.approval` 询问：Web 审批卡片显示原生提示标题，或工具名称及其命令、文件或 URL。`allowed-once` 允许这一次操作；其他所有结果都会拒绝，拒绝原因会传给 Claude Code。`bypassPermissions` 跳过所有检查，从不询问。
+
+### 你的 Claude Code 命令与 skill
+
+Claude Code 回合会加载你的用户、项目与本地 Claude 设置，因此你为 Claude Code 安装的 skill、自定义命令与插件命令在这里同样可用。组合挂载 `ctx.skills` 时，该路由会把 Session 工作区中 Claude Code 回合接受的每个命令列为用户可调用的 skill，于是 `/` 菜单会提供它。选择或输入 `/hello` 会把字面文本发送给 Claude Code，由 Claude Code 自行执行该命令；harness 不注入 skill 正文。名称不符合小写 kebab-case skill 语法的命令（例如带 `:` 的插件命令）不会出现在菜单中。同名的 harness 命令或 skill 优先。列出失败（例如安装未登录）时，这些命令在下次查询前不会出现；每次列出后经过 `commandRefreshMs` 会再次读取列表。
+
+<a id="plan-usage"></a>
+### 方案用量
+
+`claudeCodeUsage` Remote 报告已登录账号的方案窗口（五小时、每周与按模型的每周窗口）及其用量与重置时间。一次读取在 `usageFreshMs` 内回答所有应用窗口；刷新会再次询问 Claude Code。API key 与第三方登录不报告方案窗口。该 Remote 读取 Claude Code 的实验性用量请求，其字段可能随 Claude Code 版本变化。
 
 ### 你会看到什么
 
@@ -102,6 +113,9 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 | [`src/approval.ts`](src/approval.ts) | 基于 `ctx.approval` 的原生权限回调 |
 | [`src/permissions.ts`](src/permissions.ts) | 由路由设置与 Session 权限旋钮得出的原生权限模式 |
 | [`src/browser-tool.ts`](src/browser-tool.ts) | 在应用 Browser 中打开页面的进程内 MCP 工具 |
+| [`src/commands.ts`](src/commands.ts) | 为 `/` 菜单列出 Claude Code 斜杠命令的 skill provider |
+| [`src/usage.ts`](src/usage.ts) | 基于 Claude Code 用量请求的 `claudeCodeUsage` Remote |
+| [`src/types.ts`](src/types.ts) | 用量 Remote 的线路类型 |
 | [`src/replay.ts`](src/replay.ts) | 保存原生续接游标的带版本 replay 状态 |
 | [`cordis.patch.yml`](cordis.patch.yml) | 插入路由的 Profile 补丁层 |
 

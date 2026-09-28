@@ -1284,9 +1284,10 @@ describe('default Workspace preparation', () => {
       h.registry.initializeDefault(h.resolveDirectory), h.registry.initializeDefault(laterDirectory),
     ])
     expect(first).toBeDefined()
+    // The later ensure runs after the first registered the default; its failed lookup keeps that default.
     expect(repeated).toBe(first)
     expect(h.resolveDirectory).toHaveBeenCalledOnce()
-    expect(laterDirectory).not.toHaveBeenCalled()
+    expect(laterDirectory).toHaveBeenCalledOnce()
     expect(first?.path).toBe(await realpath(join(h.directoryRoot, 'nested', 'Workspace')))
     // The caller supplies no title: the initial one is the directory's final segment.
     expect(first?.title).toBe('Workspace')
@@ -1333,9 +1334,8 @@ describe('default Workspace preparation', () => {
     expect(h.registry.list()).toEqual([workspace])
     await h.ctx.fiber.dispose()
     const restarted = await firstUse({ pool: h.pool })
-    expect((await restarted.registry.initializeDefault(restarted.resolveDirectory)).id).toBe(workspace.id)
+    expect((await restarted.registry.initializeDefault(h.resolveDirectory)).id).toBe(workspace.id)
     expect(restarted.registry.defaultWorkspaceId).toBe(workspace.id)
-    expect(restarted.resolveDirectory).not.toHaveBeenCalled()
   })
 
   it('recreates the default directory when it is missing from disk', async () => {
@@ -1344,7 +1344,36 @@ describe('default Workspace preparation', () => {
     await rm(workspace.path, { recursive: true })
     expect(await h.registry.initializeDefault(h.resolveDirectory)).toBe(workspace)
     await expect(realpath(workspace.path)).resolves.toBe(workspace.path)
-    expect(h.resolveDirectory).toHaveBeenCalledOnce()
+    expect(h.resolveDirectory).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps and recreates the registered default when a later lookup fails', async () => {
+    const h = await firstUse()
+    const workspace = await h.registry.initializeDefault(h.resolveDirectory)
+    await rm(workspace.path, { recursive: true })
+    h.resolveDirectory.mockRejectedValueOnce(new Error('lookup unavailable'))
+    expect(await h.registry.initializeDefault(h.resolveDirectory)).toBe(workspace)
+    await expect(realpath(workspace.path)).resolves.toBe(workspace.path)
+    expect(h.registry.defaultWorkspaceId).toBe(workspace.id)
+  })
+
+  it('moves the default to a newly configured directory and keeps the previous one as an ordinary Workspace', async () => {
+    const h = await firstUse()
+    const previous = await h.registry.initializeDefault(h.resolveDirectory)
+    await writeFile(join(previous.path, 'keep.txt'), 'keep')
+    const moved = join(h.directoryRoot, 'home', 'default-workspace')
+    const current = await h.registry.initializeDefault(async () => moved)
+    expect(current.id).not.toBe(previous.id)
+    expect(current.path).toBe(await realpath(moved))
+    expect(current.title).toBe('default-workspace')
+    expect(h.registry.defaultWorkspaceId).toBe(current.id)
+    expect(storedState(h.pool).defaultWorkspaceId).toBe(current.id)
+    expect(h.registry.list()).toEqual([current, previous])
+    const { readFile } = await import('node:fs/promises')
+    expect(await readFile(join(previous.path, 'keep.txt'), 'utf8')).toBe('keep')
+    // The previous default lost its permanence, so the person can remove it.
+    expect(await h.registry.delete(previous.id)).toBe(true)
+    expect(h.registry.list()).toEqual([current])
   })
 
   it.each(['persisted', 'live', 'archived'] as const)('creates the default beside a %s cwd-less Session', async (kind) => {

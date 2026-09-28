@@ -27,13 +27,6 @@
 - id: ui-settings-account
   disabled: true
 
-# The permanent default Workspace is ~/default-workspace, the same path on every
-# machine regardless of where this repository or the Documents folder lives.
-- id: workspace-controller
-  config:
-    baseDirectory: home
-    productDirectory: ''
-
 # Web search runs Claude Code's own WebSearch with the same sign-in, so it needs
 # no API key. Settings can select any other composed search provider instead.
 - insert:

@@ -590,8 +590,14 @@ export async function launchWebScaffold(options: LaunchOptions = {}): Promise<We
     {
       id: 'workspace-controller',
       // Only the first-use lane exercises the permanent default Workspace; every
-      // other scenario starts from a Host that provides none.
-      config: { documentsDirectory: join(workspaceCwd, 'Documents'), defaultWorkspace: options.firstUse === true },
+      // other scenario starts from a Host that provides none. The product default
+      // base is the real home directory, so the lane selects a temporary Documents base.
+      config: {
+        baseDirectory: 'documents',
+        documentsDirectory: join(workspaceCwd, 'Documents'),
+        productDirectory: 'deepseek-harness',
+        defaultWorkspace: options.firstUse === true,
+      },
     },
     // Skill discovery is model-visible input. Pin every host-level root inside
     // the owned temp world so ~/.dsh, ~/.agents, and a bundled-root env setting

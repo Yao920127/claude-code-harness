@@ -3550,7 +3550,7 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: '@Remote(\'initializeDefault\') async initializeDefault(signal: AbortSignal): Promise<WorkspaceValue | undefined>',
-        description: 'Ensure the permanent default Workspace exists. The directory name is fixed, so the Host never renames or relocates an existing default; its initial title is that same name, which browser consumers label in the reader\'s language.',
+        description: 'Ensure the permanent default Workspace exists at the configured directory. When the configuration names another directory than the registered default\'s, the default moves there and the previous default stays an ordinary Workspace. The directory name is fixed; its initial title is that same name, which browser consumers label in the reader\'s language.',
         parameters: [{ name: 'signal', description: 'caller lifetime; cancels native directory lookup.' }],
         returns: 'the durable default Workspace, or undefined when this Host provides none; creates no Session or message.',
       },
@@ -3661,8 +3661,8 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
       },
       {
         signature: 'initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace>',
-        description: 'Ensure the permanent default Workspace exists, independently of Session history and of other registrations. A registered default reuses its durable identity and recreates its directory when it is missing from disk; the registry never renames or relocates it. Otherwise the resolver names a directory, which is created recursively and registered — or, when a Workspace already owns it, adopted — as the default. The initial title is the requested directory\'s own final segment — not the canonical one, so a symlink at that path does not retitle the Workspace after its target. After resolution, caller cancellation does not roll back creation or registration.',
-        parameters: [{ name: 'resolveDirectory', description: 'resolve the absolute directory; called only when no default registration exists, inside the registry mutation queue.' }],
+        description: 'Ensure the permanent default Workspace exists at the resolved directory, independently of Session history and of other registrations. The directory is created recursively; a registered default at that canonical path is returned as is. Otherwise the directory is registered — or, when a Workspace already owns it, adopted — as the default, and a previous default at another path stays registered as an ordinary Workspace with its Sessions and files untouched. When resolution fails and a default is registered, that default is kept and its directory recreated. The initial title is the requested directory\'s own final segment — not the canonical one, so a symlink at that path does not retitle the Workspace after its target. After resolution, caller cancellation does not roll back creation or registration.',
+        parameters: [{ name: 'resolveDirectory', description: 'resolve the configured absolute directory; called on every ensure, inside the registry mutation queue.' }],
         returns: 'the default Workspace.',
       },
       {

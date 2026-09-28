@@ -68,8 +68,8 @@ export class WorkspaceController extends TypertRemoteService {
 
   static Config: z<Config, ResolvedConfig> = z.object({
     documentsDirectory: z.string(),
-    baseDirectory: z.union(['documents', 'home'] as const).default('documents'),
-    productDirectory: z.string().pattern(/^[^/\\]*$/).default('deepseek-harness'),
+    baseDirectory: z.union(['documents', 'home'] as const).default('home'),
+    productDirectory: z.string().pattern(/^[^/\\]*$/).default(''),
     defaultWorkspace: z.boolean().default(true),
     documentsLookupTimeoutMs: z.natural().min(1).default(10_000),
   })
@@ -118,10 +118,11 @@ export class WorkspaceController extends TypertRemoteService {
   }
 
   /**
-   * Ensure the permanent default Workspace exists. The directory name is
-   * fixed, so the Host never renames or relocates an existing default; its
-   * initial title is that same name, which browser consumers label in the
-   * reader's language.
+   * Ensure the permanent default Workspace exists at the configured directory.
+   * When the configuration names another directory than the registered
+   * default's, the default moves there and the previous default stays an
+   * ordinary Workspace. The directory name is fixed; its initial title is that
+   * same name, which browser consumers label in the reader's language.
    * @param signal - caller lifetime; cancels native directory lookup.
    * @returns the durable default Workspace, or undefined when this Host provides none; creates no Session or message.
    */

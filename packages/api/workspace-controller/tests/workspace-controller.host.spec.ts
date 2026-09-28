@@ -51,7 +51,6 @@ function deferred<T>(): Deferred<T> {
 }
 
 interface HarnessOptions {
-  readonly systemDocuments?: boolean
   readonly seedDefault?: (root: string) => string
   readonly config?: (root: string) => ConstructorParameters<typeof WorkspaceController>[1]
   readonly beforeController?: (ctx: Context) => void
@@ -79,8 +78,9 @@ async function harness(options: HarnessOptions = {}) {
     contexts: { configureHost: () => dispose },
   } as never)
   options.beforeController?.(ctx)
+  // Fixtures place the default under a temporary Documents directory, never the real home.
   const controller = new WorkspaceController(
-    ctx, options.config?.(root) ?? (options.systemDocuments === true ? {} : { documentsDirectory: root }),
+    ctx, options.config?.(root) ?? { baseDirectory: 'documents', documentsDirectory: root, productDirectory: 'deepseek-harness' },
   )
   return { controller, ctx, root, storageDomain }
 }
@@ -472,10 +472,31 @@ describe('WorkspaceController follow', () => {
 })
 
 describe('default Workspace Remote', () => {
-  it('reuses the registered default without looking up system Documents', async () => {
-    const { controller, root } = await started({ systemDocuments: true, seedDefault: root => root })
+  it('keeps the registered default when the directory lookup cannot finish', async () => {
+    const { controller, root } = await harness({
+      seedDefault: root => root,
+      // The startup ensure cannot create a directory under a file, so the seeded default stays in place.
+      config: (root) => {
+        const file = join(root, 'not-a-directory')
+        writeFileSync(file, 'file')
+        return { baseDirectory: 'documents', documentsDirectory: file }
+      },
+    })
     await expect(controller.initializeDefault(AbortSignal.abort()))
       .resolves.toMatchObject({ workspace: { path: root, title: basename(root), isDefault: true } })
+  })
+
+  it('moves the default when the configuration names another directory', async () => {
+    const { controller, ctx, root } = await harness({
+      seedDefault: root => join(root, 'Documents', 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY),
+      config: root => ({ baseDirectory: 'documents', documentsDirectory: root, productDirectory: '' }),
+    })
+    const { workspace } = (await controller.initializeDefault(new AbortController().signal))!
+    expect(workspace).toMatchObject({ path: join(root, DEFAULT_WORKSPACE_DIRECTORY), isDefault: true })
+    expect(ctx.workspaceRegistry.list().map(entry => entry.path)).toEqual([
+      join(root, DEFAULT_WORKSPACE_DIRECTORY),
+      join(root, 'Documents', 'deepseek-harness', DEFAULT_WORKSPACE_DIRECTORY),
+    ])
   })
 
   it('returns a durable Workspace named after its fixed directory without allocating a Session', async () => {
@@ -489,7 +510,8 @@ describe('default Workspace Remote', () => {
   })
 
   it('provides no default Workspace when the Host disables it', async () => {
-    const { controller, ctx, root } = await harness({ config: root => ({ documentsDirectory: root, defaultWorkspace: false }) })
+    // A Host without the default needs no directory settings, so none are given.
+    const { controller, ctx, root } = await harness({ config: () => ({ defaultWorkspace: false }) })
     await expect(controller.initializeDefault(new AbortController().signal)).resolves.toBeUndefined()
     const abort = new AbortController()
     const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
@@ -505,11 +527,12 @@ describe('default Workspace Remote', () => {
 
   it('places the default under the configured product directory', async () => {
     const { defaultWorkspace, root } = await started({
-      config: root => ({ documentsDirectory: root, productDirectory: 'claude-code-harness' }),
+      config: root => ({ baseDirectory: 'documents', documentsDirectory: root, productDirectory: 'claude-code-harness' }),
     })
     expect(defaultWorkspace.path).toBe(join(root, 'claude-code-harness', DEFAULT_WORKSPACE_DIRECTORY))
     expect(() => WorkspaceController.Config({ productDirectory: 'nested/name' })).toThrow()
-    expect(WorkspaceController.Config({})).toMatchObject({ baseDirectory: 'documents', productDirectory: 'deepseek-harness' })
+    // Every account's default is `<home>/default-workspace` unless the deployment configures otherwise.
+    expect(WorkspaceController.Config({})).toMatchObject({ baseDirectory: 'home', productDirectory: '' })
     expect(WorkspaceController.Config({ baseDirectory: 'home', productDirectory: '' })).toMatchObject({ baseDirectory: 'home', productDirectory: '' })
     expect(() => WorkspaceController.Config({ baseDirectory: 'desktop' as never })).toThrow()
   })
@@ -597,14 +620,14 @@ describe('default Workspace Remote', () => {
       return path
     }
     await harness({
-      config: root => ({ documentsDirectory: occupied(root) }),
+      config: root => ({ baseDirectory: 'documents', documentsDirectory: occupied(root) }),
       beforeController: (ctx) => { vi.spyOn(ctx.logger, 'warn').mockImplementation((...args) => { warnings.push(args) }) },
     })
     await vi.waitFor(() => { expect(warnings).toHaveLength(1) })
 
     const disposed: unknown[] = []
     const { ctx } = await harness({
-      config: root => ({ documentsDirectory: occupied(root) }),
+      config: root => ({ baseDirectory: 'documents', documentsDirectory: occupied(root) }),
       beforeController: (ctx) => { vi.spyOn(ctx.logger, 'warn').mockImplementation((...args) => { disposed.push(args) }) },
     })
     await ctx.fiber.dispose()

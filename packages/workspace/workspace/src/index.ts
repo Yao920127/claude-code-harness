@@ -253,31 +253,39 @@ export class WorkspaceRegistry extends Service {
   }
 
   /**
-   * Ensure the permanent default Workspace exists, independently of Session
-   * history and of other registrations. A registered default reuses its
-   * durable identity and recreates its directory when it is missing from
-   * disk; the registry never renames or relocates it. Otherwise the resolver
-   * names a directory, which is created recursively and registered — or, when
-   * a Workspace already owns it, adopted — as the default. The initial title is
-   * the requested directory's own final segment — not the canonical one, so a
-   * symlink at that path does not retitle the Workspace after its target.
-   * After resolution, caller cancellation does not roll back creation or registration.
-   * @param resolveDirectory - resolve the absolute directory; called only when
-   * no default registration exists, inside the registry mutation queue.
+   * Ensure the permanent default Workspace exists at the resolved directory,
+   * independently of Session history and of other registrations. The
+   * directory is created recursively; a registered default at that canonical
+   * path is returned as is. Otherwise the directory is registered — or, when a
+   * Workspace already owns it, adopted — as the default, and a previous
+   * default at another path stays registered as an ordinary Workspace with its
+   * Sessions and files untouched. When resolution fails and a default is
+   * registered, that default is kept and its directory recreated. The initial
+   * title is the requested directory's own final segment — not the canonical
+   * one, so a symlink at that path does not retitle the Workspace after its
+   * target. After resolution, caller cancellation does not roll back creation
+   * or registration.
+   * @param resolveDirectory - resolve the configured absolute directory; called
+   * on every ensure, inside the registry mutation queue.
    * @returns the default Workspace.
    */
   initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace> {
     return this.enqueueOperation(async () => {
       const state = this.requireState()
       const current = state.defaultWorkspaceId === undefined ? undefined : this.entities.get(state.defaultWorkspaceId)
-      if (current !== undefined) {
+      let path: string
+      try {
+        path = await resolveDirectory()
+      } catch (error) {
+        if (current === undefined) throw error
+        // An unavailable directory lookup keeps the registered default usable.
         await mkdir(current.path, { recursive: true })
         return current
       }
-      const path = await resolveDirectory()
       if (!fullyQualifiedWorkspacePath(path)) throw new TypeError(`Workspace path is not fully qualified: '${path}'`)
       await mkdir(path, { recursive: true })
       const canonical = await realpathNormalize(path)
+      if (current?.path === canonical) return current
       return this.createCanonical(canonical, defaultWorkspaceTitle(path), true)
     })
   }

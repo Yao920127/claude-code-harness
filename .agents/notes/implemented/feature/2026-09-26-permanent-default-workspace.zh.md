@@ -14,7 +14,7 @@ Status: implemented
 
 Host 控制器在启动时确保默认工作区存在，每个 `follow` 基线都会等这次尝试结束，因此浏览器的第一个视图就已列出默认工作区，启动恢复通过普通的工作区最近使用规则选中它。Remote `initializeDefault` 仍是两个基线都为空时浏览器采用的重试路径，如今这表示 Host 未能准备默认工作区。`WorkspaceView.isDefault` 标记该行，侧边栏在其菜单中省略删除。
 
-不得在其账户的 Documents 下创建目录的 Host 可以用 `defaultWorkspace: false` 关闭默认工作区；该 Host 不做任何确保，`initializeDefault` 返回 `undefined`。`productDirectory` 配置存放 `default-workspace` 的 Documents 子目录，默认为 `deepseek-harness`；CCH bundle 设为 `claude-code-harness`。目录内容仍遵循[只删除元数据的删除策略](2026-07-27-workspace-registration-deletion.zh.md)，语言中立的名称与标题遵循[默认工作区命名](2026-09-23-language-neutral-default-workspace-naming.zh.md)。
+不得在其账户下创建目录的 Host 可以用 `defaultWorkspace: false` 关闭默认工作区；该 Host 不做任何确保，`initializeDefault` 返回 `undefined`。每个账户的默认目录都是 `<home>/default-workspace`：`baseDirectory` 默认为 `home`，`productDirectory` 默认为空，因此不做系统查询。每次确保都会解析配置的目录；它与已登记默认工作区的目录不同时，默认工作区移到该目录，原默认工作区保留为普通工作区，其 Session 和文件不变。查询失败时保留已登记的默认工作区。目录内容仍遵循[只删除元数据的删除策略](2026-07-27-workspace-registration-deletion.zh.md)，语言中立的名称与标题遵循[默认工作区命名](2026-09-23-language-neutral-default-workspace-naming.zh.md)。
 
 ## Alternatives considered
 
@@ -28,4 +28,4 @@ Host 控制器在启动时确保默认工作区存在，每个 `follow` 基线�
 
 ## Consequences
 
-在默认工作区登记之前，每次 Host 启动都会查询一次 Documents，此后最多执行一次 `mkdir`。查询缓慢时，第一个工作区基线最多延迟 `documentsLookupTimeoutMs`。已有安装环境在下次启动时获得默认工作区；之前的 Session 保留其记录的工作目录，位置不变。用户可以重命名默认工作区，但不能删除；仍可在产品之外删除其文件，下次启动会重新创建目录。注册表测试覆盖不依赖历史的创建、采纳、拒绝删除、目录重建与过期标记；控制器测试覆盖启动顺序、配置的产品目录与错误映射。
+每次 Host 启动都会解析配置的目录，并最多执行一次 `mkdir`；只有 `documents` 基础目录会做系统查询，查询缓慢时，第一个工作区基线最多延迟 `documentsLookupTimeoutMs`。默认工作区登记在 Documents 下的安装环境会在下次启动时移到 `<home>/default-workspace`。已有安装环境在下次启动时获得默认工作区；之前的 Session 保留其记录的工作目录，位置不变。用户可以重命名默认工作区，但不能删除；仍可在产品之外删除其文件，下次启动会重新创建目录。注册表测试覆盖不依赖历史的创建、采纳、拒绝删除、目录重建与过期标记；注册表测试还覆盖默认工作区的迁移，以及查询失败时保留默认工作区；控制器测试覆盖启动顺序、配置的产品目录、迁移到新配置的目录与错误映射。

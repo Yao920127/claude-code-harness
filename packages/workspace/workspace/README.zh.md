@@ -64,9 +64,9 @@ ctx.workspaceRegistry.list() // shows the project, newest first
 
 `initializeDefault(resolveDirectory)` 确保永久默认 Workspace 存在，不创建 Session，也不考虑已有的其他 Workspace 和 Session 历史。登记后由 `defaultWorkspaceId` 指明它。
 
-目录解析器仅在不存在默认登记时于变更队列内运行。它返回绝对路径；注册表创建缺失的父目录、规范化路径，再一起提交 Workspace 和默认标记，标题取所请求目录（而非规范路径）的最后一段，因此该路径上的符号链接不会让工作区改用链接目标的名称。已存在的目录直接复用，已登记在该目录的 Workspace 会被采纳为默认工作区；文件冲突或目录操作失败时拒绝初始化。[Host 控制器](../../api/workspace-controller/README.zh.md#first-use-workspace)提供 Documents 路径策略。
+目录解析器在每次调用时于变更队列内运行。它返回绝对路径；注册表创建缺失的父目录、规范化路径，再一起提交 Workspace 和默认标记，标题取所请求目录（而非规范路径）的最后一段，因此该路径上的符号链接不会让工作区改用链接目标的名称。已存在的目录直接复用，已登记在该目录的 Workspace 会被采纳为默认工作区；文件冲突或目录操作失败时拒绝初始化。[Host 控制器](../../api/workspace-controller/README.zh.md#first-use-workspace)提供目录策略。
 
-首次成功登记会持久保存工作区身份。重复调用直接返回它，不再解析目录，并在磁盘上缺少其目录时重新创建；改名保留该身份。`delete` 以 `WorkspaceDefaultUndeletableError` 拒绝删除默认工作区。旧版本已删除其登记的标记会被新的登记取代。目录或登记失败时，标记保持未设置，可以重试。后续步骤失败前已创建的目录会保留在磁盘上。目录解析成功后，调用方取消操作不会回滚目录创建或登记。[永久默认工作区决策](../../../.agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.zh.md)说明这一生命周期。
+首次成功登记会持久保存工作区身份。解析出已登记默认工作区目录的调用直接返回它，并在磁盘上缺少其目录时重新创建；改名保留该身份。解析出其他目录的调用把默认工作区移到该目录，原默认工作区保留为普通 Workspace。解析器拒绝时，若已有登记的默认工作区，则重建其目录并返回它；否则传出该拒绝。`delete` 以 `WorkspaceDefaultUndeletableError` 拒绝删除默认工作区。旧版本已删除其登记的标记会被新的登记取代。目录或登记失败时，标记保持未设置，可以重试。后续步骤失败前已创建的目录会保留在磁盘上。目录解析成功后，调用方取消操作不会回滚目录创建或登记。[永久默认工作区决策](../../../.agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.zh.md)说明这一生命周期。
 
 ### 将会话归入项目
 

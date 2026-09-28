@@ -123,7 +123,7 @@ interface Workspace {
 
 ## 默认工作区初始化
 
-控制器的 `initializeDefault` 不接受请求参数：它拥有固定目录名 `default-workspace`，解析 Documents 位置，并请求注册表执行一次初始化。注册表接收目录解析器，以所请求目录（而非规范路径）的最后一段作为初始标题，并将登记与持久化身份一起提交。语言不会传到 Host——浏览器消费方通过控制器的 `workspaceDisplayTitle` 为仍保留该自动标题的工作区加标签，因此只有屏幕上的名称跟随读者语言。[首次使用行为与配置](../../packages/api/workspace-controller/README.zh.md#first-use-workspace)说明复用和失败处理。
+控制器的 `initializeDefault` 不接受请求参数：它拥有固定目录名 `default-workspace`，解析配置的位置，并请求注册表确保默认工作区位于该处，位置改变时将其迁移过去。注册表接收目录解析器，以所请求目录（而非规范路径）的最后一段作为初始标题，并将登记与持久化身份一起提交。语言不会传到 Host——浏览器消费方通过控制器的 `workspaceDisplayTitle` 为仍保留该自动标题的工作区加标签，因此只有屏幕上的名称跟随读者语言。[首次使用行为与配置](../../packages/api/workspace-controller/README.zh.md#first-use-workspace)说明复用和失败处理。
 
 ## 会话置顶
 
@@ -339,10 +339,11 @@ Host service backing the generated `ctx.remote.workspace` namespace.
 @Remote('create') create(request: WorkspaceCreateRequest): Promise<WorkspaceCreateValue>
 
 /**
- * Ensure the permanent default Workspace exists. The directory name is
- * fixed, so the Host never renames or relocates an existing default; its
- * initial title is that same name, which browser consumers label in the
- * reader's language.
+ * Ensure the permanent default Workspace exists at the configured directory.
+ * When the configuration names another directory than the registered
+ * default's, the default moves there and the previous default stays an
+ * ordinary Workspace. The directory name is fixed; its initial title is that
+ * same name, which browser consumers label in the reader's language.
  * @param signal - caller lifetime; cancels native directory lookup.
  * @returns the durable default Workspace, or undefined when this Host provides none; creates no Session or message.
  */
@@ -495,17 +496,20 @@ Durable workspace registry. Startup waits for `sessionPersistence`, builds one c
 async create(path: string, title?: string): Promise<Workspace>
 
 /**
- * Ensure the permanent default Workspace exists, independently of Session
- * history and of other registrations. A registered default reuses its
- * durable identity and recreates its directory when it is missing from
- * disk; the registry never renames or relocates it. Otherwise the resolver
- * names a directory, which is created recursively and registered — or, when
- * a Workspace already owns it, adopted — as the default. The initial title is
- * the requested directory's own final segment — not the canonical one, so a
- * symlink at that path does not retitle the Workspace after its target.
- * After resolution, caller cancellation does not roll back creation or registration.
- * @param resolveDirectory - resolve the absolute directory; called only when
- * no default registration exists, inside the registry mutation queue.
+ * Ensure the permanent default Workspace exists at the resolved directory,
+ * independently of Session history and of other registrations. The
+ * directory is created recursively; a registered default at that canonical
+ * path is returned as is. Otherwise the directory is registered — or, when a
+ * Workspace already owns it, adopted — as the default, and a previous
+ * default at another path stays registered as an ordinary Workspace with its
+ * Sessions and files untouched. When resolution fails and a default is
+ * registered, that default is kept and its directory recreated. The initial
+ * title is the requested directory's own final segment — not the canonical
+ * one, so a symlink at that path does not retitle the Workspace after its
+ * target. After resolution, caller cancellation does not roll back creation
+ * or registration.
+ * @param resolveDirectory - resolve the configured absolute directory; called
+ * on every ensure, inside the registry mutation queue.
  * @returns the default Workspace.
  */
 initializeDefault(resolveDirectory: () => Promise<string>): Promise<Workspace>

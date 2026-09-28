@@ -29,16 +29,16 @@ Client 入口提供 `ClientWorkspaceModel` 和 `createWorkspaceStateStream()`。
 <a id="first-use-workspace"></a>
 ### 默认工作区
 
-`defaultWorkspace` 为 `true`（默认值）时，控制器启动时确保永久默认工作区存在，每个 `follow` 基线都会等这次尝试结束，因此浏览器的第一个视图就已列出它；失败的尝试会写入日志。`workspace.initializeDefault()` 重复这一确保并返回持久化的默认工作区；Client service 通过 `workspaces.initializeDefault(signal?)` 提供该操作。它不接受请求参数：固定目录名 `default-workspace` 由 Host 拥有，注册表也以同一路径片段作为初始标题，因此任何语言下同一安装环境都只有一个磁盘路径和一个存储标题。Host 将目录放在其账户的 `<base>/<productDirectory>` 下：`baseDirectory` 选择 Documents 目录（`documents`，默认值）或主目录（`home`），`productDirectory` 默认为 `deepseek-harness`，必须是单个路径片段或为空，远程 Web Host 也遵循此规则。`productDirectory` 为空时，`default-workspace` 直接位于基础目录下；`home` 基础目录无需系统查询。操作系统的文件名限制同样适用。Linux 系统查询要求存在 `xdg-user-dir` 且启用了 Documents 目录；不具备该条件的 Host 必须配置 `documentsDirectory` 或使用文件夹选择器。
+`defaultWorkspace` 为 `true`（默认值）时，控制器启动时确保永久默认工作区存在，每个 `follow` 基线都会等这次尝试结束，因此浏览器的第一个视图就已列出它；失败的尝试会写入日志。`workspace.initializeDefault()` 重复这一确保并返回持久化的默认工作区；Client service 通过 `workspaces.initializeDefault(signal?)` 提供该操作。它不接受请求参数：固定目录名 `default-workspace` 由 Host 拥有，注册表也以同一路径片段作为初始标题，因此任何语言下同一安装环境都只有一个磁盘路径和一个存储标题。Host 将目录放在其账户的 `<base>/<productDirectory>` 下：`baseDirectory` 选择主目录（`home`，默认值）或 Documents 目录（`documents`），`productDirectory` 默认为空，必须是单个路径片段或为空，远程 Web Host 也遵循此规则。因此默认配置把每个账户的默认工作区放在 `<home>/default-workspace`，无需系统查询；非空的 `productDirectory` 会在基础目录与 `default-workspace` 之间加入一层目录。操作系统的文件名限制同样适用。Linux 系统查询要求存在 `xdg-user-dir` 且启用了 Documents 目录；不具备该条件的 Host 必须配置 `documentsDirectory` 或使用文件夹选择器。
 
-[Workspace 注册表](../../workspace/workspace/README.zh.md#first-use-workspace)负责目录创建和持久化初始化。已有默认工作区直接返回，不再查询 Documents，也不会被重命名或迁移。它的 `WorkspaceView` 带有 `isDefault: true`，`workspace.delete` 以 `workspace/default-undeletable` 拒绝删除它。不得在其账户的 Documents 下创建目录的 Host 设置 `defaultWorkspace: false`：启动时不做任何确保，`initializeDefault` 返回 `undefined`，启动流程把目录选择留给用户。查询和创建失败遵循标准 Remote 错误处理。初始化不创建 Session，也不发送消息；[永久默认工作区决策](../../../.agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.zh.md)说明其生命周期。
+[Workspace 注册表](../../workspace/workspace/README.zh.md#first-use-workspace)负责目录创建和持久化初始化。每次确保都会重新解析配置的目录。它与已注册默认工作区的目录不同时，默认工作区移到配置的目录，原默认工作区连同其 Session 和文件保留为普通工作区；查询失败时返回已注册的默认工作区并重建其目录。它的 `WorkspaceView` 带有 `isDefault: true`，`workspace.delete` 以 `workspace/default-undeletable` 拒绝删除它。不得在其账户的 Documents 下创建目录的 Host 设置 `defaultWorkspace: false`：启动时不做任何确保，`initializeDefault` 返回 `undefined`，启动流程把目录选择留给用户。查询和创建失败遵循标准 Remote 错误处理。初始化不创建 Session，也不发送消息；[永久默认工作区决策](../../../.agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.zh.md)说明其生命周期。
 
 `./default-workspace` 为浏览器消费方导出 `DEFAULT_WORKSPACE_DIRECTORY` 与 `workspaceDisplayTitle(title, localizedDefault)`：仍保留自动标题的工作区按读者语言显示默认名称，其他标题一律原样显示。被用户重命名为 `default-workspace` 的工作区，或从选择器采用的同名文件夹，也会按默认工作区显示；除显示之外没有其他行为依赖该判断。
 
 | 配置 | 默认值 | 用途 |
 | --- | --- | --- |
-| `baseDirectory` | `documents` | `documents` 或 `home`：存放默认工作区的账户目录 |
-| `productDirectory` | `deepseek-harness` | 基础目录下的单个路径片段；为空则不加 |
+| `baseDirectory` | `home` | `home` 或 `documents`：存放默认工作区的账户目录 |
+| `productDirectory` | 空 | 基础目录下的单个路径片段；为空则不加 |
 | `documentsDirectory` | 系统 Documents 目录 | 完全限定的 Host 目录覆盖值，用于 `documents` 基础目录 |
 | `documentsLookupTimeoutMs` | `10000` | 操作系统目录查询的正数最大时长，单位为毫秒 |
 

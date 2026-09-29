@@ -9,11 +9,16 @@ import type {} from './locales.ts'
 import type { UsageState } from './usage-source.ts'
 import css from './UsageMeter.module.css'
 
-/** Meter state and the refresh command. */
+/** Which share of each window the meter prints and draws. */
+export type UsageDisplay = 'used' | 'remaining'
+
+/** Meter state, the viewer's display choice, and their commands. */
 export interface UsageMeterInjected {
-  readonly hooks: { readonly usage: HostObservable<UsageState> }
+  readonly hooks: { readonly usage: HostObservable<UsageState>; readonly display: HostObservable<UsageDisplay> }
   /** Ask Claude Code for current usage. */
   readonly refresh: () => void
+  /** Switch between printing the used and the remaining share. */
+  readonly setDisplay: (display: UsageDisplay) => void
 }
 
 /** Sidebar-foot share, meter state and copy. */
@@ -46,21 +51,26 @@ export function resetText(window: ClaudeCodeUsageWindow, t: Translate): string |
 }
 
 /**
- * Render every reported window as a labelled bar in the wide sidebar, or the first window's remaining share on the
- * rail. Nothing renders until a read reports plan windows, so a sign-in without a Claude plan, such as an API key
- * or another provider's route, and a failed or pending read leave the sidebar foot unchanged.
- * @param props - sidebar width, meter state, refresh command and copy.
+ * Render every reported window as a labelled bar in the wide sidebar, or the first window's share on the rail. The
+ * viewer chooses whether values and bars show the used or the remaining share; bar colors follow the used share in
+ * both. Nothing renders until a read reports plan windows, so a sign-in without a Claude plan, such as an API key or
+ * another provider's route, and a failed or pending read leave the sidebar foot unchanged.
+ * @param props - sidebar width, meter state, display choice, commands and copy.
  * @returns the meter, or null while there are no plan windows to show.
  */
-export function UsageMeter({ wide, useUsage, refresh, t }: UsageMeterProps): ReactNode {
+export function UsageMeter({ wide, useUsage, useDisplay, refresh, setDisplay, t }: UsageMeterProps): ReactNode {
   const windows = useUsage(value => value.phase === 'ready' && value.view.available ? value.view.windows : undefined)
+  const display = useDisplay(value => value === 'used' ? 'used' : 'remaining')
   const first = windows?.[0]
   if (windows === undefined || first === undefined) return null
   if (!wide) {
     const summary = windows.map(window => [windowLabel(window, t), details(window, t)].join(' · ')).join('\n')
     return (
-      <button type="button" className={css.rail} title={`${t('title')}\n${summary}`} aria-label={t('refresh')} onClick={refresh} data-claude-code-usage="">
-        {remaining(first, t)}
+      <button
+        type="button" className={css.rail} title={`${t('title')}\n${summary}`} aria-label={t('refresh')} onClick={refresh}
+        data-level={level(first)} data-claude-code-usage=""
+      >
+        {share(first, display, t)}
       </button>
     )
   }
@@ -68,20 +78,32 @@ export function UsageMeter({ wide, useUsage, refresh, t }: UsageMeterProps): Rea
     <section className={css.root} aria-label={t('title')} data-claude-code-usage="">
       <div className={css.header}>
         <span className={css.title}>{t('title')}</span>
+        <div className={css.toggle} role="group" aria-label={t('display')}>
+          {(['used', 'remaining'] as const).map(option => (
+            <button
+              key={option} type="button" className={css.option} aria-pressed={display === option}
+              onClick={() => { setDisplay(option) }}
+            >
+              {t(`display.${option}`)}
+            </button>
+          ))}
+        </div>
         <button type="button" className={css.refresh} title={t('refresh')} aria-label={t('refresh')} onClick={refresh}>
           <IconRefreshOutlineRegular />
         </button>
       </div>
       {windows.map(window => (
         <div key={`${window.kind}:${window.label ?? ''}`} className={css.row} title={details(window, t)}>
-          <span className={css.label}>{windowLabel(window, t)}</span>
+          <div className={css.line}>
+            <span className={css.label}>{windowLabel(window, t)}</span>
+            <span className={css.value} data-level={level(window)}>{share(window, display, t)}</span>
+          </div>
           <span
             className={css.bar} role="meter" aria-label={windowLabel(window, t)}
             aria-valuemin={0} aria-valuemax={100} aria-valuenow={window.utilization ?? undefined}
           >
-            <span className={css.fill} style={{ width: `${clamp(window.utilization ?? 0)}%` }} data-high={(window.utilization ?? 0) >= 80 || undefined} />
+            <span className={css.fill} style={{ width: `${barWidth(window, display)}%` }} data-level={level(window)} />
           </span>
-          <span className={css.value}>{remaining(window, t)}</span>
         </div>
       ))}
     </section>
@@ -92,14 +114,27 @@ function clamp(value: number): number {
   return Math.min(100, Math.max(0, value))
 }
 
-/** The share of a window still available, such as `剩 13%`. */
-function remaining(window: ClaudeCodeUsageWindow, t: Translate): string {
-  return window.utilization === null ? t('unknown') : t('remaining', { value: String(100 - Math.round(clamp(window.utilization))) })
+/** Color band of a window by its used share: under half, under 80%, or 80% and more. */
+function level(window: ClaudeCodeUsageWindow): 'low' | 'medium' | 'high' | undefined {
+  if (window.utilization === null) return undefined
+  return window.utilization >= 80 ? 'high' : window.utilization >= 50 ? 'medium' : 'low'
+}
+
+function barWidth(window: ClaudeCodeUsageWindow, display: UsageDisplay): number {
+  const used = clamp(window.utilization ?? 0)
+  return display === 'used' || window.utilization === null ? used : 100 - used
+}
+
+/** The chosen share of a window, such as `剩余 13%` or `已用 87%`. */
+function share(window: ClaudeCodeUsageWindow, display: UsageDisplay, t: Translate): string {
+  if (window.utilization === null) return t('unknown')
+  const used = Math.round(clamp(window.utilization))
+  return display === 'used' ? t('used', { value: String(used) }) : t('remaining', { value: String(100 - used) })
 }
 
 /** The used share and reset time of a window, for its hover text. */
 function details(window: ClaudeCodeUsageWindow, t: Translate): string {
-  const used = window.utilization === null ? t('unknown') : t('used', { value: String(Math.round(clamp(window.utilization))) })
+  const used = share(window, 'used', t)
   const reset = resetText(window, t)
   return reset === undefined ? used : `${used} · ${reset}`
 }

@@ -3,15 +3,18 @@
 import { Context } from '@deepseek-ai/cordis'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { bindSnapshotSelector, makeTranslate } from '@deepseek-ai/dsh-client-test-runtime'
 import type { ClaudeCodeUsageView } from '@deepseek-ai/dsh-llm-claude-code/types'
 import { apply, inject } from '../src/client/index.ts'
 import { en, zh } from '../src/client/locales.ts'
-import { resetText, UsageMeter, windowLabel, type UsageMeterInjected, type UsageMeterProps } from '../src/client/UsageMeter.tsx'
+import {
+  resetText, UsageMeter, windowLabel, type UsageDisplay, type UsageMeterInjected, type UsageMeterProps,
+} from '../src/client/UsageMeter.tsx'
 import { UsageSource } from '../src/client/usage-source.ts'
 import { apply as hostApply } from '../src/index.ts'
 
-afterEach(cleanup)
+afterEach(() => { cleanup(); localStorage.clear() })
 
 const t = makeTranslate(en)
 
@@ -64,10 +67,14 @@ describe('UsageSource', () => {
 })
 
 describe('UsageMeter', () => {
-  function mount(wide: boolean, source: UsageSource) {
+  function mount(wide: boolean, source: UsageSource, initial: UsageDisplay = 'remaining') {
     const refresh = vi.fn()
-    const props = { wide, t, refresh, useUsage: bindSnapshotSelector(source.state) } as never as UsageMeterProps
-    return { refresh, view: render(<UsageMeter {...props} />) }
+    const display = createSnapshotStore<UsageDisplay>(initial)
+    const setDisplay = vi.fn((value: UsageDisplay) => { display.set(value) })
+    const props = {
+      wide, t, refresh, setDisplay, useUsage: bindSnapshotSelector(source.state), useDisplay: bindSnapshotSelector(display),
+    } as never as UsageMeterProps
+    return { refresh, setDisplay, view: render(<UsageMeter {...props} />) }
   }
 
   it('names windows and their reset times', () => {
@@ -78,7 +85,7 @@ describe('UsageMeter', () => {
     expect(resetText({ kind: 'five-hour', utilization: 1, resetsAt: '2026-09-29T03:00:00.000Z' }, t)).toMatch(/^Resets /u)
   })
 
-  it('shows nothing until a read reports plan windows, then one bar per window with the remaining share', async () => {
+  it('shows nothing until a read reports plan windows, then one colored bar per window with the chosen share', async () => {
     const answers: ((value: ClaudeCodeUsageView) => void)[] = []
     const failures: ((error: Error) => void)[] = []
     const source = new UsageSource(() => new Promise((resolve, reject) => { answers.push(resolve); failures.push(reject) }))
@@ -102,25 +109,47 @@ describe('UsageMeter', () => {
     const meters = screen.getAllByRole('meter')
     expect(meters.map(meter => [meter.getAttribute('aria-label'), meter.getAttribute('aria-valuenow')]))
       .toEqual([['5 hours', '87.4'], ['Weekly', null], ['Weekly Fable', '120']])
+    const fills = () => meters.map(meter => Math.round(Number.parseFloat((meter.firstElementChild as HTMLElement).style.width) * 10) / 10)
     expect(screen.getByText('13% left')).toBeDefined()
     expect(screen.getByText('—')).toBeDefined()
     expect(screen.getByText('0% left')).toBeDefined()
+    expect(fills()).toEqual([12.6, 0, 0])
+    expect(meters.map(meter => meter.firstElementChild?.getAttribute('data-level') ?? null)).toEqual(['high', null, 'high'])
     const rows = h.view.container.querySelectorAll('[title]')
     expect([...rows].map(row => row.getAttribute('title'))).toContain('—')
     fireEvent.click(screen.getByRole('button', { name: en.refresh }))
     expect(h.refresh).toHaveBeenCalledOnce()
+    expect(screen.getByRole('button', { name: en['display.remaining'] }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: en['display.used'] }))
+    expect(h.setDisplay).toHaveBeenCalledWith('used')
+    expect(screen.getByRole('button', { name: en['display.used'] }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByText('87% used')).toBeDefined()
+    expect(screen.getByText('100% used')).toBeDefined()
+    expect(fills()).toEqual([87.4, 0, 100])
+  })
+
+  it('colors a window by its used share', async () => {
+    let answer!: (value: ClaudeCodeUsageView) => void
+    const source = new UsageSource(() => new Promise((resolve) => { answer = resolve }))
+    mount(true, source)
+    source.load(false)
+    answer({ ...view, windows: [30, 50, 79.9, 80].map(utilization => ({ kind: 'five-hour' as const, utilization, resetsAt: null })) })
+    await settle()
+    expect(screen.getAllByRole('meter').map(meter => meter.firstElementChild?.getAttribute('data-level')))
+      .toEqual(['low', 'medium', 'medium', 'high'])
   })
 
   it('shows the first window on the rail and every window as its hover text', async () => {
     let answer!: (value: ClaudeCodeUsageView) => void
     const source = new UsageSource(() => new Promise((resolve) => { answer = resolve }))
-    const h = mount(false, source)
+    const h = mount(false, source, 'used')
     expect(h.view.container.childElementCount).toBe(0)
     source.load(false)
     answer(view)
     await settle()
     const button = screen.getByRole('button', { name: en.refresh })
-    expect(button.textContent).toBe('13% left')
+    expect(button.textContent).toBe('87% used')
+    expect(button.getAttribute('data-level')).toBe('high')
     expect(button.title.split('\n')[1]).toMatch(/^5 hours · 87% used · Resets /u)
     fireEvent.click(button)
     expect(h.refresh).toHaveBeenCalledOnce()
@@ -150,6 +179,10 @@ describe('Claude Code usage plugin', () => {
     expect(dictionaries.get('claudeCodeUsage')).toEqual({ zh, en })
     const face = entries[0]!.inject()
     await vi.waitFor(() => { expect(face.hooks.usage.getSnapshot()).toEqual({ phase: 'ready', view }) })
+    expect(face.hooks.display.getSnapshot()).toBe('remaining')
+    face.setDisplay('used')
+    expect(face.hooks.display.getSnapshot()).toBe('used')
+    expect(localStorage.getItem('dsh.claude-code-usage.display.v1')).toBe('"used"')
     face.refresh()
     expect(get).toHaveBeenLastCalledWith(true)
     await vi.waitFor(() => { expect(face.hooks.usage.getSnapshot()).toEqual({ phase: 'failed', message: 'offline' }) })

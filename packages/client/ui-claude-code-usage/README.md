@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-See how much of your Claude plan remains without leaving the app. The sidebar foot shows one bar per plan window — five hours, weekly, and any per-model weekly window — with the share still available and, on hover, the used share and reset time. The figures come from the Claude Code sign-in the Host's turns use; without a Claude plan the meter stays hidden.
+See how much of your Claude plan remains without leaving the app. The sidebar foot shows one colored bar per plan window — five hours, weekly, and any per-model weekly window — with the used or remaining share and, on hover, the used share and reset time. The figures come from the Claude Code sign-in the Host's turns use; without a Claude plan the meter stays hidden.
 
 ## Table of Contents
 
@@ -25,7 +25,7 @@ See how much of your Claude plan remains without leaving the app. The sidebar fo
 <a id="use-this-package"></a>
 ## Use this package
 
-The meter sits above Settings. Each row names a window, draws its used share as a bar, and prints the remaining share; a bar at 80% or more turns red. Hover a row for the used share and reset time. The refresh button asks Claude Code again. The meter reads usage when the page loads and whenever the window becomes visible again. On the collapsed sidebar rail it shows the first window's remaining share, with every window in its hover text. Nothing shows until a read reports plan windows: a sign-in without a Claude plan, such as an API key, a Claude Code installation that is missing or signed out, and a pending or failed read all leave the sidebar foot unchanged.
+The meter sits above Settings. Each row names a window and prints its share above a bar. The header's Used / Left switch picks whether the value and the bar show the used or the remaining share; this browser keeps the choice in localStorage. The bar is green below 50% used, amber from 50%, and red from 80%, in both views. Hover a row for the used share and reset time. The refresh button asks Claude Code again. The meter reads usage when the page loads and whenever the window becomes visible again. On the collapsed sidebar rail it shows the first window's chosen share, with every window in its hover text. Nothing shows until a read reports plan windows: a sign-in without a Claude plan, such as an API key, a Claude Code installation that is missing or signed out, and a pending or failed read all leave the sidebar foot unchanged.
 
 The CCH bundle inserts this plugin. It needs the `claudeCodeUsage` Remote of [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.md#plan-usage), which also sets how long one read answers every window.
 

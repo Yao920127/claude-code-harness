@@ -98,6 +98,7 @@ export function apply(ctx: Context): void {
       select: (sessionId, key) => { panels.select(sessionId, key) },
       close: (sessionId, key) => { close(sessionId, key, panels.remove(sessionId, key)) },
       replace: (sessionId, key) => { close(sessionId, key, panels.replace(sessionId, key)) },
+      show: (sessionId) => { panels.open(sessionId) },
       hide: (sessionId) => { panels.hide(sessionId) },
       resize: (sessionId, height) => { panels.resize(sessionId, height) },
       loadShells: (sessionId, signal) => ctx.webTerminals.launchShells(sessionId, signal),

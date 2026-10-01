@@ -1,4 +1,4 @@
-/** Published PDF and spreadsheet chunks retain their bundled license notices. */
+/** Published PDF, spreadsheet, and editor chunks retain their bundled license notices. */
 import { spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -58,7 +58,7 @@ describe('published document preview licenses', () => {
       const client = run('tar', ['-xOf', resolve(packageRoot, packed.filename), 'package/lib/client.js'], packageRoot, task.timeout)
       const pdf = run('tar', ['-xOf', resolve(packageRoot, packed.filename), 'package/lib/client.pdf.js'], packageRoot, task.timeout)
       expect([...client.matchAll(/require\.async\("(\.\/client[^"/]*\.js)"\)/gu)].map(match => match[1]))
-        .toEqual(['./client.pdf.js', './client.excel.js'])
+        .toEqual(['./client.pdf.js', './client.excel.js', './client.code-editor.js'])
       expect(client).not.toMatch(/\brequire\("\.\/client[^"/]*\.js"\)/u)
       expect([...pdf.matchAll(/require\("(\.\/client[^"/]*\.js)"\)/gu)].map(match => match[1]))
         .toEqual([])
@@ -68,6 +68,11 @@ describe('published document preview licenses', () => {
       const excel = run('tar', ['-xOf', resolve(packageRoot, packed.filename), 'package/lib/client.excel.js'], packageRoot, task.timeout)
       expect(excel).not.toMatch(/\brequire\("\.\/client[^"/]*\.js"\)/u)
       expect(client).not.toContain('FortuneSheet')
+      const editor = run('tar', ['-xOf', resolve(packageRoot, packed.filename), 'package/lib/client.code-editor.js'], packageRoot, task.timeout)
+      expect(editor).not.toMatch(/\brequire\("\.\/client[^"/]*\.js"\)/u)
+      expect(editor).toContain('//! Bundled CodeMirror license notices')
+      expect(editor).toContain('// Copyright (C) 2018-2021 by Marijn Haverbeke')
+      expect(client).not.toContain('//! Bundled CodeMirror license notices')
       expect(excel).toContain('//! Bundled spreadsheet license notices')
       expect(excel).toContain('Copyright (c) 2022 Suzhou Ruilisi Technology Co., Ltd')
       expect(excel).toContain('Permission is hereby granted, free of charge')

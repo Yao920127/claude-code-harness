@@ -34,7 +34,7 @@ Global panels occupy the root-scoped `main` keyed slot; `conversation` is the re
 <a id="bottom-seat"></a>
 ### Bottom seat
 
-The root-scoped `shell.bottom` seat is a second grid row below the centre and right columns. It spans both, from the left sidebar's edge to the frame's right edge, and sizes to its occupant: an empty occupant leaves both columns full height, and a rendered occupant shortens both by its own height. The sidebar column spans both rows. The seat stacks above the column resize handles. ui-terminal-panel occupies it with the terminal panel.
+The root-scoped `shell.bottom` seat is a second grid row below the centre and right columns. It spans both, from the left sidebar's edge to the frame's right edge, and sizes to its occupant: an empty occupant leaves both columns full height, and a rendered occupant shortens both by its own height. The sidebar column spans both rows. The seat stacks above the column resize handles. While the right panel is fullscreen, the sidebar column keeps to the first row and the seat spans the full frame width, stacked above the fullscreen panel and below floating panels. ui-terminal-panel occupies it with the terminal panel.
 
 ### Window-chrome seat
 

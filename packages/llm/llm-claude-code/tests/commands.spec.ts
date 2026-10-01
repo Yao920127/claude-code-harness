@@ -7,6 +7,10 @@ const commands: SlashCommand[] = [
   { name: 'hello', description: 'Say hello', argumentHint: '<name>' },
   { name: 'review', description: '', argumentHint: '' },
   { name: 'plugin:tool', description: 'Plugin command', argumentHint: '' },
+  { name: 'plugin:hello', description: 'Shadowed by the bare hello', argumentHint: '' },
+  { name: 'a:shared', description: 'One of two shared names', argumentHint: '' },
+  { name: 'b:shared', description: 'The other shared name', argumentHint: '' },
+  { name: 'bare:', description: '', argumentHint: '' },
   { name: 'Bad_Name', description: 'Not a skill name', argumentHint: '' },
 ]
 
@@ -21,7 +25,7 @@ function provider(read = vi.fn(async (_cwd: string) => commands)) {
 afterEach(() => { vi.useRealTimers() })
 
 describe('ClaudeCodeCommandProvider', () => {
-  it('lists the workspace\'s skill-named commands as user-only skills Claude Code expands itself', async () => {
+  it('lists skill-named commands, plugin commands by their unqualified name, as user-only skills Claude Code expands itself', async () => {
     const h = provider()
     await expect(h.provider.list({})).resolves.toEqual([])
     expect(h.read).not.toHaveBeenCalled()
@@ -33,6 +37,7 @@ describe('ClaudeCodeCommandProvider', () => {
         source: 'claude-code', provider: 'claude-code', rank: CLAUDE_CODE_COMMAND_RANK, locator: 'hello',
       },
       expect.objectContaining({ name: 'review', description: '/review' }),
+      expect.objectContaining({ name: 'tool', description: 'Plugin command (plugin plugin)', locator: 'tool' }),
     ])
     await expect(h.provider.get()).resolves.toBeUndefined()
     h.lifetime.abort()

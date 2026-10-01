@@ -1,6 +1,6 @@
 /**
- * Workspace file service: read-only file previews, workspace directory
- * listings, and the filesystem-observation change feed, exposed as
+ * Workspace file service: file previews, guarded text saves, workspace
+ * directory listings, and the filesystem-observation change feed, exposed as
  * `workspaceFiles`.
  *
  * File reads follow the composed filesystem's read access, including paths
@@ -8,7 +8,9 @@
  * relative paths, with the sandbox policy root as its no-cwd fallback, not a
  * read-containment restriction. Directory listings and change observations
  * remain workspace-scoped. File-kind checks and configured read caps apply to
- * every preview; this service exposes no mutations.
+ * every preview. The one mutation, `write`, replaces the text of an existing
+ * regular file inside the workspace and only while the file still has the
+ * version the caller read.
  *
  * A page is cut from `streamText`, which decodes and rejects non-UTF-8 as it
  * goes, so the file is read only up to the first character past the page and
@@ -40,6 +42,7 @@ import type {
   WorkspaceFileStat,
   WorkspaceFileText,
   WorkspaceFileWatchFrame,
+  WorkspaceFileWriteRequest,
 } from './types.ts'
 
 export type * from './types.ts'
@@ -290,6 +293,49 @@ export class WorkspaceFiles extends TypertRemoteService {
   async stat(workspaceFileScope: WorkspaceFileScope, path: string, signal: AbortSignal): Promise<WorkspaceFileStat> {
     const { target, info } = await this.locateFile(workspaceFileScope, path, signal)
     return this.statOf(target, info)
+  }
+
+  /**
+   * Replace the complete text of an existing regular file inside the Session's
+   * workspace, only while the file still has the version the caller read; the
+   * write is atomic and fenced by the workspace like an agent's workspace write.
+   * @param workspaceFileScope - header-derived workspace root for the Session identity on the wire.
+   * @param path - absolute path or path relative to the workspace root; the file must lie inside the workspace.
+   * @param request - the complete new text and the version it was edited from.
+   * @param signal - caller cancellation.
+   * @returns the file's absolute path, its version after the write, and its new byte size.
+   */
+  @Remote
+  async write(
+    workspaceFileScope: WorkspaceFileScope,
+    path: string,
+    request: WorkspaceFileWriteRequest,
+    signal: AbortSignal,
+  ): Promise<WorkspaceFileStat> {
+    const bytes = Buffer.byteLength(request.text, 'utf8')
+    const limit = this.config.maxFileBytes
+    if (bytes > limit) {
+      throw new RemoteError('workspace-file/too-large', `${bytes} bytes for "${path}" exceed the ${limit} byte full-file cap`, { path, limit })
+    }
+    if (request.text.includes(NUL)) {
+      throw new RemoteError('workspace-file/not-text', `the text for "${path}" contains NUL bytes`, { path })
+    }
+    const { target, info } = await this.locateFile(workspaceFileScope, path, signal)
+    const root = await this.ctx.fs.resolve(workspaceFileScope.workspaceRoot, { signal })
+    if (!this.ctx.fs.contains(root, target)) {
+      throw new RemoteError('workspace-file/outside-workspace', `"${path}" is outside the workspace`, { path })
+    }
+    const changed = (cause?: unknown): RemoteError => new RemoteError(
+      'workspace-file/changed', `"${path}" changed after it was read`, { path }, cause === undefined ? undefined : { cause },
+    )
+    if (info.version !== request.version) throw changed()
+    const outcome = await this.ctx.fs.writeText(target, request.text, { kind: 'replaceIfVersion', version: info.version }, signal, {
+      mode: 'workspace-write', workspaceRoot: workspaceFileScope.workspaceRoot, sessionId: workspaceFileScope.sessionId,
+    }).catch((cause: unknown) => {
+      if (typeof cause === 'object' && cause !== null && 'code' in cause && cause.code === 'FS_STALE_VERSION') throw changed(cause)
+      throw cause
+    })
+    return { absolutePath: this.ctx.fs.processPath(target), version: outcome.version, bytes }
   }
 
   /**

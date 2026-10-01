@@ -38,6 +38,7 @@ import { apply as registerPdf } from './pdf/index.ts'
 import { apply as registerCode } from './code/index.ts'
 import { apply as registerOffice } from './office/index.ts'
 import { apply as registerExcel } from './excel/index.ts'
+import { apply as registerEditor } from './editor/index.ts'
 import { Config } from '../config.ts'
 
 // Values stay package-private unless another package needs them; the plugin
@@ -127,4 +128,6 @@ export function apply(ctx: ClientContext): void {
   registerOffice(ctx, config.office)
   registerExcel(ctx, config.excel)
   registerCode(ctx)
+  // Last: the editor is a text alternative, offered after every viewer.
+  registerEditor(ctx)
 }

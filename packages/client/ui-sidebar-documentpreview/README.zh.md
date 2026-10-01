@@ -17,6 +17,7 @@ kind: "package-reference"
 - [地址](#addresses)
 - [怎么读](#how-it-reads)
 - [Excel 预览](#excel-preview)
+- [文本编辑](#text-editing)
 - [Office 预览](#office-preview)
 - [导航](#navigation)
 - [模型体验](#model-experience)
@@ -88,6 +89,11 @@ CSV 和 TSV 默认使用表格查看器，也可选择纯文本；CSV 还提供�
 
 固定版本的 [ExcelJS 补丁](../../../patches/exceljs@4.4.0.patch)通过包内关系解析工作簿、样式、共享字符串、工作表、批注、Table 和 VML，支持绝对及相对目标，以及 ASCII 大小写等价的部件名，并按命名空间 URI 识别 SpreadsheetML 和 VML 名称。Strict OOXML 的 SpreadsheetML 和关系 URI 映射到相同的已支持预览功能；这不代表完整支持 Strict 标准。XML 部件支持 UTF-8 及两种字节序的 UTF-16；CDATA 按字面文本读取。绘图和条件格式提示按关系查找内容，不依赖部件目录。未被引用的 `xl/drawings/*.xml` 部件及其关系文件也会被移除，但不会产生提示；批注 VML 保持不变。缺失引用部件或存在大小写等价的歧义 ZIP 条目会使预览失败。解析保留批注和 Table 元数据，但预览器没有专门展示它们的控件。补丁同时覆盖 Node 源码和 `dist/exceljs.js`，浏览器入口选择已修补的 bundle。升级依赖时必须保留两个入口的行为，并通过[独立写入器回归测试和 fuzz 诊断](tests/fuzz/README.zh.md)。
 
+<a id="text-editing"></a>
+## 文本编辑
+
+纯文本查看器能显示的每个文件，都会在查看器菜单中提供**编辑**；该选项从不自动选中，因此文件总是先以预览打开。编辑器是 CodeMirror，在某个 tab 第一次选择它时加载，并按文件名为常见语言提供语法高亮。它通过 `workspaceFiles.readBytes` 加载完整文件，在 tab 保持打开期间保留其未保存文本，并通过**保存**或 Mod-S 调用 `workspaceFiles.write` 保存，同时传入加载文本时的版本。文件在加载后被修改时，保存会被拒绝，提示提供**重新加载文件**或**仍然保存**；编辑器持有未保存文本时磁盘上的变更会显示相同的选项，文本已保存时的变更则直接重新加载。标记为 `textAlternative` 的注册会在提供纯文本的地方加入查看器菜单，排在所有其他选项之后。
+
 <a id="office-preview"></a>
 ## Office 预览
 
@@ -135,7 +141,7 @@ Office Remote 通过 Connection 的 multipart 二进制传输返回原生 `Uint8
 ## 已知限制与延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
-- **预览而非编辑。** 查看器不提供文件编辑或共享搜索接口；目录地址以 `not-regular-file` 失败。未知扩展名使用纯文本读取，仍受其 UTF-8/NUL 检查限制。
+- **只能编辑纯文本。** **编辑**选项通过 `workspaceFiles.write` 保存工作区内的 UTF-8 文本文件；Office、PDF、表格和图片文件仍只能预览，查看器不共享搜索接口，目录地址以 `not-regular-file` 失败。未知扩展名使用纯文本读取，仍受其 UTF-8/NUL 检查限制。关闭带有未保存修改的 tab 会直接丢弃这些修改，不会询问。
 - **Office 转换限制。** 预览不启动原生 Office 编辑器，也不下载引擎。二进制 `.doc` 和 `.ppt` 文件不返回缺失字体诊断。转换保真度与资源限制由 [LibreOffice 提供方](../../document/office-to-pdf/README.zh.md)负责。
 - **文本顺序分页，完整文件受限。** 定位到较深处的源码行需要先加载此前各页；PDF、HTML 和图片必须取得 Host `maxFileBytes` 上限内的完整结果。
 - **PDF 栅格分配有上限。** 每页位图最多为 16,777,216 像素；超大页面或高像素密度屏幕上的高比例缩放仍可能低于设备分辨率。

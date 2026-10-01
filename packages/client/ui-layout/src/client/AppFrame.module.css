@@ -276,6 +276,18 @@
   background: var(--dsw-alias-bg-base);
 }
 
+/* A fullscreen right panel covers the whole first row, so the bottom seat
+   spans the full window width beneath it and stacks above the fullscreen
+   panel (40), keeping its occupant reachable; floating panels (60) stay above. */
+.frame[data-rightbar-fullscreen] .sidebarCol {
+  grid-row: 1;
+}
+
+.frame[data-rightbar-fullscreen] .bottomSeat {
+  grid-column: 1 / -1;
+  z-index: 41;
+}
+
 .overlayLayer {
   position: absolute;
   inset: 0;

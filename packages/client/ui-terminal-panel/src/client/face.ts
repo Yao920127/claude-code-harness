@@ -44,6 +44,8 @@ export interface TerminalPanelInjected extends Omit<TerminalInjected, 'keyedHook
   readonly close: (sessionId: SessionId, key: string) => void
   /** @param sessionId - owning Session. @param key - tab replaced by a new terminal at the same position. */
   readonly replace: (sessionId: SessionId, key: string) => void
+  /** @param sessionId - owning Session whose hidden panel shows, opening a first terminal when it has none. */
+  readonly show: (sessionId: SessionId) => void
   /** @param sessionId - owning Session whose panel hides; its terminals keep running. */
   readonly hide: (sessionId: SessionId) => void
   /** @param sessionId - owning Session. @param height - requested panel height in CSS pixels. */

@@ -3,7 +3,11 @@
  * harness UI lists every command a Claude Code turn in the Session's
  * workspace accepts — built-in commands, the user's and project's skills and
  * custom commands, and plugin commands — so a picked or typed `/name` reaches
- * Claude Code as literal prompt text, which Claude Code expands itself.
+ * Claude Code as literal prompt text, which Claude Code expands itself. A
+ * plugin command `plugin:name` is listed by its unqualified `name`, which
+ * Claude Code also accepts, because the skill-name grammar has no `:`; the
+ * unqualified name is left out when a command already has that name or
+ * another plugin command shares it, so `/name` never reaches the wrong one.
  *
  * @module @deepseek-ai/dsh-llm-claude-code/commands
  */
@@ -61,14 +65,14 @@ export class ClaudeCodeCommandProvider implements SkillProvider {
     }
     options.signal?.throwIfAborted()
     this.scheduleRefresh()
-    return commands.filter(command => isSkillName(command.name)).map(command => ({
-      name: command.name,
-      description: commandDescription(command),
+    return menuCommands(commands).map(({ name, plugin, command }) => ({
+      name,
+      description: commandDescription(command, plugin),
       invocation: { modelInvocable: false, userInvocable: true },
       source: CLAUDE_CODE_COMMAND_PROVIDER,
       provider: CLAUDE_CODE_COMMAND_PROVIDER,
       rank: CLAUDE_CODE_COMMAND_RANK,
-      locator: command.name,
+      locator: name,
     }))
   }
 
@@ -89,12 +93,42 @@ export class ClaudeCodeCommandProvider implements SkillProvider {
   }
 }
 
+/** One command as the `/` menu lists it. */
+interface MenuCommand {
+  /** Name typed after `/`: the command's own name, or a plugin command's unqualified name. */
+  readonly name: string
+  /** Plugin that contributes the command, for a `plugin:name` command. */
+  readonly plugin?: string
+  readonly command: SlashCommand
+}
+
+/**
+ * Select the commands the `/` menu can list, naming plugin commands by their unqualified name.
+ * @param commands - every command Claude Code reported, in its order.
+ * @returns commands whose menu name fits the skill grammar; a plugin command only when its unqualified name is unique.
+ */
+function menuCommands(commands: readonly SlashCommand[]): MenuCommand[] {
+  const entries = commands.map((command): MenuCommand => {
+    const separator = command.name.lastIndexOf(':')
+    return separator < 0
+      ? { name: command.name, command }
+      : { name: command.name.slice(separator + 1), plugin: command.name.slice(0, separator), command }
+  })
+  const owners = new Map<string, number>()
+  for (const entry of entries) owners.set(entry.name, (owners.get(entry.name) ?? 0) + 1)
+  const unqualified = new Set(entries.filter(entry => entry.plugin === undefined).map(entry => entry.name))
+  return entries.filter(entry => isSkillName(entry.name)
+    && (entry.plugin === undefined || (!unqualified.has(entry.name) && owners.get(entry.name) === 1)))
+}
+
 /**
  * Describe one command for the `/` menu.
  * @param command - Claude Code's command entry.
- * @returns its description followed by its argument hint, or the literal command when it has neither.
+ * @param plugin - contributing plugin of a `plugin:name` command.
+ * @returns its description, argument hint, and plugin, or the literal command when it has none of them.
  */
-function commandDescription(command: SlashCommand): string {
+function commandDescription(command: SlashCommand, plugin: string | undefined): string {
   const parts = [command.description.trim(), command.argumentHint.trim()].filter(part => part.length > 0)
+  if (plugin !== undefined) parts.push(`(${plugin} plugin)`)
   return parts.length === 0 ? `/${command.name}` : parts.join(' ')
 }

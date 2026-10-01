@@ -1,0 +1,48 @@
+/* The editor fills the document body: a save bar, optional notices, then the
+   CodeMirror view, which scrolls on its own. Tokens only. */
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.bar {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 6px 12px;
+  border-bottom: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.status {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+}
+
+.notice {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 12px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 12px;
+  background: var(--dsw-alias-bg-layer-2);
+  border-bottom: 0.5px solid var(--dsw-alias-border-l3);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.editor {
+  height: 100%;
+}

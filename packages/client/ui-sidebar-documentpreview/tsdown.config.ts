@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { Rolldown, type UserConfig } from 'tsdown'
@@ -6,7 +6,8 @@ import { clientBundle } from '../tsdown.client.ts'
 
 const bundle = clientBundle('@deepseek-ai/dsh-client-ui-sidebar-documentpreview', ['lib/types/index.js'], {
   clientBanner: fileName => fileName.endsWith('client.pdf.js') ? pdfLicenseBanner()
-    : fileName.endsWith('client.excel.js') ? excelLicenseBanner() : undefined,
+    : fileName.endsWith('client.excel.js') ? excelLicenseBanner()
+      : fileName.endsWith('client.code-editor.js') ? codeEditorLicenseBanner() : undefined,
 })
 const require = createRequire(import.meta.url)
 const workerSpecifier = 'pdfjs-dist/build/pdf.worker.min.mjs?raw'
@@ -23,6 +24,43 @@ function excelLicenseBanner(): string {
   const xls = readdirSync(xlsRoot).filter(name => /^(LICENSE|NOTICE)(\.|$)/u.test(name)).sort()
     .map(name => readFileSync(join(xlsRoot, name), 'utf8')).join('\n')
   return ['//! Bundled spreadsheet license notices', ...`${fortune}\n${excel}\n${xml}\n${csv}\n${zip}\n${xls}`.trimEnd().split('\n').map(line => `// ${line}`)].join('\n')
+}
+
+/**
+ * Locate an installed package's directory as seen from a requiring directory.
+ * @param name - package name.
+ * @param from - directory whose dependencies include the package.
+ * @returns the package's real directory.
+ */
+function packageDirectory(name: string, from: string): string {
+  for (let directory = from; ; directory = dirname(directory)) {
+    const candidate = join(directory, 'node_modules', name)
+    if (existsSync(join(candidate, 'package.json'))) return realpathSync(candidate)
+    if (dirname(directory) === directory) throw new Error(`editor license banner: cannot locate ${name} from ${from}`)
+  }
+}
+
+/** License texts of the CodeMirror packages and every dependency they reach, each text once with the packages it covers. */
+function codeEditorLicenseBanner(): string {
+  const manifest = JSON.parse(readFileSync(join(import.meta.dirname, 'package.json'), 'utf8')) as { devDependencies: Record<string, string> }
+  const texts = new Map<string, string[]>()
+  const visited = new Set<string>()
+  const visit = (name: string, from: string): void => {
+    const directory = packageDirectory(name, from)
+    if (visited.has(directory)) return
+    visited.add(directory)
+    const meta = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8')) as { name: string; dependencies?: Record<string, string> }
+    const file = readdirSync(directory).find(entry => /^licen[cs]e/iu.test(entry))
+    if (file === undefined) throw new Error(`editor license banner: ${meta.name} ships no license file`)
+    const text = readFileSync(join(directory, file), 'utf8').trimEnd()
+    texts.set(text, [...texts.get(text) ?? [], meta.name])
+    for (const dependency of Object.keys(meta.dependencies ?? {})) visit(dependency, directory)
+  }
+  for (const name of Object.keys(manifest.devDependencies).filter(name => name === 'codemirror' || name.startsWith('@codemirror/')).sort()) {
+    visit(name, import.meta.dirname)
+  }
+  const notices = [...texts].map(([text, names]) => `${[...new Set(names)].sort().join(', ')}\n\n${text}`).join('\n\n')
+  return ['//! Bundled CodeMirror license notices', ...notices.split('\n').map(line => `// ${line}`)].join('\n')
 }
 
 /** License files for PDF.js and the data embedded beside its runtime. */

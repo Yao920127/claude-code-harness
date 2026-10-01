@@ -15,8 +15,10 @@ import type { TerminalPanelInjected } from './face.ts'
 import { LazyTerminalBody } from './LazyTerminalBody.tsx'
 import type {} from './locales.ts'
 import { EMPTY_PANEL, terminalKey } from './panel-state.ts'
+import { TerminalIcon } from './TerminalIcon.tsx'
 import { TerminalTitle } from './TerminalTitle.tsx'
 import css from './TerminalPanel.module.css'
+import launcherCss from './TerminalLauncher.module.css'
 
 /** Frame seat share, panel state and commands, and localized copy. */
 export type TerminalPanelProps =
@@ -47,7 +49,19 @@ function SessionPanel(props: SessionPanelProps): ReactNode {
   const { sessionId, attach, usePanel, t } = props
   useEffect(() => attach(sessionId), [attach, sessionId])
   const panel = usePanel(sessionId, value => value ?? EMPTY_PANEL)
-  if (!panel.open || panel.active === undefined) return null
+  // The conversation's own corner button is covered while the right Sidebar is
+  // fullscreen; this one shows only then (stylesheet), at the window's corner.
+  if (!panel.open) {
+    return (
+      <Button
+        variant="ghost" size="sm" className={clsx(launcherCss.launcher, css.fullscreenLauncher)}
+        aria-label={t('open')} title={t('open')} data-terminal-fullscreen-launcher="" onClick={() => { props.show(sessionId) }}
+      >
+        <TerminalIcon />
+      </Button>
+    )
+  }
+  if (panel.active === undefined) return null
   const id = (key: string, part: 'tab' | 'body'): string => `terminal-panel-${sessionId}-${key}-${part}`
   return (
     <section className={css.root} style={{ height: panel.height }} aria-label={t('title')} data-terminal-panel="">

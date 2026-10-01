@@ -167,6 +167,9 @@ it('resolves terminal models from the panel tabs and ends a closed or replaced t
     expect(state().open).toBe(false)
     h.launcher().show()
     expect(h.launcher().hooks.panel.getSnapshot()).toMatchObject({ open: true, active: 't3' })
+    face.hide(SESSION)
+    face.show(SESSION)
+    expect(state()).toMatchObject({ open: true, active: 't3' })
   } finally { await h.dispose() }
 })
 

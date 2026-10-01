@@ -62,7 +62,7 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 
 ### 你的 Claude Code 命令与 skill
 
-Claude Code 回合会加载你的用户、项目与本地 Claude 设置，因此你为 Claude Code 安装的 skill、自定义命令与插件命令在这里同样可用。组合挂载 `ctx.skills` 时，该路由会把 Session 工作区中 Claude Code 回合接受的每个命令列为用户可调用的 skill，于是 `/` 菜单会提供它。选择或输入 `/hello` 会把字面文本发送给 Claude Code，由 Claude Code 自行执行该命令；harness 不注入 skill 正文。名称不符合小写 kebab-case skill 语法的命令（例如带 `:` 的插件命令）不会出现在菜单中。同名的 harness 命令或 skill 优先。列出失败（例如安装未登录）时，这些命令在下次查询前不会出现；每次列出后经过 `commandRefreshMs` 会再次读取列表。
+Claude Code 回合会加载你的用户、项目与本地 Claude 设置，因此你为 Claude Code 安装的 skill、自定义命令与插件命令在这里同样可用。组合挂载 `ctx.skills` 时，该路由会把 Session 工作区中 Claude Code 回合接受的每个命令列为用户可调用的 skill，于是 `/` 菜单会提供它。选择或输入 `/hello` 会把字面文本发送给 Claude Code，由 Claude Code 自行执行该命令；harness 不注入 skill 正文。插件命令 `plugin:name` 以 `/name` 出现（Claude Code 同样接受这种写法），描述中注明所属插件；若已有其他命令使用该名称，或另一个插件命令与其同名，它就不出现在菜单中，但仍可完整输入。其他不符合小写 kebab-case skill 语法的名称不会出现在菜单中。同名的 harness 命令或 skill 优先。列出失败（例如安装未登录）时，这些命令在下次查询前不会出现；每次列出后经过 `commandRefreshMs` 会再次读取列表。
 
 <a id="plan-usage"></a>
 ### 方案用量

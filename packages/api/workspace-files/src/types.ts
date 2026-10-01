@@ -45,6 +45,14 @@ export interface WorkspaceFileRange {
   readonly limit?: number
 }
 
+/** A complete replacement of one workspace text file, guarded by the version the editor started from. */
+export interface WorkspaceFileWriteRequest {
+  /** The file's complete new UTF-8 text. */
+  readonly text: string
+  /** The version the caller read the file at; the write is refused once the file has changed since. */
+  readonly version: string
+}
+
 /** One page of a workspace text file as a Client reads it. */
 export interface WorkspaceFileText extends WorkspaceFileStat {
   /** First line of the page, as requested. */
@@ -167,6 +175,8 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
       readonly path: string
       readonly kind: 'directory' | 'symlink' | 'other'
     }
+    /** The file changed after the caller read it, so a write would discard that change; nothing was written. */
+    'workspace-file/changed': { readonly path: string }
     /** The path is not a directory, so it has no children to list. */
     'workspace-file/not-directory': {
       readonly path: string

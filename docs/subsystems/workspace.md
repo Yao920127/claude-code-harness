@@ -453,6 +453,18 @@ Host Remote file reads and workspace directory observations over the composed fi
 @Remote async stat(workspaceFileScope: WorkspaceFileScope, path: string, signal: AbortSignal): Promise<WorkspaceFileStat>
 
 /**
+ * Replace the complete text of an existing regular file inside the Session's
+ * workspace, only while the file still has the version the caller read; the
+ * write is atomic and fenced by the workspace like an agent's workspace write.
+ * @param workspaceFileScope - header-derived workspace root for the Session identity on the wire.
+ * @param path - absolute path or path relative to the workspace root; the file must lie inside the workspace.
+ * @param request - the complete new text and the version it was edited from.
+ * @param signal - caller cancellation.
+ * @returns the file's absolute path, its version after the write, and its new byte size.
+ */
+@Remote async write( workspaceFileScope: WorkspaceFileScope, path: string, request: WorkspaceFileWriteRequest, signal: AbortSignal, ): Promise<WorkspaceFileStat>
+
+/**
  * List the direct children of one directory inside the Session's workspace.
  * @param workspaceFileScope - header-derived workspace root for the Session identity on the wire.
  * @param path - workspace path, absolute or relative to the workspace root.

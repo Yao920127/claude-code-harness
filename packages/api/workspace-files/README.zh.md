@@ -32,6 +32,7 @@ kind: "package-reference"
 | `stat(path)` | `WorkspaceFileStat { absolutePath, version, bytes? }` | 一个普通文件的身份、版本与大小，不含内容 |
 | `read(path, { offset?, limit? })` | `WorkspaceFileText` = stat + `{ offset, text, lines, eof }` | UTF-8 文本文件的一个行窗口；`lines` 计行数，使单个空行与越过文件末尾的页可区分 |
 | `readBytes(path, { range?, baseFile? })` | `WorkspaceFileBytes` = stat + `{ offset, data, eof }` | 以 `Uint8Array` 返回完整文件或有界字节范围；可从另一个文件所在目录解析目标 |
+| `write(path, { text, version })` | 写入后的 `WorkspaceFileStat` | 仅当工作区内已有的普通文件仍处于 `version` 时，替换其完整 UTF-8 文本；否则返回 `workspace-file/changed` |
 | `list(path)` | `WorkspaceDirectoryListing { path, entries, truncated }` | 一个目录的直接子项 |
 | `changes(path)` | `WorkspaceFileWatchFrame` 流 | 订阅就绪确认，随后为单个文件或目录直接子项的失效通知 |
 
@@ -62,7 +63,7 @@ kind: "package-reference"
 | 字段 | 默认值 | 含义 |
 |---|---|---|
 | `maxBytes` | `2097152`（2 MiB） | 单页文本与单个字节窗口的字节上限（含）；更大的页或窗口失败 |
-| `maxFileBytes` | `33554432`（32 MiB） | `readBytes` 未传 `range` 时的完整文件字节上限（含）；更大文件以 `too-large` 失败 |
+| `maxFileBytes` | `33554432`（32 MiB） | `readBytes` 未传 `range` 时的完整文件字节上限（含），也是 `write` 存储文本的上限；更大文件以 `too-large` 失败 |
 | `maxLines` | `5000` | 页大小的缺省值与上限（行）；更大的 `limit` 被拒绝 |
 | `maxEntries` | `2000` | 返回目录条目数上限；其余丢弃并报告截断 |
 

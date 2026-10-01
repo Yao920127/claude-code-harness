@@ -25,6 +25,12 @@ export interface DocumentPreviewDefinition {
   readonly loading: DocumentLoadMode
   /** Whether the implementation consumes the document's wrap preference. */
   readonly wrap?: boolean
+  /**
+   * Offer the implementation wherever the plain-text viewer is offered, after
+   * every other choice, and never select it automatically. Such an
+   * implementation declares no `extensions`; `register` rejects any.
+   */
+  readonly textAlternative?: boolean
 }
 
 /**
@@ -88,12 +94,15 @@ export class DocumentPreviewRegistry {
    * Register metadata separately from the matching keyed slot component.
    * @param definition - unique implementation and recognized suffixes; every
    * `binaryExtensions` entry must appear in `extensions`.
-   * @returns an idempotent disposer; duplicate live implementation names and
-   * binary suffixes outside `extensions` throw.
+   * @returns an idempotent disposer; duplicate live implementation names,
+   * binary suffixes outside `extensions`, and a text alternative with extensions throw.
    */
   register(definition: DocumentPreviewDefinition): () => void {
     if (this.registered.has(definition.id)) {
       throw new Error(`documentPreviews: duplicate implementation "${definition.id}"`)
+    }
+    if (definition.textAlternative === true && definition.extensions.length > 0) {
+      throw new Error(`documentPreviews: text alternative "${definition.id}" must not declare extensions`)
     }
     const declared = new Set(definition.extensions.map(normalizeSuffix))
     for (const extension of definition.binaryExtensions ?? []) {

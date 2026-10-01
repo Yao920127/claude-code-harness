@@ -17,6 +17,7 @@ Preview files in the right Sidebar and choose among registered renderers. Markdo
 - [Addresses](#addresses)
 - [How it reads](#how-it-reads)
 - [Excel preview](#excel-preview)
+- [Text editing](#text-editing)
 - [Office preview](#office-preview)
 - [Navigation](#navigation)
 - [Model Experience](#model-experience)
@@ -88,6 +89,11 @@ The read-only formula bar displays formulas and cell text literally on one line,
 
 The pinned [ExcelJS patch](../../../patches/exceljs@4.4.0.patch) resolves the workbook, styles, shared strings, worksheets, comments, Tables, and VML through package relationships, including absolute and relative targets and ASCII case-equivalent part names, and recognizes SpreadsheetML and VML names by namespace URI. Strict OOXML SpreadsheetML and relationship URIs map to the same supported preview features; this is not full Strict conformance. XML parts accept UTF-8 and either byte order of UTF-16; CDATA contributes literal text. Drawing and conditional-format notices follow relationships regardless of part directories. Unreferenced `xl/drawings/*.xml` parts and their relationship files are also omitted, without adding notices; comment VML remains. Missing referenced parts and ambiguous case-equivalent ZIP entries fail the preview. Comments and Table metadata survive parsing but have no dedicated preview controls. The patch covers the Node sources and `dist/exceljs.js`; its browser entry selects that patched bundle. Dependency upgrades must preserve both entry paths and pass the [independent-writer regressions and fuzz diagnostics](tests/fuzz/README.md).
 
+<a id="text-editing"></a>
+## Text editing
+
+Every file the plain-text viewer can show also offers **Edit** in the viewer menu; the choice is never selected automatically, so a file opens in its preview first. The editor is CodeMirror, loaded the first time a tab chooses it, with syntax highlighting for common languages chosen by file name. It loads the complete file through `workspaceFiles.readBytes`, keeps the tab's unsaved text while the tab stays open, and saves with **Save** or Mod-S through `workspaceFiles.write`, passing the version the text was loaded at. When the file changed after it was loaded, the save is refused and a notice offers **Reload file** or **Save anyway**; a change on disk while the editor holds unsaved text shows the same choices, and a change while the text is saved reloads it. A registration marked `textAlternative` joins the viewer menu wherever plain text is offered, after every other choice.
+
 <a id="office-preview"></a>
 ## Office preview
 
@@ -135,7 +141,7 @@ No direct effect; what the user reads here never enters a model request.
 ## Known Limitations and Deferred Work
 
 <a id="known-limitations-and-deferred-work"></a>
-- **Preview, not editing.** The viewers provide no file editing or shared search interface; a directory address fails with `not-regular-file`. Unknown extensions use the plain-text reader and remain subject to its UTF-8/NUL checks.
+- **Editing is plain text only.** The **Edit** choice saves UTF-8 text files inside the workspace through `workspaceFiles.write`; Office, PDF, spreadsheet, and image files stay preview-only, the viewers share no search interface, and a directory address fails with `not-regular-file`. Unknown extensions use the plain-text reader and remain subject to its UTF-8/NUL checks. Closing a tab with unsaved changes discards them without asking.
 - **Office conversion limits.** The preview does not launch native Office editors or download an engine. Binary `.doc` and `.ppt` files return no missing-font diagnostics. Conversion fidelity and resource limits belong to the [LibreOffice provider](../../document/office-to-pdf/README.md).
 - **Sequential text and bounded complete files.** Deep source lines require the preceding pages; PDF, HTML, and images require a complete result within the Host's `maxFileBytes` cap.
 - **PDF raster allocation is bounded.** Each page bitmap is capped at 16,777,216 pixels; very large pages or high zoom on high-density displays can still render below device resolution.

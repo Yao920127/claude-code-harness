@@ -134,3 +134,14 @@
 .body[hidden] {
   display: none;
 }
+
+/* The window-corner button that shows a hidden panel while a fullscreen right
+   Sidebar covers the conversation's own button. The bottom seat has no height
+   while the panel is hidden, so the button sits above the window's bottom edge. */
+.fullscreenLauncher {
+  display: none;
+}
+
+:global([data-rightbar-fullscreen]) .fullscreenLauncher {
+  display: inline-flex;
+}

@@ -38,7 +38,8 @@ function mount(initial: TerminalPanelState | null = shown, shells?: Promise<Term
   const states: Record<string, TerminalViewState | undefined> = { 'session/t1': { phase: 'connected', writable: true, title: 'zsh' } }
   const detach = vi.fn()
   const actions = {
-    attach: vi.fn(() => detach), add: vi.fn(), select: vi.fn(), close: vi.fn(), replace: vi.fn(), hide: vi.fn(), resize: vi.fn(),
+    attach: vi.fn(() => detach), add: vi.fn(), select: vi.fn(), close: vi.fn(), replace: vi.fn(),
+    show: vi.fn(), hide: vi.fn(), resize: vi.fn(),
     loadShells: vi.fn((_sessionId: SessionId, _signal: AbortSignal) => shells ?? Promise.resolve({ shells: [{ path: '/bin/zsh', name: 'zsh', args: [] }], selectedShell: '/bin/zsh' })),
     selectShell: vi.fn(),
   }
@@ -61,12 +62,18 @@ function mount(initial: TerminalPanelState | null = shown, shells?: Promise<Term
 }
 
 describe('TerminalPanel', () => {
-  it('attaches while mounted and renders nothing while hidden', () => {
+  it('attaches while mounted and offers only the fullscreen corner button while hidden', () => {
     // A Session without a stored panel reads as the empty panel.
     const h = mount(null)
     expect(h.attach).toHaveBeenCalledExactlyOnceWith(SESSION)
-    expect(h.view.container.childElementCount).toBe(0)
+    expect(screen.queryByRole('region', { name: en.title })).toBeNull()
+    const launcher = screen.getByRole('button', { name: en.open })
+    expect(launcher.hasAttribute('data-terminal-fullscreen-launcher')).toBe(true)
+    fireEvent.click(launcher)
+    expect(h.show).toHaveBeenCalledExactlyOnceWith(SESSION)
     act(() => { h.store.set({ ...shown, open: false }) })
+    expect(screen.queryByRole('region', { name: en.title })).toBeNull()
+    act(() => { h.store.set({ ...shown, active: undefined }) })
     expect(h.view.container.childElementCount).toBe(0)
     act(() => { h.store.set(shown) })
     expect(screen.getByRole('region', { name: en.title }).style.height).toBe('300px')

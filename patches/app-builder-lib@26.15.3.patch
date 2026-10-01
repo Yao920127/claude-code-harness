@@ -1,0 +1,17 @@
+diff --git a/out/node-module-collector/pnpmNodeModulesCollector.js b/out/node-module-collector/pnpmNodeModulesCollector.js
+index 8853912e013d3769f3e763d06720a94091a7ffaa..2f4c18719bd04db3aec86e4b0c70fdbb6154b817 100644
+--- a/out/node-module-collector/pnpmNodeModulesCollector.js
++++ b/out/node-module-collector/pnpmNodeModulesCollector.js
+@@ -148,7 +148,11 @@ class PnpmNodeModulesCollector extends nodeModulesCollector_1.NodeModulesCollect
+     async collectDepsRecursively(tree) {
+         const visit = async (key, value) => {
+             var _a, _b;
+-            if (((_a = value === null || value === void 0 ? void 0 : value.dedupedDependenciesCount) !== null && _a !== void 0 ? _a : 0) > 0) {
++            // pnpm 11 prints a repeated `name@version` once in full and marks later
++            // occurrences `deduped` without children. Recording a deduped occurrence
++            // here would mark the id collected and skip the full one, dropping its
++            // dependencies (debug under builder-util-runtime) from the packaged app.
++            if (((_a = value === null || value === void 0 ? void 0 : value.dedupedDependenciesCount) !== null && _a !== void 0 ? _a : 0) > 0 || (value === null || value === void 0 ? void 0 : value.deduped) === true) {
+                 return;
+             }
+             const id = `${key}@${value.version}`;

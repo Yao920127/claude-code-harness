@@ -9689,9 +9689,6 @@ importers:
       '@deepseek-ai/dsh-session':
         specifier: workspace:*
         version: link:../../core/session
-      '@deepseek-ai/dsh-skill':
-        specifier: workspace:*
-        version: link:../../skill/skill
       '@deepseek-ai/dsh-subagent-claude-code':
         specifier: workspace:*
         version: link:../../subagent/subagent-claude-code

@@ -25,15 +25,9 @@ async function openTerminal(page: Page, waitForShell = true): Promise<void> {
   if (waitForShell) await expect.poll(async () => await page.locator('.xterm-rows:visible').innerText()).toContain('bash-')
 }
 
-/** Open the panel from the right Sidebar's Start-page Terminal card. */
+/** Show the hidden panel from the conversation's corner button. */
 async function showPanel(page: Page): Promise<void> {
-  // After a reload the Sidebar restores asynchronously; wait until either entry point is on screen.
-  await page.locator('[data-sidebar-right-expand]:visible, [data-sidebar-right-guide-entry="terminal"]:visible').first().waitFor()
-  const expand = page.locator('[data-sidebar-right-expand]')
-  if (await expand.isVisible()) await expand.click()
-  const card = page.locator('[data-sidebar-right-guide-entry="terminal"]')
-  if (!await card.isVisible()) await page.locator('[data-rightbar-col] [data-dockkit-add-tab]').click()
-  await card.click()
+  await page.locator('[data-terminal-launcher]:visible').click()
   await page.locator(PANEL).waitFor()
 }
 
@@ -335,7 +329,7 @@ describe.skipIf(process.platform === 'win32')('Web terminal panel', () => {
     await expect.poll(async () => await screen.innerText()).toContain('PERSIST:xterm-256color')
     await hidePanel(page)
     await page.reload({ waitUntil: 'load' })
-    await page.locator('[data-sidebar-right-expand], [data-sidebar-right-guide]').first().waitFor()
+    await page.locator('[data-terminal-launcher]:visible').waitFor()
     expect(await page.locator(BODY).count()).toBe(0)
     expect(terminals()).toHaveLength(2)
     await showPanel(page)
@@ -362,6 +356,29 @@ describe.skipIf(process.platform === 'win32')('Web terminal panel', () => {
     await expect.poll(() => alive(firstProcess), { timeout: 10_000 }).toBe(false)
     await expect.poll(() => descendants.some(alive), { timeout: 10_000 }).toBe(false)
     await expect.poll(() => scaffold.ctx.terminalController.list(scaffold.ctx.agents.list()[0]!.id).length).toBe(0)
+    expect(tripwire.pageErrors).toEqual([])
+  })
+
+  it('opens a right Sidebar terminal page from the Start-page card without the bottom panel, and ends it on close', async () => {
+    onTestFailed(() => saveFailureShot(page, 'terminal-panel-sidebar-page'))
+    await page.locator('[data-sidebar-right-expand]:visible, [data-sidebar-right-guide-entry="terminal"]:visible').first().waitFor()
+    const expand = page.locator('[data-sidebar-right-expand]')
+    if (await expand.isVisible()) await expand.click()
+    const card = page.locator('[data-sidebar-right-guide-entry="terminal"]')
+    if (!await card.isVisible()) await page.locator('[data-rightbar-col] [data-dockkit-add-tab]').click()
+    await card.click()
+    const sidebarScreen = page.locator('[data-rightbar-col] .xterm-rows')
+    await expect.poll(async () => await sidebarScreen.innerText()).toContain('bash-')
+    expect(await page.locator(PANEL).count()).toBe(0)
+    await page.locator('[data-rightbar-col] .xterm-helper-textarea').click()
+    await page.keyboard.insertText("printf 'SIDEBAR_PID:%s\\n' \"$$\"")
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => await sidebarScreen.innerText()).toMatch(/SIDEBAR_PID:\d+/u)
+    expect(handles).toHaveLength(1)
+    const sidebarProcess = processIdentity(0)
+    await page.locator('[data-rightbar-col] [data-dockkit-tab]').filter({ hasText: 'bash' }).getByRole('button', { name: /^Close/u }).click()
+    await expect.poll(() => alive(sidebarProcess), { timeout: 10_000 }).toBe(false)
+    expect(await page.locator(PANEL).count()).toBe(0)
     expect(tripwire.pageErrors).toEqual([])
   })
 

@@ -13,8 +13,8 @@ import { LazyTerminalBody } from '../src/client/LazyTerminalBody.tsx'
 import { TerminalLauncher } from '../src/client/TerminalLauncher.tsx'
 import { TerminalPanel } from '../src/client/TerminalPanel.tsx'
 import { TerminalGuideEntry } from '../src/client/TerminalGuideEntry.tsx'
-import { TerminalRedirectBody } from '../src/client/TerminalRedirectBody.tsx'
-import type { TerminalGuideEntryInjected, TerminalLauncherInjected, TerminalPanelInjected, TerminalRedirectInjected } from '../src/client/face.ts'
+import { SidebarTerminalBody, SidebarTerminalTitle } from '../src/client/SidebarTerminal.tsx'
+import type { TerminalBodyInjected, TerminalInjected, TerminalLauncherInjected, TerminalPanelInjected } from '../src/client/face.ts'
 import { SidebarRightTabRegistry } from '@deepseek-ai/dsh-client-ui-sidebar-right/src/client/tab-registry.ts'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { TERMINAL_PANEL_PERSISTENCE, terminalKey } from '../src/client/panel-state.ts'
@@ -52,6 +52,19 @@ async function mountPlugin() {
   const commands: ShortcutCommand[] = []
   const removals: ((sessionId: SessionId) => void)[] = []
   const tabs = new SidebarRightTabRegistry(ctx)
+  const openTabs = createSnapshotStore<readonly { kind: string; sessionId: SessionId; tabId: string; contentId: string }[]>([])
+  const navigations = new Map<string, { address: string; params?: unknown }>()
+  const closeHandlers = new Map<string, (sessionId: SessionId, tab: { id: string; contentId: string }) => void>()
+  ctx.provide('sidebarRight', {
+    openTabs: { getSnapshot: () => openTabs.getSnapshot(), subscribe: (listener: () => void) => openTabs.subscribe(listener) },
+    tabDomain: {
+      occurrence: (_sessionId: SessionId, { id }: { id: string }) => ({ navigation: { getSnapshot: () => navigations.get(id)! } }),
+    },
+    registerCloseHandler: (kind: string, handler: (sessionId: SessionId, tab: { id: string; contentId: string }) => void) => {
+      closeHandlers.set(kind, handler)
+      return () => { closeHandlers.delete(kind) }
+    },
+  } as never)
   const current = createSnapshotStore<{ key: string | undefined }>({ key: undefined })
   ctx.provide('uiSession', { adapter: { current } } as never)
   ctx.provide('sidebarRightTabs', tabs)
@@ -80,10 +93,11 @@ async function mountPlugin() {
   const fiber = await ctx.plugin({ inject, apply })
   const panel = () => entries.find(entry => entry.name === 'shell.bottom')!.inject() as TerminalPanelInjected
   const launcher = (sessionId = SESSION) => entries.find(entry => entry.name === 'conversation.panel.bottom')!.inject(sessionId) as TerminalLauncherInjected
-  const guide = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.tab.guide.entry')!.inject(sessionId) as TerminalGuideEntryInjected
-  const page = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.pane.tab')!.inject(sessionId) as TerminalRedirectInjected
+  const page = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.pane.tab')!.inject(sessionId) as TerminalBodyInjected
+  const title = (sessionId = SESSION) => entries.find(entry => entry.name === 'sidebar.right.pane.tab.title')!.inject(sessionId) as TerminalInjected
   return {
-    entries, dictionaries, terminals, model, theme, commands, removals, panel, launcher, guide, page, tabs, current,
+    entries, dictionaries, terminals, model, theme, commands, removals, panel, launcher, page, title, tabs, current,
+    openTabs, navigations, closeHandlers,
     emitTheme() { ctx.emit('theme/change', theme) },
     async dispose() { await fiber.dispose(); await ctx.fiber.dispose() },
   }
@@ -98,12 +112,14 @@ it('registers the panel and its Sidebar Start-page card, then releases every con
       ['shell.bottom', TerminalPanel, 'terminalPanel', undefined],
       ['conversation.panel.bottom', TerminalLauncher, 'terminalPanel', undefined],
       ['sidebar.right.tab.guide.entry', TerminalGuideEntry, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
-      ['sidebar.right.pane.tab', TerminalRedirectBody, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
+      ['sidebar.right.pane.tab', SidebarTerminalBody, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
+      ['sidebar.right.pane.tab.title', SidebarTerminalTitle, 'terminalPanel', '@deepseek-ai/dsh-client-ui-terminal-panel'],
     ])
     const definition = h.tabs.get('terminal')!
     expect(definition.title('sidebar://terminal')).toBe('title')
+    expect(definition.multiple).toBe(true)
     expect(definition.guide?.map(entry => [entry.id, entry.order, entry.commandId, entry.title(), entry.description?.()]))
-      .toEqual([['open', 20, 'terminal.toggle', 'title', 'guideDescription']])
+      .toEqual([['open', 20, undefined, 'title', 'guideDescription']])
     expect(definition.guide?.[0]?.icon).toBeTypeOf('function')
     const face = h.panel()
     expect(face.hooks.current.getSnapshot()).toBeUndefined()
@@ -126,13 +142,14 @@ it('registers the panel and its Sidebar Start-page card, then releases every con
     expect(h.terminals.launchShells).toHaveBeenCalledWith(SESSION, signal)
     face.selectShell('/bin/zsh')
     expect(h.terminals.selectShell).toHaveBeenCalledWith('/bin/zsh')
-    expect(h.guide().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
+    expect(h.page().hooks.theme.getSnapshot()).toBe(h.theme)
     expect(h.launcher().hooks.shortcuts.getSnapshot()).toBe(SHORTCUT_CATALOG)
   } finally {
     await h.dispose()
   }
   expect(h.entries).toEqual([])
   expect(h.tabs.get('terminal')).toBeUndefined()
+  expect(h.closeHandlers.size).toBe(0)
   expect(h.dictionaries.size).toBe(0)
   expect(h.commands).toEqual([])
   expect(h.removals).toEqual([])
@@ -193,6 +210,26 @@ it('keeps every Session’s tabs retained, forgets removed Sessions, and release
   expect(h.terminals.retainTabs).toHaveBeenCalledTimes(calls)
 })
 
+it('resolves Sidebar terminal pages from their navigation, retains them beside panel tabs, and ends a closed page', async () => {
+  const h = await mountPlugin()
+  try {
+    h.navigations.set('p1', { address: 'sidebar://terminal/p1', params: { shellPath: '/bin/zsh' } })
+    h.navigations.set('p2', { address: 'sidebar://terminal/p2', params: { terminalId: 'host-2' } })
+    expect(h.page().view('p1')).toBe(h.model)
+    expect(h.terminals.view).toHaveBeenLastCalledWith(SESSION, 'p1', 'sidebar://terminal/p1', undefined, '/bin/zsh')
+    expect(h.title().keyedHooks.terminal('p2')).toBe(h.model.state)
+    expect(h.terminals.view).toHaveBeenLastCalledWith(SESSION, 'p2', 'sidebar://terminal/p2', 'host-2', undefined)
+    const page = { kind: 'terminal', sessionId: SESSION, tabId: 'p2', contentId: 'sidebar://terminal/p2' }
+    h.openTabs.set([page, { kind: 'browser', sessionId: SESSION, tabId: 'b1', contentId: 'browser' }])
+    expect(h.terminals.retainTabs).toHaveBeenLastCalledWith([page])
+    h.panel().add(SESSION)
+    expect(h.terminals.retainTabs.mock.lastCall?.[0]).toEqual([expect.objectContaining({ tabId: 't1' }), page])
+    h.closeHandlers.get('terminal')!(SESSION, { id: 'p2', contentId: 'sidebar://terminal/p2' })
+    expect(h.terminals.close).toHaveBeenLastCalledWith(SESSION, 'p2', 'sidebar://terminal/p2', 'host-2')
+  } finally { await h.dispose() }
+  expect(h.terminals.retainTabs).toHaveBeenLastCalledWith([])
+})
+
 it('toggles the panel of the Session on screen and refuses while none is', async () => {
   const h = await mountPlugin()
   try {
@@ -208,11 +245,6 @@ it('toggles the panel of the Session on screen and refuses while none is', async
     if (result.status !== 'handled') throw new Error('Expected the terminal command to be available')
     result.run()
     expect(state()).toMatchObject({ open: true, active: 't1' })
-    h.guide().open()
-    expect(state()).toMatchObject({ open: true, active: 't2' })
-    face.hide(SESSION)
-    h.page().open()
-    expect(state()).toMatchObject({ open: true, active: 't2' })
     detach()
     expect(command.resolve(input)).toEqual({ status: 'blocked', reason: 'shortcut.noSession' })
   } finally { await h.dispose() }

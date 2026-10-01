@@ -1597,7 +1597,7 @@ export interface Config {
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
 - `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:54`](../packages/llm/llm-claude-code/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:51`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */
@@ -1632,11 +1632,6 @@ export interface Config {
    * failed Claude Code turn may already have run tools with side effects.
    */
   retryPolicy?: RetryPolicyConfig
-  /**
-   * Milliseconds after the `/` menu lists Claude Code's slash commands until
-   * it asks Claude Code again, so newly installed skills and commands appear.
-   */
-  commandRefreshMs?: number
   /** Milliseconds one plan-usage read answers app windows before Claude Code is asked again. */
   usageFreshMs?: number
 }

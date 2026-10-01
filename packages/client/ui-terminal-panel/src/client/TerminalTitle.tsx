@@ -1,4 +1,4 @@
-/** Live terminal names in the panel's tab strip. */
+/** Live terminal names in the panel's tab strip and the right Sidebar's tab strip. */
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import type { InjectFace, PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import { TerminalIcon } from './TerminalIcon.tsx'
@@ -8,7 +8,7 @@ import css from './TerminalTitle.module.css'
 
 /**
  * Render the terminal name, editable in place on a double-click of its tab.
- * @param props - panel tab key, terminal model and localized copy.
+ * @param props - panel or Sidebar tab key, terminal model and localized copy.
  * @returns the terminal icon and current name or its editor.
  */
 export function TerminalTitle({ tabKey, useTerminal, view, t }: { readonly tabKey: string } & PropsLocale<'terminalPanel'> & InjectFace<TerminalInjected>): ReactNode {
@@ -19,8 +19,9 @@ export function TerminalTitle({ tabKey, useTerminal, view, t }: { readonly tabKe
   const cancelled = useRef(false)
   useLayoutEffect(() => {
     if (editing) return
-    // The whole tab chip receives the double-click, not only the name.
-    const chip = label.current?.closest('[data-terminal-tab]')
+    // The whole tab chip receives the double-click, not only the name; Dockkit
+    // captures the pointer on a Sidebar tab's drag handle.
+    const chip = label.current?.closest('[data-terminal-tab], [data-dockkit-tab], [data-dockkit-float-grip]')
     const rename = (event: Event): void => {
       event.stopPropagation()
       cancelled.current = false

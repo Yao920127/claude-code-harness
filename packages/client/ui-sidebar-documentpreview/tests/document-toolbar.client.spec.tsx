@@ -273,6 +273,34 @@ describe('document toolbar', () => {
     h.controller.abort()
   })
 
+  it('switches to the text editor from the header and back to the automatic viewer', async () => {
+    const h = harness({ 1: page(1, ['held'], true) })
+    const props = codeProps(h)
+    const editor: DocumentPreviewDefinition = {
+      id: 'editor', extensions: [], textAlternative: true, title: () => 'Edit', loading: 'renderer',
+    }
+    const view = render(<TextPreview {...props} useDocumentPreviews={selector => selector([
+      ...props.useDocumentPreviews(value => value), textBodyDefinition(() => 'viewer.text'), editor,
+    ])} />)
+    await settle()
+    const toggle = view.getByRole('button', { name: 'edit.aria' })
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(toggle)
+    expect(h.instance.getSnapshot().byTab[TAB_ID]?.rendererId).toBe('editor')
+    expect(view.getByRole('button', { name: 'edit.aria' }).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(view.getByRole('button', { name: 'edit.aria' }))
+    expect(h.instance.getSnapshot().byTab[TAB_ID]?.rendererId).toBe('code')
+    h.controller.abort()
+  })
+
+  it('offers no edit toggle without a text editor', async () => {
+    const h = harness({ 1: page(1, ['held'], true) })
+    const view = render(<TextPreview {...codeProps(h)} />)
+    await settle()
+    expect(view.queryByRole('button', { name: 'edit.aria' })).toBeNull()
+    h.controller.abort()
+  })
+
   it('dismisses the implementation picker with Escape without changing the selected implementation', async () => {
     const h = harness({ 1: page(1, ['held'], true) })
     const props = codeProps(h)

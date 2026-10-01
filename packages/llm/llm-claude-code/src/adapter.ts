@@ -11,7 +11,7 @@
  */
 
 import {
-  query as officialQuery, type Options, type Query, type SDKControlGetUsageResponse, type SlashCommand,
+  query as officialQuery, type Options, type Query, type SDKControlGetUsageResponse,
 } from '@anthropic-ai/claude-agent-sdk'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
@@ -123,16 +123,6 @@ export class ClaudeCodeAdapter extends LlmAdapter {
    */
   private async discover(): Promise<ClaudeCodeModelEntry[]> {
     return modelEntries(await this.control(this.options.discoveryCwd, query => query.supportedModels()))
-  }
-
-  /**
-   * List the slash commands a Claude Code turn in one directory accepts: built-in commands plus the
-   * skills, custom commands, and plugin commands its user and project settings install.
-   * @param cwd - workspace whose project settings add commands.
-   * @returns the commands in Claude Code's order.
-   */
-  async commands(cwd: string): Promise<SlashCommand[]> {
-    return await this.control(cwd, query => query.supportedCommands())
   }
 
   /**

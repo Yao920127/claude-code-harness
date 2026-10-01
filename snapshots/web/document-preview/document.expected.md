@@ -106,7 +106,7 @@
 
 ## Unknown suffix
 
-- Viewer menu hidden: true
+- Viewer: Plain text
 - Text: UNKNOWN_SUFFIX | Plain fallback.
 
 ## Unviewable binary

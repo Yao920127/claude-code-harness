@@ -51,7 +51,6 @@ The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pic
 | `env` | `{}` | Explicit environment layered over the credential-scrubbed parent environment |
 | `disposeGraceMs` | `3000` | Grace between the managed process's termination tiers |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | Model-request retry policy; the default never retries, because a failed turn may already have changed files |
-| `commandRefreshMs` | `300000` | Milliseconds after the `/` menu lists Claude Code's commands until they are read again |
 | `usageFreshMs` | `60000` | Milliseconds one plan-usage read answers app windows before Claude Code is asked again |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-llm-claude-code) is the exhaustive source for every accepted field.
@@ -59,10 +58,6 @@ The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-a
 ### Permissions
 
 Under the default `session` setting, each turn's native permission mode follows the Session's sandbox mode and approval policy. Full access (`danger-full-access` with the `never` policy) runs Claude Code with `bypassPermissions`, because the `never` policy would reject every prompt; `workspace-write` uses `acceptEdits`, so file edits proceed without asking; every other combination, and a composition without sandbox or approval services, uses `default`. Claude Code applies your user, project, and local Claude permission rules first. For an operation they leave undecided, the route asks `ctx.approval` on behalf of the Agent whose model call started the turn: the Web approval card shows the native prompt title, or the tool name and its command, file, or URL. `allowed-once` allows that one operation; every other outcome denies it, and the denial reason reaches Claude Code. `bypassPermissions` skips every check and never asks.
-
-### Your Claude Code commands and skills
-
-Claude Code turns load your user, project, and local Claude settings, so the skills, custom commands, and plugin commands you installed for Claude Code work here too. When the composition mounts `ctx.skills`, the route lists every command a Claude Code turn in the Session's workspace accepts as a user-invocable skill, so the `/` menu offers it. Picking `/hello`, or typing it, sends the literal text to Claude Code, which runs the command itself; the harness injects no skill body. A plugin command `plugin:name` appears as `/name`, which Claude Code also accepts, with its plugin named in the description; it stays out of the menu when another command already uses that name or another plugin command shares it, and can still be typed in full. Other names outside the lowercase kebab-case skill grammar stay out of the menu. A harness command or skill with the same name keeps precedence. A failed listing, such as a signed-out installation, leaves the commands out until the next lookup; the list is read again `commandRefreshMs` after each listing.
 
 <a id="plan-usage"></a>
 ### Plan usage
@@ -113,7 +108,6 @@ Cancelling the harness turn aborts the Claude Code turn and waits for its proces
 | [`src/approval.ts`](src/approval.ts) | Native permission callback over `ctx.approval` |
 | [`src/permissions.ts`](src/permissions.ts) | Native permission mode from the route setting and the Session's permission knobs |
 | [`src/browser-tool.ts`](src/browser-tool.ts) | In-process MCP tool that opens pages in the app Browser |
-| [`src/commands.ts`](src/commands.ts) | Skill provider listing Claude Code's slash commands for the `/` menu |
 | [`src/usage.ts`](src/usage.ts) | The `claudeCodeUsage` Remote over Claude Code's usage request |
 | [`src/types.ts`](src/types.ts) | Wire types of the usage Remote |
 | [`src/replay.ts`](src/replay.ts) | Versioned replay state holding the native resume cursor |

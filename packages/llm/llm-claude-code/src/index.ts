@@ -18,9 +18,7 @@ import type {} from '@deepseek-ai/dsh-user-approval'
 import type {} from '@deepseek-ai/dsh-sandbox-policy'
 // Type-only: the optional ctx.sidebarBrowser channel to the app's Browser tabs.
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-browser'
-import type {} from '@deepseek-ai/dsh-skill'
 import { ClaudeCodeAdapter } from './adapter.ts'
-import { ClaudeCodeCommandProvider } from './commands.ts'
 import { ClaudeCodeUsageController } from './usage.ts'
 import type { ClaudeCodeModelEntry } from './models.ts'
 import {
@@ -30,7 +28,6 @@ import {
 } from './permissions.ts'
 
 export { ClaudeCodeAdapter } from './adapter.ts'
-export { CLAUDE_CODE_COMMAND_PROVIDER, CLAUDE_CODE_COMMAND_RANK, ClaudeCodeCommandProvider } from './commands.ts'
 export { ClaudeCodeUsageController, usageView } from './usage.ts'
 export type { ClaudeCodeUsageOptions } from './usage.ts'
 export type { ClaudeCodeUsageView, ClaudeCodeUsageWindow, ClaudeCodeUsageWindowKind } from './types.ts'
@@ -82,11 +79,6 @@ export interface Config {
    * failed Claude Code turn may already have run tools with side effects.
    */
   retryPolicy?: RetryPolicyConfig
-  /**
-   * Milliseconds after the `/` menu lists Claude Code's slash commands until
-   * it asks Claude Code again, so newly installed skills and commands appear.
-   */
-  commandRefreshMs?: number
   /** Milliseconds one plan-usage read answers app windows before Claude Code is asked again. */
   usageFreshMs?: number
 }
@@ -103,7 +95,6 @@ export const Config: z<Config> = z.object({
   env: z.dict(z.string()).default({}),
   disposeGraceMs: z.number().default(3_000),
   retryPolicy: RetryPolicySchema.default({ mode: 'normal', maxRetries: 0 }),
-  commandRefreshMs: z.natural().min(1).default(300_000),
   usageFreshMs: z.natural().min(1).default(60_000),
 })
 
@@ -146,15 +137,6 @@ export function apply(ctx: Context, config: Config): void {
     },
   })
   ctx.llm.registerAdapter([provider], adapter)
-  // The `/` menu lists Claude Code's own commands; the literal prompt carries a picked one to Claude Code.
-  ctx.inject(['skills'], (scope) => {
-    scope.skills.registerProvider(control => new ClaudeCodeCommandProvider(
-      cwd => adapter.commands(cwd),
-      control,
-      config.commandRefreshMs as number,
-      (error) => { ctx.logger.warn('llm-claude-code: listing Claude Code commands failed: %o', error) },
-    ))
-  })
   ctx.plugin(ClaudeCodeUsageController, {
     read: () => adapter.usage(),
     freshMs: config.usageFreshMs as number,

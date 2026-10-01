@@ -1295,7 +1295,6 @@ flowchart TD
   pkg_llm_claude_code --> pkg_sandbox
   pkg_llm_claude_code --> pkg_sandbox_policy
   pkg_llm_claude_code --> pkg_session
-  pkg_llm_claude_code --> pkg_skill
   pkg_llm_claude_code --> pkg_subagent_claude_code
   pkg_llm_claude_code --> pkg_subprocess
   pkg_llm_claude_code --> pkg_timeout
@@ -1702,7 +1701,7 @@ flowchart TD
 | [`sdk-protocol`](../packages/sdk/protocol) | `sdk` | [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent) |
 | [`tool-ralph`](../packages/workflow/tool-ralph) | `workflow` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`subagent`](../packages/subagent/subagent), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow) |
 | [`workflow-ptc`](../packages/workflow/workflow-ptc) | `workflow` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`ptc-runtime`](../packages/ptc-runtime/ptc-runtime), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow) |
-| [`llm-claude-code`](../packages/llm/llm-claude-code) | `llm` | [`agent`](../packages/core/agent), [`client-ui-sidebar-browser`](../packages/client/ui-sidebar-browser), [`llm`](../packages/llm/llm), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`skill`](../packages/skill/skill), [`subagent-claude-code`](../packages/subagent/subagent-claude-code), [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout), [`typert-protocol`](../packages/typert/protocol), [`user-approval`](../packages/interaction/user-approval), [`util-values`](../packages/util/values) |
+| [`llm-claude-code`](../packages/llm/llm-claude-code) | `llm` | [`agent`](../packages/core/agent), [`client-ui-sidebar-browser`](../packages/client/ui-sidebar-browser), [`llm`](../packages/llm/llm), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`subagent-claude-code`](../packages/subagent/subagent-claude-code), [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout), [`typert-protocol`](../packages/typert/protocol), [`user-approval`](../packages/interaction/user-approval), [`util-values`](../packages/util/values) |
 | [`subagent-fork-in-process`](../packages/subagent/subagent-fork-in-process) | `subagent` | [`agent`](../packages/core/agent), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`subagent-in-process-driver`](../packages/subagent/subagent-in-process-driver) |
 | [`subagent-spawn-in-process`](../packages/subagent/subagent-spawn-in-process) | `subagent` | [`subagent`](../packages/subagent/subagent), [`subagent-in-process-driver`](../packages/subagent/subagent-in-process-driver) |
 | [`web-search-claude-code`](../packages/web/web-search-claude-code) | `web` | [`subagent-claude-code`](../packages/subagent/subagent-claude-code), [`subprocess`](../packages/subprocess/subprocess), [`web`](../packages/web/web) |

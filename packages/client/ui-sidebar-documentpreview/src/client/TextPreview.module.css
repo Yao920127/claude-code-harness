@@ -274,7 +274,8 @@
   background: var(--dsw-alias-interactive-bg-hover);
 }
 
-.tool[data-textpreview-tool='auto-refresh'][aria-pressed='true'] {
+.tool[data-textpreview-tool='auto-refresh'][aria-pressed='true'],
+.tool[data-textpreview-tool='edit'][aria-pressed='true'] {
   color: var(--dsw-alias-label-primary);
   background: var(--dsw-alias-interactive-bg-hover);
 }

@@ -52,9 +52,6 @@
       "path": "../../client/ui-sidebar-browser/tsconfig.host.json"
     },
     {
-      "path": "../../skill/skill"
-    },
-    {
       "path": "../../typert/protocol"
     }
   ]

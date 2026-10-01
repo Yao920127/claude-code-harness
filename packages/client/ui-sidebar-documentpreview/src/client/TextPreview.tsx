@@ -15,7 +15,7 @@ import clsx from 'clsx'
 import type { ObservableSnapshot } from '@deepseek-ai/dsh-client-store'
 import type { InjectFace, PropsLocale, PropsRenderSlots, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import {
-  FileTypeIcon, IconNowrapFillRegular, IconPauseOutlineRegular, IconPlayOutlineRegular,
+  FileTypeIcon, IconEditOutlineRegular, IconNowrapFillRegular, IconPauseOutlineRegular, IconPlayOutlineRegular,
   IconRefreshOutlineRegular, IconWrapFillRegular, Menu, PathLabel, Tooltip, classifyFileType,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { pathPartsOf } from '@deepseek-ai/dsh-util-workspace-path'
@@ -75,6 +75,10 @@ export function TextPreview({
     return [...matched, fallback, ...definitions.filter(definition => definition.textAlternative === true)]
   }, [definitions, file.path, unviewable])
   const selected = candidates.find(candidate => candidate.id === state?.rendererId) ?? candidates[0]
+  // The first text alternative is the editor the header's edit toggle switches to; the toggle returns to the automatic choice.
+  const editor = candidates.find(candidate => candidate.textAlternative === true)
+  const automatic = candidates[0]
+  const editing = editor !== undefined && selected?.id === editor.id
   const mode = selected?.loading
   const contentRendererId = mode === 'renderer' ? selected?.id : undefined
   const current = (state?.mode ?? 'text-pages') === mode && state?.contentRendererId === contentRendererId ? state : undefined
@@ -265,6 +269,20 @@ export function TextPreview({
         )}
       <div className={css.header}>
         <PathLabel path={displayPath} className={css.path} data-textpreview-path />
+        {editor !== undefined && automatic !== undefined && automatic !== editor && (
+          <Tooltip label={t(editing ? 'edit.disable' : 'edit.enable')} side="bottom" delayMs={500}>
+            <button
+              type="button"
+              className={css.tool}
+              aria-pressed={editing}
+              aria-label={t('edit.aria')}
+              data-textpreview-tool="edit"
+              onClick={() => { actions.selected(tab.id, editing ? automatic.id : editor.id) }}
+            >
+              <IconEditOutlineRegular />
+            </button>
+          </Tooltip>
+        )}
         {candidates.length > 1
           && (
             <Menu

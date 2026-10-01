@@ -9,7 +9,7 @@ import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { TerminalPanel, type TerminalPanelProps } from '../src/client/TerminalPanel.tsx'
 import { TerminalLauncher, type TerminalLauncherProps } from '../src/client/TerminalLauncher.tsx'
 import { TerminalGuideEntry, type TerminalGuideEntryProps } from '../src/client/TerminalGuideEntry.tsx'
-import { TerminalRedirectBody, type TerminalRedirectBodyProps } from '../src/client/TerminalRedirectBody.tsx'
+import { SidebarTerminalBody, SidebarTerminalTitle, type SidebarTerminalBodyProps, type SidebarTerminalTitleProps } from '../src/client/SidebarTerminal.tsx'
 import { EMPTY_PANEL, type TerminalPanelState } from '../src/client/panel-state.ts'
 import { en } from '../src/client/locales.ts'
 
@@ -216,40 +216,40 @@ describe('TerminalLauncher', () => {
 })
 
 describe('TerminalGuideEntry', () => {
-  it('opens the panel with its effective shortcut and drops the description when the guide omits it', () => {
-    const shortcuts = createSnapshotStore([{ id: 'terminal.toggle', aria: 'Control+`', keys: ['⌃', '`'] }])
-    const open = vi.fn()
+  it('replaces the Start page with a terminal page and drops the description when the guide omits it', () => {
+    const openTab = vi.fn()
+    const useTabInfo = () => ({ tab: { actions: { openTab } } })
     const props: TerminalGuideEntryProps = {
-      t, open, kind: 'terminal', entryId: 'open', title: en.title, description: en.guideDescription,
-      useShortcuts: bindSnapshotSelector(shortcuts),
+      t, useTabInfo, kind: 'terminal', entryId: 'open', title: en.title, description: en.guideDescription,
     } as never
     const view = render(<TerminalGuideEntry {...props} />)
     const card = screen.getByRole('button', { name: /Terminal/u })
     expect(card.dataset.sidebarRightGuideEntry).toBe('terminal')
-    expect(card.getAttribute('aria-keyshortcuts')).toBe('Control+`')
     expect(screen.getByText(en.guideDescription)).toBeTruthy()
     expect(card.querySelector('svg')?.getAttribute('width')).toBe('26')
     fireEvent.click(card)
-    expect(open).toHaveBeenCalledOnce()
-    act(() => { shortcuts.set([]) })
-    const bare: TerminalGuideEntryProps = { t, open, kind: 'terminal', entryId: 'open', title: en.title, useShortcuts: bindSnapshotSelector(shortcuts) } as never
+    expect(openTab).toHaveBeenCalledExactlyOnceWith('terminal', { replaceTab: true })
+    const bare: TerminalGuideEntryProps = { t, useTabInfo, kind: 'terminal', entryId: 'open', title: en.title } as never
     view.rerender(<TerminalGuideEntry {...bare} />)
-    expect(card.hasAttribute('aria-keyshortcuts')).toBe(false)
     expect(screen.queryByText(en.guideDescription)).toBeNull()
     expect(card.querySelector('svg')?.getAttribute('width')).toBe('22')
   })
 })
 
-describe('TerminalRedirectBody', () => {
-  it('opens the panel and closes its Sidebar page once, across re-renders', () => {
-    const open = vi.fn()
-    const close = vi.fn()
-    const tabInfo = { tab: { actions: { close } } }
-    const props: TerminalRedirectBodyProps = { open, useTabInfo: () => tabInfo } as never
-    const view = render(<TerminalRedirectBody {...props} />)
-    expect(view.container.childElementCount).toBe(0)
-    view.rerender(<TerminalRedirectBody {...props} open={vi.fn()} />)
-    expect(open).toHaveBeenCalledOnce()
-    expect(close).toHaveBeenCalledOnce()
+describe('SidebarTerminal', () => {
+  it('shows the page\'s terminal by its tab id and replaces an ended terminal with a new page', () => {
+    const openTab = vi.fn()
+    const useTabInfo = () => ({ tab: { id: 'p1', visible: false, actions: { openTab } } })
+    const bodyProps: SidebarTerminalBodyProps = { t, useTabInfo } as never
+    render(<SidebarTerminalBody {...bodyProps} />)
+    const body = screen.getByRole('button', { name: 'body p1' })
+    expect(body.dataset.visible).toBe('false')
+    fireEvent.click(body)
+    expect(openTab).toHaveBeenCalledExactlyOnceWith('terminal', { replaceTab: true })
+    const useTerminal = vi.fn((_key: string, select: (state: TerminalViewState | undefined) => unknown) => select({ phase: 'connected', writable: true, title: 'zsh' }))
+    const titleProps: SidebarTerminalTitleProps = { t, useTabInfo, useTerminal, view: vi.fn() } as never
+    render(<SidebarTerminalTitle {...titleProps} />)
+    expect(useTerminal).toHaveBeenCalledWith('p1', expect.any(Function))
+    expect(screen.getByText('zsh')).toBeTruthy()
   })
 })

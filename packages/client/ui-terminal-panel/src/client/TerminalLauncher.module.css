@@ -1,12 +1,15 @@
 /* A zero-height strip along the conversation root's bottom edge, measured
    as an inline-size container so the button can tell whether the docked
-   composer card leaves the corner free. */
+   composer card leaves the corner free. It paints above the active-phase
+   composer seat (z-index 7, ui-conversation ConversationRoot), whose
+   full-width band would otherwise take the button's clicks, and below that
+   seat while an @/slash menu lifts it to 9. */
 .seat {
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 2;
+  z-index: 8;
   height: 0;
   container-type: inline-size;
   pointer-events: none;

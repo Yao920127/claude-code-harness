@@ -1,8 +1,14 @@
-/** Register the window's bottom terminal panel, the conversation's corner button that shows it, its Start-page card, and its shortcut. */
+/**
+ * Register the window's bottom terminal panel, the conversation's corner button
+ * that shows it, and its shortcut; with the right Sidebar mounted, also its
+ * terminal pages and the Start-page card that opens one.
+ */
 import type { ShortcutCommandId } from '@deepseek-ai/dsh-client-shortcuts/client'
 import type { Context } from '@deepseek-ai/cordis'
 import { randomUUID } from '@deepseek-ai/dsh-util-crypto'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import type { WebTerminalId } from '@deepseek-ai/dsh-api-terminal-controller/types'
+import type { SidebarRightTabParamsMap, TabId } from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type {} from '@deepseek-ai/dsh-api-terminal-controller/client'
 import type {} from '@deepseek-ai/dsh-api-remotes/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -15,15 +21,13 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import { PluginArtworkTerminal } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { TerminalView } from '@deepseek-ai/dsh-api-terminal-controller/client'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
-import type {
-  TerminalBodyInjected, TerminalGuideEntryInjected, TerminalLauncherInjected, TerminalPanelInjected, TerminalRedirectInjected,
-} from './face.ts'
+import type { TerminalBodyInjected, TerminalInjected, TerminalLauncherInjected, TerminalPanelInjected } from './face.ts'
 import { en, zh } from './locales.ts'
 import { parseTerminalKey, TerminalPanels } from './panel-state.ts'
 import { TerminalLauncher } from './TerminalLauncher.tsx'
 import { TerminalPanel } from './TerminalPanel.tsx'
 import { TerminalGuideEntry } from './TerminalGuideEntry.tsx'
-import { TerminalRedirectBody } from './TerminalRedirectBody.tsx'
+import { SidebarTerminalBody, SidebarTerminalTitle } from './SidebarTerminal.tsx'
 // import { TerminalCleanup, type TerminalCleanupInjected } from './TerminalCleanup.tsx'
 
 export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
@@ -32,17 +36,23 @@ export type { TerminalPanelState, TerminalPanelTab } from './panel-state.ts'
 export const inject = ['slots', 'locale', 'remote', 'webTerminals', 'theme', 'shortcuts', 'uiSession']
 
 /**
- * Register the panel, its corner button, its Sidebar Start-page card, the toggle shortcut and terminal retention.
+ * Register the panel, its corner button, the toggle shortcut, the Sidebar's terminal pages and Start-page card, and terminal retention.
  * @param ctx - Client root Context with the frame and conversation slots and the terminal service.
  */
 export function apply(ctx: Context): void {
   const panels = new TerminalPanels(() => randomUUID())
   ctx.effect(() => () => { panels.dispose() }, 'ui-terminal-panel.persistence')
+  // Panel tabs and Sidebar terminal pages together hold their Host terminals for this window.
+  let sidebarTabs: () => ReturnType<TerminalPanels['retained']> = () => []
+  let holding = false
+  const retain = (): void => {
+    if (holding) ctx.webTerminals.retainTabs([...panels.retained(), ...sidebarTabs()])
+  }
   ctx.effect(() => {
-    const sync = (): void => { ctx.webTerminals.retainTabs(panels.retained()) }
-    const unsubscribe = panels.subscribe(sync)
-    sync()
-    return () => { unsubscribe(); ctx.webTerminals.retainTabs([]) }
+    holding = true
+    const unsubscribe = panels.subscribe(retain)
+    retain()
+    return () => { holding = false; unsubscribe(); ctx.webTerminals.retainTabs([]) }
   }, 'ui-terminal-panel.window-holds')
   ctx.effect(() => ctx.remote.$on('api-session/removed', (sessionId) => { panels.forget(sessionId) }),
     'ui-terminal-panel.session-removal')
@@ -112,31 +122,48 @@ export function apply(ctx: Context): void {
       show: () => { panels.toggle(sessionId) },
     }),
   }, TerminalLauncher)), 'ui-terminal-panel.launcher')
-  // The right Sidebar's Start page offers the panel as a card: a `terminal`
-  // page type carries the card, and a page of that type, such as one a saved
-  // layout restores, hands off to the panel. The Sidebar shows the Start page
-  // for a Session with no message yet, so the panel is reachable before the
-  // first turn.
-  ctx.inject(['sidebarRightTabs'], (scope) => {
+  // The right Sidebar shows terminals as its own pages, each a Host terminal
+  // apart from the bottom panel's. The Start page offers a card that opens one,
+  // so a terminal is reachable before the Session's first turn.
+  ctx.inject(['sidebarRight', 'sidebarRightTabs'], (scope) => {
+    const { sidebarRight } = scope
+    const navigation = (sessionId: SessionId, key: string) =>
+      sidebarRight.tabDomain.occurrence(sessionId, { id: key as TabId }).navigation.getSnapshot()
+    const terminalId = (params: SidebarRightTabParamsMap['terminal'] | undefined): WebTerminalId | undefined =>
+      params !== undefined && 'terminalId' in params ? params.terminalId : undefined
+    const sidebarView = (sessionId: SessionId, key: string): TerminalView => {
+      const { address, params } = navigation(sessionId, key)
+      return ctx.webTerminals.view(sessionId, key, address, terminalId(params),
+        params !== undefined && 'shellPath' in params ? params.shellPath : undefined)
+    }
+    scope.effect(() => {
+      sidebarTabs = () => sidebarRight.openTabs.getSnapshot().filter(tab => tab.kind === 'terminal')
+      const unsubscribe = sidebarRight.openTabs.subscribe(retain)
+      retain()
+      return () => { unsubscribe(); sidebarTabs = () => []; retain() }
+    }, 'ui-terminal-panel.sidebar-holds')
     scope.effect(() => scope.sidebarRightTabs.register({
-      id, kind: 'terminal', priority: 'builtin', title: () => t('title'),
-      guide: [{
-        id: 'open', order: 20, commandId: 'terminal.toggle' as ShortcutCommandId,
-        title: () => t('title'), description: () => t('guideDescription'), icon: PluginArtworkTerminal,
-      }],
-    }), 'ui-terminal-panel.guide-type')
+      id, kind: 'terminal', multiple: true, priority: 'builtin', title: () => t('title'),
+      guide: [{ id: 'open', order: 20, title: () => t('title'), description: () => t('guideDescription'), icon: PluginArtworkTerminal }],
+    }), 'ui-terminal-panel.sidebar-type')
+    scope.effect(() => sidebarRight.registerCloseHandler('terminal', (sessionId, tab) => {
+      ctx.webTerminals.close(sessionId, tab.id, tab.contentId, terminalId(navigation(sessionId, tab.id).params))
+    }), 'ui-terminal-panel.sidebar-close')
+    const sidebarInject = (sessionId: SessionId): TerminalInjected => ({
+      view: key => sidebarView(sessionId, key),
+      keyedHooks: { terminal: key => sidebarView(sessionId, key).state },
+    })
+    scope.effect(() => ctx.slots.inject('sidebar.right.tab.guide.entry', () => ctx.slots.register({
+      name: 'sidebar.right.tab.guide.entry', key: id, locale: namespace,
+    }, TerminalGuideEntry)), 'ui-terminal-panel.guide-entry')
+    scope.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
+      name: 'sidebar.right.pane.tab', key: id, locale: namespace,
+      inject: (sessionId): TerminalBodyInjected => ({ ...sidebarInject(sessionId), hooks: { theme } }),
+    }, SidebarTerminalBody)), 'ui-terminal-panel.sidebar-body')
+    scope.effect(() => ctx.slots.inject('sidebar.right.pane.tab.title', () => ctx.slots.register({
+      name: 'sidebar.right.pane.tab.title', key: id, locale: namespace, inject: sidebarInject,
+    }, SidebarTerminalTitle)), 'ui-terminal-panel.sidebar-title')
   })
-  ctx.effect(() => ctx.slots.inject('sidebar.right.tab.guide.entry', () => ctx.slots.register({
-    name: 'sidebar.right.tab.guide.entry', key: id, locale: namespace,
-    inject: (sessionId): TerminalGuideEntryInjected => ({
-      hooks: { shortcuts: ctx.shortcuts.catalog },
-      open: () => { panels.open(sessionId) },
-    }),
-  }, TerminalGuideEntry)), 'ui-terminal-panel.guide-entry')
-  ctx.effect(() => ctx.slots.inject('sidebar.right.pane.tab', () => ctx.slots.register({
-    name: 'sidebar.right.pane.tab', key: id, locale: namespace,
-    inject: (sessionId): TerminalRedirectInjected => ({ open: () => { panels.open(sessionId) } }),
-  }, TerminalRedirectBody)), 'ui-terminal-panel.page')
   // ctx.effect(() => ctx.slots.inject('shell.overlay', () => ctx.slots.register({
   //   name: 'shell.overlay', id, locale: namespace,
   //   inject: (): TerminalCleanupInjected => ({

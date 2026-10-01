@@ -1,10 +1,19 @@
-/** Injected terminal commands and observable state of the bottom terminal panel. */
+/** Injected terminal commands and observable state of the bottom terminal panel and the right Sidebar's terminal pages. */
 import type { ShortcutCatalogEntry } from '@deepseek-ai/dsh-client-shortcuts/client'
 import type { TerminalLaunchShells, TerminalView, TerminalViewState } from '@deepseek-ai/dsh-api-terminal-controller/client'
+import type { WebTerminalId } from '@deepseek-ai/dsh-api-terminal-controller/types'
+import type {} from '@deepseek-ai/dsh-client-ui-sidebar-right/client'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type { ThemeSnapshot } from '@deepseek-ai/dsh-client-ui-theme/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { TerminalPanelState } from './panel-state.ts'
+
+declare module '@deepseek-ai/dsh-client-ui-sidebar-right/client' {
+  interface SidebarRightTabParamsMap {
+    /** A Sidebar terminal page: the Host terminal it shows, or the shell its first terminal starts. */
+    terminal: { terminalId: WebTerminalId } | { shellPath: string }
+  }
+}
 
 /** A tab's React-free terminal model and its keyed observable state. */
 export interface TerminalInjected {
@@ -64,17 +73,4 @@ export interface TerminalLauncherInjected {
   }
   /** Show this Session's panel, opening a first terminal when it has none. */
   readonly show: () => void
-}
-
-/** The right Sidebar Start-page card that opens the panel. */
-export interface TerminalGuideEntryInjected {
-  readonly hooks: { readonly shortcuts: HostObservable<readonly ShortcutCatalogEntry[]> }
-  /** Show this Session's panel, or add a terminal when it is already shown. */
-  readonly open: () => void
-}
-
-/** A `terminal` Sidebar page, which hands off to the panel and closes. */
-export interface TerminalRedirectInjected {
-  /** Show this Session's panel, or add a terminal when it is already shown. */
-  readonly open: () => void
 }

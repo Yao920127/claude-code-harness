@@ -1391,11 +1391,11 @@ else process.exit(1);
     await openFile('notes.unknown')
     const plainLines = preview.locator('[data-textpreview-line]')
     await expect.poll(() => plainLines.count()).toBe(2)
-    // Plain text is the only candidate, so no viewer menu renders.
-    expect(await viewer.count()).toBe(0)
+    // Plain text is the automatic choice; the text editor is its only alternative.
+    await expect.poll(() => viewer.textContent()).toBe('Plain text')
     const fallback = (await plainLines.allTextContents()).map(line => line.trim())
     expect(fallback).toEqual(['UNKNOWN_SUFFIX', 'Plain fallback.'])
-    sections.push(['## Unknown suffix', '', `- Viewer menu hidden: ${String(await viewer.count() === 0)}`, `- Text: ${fallback.join(' | ')}`].join('\n'))
+    sections.push(['## Unknown suffix', '', `- Viewer: ${String(await viewer.textContent())}`, `- Text: ${fallback.join(' | ')}`].join('\n'))
 
     await filesTab.click()
     await column.locator('[data-files-entry="file"]').getByRole('button', { name: 'clip.mp4', exact: true }).click()

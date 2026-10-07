@@ -8,11 +8,13 @@ import {
   IconLinkOutlineRegular,
   IconRefreshOutlineRegular, Tooltip,
   IconRightUpOutlineRegular,
+  IconUserOutlineRegular,
+  Menu,
   SHIELD_OUTLINE_PATH,
   ICON_REGULAR_STROKE,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsLocale, PropsRuntime, PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
-import type { BrowserInjected } from '../browser/BrowserController.ts'
+import type { BrowserAccount, BrowserInjected } from '../browser/BrowserController.ts'
 import { emptyBrowserFrame } from '../browser/BrowserFrame.ts'
 import { currentBrowserTarget } from '../browser/BrowserPersistence.ts'
 import type { BrowserStore } from '../browser/store.ts'
@@ -31,6 +33,61 @@ function SandboxPolicyIcon({ sandboxed }: { readonly sandboxed: boolean }): Reac
   )
 }
 
+/** Last site sign-in action's visible outcome; a cancelled window leaves none. */
+type AccountNotice = 'busy' | 'signed-in' | 'cleared' | 'failed' | undefined
+
+/**
+ * Site sign-in menu: open the Google sign-in window or erase every site sign-in, then reload the tab.
+ * @param props - the provider's sign-in operations, the tab reload, the notice writer, and the locale seat.
+ * @returns the toolbar's sign-in menu button.
+ */
+function AccountMenu({ account, reload, notice, setNotice, t }: {
+  readonly account: BrowserAccount
+  readonly reload: () => void
+  readonly notice: AccountNotice
+  readonly setNotice: (notice: AccountNotice) => void
+  readonly t: BrowserBodyProps['t']
+}): ReactNode {
+  const [open, setOpen] = useState(false)
+  const run = (action: () => Promise<Exclude<AccountNotice, 'busy'>>): void => {
+    setNotice('busy')
+    void action().then((outcome) => {
+      setNotice(outcome)
+      if (outcome !== undefined && outcome !== 'failed') reload()
+    }, () => { setNotice('failed') })
+  }
+  return (
+    <Menu
+      open={open}
+      portal
+      dense
+      align="end"
+      onClose={() => { setOpen(false) }}
+      items={[
+        { id: 'google', icon: <IconUserOutlineRegular />, label: t('account.google') },
+        { id: 'clear', label: t('account.clear'), danger: true },
+      ]}
+      onSelect={(id) => {
+        setOpen(false)
+        if (id === 'google') {
+          run(async () => {
+            const result = await account.signInGoogle()
+            return result === 'cancelled' ? undefined : result
+          })
+        } else {
+          run(async () => { await account.clearSignIn(); return 'cleared' })
+        }
+      }}
+      anchor={(
+        <button type="button" className={css.tool} aria-label={t('account.menu')} title={t('account.menu')}
+          aria-haspopup="menu" aria-expanded={open} disabled={notice === 'busy'}
+          onClick={() => { setOpen(value => !value) }}
+        ><IconUserOutlineRegular size={14} /></button>
+      )}
+    />
+  )
+}
+
 /** Browser body props assembled by the tab seat. */
 export type BrowserBodyProps = PropsRuntime<'sidebar.right.pane.tab'>
   & PropsStore<BrowserStore>
@@ -45,7 +102,8 @@ function useBrowserDraft(url: string | undefined, revision: number): readonly [s
 
 /** Render provider-neutral navigation state and optional controls. */
 export function BrowserBody(props: BrowserBodyProps): ReactNode {
-  const { mount, loadUrl, restore, goBack, goForward, reload, setSandbox, useBrowserState, useStore, useTabInfo, t } = props
+  const { mount, loadUrl, restore, goBack, goForward, reload, setSandbox, account, useBrowserState, useStore, useTabInfo, t } = props
+  const [accountNotice, setAccountNotice] = useState<AccountNotice>()
   const { tab } = useTabInfo()
   useEffect(() => tab.actions.bindCommands({ refresh: () => { reload(tab.id) } }), [tab.actions, tab.id, reload])
   const saved = useStore(state => state.byTab[tab.id])
@@ -107,7 +165,13 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
           aria-pressed={!sandboxed}
           onClick={() => { setSandbox(tab.id, !sandboxed) }}
         ><SandboxPolicyIcon sandboxed={sandboxed} /></button>}
+        {account !== undefined && <AccountMenu account={account} reload={() => { reload(tab.id) }}
+          notice={accountNotice} setNotice={setAccountNotice} t={t} />}
       </form>
+      {accountNotice === 'failed' && <div className={css.failure} role="alert">{t('account.failed')}</div>}
+      {(accountNotice === 'signed-in' || accountNotice === 'cleared') && <div className={css.notice} role="status">
+        {t(accountNotice === 'signed-in' ? 'account.signedIn' : 'account.cleared')}
+      </div>}
       {sandboxed === false && <div className={css.sandboxWarning} role="status">{t('sandbox.warning')}</div>}
       {error !== undefined && <div className={css.failure} role="status">{error.code !== undefined && error.description !== undefined
         ? t('load.failed.detail', { code: String(error.code), description: error.description })

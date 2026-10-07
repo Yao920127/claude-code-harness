@@ -86,8 +86,8 @@
   background: transparent;
 }
 
-/* The constant step below the window's top strip (traffic lights, sidebar
-   toggle, shell.leading controls), the same in both sidebar states. Entry
+/* The constant step below the window's top strip (traffic lights and the
+   sidebar toggle), the same in both sidebar states. Entry
    pages in the main panel (plugin manager, settings-like pages — not the
    conversation, which owns its header) pad their top by it so their leading
    content clears the strip, and overlay primitives keep it as their top
@@ -154,57 +154,12 @@
   background: var(--dsw-alias-bg-base);
 }
 
-/* The darwin closed sidebar has no rail: the centre reaches the window edge,
-   where a separator would draw a seam against nothing. */
-:global([data-platform='darwin']) [data-sidebar-collapsed] .centerCol,
-:global([data-platform='darwin']) [data-sidebar-collapsed] .bottomSeat {
-  border-left: none;
-}
-
-/* Published while the shell.leading seat is mounted (same condition as the
-   TSX mount: darwin with the sidebar collapsed — the collapse that hides the
-   column entirely): the inline band the window chrome occupies, measured from
-   the frame's left edge — traffic lights to x 68, controls at x 88
-   (28 + 8 + 28), then 8px of air. Main panels whose content reaches the
-   top-left corner pad by this. */
-:global([data-platform='darwin']) .frame[data-sidebar-collapsed] {
-  --dsh-frame-leading-clearance: 160px;
-}
-
-/* Fullscreen hides the traffic lights (preload mirrors the window state onto
-   html[data-fullscreen]): the seat takes their band and the clearance keeps
-   only the controls (12 + 28 + 8 + 28 + 8). The 12px start matches the
-   expanded sidebar strip's inline padding (ui-sidebar .topStrip), so
-   collapsing never shifts the toggle. */
-:global([data-platform='darwin'][data-fullscreen]) .frame[data-sidebar-collapsed] {
-  --dsh-frame-leading-clearance: 84px;
-}
-
-:global([data-platform='darwin'][data-fullscreen]) .leadingSeat {
-  left: 12px;
-}
-
 /* The frame declares no window drag of its own: every chrome row owns the drag
    over its own box (ui-web base.css holds the one rule; the ui-theme app-region
    gate lists the rows). The ordering rule that replaces the old "band first"
    invariant: a surface that covers the window and must stay clickable portals
    beside #root, which puts it after every drag row in document order. The Windows
    caption row above is the other platform's chrome and stays. */
-
-/* The seat itself: the two 28px controls centered on the conversation title
-   row (10px header inset + 30px row → centre y 25) and level with the traffic
-   lights (centre y ≈ 24). Sits above column content, below frame overlays
-   (20) and the fullscreen right panel (40). The box subtracts itself from any
-   window drag row beneath (Electron app-regions are geometry, not stacking). */
-.leadingSeat {
-  position: absolute;
-  top: 11px;
-  left: 88px;
-  z-index: 15;
-  display: flex;
-  align-items: center;
-  -webkit-app-region: no-drag;
-}
 
 /* Drag handles are frame children (columns clip overflow): an 8px hit strip
    centered on the column border via inline left, above column content. No

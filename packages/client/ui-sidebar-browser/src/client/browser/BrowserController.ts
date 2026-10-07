@@ -2,6 +2,7 @@
 import { createSnapshotStore, type BoundActions, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
+import type { DesktopBrowserSignInResult } from '../../types.ts'
 import type { BrowserFrameState } from './BrowserFrame.ts'
 import type { BrowserPage, BrowserPageFactory } from './BrowserPage.ts'
 import { currentBrowserTarget, type BrowserTabState } from './BrowserPersistence.ts'
@@ -192,6 +193,14 @@ export interface BrowserMountRequest {
   readonly openTab: (url: string) => void
 }
 
+/** Sign-in operations over the provider's shared site storage; only the Desktop provider has them. */
+export interface BrowserAccount {
+  /** Open the Google sign-in window. @returns how the window ended. */
+  signInGoogle(): Promise<DesktopBrowserSignInResult>
+  /** @returns after every site cookie and storage entry has been erased. */
+  clearSignIn(): Promise<void>
+}
+
 /** Plain Slot callbacks and a framework-bound state source, not a desktop protocol. */
 export interface BrowserInjected {
   readonly keyedHooks: {
@@ -215,6 +224,8 @@ export interface BrowserInjected {
   reload(tabId: TabId): void
   /** @param tabId - owning tab. @param enabled - provider's optional sandbox control. */
   setSandbox(tabId: TabId, enabled: boolean): void
+  /** Site sign-in operations; absent for providers whose site storage belongs to the user's own browser. */
+  readonly account?: BrowserAccount
 }
 
 /**
@@ -224,11 +235,12 @@ export interface BrowserInjected {
  * @param isTabOpen - authoritative layout membership, independent of mounted bodies and plugin lifetime.
  * @param searchUrl - current search address template for keyword input.
  * @param homeUrl - current home address a new tab opens without its own address.
+ * @param account - the provider's site sign-in operations, when it has them.
  * @returns tab callbacks.
  */
 export function createBrowserControllers(actions: BoundActions<BrowserStore>, createPage: BrowserPageFactory,
   isTabOpen: (tabId: TabId) => boolean, searchUrl: () => string | undefined,
-  homeUrl: () => string | undefined): BrowserInjected {
+  homeUrl: () => string | undefined, account?: BrowserAccount): BrowserInjected {
   let currentActions = actions
   const controllers = new Map<TabId, {
     readonly signal: AbortSignal
@@ -279,5 +291,6 @@ export function createBrowserControllers(actions: BoundActions<BrowserStore>, cr
     goForward: (id) => { controller(id)?.goForward() },
     reload: (id) => { controller(id)?.reload() },
     setSandbox: (id, enabled) => { controller(id)?.setSandbox(enabled) },
+    ...account === undefined ? {} : { account },
   }
 }

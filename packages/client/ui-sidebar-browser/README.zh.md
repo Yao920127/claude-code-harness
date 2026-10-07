@@ -27,6 +27,8 @@ kind: "package-reference"
 
 Browser 在 Web profile 中默认禁用，在 Desktop 中默认启用。Web 用户可通过 profile patch 启用随附条目。可以从右侧 Sidebar guide 打开 **浏览器**并输入 HTTP(S) URL 或搜索关键词。Chat 的[链接偏好](../ui-chat/README.zh.md)选择**应用内侧边栏**时，HTTP(S) 链接会在此打开。不带 scheme 的主机名会补全为 HTTPS。不带 scheme 且包含空白、或主机名既无点也无端口且不是 `localhost` 的输入视为搜索：`youtube` 会搜索，而 `youtube.com` 与 `localhost:3000` 会导航。公共目标与 loopback 目标使用相同的默认 sandbox。每次 guide 操作或委托到此的消息链接操作都会创建一个新的 Browser tab。
 
+在 Desktop 上，工具栏的 **网站登录** 菜单提供 **使用 Google 登录**，它会打开独立的 Google 登录窗口；Google 回到账号页面后窗口关闭、tab 重新加载，此后每个 Browser tab 都保持登录，应用重启后也一样。**清除登录资料** 会清除所有网站的 cookie 与存储并重新加载 tab。Agent 在 Browser 中打开的页面带着同样的登录状态加载；Agent 的浏览器工具只能打开地址，无法读取页面内容。
+
 ### 何时选择
 
 当 Web 页面需要保留在当前 Session 旁时，选择 Browser。本地文件使用 [Document Preview](../ui-sidebar-documentpreview/README.zh.md)；站点拒绝 iframe 嵌入或需要本包不授予的浏览器 capability 时，使用明确的外部浏览器操作。
@@ -86,7 +88,8 @@ Desktop 主进程批准 guest 租约，并执行挂载、导航和权限策略�
 - [右侧 Sidebar](../../../docs/subsystems/sidebar-right.zh.md)——tab composition、导航与生命周期。
 - [Document Preview](../ui-sidebar-documentpreview/README.zh.md)——本地源码、Markdown、图片、HTML 与 PDF 渲染。
 - [Sidebar Browser 决策](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.zh.md)——iframe 行为与 controller 所有权。
-- [Desktop Browser 决策](../../../.agents/notes/implemented/feature/2026-09-20-desktop-browser-webview.zh.md)——webview 租约、CWD 存储分组与手动恢复。
+- [Desktop Browser 决策](../../../.agents/notes/implemented/feature/2026-09-20-desktop-browser-webview.zh.md)——webview 租约与手动恢复。
+- [共享持久登录决策](../../../.agents/notes/implemented/feature/2026-10-07-desktop-browser-shared-sign-in.zh.md)——单一持久分区与 Google 登录窗口。
 
 -----
 
@@ -112,7 +115,7 @@ Desktop 主进程批准 guest 租约，并执行挂载、导航和权限策略�
 - 只要 tab 仍在 Sidebar 布局中，保存的标题和 URL 就会跨刷新与插件卸载保留。关闭 tab 会删除其检查点。重启恢复不恢复页面内存、未保存的表单或 Chromium history 栈。
 - 本地文件会被拒绝，并继续由 Document Preview 负责。
 - Google 与多数搜索引擎拒绝 iframe 嵌入，因此在 Web 中关键词搜索与默认的 Google 首页会保持空白：浏览器把被拒绝的 frame 报告为普通加载，所以不会出现失败提示。可在系统浏览器中打开，或使用由 `<webview>` 渲染的 Desktop。把 `searchUrl` 与 `homeUrl` 设为允许嵌入的网站可避免此问题。
-- Desktop 按规范化的工作区 CWD 共享进程内存储分区；没有解析到 Workspace 的 Session 单独隔离。Cookie 与 Web storage 不跨应用重启保留。guest 权限、下载与原生 popup 均被拒绝；通过检查的 HTTP(S) popup 请求会打开 Sidebar tab。Host 地址过滤不是通用私网或 DNS-rebinding 防火墙。
+- Desktop guest 在所有 Workspace 与 Session 之间共享同一个持久存储分区，因此 cookie 与 Web storage（包括登录状态）会跨应用重启保留，直到 **清除登录资料** 将其清除。该分区把 Electron 的 user agent 呈现为它所内嵌的 Chrome；Google 仍可能拒绝它判定为不安全的登录，此时登录会报告为没有完成。guest 权限、下载与原生 popup 均被拒绝；通过检查的 HTTP(S) popup 请求会打开 Sidebar tab。Host 地址过滤不是通用私网或 DNS-rebinding 防火墙。
 
 <a id="dev-note"></a>
 ### 开发备注

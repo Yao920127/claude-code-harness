@@ -33,7 +33,7 @@
     "@deepseek-ai/cordis": "workspace:~"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "0.3.263",
+    "@anthropic-ai/claude-agent-sdk": "0.3.291",
     "@deepseek-ai/schemastery": "workspace:~"
   },
   "devDependencies": {

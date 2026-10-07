@@ -92,7 +92,6 @@ describe('ui-layout client apply', () => {
     expect(slots.spec('main')).toEqual({ kind: 'keyed', scope: 'root' })
     expect(slots.spec('rightbar')).toEqual({ kind: 'single', scope: 'root' })
     expect(slots.spec('shell.overlay')).toEqual({ kind: 'list', scope: 'root' })
-    expect(slots.spec('shell.leading')).toEqual({ kind: 'single', scope: 'root' })
     expect(slots.spec('shell.bottom')).toEqual({ kind: 'single', scope: 'root' })
   })
 
@@ -165,7 +164,6 @@ describe('ui-layout client apply', () => {
     expect(slots.spec('main')).toBeUndefined()
     expect(slots.spec('rightbar')).toBeUndefined()
     expect(slots.spec('shell.overlay')).toBeUndefined()
-    expect(slots.spec('shell.leading')).toBeUndefined()
     expect(slots.spec('shell.bottom')).toBeUndefined()
     expect(host.root.getSnapshot().hooks.panelInfo).toBeUndefined()
     // The built-in root declaration survives entry teardown (renderer-owned).

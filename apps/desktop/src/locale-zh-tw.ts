@@ -129,6 +129,7 @@ export const zhTW = {
   mandatoryDetail: '目前版本已停止支援，請更新後繼續使用。在您確認重啟之前，現有任務可以繼續執行。',
   mandatoryUnavailable: '暫時無法檢查更新要求，請在網路恢復後重試。',
   policyLoginTitle: '登入測試環境',
+  browserSignInTitle: '使用 Google 登入',
   policyLoginRequired: '這是測試版應用，檢查更新要求需要先透過飛書登入。登入不會下載或安裝更新。',
   policyLogin: '透過飛書登入',
   policyLoginFailed: '測試環境登入未完成，請檢查網路後重試。',

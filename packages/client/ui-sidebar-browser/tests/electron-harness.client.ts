@@ -12,17 +12,18 @@ export function electronFixture(initial?: BrowserTabState) {
   const opens = new Set<(url: string) => void>()
   const reservation: DesktopBrowserReservation = { lease: `lease-${++sequence}` as DesktopBrowserLeaseId, partition: 'partition' }
   const bridge = {
-    acquire: vi.fn(async (_workspace: string) => reservation),
+    acquire: vi.fn(async () => reservation),
     release: vi.fn(async (_lease: DesktopBrowserLeaseId) => {}),
     onOpenRequested: vi.fn((_lease: DesktopBrowserLeaseId, listener: (url: string) => void) => {
       opens.add(listener)
       return () => { opens.delete(listener) }
     }),
+    signInGoogle: vi.fn(async () => 'signed-in' as const),
+    clearSignIn: vi.fn(async () => {}),
   } satisfies DesktopBrowserBridge
-  const workspace = vi.fn(async (_signal: AbortSignal) => 'cwd:/workspace')
   const persist = vi.fn()
   const openRequested = vi.fn()
-  const page = createElectronPage({ initial, persist, openRequested }, bridge, workspace)
+  const page = createElectronPage({ initial, persist, openRequested }, bridge)
   const presentation = page.presentation
   if (!(presentation instanceof ElectronWebviewPresentation)) throw new Error('expected the Electron presentation')
   const create = presentation.createElement.bind(presentation)
@@ -48,7 +49,7 @@ export function electronFixture(initial?: BrowserTabState) {
   host.id = `electron-fixture-${sequence}`
   document.body.append(host)
   return {
-    ...page, presentation, bridge, workspace, persist, openRequested, opens, guests, host, reservation,
+    ...page, presentation, bridge, persist, openRequested, opens, guests, host, reservation,
     mount: () => presentation.mount(host.id),
     async guest() {
       await vi.waitFor(() => { expectGuest() })

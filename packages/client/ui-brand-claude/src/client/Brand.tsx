@@ -1,7 +1,9 @@
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from './index.ts'
 import { CLAUDE_MARK_COLOR, CLAUDE_MARK_PATH, CLAUDE_MARK_VIEWBOX } from './mark.ts'
-import styles from './Brand.module.css'
+
+/** Square edge of the blank-session hero mark, which stands alone without a headline. */
+export const CLAUDE_HERO_MARK_SIZE = 64
 
 /** Presentation shared by the sidebar and hero mark positions. */
 interface ClaudeMarkProps {
@@ -40,10 +42,20 @@ export function ClaudeBrandName({ t }: PropsLocale<'brand.claude'>) {
 }
 
 /**
- * Render the blank-session hero headline.
- * @param props - The framework translate seat for the `brand.claude` namespace.
- * @returns the headline text.
+ * Render the blank-session hero mark at {@link CLAUDE_HERO_MARK_SIZE} in place
+ * of the host's headline-sized request.
+ * @param props - Host placement class; the host size is replaced.
+ * @returns the decorative mark.
  */
-export function ClaudeHeadline({ t }: PropsLocale<'brand.claude'>) {
-  return <span className={styles.headline}>{t('headline')}</span>
+export function ClaudeHeroMark({ className }: ClaudeMarkProps) {
+  return <ClaudeMark size={CLAUDE_HERO_MARK_SIZE} className={className} />
+}
+
+/**
+ * Occupy the hero headline seat with no text, so the hero shows the mark alone
+ * instead of the host's fallback headline.
+ * @returns nothing.
+ */
+export function ClaudeHeroHeadline() {
+  return null
 }

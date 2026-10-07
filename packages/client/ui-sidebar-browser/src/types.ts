@@ -21,11 +21,14 @@ export type BrowserOpenStreamItem =
 /** Main-issued identity of one guest reservation. */
 export type DesktopBrowserLeaseId = Branded<'DesktopBrowserLeaseId'>
 
-/** A guest's approved, process-local storage partition. */
+/** A guest's approved storage partition, shared by every Sidebar guest and kept across restarts. */
 export interface DesktopBrowserReservation {
   readonly lease: DesktopBrowserLeaseId
   readonly partition: string
 }
+
+/** Outcome of one Google sign-in window: finished, closed by the user, or unable to load. */
+export type DesktopBrowserSignInResult = 'signed-in' | 'cancelled' | 'failed'
 
 /** Main-approved request to open an HTTP(S) page from an existing guest. */
 export interface DesktopBrowserOpenRequest {
@@ -35,10 +38,14 @@ export interface DesktopBrowserOpenRequest {
 
 /** Origin-scoped operations; no Electron objects or arbitrary IPC cross this interface. */
 export interface DesktopBrowserBridge {
-  /** @param workspace - resolved storage account. @returns one approved guest reservation. */
-  acquire(workspace: string): Promise<DesktopBrowserReservation>
+  /** @returns one approved guest reservation in the shared partition. */
+  acquire(): Promise<DesktopBrowserReservation>
   /** @param lease - the caller's reservation. @returns after its guest has been destroyed. */
   release(lease: DesktopBrowserLeaseId): Promise<void>
   /** @param lease - originating guest. @param listener - approved URL consumer. @returns unsubscribe callback. */
   onOpenRequested(lease: DesktopBrowserLeaseId, listener: (url: string) => void): () => void
+  /** Open the Google sign-in window over the shared partition. @returns how the window ended. */
+  signInGoogle(): Promise<DesktopBrowserSignInResult>
+  /** @returns after every cookie and site storage entry of the shared partition has been erased. */
+  clearSignIn(): Promise<void>
 }

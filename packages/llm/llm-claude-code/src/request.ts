@@ -11,9 +11,11 @@
  * @module @deepseek-ai/dsh-llm-claude-code/request
  */
 
+import type { EffortLevel } from '@anthropic-ai/claude-agent-sdk'
 import { LlmError } from '@deepseek-ai/dsh-llm'
 import type { ContentBlock, GenerateOptions, RequestMessage } from '@deepseek-ai/dsh-llm'
 import { assertNever } from '@deepseek-ai/dsh-util-values'
+import { effortLevel } from './models.ts'
 import { readReplay, type ClaudeCodeReplay } from './replay.ts'
 
 /** One Claude Code turn derived from a harness request. */
@@ -24,6 +26,8 @@ export interface ClaudeCodeTurnPlan {
   readonly systemAppend?: string
   /** Native chain entry to resume after; absent starts a fresh native conversation. */
   readonly resume?: ClaudeCodeReplay
+  /** Claude Code effort level for the turn; absent leaves Claude Code's own setting in charge. */
+  readonly effort?: EffortLevel
 }
 
 function unsupported(option: string, detail: string): LlmError {
@@ -45,7 +49,19 @@ function assertSupportedOptions(options: GenerateOptions): void {
   if (options.maxTokens !== undefined && options.purpose === undefined) {
     throw unsupported('maxTokens', 'Claude Code chooses its own output cap')
   }
-  if (options.reasoningEffort !== undefined) throw unsupported('reasoning effort', 'this route advertises no efforts')
+}
+
+/**
+ * Map the request's effort to a Claude Code level.
+ * @param options - the assembled request.
+ * @returns the level, or none when the request names no effort.
+ * @throws {LlmError} code `UNSUPPORTED_OPTION` for an effort this route never advertises.
+ */
+function requestEffort(options: GenerateOptions): Pick<ClaudeCodeTurnPlan, 'effort'> {
+  if (options.reasoningEffort === undefined) return {}
+  const effort = effortLevel(options.reasoningEffort)
+  if (effort === undefined) throw unsupported(`reasoning effort "${options.reasoningEffort}"`, 'Claude Code accepts low, medium, high, xhigh, or max')
+  return { effort }
 }
 
 /**
@@ -150,6 +166,7 @@ function historyText(messages: readonly RequestMessage[]): string {
  */
 export function planTurn(options: GenerateOptions): ClaudeCodeTurnPlan {
   assertSupportedOptions(options)
+  const effort = requestEffort(options)
   const auxiliary = options.purpose !== undefined
   const systemParts: string[] = []
   if (auxiliary && options.system !== undefined) systemParts.push(options.system)
@@ -191,5 +208,6 @@ export function planTurn(options: GenerateOptions): ClaudeCodeTurnPlan {
     prompt: historyText(auxiliary ? history : history.filter(sentInConversation)) + prompt,
     ...systemAppend.length === 0 ? {} : { systemAppend },
     ...resume === undefined ? {} : { resume },
+    ...effort,
   }
 }

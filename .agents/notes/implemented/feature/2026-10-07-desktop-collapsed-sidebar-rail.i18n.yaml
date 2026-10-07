@@ -1,0 +1,22 @@
+# Bilingual-pair consistency record for 2026-10-07-desktop-collapsed-sidebar-rail.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-07-desktop-collapsed-sidebar-rail.md
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform:
+  en: b3010c08e9d5e323
+  zh: 286e097f9652c49a
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform/problem:
+  en: 845ea441773818c9
+  zh: a860ed821c9ba08f
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform/decision:
+  en: cd1e09aea789701d
+  zh: a148e3bc309a1a10
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform/decision/what-this-replaces:
+  en: d96ed1c1d134478c
+  zh: b0938eff906c543d
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform/alternatives-considered:
+  en: d2a710f40b53eca2
+  zh: 3aa2cf1be4e29018
+/agent-note-collapsed-sidebar-rail-on-every-desktop-platform/consequences:
+  en: 833ba1bb9ffa712d
+  zh: e715d0e0556795cc

@@ -255,7 +255,6 @@ describe('web e2e: macOS window drag coverage', () => {
       const panel = await rectOf(page, '[data-sidebar-right-panel]')
       const tabs = await rectOf(page, '[data-conversation-tabs]')
       const header = await rectOf(page, '[data-slot="conversation.header"] > header')
-      const seat = await rectOf(page, '[data-shell-leading]')
       // The sidebar column drags through its own rows (ui-sidebar), so its
       // coverage is the rows' geometry rather than a frame band's height.
       const toggle = await rectOf(page, 'button[aria-label="Collapse sidebar"]')
@@ -308,15 +307,6 @@ describe('web e2e: macOS window drag coverage', () => {
           },
         )
       }
-      if (seat.width > 0) {
-        probes.push({
-          row: 'shell.leading seat',
-          what: 'the row of window-chrome controls',
-          at: () => [seat.x + 4, seat.y + seat.height / 2],
-          drag: false,
-        })
-      }
-
       for (const probe of probes) {
         const [x, y] = probe.at()
         const expected = `${probe.row}: ${probe.what} at ${Math.round(x)},${Math.round(y)}`
@@ -337,26 +327,27 @@ describe('web e2e: macOS window drag coverage', () => {
     }
   }, 180_000)
 
-  it('keeps the Conversation header draggable over the collapsed column, and the seat out of it', async () => {
+  it('keeps the collapsed rail’s top strip draggable over the traffic lights and its expand toggle clickable', async () => {
     const { page, tripwire } = await darwinPage()
     try {
       await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
-      await page.locator('[data-shell-leading]').waitFor({ state: 'visible', timeout: 15_000 })
+      const toggleButton = page.getByRole('button', { name: 'Open sidebar', exact: true })
+      await toggleButton.waitFor({ state: 'visible', timeout: 15_000 })
       await settled(page)
       const regions = await collectedRegions(page, INTERACTIVE_SELECTOR)
       const header = await rectOf(page, '[data-slot="conversation.header"] > header')
-      const seat = await rectOf(page, '[data-shell-leading]')
+      const toggle = await rectOf(page, 'button[aria-label="Open sidebar"]')
 
-      // With the column hidden the centre starts at the frame's left edge, where
-      // the Conversation header owns the run.
+      // The 56px rail keeps the expand toggle below the traffic lights; the
+      // strip above it is the rail's window-drag row.
+      expect(toggle.x + toggle.width, 'the toggle stays inside the 56px rail').toBeLessThanOrEqual(56)
+      expect(toggle.y, 'the toggle starts below the traffic lights').toBeGreaterThanOrEqual(36)
+      expect(isDraggableAt(regions, toggle.x + toggle.width / 2, 8), 'the rail strip over the traffic lights').toBe(true)
       expect(
-        isDraggableAt(regions, header.x + 40, header.y + 4),
-        'the Conversation header over the frame’s left edge',
-      ).toBe(true)
-      expect(
-        isDraggableAt(regions, seat.x + seat.width / 2, seat.y + seat.height / 2),
-        'the seat holding the reopen controls',
+        isDraggableAt(regions, toggle.x + toggle.width / 2, toggle.y + toggle.height / 2),
+        'the expand toggle',
       ).toBe(false)
+      expect(isDraggableAt(regions, header.x + 40, header.y + 4), 'the Conversation header beside the rail').toBe(true)
 
       expect(swallowedBoxes(regions), 'interactive boxes inside the drag surface').toEqual([])
       expect(tripwire.pageErrors).toEqual([])

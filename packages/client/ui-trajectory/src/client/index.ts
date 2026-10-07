@@ -1,6 +1,6 @@
 /**
- * Browser trajectory plugin contributing one entry to the conversation view
- * slot without defining a service.
+ * Browser trajectory plugin contributing the Trajectory and Workflow entries
+ * to the conversation view slot without defining a service.
  */
 import type { Context } from '@deepseek-ai/cordis'
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment'
@@ -15,6 +15,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-session/client'
 import { createTrajectoryDurationStore } from './duration-store.ts'
+import { FlowView, type FlowViewInjected } from './FlowView.tsx'
 import { createTrajectoryStringWrappingStore } from './string-wrapping-store.ts'
 import { en, NS, zh } from './locales.ts'
 import { registerTrajectoryAssistantDefinition } from './trajectory-assistant-definition.ts'
@@ -41,8 +42,9 @@ export type {
 export const inject = ['slots', 'sessions', 'uiSession', 'uiConversation', 'locale']
 
 /**
- * Client plugin body: register the trajectory view tab. The registration
- * rides the slot service's effect wrapper, so plugin unload removes the tab.
+ * Client plugin body: register the Trajectory and Workflow view tabs. Each
+ * registration rides the slot service's effect wrapper, so plugin unload
+ * removes both tabs.
  * @param ctx - client root context.
  */
 export function apply(ctx: Context): void {
@@ -66,6 +68,24 @@ export function apply(ctx: Context): void {
   const t = ctx.locale.bind(NS)
   const duration = createTrajectoryDurationStore()
   const stringWrapping = createTrajectoryStringWrappingStore()
+  const jsonStringWrapping: FlowViewInjected['jsonStringWrapping'] = {
+    getDefault: () => stringWrapping.getSnapshot(),
+    setDefault: (value) => { stringWrapping.set(value) },
+  }
+  // Both views page the same Session history and report whether the
+  // Trajectory target changed.
+  const olderHistoryLoader = (sessionId: SessionId): (() => Promise<boolean>) => {
+    const session = ctx.sessions.binding(sessionId)?.session
+    if (session === undefined) {
+      throw new Error(`ui-trajectory: session "${sessionId}" is unavailable`)
+    }
+    const trajectory = ctx.uiConversation.binding(sessionId).target('trajectory')
+    return async () => {
+      const before = trajectory.getSnapshot()
+      await session.loadOlder()
+      return trajectory.getSnapshot() !== before
+    }
+  }
   registerTrajectoryMessageDefinitions(ctx)
   registerTrajectoryRequestHeaderDefinition(ctx)
   registerTrajectoryAssistantDefinition(ctx)
@@ -85,29 +105,26 @@ export function apply(ctx: Context): void {
     children: {
       'conversation.trajectory.images': { kind: 'single', scope: 'session' },
     },
-    inject: (sessionId: SessionId): TrajectoryViewInjected => {
-      const session = ctx.sessions.binding(sessionId)?.session
-      if (session === undefined) {
-        throw new Error(`ui-trajectory: session "${sessionId}" is unavailable`)
-      }
-      const trajectory = ctx.uiConversation.binding(sessionId).target('trajectory')
-      return {
-        hooks: { duration },
-        jsonStringWrapping: {
-          getDefault: () => stringWrapping.getSnapshot(),
-          setDefault: (value) => { stringWrapping.set(value) },
-        },
-        loadOlder: async () => {
-          const before = trajectory.getSnapshot()
-          await session.loadOlder()
-          return trajectory.getSnapshot() !== before
-        },
-        loadImage: Object.assign(
-          (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
-          { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
-        ),
-        setActualDuration: (value) => { duration.set(value) },
-      }
-    },
+    inject: (sessionId: SessionId): TrajectoryViewInjected => ({
+      hooks: { duration },
+      jsonStringWrapping,
+      loadOlder: olderHistoryLoader(sessionId),
+      loadImage: Object.assign(
+        (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
+        { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
+      ),
+      setActualDuration: (value) => { duration.set(value) },
+    }),
   }, TrajectoryView))
+  ctx.slots.inject('conversation.view', () => ctx.slots.register({
+    name: 'conversation.view',
+    id: 'flow',
+    order: 20,
+    locale: NS,
+    label: () => t('view.flow'),
+    inject: (sessionId: SessionId): FlowViewInjected => ({
+      jsonStringWrapping,
+      loadOlder: olderHistoryLoader(sessionId),
+    }),
+  }, FlowView))
 }

@@ -86,8 +86,7 @@
    strip. Widen that strip's start inset (dockkit publishes the variable);
    the second Grid column sits clear of the lights and uses the ordinary inset. */
 :global([data-platform='darwin']) .panel[data-sidebar-right-panel='fullscreen'] :global([data-dockkit-host='dock'][data-dockkit-column='0']) {
-  /* Lights end near x 68; 88 leaves the same 20px of air the conversation
-     header's leading controls keep after them (ui-sidebar HeaderLeadingControls). */
+  /* Lights end near x 68; 88 leaves 20px of air after them. */
   --dsh-dockkit-strip-inline-start: 88px;
 }
 

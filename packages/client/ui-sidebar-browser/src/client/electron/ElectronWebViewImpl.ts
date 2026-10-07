@@ -20,7 +20,6 @@ export class ElectronWebViewImpl implements BrowserFrame {
   private guestLifetime: AbortController | undefined
   private element: WebviewElement | undefined
   private lease: DesktopBrowserLeaseId | undefined
-  private workspaceKey: string | undefined
   private initializing: Promise<void> | undefined
   private ready = false
   private pending: BrowserTarget | undefined
@@ -34,11 +33,9 @@ export class ElectronWebViewImpl implements BrowserFrame {
   /**
    * @param options - saved address, persistence and source-tab opening callback.
    * @param bridge - main-process guest operations.
-   * @param workspace - resolves the storage account once for this frame lifetime.
    * @param presentation - tag and Sidebar placement adapter.
    */
   constructor(private readonly options: BrowserPageOptions, private readonly bridge: DesktopBrowserBridge,
-    private readonly workspace: (signal: AbortSignal) => Promise<string>,
     private readonly presentation: ElectronWebviewPresentation) {
     this.checkpoint = currentBrowserTarget(options.initial)
     this.store = createSnapshotStore(emptyBrowserFrame())
@@ -142,10 +139,8 @@ export class ElectronWebViewImpl implements BrowserFrame {
   }
 
   private async createGuest(attachmentSignal: AbortSignal): Promise<void> {
-    this.workspaceKey ??= await this.workspace(attachmentSignal)
-    if (attachmentSignal.aborted) return
-    const reservation = await this.bridge.acquire(this.workspaceKey)
-    // oxlint-disable-next-line typescript/no-unnecessary-condition -- The signal can abort while acquire is pending.
+    const reservation = await this.bridge.acquire()
+    // The signal can abort while acquire is pending.
     if (attachmentSignal.aborted) { await this.release(reservation.lease); return }
     this.lease = reservation.lease
     this.guestLifetime = new AbortController()

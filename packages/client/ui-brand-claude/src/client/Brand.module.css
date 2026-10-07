@@ -1,6 +1,0 @@
-/* Display headlines use the serif face at regular weight with tightened tracking. */
-.headline {
-  font-family: var(--cch-font-display);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-}

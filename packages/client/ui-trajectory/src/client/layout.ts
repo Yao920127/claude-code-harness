@@ -574,6 +574,21 @@ export function deriveTrajectoryLayout(
 }
 
 /**
+ * Find the highest record index in a layout.
+ * @param turns - Layout turns.
+ * @returns The highest cell index, or 0 for an empty layout.
+ */
+export function lastCellIndex(turns: readonly TrajectoryTurnModel[]): number {
+  let last = 0
+  for (const turn of turns) {
+    for (const group of turn.groups) {
+      for (const cell of group.cells) last = Math.max(last, cell.index)
+    }
+  }
+  return last
+}
+
+/**
  * Append the changing in-flight assistant cells to a stable finalized layout.
  * @param turns - Finalized layout derived with an empty-block partial anchor.
  * @param partial - Current in-flight assistant projection.

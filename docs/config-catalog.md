@@ -1594,8 +1594,8 @@ export interface Config {
 ## `@deepseek-ai/dsh-llm-claude-code`
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
-- `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:51`](../packages/llm/llm-claude-code/src/index.ts)
+- `refs`: `EffortLevel` (`@anthropic-ai/claude-agent-sdk`) · [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:53`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */
@@ -1610,6 +1610,13 @@ export interface Config {
    * installation reports for its account.
    */
   models?: ClaudeCodeModelEntry[]
+  /**
+   * Absolute path of the Claude Code executable to run, for example the
+   * installed `/opt/homebrew/bin/claude`. Absent runs the Claude Code build
+   * the pinned Agent SDK distributes. A configured executable lists that
+   * installation's models and runs its turns.
+   */
+  executable?: string
   /**
    * Permission setting (default `session`). `session` derives each turn's
    * native mode from the Session's sandbox mode and approval policy: full
@@ -1642,6 +1649,8 @@ export interface ClaudeCodeModelEntry {
   readonly name: string
   /** Optional selector distinction. */
   readonly description?: string
+  /** Claude Code effort levels the model accepts; absent or empty offers no effort choice. */
+  readonly efforts?: EffortLevel[]
 }
 
 /** Route-selected permission setting. */

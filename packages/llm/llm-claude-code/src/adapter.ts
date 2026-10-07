@@ -29,7 +29,7 @@ import { scrubbedParentEnv, type SubprocessHandle, type SubprocessSpawnSpec } fr
 import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
 import { approvalCallback } from './approval.ts'
 import { BROWSER_MCP_SERVER, BROWSER_TOOL_ID, browserToolServer } from './browser-tool.ts'
-import { modelEntries, NATIVE_MODEL_ID, type ClaudeCodeModelEntry } from './models.ts'
+import { modelEntries, modelReasoning, NATIVE_MODEL_ID, type ClaudeCodeModelEntry } from './models.ts'
 import { resolvePermissionMode, type ClaudeCodeRoutePermissionMode, type SessionPermissions } from './permissions.ts'
 import { planTurn, type ClaudeCodeTurnPlan } from './request.ts'
 import { ClaudeCodeStreamTranslator } from './stream.ts'
@@ -42,6 +42,8 @@ export interface ClaudeCodeAdapterOptions {
   readonly displayName: string
   /** Advertised models in selector order; absent asks the signed-in Claude Code installation. */
   readonly models?: readonly ClaudeCodeModelEntry[]
+  /** Claude Code executable every process runs; absent runs the one the Agent SDK distributes. */
+  readonly executable?: string
   /** Working directory for the model-discovery process, whose settings select the default model. */
   readonly discoveryCwd: string
   /** Reports a failed model discovery; the selector then offers only the native default. */
@@ -99,10 +101,17 @@ export class ClaudeCodeAdapter extends LlmAdapter {
   }
 
   override async resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
-    // Every model call resolves its model, so only an already-started discovery is consulted.
-    const known = this.options.models ?? await this.discovered
-    const entry = known?.find(candidate => candidate.id === model)
-    return { provider, id: model, name: entry?.name ?? model, inputModalities: ['text'] }
+    // Effort validation needs the model's levels, so the first resolution
+    // waits for the one shared discovery; later resolutions reuse its result.
+    const entry = (await this.models()).find(candidate => candidate.id === model)
+    const reasoning = modelReasoning(entry?.efforts)
+    return {
+      provider,
+      id: model,
+      name: entry?.name ?? model,
+      inputModalities: ['text'],
+      ...reasoning === undefined ? {} : { reasoning },
+    }
   }
 
   /** The configured models, or the signed-in installation's list, discovered once. */
@@ -134,6 +143,12 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       query.usage_EXPERIMENTAL_MAY_CHANGE_DO_NOT_RELY_ON_THIS_API_YET({ skipBehaviors: true }))
   }
 
+  /** SDK option selecting the configured Claude Code executable, when one is configured. */
+  private executableOption(): Pick<Options, 'pathToClaudeCodeExecutable'> {
+    const executable = this.options.executable
+    return executable === undefined ? {} : { pathToClaudeCodeExecutable: executable }
+  }
+
   /**
    * Start a Claude Code process that runs no turn, answer one control request, and end the process.
    * @param cwd - working directory whose settings the process loads.
@@ -154,6 +169,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       options: {
         cwd,
         env: { ...scrubbedParentEnv(), ...this.options.env },
+        ...this.executableOption(),
         persistSession: false,
         spawnClaudeCodeProcess: (spawnOptions) => {
           child = this.options.spawn(claudeSpawnSpec(spawnOptions, this.options.disposeGraceMs))
@@ -237,7 +253,9 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       abortController: controller,
       cwd,
       env: { ...scrubbedParentEnv(), ...this.options.env },
+      ...this.executableOption(),
       ...request.model === NATIVE_MODEL_ID ? {} : { model: request.model },
+      ...plan.effort === undefined ? {} : { effort: plan.effort },
       includePartialMessages: true,
       systemPrompt: plan.systemAppend === undefined
         ? { type: 'preset', preset: 'claude_code' }

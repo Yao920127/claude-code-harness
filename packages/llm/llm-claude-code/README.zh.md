@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agent preset 下在输入框的模型选择器里选择 Claude 模型；把它设为默认模型选择后，每个新 Session 都会以 Claude Code 开始。选择器列出 Claude Code 为你的账号报告的模型——例如 `Claude (Claude Code settings)`（不发送模型，由你的 Claude Code 设置决定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——并在选择器首次请求时从一个短暂的 Claude Code 进程读取该列表。设置项的说明写出账号的推荐模型，它只在没有设置选择模型时生效。
+Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agent preset 下在输入框的模型选择器里选择 Claude 模型；把它设为默认模型选择后，每个新 Session 都会以 Claude Code 开始。选择器列出 Claude Code 为你的账号报告的模型——例如 `Claude (Claude Code settings)`（不发送模型，由你的 Claude Code 设置决定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——并在选择器首次请求时从一个短暂的 Claude Code 进程读取该列表。设置项的说明写出账号的推荐模型，它只在没有设置选择模型时生效。对于接受推理强度设置的模型，选择器的 Effort 行提供 Claude Code 为它报告的等级——Low、Medium、High、Extra high（`xhigh`）与 Max——并从 High 开始；所选等级作为 `effort` 选项传给 Claude Code。没有报告等级的模型不显示 Effort 行。
 
 ### 配置
 
@@ -46,7 +46,8 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 |---|---|---|
 | `provider` | `claude-code` | 注册到 `ctx.llm` 的路由名；每个挂载实例需要唯一值 |
 | `displayName` | `Claude Code` | 模型选择器显示的路由名称 |
-| `models` | 自动发现 | 可选模型；缺省或为空时列出账号的模型。id `default` 不发送模型，由你的 Claude 设置决定，其他 id 原样传给 Claude Code |
+| `models` | 自动发现 | 可选模型；缺省或为空时列出账号的模型。id `default` 不发送模型，由你的 Claude 设置决定，其他 id 原样传给 Claude Code。条目可选的 `efforts` 列出它提供的推理强度等级 |
+| `executable` | SDK 内置版本 | 要运行的 Claude Code 可执行文件的绝对路径，例如 `/opt/homebrew/bin/claude`；缺省时运行锁定的 Agent SDK 所分发的版本。设置它即可列出并运行你已安装的 Claude Code 所提供的模型；路径不存在时在加载时失败 |
 | `permissionMode` | `session` | `session` 跟随每个 Session 的权限预设；原生模式（`default`、`acceptEdits`、`auto`、`plan` 或 `bypassPermissions`）固定每个回合 |
 | `env` | `{}` | 叠加在已清除凭据的父环境之上的显式环境 |
 | `disposeGraceMs` | `3000` | 受管进程各终止层级之间的宽限时间 |
@@ -115,7 +116,7 @@ Bundle 补丁插入一行 `llm-claude-code`。在 Web 应用中，于任何 agen
 
 ### 请求流程
 
-`planTurn()` 拒绝 temperature、停止序列、推理强度、图片，以及对话请求中的 `maxTokens`，并忽略 harness 工具 schema。它找到本构建可读取 replay 状态的最新助手消息，并把其后结尾用户消息中由人撰写的文本作为提示发送；插件插入的用户消息（例如 runtime-context 快照）会被舍弃，除非结尾消息中没有其他内容。从该位置到结尾用户消息之间的消息——没有 replay 状态时则为全部消息——会在提示前的 `<conversation_history>` 块中引用一次。辅助调用（设置了 `purpose`，例如 Session 标题）发送所有消息、附加其系统提示、从不续接，并以无工具、单回合且不持久化原生记录的方式运行。[`src/models.ts`](src/models.ts) 为发现的模型命名：原生默认项以决定它的 Claude Code 设置命名，所有别名都保留在列表中。
+`planTurn()` 把请求的推理强度映射为 Claude Code 等级，并拒绝 temperature、停止序列、`low`、`medium`、`high`、`xhigh` 与 `max` 以外的推理强度、图片，以及对话请求中的 `maxTokens`，并忽略 harness 工具 schema。它找到本构建可读取 replay 状态的最新助手消息，并把其后结尾用户消息中由人撰写的文本作为提示发送；插件插入的用户消息（例如 runtime-context 快照）会被舍弃，除非结尾消息中没有其他内容。从该位置到结尾用户消息之间的消息——没有 replay 状态时则为全部消息——会在提示前的 `<conversation_history>` 块中引用一次。辅助调用（设置了 `purpose`，例如 Session 标题）发送所有消息、附加其系统提示、从不续接，并以无工具、单回合且不持久化原生记录的方式运行。[`src/models.ts`](src/models.ts) 为发现的模型命名，并保留每个模型报告的推理强度等级：原生默认项以决定它的 Claude Code 设置命名，所有别名都保留在列表中。
 
 adapter 从请求的 Session 解析工作区；请求未指定 Session 时则从发起调用的 Agent 解析，两者都没有工作区时，会在启动 Claude Code 之前以 `NO_WORKSPACE` 失败。SDK 的自定义 spawn 钩子把平台 CLI 置于 `ctx.subprocess` 之下；流的 `finally` 会关闭查询、终止受管范围，并等待整个进程树退出。
 

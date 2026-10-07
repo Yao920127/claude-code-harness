@@ -4,7 +4,9 @@ import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react
 import { useSyncExternalStore } from 'react'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { PaneId, TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
-import { createBrowserControllers, type BrowserControllerState, type BrowserInjected } from '../src/client/browser/BrowserController.ts'
+import {
+  createBrowserControllers, type BrowserAccount, type BrowserControllerState, type BrowserInjected,
+} from '../src/client/browser/BrowserController.ts'
 import { createBrowserStore } from '../src/client/browser/store.ts'
 import type { BrowserBodyProps } from '../src/client/view/BrowserBody.tsx'
 import { BrowserBody } from '../src/client/view/BrowserBody.tsx'
@@ -38,14 +40,20 @@ const absentState = {
 }
 
 function mountBrowser(navigation?: { readonly url?: string },
-  options: { initial?: BrowserTabState; createPage?: BrowserPageFactory; refreshShortcut?: ReturnType<BrowserBodyProps['useTabInfo']>['tab']['refreshShortcut'] } = {}) {
+  options: {
+    initial?: BrowserTabState
+    createPage?: BrowserPageFactory
+    account?: BrowserAccount
+    refreshShortcut?: ReturnType<BrowserBodyProps['useTabInfo']>['tab']['refreshShortcut']
+  } = {}) {
   const store = createBrowserStore().create(`browser-body-test-${String(++mountSequence)}`)
   if (options.initial !== undefined) store.actions.replace(TAB, options.initial)
   const lifetime = new AbortController()
   lifetimes.add(lifetime)
   const injected = createBrowserControllers(store.actions, options.createPage ?? createIframePage, () => true,
-    () => 'https://search.example/?q=%s', () => undefined)
+    () => 'https://search.example/?q=%s', () => undefined, options.account)
   controllers.push(injected)
+  const reload = vi.spyOn(injected, 'reload')
   const { keyedHooks, ...commands } = injected
   const tabActions = { bindCommands: vi.fn<ReturnType<BrowserBodyProps['useTabInfo']>['tab']['actions']['bindCommands']>(() => vi.fn()), openResource: vi.fn(), openTab: vi.fn(), close: vi.fn() }
   const props: Pick<BrowserBodyProps, 'sessionId' | 'useTabInfo' | 'useStore' | 'actions' | 't' | 'useBrowserState'>
@@ -74,9 +82,76 @@ function mountBrowser(navigation?: { readonly url?: string },
     }
   const renderBody = () => render(<BrowserBody {...props as BrowserBodyProps} />)
   return {
-    view: renderBody(), remount: renderBody, store, lifetime, injected, tabActions,
+    view: renderBody(), remount: renderBody, store, lifetime, injected, tabActions, reload,
   }
 }
+
+describe('site sign-in menu', () => {
+  function account(result: Awaited<ReturnType<BrowserAccount['signInGoogle']>> | Error = 'signed-in') {
+    return {
+      signInGoogle: vi.fn(async () => {
+        if (result instanceof Error) throw result
+        return result
+      }),
+      clearSignIn: vi.fn(async () => {}),
+    }
+  }
+  const choose = async (view: ReturnType<typeof render>, label: string) => {
+    fireEvent.click(view.getByRole('button', { name: zh['account.menu'] }))
+    fireEvent.click(await waitFor(() => view.getByRole('menuitem', { name: label })))
+  }
+
+  it('closes the menu on Escape without starting a sign-in', async () => {
+    const signIn = account()
+    const { view } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
+    const button = view.getByRole('button', { name: zh['account.menu'] })
+    fireEvent.click(button)
+    const item = await waitFor(() => view.getByRole('menuitem', { name: zh['account.google'] }))
+    fireEvent.keyDown(item, { key: 'Escape' })
+    await waitFor(() => { expect(view.queryByRole('menuitem', { name: zh['account.google'] })).toBeNull() })
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    expect(signIn.signInGoogle).not.toHaveBeenCalled()
+  })
+
+  it('is absent for a provider without site sign-in', () => {
+    const { view } = mountBrowser({ url: 'https://example.test/' })
+    expect(view.queryByRole('button', { name: zh['account.menu'] })).toBeNull()
+  })
+
+  it('signs in with Google, reports it, and reloads the tab', async () => {
+    const signIn = account()
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
+    await choose(view, zh['account.google'])
+    expect(signIn.signInGoogle).toHaveBeenCalledOnce()
+    await waitFor(() => { expect(view.getByRole('status').textContent).toBe(zh['account.signedIn']) })
+    expect(reload).toHaveBeenCalledWith(TAB)
+  })
+
+  it('leaves no notice and no reload when the sign-in window is closed', async () => {
+    const signIn = account('cancelled')
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
+    await choose(view, zh['account.google'])
+    await waitFor(() => { expect(view.getByRole('button', { name: zh['account.menu'] }).hasAttribute('disabled')).toBe(false) })
+    expect(view.queryByText(zh['account.signedIn'])).toBeNull()
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it.each([['failed' as const], [new Error('ipc closed')]])('reports a sign-in that did not finish (%s)', async (result) => {
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: account(result) })
+    await choose(view, zh['account.google'])
+    await waitFor(() => { expect(view.getByRole('alert').textContent).toBe(zh['account.failed']) })
+    expect(reload).not.toHaveBeenCalled()
+  })
+
+  it('clears every site sign-in and reloads the tab', async () => {
+    const signIn = account()
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
+    await choose(view, zh['account.clear'])
+    expect(signIn.clearSignIn).toHaveBeenCalledOnce()
+    await waitFor(() => { expect(view.getByRole('status').textContent).toBe(zh['account.cleared']) })
+    expect(reload).toHaveBeenCalledWith(TAB)
+  })
+})
 
 afterEach(async () => {
   cleanup()

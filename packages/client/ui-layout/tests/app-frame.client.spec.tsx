@@ -225,48 +225,32 @@ describe('AppFrame', () => {
     expect(getByTestId('rightbar-content')).toBeTruthy()
   })
 
-  it('keeps Windows caption controls mounted with a zero-width collapsed column', () => {
-    document.documentElement.setAttribute('data-windows-titlebar', '')
-    try {
-      const { frame, instance, sidebarOwner, getByTestId, queryByTestId } = mountFrame()
-      act(() => { instance.actions.toggleSidebar() })
-      expect(tracks(frame)[0]).toBe(0)
-      expect(sidebarOwner()).toMatchObject({ collapsed: true, width: 0 })
-      expect(getByTestId('sidebar-content')).toBeTruthy()
-      // The caption row keeps the reopen controls; the darwin-only
-      // shell.leading seat must not mount a duplicate set.
-      expect(queryByTestId('shell.leading-content')).toBeNull()
-    } finally {
-      document.documentElement.removeAttribute('data-windows-titlebar')
-    }
-  })
-
   it('keeps the closed sidebar mounted at its 56px rail without a handle', () => {
-    const { frame, instance, sidebarOwner, getByTestId, queryByTestId } = mountFrame()
+    const { frame, instance, sidebarOwner, getByTestId } = mountFrame()
     act(() => { instance.actions.toggleSidebar() })
     expect(tracks(frame)).toEqual([56, 0])
     expect(sidebarOwner()).toEqual({ collapsed: true, width: 56 })
     expect(getByTestId('sidebar-content')).toBeTruthy()
     expect(frame.querySelector('[data-side="sidebar"]')).toBeNull()
-    // The rail keeps the window chrome housed: no shell.leading seat.
-    expect(queryByTestId('shell.leading-content')).toBeNull()
-    expect(frame.querySelector('[data-shell-leading-band]')).toBeNull()
   })
 
-  it('mounts the shell.leading seat only while the darwin collapse hides the column', () => {
-    document.documentElement.dataset.platform = 'darwin'
-    const { frame, instance, sidebarOwner, queryByTestId } = mountFrame()
-    // The frame declares no window drag of its own: every chrome row owns its
-    // run (ui-sidebar, ui-dockkit, ui-conversation, ui-plugin-manager).
-    expect(frame.querySelector('[data-shell-leading-band]')).toBeNull()
-    expect(queryByTestId('shell.leading-content')).toBeNull()
-    act(() => { instance.actions.toggleSidebar() })
-    expect(tracks(frame)).toEqual([0, 0])
-    expect(sidebarOwner()).toEqual({ collapsed: true, width: 0 })
-    expect(frame.querySelector('[data-shell-leading]')).not.toBeNull()
-    expect(queryByTestId('shell.leading-content')).toBeTruthy()
-    act(() => { instance.actions.toggleSidebar() })
-    expect(queryByTestId('shell.leading-content')).toBeNull()
+  it.each([
+    ['macOS desktop', () => { document.documentElement.dataset.platform = 'darwin' }],
+    ['the Windows titlebar', () => { document.documentElement.setAttribute('data-windows-titlebar', '') }],
+  ])('keeps the 56px rail on %s, with no window-chrome seat over the main panels', (_label, platform) => {
+    platform()
+    try {
+      const { frame, instance, sidebarOwner, getByTestId, slotCalls } = mountFrame()
+      act(() => { instance.actions.toggleSidebar() })
+      expect(tracks(frame)).toEqual([56, 0])
+      expect(sidebarOwner()).toEqual({ collapsed: true, width: 56 })
+      expect(getByTestId('sidebar-content')).toBeTruthy()
+      expect(frame.querySelector('[data-shell-leading]')).toBeNull()
+      expect(slotCalls.map(call => call.key)).not.toContain('shell.leading')
+    } finally {
+      delete document.documentElement.dataset.platform
+      document.documentElement.removeAttribute('data-windows-titlebar')
+    }
   })
 
   it('renders the bottom seat below the centre and right columns in every sidebar state', () => {

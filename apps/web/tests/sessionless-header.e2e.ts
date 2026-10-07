@@ -43,15 +43,12 @@ describe('navigation without a selected Session', () => {
       const header = page.locator('[data-slot="conversation.header"] > header')
       expect(await header.evaluate(element => element.getBoundingClientRect().height)).toBe(platform === 'darwin' ? 40 : 0)
       await page.getByRole('button', { name: 'Collapse sidebar', exact: true }).click()
-      const reopen = platform === 'darwin'
-        ? page.locator('[data-shell-leading]').getByRole('button', { name: 'Open sidebar', exact: true })
-        : page.getByRole('button', { name: 'Open sidebar', exact: true })
+      // Every platform reopens from the collapsed rail, which also keeps New Session.
+      const reopen = page.getByRole('button', { name: 'Open sidebar', exact: true })
       await reopen.waitFor({ state: 'visible' })
       expect(await sessionHeader.count()).toBe(0)
       expect(await header.evaluate(element => element.getBoundingClientRect().height)).toBe(platform === 'darwin' ? 40 : 0)
-      if (platform === 'darwin') {
-        expect(await page.locator('[data-shell-leading]').getByRole('button', { name: 'New session', exact: true }).isVisible()).toBe(true)
-      }
+      expect(await page.getByRole('button', { name: 'New session', exact: true }).isVisible()).toBe(true)
       // The open label precedes both the column slide and the rail's mount animation.
       // Reverse the pointer action only after the rendered sidebar has settled.
       const sidebarSettled = () => page.locator('[data-sidebar-collapsed]').evaluate((frame: HTMLElement) =>

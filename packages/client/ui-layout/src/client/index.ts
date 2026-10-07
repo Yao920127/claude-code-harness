@@ -97,20 +97,6 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
      */
     'shell.overlay': { kind: 'list'; scope: 'root' }
     /**
-     * Window-chrome seat at the frame's top-left, over every main panel.
-     * Mounted only while the sidebar column is fully hidden (macOS desktop
-     * collapse; other platforms keep the rail), so the occupant can assume the
-     * frame edge is the window edge and the macOS traffic lights sit before it.
-     * OCCUPIED by ui-sidebar's reopen/New Session controls.
-     *
-     * While the seat is mounted the frame publishes
-     * `--dsh-frame-leading-clearance` (the inline inset the seat's band
-     * occupies, measured from the frame's left edge); a main panel whose
-     * content reaches the top-left corner pads by it so nothing lands under
-     * the lights or the controls.
-     */
-    'shell.leading': { kind: 'single'; scope: 'root' }
-    /**
      * Frame-wide bottom seat: a row below the centre and right columns that
      * spans both, starting at the left sidebar's edge. It has no height of its
      * own, so an occupant that renders nothing leaves the columns full height,
@@ -184,7 +170,6 @@ export function apply(ctx: ClientContext): void {
         'main': { kind: 'keyed', scope: 'root' },
         'rightbar': { kind: 'single', scope: 'root' },
         'shell.overlay': { kind: 'list', scope: 'root' },
-        'shell.leading': { kind: 'single', scope: 'root' },
         'shell.bottom': { kind: 'single', scope: 'root' },
       },
       store,

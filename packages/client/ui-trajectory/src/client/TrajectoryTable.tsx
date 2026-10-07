@@ -13,22 +13,19 @@ import {
   IconCodeOutlineRegular,
   IconWrapLinesOutlineRegular,
   IconCopyOutlineRegular,
-  IconSettingsOutlineRegular,
-  IconSparkleRegular,
-  IconUserOutlineRegular,
   JsonTree,
   MarkdownText,
   StateDot,
   Tooltip,
   writeClipboard,
 } from '@deepseek-ai/dsh-client-ui-primitives'
-import type { JsonTreeLabels, JsonTreeProps, MarkdownLabels } from '@deepseek-ai/dsh-client-ui-primitives'
+import type { JsonTreeProps } from '@deepseek-ai/dsh-client-ui-primitives'
 import { structuredPatch } from 'diff'
 import type {
   AssistantRequestConfig, ConversationPromptSnapshot, RenderMessageImages,
 } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
-  AssistantMetricDetail, TrajectoryCellKind, TrajectoryCellProps, TrajectorySourceBlock,
+  AssistantMetricDetail, TrajectoryCellProps, TrajectorySourceBlock,
 } from './trajectory-record.ts'
 import { formatElapsedSeconds, trajectoryRecordId } from './trajectory-record.ts'
 import {
@@ -39,6 +36,7 @@ import type { TrajectoryTurnModel } from './layout.ts'
 import { trajectoryPreviewText } from './trajectory-preview.ts'
 import type { TrajectoryKey, TrajectoryTranslate } from './locales.ts'
 import { COMPACTION_INTERRUPTED_ERROR } from './copy-codes.ts'
+import { jsonTreeLabels, KIND_ICON, KIND_LABEL_KEY, markdownLabels } from './trajectory-kind.tsx'
 import { codeProgram, PTC_TOOL_NAME, type CodeProgram } from './code-program.ts'
 import css from './TrajectoryTable.module.css'
 
@@ -48,87 +46,6 @@ const HISTORY_LOAD_ROW_HEIGHT_PX = 30
 const VIRTUALIZATION_THRESHOLD = 100
 const VIRTUAL_OVERSCAN_ROWS = 12
 const VIRTUAL_INITIAL_VIEWPORT_HEIGHT_PX = 600
-
-const KIND_LABEL_KEY: Record<TrajectoryCellKind, TrajectoryKey> = {
-  system: 'kind.system',
-  user: 'kind.user',
-  context: 'kind.context',
-  compacted: 'kind.compacted',
-  message: 'kind.assistant',
-  tool: 'kind.tool',
-  subtool: 'kind.subtool',
-}
-
-function ToolWrenchIcon(): ReactNode {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      data-role-icon="wrench"
-      aria-hidden="true"
-    >
-      <path d="M14 3.3a3.8 3.8 0 0 1-4.8 4.8l-5.1 5.1a1.6 1.6 0 1 1-2.3-2.3l5.1-5.1A3.8 3.8 0 0 1 11.7 1l-2.3 2.3 2.3 2.3L14 3.3Z" />
-    </svg>
-  )
-}
-
-function InformationIcon(): ReactNode {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      data-role-icon="information"
-      aria-hidden="true"
-    >
-      <circle cx="8" cy="8" r="6.7" />
-      <circle cx="8" cy="5.5" r=".85" fill="currentColor" stroke="none" />
-      <path d="M8 7.75v3.4" strokeWidth="1.8" />
-    </svg>
-  )
-}
-
-function CompactedIcon(): ReactNode {
-  return (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      data-role-icon="compacted"
-      aria-hidden="true"
-    >
-      <path d="m2.5 2.5 3.75 3.75M3 6.25h3.25V3" />
-      <path d="m13.5 2.5-3.75 3.75M13 6.25H9.75V3" />
-      <path d="m2.5 13.5 3.75-3.75M3 9.75h3.25V13" />
-      <path d="m13.5 13.5-3.75-3.75M13 9.75H9.75V13" />
-    </svg>
-  )
-}
-
-const KIND_ICON: Record<TrajectoryCellKind, ReactNode> = {
-  system: <IconSettingsOutlineRegular size={13} />,
-  user: <IconUserOutlineRegular size={13} />,
-  context: <InformationIcon />,
-  compacted: <CompactedIcon />,
-  message: <IconSparkleRegular size={13} />,
-  tool: <ToolWrenchIcon />,
-  subtool: <ToolWrenchIcon />,
-}
 
 interface TableRecord {
   turn: number | null
@@ -233,28 +150,6 @@ const REQUEST_TABS: readonly DetailTabItem[] = [
   { id: 'usage', labelKey: 'tab.usage' },
   { id: 'timing', labelKey: 'tab.timing' },
 ]
-
-function jsonTreeLabels(t: TrajectoryTranslate): JsonTreeLabels {
-  return {
-    copyValue: t('copy.value'),
-    copyJson: t('copy.json'),
-    copyPath: t('copy.path'),
-    copyPrettyJson: t('copy.prettyJson'),
-    copyCompactJson: t('copy.compactJson'),
-    copied: t('copied'),
-    copyFailed: t('copy.failed'),
-    collapseNode: t('collapse'),
-    expandNode: t('expand'),
-    copyButtonTitle: action => t('copy.optionsHint', { action }),
-  }
-}
-
-function markdownLabels(t: TrajectoryTranslate): MarkdownLabels {
-  return {
-    code: { copyLabel: t('copy'), copiedLabel: t('copied') },
-    footnotes: t('markdown.footnotes'),
-  }
-}
 
 type TrajectorySplitStyle = CSSProperties & {
   '--trajectory-tool-request-width': string

@@ -221,6 +221,14 @@
   background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent);
 }
 
+.notice {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-xxxs-11);
+  background: var(--dsw-alias-bg-module-platform);
+}
+
 .sandboxWarning {
   flex: 0 0 auto;
   padding: 6px 12px;

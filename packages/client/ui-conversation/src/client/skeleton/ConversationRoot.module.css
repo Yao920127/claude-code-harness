@@ -73,11 +73,6 @@
   align-items: center;
   gap: 0;
   min-height: 30px;
-  /* Clears the frame's window-chrome band (traffic lights + shell.leading
-     controls, ui-layout AppFrame) when it is published; the header already
-     pads 20px of it. Zero everywhere else (the fallback makes the max
-     negative). */
-  padding-inline-start: max(0px, calc(var(--dsh-frame-leading-clearance, 0px) - 20px));
 }
 
 .titleCluster {

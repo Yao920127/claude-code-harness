@@ -1,5 +1,5 @@
 ---
-description: "Trajectory view for the dsh web client: a turn-aware event ledger with an interactive timing overview, registered into the conversation view ring."
+description: "Trajectory and Workflow views for the dsh web client: a turn-aware event ledger with an interactive timing overview, and the same records drawn as a flowchart, registered into the conversation view ring."
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-The Trajectory tab lets you inspect agent activity as a turn-aware ledger and interactive timing overview. It groups User, Assistant, Tool, nested Subtool, and compaction records, marks turn and step boundaries, and opens a record inspector for token usage, duration, input, output, timing, images, and attachment summaries. Long histories open at the current tail, load older pages on demand, and render only visible rows. During streaming, the view follows the tail until you scroll upward, and in-flight records show a start marker without inventing elapsed time.
+The Trajectory tab lets you inspect agent activity as a turn-aware ledger and interactive timing overview. It groups User, Assistant, Tool, nested Subtool, and compaction records, marks turn and step boundaries, and opens a record inspector for token usage, duration, input, output, timing, images, and attachment summaries. Long histories open at the current tail, load older pages on demand, and render only visible rows. During streaming, the view follows the tail until you scroll upward. The Workflow tab draws the same records as a flowchart of steps and the tools each step called.
 
 ## Table of Contents
 
@@ -43,6 +43,12 @@ Historical replies retain TTFT, generation duration, and throughput when their r
 
 A fixed Overview above the ledger projects real record start/duration timing from left to right; Assistant spans divide recorded TTFT from decoding, and a 500 ms hover reveals exact clock and duration details. Dragging an interval focuses the ledger on every record active at any point in that inclusive range; wheel gestures zoom the time domain; a right-button click clears the selected interval, and a right-button drag pans an already zoomed viewport. The initial view and streaming updates stay at the tail; scrolling upward suspends following so new records do not interrupt inspection of earlier rows.
 
+### The Workflow chart
+
+The Workflow tab draws every resident record as a node, left to right in record order, with arrows from each record to the next. Each turn starts with a turn label above the user message; each step shows the model reply, then the tool calls it made stacked in one column, and the next step's reply joins them again. `run_code` child calls appear in the column after their parent call. Each role has its own color, shown by the toolbar's legend: user messages, model replies, tool calls, subtool calls, and context. A node shows what the record did — the reply's opening text or the call's arguments — and its duration; a model reply also shows its input and output tokens. A failed record has a red border, and a running record has a dashed border with an animated incoming arrow. System prompts and context injections stay hidden until **Show context** is pressed. Drag the canvas to pan, scroll or pinch to zoom, use **Fit view** to show the whole chart, and use the minimap in the corner to jump.
+
+Clicking a node, or pressing Enter on a focused node, opens a details panel with the record's status, duration, what it did, input, thinking, and output. For a model reply the panel lists input, cache-read, cache-write, output, and reasoning tokens and their total; a tool record notes that running the tool consumes no model tokens, because its result counts toward the next model request's input. JSON tool arguments and results use the JSON tree. A tool record's **Open in Trajectory** button switches to the Trajectory tab with that call selected. When older history is not loaded, the toolbar's **Load earlier history** button pages one more Session page into both views.
+
 -----
 
 <a id="understand-the-implementation"></a>
@@ -65,7 +71,7 @@ Long ledgers initially derive React data from 50 target Nodes ending at the moun
 
 ### Layout
 
-Trajectory asks the conversation shell to float the composer over the full-height ledger, while its responsive vertical scrollers reserve the composer's live height so final rows remain reachable. Scrollable Summary regions keep their scrollbar thumbs transparent until hovered or focused, without changing the reserved scroll geometry. The package provides no service and declares no Context merge.
+Trajectory asks the conversation shell to float the composer over the full-height ledger, while its responsive vertical scrollers reserve the composer's live height so final rows remain reachable. Workflow folds the same layout into positioned nodes in `flow-graph.ts` and renders them with `@xyflow/react`; it floats the composer the same way and reserves its height below the canvas and the details panel. Scrollable Summary regions keep their scrollbar thumbs transparent until hovered or focused, without changing the reserved scroll geometry. The package provides no service and declares no Context merge.
 
 </details>
 
@@ -113,4 +119,4 @@ None.
 
 </details>
 
-**Runtime invariant:** No companion is published. It is a pure-consumer plugin: it emits no Cordis events and owns no mutable cross-plugin state; its view-slot registration is a plain effect whose disposal the slot ledger's own specs and this package's behavior specs observe directly.
+**Runtime invariant:** No companion is published. It is a pure-consumer plugin: it emits no Cordis events and owns no mutable cross-plugin state; its two view-slot registrations are plain effects whose disposal the slot ledger's own specs and this package's behavior specs observe directly.

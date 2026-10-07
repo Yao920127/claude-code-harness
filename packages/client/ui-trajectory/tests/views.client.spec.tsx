@@ -73,6 +73,7 @@ const runtimes: SlotTestRuntime[] = []
 afterEach(async () => {
   cleanup()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
   Reflect.deleteProperty(HTMLElement.prototype, 'scrollTo')
   for (const runtime of runtimes.splice(0)) await runtime.dispose()
 })
@@ -97,6 +98,26 @@ const NODES: LegacyConversationSlice['nodes'] = [
     kind: 'assistant', seq: 4, time: 4_000, turn: 2, step: 1, blocks: [],
     timing: { stepStartTime: 3_500, firstTokenTime: 3_700, completedTime: 4_000 },
   },
+]
+
+/** Workflow fixture: one turn whose first step calls a tool and whose second step answers, then a second turn. */
+const FLOW_NODES: LegacyConversationSlice['nodes'] = [
+  { kind: 'user', seq: 1, time: 1_000, content: [{ type: 'text', text: 'list files' }], source: null },
+  {
+    kind: 'assistant', seq: 2, time: 2_000, turn: 1, step: 1,
+    blocks: [{ kind: 'tool-call', callId: 'c1', name: 'bash', argsRaw: '{"command":"ls"}' }],
+  },
+  {
+    kind: 'tool-result', seq: 3, time: 3_000, callId: 'c1',
+    call: { name: 'bash', argsRaw: '{"command":"ls"}' }, callTime: 2_200,
+    content: [{ type: 'text', text: 'a.ts' }], isError: false, subCalls: [],
+  },
+  {
+    kind: 'assistant', seq: 4, time: 4_000, turn: 1, step: 2, blocks: [{ kind: 'text', text: 'One file.' }],
+    usage: { inputTokens: 1_200, cacheReadTokens: 800, outputTokens: 34 },
+  },
+  { kind: 'user', seq: 5, time: 5_000, content: [{ type: 'text', text: 'thanks' }], source: null },
+  { kind: 'assistant', seq: 6, time: 6_000, turn: 2, step: 1, blocks: [{ kind: 'text', text: 'You are welcome.' }] },
 ]
 
 function historySnapshot(
@@ -388,7 +409,7 @@ function mount(fixture: Awaited<ReturnType<typeof bench>>) {
           t: tZh,
         }
       })()
-      : injected
+      : { ...injected, t: tZh }
     const viewProps: ConvViewProps = { ...owner, ...standardProps }
     return (
       <View
@@ -426,15 +447,16 @@ function mount(fixture: Awaited<ReturnType<typeof bench>>) {
 }
 
 describe('plugin registration', () => {
-  it('registers trajectory after chat on the ring', async () => {
+  it('registers trajectory and workflow after chat on the ring', async () => {
     const b = await bench()
     expect(tabsOf(b.slots)).toEqual([
       { id: 'chat', label: 'Chat' },
       { id: 'trajectory', label: 'Trajectory' },
+      { id: 'flow', label: 'Workflow' },
     ])
   })
 
-  it('fiber disposal removes the tab and leaves chat standing', async () => {
+  it('fiber disposal removes both tabs and leaves chat standing', async () => {
     const b = await bench()
     expect(b.events.entries().length).toBeGreaterThan(0)
     expect(b.views.entries()).toHaveLength(1)
@@ -509,11 +531,11 @@ describe('plugin registration', () => {
 })
 
 describe('tab switching in ConversationRoot', () => {
-  it('renders two tabs, defaults to chat, and switches to the trajectory ledger', async () => {
+  it('renders three tabs, defaults to chat, and switches to the trajectory ledger', async () => {
     const b = await bench()
     const view = mount(b)
     expect(screen.getByTestId('chat-body')).toBeTruthy()
-    expect(screen.getAllByRole('tab').map(t => t.textContent)).toEqual(['Chat', 'Trajectory'])
+    expect(screen.getAllByRole('tab').map(t => t.textContent)).toEqual(['Chat', 'Trajectory', 'Workflow'])
 
     fireEvent.click(screen.getByRole('tab', { name: 'Trajectory' }))
     expect(screen.queryByText(/turns ·/)).toBeNull()
@@ -532,15 +554,61 @@ describe('tab switching in ConversationRoot', () => {
     expect(b.loadOlder).not.toHaveBeenCalled()
   })
 
-  it('labels the trajectory tab in the active locale', async () => {
+  it('labels the trajectory and workflow tabs in the active locale', async () => {
     const b = await bench()
-    const labelOf = () => tabsOf(b.slots).find(tab => tab.id === 'trajectory')?.label
-    expect(labelOf()).toBe('Trajectory')
+    const labelOf = (id: string) => tabsOf(b.slots).find(tab => tab.id === id)?.label
+    expect(labelOf('trajectory')).toBe('Trajectory')
+    expect(labelOf('flow')).toBe('Workflow')
     const locale = b.ctx.get('locale') as { setLocale(id: string): void }
     locale.setLocale('zh')
-    expect(labelOf()).toBe('轨迹')
+    expect(labelOf('trajectory')).toBe('轨迹')
+    expect(labelOf('flow')).toBe('工作流')
     locale.setLocale('en')
-    expect(labelOf()).toBe('Trajectory')
+    expect(labelOf('trajectory')).toBe('Trajectory')
+  })
+
+  it('draws the workflow chart, opens record details, and jumps to the trajectory record', async () => {
+    // jsdom has no DOMMatrixReadOnly; the chart reads only the viewport scale from it.
+    vi.stubGlobal('DOMMatrixReadOnly', class { readonly m22 = 1 })
+    const b = await bench(historySnapshot(FLOW_NODES))
+    const view = mount(b)
+    fireEvent.click(screen.getByRole('tab', { name: 'Workflow' }))
+    expect(screen.queryByTestId('chat-body')).toBeNull()
+    expect(screen.getByRole('toolbar', { name: '工作流工具栏' })).toBeTruthy()
+    expect(view.container.querySelector('[data-conversation-composer-overlay]')).toBeTruthy()
+    const node = (kind: string) => view.container.querySelectorAll(`.react-flow__node [data-flow-node="${kind}"]`)
+    const kinds = () => [...view.container.querySelectorAll('.react-flow__node [data-flow-node]')]
+      .map(element => element.getAttribute('data-flow-node'))
+    expect(kinds()).toEqual(['input', 'model', 'tool', 'model', 'input', 'model'])
+    // The legend names each role with its color.
+    expect(screen.getByRole('list', { name: '角色颜色' }).textContent).toBe('用户助手工具子工具上下文')
+    // The answering reply shows what it said and its token counts on the node.
+    expect(node('model')[1]!.textContent).toContain('One file.')
+    expect(node('model')[1]!.textContent).toContain('输入 1,200 · 输出 34 tok')
+    expect(screen.getByText('bash')).toBeTruthy()
+    expect(screen.getByText('第 1 轮')).toBeTruthy()
+    expect(screen.getByText('第 2 轮')).toBeTruthy()
+
+    fireEvent.click(node('tool')[0]!)
+    const details = screen.getByRole('complementary', { name: '事件详情' })
+    expect(details.textContent).toContain('第 1 轮 · 第 1 步')
+    expect(details.textContent).toContain('已完成')
+    expect(details.textContent).toContain('a.ts')
+    expect(details.textContent).toContain('工具执行本身不消耗模型 token')
+    fireEvent.click(node('model')[1]!)
+    const reply = screen.getByRole('complementary', { name: '事件详情' })
+    expect(reply.textContent).toContain('做了什么One file.')
+    expect(reply.textContent).toContain('输入1,200 tok')
+    expect(reply.textContent).toContain('缓存读取800 tok')
+    expect(reply.textContent).toContain('输出34 tok')
+    expect(reply.textContent).toContain('合计2,034 tok')
+    fireEvent.click(screen.getByRole('button', { name: '关闭详情' }))
+    expect(screen.queryByRole('complementary', { name: '事件详情' })).toBeNull()
+
+    fireEvent.click(node('tool')[0]!)
+    fireEvent.click(screen.getByRole('button', { name: '在轨迹中查看' }))
+    expect(screen.getByRole('toolbar', { name: '轨迹工具栏' })).toBeTruthy()
+    expect(b.loadOlder).not.toHaveBeenCalled()
   })
 
   it('opens a local record inspector and switches payload tabs without opening chat details', async () => {

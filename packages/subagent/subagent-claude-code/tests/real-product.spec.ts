@@ -93,7 +93,9 @@ const claudeBin = join(
   platformRoot,
   process.platform === 'win32' ? 'claude.exe' : 'claude',
 )
-const settingsModel = 'dsh-settings-inheritance-marker'
+// The real CLI rejects model names it does not recognize, so fixtures use
+// real model ids; the local Messages server answers for any of them.
+const settingsModel = 'claude-haiku-4-5-20251001'
 const fakeKey = 'dsh-fake-anthropic-key'
 
 const roots: string[] = []
@@ -101,19 +103,21 @@ const fixtures: MessagesFixture[] = []
 const contexts: Context[] = []
 
 // Ambient Anthropic model env leaks into the real CLI and overrides the
-// fixture settings.json on developer machines; delete it for this file and
-// restore it after, like the workspace-context USERPROFILE isolation.
-const ambientAnthropicModel = process.env.ANTHROPIC_MODEL
-const ambientAnthropicSmallFastModel = process.env.ANTHROPIC_SMALL_FAST_MODEL
+// fixture settings.json on developer machines, and a Claude Code session that
+// launches the suite exports its entrypoint, which makes the CLI ignore the
+// fixture API key; delete them for this file and restore them after, like
+// the workspace-context USERPROFILE isolation.
+const AMBIENT_CLAUDE_ENV = ['ANTHROPIC_MODEL', 'ANTHROPIC_SMALL_FAST_MODEL', 'CLAUDE_CODE_ENTRYPOINT', 'CLAUDECODE'] as const
+const ambientClaudeEnv = new Map(AMBIENT_CLAUDE_ENV.map(name => [name, process.env[name]]))
 
 beforeAll(() => {
-  delete process.env.ANTHROPIC_MODEL
-  delete process.env.ANTHROPIC_SMALL_FAST_MODEL
+  for (const name of AMBIENT_CLAUDE_ENV) Reflect.deleteProperty(process.env, name)
 })
 
 afterAll(() => {
-  if (ambientAnthropicModel !== undefined) process.env.ANTHROPIC_MODEL = ambientAnthropicModel
-  if (ambientAnthropicSmallFastModel !== undefined) process.env.ANTHROPIC_SMALL_FAST_MODEL = ambientAnthropicSmallFastModel
+  for (const [name, value] of ambientClaudeEnv) {
+    if (value !== undefined) process.env[name] = value
+  }
 })
 
 afterEach(async () => {
@@ -286,7 +290,7 @@ function startRequest(
   })
 }
 
-describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 fixture', {
+describe('real Claude Agent SDK 0.3.291 and its distributed Claude Code 2.1.291 fixture', {
   timeout: 60_000,
 }, () => {
   it('inherits host settings and sends the exact task and fake key to local Messages', async () => {
@@ -296,13 +300,13 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 
       kind: 'complete',
       text: sentinel,
     })
-    expect(sdkPackage.version).toBe('0.3.263')
-    expect(sdkPackage.claudeCodeVersion).toBe('2.1.263')
-    expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.263')
+    expect(sdkPackage.version).toBe('0.3.291')
+    expect(sdkPackage.claudeCodeVersion).toBe('2.1.291')
+    expect(sdkPackage.optionalDependencies[platformPackage]).toBe('0.3.291')
     const version = await execFileAsync(claudeBin, ['--version'], {
       env: { ...process.env, ...harness.env },
     })
-    expect(version.stdout.trim()).toBe('2.1.263 (Claude Code)')
+    expect(version.stdout.trim()).toBe('2.1.291 (Claude Code)')
 
     const run = await startRequest(harness, task)
     await expect(run.result).resolves.toEqual({
@@ -315,7 +319,7 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 
       (message): message is SDKSystemMessage =>
         message.type === 'system' && message.subtype === 'init',
     )
-    expect(initMessage?.claude_code_version).toBe('2.1.263')
+    expect(initMessage?.claude_code_version).toBe('2.1.291')
     const spawnedExecutable = harness.spawnSpecs[0]?.argv[0]
     expect(spawnedExecutable).toBeDefined()
     expect(process.platform === 'win32'
@@ -389,14 +393,14 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 
     const { ctx, handles, spawnSpecs } = await realRuntime()
     const safeFiber = await ctx.plugin(claudeCode, {
       providerName: 'claude-safe',
-      model: 'claude-safe-model',
+      model: 'claude-sonnet-4-5-20250929',
       env: safeInstance.env,
       permissionMode: 'dontAsk',
       disposeGraceMs: 3_000,
     })
     const bypassFiber = await ctx.plugin(claudeCode, {
       providerName: 'claude-bypass',
-      model: 'claude-bypass-model',
+      model: 'claude-haiku-4-5-20251001',
       env: bypassInstance.env,
       permissionMode: 'bypassPermissions',
       disposeGraceMs: 3_000,
@@ -444,8 +448,8 @@ describe('real Claude Agent SDK 0.3.263 and its distributed Claude Code 2.1.263 
     await Promise.all([safeRun.dispose(), bypassRun.dispose()])
     expect(safeInstance.fixture.requests).toHaveLength(1)
     expect(bypassInstance.fixture.requests).toHaveLength(1)
-    expect(safeInstance.fixture.requests[0]?.body.model).toBe('claude-safe-model')
-    expect(bypassInstance.fixture.requests[0]?.body.model).toBe('claude-bypass-model')
+    expect(safeInstance.fixture.requests[0]?.body.model).toBe('claude-sonnet-4-5-20250929')
+    expect(bypassInstance.fixture.requests[0]?.body.model).toBe('claude-haiku-4-5-20251001')
     expect(safeInstance.fixture.requests[0]?.body.messages)
       .not.toEqual(bypassInstance.fixture.requests[0]?.body.messages)
     expect(spawnSpecs.map(spec => spec.env?.CLAUDE_CONFIG_DIR).sort())

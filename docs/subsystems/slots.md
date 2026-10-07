@@ -183,7 +183,6 @@ root
 │     │  └─ sidebar.right.tab.guide.entry
 │     ├─ sidebar.right.pane.tab.title
 │     └─ sidebar.right.tab.menu.item
-├─ shell.leading
 └─ shell.overlay
    └─ shell.quota-notice
 ```

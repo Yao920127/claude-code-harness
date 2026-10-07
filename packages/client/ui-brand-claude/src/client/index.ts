@@ -5,7 +5,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
-import { ClaudeBrandName, ClaudeHeadline, ClaudeMark } from './Brand.tsx'
+import { ClaudeBrandName, ClaudeHeroHeadline, ClaudeHeroMark, ClaudeMark } from './Brand.tsx'
 import { en, zh, type BrandClaudeKey } from './locales.ts'
 import { claudeMarkDataUrl } from './mark.ts'
 import { CLAUDE_THEME_TOKENS } from './theme.ts'
@@ -60,8 +60,8 @@ function installFonts(): () => void {
 }
 
 /**
- * Apply the Claude palette and typography, fill the sidebar mark and name and the conversation hero mark and headline,
- * and replace the page icon.
+ * Apply the Claude palette and typography, fill the sidebar mark and name,
+ * show the enlarged hero mark with an empty headline seat, and replace the page icon.
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {
@@ -76,7 +76,7 @@ export function apply(ctx: ClientContext): void {
     }))
   ctx.slots.inject('conversation.hero.brand.mark', () =>
     ctx.slots.inject('conversation.hero.brand.headline', function* () {
-      yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, ClaudeMark)
-      yield ctx.slots.register({ name: 'conversation.hero.brand.headline', locale: NS }, ClaudeHeadline)
+      yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, ClaudeHeroMark)
+      yield ctx.slots.register({ name: 'conversation.hero.brand.headline' }, ClaudeHeroHeadline)
     }))
 }

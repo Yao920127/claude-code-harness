@@ -3,7 +3,7 @@ import type { ModelInfo, Options, Query, SDKMessage, SdkMcpToolDefinition, Spawn
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, type Mock, vi } from 'vitest'
 import type { Agent } from '@deepseek-ai/dsh-agent'
-import LlmRuntime, { createAssistantMessage, createUserMessage, LlmError, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
+import LlmRuntime, { createAssistantMessage, createUserMessage, LlmError, ReasoningEffortId, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
 import type { GenerateOptions, StreamChunk } from '@deepseek-ai/dsh-llm'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import type { SubprocessHandle, SubprocessOutcome, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
@@ -88,10 +88,22 @@ function discoveryQuery(models: ModelInfo[], fail?: Error): QueryFactory {
 
 // Partial ModelInfo fixtures carry only the fields discovery reads.
 const accountModels: ModelInfo[] = [
-  { value: 'default', resolvedModel: 'claude-sonnet-5', displayName: 'Default (recommended)', description: 'Sonnet 5 · Efficient for routine tasks' },
-  { value: 'sonnet', resolvedModel: 'claude-sonnet-5', displayName: 'Sonnet', description: 'Sonnet 5 · Efficient for routine tasks' },
-  { value: 'claude-fable-5-1[1m]', resolvedModel: 'claude-fable-5-1', displayName: 'Fable', description: 'Fable 5.1 · Most capable · Requires usage credits' },
-  { value: 'haiku', displayName: 'Haiku', description: 'Haiku' },
+  {
+    value: 'default', resolvedModel: 'claude-sonnet-5', displayName: 'Default (recommended)', description: 'Sonnet 5 · Efficient for routine tasks',
+    supportsEffort: true, supportedEffortLevels: ['max', 'low', 'medium', 'high', 'xhigh'],
+  },
+  {
+    value: 'sonnet', resolvedModel: 'claude-sonnet-5', displayName: 'Sonnet', description: 'Sonnet 5 · Efficient for routine tasks',
+    supportsEffort: true, supportedEffortLevels: ['low', 'medium', 'high'],
+  },
+  {
+    value: 'claude-fable-5-1[1m]', resolvedModel: 'claude-fable-5-1', displayName: 'Fable', description: 'Fable 5.1 · Most capable · Requires usage credits',
+    supportsEffort: false, supportedEffortLevels: ['high'],
+  },
+  { value: 'haiku', displayName: 'Haiku', description: 'Haiku', supportedEffortLevels: ['low', 'max'] },
+  // Newer Claude Code names the model in displayName and keeps only notes in description.
+  { value: 'opus', resolvedModel: 'claude-opus-5-5', displayName: 'Opus 5.5', description: 'For complex work and everyday tasks' },
+  { value: 'claude-opus-5', resolvedModel: 'claude-opus-5', displayName: 'Opus 5', description: '' },
 ] as never
 
 const spawnOptions: SpawnOptions = { command: '/bin/claude', args: ['--x'], cwd: CWD, env: {}, signal: new AbortController().signal }
@@ -171,13 +183,15 @@ describe('ClaudeCodeAdapter model discovery', () => {
   it('lists every account model once, labeling the native default by the settings that choose it', async () => {
     const { adapter: route, child, spawn } = adapter({}, false)
     queryMock.mockImplementation(discoveryQuery(accountModels))
-    await expect(route.resolveModel('claude-code', 'default')).resolves.toMatchObject({ name: 'default' })
+    await expect(route.resolveModel('claude-code', 'default')).resolves.toMatchObject({ name: 'Claude (Claude Code settings)' })
     const listed = await route.listModels('claude-code')
     expect(listed.map(model => [model.id, model.name, model.description])).toEqual([
       ['default', 'Claude (Claude Code settings)', 'The model your Claude Code settings select; Sonnet 5 without a setting'],
       ['sonnet', 'Claude Sonnet 5', 'Efficient for routine tasks'],
       ['claude-fable-5-1[1m]', 'Claude Fable 5.1', 'Most capable · Requires usage credits'],
-      ['haiku', 'Claude Haiku', undefined],
+      ['haiku', 'Claude Haiku', 'Haiku'],
+      ['opus', 'Claude Opus 5.5', 'For complex work and everyday tasks'],
+      ['claude-opus-5', 'Claude Opus 5', undefined],
     ])
     await route.listModels('claude-code')
     expect(queryMock).toHaveBeenCalledTimes(1)
@@ -185,6 +199,31 @@ describe('ClaudeCodeAdapter model discovery', () => {
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(child.terminate).toHaveBeenCalled()
     await expect(route.resolveModel('claude-code', 'claude-fable-5-1[1m]')).resolves.toMatchObject({ name: 'Claude Fable 5.1' })
+  })
+
+  it('offers each model the effort levels Claude Code reports, ascending, defaulting to high', async () => {
+    const { adapter: route } = adapter({}, false)
+    queryMock.mockImplementation(discoveryQuery(accountModels))
+    const efforts = async (model: string) => {
+      const resolved = await route.resolveModel('claude-code', model)
+      return resolved.reasoning === undefined
+        ? undefined
+        : {
+          ids: resolved.reasoning.efforts.map(effort => effort.id),
+          names: resolved.reasoning.efforts.map(effort => effort.name),
+          defaultEffort: resolved.reasoning.defaultEffort,
+        }
+    }
+    await expect(efforts('default')).resolves.toEqual({
+      ids: ['low', 'medium', 'high', 'xhigh', 'max'],
+      names: ['Low', 'Medium', 'High', 'Extra high', 'Max'],
+      defaultEffort: 'high',
+    })
+    await expect(efforts('sonnet')).resolves.toMatchObject({ ids: ['low', 'medium', 'high'], defaultEffort: 'high' })
+    // A model that takes no effort setting, or offers no high, gets no choice or no default.
+    await expect(efforts('claude-fable-5-1[1m]')).resolves.toBeUndefined()
+    await expect(efforts('haiku')).resolves.toEqual({ ids: ['low', 'max'], names: ['Low', 'Max'], defaultEffort: undefined })
+    await expect(efforts('unlisted')).resolves.toBeUndefined()
   })
 
   it('offers only the native default after a failure and retries on the next read', async () => {
@@ -202,7 +241,7 @@ describe('ClaudeCodeAdapter model discovery', () => {
     expect(options.onDiscoveryError).toHaveBeenLastCalledWith(expect.objectContaining({ message: 'spawn refused' }))
 
     queryMock.mockImplementation(discoveryQuery(accountModels))
-    await expect(route.listModels('claude-code')).resolves.toHaveLength(4)
+    await expect(route.listModels('claude-code')).resolves.toHaveLength(6)
   })
 })
 
@@ -292,6 +331,24 @@ describe('ClaudeCodeAdapter.stream', () => {
       resumeSessionAt: 'cursor',
     })
     expect(lastOptions().systemPrompt).not.toHaveProperty('append')
+    expect(lastOptions()).not.toHaveProperty('effort')
+  })
+
+  it('passes the requested effort level to Claude Code', async () => {
+    const { adapter: route } = adapter()
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(route.stream(request({ reasoningEffort: ReasoningEffortId('max') })))
+    expect(lastOptions()).toMatchObject({ effort: 'max' })
+  })
+
+  it('runs the configured Claude Code executable for turns and control requests', async () => {
+    const { adapter: route } = adapter({ executable: '/opt/homebrew/bin/claude' }, false)
+    queryMock.mockImplementation(discoveryQuery(accountModels))
+    await route.listModels('claude-code')
+    expect(lastOptions()).toMatchObject({ pathToClaudeCodeExecutable: '/opt/homebrew/bin/claude' })
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    await collect(route.stream(request()))
+    expect(lastOptions()).toMatchObject({ pathToClaudeCodeExecutable: '/opt/homebrew/bin/claude' })
   })
 
   it('offers the app browser tool to conversation turns only, opening tabs in the turn\'s Session', async () => {
@@ -494,6 +551,20 @@ describe('llm-claude-code plugin', () => {
     await expect(ctx.llm.listModels('claude-code')).resolves.toEqual([
       { provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text'] },
     ])
+    expect(queryMock).not.toHaveBeenCalled()
+  })
+
+  it('serves configured effort levels and refuses an executable that is not an existing absolute path', async () => {
+    const ctx = await host()
+    expect(() => { plugin.apply(ctx, plugin.Config({ executable: 'claude' })) }).toThrow('executable must be an absolute path')
+    expect(() => { plugin.apply(ctx, plugin.Config({ executable: '/no/such/claude' })) }).toThrow('executable must be an absolute path')
+    await ctx.plugin(plugin, plugin.Config({
+      executable: process.execPath,
+      models: [{ id: 'opus', name: 'Opus', efforts: ['high', 'max'] }, { id: 'plain', name: 'Plain', efforts: [] }],
+    }))
+    const resolved = await ctx.llm.resolveModelInfo('claude-code', 'opus')
+    expect(resolved.reasoning?.efforts.map(effort => effort.id)).toEqual(['high', 'max'])
+    await expect(ctx.llm.resolveModelInfo('claude-code', 'plain')).resolves.not.toHaveProperty('reasoning')
     expect(queryMock).not.toHaveBeenCalled()
   })
 })

@@ -35,7 +35,36 @@
   padding: 18px 10px 6px;
 }
 
-/* The brand stays in the sidebar; fixed caption controls survive zero-width collapse. */
+/* macOS desktop rail: the hiddenInset traffic lights span x 12–68 across the
+   window's top band, wider than the 56px rail, so the rail's controls start
+   below them. The top strip reaches back over that band as the rail's
+   window-drag row and carries the expand toggle as the rail's first control;
+   the empty logo row folds away. Fullscreen hides the lights, so the band
+   shrinks to the ordinary rail inset. */
+:global([data-platform='darwin']) .root.collapsed {
+  --dsh-sidebar-rail-chrome: 44px;
+
+  padding-top: var(--dsh-sidebar-rail-chrome);
+}
+
+:global([data-platform='darwin'][data-fullscreen]) .root.collapsed {
+  --dsh-sidebar-rail-chrome: 18px;
+}
+
+:global([data-platform='darwin']) .root.collapsed .topStrip {
+  height: auto;
+  margin: calc(-1 * var(--dsh-sidebar-rail-chrome)) -10px 12px;
+  padding: var(--dsh-sidebar-rail-chrome) 10px 0;
+  justify-content: flex-start;
+}
+
+:global([data-platform='darwin']) .root.collapsed .logoRow {
+  display: none;
+}
+
+/* The brand stays in the sidebar; the toggle and New Session stay fixed in the
+   caption row while the collapsed rail below them keeps its panel, browsing,
+   and foot controls. */
 :global([data-windows-titlebar]) .root .logoRow {
   height: 40px;
   margin: 0;
@@ -71,18 +100,12 @@
 }
 
 :global([data-windows-titlebar]) .root.collapsed {
-  padding: 0;
+  padding: 12px 10px 6px;
 }
 
 :global([data-windows-titlebar]) .root:not(.collapsed) .newSession {
   margin-top: 8px;
   margin-left: 0;
-}
-
-:global([data-windows-titlebar]) .collapsed .panelList,
-:global([data-windows-titlebar]) .collapsed .regionArea,
-:global([data-windows-titlebar]) .collapsed .footArea {
-  display: none;
 }
 
 :global(html[data-windows-titlebar]:has([data-sidebar-collapsed='true'])) {

@@ -16,8 +16,7 @@ import {
 import { TrajectoryToolbar } from './TrajectoryToolbar.tsx'
 import { TrajectoryTimeline } from './TrajectoryTimeline.tsx'
 import {
-  appendTrajectoryPartialLayout, deriveTrajectoryLayout,
-  type TrajectoryTurnModel,
+  appendTrajectoryPartialLayout, deriveTrajectoryLayout, lastCellIndex,
 } from './layout.ts'
 import {
   trajectoryTimelineFocusIndexes,
@@ -39,16 +38,6 @@ function containsCall(calls: readonly ToolCallBlock[], callId: string): boolean 
     if (call.callId === callId || containsCall(call.subCalls, callId)) return true
   }
   return false
-}
-
-function lastCellIndex(turns: readonly TrajectoryTurnModel[]): number {
-  let last = 0
-  for (const turn of turns) {
-    for (const group of turn.groups) {
-      for (const cell of group.cells) last = Math.max(last, cell.index)
-    }
-  }
-  return last
 }
 
 function timelineBlock(block: AssistantBlock): AssistantBlock {

@@ -12,9 +12,9 @@ iframe 无法提供跨域导航状态, 也无法显示拒绝嵌入的站点. 如
 
 ## Decision
 
-Desktop 通过 `ElectronWebViewImpl` 使用 `<webview>`; Web 保留显式启用的 iframe 载体. [Sidebar Browser 决策](2026-09-16-sidebar-browser.zh.md)负责共享 Tab 行为与 iframe 限制; 本文负责 Desktop 载体和按 Workspace 共享的分区.
+Desktop 通过 `ElectronWebViewImpl` 使用 `<webview>`; Web 保留显式启用的 iframe 载体. [Sidebar Browser 决策](2026-09-16-sidebar-browser.zh.md)负责共享 Tab 行为与 iframe 限制; 本文负责 Desktop 载体.
 
-[Sidebar 稳定挂载决策](../architecture/2026-09-20-sidebar-retained-tab-layout.zh.md)负责真实 CSS 布局中的保活会话与 Tab 容器。Workspace 存储所有权与 guest 基础安全配置仍由本文负责。
+[Sidebar 稳定挂载决策](../architecture/2026-09-20-sidebar-retained-tab-layout.zh.md)负责真实 CSS 布局中的保活会话与 Tab 容器。guest 基础安全配置仍由本文负责。
 
 - `BrowserController` 负责地址命令与可恢复的展示状态。原生 history 留在 guest 内；真实 URL 与标题观察更新持久化地址。
 - 控制器注册表按 DSH Session 索引，不依赖呈现绑定的存活期。重新绑定只替换存储写入方，不重建页面。
@@ -28,9 +28,9 @@ Browser 分别拥有 Host 与 Client 编译程序。Desktop 和 Host 聚合配�
 
 ### Storage ownership
 
-`DesktopBrowserGuests` 为每个规范化 CWD 存储账号分配随机、非持久化的 Electron partition。Client 使用 Host 规范化后的 `WorkspaceView.path`，不使用 Workspace 记录 UUID，因此在同一目录重建 Workspace 不改变存储账号 key。DSH Session 解析到同一 CWD 的 Browser Tab 共享账号；没有可解析 Workspace 的 Session 仍单独隔离。Workspace 归属在 Client 收到权威基线后解析，并在一次 guest occurrence 内保持不变。CWD key 控制共享关系，不决定是否落盘。
+[共享持久登录决策](2026-10-07-desktop-browser-shared-sign-in.zh.md)取代了本节按 Workspace 划分的分区：现在每个 guest 都使用一个由所有 Workspace 与 Session 共享的持久分区，Client 不再解析 Workspace 存储账号。本文记录当初为何选择按 Workspace 共享而非按 tab 隔离。
 
-关闭 tab 只释放它的 guest，不清空账号的 Cookie 或存储。Cookie、localStorage、IndexedDB、Service Worker 与缓存由 partition 持有，并继续遵循普通 origin 规则。DOM、原生 history 与 sessionStorage 仍由页面持有。账号 partition 在同一 Electron 进程内重建窗口后仍保留，但不跨应用退出持久化。
+关闭 tab 只释放它的 guest，不清空分区的 Cookie 或存储。Cookie、localStorage、IndexedDB、Service Worker 与缓存由 partition 持有，并继续遵循普通 origin 规则。DOM、原生 history 与 sessionStorage 仍由页面持有。
 
 ### Initial guest policy
 
@@ -52,8 +52,8 @@ Desktop toolbar 没有关闭 sandbox 的开关。实现不增加远程调试端�
 
 ## Consequences
 
-Sidebar 持有的稳定祖先保留页面，无需 Browser 自行处理几何或遮挡。隐藏 guest 保留页面内存，也可能继续联网；当前没有空闲回收策略。持久化存储、可选择的隔离级别与权限授权 UI 留作独立工作。临时 Workspace partition 是当前策略，并不意味着 Workspace 隔离必然要求临时存储。
+Sidebar 持有的稳定祖先保留页面，无需 Browser 自行处理几何或遮挡。隐藏 guest 保留页面内存，也可能继续联网；当前没有空闲回收策略。可选择的隔离级别与权限授权 UI 留作独立工作。
 
 定向测试覆盖原生导航错误恢复、preload 监听范围和已迁移的 iframe 行为。这些测试不能确认真实 Electron 的挂载时序、遮挡、焦点、平台样式或存储隔离；这些仍是运行时验证缺口。本次变更不附带 GUI 录像。此实现不构成完整浏览器安全策略已经可以发布的证据。
 
-包内的 Electron 提供方、呈现适配器、页面工厂与 Workspace 存储解析集中在 `src/client/electron/`. 在原生 Electron 测试环境覆盖 guest 行为之前, 该目录暂时不参与逐文件覆盖率门禁; 其单元测试仍然运行. 共享 Browser 控制器、恢复 UI、iframe 代码和 Sidebar 保活仍遵循现有覆盖率要求.
+包内的 Electron 提供方、呈现适配器与页面工厂集中在 `src/client/electron/`. 在原生 Electron 测试环境覆盖 guest 行为之前, 该目录暂时不参与逐文件覆盖率门禁; 其单元测试仍然运行. 共享 Browser 控制器、恢复 UI、iframe 代码和 Sidebar 保活仍遵循现有覆盖率要求.

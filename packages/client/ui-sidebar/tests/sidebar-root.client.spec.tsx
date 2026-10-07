@@ -10,7 +10,6 @@ import type {
   SidebarFooterActionOwnerProps, SidebarRootComponentProps, SidebarSectionOwnerProps,
   SidebarSettingsOwnerProps,
 } from '../src/client/contract/slots.ts'
-import { HeaderLeadingControls, type HeaderLeadingControlsProps } from '../src/client/HeaderLeadingControls.tsx'
 import { SidebarRoot } from '../src/client/SidebarRoot.tsx'
 import { en } from '../src/client/locales.ts'
 import { en as commonEn } from '@deepseek-ai/dsh-client-locale/src/locales/en.ts'
@@ -111,15 +110,6 @@ describe('SidebarRoot shell', () => {
     fireEvent.focus(expanded)
     expect(screen.queryByRole('tooltip')).toBeNull()
     expect(Array.from(expanded.querySelectorAll('kbd'), key => key.textContent)).toEqual(['Ctrl', 'N'])
-    cleanup()
-    render(<HeaderLeadingControls toggleSidebar={vi.fn()} startSession={vi.fn()} selectPanel={vi.fn()} t={t}
-      usePanelInfo={neverHook} useSessions={neverHook} useSessionStatus={neverHook}
-      useSessionRetainInfo={neverHook} useResource={useResource} useWorkspaces={neverHook}
-      usePanels={select => select([])} useShortcuts={select => select([shortcut])} />)
-    const button = screen.getByRole('button', { name: 'New session' })
-    expect(button.getAttribute('aria-keyshortcuts')).toBe('Control+N')
-    fireEvent.focus(button)
-    expect(Array.from(screen.getByRole('tooltip').querySelectorAll('kbd'), key => key.textContent)).toEqual(['Ctrl', 'N'])
   })
   it('routes New Session (capsule + wordmark) and the column toggle', () => {
     const b = mountShell()
@@ -256,18 +246,6 @@ it('keeps the macOS sidebar toggle in its top strip', () => {
   // New Session capsule starts a session.
   expect(screen.getAllByRole('button', { name: 'New session' })).toHaveLength(1)
   expect(screen.getByTestId('custom-brand-mark')).toBeTruthy()
-})
-
-it('wires the shell.leading controls to the shared sidebar actions', () => {
-  const toggleSidebar = vi.fn()
-  const startSession = vi.fn()
-  // This occupant only consumes its two actions and locale, not Session hooks.
-  const props = { toggleSidebar, startSession, t, useShortcuts: select => select([{ id: 'sidebar.left.toggle' as ShortcutCommandId, label: 'Toggle sidebar', aliases: [], binding: null, modified: false, conflicts: [], issue: null, keys: ['⌘', 'B'], aria: 'Meta+B' }]) } as HeaderLeadingControlsProps
-  render(<HeaderLeadingControls {...props} />)
-  fireEvent.click(screen.getByRole('button', { name: en['toggle.open'] }))
-  fireEvent.click(screen.getByRole('button', { name: en['session.new.label'] }))
-  expect(toggleSidebar).toHaveBeenCalledOnce()
-  expect(startSession).toHaveBeenCalledOnce()
 })
 
 describe('Windows caption tooltips', () => {

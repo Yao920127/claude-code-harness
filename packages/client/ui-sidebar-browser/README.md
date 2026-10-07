@@ -27,6 +27,8 @@ Browse HTTP(S) pages, including loopback services, inside independent right-Side
 
 Browser is disabled by default in Web profiles and enabled on Desktop. Enable the shipped entry through the Web profile patch to use it. Open **Browser** from the right-Sidebar guide and enter an HTTP(S) URL or search terms. Chat HTTP(S) links open here when the [link preference](../ui-chat/README.md) selects **In-App Sidebar**. A host name without a scheme becomes HTTPS. Input without a scheme that contains whitespace, or names a host with no dot or port other than `localhost`, is a search: `youtube` searches, while `youtube.com` and `localhost:3000` navigate. Public and loopback targets use the same default sandbox. Each guide action or delegated message-link activation creates another Browser tab.
 
+On Desktop, the toolbar's **Site sign-in** menu offers **Sign in with Google**, which opens a separate Google sign-in window; once Google returns to the account page the window closes, the tab reloads, and every Browser tab stays signed in, including after the application restarts. **Clear sign-in data** erases every site's cookies and storage and reloads the tab. Pages the Agent opens in the Browser load with the same sign-ins; the Agent's browser tool can only open an address and cannot read the page.
+
 ### When to choose it
 
 Choose Browser for a Web page that should remain beside the current Session. Choose [Document Preview](../ui-sidebar-documentpreview/README.md) for local files, and use the explicit external-browser action when a site refuses iframe embedding or needs browser capabilities this package withholds.
@@ -86,7 +88,8 @@ The page refresh shortcut calls the same reload operation as the toolbar. Its to
 - [Right Sidebar](../../../docs/subsystems/sidebar-right.md) — tab composition, navigation, and lifecycle.
 - [Document Preview](../ui-sidebar-documentpreview/README.md) — local source, Markdown, images, HTML, and PDF rendering.
 - [Sidebar Browser decision](../../../.agents/notes/implemented/feature/2026-09-16-sidebar-browser.md) — iframe behavior and controller ownership.
-- [Desktop Browser decision](../../../.agents/notes/implemented/feature/2026-09-20-desktop-browser-webview.md) — webview leases, CWD storage grouping and manual restoration.
+- [Desktop Browser decision](../../../.agents/notes/implemented/feature/2026-09-20-desktop-browser-webview.md) — webview leases and manual restoration.
+- [Shared persistent sign-in decision](../../../.agents/notes/implemented/feature/2026-10-07-desktop-browser-shared-sign-in.md) — one persistent partition and the Google sign-in window.
 
 -----
 
@@ -112,7 +115,7 @@ The isolation policy deliberately gives up some browser compatibility:
 - Saved title and URL survive reloads and plugin unload while the tab remains in Sidebar's layout. Closing the tab removes its checkpoint. Restart restoration does not recover page memory, unsaved forms or Chromium's history stack.
 - Local files are rejected and remain owned by Document Preview.
 - Google and most search engines refuse iframe embedding, so in Web a keyword search and the default Google home page stay blank: browsers report a refused frame as an ordinary load, so no failure notice appears. Open the page externally or use Desktop, whose `<webview>` renders it. Setting `searchUrl` and `homeUrl` to sites that allow embedding avoids this.
-- Desktop shares process-local storage partitions by canonical workspace CWD; Sessions without a resolved Workspace are isolated separately. Cookies and Web storage do not survive application restart. Guest permissions, downloads and native popups are denied; approved HTTP(S) popup requests open Sidebar tabs. Host-address filtering is not a general private-network or DNS-rebinding firewall.
+- Desktop guests share one persistent storage partition across every Workspace and Session, so cookies and Web storage, sign-ins included, survive application restart until **Clear sign-in data** erases them. The partition presents Electron's user agent as the Chrome it embeds; Google can still refuse a sign-in it judges unsafe, which reports the sign-in as not finished. Guest permissions, downloads and native popups are denied; approved HTTP(S) popup requests open Sidebar tabs. Host-address filtering is not a general private-network or DNS-rebinding firewall.
 
 <a id="dev-note"></a>
 ### Dev Note

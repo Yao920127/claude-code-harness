@@ -149,9 +149,14 @@ describe('planTurn', () => {
     ['temperature', { temperature: 0.5 }],
     ['stop', { stop: ['x'] }],
     ['maxTokens', { maxTokens: 10 }],
-    ['reasoningEffort', { reasoningEffort: ReasoningEffortId('high') }],
+    ['an unknown reasoningEffort', { reasoningEffort: ReasoningEffortId('turbo') }],
   ])('refuses %s', (_label, extra) => {
     expect(failureCode(() => planTurn(request([user('x')], extra)))).toBe('UNSUPPORTED_OPTION')
+  })
+
+  it('carries a Claude Code effort level and leaves it out when the request names none', () => {
+    expect(planTurn(request([user('x')], { reasoningEffort: ReasoningEffortId('xhigh') })).effort).toBe('xhigh')
+    expect(planTurn(request([user('x')]))).not.toHaveProperty('effort')
   })
 
   it('accepts an empty stop list', () => {

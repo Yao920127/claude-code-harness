@@ -63,7 +63,6 @@ async function boot(platform: ShortcutPlatform = 'macos', runtime: 'desktop' | '
   ctx.provide('sidebarRight', sidebar as never)
   ctx.provide('shortcuts', { register: (command: ShortcutCommand) => registry.register(command) } as never)
   ctx.provide('sidebarRightTabs', tabs as never)
-  ctx.provide('workspaces', { list: createSnapshotStore({ phase: 'ready', items: [] }) } as never)
   ctx.provide('slots', slots as never)
   ctx.provide('locale', locale as never)
   ctx.provide('configForms', { get: vi.fn(() => ({ getSnapshot: () => ({ value: { searchUrl: 'https://search.example/?q=%s' } }) })) } as never)
@@ -79,6 +78,8 @@ describe('ui-sidebar-browser apply', () => {
       acquire,
       release: vi.fn(async () => {}),
       onOpenRequested: vi.fn(() => () => {}),
+      signInGoogle: vi.fn(async () => 'signed-in' as const),
+      clearSignIn: vi.fn(async () => {}),
     }
     vi.stubGlobal('dshDesktop', { protocolVersion, browser: bridge })
     const h = await boot()
@@ -99,7 +100,7 @@ describe('ui-sidebar-browser apply', () => {
         initial: undefined, initialUrl: 'https://example.test/', openTab: vi.fn() })
       expect(replacementStore.getSnapshot().byTab[tabId]).toBeDefined()
       expect(firstStore.getSnapshot().byTab[tabId]).toBeUndefined()
-      if (protocolVersion === 1) await vi.waitFor(() => { expect(acquire).toHaveBeenCalledWith('session:session') })
+      if (protocolVersion === 1) await vi.waitFor(() => { expect(acquire).toHaveBeenCalledWith() })
       else expect(host.querySelector('iframe')).not.toBeNull()
       h.openTabs.set([{ sessionId: 'other', tabId }, { sessionId: 'session', tabId: 'other-tab' as TabId }])
       signal.abort()

@@ -7,7 +7,9 @@ import { cleanup, render } from '@testing-library/react'
 import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
 import { SlotRegistry } from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { apply, inject } from '../src/client/index.ts'
-import { ClaudeBrandName, ClaudeHeadline, ClaudeMark } from '../src/client/Brand.tsx'
+import {
+  CLAUDE_HERO_MARK_SIZE, ClaudeBrandName, ClaudeHeroHeadline, ClaudeHeroMark, ClaudeMark,
+} from '../src/client/Brand.tsx'
 import { claudeMarkDataUrl } from '../src/client/mark.ts'
 import { CLAUDE_THEME_TOKENS } from '../src/client/theme.ts'
 import { apply as hostApply } from '../src/index.ts'
@@ -57,7 +59,8 @@ describe('Claude browser-brand plugin', () => {
     const fonts = document.head.querySelector<HTMLStyleElement>('style[data-plugin-css="@deepseek-ai/dsh-client-ui-brand-claude/fonts.css"]')
     expect(fonts).not.toBeNull()
     expect(subject.locale.bind('brand.claude')('name')).toBe('Claude Code')
-    expect(subject.locale.bind('brand.claude')('headline')).toBe('Create what\u2019s exciting. Maintain what\u2019s essential.')
+    expect(subject.slots.entries('conversation.hero.brand.mark')[0]?.component).toBe(ClaudeHeroMark)
+    expect(subject.slots.entries('conversation.hero.brand.headline')[0]?.component).toBe(ClaudeHeroHeadline)
 
     await fiber.dispose()
     for (const hole of HOLES) expect(subject.slots.entries(hole)).toHaveLength(0)
@@ -81,7 +84,7 @@ describe('Claude browser-brand plugin', () => {
     }
   })
 
-  it('renders the mark at the requested size and the translated name', () => {
+  it('renders the mark at the requested size, the enlarged hero mark, an empty headline, and the translated name', () => {
     const mark = render(<ClaudeMark size={34} className="hero" />)
     const svg = mark.container.querySelector('svg')
     expect(svg?.getAttribute('width')).toBe('34')
@@ -90,8 +93,11 @@ describe('Claude browser-brand plugin', () => {
 
     const name = render(<ClaudeBrandName t={key => `[${key}]`} />)
     expect(name.container.textContent).toBe('[name]')
-    const headline = render(<ClaudeHeadline t={key => `[${key}]`} />)
-    expect(headline.container.textContent).toBe('[headline]')
+    const hero = render(<ClaudeHeroMark size={34} className="fish" />)
+    const heroSvg = hero.container.querySelector('svg')
+    expect(heroSvg?.getAttribute('width')).toBe(String(CLAUDE_HERO_MARK_SIZE))
+    expect(heroSvg?.getAttribute('class')).toBe('fish')
+    expect(render(<ClaudeHeroHeadline />).container.innerHTML).toBe('')
   })
 
   it('encodes the mark as a standalone SVG page icon', () => {

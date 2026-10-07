@@ -6,7 +6,9 @@
  * @module @deepseek-ai/dsh-llm-claude-code
  */
 
+import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { isAbsolute } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {} from '@deepseek-ai/dsh-agent'
@@ -60,6 +62,13 @@ export interface Config {
    */
   models?: ClaudeCodeModelEntry[]
   /**
+   * Absolute path of the Claude Code executable to run, for example the
+   * installed `/opt/homebrew/bin/claude`. Absent runs the Claude Code build
+   * the pinned Agent SDK distributes. A configured executable lists that
+   * installation's models and runs its turns.
+   */
+  executable?: string
+  /**
    * Permission setting (default `session`). `session` derives each turn's
    * native mode from the Session's sandbox mode and approval policy: full
    * access with the `never` policy skips every native check, `workspace-write`
@@ -90,7 +99,9 @@ export const Config: z<Config> = z.object({
     id: z.string().min(1).required(),
     name: z.string().min(1).required(),
     description: z.string(),
+    efforts: z.array(z.union(['low', 'medium', 'high', 'xhigh', 'max'] as const)),
   })),
+  executable: z.string().min(1),
   permissionMode: z.union([...CLAUDE_CODE_ROUTE_PERMISSION_MODES]).default(SESSION_PERMISSION_MODE),
   env: z.dict(z.string()).default({}),
   disposeGraceMs: z.number().default(3_000),
@@ -101,12 +112,16 @@ export const Config: z<Config> = z.object({
 /**
  * Register the Claude Code route.
  * @param ctx - context carrying the LLM, subprocess, session, and agent services.
- * @param config - route identity, models, permission mode, environment, disposal grace, and retry policy.
+ * @param config - route identity, models, executable, permission mode, environment, disposal grace, and retry policy.
  */
 export function apply(ctx: Context, config: Config): void {
   const disposeGraceMs = config.disposeGraceMs as number
   if (!Number.isFinite(disposeGraceMs) || disposeGraceMs <= 0 || disposeGraceMs > MAX_TIMER_DELAY_MS) {
     throw new Error(`llm-claude-code: disposeGraceMs must be a positive number no greater than ${MAX_TIMER_DELAY_MS}`)
+  }
+  const executable = config.executable
+  if (executable !== undefined && (!isAbsolute(executable) || !existsSync(executable))) {
+    throw new Error(`llm-claude-code: executable must be an absolute path to an existing file; got "${executable}"`)
   }
   // The schema materializes `[]` for an absent array, so empty also means "discover".
   const models = config.models?.length === 0 ? undefined : config.models
@@ -115,6 +130,7 @@ export function apply(ctx: Context, config: Config): void {
     provider,
     displayName: config.displayName as string,
     ...models === undefined ? {} : { models },
+    ...executable === undefined ? {} : { executable },
     discoveryCwd: homedir(),
     onDiscoveryError: (error) => { ctx.logger.warn('llm-claude-code: model discovery failed: %o', error) },
     permissionMode: config.permissionMode as ClaudeCodeRoutePermissionMode,

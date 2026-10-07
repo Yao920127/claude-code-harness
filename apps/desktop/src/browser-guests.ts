@@ -12,37 +12,65 @@ interface GuestLease {
   releaseInput?: () => void
 }
 
-/** Owns workspace storage partitions independently from individual tab guests. */
+/**
+ * The one persistent storage partition every Sidebar guest shares, so a site
+ * sign-in, such as Google's, stays signed in in every tab and across restarts.
+ */
+export const SIDEBAR_BROWSER_PARTITION = 'persist:dsh-sidebar-browser'
+
+/**
+ * Present Electron's user agent as the Chrome it embeds: drop the application
+ * and Electron product tokens, which sign-in pages such as Google's treat as an
+ * unsupported embedded browser.
+ * @param userAgent - Electron's default user agent.
+ * @returns the same agent with only the Chromium product tokens.
+ */
+export function chromeUserAgent(userAgent: string): string {
+  return userAgent.replace(/(\(KHTML, like Gecko\)) .*?(Chrome\/)/u, '$1 $2').replace(/ Electron\/\S+/u, '')
+}
+
+/** Owns the shared storage partition independently from individual tab guests. */
 export class DesktopBrowserGuests {
-  private readonly partitions = new Map<string, string>()
   private readonly leases = new Map<DesktopBrowserLeaseId, GuestLease>()
+  private configured: Session | undefined
 
   /** @param hostUrl - current authenticated DSH Host, which guests cannot request. */
   constructor(private readonly hostUrl: () => string | undefined) {}
 
   /**
-   * Reserve one guest in a workspace's process-lifetime partition.
-   * @param owner - authenticated primary application WebContents.
-   * @param workspace - workspace identity received over IPC.
-   * @returns opaque lease and the partition approved for it.
+   * The shared guest Session, configured with the isolation policy on first use.
+   * @returns the Session of {@link SIDEBAR_BROWSER_PARTITION}.
    */
-  acquire(owner: WebContents, workspace: unknown): DesktopBrowserReservation {
-    if (typeof workspace !== 'string' || workspace.length === 0 || workspace.length > 4096) {
-      throw new Error('desktop browser: a workspace storage identity is required')
+  browserSession(): Session {
+    if (this.configured === undefined) {
+      const browserSession = session.fromPartition(SIDEBAR_BROWSER_PARTITION)
+      this.configureSession(browserSession)
+      this.configured = browserSession
     }
-    let partition = this.partitions.get(workspace)
-    if (partition === undefined) {
-      partition = `dsh-sidebar-browser-${randomUUID()}`
-      this.configureSession(session.fromPartition(partition))
-      this.partitions.set(workspace, partition)
-    }
-    const lease = randomUUID() as DesktopBrowserLeaseId
-    this.leases.set(lease, { owner, partition, attached: false })
-    return { lease, partition }
+    return this.configured
   }
 
   /**
-   * Release only a lease issued to this application window; workspace storage survives.
+   * Reserve one guest in the shared persistent partition.
+   * @param owner - authenticated primary application WebContents.
+   * @returns opaque lease and the partition approved for it.
+   */
+  acquire(owner: WebContents): DesktopBrowserReservation {
+    this.browserSession()
+    const lease = randomUUID() as DesktopBrowserLeaseId
+    this.leases.set(lease, { owner, partition: SIDEBAR_BROWSER_PARTITION, attached: false })
+    return { lease, partition: SIDEBAR_BROWSER_PARTITION }
+  }
+
+  /** Erase every cookie, site storage entry, and HTTP auth cache of the shared partition, signing every site out. */
+  async clearSignIn(): Promise<void> {
+    const browserSession = this.browserSession()
+    await browserSession.clearStorageData()
+    await browserSession.clearAuthCache()
+  }
+
+  /**
+   * Release only a lease issued to this application window; the shared storage survives.
    * @param owner - authenticated IPC sender.
    * @param id - lease received over IPC.
    */
@@ -139,6 +167,7 @@ export class DesktopBrowserGuests {
   }
 
   private configureSession(browserSession: Session): void {
+    browserSession.setUserAgent(chromeUserAgent(browserSession.getUserAgent()))
     browserSession.setPermissionRequestHandler((_contents, _permission, callback) => { callback(false) })
     browserSession.setPermissionCheckHandler(() => false)
     browserSession.setDevicePermissionHandler(() => false)

@@ -18,7 +18,7 @@ Electron 主进程在 darwin 上以 `titleBarStyle: 'hiddenInset'`、`trafficLig
 
 **原生主题同步。** 毛玻璃材质跟随 `nativeTheme.themeSource`，后者默认跟踪系统外观，会与应用自身的主题偏好背离。ui-theme 引导脚本与 ui-layout 的 `ThemePresenter` 发布 `html[data-ds-theme-source]`（`light`、`dark` 或 `system`；固定偏好——包括注册主题 id——发布其解析后的配色）。应用 preload 观察该属性并经 `dsh-desktop:native-theme-set` 转发；主进程校验取值与发送者（主窗口的 WebContents，包括其本地静态 Web 文档）后赋给 `nativeTheme.themeSource`。发布偏好而非解析值，可在偏好为 `system` 时保留跟随系统。
 
-**侧边栏顶部条与完全隐藏。** darwin 上侧边栏展开时有一条 52px 的顶部条，避开红绿灯并承载收起按钮；顶部条自己打上 `data-window-drag`，于是它自身那 52px 盒子就是窗口的拖拽区（唯一的 darwin drag 规则由 ui-web base.css 声明），按钮经 base.css 交互规则自行减除。收起侧边栏时整列隐藏——`computeColumns` 接受显式 `collapsedWidth`，AppFrame 在 darwin 桌面传 0——而非其他平台保留的 56px rail。重新打开的入口位于框架 root 作用域的 `shell.leading` 窗口 chrome 座，由 AppFrame 仅在整列隐藏时挂载；ui-sidebar 向其注册 `HeaderLeadingControls`（打开侧边栏 + 新会话，复用 shell 的 inject face 与 locale）。座的位置、面板用于避让的 `--dsh-frame-leading-clearance` 变量，以及早先会话头部座的移除，归 [shell.leading Agent Note](../architecture/2026-09-17-frame-shell-leading-window-chrome-seat.zh.md) 所有。
+**侧边栏顶部条与收起。** darwin 上侧边栏展开时有一条 52px 的顶部条，避开红绿灯并承载收起按钮；顶部条自己打上 `data-window-drag`，于是它自身那 52px 盒子就是窗口的拖拽区（唯一的 darwin drag 规则由 ui-web base.css 声明），按钮经 base.css 交互规则自行减除。本文最初让 darwin 上收起的列整列隐藏；[收起侧栏轨道决策](2026-10-07-desktop-collapsed-sidebar-rail.zh.md)取代了这一部分，现在 darwin 上收起的侧边栏保留 56px rail，其控件位于红绿灯下方。
 
 **窗口全屏标记。** macOS 全屏隐藏红绿灯，围绕它们构建的布局必须放松。主进程在 `enter-full-screen`、`leave-full-screen` 与每次 `did-finish-load` 时经 `dsh-desktop:window-fullscreen` 转发 `isFullScreen()`；应用 preload 的 `syncWindowFullscreen()` 把它镜像到 `html[data-fullscreen]`。消费者：AppFrame 把 `--dsh-frame-leading-clearance` 降到 84px 并把座移到 `left: 12px`，侧边栏 `.topStrip` 把收起按钮移到条带左端，右侧边栏全屏面板把首格 pane 的 dockkit strip 内边距重置回常规 10px。
 
@@ -42,10 +42,10 @@ Electron 主进程在 darwin 上以 `titleBarStyle: 'hiddenInset'`、`trafficLig
 
 - macOS 窗口获得半透明侧边栏与隐藏标题栏，对其他平台零成本：所有规则限定在 `[data-platform='darwin']` 下，该属性仅由 Electron preload 设置。
 - 毛玻璃材质跟随应用主题，含第三方注册主题（取其解析配色）。截图与录屏与纯 Web 的平面渲染不同。
-- 重新打开控件占据框架的 `shell.leading` 座，是客户端 catalog 中的公开 slot；早先的 `conversation.session.header.leading` 座已移除（[shell.leading Agent Note](../architecture/2026-09-17-frame-shell-leading-window-chrome-seat.zh.md)）。
+- darwin 上收起的侧边栏保留 56px rail，其展开按钮与新会话按钮可在每个主面板中重新打开侧边栏并开始会话（[收起侧栏轨道决策](2026-10-07-desktop-collapsed-sidebar-rail.zh.md)）。
 - 拖拽区归属是窗口级全局不变量：`-webkit-app-region: drag` 只出现在 ui-web `base.css`（作用于 `data-window-drag` 的唯一 darwin 规则）与 ui-layout `AppFrame.module.css`（Windows 顶栏 `.frame::before`）内；其他包依赖 base.css 的退出规则或添加限定范围的 `no-drag`，永不新增拖拽面。ui-theme 的 app-region 门禁把每个 chrome 行的 markup 标记与它的样式表、选择器和写死高度配成一条，并拒绝别处的标记。
 - 接受透明窗口 + 毛玻璃在屏幕共享中呈现不同、启动可能闪烁；透明 `backgroundColor` 缓解闪烁。
 
 ## Testing
 
-ui-theme 引导与 ui-layout presenter 测试钉住 `data-ds-theme-source` 的发布与清除。ui-sidebar apply 测试钉住 `shell.leading` 注册（组件、locale、共享 inject face）及 teardown 移除；ui-layout 的 app-frame 测试钉住 darwin 下座的挂载。desktop main-startup 测试钉住全屏转发（状态切换、重载、已销毁窗口守卫、仅 darwin 注册），preload-platform 测试钉住 `html[data-fullscreen]` 镜像。ui-theme 的 corner-shape 与 full-round 样式门覆盖新样式表，其 app-region 门禁钉住唯一那条 darwin drag 规则与每个 chrome 行的 markup 标记。
+ui-theme 引导与 ui-layout presenter 测试钉住 `data-ds-theme-source` 的发布与清除。ui-layout 的 app-frame 测试钉住 darwin 收起后的 56px rail。desktop main-startup 测试钉住全屏转发（状态切换、重载、已销毁窗口守卫、仅 darwin 注册），preload-platform 测试钉住 `html[data-fullscreen]` 镜像。ui-theme 的 corner-shape 与 full-round 样式门覆盖新样式表，其 app-region 门禁钉住唯一那条 darwin drag 规则与每个 chrome 行的 markup 标记。

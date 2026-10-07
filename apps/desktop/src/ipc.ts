@@ -20,6 +20,8 @@ export const DESKTOP_IPC = {
   browserAcquire: 'dsh-desktop:browser-acquire',
   browserRelease: 'dsh-desktop:browser-release',
   browserOpenRequested: 'dsh-desktop:browser-open-requested',
+  browserSignInGoogle: 'dsh-desktop:browser-sign-in-google',
+  browserClearSignIn: 'dsh-desktop:browser-clear-sign-in',
   directoryPick: 'dsh-desktop:directory-pick',
   localeBootstrap: 'dsh-desktop:locale-bootstrap',
   localeChanged: 'dsh-desktop:locale-changed',

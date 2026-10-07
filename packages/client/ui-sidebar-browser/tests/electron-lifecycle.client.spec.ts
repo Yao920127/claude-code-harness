@@ -89,25 +89,7 @@ it('releases an acquisition that finishes after attachment cancellation', async 
   }
 })
 
-it('does not acquire a guest when Workspace resolution finishes after disposal', async () => {
-  const h = fixture()
-  const pending = Promise.withResolvers<string>()
-  h.workspace.mockReturnValueOnce(pending.promise)
-  h.mount()
-  h.frame.loadUrl(target)
-  try {
-    const disposed = h.frame.dispose()
-    pending.resolve('cwd:/late')
-    await disposed
-    expect(h.bridge.acquire).not.toHaveBeenCalled()
-    h.mount()
-    expect(h.guests).toHaveLength(0)
-  } finally {
-    pending.resolve('cwd:/late')
-  }
-})
-
-it('recreates the guest after physical remount or crash without resolving Workspace again', async () => {
+it('recreates the guest after physical remount or crash', async () => {
   const h = fixture()
   const unmount = h.mount()
   h.frame.loadUrl(target)
@@ -117,7 +99,6 @@ it('recreates the guest after physical remount or crash without resolving Worksp
   h.mount()
   const second = await h.guest()
   expect(second.element).not.toBe(first.element)
-  expect(h.workspace).toHaveBeenCalledOnce()
   second.emit('dom-ready')
   expect(second.loadURL).toHaveBeenCalledWith(target.url)
   second.emit('render-process-gone')

@@ -6,6 +6,7 @@ export const NS = 'trajectory'
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
   'view.trajectory': '轨迹',
+  'view.flow': '工作流',
   'toolbar.aria': '轨迹工具栏',
   'toolbar.duration': '时长',
   'toolbar.useActualDuration': '使用实际时长',
@@ -197,6 +198,23 @@ export const zh = {
   'layout.toolsRemovedCount': '移除 {count} 个',
   'layout.systemPromptAndToolsUpdated': '系统提示词和工具已更新',
   'layout.compactionInterrupted': '上下文压缩在完成前被中断。',
+  'flow.canvas': '工作流程图',
+  'flow.toolbar': '工作流工具栏',
+  'flow.fit': '适合画面',
+  'flow.showContext': '显示上下文',
+  'flow.empty': '还没有可以显示的步骤',
+  'flow.loading': '正在加载工作流…',
+  'flow.model': '模型回复',
+  'flow.modelRequest': '模型请求',
+  'flow.running': '执行中',
+  'flow.openInTrajectory': '在轨迹中查看',
+  'flow.minimap': '工作流缩略图',
+  'flow.node': '{kind}：{label}，{status}',
+  'flow.nodeTokens': '输入 {input} · 输出 {output} tok',
+  'flow.what': '做了什么',
+  'flow.totalTokens': '合计',
+  'flow.toolTokens': '工具执行本身不消耗模型 token；它的结果会计入下一次模型请求的输入。',
+  'flow.legend': '角色颜色',
 } as const
 
 /** The trajectory dictionary key union. */
@@ -204,7 +222,7 @@ export type TrajectoryKey = keyof typeof zh
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface LocaleNamespaceMap {
-    /** The complete trajectory ledger, timeline, inspector, and toolbar copy. */
+    /** The complete trajectory ledger, timeline, inspector, toolbar, and workflow chart copy. */
     trajectory: TrajectoryKey
   }
 }
@@ -216,6 +234,7 @@ export type TrajectoryTranslate =
 /** English dictionary, checked complete against the Chinese source of truth. */
 export const en: Record<TrajectoryKey, string> = {
   'view.trajectory': 'Trajectory',
+  'view.flow': 'Workflow',
   'toolbar.aria': 'Trajectory toolbar',
   'toolbar.duration': 'Duration',
   'toolbar.useActualDuration': 'Use actual duration',
@@ -407,4 +426,21 @@ export const en: Record<TrajectoryKey, string> = {
   'layout.toolsRemovedCount': '{count} removed',
   'layout.systemPromptAndToolsUpdated': 'System Prompt and Tools Updated',
   'layout.compactionInterrupted': 'Compaction was interrupted before completion.',
+  'flow.canvas': 'Workflow chart',
+  'flow.toolbar': 'Workflow toolbar',
+  'flow.fit': 'Fit view',
+  'flow.showContext': 'Show context',
+  'flow.empty': 'No steps to show yet',
+  'flow.loading': 'Loading workflow…',
+  'flow.model': 'Model reply',
+  'flow.modelRequest': 'Model request',
+  'flow.running': 'Running',
+  'flow.openInTrajectory': 'Open in Trajectory',
+  'flow.minimap': 'Workflow minimap',
+  'flow.node': '{kind}: {label}, {status}',
+  'flow.nodeTokens': 'In {input} · Out {output} tok',
+  'flow.what': 'What it did',
+  'flow.totalTokens': 'Total',
+  'flow.toolTokens': 'Running a tool consumes no model tokens; its result counts toward the next model request’s input.',
+  'flow.legend': 'Role colors',
 }

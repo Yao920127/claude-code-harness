@@ -1,6 +1,6 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-trajectory",
-  "description": "Trajectory event ledger with an interactive timing overview: pure-consumer plugin registering into the conversation ViewMap (no service)",
+  "description": "Trajectory event ledger with an interactive timing overview, plus a Workflow flowchart of the same records: pure-consumer plugin registering into the conversation ViewMap (no service)",
   "version": "0.1.7-rc.2",
   "publishConfig": {
     "access": "public"
@@ -68,6 +68,7 @@
     "@deepseek-ai/dsh-llm": "workspace:*",
     "@deepseek-ai/dsh-attachment": "workspace:*",
     "@tanstack/react-virtual": "^3.14.9",
+    "@xyflow/react": "^12.12.0",
     "diff": "^9.0.0"
   },
   "files": [

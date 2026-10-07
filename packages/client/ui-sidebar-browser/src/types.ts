@@ -27,9 +27,6 @@ export interface DesktopBrowserReservation {
   readonly partition: string
 }
 
-/** Outcome of one Google sign-in window: finished, closed by the user, or unable to load. */
-export type DesktopBrowserSignInResult = 'signed-in' | 'cancelled' | 'failed'
-
 /** Main-approved request to open an HTTP(S) page from an existing guest. */
 export interface DesktopBrowserOpenRequest {
   readonly lease: DesktopBrowserLeaseId
@@ -44,8 +41,6 @@ export interface DesktopBrowserBridge {
   release(lease: DesktopBrowserLeaseId): Promise<void>
   /** @param lease - originating guest. @param listener - approved URL consumer. @returns unsubscribe callback. */
   onOpenRequested(lease: DesktopBrowserLeaseId, listener: (url: string) => void): () => void
-  /** Open the Google sign-in window over the shared partition. @returns how the window ended. */
-  signInGoogle(): Promise<DesktopBrowserSignInResult>
   /** @returns after every cookie and site storage entry of the shared partition has been erased. */
   clearSignIn(): Promise<void>
 }

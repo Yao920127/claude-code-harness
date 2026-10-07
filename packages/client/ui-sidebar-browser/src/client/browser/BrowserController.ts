@@ -2,7 +2,6 @@
 import { createSnapshotStore, type BoundActions, type SnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { TabId } from '@deepseek-ai/dsh-client-ui-dockkit'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
-import type { DesktopBrowserSignInResult } from '../../types.ts'
 import type { BrowserFrameState } from './BrowserFrame.ts'
 import type { BrowserPage, BrowserPageFactory } from './BrowserPage.ts'
 import { currentBrowserTarget, type BrowserTabState } from './BrowserPersistence.ts'
@@ -193,10 +192,8 @@ export interface BrowserMountRequest {
   readonly openTab: (url: string) => void
 }
 
-/** Sign-in operations over the provider's shared site storage; only the Desktop provider has them. */
+/** Site-storage operations the provider exposes; only the Desktop provider, whose storage persists, has them. */
 export interface BrowserAccount {
-  /** Open the Google sign-in window. @returns how the window ended. */
-  signInGoogle(): Promise<DesktopBrowserSignInResult>
   /** @returns after every site cookie and storage entry has been erased. */
   clearSignIn(): Promise<void>
 }

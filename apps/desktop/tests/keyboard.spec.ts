@@ -29,7 +29,6 @@ const overlays = await vi.hoisted(async () => {
   return { Window }
 })
 vi.mock('electron', () => ({ ipcMain: ipc, BrowserWindow: overlays.Window, app: { isPackaged: true }, session: { fromPartition: () => ({
-  getUserAgent: () => 'Mozilla/5.0 (KHTML, like Gecko) App/1 Chrome/1 Electron/1 Safari/537.36', setUserAgent: vi.fn(),
   setPermissionRequestHandler: vi.fn(), setPermissionCheckHandler: vi.fn(), setDevicePermissionHandler: vi.fn(),
   setDisplayMediaRequestHandler: vi.fn(), on: vi.fn(), webRequest: { onBeforeRequest: vi.fn() },
 }) } }))

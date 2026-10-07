@@ -27,12 +27,10 @@ export const zh = {
   'load.failed': '页面加载失败；请刷新重试或在系统浏览器中打开。',
   'load.failed.detail': '页面加载失败 ({code}): {description}',
   'address.unknown': '页面已跳转；当前载体无法读取新的 URL。',
-  'account.menu': '网站登录',
-  'account.google': '使用 Google 登录',
+  'account.menu': '登录资料',
   'account.clear': '清除登录资料',
-  'account.signedIn': '已登录 Google；所有浏览器标签页都会保持登录。',
   'account.cleared': '已清除所有网站的登录资料。',
-  'account.failed': '登录没有完成；请稍后再试。',
+  'account.failed': '清除没有完成；请稍后再试。',
 } satisfies Record<string, string>
 
 /** Browser dictionary key union. */
@@ -67,12 +65,10 @@ export const en = {
   'load.failed': 'The page could not load; reload or open it in the system browser.',
   'load.failed.detail': 'Page load failed ({code}): {description}',
   'address.unknown': 'The page navigated; this carrier cannot read its new URL.',
-  'account.menu': 'Site sign-in',
-  'account.google': 'Sign in with Google',
+  'account.menu': 'Sign-in data',
   'account.clear': 'Clear sign-in data',
-  'account.signedIn': 'Signed in to Google; every browser tab stays signed in.',
   'account.cleared': 'Sign-in data for every site was cleared.',
-  'account.failed': 'Sign-in did not finish; try again later.',
+  'account.failed': 'Clearing did not finish; try again later.',
 } satisfies Record<SidebarBrowserKey, string>
 
 declare module '@deepseek-ai/dsh-client-ui-slots' {

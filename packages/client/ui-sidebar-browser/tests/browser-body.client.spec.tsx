@@ -86,70 +86,48 @@ function mountBrowser(navigation?: { readonly url?: string },
   }
 }
 
-describe('site sign-in menu', () => {
-  function account(result: Awaited<ReturnType<BrowserAccount['signInGoogle']>> | Error = 'signed-in') {
-    return {
-      signInGoogle: vi.fn(async () => {
-        if (result instanceof Error) throw result
-        return result
-      }),
-      clearSignIn: vi.fn(async () => {}),
-    }
+describe('sign-in data menu', () => {
+  function account(clear: () => Promise<void> = async () => {}) {
+    const clearSignIn = vi.fn(clear)
+    return { account: { clearSignIn } satisfies BrowserAccount, clearSignIn }
   }
-  const choose = async (view: ReturnType<typeof render>, label: string) => {
+  const openClear = async (view: ReturnType<typeof render>) => {
     fireEvent.click(view.getByRole('button', { name: zh['account.menu'] }))
-    fireEvent.click(await waitFor(() => view.getByRole('menuitem', { name: label })))
+    fireEvent.click(await waitFor(() => view.getByRole('menuitem', { name: zh['account.clear'] })))
   }
 
-  it('closes the menu on Escape without starting a sign-in', async () => {
-    const signIn = account()
-    const { view } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
-    const button = view.getByRole('button', { name: zh['account.menu'] })
-    fireEvent.click(button)
-    const item = await waitFor(() => view.getByRole('menuitem', { name: zh['account.google'] }))
-    fireEvent.keyDown(item, { key: 'Escape' })
-    await waitFor(() => { expect(view.queryByRole('menuitem', { name: zh['account.google'] })).toBeNull() })
-    expect(button.getAttribute('aria-expanded')).toBe('false')
-    expect(signIn.signInGoogle).not.toHaveBeenCalled()
-  })
-
-  it('is absent for a provider without site sign-in', () => {
+  it('is absent for a provider whose storage the user does not own', () => {
     const { view } = mountBrowser({ url: 'https://example.test/' })
     expect(view.queryByRole('button', { name: zh['account.menu'] })).toBeNull()
   })
 
-  it('signs in with Google, reports it, and reloads the tab', async () => {
-    const signIn = account()
-    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
-    await choose(view, zh['account.google'])
-    expect(signIn.signInGoogle).toHaveBeenCalledOnce()
-    await waitFor(() => { expect(view.getByRole('status').textContent).toBe(zh['account.signedIn']) })
-    expect(reload).toHaveBeenCalledWith(TAB)
+  it('closes the menu on Escape without clearing', async () => {
+    const { account: acc, clearSignIn } = account()
+    const { view } = mountBrowser({ url: 'https://example.test/' }, { account: acc })
+    const button = view.getByRole('button', { name: zh['account.menu'] })
+    fireEvent.click(button)
+    const item = await waitFor(() => view.getByRole('menuitem', { name: zh['account.clear'] }))
+    fireEvent.keyDown(item, { key: 'Escape' })
+    await waitFor(() => { expect(view.queryByRole('menuitem', { name: zh['account.clear'] })).toBeNull() })
+    expect(button.getAttribute('aria-expanded')).toBe('false')
+    expect(clearSignIn).not.toHaveBeenCalled()
   })
 
-  it('leaves no notice and no reload when the sign-in window is closed', async () => {
-    const signIn = account('cancelled')
-    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
-    await choose(view, zh['account.google'])
-    await waitFor(() => { expect(view.getByRole('button', { name: zh['account.menu'] }).hasAttribute('disabled')).toBe(false) })
-    expect(view.queryByText(zh['account.signedIn'])).toBeNull()
-    expect(reload).not.toHaveBeenCalled()
-  })
-
-  it.each([['failed' as const], [new Error('ipc closed')]])('reports a sign-in that did not finish (%s)', async (result) => {
-    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: account(result) })
-    await choose(view, zh['account.google'])
-    await waitFor(() => { expect(view.getByRole('alert').textContent).toBe(zh['account.failed']) })
-    expect(reload).not.toHaveBeenCalled()
-  })
-
-  it('clears every site sign-in and reloads the tab', async () => {
-    const signIn = account()
-    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: signIn })
-    await choose(view, zh['account.clear'])
-    expect(signIn.clearSignIn).toHaveBeenCalledOnce()
+  it('clears every site sign-in, reports it, and reloads the tab', async () => {
+    const { account: acc, clearSignIn } = account()
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: acc })
+    await openClear(view)
+    expect(clearSignIn).toHaveBeenCalledOnce()
     await waitFor(() => { expect(view.getByRole('status').textContent).toBe(zh['account.cleared']) })
     expect(reload).toHaveBeenCalledWith(TAB)
+  })
+
+  it('reports a clear that did not finish, and does not reload', async () => {
+    const { account: acc } = account(() => Promise.reject(new Error('ipc closed')))
+    const { view, reload } = mountBrowser({ url: 'https://example.test/' }, { account: acc })
+    await openClear(view)
+    await waitFor(() => { expect(view.getByRole('alert').textContent).toBe(zh['account.failed']) })
+    expect(reload).not.toHaveBeenCalled()
   })
 })
 

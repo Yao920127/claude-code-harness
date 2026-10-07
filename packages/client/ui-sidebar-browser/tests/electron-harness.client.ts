@@ -18,7 +18,6 @@ export function electronFixture(initial?: BrowserTabState) {
       opens.add(listener)
       return () => { opens.delete(listener) }
     }),
-    signInGoogle: vi.fn(async () => 'signed-in' as const),
     clearSignIn: vi.fn(async () => {}),
   } satisfies DesktopBrowserBridge
   const persist = vi.fn()

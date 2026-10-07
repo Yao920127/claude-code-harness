@@ -33,13 +33,14 @@ function SandboxPolicyIcon({ sandboxed }: { readonly sandboxed: boolean }): Reac
   )
 }
 
-/** Last site sign-in action's visible outcome; a cancelled window leaves none. */
-type AccountNotice = 'busy' | 'signed-in' | 'cleared' | 'failed' | undefined
+/** The clear action's visible outcome. */
+type AccountNotice = 'busy' | 'cleared' | 'failed' | undefined
 
 /**
- * Site sign-in menu: open the Google sign-in window or erase every site sign-in, then reload the tab.
- * @param props - the provider's sign-in operations, the tab reload, the notice writer, and the locale seat.
- * @returns the toolbar's sign-in menu button.
+ * Site-storage menu: erase every site's saved sign-in, then reload the tab. The
+ * single destructive item sits behind the menu so one click cannot wipe it.
+ * @param props - the provider's storage operations, the tab reload, the notice writer, and the locale seat.
+ * @returns the toolbar's menu button.
  */
 function AccountMenu({ account, reload, notice, setNotice, t }: {
   readonly account: BrowserAccount
@@ -49,13 +50,6 @@ function AccountMenu({ account, reload, notice, setNotice, t }: {
   readonly t: BrowserBodyProps['t']
 }): ReactNode {
   const [open, setOpen] = useState(false)
-  const run = (action: () => Promise<Exclude<AccountNotice, 'busy'>>): void => {
-    setNotice('busy')
-    void action().then((outcome) => {
-      setNotice(outcome)
-      if (outcome !== undefined && outcome !== 'failed') reload()
-    }, () => { setNotice('failed') })
-  }
   return (
     <Menu
       open={open}
@@ -63,20 +57,14 @@ function AccountMenu({ account, reload, notice, setNotice, t }: {
       dense
       align="end"
       onClose={() => { setOpen(false) }}
-      items={[
-        { id: 'google', icon: <IconUserOutlineRegular />, label: t('account.google') },
-        { id: 'clear', label: t('account.clear'), danger: true },
-      ]}
-      onSelect={(id) => {
+      items={[{ id: 'clear', label: t('account.clear'), danger: true }]}
+      onSelect={() => {
         setOpen(false)
-        if (id === 'google') {
-          run(async () => {
-            const result = await account.signInGoogle()
-            return result === 'cancelled' ? undefined : result
-          })
-        } else {
-          run(async () => { await account.clearSignIn(); return 'cleared' })
-        }
+        setNotice('busy')
+        void account.clearSignIn().then(() => {
+          setNotice('cleared')
+          reload()
+        }, () => { setNotice('failed') })
       }}
       anchor={(
         <button type="button" className={css.tool} aria-label={t('account.menu')} title={t('account.menu')}
@@ -169,9 +157,7 @@ export function BrowserBody(props: BrowserBodyProps): ReactNode {
           notice={accountNotice} setNotice={setAccountNotice} t={t} />}
       </form>
       {accountNotice === 'failed' && <div className={css.failure} role="alert">{t('account.failed')}</div>}
-      {(accountNotice === 'signed-in' || accountNotice === 'cleared') && <div className={css.notice} role="status">
-        {t(accountNotice === 'signed-in' ? 'account.signedIn' : 'account.cleared')}
-      </div>}
+      {accountNotice === 'cleared' && <div className={css.notice} role="status">{t('account.cleared')}</div>}
       {sandboxed === false && <div className={css.sandboxWarning} role="status">{t('sandbox.warning')}</div>}
       {error !== undefined && <div className={css.failure} role="status">{error.code !== undefined && error.description !== undefined
         ? t('load.failed.detail', { code: String(error.code), description: error.description })

@@ -18,7 +18,6 @@ export function createDesktopBrowserBridge(): DesktopBrowserBridge {
   })
   return {
     acquire: () => ipcRenderer.invoke(DESKTOP_IPC.browserAcquire) as ReturnType<DesktopBrowserBridge['acquire']>,
-    signInGoogle: () => ipcRenderer.invoke(DESKTOP_IPC.browserSignInGoogle) as ReturnType<DesktopBrowserBridge['signInGoogle']>,
     clearSignIn: () => ipcRenderer.invoke(DESKTOP_IPC.browserClearSignIn) as Promise<void>,
     release: lease => ipcRenderer.invoke(DESKTOP_IPC.browserRelease, lease) as Promise<void>,
     onOpenRequested(lease, listener) {

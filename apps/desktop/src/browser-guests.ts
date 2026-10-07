@@ -13,21 +13,10 @@ interface GuestLease {
 }
 
 /**
- * The one persistent storage partition every Sidebar guest shares, so a site
- * sign-in, such as Google's, stays signed in in every tab and across restarts.
+ * The one persistent storage partition every Sidebar guest shares, so a site a
+ * tab signs in to stays signed in in every tab and across restarts.
  */
 export const SIDEBAR_BROWSER_PARTITION = 'persist:dsh-sidebar-browser'
-
-/**
- * Present Electron's user agent as the Chrome it embeds: drop the application
- * and Electron product tokens, which sign-in pages such as Google's treat as an
- * unsupported embedded browser.
- * @param userAgent - Electron's default user agent.
- * @returns the same agent with only the Chromium product tokens.
- */
-export function chromeUserAgent(userAgent: string): string {
-  return userAgent.replace(/(\(KHTML, like Gecko\)) .*?(Chrome\/)/u, '$1 $2').replace(/ Electron\/\S+/u, '')
-}
 
 /** Owns the shared storage partition independently from individual tab guests. */
 export class DesktopBrowserGuests {
@@ -167,7 +156,6 @@ export class DesktopBrowserGuests {
   }
 
   private configureSession(browserSession: Session): void {
-    browserSession.setUserAgent(chromeUserAgent(browserSession.getUserAgent()))
     browserSession.setPermissionRequestHandler((_contents, _permission, callback) => { callback(false) })
     browserSession.setPermissionCheckHandler(() => false)
     browserSession.setDevicePermissionHandler(() => false)

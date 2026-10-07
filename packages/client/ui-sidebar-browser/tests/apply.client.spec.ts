@@ -78,7 +78,6 @@ describe('ui-sidebar-browser apply', () => {
       acquire,
       release: vi.fn(async () => {}),
       onOpenRequested: vi.fn(() => () => {}),
-      signInGoogle: vi.fn(async () => 'signed-in' as const),
       clearSignIn: vi.fn(async () => {}),
     }
     vi.stubGlobal('dshDesktop', { protocolVersion, browser: bridge })

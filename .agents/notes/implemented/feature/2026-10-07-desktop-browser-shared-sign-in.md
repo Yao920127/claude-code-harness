@@ -6,27 +6,30 @@ English | [中文](2026-10-07-desktop-browser-shared-sign-in.zh.md)
 
 ## Problem
 
-Desktop Browser guests used random, non-persistent partitions keyed by Workspace CWD. A user who signed in to Google in one Workspace had to sign in again in every other Workspace and after every application restart. Google also refuses sign-in inside an embedded browser whose user agent names Electron, so signing in from a Browser tab could fail outright.
+Desktop Browser guests used random, non-persistent partitions keyed by Workspace CWD. A user who signed in to a site in one Workspace had to sign in again in every other Workspace and after every application restart. The request was that the Sidebar Browser remember a sign-in.
 
 ## Decision
 
 This note supersedes the storage-ownership part of the [retained Desktop browser webview decision](2026-09-20-desktop-browser-webview.md); its lease, presentation, and guest-policy decisions stay in force.
 
-- Every Desktop Browser guest uses the one persistent partition `persist:dsh-sidebar-browser` (`SIDEBAR_BROWSER_PARTITION` in `apps/desktop/src/browser-guests.ts`). Cookies and Web storage are shared across every Workspace and Session and survive application restart. The bridge's `acquire()` takes no Workspace identity, and the Client no longer resolves one.
-- The partition keeps the existing guest policy: denied permissions, devices, display capture, downloads and native popups, and cancelled requests to the DSH Host. Its user agent drops the application and `Electron/` product tokens, so pages see the embedded Chrome.
-- The Browser toolbar's **Site sign-in** menu, present only on Desktop, offers **Sign in with Google** and **Clear sign-in data**. Sign-in opens `DesktopBrowserSignIn` (`apps/desktop/src/browser-sign-in.ts`): one sandboxed `BrowserWindow` over the same partition, with no preload, Node integration, nested webviews or popups, that accepts only credential-free HTTPS navigation. The window finishes as `signed-in` when Google commits a document at `https://myaccount.google.com`, `cancelled` when the user closes it, and `failed` on a load failure, renderer crash, or non-HTTPS navigation. Clearing erases the partition's storage data and HTTP auth cache.
-- After `signed-in` or a clear, the tab reloads so the page reads the new cookies.
+- Every Desktop Browser guest uses the one persistent partition `persist:dsh-sidebar-browser` (`SIDEBAR_BROWSER_PARTITION` in `apps/desktop/src/browser-guests.ts`). Cookies and Web storage are shared across every Workspace and Session and survive application restart. The bridge's `acquire()` takes no Workspace identity, and the Client no longer resolves one. So a site a tab signs in to — any site that permits an embedded-browser sign-in — stays signed in in every tab and after a restart, with no credential handling by the app.
+- The partition keeps the existing guest policy: denied permissions, devices, display capture, downloads and native popups, and cancelled requests to the DSH Host.
+- The Browser toolbar's **Sign-in data** menu, present only on Desktop, offers one destructive item, **Clear sign-in data**, which erases the partition's storage data and HTTP auth cache and reloads the tab. The single item sits behind the menu so one click cannot wipe every sign-in.
+
+No Google-specific sign-in is built. Google refuses to sign in inside an embedded browser, and the three ways to work around that were each rejected, so Google-account sites are left to the user's own system browser.
 
 ## Alternatives considered
 
-**Keep Workspace partitions and make them persistent.** A Google sign-in would land in only one Workspace, and the user would repeat it per directory. The user asked for one sign-in that every Browser tab uses.
+**Keep Workspace partitions and make them persistent.** A sign-in would land in only one Workspace, and the user would repeat it per directory. The request was one sign-in that every Browser tab uses.
 
-**Import cookies from the user's installed Chrome profile.** Chrome encrypts its cookie store with a key in the system keychain, and its on-disk format changes between releases. Reading it needs keychain consent, grants the app every site's session at once, and breaks on Chrome updates.
+**Add a Google sign-in window, presenting Electron as plain Chrome.** A dedicated sandboxed `BrowserWindow` over the shared partition, with the application and `Electron/` product tokens dropped from the user agent, was built and then removed. Google still detected the embedded browser and refused, so the window never reached the account page; dropping the Electron tokens only to defeat Google's embedded-browser check is detection evasion against a deliberate security control, so it was taken out rather than pushed further.
 
-**Sign in inside a Browser tab.** Google rejects the embedded webview, and a tab cannot reliably detect the end of the flow to report it.
+**Import cookies from the user's installed Chrome profile.** Chrome encrypts its cookie store with a key in the system keychain, and its on-disk format changes between releases. Reading it is credential-extraction tooling that works against any Chrome account, needs keychain consent, grants the app every site's session at once, and newer Chrome binds Google sessions to that device's Chrome, so an imported session may not work anyway. Declined.
+
+**Open Google sign-in in the system browser.** Rejected by the user, who did not want the app to open Chrome or Safari. Google-account sites therefore cannot be used signed-in inside the Sidebar Browser; the user signs in to them in their own browser.
 
 ## Consequences
 
-Sites signed in once stay signed in in every Workspace, and isolation between Workspaces is gone. Pages the Agent opens with its browser tool load with these sign-ins; the tool can only open an address and reads nothing back, but a page that performs an action on a plain GET would act as the signed-in user. **Clear sign-in data** is the only way to sign every site out.
+Sites that permit embedded sign-in stay signed in in every Workspace once signed in, and isolation between Workspaces is gone. Pages the Agent opens with its browser tool load with these sign-ins; the tool can only open an address and reads nothing back, but a page that performs an action on a plain GET would act as the signed-in user. **Clear sign-in data** is the only way to sign every site out. Google-account sites (and any other site that refuses embedded-browser sign-in) cannot be signed in to in the Sidebar Browser at all.
 
-Google can still refuse a sign-in it judges unsafe; the window then never reaches the account page, and the user sees the sign-in reported as not finished after closing it. Main-process unit tests cover the partition, user agent, clearing, and every window outcome with Electron substituted; no test drives a real Google sign-in.
+Main-process unit tests cover the shared persistent partition and clearing with Electron substituted; the client tests cover the clear menu's success and failure paths and its absence on Web.

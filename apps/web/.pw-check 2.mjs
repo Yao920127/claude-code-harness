@@ -1,0 +1,13 @@
+import { chromium } from 'playwright'
+const browser = await chromium.launch()
+const page = await browser.newPage({ viewport: { width: 1500, height: 950 } })
+await page.goto('http://127.0.0.1:19555/?token=N95DEKKW9lbNws_F9oAEUMAvlcWV6b1HXggr0q5yZTI')
+await page.waitForTimeout(4000)
+const labels = async () => page.evaluate(() => [...document.querySelectorAll('button[aria-label]')].map(b => b.getAttribute('aria-label')).filter(Boolean))
+console.log('buttons:', JSON.stringify(await labels()))
+await page.keyboard.press('Control+Backquote')
+await page.waitForTimeout(2500)
+await page.screenshot({ path: '/private/tmp/claude-501/-Users-yaolo-Desktop-claude-code-harness/f5e981ce-9ba8-4994-8f95-f4b7f4ebf987/scratchpad/s1-terminal.png' })
+console.log('terminal panel present:', await page.locator('[data-terminal-panel]').count())
+console.log('buttons after:', JSON.stringify(await labels()))
+await browser.close()

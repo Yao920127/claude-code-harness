@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-09-27-cch-launcher-shorthand.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-27-cch-launcher-shorthand.md
+/agent-note-cch-launcher-shorthand:
+  en: 6058e37d74c27b8c
+  zh: 259f5808045a2aca
+/agent-note-cch-launcher-shorthand/problem:
+  en: b1055e6e4fc1be7d
+  zh: 2619de8559c6f79d
+/agent-note-cch-launcher-shorthand/decision:
+  en: 28abde2283631360
+  zh: d495d3cd2ada23d4
+/agent-note-cch-launcher-shorthand/alternatives-considered:
+  en: ad6a9ee4fb0191dd
+  zh: d5f1f8623ba71be9
+/agent-note-cch-launcher-shorthand/consequences:
+  en: 9e04d1af0e0f8993
+  zh: 98a327900dd5591d

@@ -86,7 +86,7 @@ describe('Claude browser-brand plugin', () => {
     }
   })
 
-  it('renders the mark at the requested size, the enlarged hero mark, the hero wordmark, and the translated name', () => {
+  it('renders the mark at the requested size, the hero mark, the hero wordmark, and the translated name', () => {
     const mark = render(<ClaudeMark size={34} className="hero" />)
     const svg = mark.container.querySelector('svg')
     expect(svg?.getAttribute('width')).toBe('34')

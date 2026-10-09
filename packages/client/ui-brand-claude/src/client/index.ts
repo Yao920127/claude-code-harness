@@ -61,7 +61,7 @@ function installFonts(): () => void {
 
 /**
  * Apply the Claude palette and typography, fill the sidebar mark and name,
- * show the enlarged hero mark with its product wordmark, and replace the page icon.
+ * show the hero mark with its product wordmark, and replace the page icon.
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {

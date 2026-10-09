@@ -3,8 +3,8 @@ import type {} from './index.ts'
 import { CLAUDE_MARK_COLOR, CLAUDE_MARK_PATH, CLAUDE_MARK_VIEWBOX } from './mark.ts'
 import styles from './Brand.module.css'
 
-/** Square edge of the blank-session hero mark, which stands alone without a headline. */
-export const CLAUDE_HERO_MARK_SIZE = 64
+/** Square edge of the blank-session hero mark, paired with its wordmark. */
+export const CLAUDE_HERO_MARK_SIZE = 44
 
 /** Presentation shared by the sidebar and hero mark positions. */
 interface ClaudeMarkProps {
@@ -55,8 +55,8 @@ export function ClaudeHeroMark({ className }: ClaudeMarkProps) {
 }
 
 /**
- * Render the product wordmark beside the enlarged hero mark, in the serif
- * display face at regular weight with negative tracking.
+ * Render the product wordmark beside the hero mark, in the serif display
+ * face at regular weight with negative tracking.
  * @param props - The framework translate seat for the `brand.claude` namespace.
  * @returns the product name text.
  */

@@ -1,12 +1,12 @@
-/* Hero wordmark beside the enlarged 64px mark: serif display face at regular
-   weight with negative tracking (DESIGN.md display-md), proportionate to the
-   mark rather than the host's smaller default headline row. */
+/* Hero wordmark beside the 44px mark: serif display face at regular weight
+   with negative tracking (DESIGN.md display-sm), proportionate to the mark
+   rather than the host's smaller default headline row. */
 .heroHeadline {
   font-family: var(--cch-font-display);
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 400;
-  line-height: 1.15;
-  letter-spacing: -0.5px;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
 }
 
 /* Sidebar name: longer than the host's `.brandName` row was sized for, so

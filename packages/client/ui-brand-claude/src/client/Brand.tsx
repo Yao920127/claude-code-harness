@@ -1,6 +1,7 @@
 import type { PropsLocale } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from './index.ts'
 import { CLAUDE_MARK_COLOR, CLAUDE_MARK_PATH, CLAUDE_MARK_VIEWBOX } from './mark.ts'
+import styles from './Brand.module.css'
 
 /** Square edge of the blank-session hero mark, which stands alone without a headline. */
 export const CLAUDE_HERO_MARK_SIZE = 64
@@ -33,12 +34,14 @@ export function ClaudeMark({ size, className }: ClaudeMarkProps) {
 }
 
 /**
- * Render the product name beside the sidebar mark.
+ * Render the product name beside the sidebar mark, sized to keep the longer
+ * name on the host's fixed-height single line; an extremely narrow sidebar
+ * still truncates with an ellipsis rather than wrapping into the row above.
  * @param props - The framework translate seat for the `brand.claude` namespace.
  * @returns the name text.
  */
 export function ClaudeBrandName({ t }: PropsLocale<'brand.claude'>) {
-  return <span>{t('name')}</span>
+  return <span className={styles.sidebarName}>{t('name')}</span>
 }
 
 /**
@@ -52,10 +55,11 @@ export function ClaudeHeroMark({ className }: ClaudeMarkProps) {
 }
 
 /**
- * Occupy the hero headline seat with no text, so the hero shows the mark alone
- * instead of the host's fallback headline.
- * @returns nothing.
+ * Render the product wordmark beside the enlarged hero mark, in the serif
+ * display face at regular weight with negative tracking.
+ * @param props - The framework translate seat for the `brand.claude` namespace.
+ * @returns the product name text.
  */
-export function ClaudeHeroHeadline() {
-  return null
+export function ClaudeHeroHeadline({ t }: PropsLocale<'brand.claude'>) {
+  return <span className={styles.heroHeadline}>{t('name')}</span>
 }

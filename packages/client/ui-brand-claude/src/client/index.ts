@@ -61,7 +61,7 @@ function installFonts(): () => void {
 
 /**
  * Apply the Claude palette and typography, fill the sidebar mark and name,
- * show the enlarged hero mark with an empty headline seat, and replace the page icon.
+ * show the enlarged hero mark with its product wordmark, and replace the page icon.
  * @param ctx - Client root context.
  */
 export function apply(ctx: ClientContext): void {
@@ -77,6 +77,6 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('conversation.hero.brand.mark', () =>
     ctx.slots.inject('conversation.hero.brand.headline', function* () {
       yield ctx.slots.register({ name: 'conversation.hero.brand.mark' }, ClaudeHeroMark)
-      yield ctx.slots.register({ name: 'conversation.hero.brand.headline' }, ClaudeHeroHeadline)
+      yield ctx.slots.register({ name: 'conversation.hero.brand.headline', locale: NS }, ClaudeHeroHeadline)
     }))
 }

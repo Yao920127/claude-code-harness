@@ -5,10 +5,10 @@ export type BrandClaudeKey = 'name'
 
 /** Chinese copy. */
 export const zh: Record<BrandClaudeKey, string> = {
-  name: 'Claude Code',
+  name: 'Claude Code Harness',
 }
 
 /** English copy. */
 export const en: Record<BrandClaudeKey, string> = {
-  name: 'Claude Code',
+  name: 'Claude Code Harness',
 }

@@ -1,0 +1,25 @@
+/* Hero wordmark beside the enlarged 64px mark: serif display face at regular
+   weight with negative tracking (DESIGN.md display-md), proportionate to the
+   mark rather than the host's smaller default headline row. */
+.heroHeadline {
+  font-family: var(--cch-font-display);
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+}
+
+/* Sidebar name: longer than the host's `.brandName` row was sized for, so
+   the weight and 24px line-height stay inherited from that host class while
+   this scales the size down and keeps the text on its one line; `min-width:
+   0` already reaches down from the host's flex ancestors, so overflow here
+   truncates instead of wrapping into the row above. */
+.sidebarName {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 15px;
+  letter-spacing: 0;
+}

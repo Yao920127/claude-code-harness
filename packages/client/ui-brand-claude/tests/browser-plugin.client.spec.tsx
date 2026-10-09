@@ -58,9 +58,11 @@ describe('Claude browser-brand plugin', () => {
     expect(subject.theme.overrideTokens).toHaveBeenCalledExactlyOnceWith('@deepseek-ai/dsh-client-ui-brand-claude', CLAUDE_THEME_TOKENS)
     const fonts = document.head.querySelector<HTMLStyleElement>('style[data-plugin-css="@deepseek-ai/dsh-client-ui-brand-claude/fonts.css"]')
     expect(fonts).not.toBeNull()
-    expect(subject.locale.bind('brand.claude')('name')).toBe('Claude Code')
+    expect(subject.locale.bind('brand.claude')('name')).toBe('Claude Code Harness')
     expect(subject.slots.entries('conversation.hero.brand.mark')[0]?.component).toBe(ClaudeHeroMark)
-    expect(subject.slots.entries('conversation.hero.brand.headline')[0]?.component).toBe(ClaudeHeroHeadline)
+    const heroHeadline = subject.slots.entries('conversation.hero.brand.headline')[0]
+    expect(heroHeadline?.component).toBe(ClaudeHeroHeadline)
+    expect(heroHeadline?.locale).toBe('brand.claude')
 
     await fiber.dispose()
     for (const hole of HOLES) expect(subject.slots.entries(hole)).toHaveLength(0)
@@ -84,7 +86,7 @@ describe('Claude browser-brand plugin', () => {
     }
   })
 
-  it('renders the mark at the requested size, the enlarged hero mark, an empty headline, and the translated name', () => {
+  it('renders the mark at the requested size, the enlarged hero mark, the hero wordmark, and the translated name', () => {
     const mark = render(<ClaudeMark size={34} className="hero" />)
     const svg = mark.container.querySelector('svg')
     expect(svg?.getAttribute('width')).toBe('34')
@@ -97,7 +99,8 @@ describe('Claude browser-brand plugin', () => {
     const heroSvg = hero.container.querySelector('svg')
     expect(heroSvg?.getAttribute('width')).toBe(String(CLAUDE_HERO_MARK_SIZE))
     expect(heroSvg?.getAttribute('class')).toBe('fish')
-    expect(render(<ClaudeHeroHeadline />).container.innerHTML).toBe('')
+    const heroHeadline = render(<ClaudeHeroHeadline t={key => `[${key}]`} />)
+    expect(heroHeadline.container.textContent).toBe('[name]')
   })
 
   it('encodes the mark as a standalone SVG page icon', () => {

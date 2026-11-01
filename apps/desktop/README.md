@@ -74,7 +74,7 @@ Welcome loads the shared Toast palette and shadow tokens, with system typography
 
 ## Installation ownership
 
-Electron owns `$DSH_HOME/profiles/desktop`. Its `dependencies` contains packages installed by pnpm; `dsh.profile.bundles` contains the built-in bundles followed by enabled plugins. The signed application supplies dsh, the private Desktop Host, and their production packages from `resources/app.asar/dsh`. Packaged applications select runtime profile resolution without creating package links; development profiles use filesystem links. Both host and plugins execute in the same Electron Node-mode process; Desktop does not enable `--preserve-symlinks`. The CLI cannot boot or mutate this profile.
+Electron owns `$DSH_HOME/profiles/desktop`. Its `dependencies` contains packages installed by pnpm; `dsh.profile.bundles` contains the built-in bundles followed by enabled plugins; a profile that still holds an earlier release's exact built-in list moves to the current one at launch, so a new built-in bundle reaches it, while an edited list stays unchanged. The signed application supplies dsh, the private Desktop Host, and their production packages from `resources/app.asar/dsh`. Packaged applications select runtime profile resolution without creating package links; development profiles use filesystem links. Both host and plugins execute in the same Electron Node-mode process; Desktop does not enable `--preserve-symlinks`. The CLI cannot boot or mutate this profile.
 
 Without an explicit `DSH_HOME`, Claude Code Harness selects `~/.cch` as its Harness home before any profile access and passes it to the Desktop Host. A DeepSeek Harness installation keeps `~/.dsh`, so the two applications never boot the same desktop profile.
 

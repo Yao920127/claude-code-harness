@@ -85,14 +85,18 @@ describe('codingCliToolDefinition', () => {
 })
 
 describe('coding-cli tool cards plugin', () => {
-  it('registers the Definition with the Conversation engine', async () => {
+  it('registers the Definition with the Conversation engine and no sign-in list outside the Desktop app', async () => {
     expect(hostApply).not.toThrow()
     const ctx = new Context()
     const register = vi.fn()
+    const slots = { inject: vi.fn(), register: vi.fn() }
     ctx.provide('uiConversation', { events: { register } } as never)
+    ctx.provide('slots', slots as never)
+    ctx.provide('locale', { register: vi.fn(() => () => {}) } as never)
     const fiber = ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     expect(register).toHaveBeenCalledWith(codingCliToolDefinition)
+    expect(slots.inject).not.toHaveBeenCalled()
     await fiber.dispose()
   })
 })

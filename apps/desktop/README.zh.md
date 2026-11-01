@@ -76,7 +76,7 @@ Welcome 載入共享 Toast 的配色和陰影變數，掛載在 body 下的通�
 
 ## 安裝歸屬
 
-Electron 擁有 `$DSH_HOME/profiles/desktop`。其 `dependencies` 包含 pnpm 安裝的包；`dsh.profile.bundles` 包含內建 bundle，後接已啟用外掛。簽名應用從 `resources/app.asar/dsh` 提供 dsh、私有 Desktop Host 及其生產依賴。打包應用選擇 runtime profile 解析，不建立包連結；開發 profile 使用檔案系統連結。主機與外掛在同一個 Electron Node 模式程序中執行；Desktop 不啟用 `--preserve-symlinks`。CLI 不能啟動或修改此 profile。
+Electron 擁有 `$DSH_HOME/profiles/desktop`。其 `dependencies` 包含 pnpm 安裝的包；`dsh.profile.bundles` 包含內建 bundle，後接已啟用外掛；仍保留先前版本完整內建清單的 profile 會在啟動時改為目前的清單，讓新的內建 bundle 生效，而使用者編輯過的清單保持不變。簽名應用從 `resources/app.asar/dsh` 提供 dsh、私有 Desktop Host 及其生產依賴。打包應用選擇 runtime profile 解析，不建立包連結；開發 profile 使用檔案系統連結。主機與外掛在同一個 Electron Node 模式程序中執行；Desktop 不啟用 `--preserve-symlinks`。CLI 不能啟動或修改此 profile。
 
 未顯式設定 `DSH_HOME` 時，Claude Code Harness 在存取任何 profile 前選擇 `~/.cch` 作為 Harness 主目錄，並傳給 Desktop Host。DeepSeek Harness 安裝保留 `~/.dsh`，因此兩個應用絕不會啟動同一個桌面 profile。
 

@@ -1676,7 +1676,10 @@ export type ClaudeCodeRoutePermissionMode = typeof CLAUDE_CODE_ROUTE_PERMISSION_
 export interface Config {
   /** CLI the route runs. */
   cli: CodingCliId
-  /** Provider route registered on `ctx.llm` (default: the `cli` value). */
+  /**
+   * Provider route registered on `ctx.llm` (default: the `cli` value followed by `-cli`, such as `codex-cli`), which
+   * keeps the sign-in routes apart from API-key routes of the same vendor, such as pi-ai's `opencode`.
+   */
   provider?: string
   /** Route label shown by model selectors (default: the CLI's name). */
   displayName?: string
@@ -1688,7 +1691,10 @@ export interface Config {
   models?: CodingCliModelEntry[]
   /** Absolute path of the CLI executable; absent searches PATH and the CLI's install directories. */
   executable?: string
-  /** Effort level selected for a model that accepts it when the Session names none (default `medium`); otherwise the CLI's own default applies. */
+  /**
+   * Effort level selected for a model that accepts it when the Session names none (default `medium`); otherwise the
+   * CLI's own default applies.
+   */
   defaultEffort?: string
   /**
    * Access setting (default `session`). `session` derives each turn's level

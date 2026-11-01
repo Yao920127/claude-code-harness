@@ -3,23 +3,26 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/client/ui-coding-cli-tools/README.md
 /:
-  en: f98c735d98ab76c2
-  zh: 409ac6344e1ebff3
+  en: 65aa9b352a7a0e19
+  zh: c3c90fc43ba053bd
 /deepseek-ai-dsh-client-ui-coding-cli-tools:
   en: 63c189fbeea24213
   zh: 3afb52057d3551db
 /deepseek-ai-dsh-client-ui-coding-cli-tools/summary:
-  en: d9099ce5e83b37bc
-  zh: 23f8451dc1cf23f7
+  en: 5fbf6f0c215f664e
+  zh: 983a4b2173f9a274
 /deepseek-ai-dsh-client-ui-coding-cli-tools/table-of-contents:
   en: d152484eb41ac6b4
   zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-coding-cli-tools/use-this-package:
-  en: a92541944646bf9c
-  zh: f8c1178aaacb0c41
+  en: 1b0d19751aaf1c27
+  zh: 3a88165319d320d8
+/deepseek-ai-dsh-client-ui-coding-cli-tools/use-this-package/sign-in-list:
+  en: 9018ffccdff2b5f0
+  zh: 3b1f934a54e6901e
 /deepseek-ai-dsh-client-ui-coding-cli-tools/understand-the-implementation:
-  en: 845dc3e093d1cd45
-  zh: 666a11b5f09abcad
+  en: 3e3e4ca8d833dda5
+  zh: 1ea2f9a3f759c452
 /deepseek-ai-dsh-client-ui-coding-cli-tools/further-exploration:
   en: b031617cec75c948
   zh: fa4faeba184254e6

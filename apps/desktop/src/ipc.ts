@@ -1,5 +1,6 @@
 /** Typed preload operations exposed only by the Electron shell. */
 
+import type { CliLoginResult, CliProviderId, CliStatus } from './cli-api.ts'
 import type { DesktopKeyboardApi, DesktopShortcutsApi } from '@deepseek-ai/dsh-client-shortcuts/protocol'
 import type { IpcMainInvokeEvent } from 'electron'
 import type { DesktopBrowserBridge } from '@deepseek-ai/dsh-client-ui-sidebar-browser/types'
@@ -31,6 +32,10 @@ export const DESKTOP_IPC = {
   windowFullscreen: 'dsh-desktop:window-fullscreen',
   windowsAppearance: 'dsh-desktop:windows-appearance',
   windowsMenu: 'dsh-desktop:windows-menu',
+  cliStatus: 'dsh-desktop:cli-status',
+  cliSignIn: 'dsh-desktop:cli-sign-in',
+  cliSubmitCode: 'dsh-desktop:cli-submit-code',
+  cliCancel: 'dsh-desktop:cli-cancel',
 } as const
 
 /** Desktop release update state rendered by desktop-owned UI. */
@@ -79,6 +84,20 @@ export interface DshDesktopProductApi {
     open(): Promise<void>
     subscribe(listener: (state: DesktopUpdatePresentation) => void): () => void
   }
+  /** Sign-in state and login of the coding-agent CLIs whose own sign-in the model routes use. */
+  readonly cli: DesktopCliApi
+}
+
+/** CLI sign-in operations the product window shares with the welcome window. */
+export interface DesktopCliApi {
+  /** @param provider - CLI id. @returns the CLI's stored sign-in state. */
+  status(provider: CliProviderId): Promise<CliStatus>
+  /** @param provider - CLI id. @returns how the CLI's own login ended. */
+  signIn(provider: CliProviderId): Promise<CliLoginResult>
+  /** @param provider - CLI id. @param code - authorization code the browser showed. @returns whether a running login received it. */
+  submitCode(provider: CliProviderId, code: string): Promise<boolean>
+  /** @param provider - CLI id whose running login stops. */
+  cancel(provider: CliProviderId): Promise<void>
 }
 
 /** Scheme of Desktop-owned application documents. */

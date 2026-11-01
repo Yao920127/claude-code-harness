@@ -62,6 +62,8 @@ export {
   bundlePatchFiles,
   bundlePatchPaths,
   initProfile,
+  RETIRED_CCH_PROFILE_BUNDLES,
+  upgradeRetiredProfileBundles,
   removeLinkProjections,
   loadProfile,
   loadProfileDirectory,

@@ -29,6 +29,8 @@ import {
   reportSkippedBundles,
   resolveBundleDir,
   resolveProfileDir,
+  RETIRED_CCH_PROFILE_BUNDLES,
+  upgradeRetiredProfileBundles,
   writeProfileManifest,
   type Profile,
   type RuntimeResolution,
@@ -389,6 +391,24 @@ describe('loadProfile', () => {
     expect(readProfileManifest('t', custom).dsh?.profile?.bundles).toEqual([
       '@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless', 'custom-bundle',
     ])
+  })
+
+  it('moves an earlier release\'s built-in CCH bundle list to the current one and keeps an edited list', () => {
+    const home = tmp()
+    const stock = resolveProfileDir('desktop', home)
+    initProfile(stock, RETIRED_CCH_PROFILE_BUNDLES[0] ?? [])
+    expect(upgradeRetiredProfileBundles('t', stock, RETIRED_CCH_PROFILE_BUNDLES, CCH_PROFILE_BUNDLES)).toBe(true)
+    expect(readProfileManifest('t', stock).dsh?.profile?.bundles).toEqual([...CCH_PROFILE_BUNDLES])
+    expect(CCH_PROFILE_BUNDLES).toContain('@deepseek-ai/dsh-llm-coding-cli')
+    expect(upgradeRetiredProfileBundles('t', stock, RETIRED_CCH_PROFILE_BUNDLES, CCH_PROFILE_BUNDLES)).toBe(false)
+
+    const edited = resolveProfileDir('edited', home)
+    initProfile(edited, [...RETIRED_CCH_PROFILE_BUNDLES[0] ?? [], 'custom-bundle'])
+    expect(upgradeRetiredProfileBundles('t', edited, RETIRED_CCH_PROFILE_BUNDLES, CCH_PROFILE_BUNDLES)).toBe(false)
+    const empty = resolveProfileDir('empty', home)
+    initProfile(empty, [])
+    writeProfileManifest(empty, { name: 'empty' })
+    expect(upgradeRetiredProfileBundles('t', empty, RETIRED_CCH_PROFILE_BUNDLES, CCH_PROFILE_BUNDLES)).toBe(false)
   })
 
   it.each(['missing package', 'invalid manifest', 'not a bundle', 'missing patch', 'invalid patch'])(

@@ -22,6 +22,18 @@
     },
     {
       "path": "../../llm/llm-coding-cli"
+    },
+    {
+      "path": "../locale/tsconfig.client.json"
+    },
+    {
+      "path": "../ui-renderer"
+    },
+    {
+      "path": "../ui-settings-models"
+    },
+    {
+      "path": "../ui-slots"
     }
   ]
 }

@@ -13,6 +13,7 @@
     "apps/desktop/src/keybindings.ts",
     "apps/desktop/src/browser-guests.ts",
     "apps/desktop/src/ipc.ts",
+    "apps/desktop/src/cli-api.ts",
     "apps/desktop/src/update-overlay.ts"
   ],
   "include": [],

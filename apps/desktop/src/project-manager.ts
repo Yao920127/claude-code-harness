@@ -23,7 +23,7 @@ import type { DesktopPaths } from './paths.ts'
 import type { DesktopRelease } from './release.ts'
 import { readDesktopRuntime } from './runtime-tree.ts'
 import {
-  CCH_PROFILE_BUNDLES, initProfile, removeLinkProjections, sanitizeProfile,
+  CCH_PROFILE_BUNDLES, initProfile, RETIRED_CCH_PROFILE_BUNDLES, removeLinkProjections, sanitizeProfile, upgradeRetiredProfileBundles,
 } from '@deepseek-ai/dsh-app-boot'
 
 const PROJECT_NAME = '@deepseek-ai/dsh-desktop-runtime'
@@ -171,7 +171,11 @@ export function createDevelopmentProjectMetadata(projectDir: string, release: De
   writeFileSync(join(projectDir, 'pnpm-workspace.yaml'), workspaceFile(), { mode: 0o600 })
 }
 
-/** Create the first external plugin profile without running a package manager. */
+/**
+ * Create the first external plugin profile without running a package manager, and move a profile that still holds an
+ * earlier release's built-in bundle list to the current one, so a release's new built-in bundles reach it.
+ */
 export function createPluginProfile(projectDir: string): void {
   initProfile(projectDir, DESKTOP_BUNDLES)
+  upgradeRetiredProfileBundles('dsh', projectDir, RETIRED_CCH_PROFILE_BUNDLES, DESKTOP_BUNDLES)
 }

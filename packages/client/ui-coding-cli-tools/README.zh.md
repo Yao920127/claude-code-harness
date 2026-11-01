@@ -1,5 +1,5 @@
 ---
-description: "在 Web 對話中，把 Codex、Antigravity、Grok Build 與 OpenCode 在自身回合內執行的工具呼叫顯示為工具卡片。"
+description: "在 Web 對話中，把 Codex、Antigravity、Grok Build 與 OpenCode 在自身回合內執行的工具呼叫顯示為工具卡片，並在 Desktop 的模型設定中列出模型路由所用 CLI 的登入。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-看見 coding CLI 在回答時做了什麼。當 Session 透過 [`dsh-llm-coding-cli`](../../llm/llm-coding-cli/README.zh.md) 與 Codex、Antigravity、Grok Build 或 OpenCode 對話時，CLI 執行的每個工具呼叫都會在對話中顯示為與 harness 工具相同的工具卡片：shell 命令顯示為附輸出的終端機卡片，檔案讀取、寫入或編輯會顯示該檔案，搜尋或網路呼叫則顯示其查詢。
+看見 coding CLI 在回答時做了什麼。當 Session 透過 [`dsh-llm-coding-cli`](../../llm/llm-coding-cli/README.zh.md) 與 Codex、Antigravity、Grok Build 或 OpenCode 對話時，CLI 執行的每個工具呼叫都會在對話中顯示為與 harness 工具相同的工具卡片：shell 命令顯示為附輸出的終端機卡片，檔案讀取、寫入或編輯會顯示該檔案，搜尋或網路呼叫則顯示其查詢。在 Desktop 應用中，「設定 → 模型」也會列出模型路由使用其自身登入的 CLI，附上狀態與登入按鈕。
 
 ## 目錄
 
@@ -27,6 +27,10 @@ kind: "package-reference"
 
 `dsh-llm-coding-cli` Bundle 會插入本外掛，因此 CCH Profile 無需設定即可顯示卡片。CLI 一開始呼叫就會出現卡片，並在 CLI 回報結果時完成；CLI 回報失敗的呼叫，或在其步驟結束時仍在執行的呼叫，會以錯誤結束。卡片會與該回合的其他過程列一起分組與計數。沒有 harness 對應工具的 CLI 工具（例如 MCP 工具）會以通用卡片顯示其原本的名稱與參數。
 
+### 登入清單
+
+在 Desktop 應用中，「設定 → 模型」底部顯示「以登入使用（不需 API 金鑰）」：Claude Code、Codex、Antigravity、Grok Build 與 OpenCode，各自附上登入狀態——已登入（CLI 回報帳號 email 時一併顯示）、未登入或未安裝——以及執行該 CLI 自己登入的「登入」或「重新登入」按鈕。Claude Code 的登入會要求貼上其瀏覽器頁面顯示的授權碼；Codex 與 Grok Build 在瀏覽器中完成；Antigravity 與 OpenCode 會開啟終端機視窗，完成後按「重新檢查」讀取新狀態。因此 Claude Code 登出後只需一個按鈕即可恢復。`cch web` 應用沒有 Desktop 橋接，不顯示此清單。
+
 <a id="understand-the-implementation"></a>
 ## 理解實作
 
@@ -34,6 +38,8 @@ kind: "package-reference"
 <summary>實作內部細節——點選展開</summary>
 
 路由把每個回報的工具狀態記錄為 `coding-cli/tool` Session 事件，其名稱與參數已轉成 harness 用語。本外掛註冊一個 Conversation Definition，依 `callId` 比對這些事件，並為每個呼叫建立一個 Chat `tool-call` 節點：執行中時是已開始的呼叫，完成或失敗後是附輸出文字的已結束結果，而在其 Step 或 Turn 先結束時則是被中斷的結果。渲染、分組與計數沿用 [ui-chat](../ui-chat/README.zh.md) 與 [ui-tool](../ui-tool/README.zh.md) 對 harness 工具呼叫的處理。
+
+登入清單只在 Desktop preload 公開 `dshDesktop.cli` 時佔用 [ui-settings-models](../ui-settings-models/README.zh.md) 的 `settings.models.footer` 座；Desktop 主程序執行它與歡迎視窗共用的狀態查詢與登入。
 
 </details>
 

@@ -37,8 +37,8 @@ import { DesktopFatalRecovery } from './fatal-recovery.ts'
 import { pruneCrashReports, RendererConsoleTail, writeCrashReport, type CrashReportSource } from './crash-report.ts'
 import { openWelcomeWindow } from './welcome-window.ts'
 import { claudeCodeExecutable } from './claude-code-login.ts'
-import { createCliLogins } from './cli-login.ts'
-import { CLI_PROVIDERS, WELCOME_IPC, needsWelcome, type WelcomeAuthentication, type WelcomeNotice } from './welcome-api.ts'
+import { createCliLogins, type CliLogin } from './cli-login.ts'
+import { CLI_PROVIDERS, WELCOME_IPC, isCliProvider, needsWelcome, type WelcomeAuthentication, type WelcomeNotice } from './welcome-api.ts'
 import { connectDesktopWelcome, type DesktopWelcomeBackend, type WelcomeState } from './welcome-backend.ts'
 import { DesktopUpdateJournal } from './update-journal.ts'
 import { DesktopUpdatePreparationError } from './update-error.ts'
@@ -744,6 +744,19 @@ async function main(): Promise<void> {
     assertProductSender(event)
     return presentDesktopUpdate(updates.state)
   })
+  const productCli = (event: IpcMainInvokeEvent, id: unknown): CliLogin => {
+    assertProductSender(event)
+    if (!isCliProvider(id)) throw new Error('dsh desktop: rejected an unknown CLI id')
+    return cliLogins[id]
+  }
+  ipcMain.handle(DESKTOP_IPC.cliStatus, (event, id: unknown) => productCli(event, id).status())
+  ipcMain.handle(DESKTOP_IPC.cliSignIn, (event, id: unknown) => productCli(event, id).signIn())
+  ipcMain.handle(DESKTOP_IPC.cliSubmitCode, (event, id: unknown, code: unknown) => {
+    const login = productCli(event, id)
+    if (typeof code !== 'string') throw new Error('dsh desktop: rejected a non-string authorization code')
+    return login.submitCode(code)
+  })
+  ipcMain.handle(DESKTOP_IPC.cliCancel, (event, id: unknown) => { productCli(event, id).cancel() })
   ipcMain.handle(DESKTOP_IPC.onboardingApiKey, async (event) => {
     assertProductSender(event)
     return (await readWelcomeState()).hasApiKey

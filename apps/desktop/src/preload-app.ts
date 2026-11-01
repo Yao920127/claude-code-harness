@@ -3,6 +3,7 @@
 import type { DesktopShortcutInput, ShortcutConfigSnapshot, ShortcutSaveResult } from '@deepseek-ai/dsh-client-shortcuts/protocol'
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { DESKTOP_IPC, SCHEME, type DshDesktopProductApi, type DesktopUpdatePresentation } from './ipc.ts'
+import type { CliLoginResult, CliStatus } from './cli-api.ts'
 import { PLATFORM_IPC } from './platform-ipc.ts'
 import { markDocumentPlatform, syncWindowFullscreen } from './preload-platform.ts'
 import { syncNativeTheme } from './preload-theme.ts'
@@ -44,6 +45,12 @@ function createProductApi(): DshDesktopProductApi {
         ipcRenderer.on(DESKTOP_IPC.shortcutsChanged, handle)
         return () => { ipcRenderer.off(DESKTOP_IPC.shortcutsChanged, handle) }
       },
+    },
+    cli: {
+      status: provider => ipcRenderer.invoke(DESKTOP_IPC.cliStatus, provider) as Promise<CliStatus>,
+      signIn: provider => ipcRenderer.invoke(DESKTOP_IPC.cliSignIn, provider) as Promise<CliLoginResult>,
+      submitCode: (provider, code) => ipcRenderer.invoke(DESKTOP_IPC.cliSubmitCode, provider, code) as Promise<boolean>,
+      cancel: provider => ipcRenderer.invoke(DESKTOP_IPC.cliCancel, provider) as Promise<void>,
     },
     updates: {
       status: () => ipcRenderer.invoke(DESKTOP_IPC.updatesStatus) as Promise<DesktopUpdatePresentation>,

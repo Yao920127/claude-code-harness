@@ -359,7 +359,7 @@ function profilePackages(source: string): { packages: string[]; webBundles: stri
   const file = ts.createSourceFile(PROFILE_SOURCE, source, ts.ScriptTarget.Latest, true)
   const required = new Set(['PROFILE_TEMPLATES', 'DEFAULT_PROFILE_BUNDLES'])
   // Shared bundle lists a template names by reference; each is scanned as its own declaration.
-  const referenced = new Set(['CCH_PROFILE_BUNDLES'])
+  const referenced = new Set(['CCH_PROFILE_BUNDLES', 'RETIRED_CCH_PROFILE_BUNDLES'])
   const found = new Set<string>()
   const packages: string[] = []
   const webBundles: string[] = []

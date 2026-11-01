@@ -75,6 +75,17 @@ describe('desktop external plugin profile', () => {
     expect(lstatSync(path).isDirectory()).toBe(true)
     expect(lstatSync(join(profile, 'node_modules/plugin')).isDirectory()).toBe(true)
   })
+  it('moves a profile with an earlier release\'s built-in bundles to the current built-in bundles', async () => {
+    const { manager } = setup()
+    await manager.applyRelease()
+    const path = join(manager.paths.profile, 'package.json')
+    const manifest = JSON.parse(readFileSync(path, 'utf8')) as { dsh: { profile: { bundles: string[] } } }
+    manifest.dsh.profile.bundles = CCH_PROFILE_BUNDLES.filter(bundle => bundle !== '@deepseek-ai/dsh-llm-coding-cli')
+    writeFileSync(path, JSON.stringify(manifest))
+    await manager.applyRelease()
+    expect((JSON.parse(readFileSync(path, 'utf8')) as typeof manifest).dsh.profile.bundles).toEqual([...CCH_PROFILE_BUNDLES])
+  })
+
   it('reuses plugin files without scanning manifests and can disable them', async () => {
     const { manager } = setup()
     await manager.applyRelease()

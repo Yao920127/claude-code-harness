@@ -290,7 +290,7 @@ describe('llm-coding-cli plugin', () => {
     const ctx = await host()
     const fiber = await ctx.plugin(plugin, plugin.Config({ cli: 'grok', executable: process.execPath }))
     await ctx.plugin(plugin, plugin.Config({ cli: 'codex', provider: 'my-codex', displayName: 'Mine', models: [{ id: 'm', name: 'M' }] }))
-    expect(ctx.llm.listProviders()).toEqual([{ id: 'grok', name: 'Grok Build' }, { id: 'my-codex', name: 'Mine' }])
+    expect(ctx.llm.listProviders()).toEqual([{ id: 'grok-cli', name: 'Grok Build' }, { id: 'my-codex', name: 'Mine' }])
     await fiber.dispose()
     expect(ctx.llm.listProviders()).toEqual([{ id: 'my-codex', name: 'Mine' }])
   })
@@ -301,7 +301,7 @@ describe('llm-coding-cli plugin', () => {
     ctx.provide('sandboxPolicy', { resolve: () => ({ mode: 'danger-full-access', workspaceRoot: CWD }) } as never)
     ctx.provide('approval', { effectivePolicy: () => 'never' } as never)
     await ctx.plugin(plugin, plugin.Config({ cli: 'codex', executable: process.execPath, env: { EXTRA: '1' } }))
-    const chunks = await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
+    const chunks = await collect(ctx.llm.stream(request({ provider: 'codex-cli', sessionId: 's' as SessionId })))
     expect(chunks.at(-1)).toMatchObject({ type: 'finish', reason: { kind: 'stop' } })
     expect(spawn.mock.calls.at(-1)).toMatchObject([{ argv: [process.execPath, 'exec', '--json', '--skip-git-repo-check', '--dangerously-bypass-approvals-and-sandbox', '--model', 'gpt-6-luna', '-'], env: { EXTRA: '1' } }])
   })
@@ -313,7 +313,7 @@ describe('llm-coding-cli plugin', () => {
     ctx.provide('attachments', { readImage } as never)
     await ctx.plugin(plugin, plugin.Config({ cli: 'codex', executable: process.execPath, models: [{ id: 'm', name: 'M' }] }))
     const png = { attachmentId: 'a1', mediaType: 'image/png', bytes: 1, width: 1, height: 1 } as ImageAttachmentRef
-    await collect(ctx.llm.stream(request({ model: 'm', sessionId: 's' as SessionId, messages: [createUserMessage({ content: [{ type: 'image', attachment: png }], source: { kind: 'user' } })] })))
+    await collect(ctx.llm.stream(request({ provider: 'codex-cli', model: 'm', sessionId: 's' as SessionId, messages: [createUserMessage({ content: [{ type: 'image', attachment: png }], source: { kind: 'user' } })] })))
     expect(readImage).toHaveBeenCalledOnce()
     expect(spawn.mock.calls.at(-1)?.[0].argv).toContain('--image')
   })
@@ -323,16 +323,16 @@ describe('llm-coding-cli plugin', () => {
     const ctx = await host(spawn)
     const warn = vi.spyOn(ctx.logger, 'warn')
     await ctx.plugin(plugin, plugin.Config({ cli: 'codex', executable: process.execPath }))
-    await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId })))
+    await collect(ctx.llm.stream(request({ provider: 'codex-cli', sessionId: 's' as SessionId })))
     expect(spawn.mock.calls.at(-1)?.[0].argv).toContain('read-only')
-    await ctx.llm.listModels('codex')
+    await ctx.llm.listModels('codex-cli')
     expect(warn).toHaveBeenCalled()
   })
 
   it('searches for the CLI when no executable is configured', async () => {
     const ctx = await host()
     await ctx.plugin(plugin, plugin.Config({ cli: 'opencode', env: { PATH: '/nonexistent' } }))
-    await expect(ctx.llm.listModels('opencode')).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'default' })]))
+    await expect(ctx.llm.listModels('opencode-cli')).resolves.toEqual(expect.arrayContaining([expect.objectContaining({ id: 'default' })]))
   })
 
   it('refuses an unusable disposal grace or executable', async () => {

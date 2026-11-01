@@ -49,7 +49,10 @@ export const inject = ['llm', 'subprocess', 'sessions', 'agents']
 export interface Config {
   /** CLI the route runs. */
   cli: CodingCliId
-  /** Provider route registered on `ctx.llm` (default: the `cli` value). */
+  /**
+   * Provider route registered on `ctx.llm` (default: the `cli` value followed by `-cli`, such as `codex-cli`), which
+   * keeps the sign-in routes apart from API-key routes of the same vendor, such as pi-ai's `opencode`.
+   */
   provider?: string
   /** Route label shown by model selectors (default: the CLI's name). */
   displayName?: string
@@ -139,7 +142,7 @@ export function apply(ctx: Context, config: Config): void {
     throw new Error(`llm-coding-cli: executable must be an absolute path to an existing file; got "${configured}"`)
   }
   const host = { path: process.env.PATH, home: homedir(), platform: process.platform }
-  const provider = config.provider ?? cli
+  const provider = config.provider ?? `${cli}-cli`
   // The schema materializes `[]` for an absent array, so empty also means "discover".
   const models = config.models?.length === 0 ? undefined : config.models
   const extraEnv = config.env as Record<string, string>

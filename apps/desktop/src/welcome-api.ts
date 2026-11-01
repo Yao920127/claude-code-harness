@@ -2,6 +2,10 @@
 
 import type { AccountView, SignInAttemptId } from '@deepseek-ai/dsh-deepseek-account/types'
 import type { DesktopLocale } from './locale.ts'
+import { CLI_PROVIDERS, type CliLoginResult, type CliProviderId, type CliStatus } from './cli-api.ts'
+
+export { CLI_PROVIDERS } from './cli-api.ts'
+export type { CliLoginResult, CliProviderId, CliStatus } from './cli-api.ts'
 
 /** Private native welcome channels, installed only while its window exists. */
 export const WELCOME_IPC = {
@@ -18,11 +22,6 @@ export const WELCOME_IPC = {
   cliCancel: 'dsh-welcome:cli-cancel',
 } as const
 
-/** Coding-agent CLIs the welcome offers, in display order; signing in to any one of them is optional. */
-export const CLI_PROVIDERS = ['claude-code', 'codex', 'antigravity', 'grok', 'opencode'] as const
-
-/** One coding-agent CLI the welcome can sign in to. */
-export type CliProviderId = typeof CLI_PROVIDERS[number]
 
 /**
  * How a CLI's login proceeds: `browser-code` accepts a pasted authorization code, `browser` completes through the
@@ -48,14 +47,6 @@ export function isCliProvider(value: unknown): value is CliProviderId {
   return typeof value === 'string' && (CLI_PROVIDERS as readonly string[]).includes(value)
 }
 
-/** Sign-in state reported by a CLI; `unavailable` means the CLI is not installed or could not run or answer. */
-export type CliStatus =
-  | { readonly state: 'signed-in'; readonly email?: string }
-  | { readonly state: 'signed-out' }
-  | { readonly state: 'unavailable' }
-
-/** Outcome of one CLI login; `terminal` means the login continues in a terminal window and its outcome is unknown. */
-export type CliLoginResult = 'signed-in' | 'failed' | 'cancelled' | 'terminal'
 
 /** Credential writes return a safe outcome without exposing Host diagnostics. */
 export type WelcomeSaveResult = { readonly ok: true } | { readonly ok: false }

@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Install this Profile Bundle to talk to an installed coding CLI from a harness Session without an API key. It registers one model route per CLI — `codex`, `antigravity`, `grok`, and `opencode` — listing the models that CLI's own model picker shows, including gateway models. Each model call runs one complete headless turn of that CLI in the Session workspace, signed in with the CLI's own login and with the prompt's images attached; the harness shows the answer, the thinking, and each tool call the CLI ran as a tool card. Choose [`dsh-llm-claude-code`](../llm-claude-code/README.md) for Claude Code.
+Install this Profile Bundle to talk to an installed coding CLI from a harness Session without an API key. It registers one model route per CLI — `codex-cli`, `antigravity-cli`, `grok-cli`, and `opencode-cli` — listing the models that CLI's own model picker shows, including gateway models. Each model call runs one complete headless turn of that CLI in the Session workspace, signed in with the CLI's own login and with the prompt's images attached; the harness shows the answer, the thinking, and each tool call the CLI ran as a tool card. Choose [`dsh-llm-claude-code`](../llm-claude-code/README.md) for Claude Code.
 
 ## Table of Contents
 
@@ -27,7 +27,7 @@ Install this Profile Bundle to talk to an installed coding CLI from a harness Se
 
 ### Before you start
 
-Install each CLI you want to use and sign in once with its own login on the machine that runs the harness: `codex login`, `agy` (Antigravity signs in on first start), `grok login`, or `opencode auth login`. The CCH Desktop welcome runs the same logins. The routes never read, copy, or change stored credentials, and the harness removes credential-shaped variables such as `OPENAI_API_KEY` from the inherited environment. A turn without a usable login fails with the CLI's own error message.
+Install each CLI you want to use and sign in once with its own login on the machine that runs the harness: `codex login`, `agy` (Antigravity signs in on first start), `grok login`, or `opencode auth login`. The CCH Desktop welcome and the Use with sign-in list at the foot of Settings → Models run the same logins and show each CLI's state. These routes are separate from the API-key providers of the Models settings, such as pi-ai's `openai-codex` and `opencode`, which need their own keys. The routes never read, copy, or change stored credentials, and the harness removes credential-shaped variables such as `OPENAI_API_KEY` from the inherited environment. A turn without a usable login fails with the CLI's own error message.
 
 ### Installing the Bundle
 
@@ -42,10 +42,10 @@ The Bundle patch inserts four route rows, `llm-codex`, `llm-antigravity`, `llm-g
 
 | Route | CLI | Model list | Effort row |
 |---|---|---|---|
-| `codex` | `codex` | `codex debug models`, entries Codex shows in `/model` | The reasoning levels Codex reports per model, starting at `defaultEffort` when offered, otherwise at Codex's default |
-| `antigravity` | `agy` | `agy models` | None; the model ids carry their effort |
-| `grok` | `grok` | `grok models` | None |
-| `opencode` | `opencode` | `opencode models` | None |
+| `codex-cli` | `codex` | `codex debug models`, entries Codex shows in `/model` | The reasoning levels Codex reports per model, starting at `defaultEffort` when offered, otherwise at Codex's default |
+| `antigravity-cli` | `agy` | `agy models` | None; the model ids carry their effort |
+| `grok-cli` | `grok` | `grok models` | None |
+| `opencode-cli` | `opencode` | `opencode models` | None |
 
 A route reads its list from a short-lived CLI process the first time a selector asks and reuses it for `modelsFreshMs`. A CLI that is not installed lists only its CLI-settings entry, and a turn on it fails with `CODING_CLI_NOT_INSTALLED`.
 
@@ -54,7 +54,7 @@ A route reads its list from a short-lived CLI process the first time a selector 
 | Field | Default | Meaning |
 |---|---|---|
 | `cli` | required | `codex`, `antigravity`, `grok`, or `opencode` |
-| `provider` | the `cli` value | Route name registered on `ctx.llm`; each mounted instance needs a unique value |
+| `provider` | the `cli` value plus `-cli` | Route name registered on `ctx.llm`; each mounted instance needs a unique value. The suffix keeps the sign-in routes apart from API-key routes of the same vendor, such as pi-ai's `opencode` |
 | `displayName` | the CLI's name | Route label shown by model selectors |
 | `models` | discovered | Selectable models; absent or empty lists the CLI's models. The id `default` sends no model; an entry's optional `efforts` and `defaultEffort` set its Effort row |
 | `executable` | searched | Absolute path of the CLI; absent searches PATH, `/opt/homebrew/bin`, `/usr/local/bin`, `~/.local/bin`, `~/.bun/bin`, `~/.npm-global/bin`, and the CLI's own install directory. A path that does not exist fails at load |

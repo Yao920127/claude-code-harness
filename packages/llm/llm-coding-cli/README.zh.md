@@ -9,7 +9,7 @@ kind: "package-bundle"
 
 ## 概述
 
-安裝這個 Profile Bundle，即可在 harness Session 中與已安裝的 coding CLI 對話，無需 API 金鑰。它為每個 CLI 註冊一條模型路由——`codex`、`antigravity`、`grok` 與 `opencode`——列出該 CLI 自己的模型選擇器顯示的模型，包括閘道加入的模型。每次模型呼叫都會在 Session 工作區中執行該 CLI 的一個完整 headless 回合，使用該 CLI 自己的登入並附上提示中的圖片；harness 顯示回答、思考過程，並把 CLI 執行的每個工具呼叫顯示為工具卡片。Claude Code 請選擇 [`dsh-llm-claude-code`](../llm-claude-code/README.zh.md)。
+安裝這個 Profile Bundle，即可在 harness Session 中與已安裝的 coding CLI 對話，無需 API 金鑰。它為每個 CLI 註冊一條模型路由——`codex-cli`、`antigravity-cli`、`grok-cli` 與 `opencode-cli`——列出該 CLI 自己的模型選擇器顯示的模型，包括閘道加入的模型。每次模型呼叫都會在 Session 工作區中執行該 CLI 的一個完整 headless 回合，使用該 CLI 自己的登入並附上提示中的圖片；harness 顯示回答、思考過程，並把 CLI 執行的每個工具呼叫顯示為工具卡片。Claude Code 請選擇 [`dsh-llm-claude-code`](../llm-claude-code/README.zh.md)。
 
 ## 目錄
 
@@ -27,7 +27,7 @@ kind: "package-bundle"
 
 ### 開始之前
 
-在執行 harness 的機器上安裝想使用的每個 CLI，並用它自己的登入方式登入一次：`codex login`、`agy`（Antigravity 首次啟動時登入）、`grok login` 或 `opencode auth login`。CCH Desktop 歡迎頁執行的是同樣的登入。這些路由從不讀取、複製或修改已儲存的憑證，harness 也會從繼承的環境中移除 `OPENAI_API_KEY` 等憑證類變數。沒有可用登入的回合會以 CLI 自己的錯誤訊息失敗。
+在執行 harness 的機器上安裝想使用的每個 CLI，並用它自己的登入方式登入一次：`codex login`、`agy`（Antigravity 首次啟動時登入）、`grok login` 或 `opencode auth login`。CCH Desktop 歡迎頁與「設定 → 模型」底部的「以登入使用」清單執行同樣的登入並顯示各 CLI 的狀態。這些路由與模型設定中的 API 金鑰供應商（例如 pi-ai 的 `openai-codex` 與 `opencode`）分開，後者需要各自的金鑰。這些路由從不讀取、複製或修改已儲存的憑證，harness 也會從繼承的環境中移除 `OPENAI_API_KEY` 等憑證類變數。沒有可用登入的回合會以 CLI 自己的錯誤訊息失敗。
 
 ### 安裝 Bundle
 
@@ -42,10 +42,10 @@ Bundle patch 插入四條路由列 `llm-codex`、`llm-antigravity`、`llm-grok` 
 
 | 路由 | CLI | 模型列表 | Effort 列 |
 |---|---|---|---|
-| `codex` | `codex` | `codex debug models` 中 Codex 在 `/model` 顯示的項目 | Codex 為每個模型回報的推理等級；提供 `defaultEffort` 時從它開始，否則從 Codex 的預設等級開始 |
-| `antigravity` | `agy` | `agy models` | 無；模型 id 已帶有 effort |
-| `grok` | `grok` | `grok models` | 無 |
-| `opencode` | `opencode` | `opencode models` | 無 |
+| `codex-cli` | `codex` | `codex debug models` 中 Codex 在 `/model` 顯示的項目 | Codex 為每個模型回報的推理等級；提供 `defaultEffort` 時從它開始，否則從 Codex 的預設等級開始 |
+| `antigravity-cli` | `agy` | `agy models` | 無；模型 id 已帶有 effort |
+| `grok-cli` | `grok` | `grok models` | 無 |
+| `opencode-cli` | `opencode` | `opencode models` | 無 |
 
 路由在選擇器第一次詢問時，從一個短暫的 CLI 程序讀取列表，並在 `modelsFreshMs` 內重複使用。未安裝的 CLI 只列出其 CLI settings 項目，在其上執行的回合會以 `CODING_CLI_NOT_INSTALLED` 失敗。
 
@@ -54,7 +54,7 @@ Bundle patch 插入四條路由列 `llm-codex`、`llm-antigravity`、`llm-grok` 
 | 欄位 | 預設值 | 含義 |
 |---|---|---|
 | `cli` | 必填 | `codex`、`antigravity`、`grok` 或 `opencode` |
-| `provider` | `cli` 的值 | 註冊到 `ctx.llm` 的路由名稱；每個掛載的實例都需要唯一值 |
+| `provider` | `cli` 的值加上 `-cli` | 註冊到 `ctx.llm` 的路由名稱；每個掛載的實例都需要唯一值。後綴讓登入路由與同一廠商的 API 金鑰路由（例如 pi-ai 的 `opencode`）分開 |
 | `displayName` | CLI 的名稱 | 模型選擇器顯示的路由標籤 |
 | `models` | 自動發現 | 可選模型；缺省或空列表時列出 CLI 的模型。id `default` 不傳送模型；項目可選的 `efforts` 與 `defaultEffort` 設定其 Effort 列 |
 | `executable` | 自動搜尋 | CLI 的絕對路徑；缺省時搜尋 PATH、`/opt/homebrew/bin`、`/usr/local/bin`、`~/.local/bin`、`~/.bun/bin`、`~/.npm-global/bin` 與 CLI 自己的安裝目錄。不存在的路徑在載入時失敗 |

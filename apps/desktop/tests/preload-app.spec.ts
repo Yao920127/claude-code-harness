@@ -151,6 +151,20 @@ it.each(['win32', 'darwin'] as const)('installs the embedded mandatory UI only i
   }
 })
 
+it('exposes the CLI sign-in operations of the main process', async () => {
+  vi.stubGlobal('location', new URL('dsh-app://app/'))
+  await import('../src/preload-app.ts')
+  const api = electron.contextBridge.exposeInMainWorld.mock.calls.find(([name]) => name === 'dshDesktop')?.[1] as DshDesktopProductApi
+  await api.cli.status('codex')
+  await api.cli.signIn('grok')
+  await api.cli.submitCode('claude-code', 'abc')
+  await api.cli.cancel('opencode')
+  expect(electron.ipcRenderer.invoke).toHaveBeenCalledWith(DESKTOP_IPC.cliStatus, 'codex')
+  expect(electron.ipcRenderer.invoke).toHaveBeenCalledWith(DESKTOP_IPC.cliSignIn, 'grok')
+  expect(electron.ipcRenderer.invoke).toHaveBeenCalledWith(DESKTOP_IPC.cliSubmitCode, 'claude-code', 'abc')
+  expect(electron.ipcRenderer.invoke).toHaveBeenCalledWith(DESKTOP_IPC.cliCancel, 'opencode')
+})
+
 it('exposes constrained shortcut operations and releases configuration subscriptions', async () => {
   vi.stubGlobal('location', new URL('dsh-app://app/'))
   await import('../src/preload-app.ts')

@@ -213,9 +213,24 @@ export const PROFILE_TEMPLATES: Record<string, ProfileTemplate> = {
   },
 }
 
+/**
+ * Earlier releases' built-in CCH bundle lists, exactly as they wrote them into a new profile. A profile still holding
+ * one of them has not edited its bundles, so it moves to the current {@link CCH_PROFILE_BUNDLES}.
+ */
+export const RETIRED_CCH_PROFILE_BUNDLES: readonly (readonly string[])[] = [
+  [
+    '@deepseek-ai/dsh-base',
+    '@deepseek-ai/dsh-web-app',
+    '@deepseek-ai/dsh-llm-claude-code',
+    '@deepseek-ai/dsh-client-ui-brand-claude',
+    '@deepseek-ai/dsh-cch',
+  ],
+]
+
 /** Installation-owned bundle tuples normalized to the shipped template. */
-const INSTALLATION_OWNED_PROFILE_TUPLES: Record<string, readonly string[]> = {
-  headless: ['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless'],
+const INSTALLATION_OWNED_PROFILE_TUPLES: Record<string, readonly (readonly string[])[]> = {
+  headless: [['@deepseek-ai/dsh-base', '@deepseek-ai/dsh-web-app', '@deepseek-ai/dsh-headless']],
+  cch: RETIRED_CCH_PROFILE_BUNDLES,
 }
 
 /** The bundle list a `dsh plugin` init uses for a name with no shipped template. */
@@ -595,24 +610,44 @@ function sameBundles(left: readonly string[], right: readonly string[]): boolean
  * preserving all other manifest fields. Other bundle lists remain untouched.
  */
 function normalizeShippedProfile(name: string, dir: string, manifest: ProfileManifest): ProfileManifest {
-  const installationOwned = INSTALLATION_OWNED_PROFILE_TUPLES[name]
   const template = PROFILE_TEMPLATES[name]
-  const bundles = manifest.dsh?.profile?.bundles
-  if (template === undefined || bundles === undefined) return manifest
-  const isRetiredTuple = installationOwned !== undefined && sameBundles(bundles, installationOwned)
-  if (!isRetiredTuple) return manifest
+  if (template === undefined) return manifest
+  return replaceRetiredBundles(dir, manifest, INSTALLATION_OWNED_PROFILE_TUPLES[name] ?? [], template.bundles)
+}
+
+function replaceRetiredBundles(
+  dir: string, manifest: ProfileManifest, retired: readonly (readonly string[])[], bundles: readonly string[],
+): ProfileManifest {
+  const current = manifest.dsh?.profile?.bundles
+  if (current === undefined || !retired.some(tuple => sameBundles(current, tuple))) return manifest
   const normalized: ProfileManifest = {
     ...manifest,
     dsh: {
       ...manifest.dsh,
       profile: {
         ...manifest.dsh?.profile,
-        bundles: [...template.bundles],
+        bundles: [...bundles],
       },
     },
   }
   writeProfileManifest(dir, normalized)
   return normalized
+}
+
+/**
+ * Move a profile whose bundle list is exactly one an earlier release wrote to the current built-in list, preserving
+ * every other manifest field. A list the person edited stays unchanged.
+ * @param binName - command name used in manifest read errors.
+ * @param dir - the profile directory.
+ * @param retired - bundle lists earlier releases wrote.
+ * @param bundles - the current built-in bundle list.
+ * @returns whether the manifest was rewritten.
+ */
+export function upgradeRetiredProfileBundles(
+  binName: string, dir: string, retired: readonly (readonly string[])[], bundles: readonly string[],
+): boolean {
+  const manifest = readProfileManifest(binName, dir)
+  return replaceRetiredBundles(dir, manifest, retired, bundles) !== manifest
 }
 
 /**

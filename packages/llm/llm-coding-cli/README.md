@@ -43,11 +43,11 @@ The Bundle patch inserts four route rows, `llm-codex`, `llm-antigravity`, `llm-g
 | Route | CLI | Model list | Effort row |
 |---|---|---|---|
 | `codex-cli` | `codex` | `codex debug models`, entries Codex shows in `/model` | The reasoning levels Codex reports per model, starting at `defaultEffort` when offered, otherwise at Codex's default |
-| `antigravity-cli` | `agy` | `agy models` | None; the model ids carry their effort |
-| `grok-cli` | `grok` | `grok models` | None |
-| `opencode-cli` | `opencode` | `opencode models` | None |
+| `antigravity-cli` | `agy` | `agy models`; ids that differ only in a trailing level (`gemini-4-argon-low`, `-medium`, `-high`) form one model | Those levels; the turn runs `<model>-<level>` |
+| `grok-cli` | `grok` | `grok models` | The levels Grok declares in `~/.grok/models_cache.json` and in `~/.grok/config.toml` `[model."<id>"]` tables, passed as `--reasoning-effort` |
+| `opencode-cli` | `opencode` | `opencode models` | The `variants` OpenCode's `~/.config/opencode/opencode.json` declares per model; the turn runs `--model <model>#<variant>` |
 
-A route reads its list from a short-lived CLI process the first time a selector asks and reuses it for `modelsFreshMs`. A CLI that is not installed lists only its CLI-settings entry, and a turn on it fails with `CODING_CLI_NOT_INSTALLED`.
+Every Effort row lists levels from lowest to highest and starts at `defaultEffort` when the model offers it, otherwise at the CLI's own default. A model the CLI declares no levels for shows no Effort row. A route reads its list from a short-lived CLI process the first time a selector asks and reuses it for `modelsFreshMs`. A CLI that is not installed lists only its CLI-settings entry, and a turn on it fails with `CODING_CLI_NOT_INSTALLED`.
 
 ### Configuration
 

@@ -43,11 +43,11 @@ Bundle patch 插入四條路由列 `llm-codex`、`llm-antigravity`、`llm-grok` 
 | 路由 | CLI | 模型列表 | Effort 列 |
 |---|---|---|---|
 | `codex-cli` | `codex` | `codex debug models` 中 Codex 在 `/model` 顯示的項目 | Codex 為每個模型回報的推理等級；提供 `defaultEffort` 時從它開始，否則從 Codex 的預設等級開始 |
-| `antigravity-cli` | `agy` | `agy models` | 無；模型 id 已帶有 effort |
-| `grok-cli` | `grok` | `grok models` | 無 |
-| `opencode-cli` | `opencode` | `opencode models` | 無 |
+| `antigravity-cli` | `agy` | `agy models`；只差在結尾等級的 id（`gemini-4-argon-low`、`-medium`、`-high`）合併為一個模型 | 這些等級；回合執行 `<model>-<level>` |
+| `grok-cli` | `grok` | `grok models` | Grok 在 `~/.grok/models_cache.json` 與 `~/.grok/config.toml` 的 `[model."<id>"]` 表中宣告的等級，以 `--reasoning-effort` 傳入 |
+| `opencode-cli` | `opencode` | `opencode models` | OpenCode 在 `~/.config/opencode/opencode.json` 為每個模型宣告的 `variants`；回合執行 `--model <model>#<variant>` |
 
-路由在選擇器第一次詢問時，從一個短暫的 CLI 程序讀取列表，並在 `modelsFreshMs` 內重複使用。未安裝的 CLI 只列出其 CLI settings 項目，在其上執行的回合會以 `CODING_CLI_NOT_INSTALLED` 失敗。
+每個 Effort 列都由低到高列出等級；模型提供 `defaultEffort` 時從它開始，否則從 CLI 自己的預設開始。CLI 未宣告等級的模型不顯示 Effort 列。路由在選擇器第一次詢問時，從一個短暫的 CLI 程序讀取列表，並在 `modelsFreshMs` 內重複使用。未安裝的 CLI 只列出其 CLI settings 項目，在其上執行的回合會以 `CODING_CLI_NOT_INSTALLED` 失敗。
 
 ### 設定
 

@@ -23,6 +23,7 @@ import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import type { SubprocessHandle, SubprocessSpawnSpec } from '@deepseek-ai/dsh-subprocess'
 import { resolveAccess, type CodingCliRouteAccess, type SessionPermissions } from './access.ts'
 import type { CliInvocation, CodingCliDefinition, CodingCliId } from './clis.ts'
+import { withEfforts, type ReadTextFile } from './efforts.ts'
 import { writeTurnImages, type TurnImageData } from './images.ts'
 import { modelReasoning, NATIVE_MODEL_ID, type CodingCliModelEntry } from './models.ts'
 import { planTurn } from './request.ts'
@@ -49,6 +50,10 @@ export interface CodingCliAdapterOptions {
   readonly executable: () => string | undefined
   /** Environment layered over the credential-scrubbed parent environment, given the located executable. */
   readonly env: (executable: string) => Readonly<Record<string, string>>
+  /** The user's home directory, where CLIs keep the files that declare their models' effort levels. */
+  readonly home: string
+  /** Reads one text file; undefined when it does not exist or cannot be read. */
+  readonly readTextFile: ReadTextFile
   /** Working directory of the model-listing process. */
   readonly discoveryCwd: string
   /** Milliseconds the model-listing process may run. */
@@ -163,7 +168,10 @@ export class CodingCliAdapter extends LlmAdapter {
       const stderr = child.collected.stderr?.readFrom(0).text.trim() ?? ''
       throw new Error(`listing ${this.options.displayName} models failed (exit ${String(outcome.exitCode)})${stderr.length === 0 ? '' : `: ${stderr}`}`)
     }
-    return this.options.definition.parseModels(stdout.text)
+    const { definition, home, readTextFile } = this.options
+    const listed = definition.parseModels(stdout.text)
+    const declared = definition.modelEfforts?.(home, readTextFile)
+    return declared === undefined ? listed : withEfforts(listed, declared)
   }
 
   /**

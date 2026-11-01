@@ -61,6 +61,8 @@ function adapter(scripts: ChildScript[], overrides: Partial<CodingCliAdapterOpti
     displayName: 'Codex',
     executable: () => '/bin/codex',
     env: executable => ({ PATH: `${executable}-dir` }),
+    home: '/home/me',
+    readTextFile: () => undefined,
     discoveryCwd: '/home/me',
     discoveryTimeoutMs: 1_000,
     discoveryMaxBytes: 1_000_000,
@@ -154,6 +156,18 @@ describe('CodingCliAdapter models', () => {
     await route.listModels('codex')
     expect(options.onDiscoveryError).toHaveBeenCalledWith(new Error('listing Codex models timed out'))
     timeout.mockRestore()
+  })
+
+  it('attaches the effort levels the CLI declares in its own files', async () => {
+    const { adapter: route } = adapter([{ stdout: '  * grok-4.7 (default)\n' }], {
+      cli: 'grok', definition: CODING_CLIS.grok,
+      readTextFile: path => path.endsWith('models_cache.json')
+        ? JSON.stringify({ models: { 'grok-4.7': { info: { reasoning_efforts: [{ value: 'high' }, { value: 'low' }] } } } })
+        : undefined,
+    })
+    await expect(route.resolveModel('grok-cli', 'grok-4.7')).resolves.toMatchObject({
+      reasoning: { efforts: [{ id: 'low' }, { id: 'high' }] },
+    })
   })
 
   it('lists only the CLI-settings entry when the CLI is not installed, and serves configured models', async () => {

@@ -11,6 +11,7 @@ import {
   ANTIGRAVITY_RECORD_EVENTS, AntigravityDecoder, CODEX_RECORD_TYPES, CodexDecoder, GROK_RECORD_TYPES, GrokDecoder,
   OPENCODE_RECORD_TYPES, OpenCodeDecoder, withFallback, type CliEventDecoder,
 } from './events.ts'
+import { groupEffortSuffixes, readGrokEfforts, readOpenCodeEfforts, type ModelEfforts, type ReadTextFile } from './efforts.ts'
 import {
   parseAntigravityModels, parseCodexModels, parseGrokModels, parseOpenCodeModels, type CodingCliModelEntry,
 } from './models.ts'
@@ -64,6 +65,13 @@ export interface CodingCliDefinition {
   readonly modelArgs: readonly string[]
   /** Largest image the CLI receives, in encoded bytes; a larger image is sent as a smaller version. Absent sends originals. */
   readonly imageMaxBytes?: number
+  /**
+   * Read the effort levels the CLI declares for its models in its own files.
+   * @param home - the user's home directory.
+   * @param read - reads one file.
+   * @returns levels by model id; absent when the CLI declares levels nowhere else or lists them itself.
+   */
+  modelEfforts?(home: string, read: ReadTextFile): Map<string, ModelEfforts>
   /**
    * Parse the model list.
    * @param stdout - complete standard output of {@link modelArgs}.
@@ -179,11 +187,13 @@ export const CODING_CLIS: { readonly [Id in CodingCliId]: CodingCliDefinition } 
     command: 'agy',
     homeDirectories: [],
     modelArgs: ['models'],
-    parseModels: parseAntigravityModels,
+    // Antigravity lists one id per effort level (`<model>-<level>`); the route offers them as one model with levels.
+    parseModels: stdout => groupEffortSuffixes(parseAntigravityModels(stdout)),
     turn: turn => ({
       args: [
         '--output-format', 'stream-json', ...ANTIGRAVITY_ACCESS[turn.access],
-        ...optional('--model', turn.model), ...optional('--effort', turn.effort), ...optional('--conversation', turn.resume),
+        ...optional('--model', turn.model === undefined || turn.effort === undefined ? turn.model : `${turn.model}-${turn.effort}`),
+        ...optional('--conversation', turn.resume),
         // Antigravity takes no inline images; it reads linked files with its own tools, which only read inside its workspace.
         ...imageDirectories(turn.images),
         `--print=${linkedImages(turn.prompt, turn.images)}`,
@@ -199,6 +209,7 @@ export const CODING_CLIS: { readonly [Id in CodingCliId]: CodingCliDefinition } 
     homeDirectories: [['.grok', 'bin']],
     modelArgs: ['models'],
     parseModels: parseGrokModels,
+    modelEfforts: readGrokEfforts,
     turn: turn => ({
       args: [
         '--output-format', 'streaming-json', ...GROK_ACCESS[turn.access],
@@ -214,11 +225,14 @@ export const CODING_CLIS: { readonly [Id in CodingCliId]: CodingCliDefinition } 
     homeDirectories: [['.opencode', 'bin']],
     modelArgs: ['models'],
     parseModels: parseOpenCodeModels,
+    modelEfforts: readOpenCodeEfforts,
     // A standalone server runs in the Session workspace; the shared background service keeps its own directory.
     turn: turn => ({
       args: [
         'run', '--standalone', '--format', 'json', '--thinking', ...OPENCODE_ACCESS[turn.access],
-        ...optional('--model', turn.model), ...optional('--session', turn.resume),
+        // OpenCode selects a declared effort variant as `<model>#<variant>`.
+        ...optional('--model', turn.model === undefined || turn.effort === undefined ? turn.model : `${turn.model}#${turn.effort}`),
+        ...optional('--session', turn.resume),
         ...repeated('--file', turn.images.map(image => image.path)),
         '--', turn.prompt,
       ],

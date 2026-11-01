@@ -8,7 +8,7 @@
 
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { isAbsolute } from 'node:path'
 // Type-only service merges for ctx.agents, ctx.sessions, ctx.subprocess, ctx.approval, and ctx.sandboxPolicy.
@@ -112,6 +112,20 @@ export const Config: z<Config> = z.object({
 })
 
 /**
+ * Read one text file.
+ * @param path - absolute file path.
+ * @returns the file text, or undefined when it does not exist or cannot be read.
+ */
+function readTextFile(path: string): string | undefined {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch (_unreadable) {
+    // A CLI without this file declares no effort levels there.
+    return undefined
+  }
+}
+
+/**
  * Read a Session's permission knobs.
  * @param ctx - context whose optional sandbox-policy and approval services decide them.
  * @param session - the Session.
@@ -154,6 +168,8 @@ export function apply(ctx: Context, config: Config): void {
     ...models === undefined ? {} : { models },
     executable: () => configured ?? locateCli(definition.command, definition.homeDirectories, host),
     env: executable => ({ PATH: cliPath(executable, definition.homeDirectories, host), ...extraEnv }),
+    home: host.home,
+    readTextFile,
     discoveryCwd: host.home,
     discoveryTimeoutMs: config.discoveryTimeoutMs as number,
     discoveryMaxBytes: config.discoveryMaxBytes as number,

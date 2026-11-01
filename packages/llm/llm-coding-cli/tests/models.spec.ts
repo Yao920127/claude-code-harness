@@ -49,9 +49,9 @@ describe('turn invocations', () => {
     expect(CODING_CLIS.grok.turn({ ...turn, access: 'full-access' }).args)
       .toEqual(['--output-format', 'streaming-json', '--permission-mode', 'bypassPermissions', '--model', 'm', '--reasoning-effort', 'high', '--resume', 'c1', '--single=-p hi'])
     expect(CODING_CLIS.antigravity.turn({ ...turn, access: 'workspace-write' }).args)
-      .toEqual(['--output-format', 'stream-json', '--mode', 'accept-edits', '--model', 'm', '--effort', 'high', '--conversation', 'c1', '--print=-p hi'])
+      .toEqual(['--output-format', 'stream-json', '--mode', 'accept-edits', '--model', 'm-high', '--conversation', 'c1', '--print=-p hi'])
     expect(CODING_CLIS.opencode.turn({ ...turn, access: 'full-access' }).args)
-      .toEqual(['run', '--standalone', '--format', 'json', '--thinking', '--auto', '--model', 'm', '--session', 'c1', '--', '-p hi'])
+      .toEqual(['run', '--standalone', '--format', 'json', '--thinking', '--auto', '--model', 'm#high', '--session', 'c1', '--', '-p hi'])
   })
 
   it('omits the model, effort, and conversation the turn leaves to the CLI', () => {

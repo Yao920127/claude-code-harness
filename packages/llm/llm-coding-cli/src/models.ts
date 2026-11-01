@@ -30,7 +30,23 @@ export interface CodingCliModelEntry {
 
 /** Selector names of the effort levels the CLIs report. */
 const EFFORT_NAMES: Readonly<Record<string, string>> = {
-  minimal: 'Minimal', low: 'Low', medium: 'Medium', high: 'High', xhigh: 'Extra high', max: 'Max',
+  minimal: 'Minimal', low: 'Low', medium: 'Medium', high: 'High', xhigh: 'Extra high', max: 'Max', ultra: 'Ultra',
+}
+
+/** Known effort levels from lowest to highest; a level outside this list sorts after them in the CLI's order. */
+const EFFORT_ORDER = ['minimal', 'low', 'medium', 'high', 'xhigh', 'max']
+
+/**
+ * Sort effort levels from lowest to highest, as the selector's slider shows them.
+ * @param efforts - levels in any order.
+ * @returns known levels ascending, then unknown levels in their given order.
+ */
+export function ascendingEfforts(efforts: readonly string[]): string[] {
+  const rank = (level: string): number => {
+    const index = EFFORT_ORDER.indexOf(level)
+    return index === -1 ? EFFORT_ORDER.length : index
+  }
+  return efforts.toSorted((left, right) => rank(left) - rank(right))
 }
 
 /**
@@ -45,7 +61,7 @@ export function modelReasoning(entry: CodingCliModelEntry | undefined, preferred
   if (efforts === undefined || efforts.length === 0) return undefined
   const fallback = efforts.includes(preferred) ? preferred : entry?.defaultEffort
   return {
-    efforts: efforts.map(level => ({ id: ReasoningEffortId(level), name: EFFORT_NAMES[level] ?? level })),
+    efforts: ascendingEfforts(efforts).map(level => ({ id: ReasoningEffortId(level), name: EFFORT_NAMES[level] ?? level })),
     ...fallback === undefined ? {} : { defaultEffort: ReasoningEffortId(fallback) },
   }
 }

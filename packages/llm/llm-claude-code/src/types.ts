@@ -16,6 +16,8 @@ export interface ClaudeCodeUsageWindow {
 
 /** Plan usage of the Claude Code sign-in the Host's turns use. */
 export interface ClaudeCodeUsageView {
+  /** Model route whose turns use this sign-in; app windows show the usage while a Session selects it. */
+  readonly provider: string
   /** Claude subscription type, such as `pro` or `max`; null for API-key and third-party sign-ins. */
   readonly subscription: string | null
   /** Whether plan windows apply to this sign-in; false leaves `windows` empty. */

@@ -1,0 +1,91 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/llm/llm-coding-cli/README.md
+/:
+  en: 132acf182420c476
+  zh: 11033619cc46ac0e
+/deepseek-ai-dsh-llm-coding-cli:
+  en: 22f4c9612844d0b7
+  zh: 3fb25922d35d0b02
+/deepseek-ai-dsh-llm-coding-cli/summary:
+  en: f6ae569824acdb1f
+  zh: 55797300f1bb434f
+/deepseek-ai-dsh-llm-coding-cli/table-of-contents:
+  en: d152484eb41ac6b4
+  zh: de9abc8870a17a5c
+/deepseek-ai-dsh-llm-coding-cli/use-this-package:
+  en: bbff250eba0f1b89
+  zh: 0a618f05cc88ee2b
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/before-you-start:
+  en: f2e6456ef26c81b6
+  zh: 0440fdbef575958b
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/installing-the-bundle:
+  en: 026e4ce0cc189a0b
+  zh: a4dc7fbeb6acbd81
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/configuration:
+  en: 871ae7d4a263cf36
+  zh: 2409e11654213f9b
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/permissions:
+  en: a6b58365418b33de
+  zh: cd727f3b2e0df307
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/images:
+  en: fede25478759f352
+  zh: 75d6d166299167d0
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/what-you-see:
+  en: 206121cf961e8b6f
+  zh: 4a12596bce5ef027
+/deepseek-ai-dsh-llm-coding-cli/use-this-package/failure-and-recovery:
+  en: 7f941adc8bb20d26
+  zh: 280c44bfc3620464
+/deepseek-ai-dsh-llm-coding-cli/understand-the-implementation:
+  en: 42b15ac6321706aa
+  zh: 5d7e805402b76143
+/deepseek-ai-dsh-llm-coding-cli/understand-the-implementation/design-concept:
+  en: c11b54156522fbe8
+  zh: 697209ce7a71259c
+/deepseek-ai-dsh-llm-coding-cli/understand-the-implementation/source-map:
+  en: 9d106bffdd0d1a36
+  zh: 2f8fc7514fe6ba04
+/deepseek-ai-dsh-llm-coding-cli/understand-the-implementation/request-flow:
+  en: 45a87fdb59c45c47
+  zh: a9c740d0637b0959
+/deepseek-ai-dsh-llm-coding-cli/understand-the-implementation/stream-translation:
+  en: b42f655a20eb7158
+  zh: 0dd07fcee38f78d1
+/deepseek-ai-dsh-llm-coding-cli/further-exploration:
+  en: 64185f7b9f69180e
+  zh: 7aa16fca5a5853c2
+/deepseek-ai-dsh-llm-coding-cli/model-experience:
+  en: 215e7ba838619b7b
+  zh: 73cadbe559f27b3c
+/deepseek-ai-dsh-llm-coding-cli/model-experience/cli-prompt:
+  en: 9f9187a2e534fe0e
+  zh: b193aa0230693422
+/deepseek-ai-dsh-llm-coding-cli/model-experience/cli-prompt/what-the-model-sees:
+  en: 88a20a1590d12315
+  zh: e16648c526cfdba3
+/deepseek-ai-dsh-llm-coding-cli/model-experience/cli-prompt/token-effect:
+  en: 5033378d275d4848
+  zh: 9c2f30555513671a
+/deepseek-ai-dsh-llm-coding-cli/model-experience/cli-prompt/kv-cache-effect:
+  en: f77649960e037e3e
+  zh: 1737a980e7452e51
+/deepseek-ai-dsh-llm-coding-cli/model-experience/harness-history:
+  en: de330c6c1d237c75
+  zh: 637ab3d3bdb0d33f
+/deepseek-ai-dsh-llm-coding-cli/model-experience/harness-history/what-the-model-sees:
+  en: a331a14afd7c79bf
+  zh: b51e0d67c5726fb4
+/deepseek-ai-dsh-llm-coding-cli/model-experience/harness-history/token-effect:
+  en: d24b3abb7a04c98f
+  zh: 7e8f436b791b7102
+/deepseek-ai-dsh-llm-coding-cli/model-experience/harness-history/kv-cache-effect:
+  en: 4da37db427d1ae65
+  zh: 44bb96c2758062b1
+/deepseek-ai-dsh-llm-coding-cli/known-limitations-and-deferred-work:
+  en: d0b8d0dbf569f989
+  zh: 0a83e6000ce159ff
+/deepseek-ai-dsh-llm-coding-cli/known-limitations-and-deferred-work/dev-note:
+  en: 6145fec46dd8019a
+  zh: 6fb08859839c65f8

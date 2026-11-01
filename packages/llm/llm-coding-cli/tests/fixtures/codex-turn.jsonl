@@ -1,0 +1,8 @@
+{"type":"thread.started","thread_id":"01a19641-fa6e-7c23-a218-dde160fa6e58"}
+{"type":"item.completed","item":{"id":"item_0","type":"error","message":"clamping SessionEnd hook timeout to 3s in /Users/yaolo/.codex/hooks.json"}}
+{"type":"turn.started"}
+{"type":"item.completed","item":{"id":"item_1","type":"error","message":"Exceeded skills context budget. All skill descriptions were removed and 221 additional skills were not included in the model-visible skills list."}}
+{"type":"item.started","item":{"id":"item_2","type":"command_execution","command":"/bin/zsh -lc 'cat a.txt'","aggregated_output":"","exit_code":null,"status":"in_progress"}}
+{"type":"item.completed","item":{"id":"item_2","type":"command_execution","command":"/bin/zsh -lc 'cat a.txt'","aggregated_output":"hello\n","exit_code":0,"status":"completed"}}
+{"type":"item.completed","item":{"id":"item_3","type":"agent_message","text":"hello"}}
+{"type":"turn.completed","usage":{"input_tokens":40724,"cached_input_tokens":29824,"cache_write_input_tokens":0,"output_tokens":112,"reasoning_output_tokens":14}}

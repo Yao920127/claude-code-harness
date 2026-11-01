@@ -1,0 +1,28 @@
+# Bilingual-pair consistency record for 2026-11-01-coding-cli-tool-event.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-11-01-coding-cli-tool-event.md
+/:
+  en: 3d5a424ae7d7e46b
+  zh: 630ac71355b9ea16
+/2026-11-01-coding-cli-tool-event:
+  en: 54f440f095045378
+  zh: 442f98b8ebc042f3
+/2026-11-01-coding-cli-tool-event/summary:
+  en: 87a22dafa9a72d28
+  zh: 9c88393cadf74536
+/2026-11-01-coding-cli-tool-event/table-of-contents:
+  en: 6cf314a069ceb451
+  zh: 378f31ff431be8cb
+/2026-11-01-coding-cli-tool-event/declaration:
+  en: 6907136f28e48c90
+  zh: c57270ea21c7a438
+/2026-11-01-coding-cli-tool-event/compatibility:
+  en: 09096d3831eeee02
+  zh: e2bd1287158fe262
+/2026-11-01-coding-cli-tool-event/verification:
+  en: 6e0af14b5bb2f9de
+  zh: 5fc2456711684190
+/2026-11-01-coding-cli-tool-event/dev-note:
+  en: b75c8458928b72b9
+  zh: 65940114a1aedb39

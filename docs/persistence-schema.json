@@ -5404,6 +5404,121 @@
       }
     },
     {
+      "key": "event:coding-cli/tool",
+      "kind": "event",
+      "event": "coding-cli/tool",
+      "surface": false,
+      "digest": "563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "data",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "ignorable",
+                "type": 7,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 9,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "arguments",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "callId",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "output",
+                "type": 2,
+                "optional": true
+              },
+              {
+                "name": "provider",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "status",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "union",
+            "types": [
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "literal",
+            "value": "failed"
+          },
+          {
+            "kind": "literal",
+            "value": "running"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "coding-cli/tool"
+          }
+        ]
+      }
+    },
+    {
       "key": "event:command/done",
       "kind": "event",
       "event": "command/done",
@@ -32795,6 +32910,20 @@
       "sources": []
     },
     {
+      "digest": "29fc0351c710d4d5ee00d5d7e1a3eef6d2c0a561cb070cac2ee8dcde45ac7274",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "literal",
+            "value": "coding-cli/tool"
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
+    },
+    {
       "digest": "2aad1179f957631477b582e57cd8f538cb82618fc3fb816bde1171154235b065",
       "schema": {
         "root": 0,
@@ -35494,6 +35623,80 @@
       ],
       "sources": [
         "packages/feedback/message-feedback/src/types.ts:17"
+      ]
+    },
+    {
+      "digest": "3a606c7b6e654c8d937f7b24e8aa0e0a16f76eff73c03e4c1e82fb4cddc217ad",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "arguments",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "callId",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "output",
+                "type": 1,
+                "optional": true
+              },
+              {
+                "name": "provider",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "status",
+                "type": 2,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "union",
+            "types": [
+              3,
+              4,
+              5
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "literal",
+            "value": "failed"
+          },
+          {
+            "kind": "literal",
+            "value": "running"
+          }
+        ]
+      },
+      "names": [
+        "packages/llm/llm-coding-cli/src/types.ts#CodingCliToolEventData"
+      ],
+      "sources": [
+        "packages/llm/llm-coding-cli/src/types.ts:14"
       ]
     },
     {
@@ -49866,6 +50069,119 @@
           {
             "kind": "literal",
             "value": "agent-preset/selected"
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
+    },
+    {
+      "digest": "563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "data",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "ignorable",
+                "type": 7,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 9,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "arguments",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "callId",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "output",
+                "type": 2,
+                "optional": true
+              },
+              {
+                "name": "provider",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "status",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "union",
+            "types": [
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "literal",
+            "value": "failed"
+          },
+          {
+            "kind": "literal",
+            "value": "running"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "coding-cli/tool"
           }
         ]
       },
@@ -69519,6 +69835,40 @@
       ]
     },
     {
+      "digest": "a63502c8ca4b62f4994d49de517e7bd7ceec9c494d13c7dcdf2f2f01066e62a2",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "union",
+            "types": [
+              1,
+              2,
+              3
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "literal",
+            "value": "failed"
+          },
+          {
+            "kind": "literal",
+            "value": "running"
+          }
+        ]
+      },
+      "names": [
+        "packages/llm/llm-coding-cli/src/types.ts#CodingCliToolStatus"
+      ],
+      "sources": [
+        "packages/llm/llm-coding-cli/src/types.ts:11"
+      ]
+    },
+    {
       "digest": "a6567ccb2e530606b775371eb4fa31468d72084339968e8b0440a516a23b39dc",
       "schema": {
         "root": 0,
@@ -74331,6 +74681,20 @@
       "sources": [
         "packages/util/values/src/index.ts:4"
       ]
+    },
+    {
+      "digest": "c6e4fa548c431804f6adebfaed3e343205c813699d2a191f990a7b1133e8c5ba",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "literal",
+            "value": "running"
+          }
+        ]
+      },
+      "names": [],
+      "sources": []
     },
     {
       "digest": "c748fb42c80a120038a8c587af80ec39924803c401364db11c8974d5bf6d0262",

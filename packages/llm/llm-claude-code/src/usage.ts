@@ -32,9 +32,10 @@ const NAMED_WINDOWS: readonly (readonly [NamedWindow, ClaudeCodeUsageWindowKind]
  * Convert Claude Code's usage answer to the Remote view.
  * @param usage - Claude Code's `/usage` data.
  * @param readAt - time the Host read it.
+ * @param provider - model route whose turns use the sign-in.
  * @returns the plan windows Claude Code reported, in display order.
  */
-export function usageView(usage: SDKControlGetUsageResponse, readAt: Date): ClaudeCodeUsageView {
+export function usageView(usage: SDKControlGetUsageResponse, readAt: Date, provider: string): ClaudeCodeUsageView {
   const limits = usage.rate_limits
   const windows: ClaudeCodeUsageWindow[] = []
   if (limits !== null) {
@@ -47,6 +48,7 @@ export function usageView(usage: SDKControlGetUsageResponse, readAt: Date): Clau
     }
   }
   return {
+    provider,
     subscription: usage.subscription_type,
     available: usage.rate_limits_available && limits !== null,
     windows,
@@ -56,6 +58,8 @@ export function usageView(usage: SDKControlGetUsageResponse, readAt: Date): Clau
 
 /** How the usage Remote reads Claude Code. */
 export interface ClaudeCodeUsageOptions {
+  /** Model route whose turns use the Claude Code sign-in. */
+  readonly provider: string
   /** Asks Claude Code for its usage data. */
   readonly read: () => Promise<SDKControlGetUsageResponse>
   /** Milliseconds a read answers later calls before Claude Code is asked again. */
@@ -86,7 +90,7 @@ export class ClaudeCodeUsageController extends TypertRemoteService {
     const at = this.options.now()
     const cached = this.cached
     if (!refresh && cached !== undefined && at - cached.at < this.options.freshMs) return cached.view
-    const view = this.options.read().then(usage => usageView(usage, new Date(at)))
+    const view = this.options.read().then(usage => usageView(usage, new Date(at), this.options.provider))
     const entry = { at, view }
     this.cached = entry
     view.catch(() => { if (this.cached === entry) this.cached = undefined })

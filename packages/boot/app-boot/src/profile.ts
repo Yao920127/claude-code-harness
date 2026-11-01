@@ -178,13 +178,15 @@ export function resolveProfileDir(name: string, home: string = resolveDshHome())
 /**
  * Built-in bundles of a CCH (Claude Code Harness) profile: the Web template,
  * then the bundles that make Claude Code the default model route with the
- * Claude brand; `dsh-cch` layers the defaults last.
+ * Claude brand, plus the Codex, Antigravity, Grok Build, and OpenCode routes
+ * that run those CLIs with their own sign-ins; `dsh-cch` layers the defaults last.
  * The `cch` template and the Desktop profile both compose this list.
  */
 export const CCH_PROFILE_BUNDLES: readonly string[] = [
   '@deepseek-ai/dsh-base',
   '@deepseek-ai/dsh-web-app',
   '@deepseek-ai/dsh-llm-claude-code',
+  '@deepseek-ai/dsh-llm-coding-cli',
   '@deepseek-ai/dsh-client-ui-brand-claude',
   '@deepseek-ai/dsh-cch',
 ]

@@ -6,6 +6,7 @@ import type { InjectFace, PropsLocale, PropsRuntime } from '@deepseek-ai/dsh-cli
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar/client'
 import type { HostObservable } from '@deepseek-ai/dsh-client-ui-slots'
 import type {} from './locales.ts'
+import type { SelectedRoute } from './selected-route.ts'
 import type { UsageState } from './usage-source.ts'
 import css from './UsageMeter.module.css'
 
@@ -14,7 +15,12 @@ export type UsageDisplay = 'used' | 'remaining'
 
 /** Meter state, the viewer's display choice, and their commands. */
 export interface UsageMeterInjected {
-  readonly hooks: { readonly usage: HostObservable<UsageState>; readonly display: HostObservable<UsageDisplay> }
+  readonly hooks: {
+    readonly usage: HostObservable<UsageState>
+    readonly display: HostObservable<UsageDisplay>
+    /** Model route the main Session selects. */
+    readonly route: HostObservable<SelectedRoute>
+  }
   /** Ask Claude Code for current usage. */
   readonly refresh: () => void
   /** Switch between printing the used and the remaining share. */
@@ -53,16 +59,20 @@ export function resetText(window: ClaudeCodeUsageWindow, t: Translate): string |
 /**
  * Render every reported window as a labelled bar in the wide sidebar, or the first window's share on the rail. The
  * viewer chooses whether values and bars show the used or the remaining share; bar colors follow the used share in
- * both. Nothing renders until a read reports plan windows, so a sign-in without a Claude plan, such as an API key or
- * another provider's route, and a failed or pending read leave the sidebar foot unchanged.
- * @param props - sidebar width, meter state, display choice, commands and copy.
+ * both. Nothing renders until a read reports plan windows, so a sign-in without a Claude plan, such as an API key, and
+ * a failed or pending read leave the sidebar foot unchanged. Nothing renders either while the main Session selects
+ * another model route, or while its selection is still loading; with no Session open the meter shows.
+ * @param props - sidebar width, meter state, display choice, selected route, commands and copy.
  * @returns the meter, or null while there are no plan windows to show.
  */
-export function UsageMeter({ wide, useUsage, useDisplay, refresh, setDisplay, t }: UsageMeterProps): ReactNode {
+export function UsageMeter({ wide, useUsage, useDisplay, useRoute, refresh, setDisplay, t }: UsageMeterProps): ReactNode {
   const windows = useUsage(value => value.phase === 'ready' && value.view.available ? value.view.windows : undefined)
+  const provider = useUsage(value => value.phase === 'ready' ? value.view.provider : undefined)
+  const route = useRoute(value => value)
   const display = useDisplay(value => value === 'used' ? 'used' : 'remaining')
   const first = windows?.[0]
   if (windows === undefined || first === undefined) return null
+  if (route !== undefined && route !== provider) return null
   if (!wide) {
     const summary = windows.map(window => [windowLabel(window, t), details(window, t)].join(' · ')).join('\n')
     return (

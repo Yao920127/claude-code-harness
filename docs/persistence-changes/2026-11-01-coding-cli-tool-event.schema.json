@@ -1,0 +1,121 @@
+{
+  "formatVersion": 2,
+  "roots": [
+    {
+      "key": "event:coding-cli/tool",
+      "kind": "event",
+      "event": "coding-cli/tool",
+      "surface": false,
+      "digest": "563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1",
+      "schema": {
+        "root": 0,
+        "nodes": [
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "data",
+                "type": 1,
+                "optional": false
+              },
+              {
+                "name": "ignorable",
+                "type": 7,
+                "optional": true
+              },
+              {
+                "name": "seq",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "time",
+                "type": 8,
+                "optional": false
+              },
+              {
+                "name": "type",
+                "type": 9,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "object",
+            "properties": [
+              {
+                "name": "arguments",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "callId",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "name",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "output",
+                "type": 2,
+                "optional": true
+              },
+              {
+                "name": "provider",
+                "type": 2,
+                "optional": false
+              },
+              {
+                "name": "status",
+                "type": 3,
+                "optional": false
+              }
+            ],
+            "indices": []
+          },
+          {
+            "kind": "primitive",
+            "type": "string"
+          },
+          {
+            "kind": "union",
+            "types": [
+              4,
+              5,
+              6
+            ]
+          },
+          {
+            "kind": "literal",
+            "value": "completed"
+          },
+          {
+            "kind": "literal",
+            "value": "failed"
+          },
+          {
+            "kind": "literal",
+            "value": "running"
+          },
+          {
+            "kind": "literal",
+            "value": true
+          },
+          {
+            "kind": "primitive",
+            "type": "number"
+          },
+          {
+            "kind": "literal",
+            "value": "coding-cli/tool"
+          }
+        ]
+      }
+    }
+  ],
+  "types": []
+}

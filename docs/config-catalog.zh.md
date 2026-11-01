@@ -1619,6 +1619,8 @@ export interface Config {
    * installation's models and runs its turns.
    */
   executable?: string
+  /** Effort level selected for a model that accepts it when the Session names none (default `medium`). */
+  defaultEffort?: typeof CLAUDE_CODE_EFFORT_LEVELS[number]
   /**
    * Permission setting (default `session`). `session` derives each turn's
    * native mode from the Session's sandbox mode and approval policy: full
@@ -1659,6 +1661,76 @@ export interface ClaudeCodeModelEntry {
 export type ClaudeCodeRoutePermissionMode = typeof CLAUDE_CODE_ROUTE_PERMISSION_MODES[number]
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-llm-claude-code -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-llm-coding-cli -->
+<a id="deepseek-aidsh-llm-coding-cli"></a>
+
+## `@deepseek-ai/dsh-llm-coding-cli`
+
+- `inject`: `llm` · `subprocess` · `sessions` · `agents`
+- `refs`: [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
+- `source`: [`packages/llm/llm-coding-cli/src/index.ts:49`](../packages/llm/llm-coding-cli/src/index.ts)
+
+```ts config-catalog
+/** Deployment-owned CLI, route identity, models, access, environment, and process limits. */
+export interface Config {
+  /** CLI the route runs. */
+  cli: CodingCliId
+  /** Provider route registered on `ctx.llm` (default: the `cli` value). */
+  provider?: string
+  /** Route label shown by model selectors (default: the CLI's name). */
+  displayName?: string
+  /**
+   * Selectable models; the id `default` leaves the CLI's own settings in
+   * charge. Absent or empty lists the models the CLI's own listing command
+   * reports for its sign-in and configuration.
+   */
+  models?: CodingCliModelEntry[]
+  /** Absolute path of the CLI executable; absent searches PATH and the CLI's install directories. */
+  executable?: string
+  /** Effort level selected for a model that accepts it when the Session names none (default `medium`); otherwise the CLI's own default applies. */
+  defaultEffort?: string
+  /**
+   * Access setting (default `session`). `session` derives each turn's level
+   * from the Session's sandbox mode and approval policy; `read-only`,
+   * `workspace-write`, or `full-access` pins every turn.
+   */
+  access?: CodingCliRouteAccess
+  /** Explicit environment entries layered over the credential-scrubbed parent environment. */
+  env?: Record<string, string>
+  /** Grace in milliseconds between CLI managed-range termination tiers. */
+  disposeGraceMs?: number
+  /** Milliseconds the model-listing command may run. */
+  discoveryTimeoutMs?: number
+  /** Largest model-listing output accepted, in bytes. */
+  discoveryMaxBytes?: number
+  /** Milliseconds one model list answers selectors before the CLI is asked again. */
+  modelsFreshMs?: number
+  /** Model-request retry policy; the default never retries, because a failed turn may already have changed files. */
+  retryPolicy?: RetryPolicyConfig
+}
+
+/** One coding CLI a route can run. */
+export type CodingCliId = typeof CODING_CLI_IDS[number]
+
+/** One selectable model advertised by a route. */
+export interface CodingCliModelEntry {
+  /** Model id passed to the CLI unchanged; {@link NATIVE_MODEL_ID} passes none. */
+  readonly id: string
+  /** Selector label. */
+  readonly name: string
+  /** Optional selector distinction. */
+  readonly description?: string
+  /** Effort levels the CLI accepts for the model; absent or empty offers no effort choice. */
+  readonly efforts?: string[]
+  /** Effort the CLI applies when none is chosen; one of {@link efforts}. */
+  readonly defaultEffort?: string
+}
+
+/** Route-selected access setting. */
+export type CodingCliRouteAccess = typeof CODING_CLI_ROUTE_ACCESS[number]
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-llm-coding-cli -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-llm-deepseek-account -->
 <a id="deepseek-aidsh-llm-deepseek-account"></a>
@@ -4489,6 +4561,7 @@ export interface Config {
 | `@deepseek-ai/dsh-client-ui-brand-official` | — | [`packages/client/ui-brand-official/src/index.ts`](../packages/client/ui-brand-official/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-chat` | — | [`packages/client/ui-chat/src/index.ts`](../packages/client/ui-chat/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-claude-code-usage` | — | [`packages/client/ui-claude-code-usage/src/index.ts`](../packages/client/ui-claude-code-usage/src/index.ts) |
+| `@deepseek-ai/dsh-client-ui-coding-cli-tools` | — | [`packages/client/ui-coding-cli-tools/src/index.ts`](../packages/client/ui-coding-cli-tools/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-commands` | — | [`packages/client/ui-commands/src/index.ts`](../packages/client/ui-commands/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-conversation` | — | [`packages/client/ui-conversation/src/index.ts`](../packages/client/ui-conversation/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-cordis` | — | [`packages/extensions/ui-cordis/src/index.ts`](../packages/extensions/ui-cordis/src/index.ts) |

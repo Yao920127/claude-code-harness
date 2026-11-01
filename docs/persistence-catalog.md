@@ -27,6 +27,7 @@ The [format references](persistence-changes/historical-formats/README.md) cover 
 | `event:approval/policy` | event | `26718e15e7e395bce9642dba5bbe09b3b1a4ce2213d20d566cd9207d7fc5fb78` | [`{ type: "approval/policy" }`](#persistence-type-sha256-26718e15e7e395bce9642dba5bbe09b3b1a4ce2213d20d566cd9207d7fc5fb78) |
 | `event:assistant/attempt` | event | `15d5dfdd822aa35e115afd74a8982825a493880457774e6850bc1520b50875e4` | [`{ type: "assistant/attempt" }`](#persistence-type-sha256-15d5dfdd822aa35e115afd74a8982825a493880457774e6850bc1520b50875e4) |
 | `event:assistant/message` | event | `1033093edd0db80ff410e00830b523405e00bb0c7684948e531ff65095799625` | [`{ type: "assistant/message" }`](#persistence-type-sha256-1033093edd0db80ff410e00830b523405e00bb0c7684948e531ff65095799625) |
+| `event:coding-cli/tool` | event | `563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1` | [`{ type: "coding-cli/tool" }`](#persistence-type-sha256-563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1) |
 | `event:command/done` | event | `15196447222782e773eb943c92b18316ce96b9af0f0cfddb6e57ba8274ecc5ff` | [`{ type: "command/done" }`](#persistence-type-sha256-15196447222782e773eb943c92b18316ce96b9af0f0cfddb6e57ba8274ecc5ff) |
 | `event:command/run` | event | `37184378c6439257d105c4e2022d80fc9c3a3f7c7f6ac661b00bc9f18d871006` | [`{ type: "command/run" }`](#persistence-type-sha256-37184378c6439257d105c4e2022d80fc9c3a3f7c7f6ac661b00bc9f18d871006) |
 | `event:compaction/end` | event | `b0127044ab31a702bddfd785d345f5abd7a70876746e895ce443afa3e60ddf2d` | [`{ type: "compaction/end" }`](#persistence-type-sha256-b0127044ab31a702bddfd785d345f5abd7a70876746e895ce443afa3e60ddf2d) |
@@ -313,6 +314,22 @@ Source: [`packages/core/session/src/types.ts:355`](../packages/core/session/src/
 Types: [TokenUsage](subsystems/llm-streaming.md)
 
 Source: [`packages/core/session/src/types.ts:341`](../packages/core/session/src/types.ts)
+
+### `coding-cli/*`
+
+<a id="coding-clitool--log-only"></a>
+
+#### `coding-cli/tool` — log-only
+
+```ts persistence-catalog
+/**
+ * One state of a tool call a coding CLI ran inside its own model turn. Log-only display state: the call already
+ * ran inside the CLI, so it never enters derived history and no model request sees it.
+ */
+'coding-cli/tool': CodingCliToolEventData
+```
+
+Source: [`packages/llm/llm-coding-cli/src/types.ts:34`](../packages/llm/llm-coding-cli/src/types.ts)
 
 ### `command/*`
 
@@ -1525,6 +1542,14 @@ SHA-256: `15495614ccfa9cbdeefb0ec2abd76406435f4c6ff3dae42acae8e09ef42025c9`
 
 `"codex"`
 
+<a id="persistence-type-sha256-29fc0351c710d4d5ee00d5d7e1a3eef6d2c0a561cb070cac2ee8dcde45ac7274"></a>
+
+### `"coding-cli/tool"`
+
+SHA-256: `29fc0351c710d4d5ee00d5d7e1a3eef6d2c0a561cb070cac2ee8dcde45ac7274`
+
+`"coding-cli/tool"`
+
 <a id="persistence-type-sha256-8cdd3fdd295cee53035de16a1b23411716f75e9f994fe9510cac5d7fef605c76"></a>
 
 ### `"command/done"`
@@ -2291,6 +2316,14 @@ SHA-256: `34d1ab5c5df378186d6054b1a1beea9a41e41965d6f336f0bc0025c441a82e66`
 
 `"resume"`
 
+<a id="persistence-type-sha256-c6e4fa548c431804f6adebfaed3e343205c813699d2a191f990a7b1133e8c5ba"></a>
+
+### `"running"`
+
+SHA-256: `c6e4fa548c431804f6adebfaed3e343205c813699d2a191f990a7b1133e8c5ba`
+
+`"running"`
+
 <a id="persistence-type-sha256-24b10f7cdae64928f89c49afc2eca0af9eb4a2f135e16f3416e6b8461fef1748"></a>
 
 ### `"runtime-context"`
@@ -3053,6 +3086,45 @@ One of:
 SHA-256: `84bbfdce7d2eab5b0c53e72ff7406db856c8bfd621b965b72fd86598ba493bf7`
 
 Array of [`AssistantStreamRecord`](#persistence-type-sha256-33341aac09312300de5a178e6cc6f6544a4876f7f710cfea55eda473c8d329ef).
+
+<a id="persistence-type-sha256-3a606c7b6e654c8d937f7b24e8aa0e0a16f76eff73c03e4c1e82fb4cddc217ad"></a>
+
+<a id="persistence-type-codingclitooleventdata"></a>
+
+<a id="persistence-type-packagesllmllm-coding-clisrctypestscodingclitooleventdata"></a>
+
+### `CodingCliToolEventData`
+
+SHA-256: `3a606c7b6e654c8d937f7b24e8aa0e0a16f76eff73c03e4c1e82fb4cddc217ad`
+
+Sources: [`packages/llm/llm-coding-cli/src/types.ts:14`](../packages/llm/llm-coding-cli/src/types.ts)
+
+| Property | Presence | Type |
+|---|---|---|
+| `arguments` | required | `string` |
+| `callId` | required | `string` |
+| `name` | required | `string` |
+| `output` | optional | `string` |
+| `provider` | required | `string` |
+| `status` | required | [`CodingCliToolStatus`](#persistence-type-sha256-a63502c8ca4b62f4994d49de517e7bd7ceec9c494d13c7dcdf2f2f01066e62a2) |
+
+<a id="persistence-type-sha256-a63502c8ca4b62f4994d49de517e7bd7ceec9c494d13c7dcdf2f2f01066e62a2"></a>
+
+<a id="persistence-type-codingclitoolstatus"></a>
+
+<a id="persistence-type-packagesllmllm-coding-clisrctypestscodingclitoolstatus"></a>
+
+### `CodingCliToolStatus`
+
+SHA-256: `a63502c8ca4b62f4994d49de517e7bd7ceec9c494d13c7dcdf2f2f01066e62a2`
+
+Sources: [`packages/llm/llm-coding-cli/src/types.ts:11`](../packages/llm/llm-coding-cli/src/types.ts)
+
+One of:
+
+- `"completed"`
+- `"failed"`
+- `"running"`
 
 <a id="persistence-type-sha256-ada310bf0bdb8fed51f3b56ea63f6ea6b18bbd587f04fccb63a14ab0b2a24e05"></a>
 
@@ -7750,6 +7822,22 @@ Sources: [`packages/llm/llm/src/assistant-stream.ts:44`](../packages/llm/llm/src
 | `chunk` | required | [`StreamChunk`](#persistence-type-sha256-47e9095591ae36e7c39ee62553097772f2bfa16304536a72dbbc3f691f605180) |
 | `time` | required | `number` |
 | `type` | required | `"chunk"` |
+
+<a id="persistence-type-sha256-563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1"></a>
+
+<a id="persistence-type-eventcoding-clitool"></a>
+
+### `{ type: "coding-cli/tool" }`
+
+SHA-256: `563565881151791031b8f990719507bd5e4ae5f2a9d823c9a353585c1cb5c5e1`
+
+| Property | Presence | Type |
+|---|---|---|
+| `data` | required | [`CodingCliToolEventData`](#persistence-type-sha256-3a606c7b6e654c8d937f7b24e8aa0e0a16f76eff73c03e4c1e82fb4cddc217ad) |
+| `ignorable` | optional | `true` |
+| `seq` | required | `number` |
+| `time` | required | `number` |
+| `type` | required | `"coding-cli/tool"` |
 
 <a id="persistence-type-sha256-15196447222782e773eb943c92b18316ce96b9af0f0cfddb6e57ba8274ecc5ff"></a>
 

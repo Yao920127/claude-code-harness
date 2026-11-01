@@ -1,5 +1,5 @@
 ---
-description: "LLM（大語言模型）能力包組：一個提供者無關的模型呼叫服務、DeepSeek、pi-ai 與 Claude Code 提供者介面卡、請求重試執行，以及具備回放感知的 token 計量。"
+description: "LLM（大語言模型）能力包組：一個提供者無關的模型呼叫服務、DeepSeek、pi-ai、Claude Code 與 coding CLI 提供者介面卡、請求重試執行，以及具備回放感知的 token 計量。"
 kind: "package-group"
 ---
 
@@ -30,6 +30,7 @@ llm 組提供 harness 的模型呼叫能力：一個提供者無關的服務，�
 | [`llm-deepseek-account/`](llm-deepseek-account/README.zh.md) | 帳號 token 授權驗證、失效處理與模型發現 | `ctx.llm` |
 | [`llm-pi-ai/`](llm-pi-ai/README.zh.md) | 透過 pi-ai 目錄與協定格式服務設定的提供者路由，包括手工宣告的閘道 | 註冊到 `ctx.llm` |
 | [`llm-claude-code/`](llm-claude-code/README.zh.md) | 以主機自己的 Claude Code 登入，把每次模型呼叫作為一個 Claude Code 回合執行，並提供 `claude-code` preset | 註冊到 `ctx.llm` |
+| [`llm-coding-cli/`](llm-coding-cli/README.zh.md) | 以各 CLI 自己的登入，把每次模型呼叫作為一個 Codex、Antigravity、Grok Build 或 OpenCode 的 headless 回合執行 | 註冊到 `ctx.llm` |
 | [`deepseek-llm-api-extensions/`](deepseek-llm-api-extensions/README.zh.md) | 在官方 DeepSeek 請求上註冊具有生命週期歸屬的頂層欄位 | `ctx.deepseekLlmApiExtensions` |
 | [`plugin-package-inventory-deepseek/`](plugin-package-inventory-deepseek/README.zh.md) | 為官方 DeepSeek 請求貢獻目前啟用的 Loader 包清單 | 貢獻 `dsh_plugin_packages` |
 | [`llm-retry/`](llm-retry/README.zh.md) | 在持久 agent 步驟邊界上按各提供者策略重試失敗的模型請求 | 監聽 `agent/request-error` |

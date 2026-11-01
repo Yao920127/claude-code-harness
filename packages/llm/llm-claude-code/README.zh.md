@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agent preset 下在輸入框的模型選擇器裡選擇 Claude 模型；把它設為預設模型選擇後，每個新 Session 都會以 Claude Code 開始。選擇器列出 Claude Code 為你的帳號報告的模型——例如 `Claude (Claude Code settings)`（不傳送模型，由你的 Claude Code 設定決定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——並在選擇器首次請求時從一個短暫的 Claude Code 程序讀取該列表。設定項的說明寫出帳號的推薦模型，它只在沒有設定選擇模型時生效。對於接受推理強度設定的模型，選擇器的 Effort 行提供 Claude Code 為它報告的等級——Low、Medium、High、Extra high（`xhigh`）與 Max——並從 High 開始；所選等級作為 `effort` 選項傳給 Claude Code。沒有報告等級的模型不顯示 Effort 行。
+Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agent preset 下在輸入框的模型選擇器裡選擇 Claude 模型；把它設為預設模型選擇後，每個新 Session 都會以 Claude Code 開始。選擇器列出 Claude Code 為你的帳號報告的模型——例如 `Claude (Claude Code settings)`（不傳送模型，由你的 Claude Code 設定決定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——並在選擇器首次請求時從一個短暫的 Claude Code 程序讀取該列表。設定項的說明寫出帳號的推薦模型，它只在沒有設定選擇模型時生效。對於接受推理強度設定的模型，選擇器的 Effort 行提供 Claude Code 為它報告的等級——Low、Medium、High、Extra high（`xhigh`）與 Max——並從 Medium（或設定的 `defaultEffort`）開始；所選等級作為 `effort` 選項傳給 Claude Code。沒有報告等級的模型不顯示 Effort 行。
 
 ### 設定
 
@@ -48,6 +48,7 @@ Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agen
 | `displayName` | `Claude Code` | 模型選擇器顯示的路由名稱 |
 | `models` | 自動發現 | 可選模型；預設或為空時列出帳號的模型。id `default` 不傳送模型，由你的 Claude 設定決定，其他 id 原樣傳給 Claude Code。條目可選的 `efforts` 列出它提供的推理強度等級 |
 | `executable` | SDK 內建版本 | 要執行的 Claude Code 可執行檔案的絕對路徑，例如 `/opt/homebrew/bin/claude`；預設時執行鎖定的 Agent SDK 所分發的版本。設定它即可列出並執行你已安裝的 Claude Code 所提供的模型；路徑不存在時在載入時失敗 |
+| `defaultEffort` | `medium` | 模型接受該等級且 Session 未指定時的起始推理強度：`low`、`medium`、`high`、`xhigh` 或 `max` |
 | `permissionMode` | `session` | `session` 跟隨每個 Session 的權限預設；原生模式（`default`、`acceptEdits`、`auto`、`plan` 或 `bypassPermissions`）固定每個回合 |
 | `env` | `{}` | 疊加在已清除憑證的父環境之上的顯式環境 |
 | `disposeGraceMs` | `3000` | 受管程序各終止層級之間的寬限時間 |

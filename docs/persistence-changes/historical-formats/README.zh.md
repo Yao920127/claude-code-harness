@@ -32,7 +32,7 @@ description: "查詢從 V0 到工作區寫入器版本的每個 Session 格式�
 | 1 | PR #3349 | [V1](v1.zh.md) | [JSON](v1.schema.json) | 54 / 415 |
 | 2 | `dsh-v0.1.3-alpha.2` | [V2](v2.zh.md) | [JSON](v2.schema.json) | 56 / 435 |
 | 3 | PR #4320 | [V3](v3.zh.md) | [JSON](v3.schema.json) | 60 / 467 |
-| 4 | 目前工作樹 | [目前目錄](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json) | 62 / 587 |
+| 4 | 目前工作樹 | [目前目錄](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json) | 63 / 592 |
 
 <!-- persistence-format-index:end -->
 

@@ -121,6 +121,7 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     provider: 'claude-code',
     displayName: 'Claude Code',
     ...configuredModels ? { models: [{ id: 'default', name: 'Claude Code', description: 'native' }, { id: 'opus', name: 'Opus' }] } : {},
+    defaultEffort: 'medium',
     permissionMode: 'session',
     env: { EXTRA: '1' },
     disposeGraceMs: 1_000,
@@ -201,7 +202,7 @@ describe('ClaudeCodeAdapter model discovery', () => {
     await expect(route.resolveModel('claude-code', 'claude-fable-5-1[1m]')).resolves.toMatchObject({ name: 'Claude Fable 5.1' })
   })
 
-  it('offers each model the effort levels Claude Code reports, ascending, defaulting to high', async () => {
+  it('offers each model the effort levels Claude Code reports, ascending, defaulting to the route default', async () => {
     const { adapter: route } = adapter({}, false)
     queryMock.mockImplementation(discoveryQuery(accountModels))
     const efforts = async (model: string) => {
@@ -217,10 +218,10 @@ describe('ClaudeCodeAdapter model discovery', () => {
     await expect(efforts('default')).resolves.toEqual({
       ids: ['low', 'medium', 'high', 'xhigh', 'max'],
       names: ['Low', 'Medium', 'High', 'Extra high', 'Max'],
-      defaultEffort: 'high',
+      defaultEffort: 'medium',
     })
-    await expect(efforts('sonnet')).resolves.toMatchObject({ ids: ['low', 'medium', 'high'], defaultEffort: 'high' })
-    // A model that takes no effort setting, or offers no high, gets no choice or no default.
+    await expect(efforts('sonnet')).resolves.toMatchObject({ ids: ['low', 'medium', 'high'], defaultEffort: 'medium' })
+    // A model that takes no effort setting, or offers no medium, gets no choice or no default.
     await expect(efforts('claude-fable-5-1[1m]')).resolves.toBeUndefined()
     await expect(efforts('haiku')).resolves.toEqual({ ids: ['low', 'max'], names: ['Low', 'Max'], defaultEffort: undefined })
     await expect(efforts('unlisted')).resolves.toBeUndefined()

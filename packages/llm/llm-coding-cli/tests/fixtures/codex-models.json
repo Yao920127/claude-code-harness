@@ -1,0 +1,182 @@
+{
+ "models": [
+  {
+   "slug": "gpt-6-luna",
+   "display_name": "GPT-6-Luna",
+   "description": "Fast and affordable model for easier tasks.",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": "Fast responses with lighter reasoning"
+    },
+    {
+     "effort": "medium",
+     "description": "Balances speed and reasoning depth for everyday tasks"
+    },
+    {
+     "effort": "high",
+     "description": "Greater reasoning depth for complex problems"
+    },
+    {
+     "effort": "xhigh",
+     "description": "Extra high reasoning depth for complex problems"
+    },
+    {
+     "effort": "max",
+     "description": "Maximum reasoning depth for the hardest problems"
+    }
+   ],
+   "visibility": "list"
+  },
+  {
+   "slug": "gpt-5.6-terra",
+   "display_name": "GPT-5.6-Terra",
+   "description": "Older balanced model for straightforward work.",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": "Fast responses with lighter reasoning"
+    },
+    {
+     "effort": "medium",
+     "description": "Balances speed and reasoning depth for everyday tasks"
+    },
+    {
+     "effort": "high",
+     "description": "Greater reasoning depth for complex problems"
+    },
+    {
+     "effort": "xhigh",
+     "description": "Extra high reasoning depth for complex problems"
+    },
+    {
+     "effort": "max",
+     "description": "Maximum reasoning depth for the hardest problems"
+    },
+    {
+     "effort": "ultra",
+     "description": "Maximum reasoning with automatic task delegation"
+    }
+   ],
+   "visibility": "list"
+  },
+  {
+   "slug": "gpt-5.6-luna",
+   "display_name": "GPT-5.6-Luna",
+   "description": "Older fast and efficient model.",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": "Fast responses with lighter reasoning"
+    },
+    {
+     "effort": "medium",
+     "description": "Balances speed and reasoning depth for everyday tasks"
+    },
+    {
+     "effort": "high",
+     "description": "Greater reasoning depth for complex problems"
+    },
+    {
+     "effort": "xhigh",
+     "description": "Extra high reasoning depth for complex problems"
+    },
+    {
+     "effort": "max",
+     "description": "Maximum reasoning depth for the hardest problems"
+    }
+   ],
+   "visibility": "list"
+  },
+  {
+   "slug": "claude/claude-haiku-5-5",
+   "display_name": "Claude Haiku 5.5 \u00b7 Claude Code",
+   "description": "Claude Haiku 5.5 \u00b7 Claude Code via magpie",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": ""
+    },
+    {
+     "effort": "medium",
+     "description": ""
+    },
+    {
+     "effort": "high",
+     "description": ""
+    },
+    {
+     "effort": "xhigh",
+     "description": ""
+    },
+    {
+     "effort": "max",
+     "description": ""
+    }
+   ],
+   "visibility": "list"
+  },
+  {
+   "slug": "gpt-reserve",
+   "display_name": "GPT-Reserve",
+   "description": "Fast and affordable agentic coding model.",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": "Fast responses with lighter reasoning"
+    },
+    {
+     "effort": "medium",
+     "description": "Balances speed and reasoning depth for everyday tasks"
+    },
+    {
+     "effort": "high",
+     "description": "Greater reasoning depth for complex problems"
+    },
+    {
+     "effort": "xhigh",
+     "description": "Extra high reasoning depth for complex problems"
+    },
+    {
+     "effort": "max",
+     "description": "Maximum reasoning depth for the hardest problems"
+    }
+   ],
+   "visibility": "hide"
+  },
+  {
+   "slug": "codex-auto-review",
+   "display_name": "Codex Auto Review",
+   "description": "Automatic approval review model for Codex.",
+   "default_reasoning_level": "medium",
+   "supported_reasoning_levels": [
+    {
+     "effort": "low",
+     "description": "Fast responses with lighter reasoning"
+    },
+    {
+     "effort": "medium",
+     "description": "Balances speed and reasoning depth for everyday tasks"
+    },
+    {
+     "effort": "high",
+     "description": "Greater reasoning depth for complex problems"
+    },
+    {
+     "effort": "xhigh",
+     "description": "Extra high reasoning depth for complex problems"
+    },
+    {
+     "effort": "max",
+     "description": "Maximum reasoning depth for the hardest problems"
+    }
+   ],
+   "visibility": "hide"
+  }
+ ]
+}

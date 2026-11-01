@@ -4806,7 +4806,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ClaudeCodeUsageView',
-    declaration: 'export interface ClaudeCodeUsageView {\n    readonly subscription: string | null;\n    readonly available: boolean;\n    readonly windows: readonly ClaudeCodeUsageWindow[];\n    readonly readAt: string;\n}',
+    declaration: 'export interface ClaudeCodeUsageView {\n    readonly provider: string;\n    readonly subscription: string | null;\n    readonly available: boolean;\n    readonly windows: readonly ClaudeCodeUsageWindow[];\n    readonly readAt: string;\n}',
   },
   {
     name: 'ClaudeCodeUsageWindow',

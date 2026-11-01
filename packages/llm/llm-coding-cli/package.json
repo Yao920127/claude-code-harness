@@ -1,0 +1,71 @@
+{
+  "name": "@deepseek-ai/dsh-llm-coding-cli",
+  "description": "Coding-CLI model routes for the DeepSeek Harness LLM seam: each model call runs one headless Codex, Antigravity, Grok Build, or OpenCode turn with that CLI's own sign-in",
+  "version": "0.1.7-rc.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deepseek-ai/deepseek-harness.git",
+    "directory": "packages/llm/llm-coding-cli"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./types": {
+      "types": "./lib/types/types.d.ts",
+      "default": "./lib/types/types.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "cordis.patch.yml",
+    "lib/types/**/*.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-agent": "workspace:*",
+    "@deepseek-ai/dsh-attachment": "workspace:*",
+    "@deepseek-ai/dsh-llm": "workspace:*",
+    "@deepseek-ai/dsh-sandbox": "workspace:*",
+    "@deepseek-ai/dsh-sandbox-policy": "workspace:*",
+    "@deepseek-ai/dsh-session": "workspace:*",
+    "@deepseek-ai/dsh-subprocess": "workspace:*",
+    "@deepseek-ai/dsh-timeout": "workspace:*",
+    "@deepseek-ai/dsh-user-approval": "workspace:*",
+    "@deepseek-ai/dsh-util-values": "workspace:*"
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-brand": "workspace:*",
+    "@deepseek-ai/dsh-client-ui-coding-cli-tools": "workspace:*",
+    "@deepseek-ai/schemastery": "workspace:~"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "workspace:~",
+    "@deepseek-ai/dsh-agent": "workspace:*",
+    "@deepseek-ai/dsh-attachment": "workspace:*",
+    "@deepseek-ai/dsh-llm": "workspace:*",
+    "@deepseek-ai/dsh-sandbox": "workspace:*",
+    "@deepseek-ai/dsh-sandbox-policy": "workspace:*",
+    "@deepseek-ai/dsh-session": "workspace:*",
+    "@deepseek-ai/dsh-subprocess": "workspace:*",
+    "@deepseek-ai/dsh-timeout": "workspace:*",
+    "@deepseek-ai/dsh-user-approval": "workspace:*",
+    "@deepseek-ai/dsh-util-values": "workspace:*"
+  }
+}

@@ -431,6 +431,7 @@
     { "path": "./packages/subagent/subagent-acp" },
     { "path": "./packages/subagent/subagent-claude-code" },
     { "path": "./packages/llm/llm-claude-code" },
+    { "path": "./packages/llm/llm-coding-cli" },
     { "path": "./packages/subagent/subagent-codex" },
     { "path": "./packages/subagent/subagent-dsh-sdk" },
     { "path": "./packages/jobs/jobs" },

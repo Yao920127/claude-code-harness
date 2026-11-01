@@ -37,21 +37,22 @@ const EFFORT_LEVELS: readonly { readonly level: EffortLevel; readonly info: LlmR
   { level: 'max', info: { id: ReasoningEffortId('max'), name: 'Max' } },
 ]
 
-/** Claude Code's own default effort, selected whenever the model accepts it. */
-const DEFAULT_EFFORT: EffortLevel = 'high'
+/** Effort levels a route may configure as its default. */
+export const CLAUDE_CODE_EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'] as const satisfies readonly EffortLevel[]
 
 /**
  * Describe the effort choices of one model in Claude Code's ascending order.
  * @param efforts - levels the model accepts.
- * @returns selector efforts with `high` as the default when accepted; undefined when no level is accepted.
+ * @param defaultEffort - the route's default level, selected when the model accepts it.
+ * @returns selector efforts with the default when accepted; undefined when no level is accepted.
  */
-export function modelReasoning(efforts: readonly EffortLevel[] | undefined): LlmModelReasoningInfo | undefined {
+export function modelReasoning(efforts: readonly EffortLevel[] | undefined, defaultEffort: EffortLevel): LlmModelReasoningInfo | undefined {
   if (efforts === undefined) return undefined
   const offered = EFFORT_LEVELS.filter(entry => efforts.includes(entry.level))
   if (offered.length === 0) return undefined
   return {
     efforts: offered.map(entry => entry.info),
-    ...efforts.includes(DEFAULT_EFFORT) ? { defaultEffort: ReasoningEffortId(DEFAULT_EFFORT) } : {},
+    ...efforts.includes(defaultEffort) ? { defaultEffort: ReasoningEffortId(defaultEffort) } : {},
   }
 }
 

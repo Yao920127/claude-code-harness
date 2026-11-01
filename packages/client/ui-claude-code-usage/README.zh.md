@@ -25,7 +25,7 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用此包
 
-用量卡片位於「設定」上方。每一行標出視窗名稱，並在進度條上方印出比例。標題欄的「已用 / 剩餘」開關決定數值與進度條顯示已用還是剩餘比例；此瀏覽器會把選擇儲存在 localStorage。兩種顯示下，已用低於 50% 時進度條為綠色，從 50% 起為橙色，從 80% 起為紅色。懸停某一行可檢視已用比例與重置時間。重新整理按鈕會再次詢問 Claude Code。頁面載入時以及視窗重新可見時，卡片都會讀取用量。在收起的側欄軌道上，它顯示第一個視窗所選的比例，懸停文字列出所有視窗。讀取到方案視窗之前不顯示任何內容：沒有 Claude 方案的登入（例如 API key）、未安裝或未登入的 Claude Code，以及讀取中或讀取失敗時，側欄底部都保持不變。
+用量卡片位於「設定」上方。每一行標出視窗名稱，並在進度條上方印出比例。標題欄的「已用 / 剩餘」開關決定數值與進度條顯示已用還是剩餘比例；此瀏覽器會把選擇儲存在 localStorage。兩種顯示下，已用低於 50% 時進度條為綠色，從 50% 起為橙色，從 80% 起為紅色。懸停某一行可檢視已用比例與重置時間。重新整理按鈕會再次詢問 Claude Code。頁面載入時以及視窗重新可見時，卡片都會讀取用量。在收起的側欄軌道上，它顯示第一個視窗所選的比例，懸停文字列出所有視窗。讀取到方案視窗之前不顯示任何內容：沒有 Claude 方案的登入（例如 API key）、未安裝或未登入的 Claude Code，以及讀取中或讀取失敗時，側欄底部都保持不變。目前開啟的 Session 選擇其他模型路由（例如 Codex 或 DeepSeek 路由）時，以及該 Session 的模型選擇仍在載入時，卡片也會隱藏；沒有開啟 Session 時則會顯示。
 
 CCH bundle 會插入此外掛。它需要 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md#plan-usage) 的 `claudeCodeUsage` Remote，該路由也決定一次讀取可供所有視窗使用多久。
 
@@ -35,7 +35,7 @@ CCH bundle 會插入此外掛。它需要 [`dsh-llm-claude-code`](../../llm/llm-
 <details>
 <summary>實作細節——點選展開</summary>
 
-外掛佔用 [ui-sidebar](../ui-sidebar/README.zh.md) 的 `sidebar.footer.action` 座。`UsageSource` 擁有卡片狀態：同一時間只有一次 Remote 讀取有效，較新的讀取會取代仍在進行的較舊讀取，重新整理期間繼續顯示已有的回答。外掛會等到 `remote.claudeCodeUsage` 名稱空間掛載後才進行首次讀取。
+外掛佔用 [ui-sidebar](../ui-sidebar/README.zh.md) 的 `sidebar.footer.action` 座。它透過 `ctx.uiSession` 跟隨主 Session，透過可選的 `ctx.modelDirectories` 跟隨該 Session 的模型選擇，並把選擇的路由與用量回答所指的路由比較；沒有模型選擇外掛時，每個 Session 都會顯示卡片。`UsageSource` 擁有卡片狀態：同一時間只有一次 Remote 讀取有效，較新的讀取會取代仍在進行的較舊讀取，重新整理期間繼續顯示已有的回答。外掛會等到 `remote.claudeCodeUsage` 名稱空間掛載後才進行首次讀取。
 
 </details>
 

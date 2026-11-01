@@ -33,6 +33,7 @@
     "@deepseek-ai/dsh-cch": "workspace:*",
     "@deepseek-ai/dsh-client-ui-brand-claude": "workspace:*",
     "@deepseek-ai/dsh-llm-claude-code": "workspace:*",
+    "@deepseek-ai/dsh-llm-coding-cli": "workspace:*",
     "@deepseek-ai/dsh-client-ui-agent-preset": "workspace:*",
     "@deepseek-ai/dsh-client-ui-cordis": "workspace:*",
     "@deepseek-ai/dsh-cmdline": "workspace:*",

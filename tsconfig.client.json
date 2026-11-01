@@ -85,6 +85,7 @@
     { "path": "./packages/client/ui-brand-official" },
     { "path": "./packages/client/ui-brand-claude" },
     { "path": "./packages/client/ui-claude-code-usage" },
+    { "path": "./packages/client/ui-coding-cli-tools" },
     { "path": "./packages/client/ui-approval" },
     { "path": "./packages/client/ui-chat/tsconfig.client.json" },
     { "path": "./packages/client/ui-conversation/tsconfig.client.json" },

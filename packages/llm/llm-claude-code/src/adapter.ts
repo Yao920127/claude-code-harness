@@ -11,7 +11,7 @@
  */
 
 import {
-  query as officialQuery, type Options, type Query, type SDKControlGetUsageResponse,
+  query as officialQuery, type EffortLevel, type Options, type Query, type SDKControlGetUsageResponse,
 } from '@anthropic-ai/claude-agent-sdk'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
@@ -48,6 +48,8 @@ export interface ClaudeCodeAdapterOptions {
   readonly discoveryCwd: string
   /** Reports a failed model discovery; the selector then offers only the native default. */
   readonly onDiscoveryError: (error: Error) => void
+  /** Effort level selected for a model that accepts it when a request names none. */
+  readonly defaultEffort: EffortLevel
   /** Permission setting: `session` derives each turn's native mode from the Session; any other value pins it. */
   readonly permissionMode: ClaudeCodeRoutePermissionMode
   /** Explicit environment layered over the credential-scrubbed parent environment. */
@@ -104,7 +106,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
     // Effort validation needs the model's levels, so the first resolution
     // waits for the one shared discovery; later resolutions reuse its result.
     const entry = (await this.models()).find(candidate => candidate.id === model)
-    const reasoning = modelReasoning(entry?.efforts)
+    const reasoning = modelReasoning(entry?.efforts, this.options.defaultEffort)
     return {
       provider,
       id: model,

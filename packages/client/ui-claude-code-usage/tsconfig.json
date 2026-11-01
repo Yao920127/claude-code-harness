@@ -34,6 +34,15 @@
     },
     {
       "path": "../../llm/llm-claude-code"
+    },
+    {
+      "path": "../../core/session"
+    },
+    {
+      "path": "../ui-session"
+    },
+    {
+      "path": "../ui-model-selection"
     }
   ]
 }

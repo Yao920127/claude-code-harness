@@ -71,6 +71,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-client-ui-brand-official` | no | Official DeepSeek Harness brand occupants for the Web client's sidebar slots |
 | `@deepseek-ai/dsh-client-ui-chat` | no | Chat Conversation target, node definitions, renderers, and details surface |
 | `@deepseek-ai/dsh-client-ui-claude-code-usage` | no | Claude Code plan usage in the Web sidebar foot: five-hour and weekly limit use with reset times |
+| `@deepseek-ai/dsh-client-ui-coding-cli-tools` | no | Tool cards for the tool calls Codex, Antigravity, Grok Build, and OpenCode run inside their own model turns |
 | `@deepseek-ai/dsh-client-ui-commands` | no | Client command surface: global directory cache, '/' source, three command UI kinds, popupSelect registry |
 | `@deepseek-ai/dsh-client-ui-conversation` | no | Target-neutral Conversation assembly, shell, composer, queue, and view navigation |
 | `@deepseek-ai/dsh-client-ui-deliverables` | no | Changed-files card with per-file comparison tabs, delivery cards, and clickable final-response file references for Web |
@@ -282,6 +283,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 | `@deepseek-ai/dsh-deepseek-llm-api-extensions` | no | Additive request-field registry for the official DeepSeek LLM API adapter |
 | `@deepseek-ai/dsh-llm` | no | Provider-neutral LLM service interface for the DeepSeek Harness |
 | `@deepseek-ai/dsh-llm-claude-code` | yes | Claude Code model route for the DeepSeek Harness LLM seam: each model call runs one Claude Code turn with the host's own Claude Code sign-in |
+| `@deepseek-ai/dsh-llm-coding-cli` | yes | Coding-CLI model routes for the DeepSeek Harness LLM seam: each model call runs one headless Codex, Antigravity, Grok Build, or OpenCode turn with that CLI's own sign-in |
 | `@deepseek-ai/dsh-llm-deepseek-account` | yes | DeepSeek account provider authentication and discovery |
 | `@deepseek-ai/dsh-llm-deepseek-api-key` | yes | DeepSeek api-key provider authentication and discovery |
 | `@deepseek-ai/dsh-llm-pi-ai` | yes | pi-ai-backed DeepSeek adapter for the DeepSeek Harness LLM seam (design-verification twin of dsh-llm-deepseek) |

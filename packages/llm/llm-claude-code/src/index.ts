@@ -22,7 +22,7 @@ import type {} from '@deepseek-ai/dsh-sandbox-policy'
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-browser'
 import { ClaudeCodeAdapter } from './adapter.ts'
 import { ClaudeCodeUsageController } from './usage.ts'
-import type { ClaudeCodeModelEntry } from './models.ts'
+import { CLAUDE_CODE_EFFORT_LEVELS, type ClaudeCodeModelEntry } from './models.ts'
 import {
   CLAUDE_CODE_ROUTE_PERMISSION_MODES,
   SESSION_PERMISSION_MODE,
@@ -34,7 +34,7 @@ export { ClaudeCodeUsageController, usageView } from './usage.ts'
 export type { ClaudeCodeUsageOptions } from './usage.ts'
 export type { ClaudeCodeUsageView, ClaudeCodeUsageWindow, ClaudeCodeUsageWindowKind } from './types.ts'
 export type { ClaudeCodeAdapterOptions } from './adapter.ts'
-export { modelEntries, NATIVE_MODEL_ID, NATIVE_MODEL_NAME } from './models.ts'
+export { CLAUDE_CODE_EFFORT_LEVELS, modelEntries, NATIVE_MODEL_ID, NATIVE_MODEL_NAME } from './models.ts'
 export {
   CLAUDE_CODE_NATIVE_PERMISSION_MODES,
   CLAUDE_CODE_ROUTE_PERMISSION_MODES,
@@ -68,6 +68,8 @@ export interface Config {
    * installation's models and runs its turns.
    */
   executable?: string
+  /** Effort level selected for a model that accepts it when the Session names none (default `medium`). */
+  defaultEffort?: typeof CLAUDE_CODE_EFFORT_LEVELS[number]
   /**
    * Permission setting (default `session`). `session` derives each turn's
    * native mode from the Session's sandbox mode and approval policy: full
@@ -102,6 +104,7 @@ export const Config: z<Config> = z.object({
     efforts: z.array(z.union(['low', 'medium', 'high', 'xhigh', 'max'] as const)),
   })),
   executable: z.string().min(1),
+  defaultEffort: z.union([...CLAUDE_CODE_EFFORT_LEVELS]).default('medium'),
   permissionMode: z.union([...CLAUDE_CODE_ROUTE_PERMISSION_MODES]).default(SESSION_PERMISSION_MODE),
   env: z.dict(z.string()).default({}),
   disposeGraceMs: z.number().default(3_000),
@@ -133,6 +136,7 @@ export function apply(ctx: Context, config: Config): void {
     ...executable === undefined ? {} : { executable },
     discoveryCwd: homedir(),
     onDiscoveryError: (error) => { ctx.logger.warn('llm-claude-code: model discovery failed: %o', error) },
+    defaultEffort: config.defaultEffort as typeof CLAUDE_CODE_EFFORT_LEVELS[number],
     permissionMode: config.permissionMode as ClaudeCodeRoutePermissionMode,
     env: config.env as Record<string, string>,
     disposeGraceMs,
@@ -154,6 +158,7 @@ export function apply(ctx: Context, config: Config): void {
   })
   ctx.llm.registerAdapter([provider], adapter)
   ctx.plugin(ClaudeCodeUsageController, {
+    provider,
     read: () => adapter.usage(),
     freshMs: config.usageFreshMs as number,
     now: () => Date.now(),

@@ -9,8 +9,8 @@
   en: e7c80d1de4d328b4
   zh: fb83528fe8ae9b51
 /session-persistence-event-catalog/persistence-type-fingerprints:
-  en: 0254fc43535dfaad
-  zh: 128cc13cb96c9de0
+  en: e6c86666c0f87809
+  zh: d961ef9948f925f8
 /session-persistence-event-catalog/event-envelope:
   en: 7ebb1a2e0dd1f916
   zh: cdefa3eb8f459433
@@ -50,6 +50,12 @@
 /session-persistence-event-catalog/events/assistant/assistant-message-surface:
   en: 70721b64d98f892e
   zh: 3203e91fc8c9a868
+/session-persistence-event-catalog/events/coding-cli:
+  en: 71ddc7aa2cd5033a
+  zh: 71ddc7aa2cd5033a
+/session-persistence-event-catalog/events/coding-cli/coding-cli-tool-log-only:
+  en: e6a6234b15d75aeb
+  zh: a7ba5f41db8557be
 /session-persistence-event-catalog/events/command:
   en: 2cecb5b0ee955732
   zh: 2cecb5b0ee955732
@@ -381,8 +387,11 @@
   en: ae48fcd465c67547
   zh: ae48fcd465c67547
 /session-persistence-event-catalog/resolved-persistence-types/codex:
-  en: cd907982df03b4d9
-  zh: cd907982df03b4d9
+  en: ba5d5305af5cf509
+  zh: ba5d5305af5cf509
+/session-persistence-event-catalog/resolved-persistence-types/coding-cli-tool:
+  en: d4822627f40572d3
+  zh: d4822627f40572d3
 /session-persistence-event-catalog/resolved-persistence-types/command-done:
   en: 5f2dcf7e9c3787ab
   zh: 5f2dcf7e9c3787ab
@@ -666,8 +675,11 @@
   en: ade80ed58d3b63b2
   zh: ade80ed58d3b63b2
 /session-persistence-event-catalog/resolved-persistence-types/resume:
-  en: e27772872766bd6d
-  zh: e27772872766bd6d
+  en: d440123c97322da2
+  zh: d440123c97322da2
+/session-persistence-event-catalog/resolved-persistence-types/running:
+  en: e145ea5aa96c5d58
+  zh: e145ea5aa96c5d58
 /session-persistence-event-catalog/resolved-persistence-types/runtime-context:
   en: 784f0d4afdaaa472
   zh: 784f0d4afdaaa472
@@ -924,8 +936,14 @@
   en: 144fc40c557c39fb
   zh: cc5d160ee9ffaafb
 /session-persistence-event-catalog/resolved-persistence-types/assistantstreamrecord~2:
-  en: e393deed01de3665
-  zh: 7b00dd25ec21cc03
+  en: 02228e566cd2b9f9
+  zh: f2b297f499e86a16
+/session-persistence-event-catalog/resolved-persistence-types/codingclitooleventdata:
+  en: 52af2177cb8b0899
+  zh: b55d378b3d1434b9
+/session-persistence-event-catalog/resolved-persistence-types/codingclitoolstatus:
+  en: d52c8c7226348d0b
+  zh: 874c18de187136e5
 /session-persistence-event-catalog/resolved-persistence-types/commandsource:
   en: 86c7e2b4ae099661
   zh: 9a9aa943ca3e99c9
@@ -1863,8 +1881,11 @@
   en: 5caed426cab416ee
   zh: f589eba79f3022d8
 /session-persistence-event-catalog/resolved-persistence-types/type-chunk:
-  en: 2186ede3e9917aea
-  zh: 5ae5ffc0e4e049aa
+  en: e943581123164b19
+  zh: 0049679db09a8db6
+/session-persistence-event-catalog/resolved-persistence-types/type-coding-cli-tool:
+  en: 24cf555a423c2664
+  zh: ec9d2bbbcef15d0d
 /session-persistence-event-catalog/resolved-persistence-types/type-command-done:
   en: 1a28f9fcd1818880
   zh: 9d64bbaf559d4c20

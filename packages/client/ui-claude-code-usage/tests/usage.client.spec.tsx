@@ -12,6 +12,8 @@ import {
   resetText, UsageMeter, windowLabel, type UsageDisplay, type UsageMeterInjected, type UsageMeterProps,
 } from '../src/client/UsageMeter.tsx'
 import { UsageSource } from '../src/client/usage-source.ts'
+import { selectedRoute, type SelectedRoute, type SessionSelection } from '../src/client/selected-route.ts'
+import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { apply as hostApply } from '../src/index.ts'
 
 afterEach(() => { cleanup(); localStorage.clear() })
@@ -19,6 +21,7 @@ afterEach(() => { cleanup(); localStorage.clear() })
 const t = makeTranslate(en)
 
 const view: ClaudeCodeUsageView = {
+  provider: 'claude-code',
   subscription: 'max',
   available: true,
   readAt: '2026-09-29T00:00:00.000Z',
@@ -67,15 +70,31 @@ describe('UsageSource', () => {
 })
 
 describe('UsageMeter', () => {
-  function mount(wide: boolean, source: UsageSource, initial: UsageDisplay = 'remaining') {
+  function mount(wide: boolean, source: UsageSource, initial: UsageDisplay = 'remaining', route = createSnapshotStore<SelectedRoute>(undefined)) {
     const refresh = vi.fn()
     const display = createSnapshotStore<UsageDisplay>(initial)
     const setDisplay = vi.fn((value: UsageDisplay) => { display.set(value) })
     const props = {
-      wide, t, refresh, setDisplay, useUsage: bindSnapshotSelector(source.state), useDisplay: bindSnapshotSelector(display),
+      wide, t, refresh, setDisplay,
+      useUsage: bindSnapshotSelector(source.state), useDisplay: bindSnapshotSelector(display), useRoute: bindSnapshotSelector(route),
     } as never as UsageMeterProps
     return { refresh, setDisplay, view: render(<UsageMeter {...props} />) }
   }
+
+  it('shows usage only while the main Session selects the Claude Code route or no Session is open', async () => {
+    const source = new UsageSource(() => Promise.resolve(view))
+    const route = createSnapshotStore<SelectedRoute>('codex')
+    const h = mount(true, source, 'remaining', route)
+    source.load(false)
+    await settle()
+    expect(h.view.container.childElementCount).toBe(0)
+    act(() => { route.set(null) })
+    expect(h.view.container.childElementCount).toBe(0)
+    act(() => { route.set('claude-code') })
+    expect(screen.getAllByRole('meter')).toHaveLength(3)
+    act(() => { route.set(undefined) })
+    expect(screen.getAllByRole('meter')).toHaveLength(3)
+  })
 
   it('names windows and their reset times', () => {
     expect(windowLabel({ kind: 'model', label: 'Fable', utilization: 1, resetsAt: null }, t)).toBe('Weekly Fable')
@@ -156,6 +175,36 @@ describe('UsageMeter', () => {
   })
 })
 
+describe('selectedRoute', () => {
+  function selection(provider: string | null) {
+    type Snapshot = ReturnType<SessionSelection['getSnapshot']>
+    const store = createSnapshotStore<Snapshot>({ current: provider === null ? null : { provider } })
+    return store satisfies SessionSelection
+  }
+
+  it('follows the main Session and its selection', () => {
+    const current = createSnapshotStore<SessionId | undefined>(undefined)
+    const selections = new Map([['a', selection('claude-code')], ['b', selection(null)]])
+    const route = selectedRoute(current, id => selections.get(id))
+    const listener = vi.fn()
+    const stop = route.subscribe(listener)
+    expect(route.getSnapshot()).toBeUndefined()
+    current.set('a' as SessionId)
+    expect(route.getSnapshot()).toBe('claude-code')
+    selections.get('a')!.set({ current: { provider: 'codex' } })
+    expect(route.getSnapshot()).toBe('codex')
+    current.set('b' as SessionId)
+    expect(route.getSnapshot()).toBeNull()
+    current.set('c' as SessionId)
+    expect(route.getSnapshot()).toBeUndefined()
+    expect(listener).toHaveBeenCalledTimes(4)
+    stop()
+    selections.get('a')!.set({ current: null })
+    current.set(undefined)
+    expect(listener).toHaveBeenCalledTimes(4)
+  })
+})
+
 describe('Claude Code usage plugin', () => {
   it('reads usage on load, on visibility and on refresh, and releases its registrations on unload', async () => {
     expect(hostApply).not.toThrow()
@@ -174,10 +223,25 @@ describe('Claude Code usage plugin', () => {
       .mockResolvedValue({ ok: false, error: new Error('offline') })
     ctx.provide('remote', { claudeCodeUsage: { get } } as never)
     ctx.provide('remote.claudeCodeUsage', {} as never)
+    const current = createSnapshotStore<{ key: unknown }>({ key: undefined })
+    ctx.provide('uiSession', { adapter: { current } } as never)
+    const directory = createSnapshotStore({ current: { provider: 'codex' } })
+    const directoryFor = vi.fn((id: string) => {
+      if (id === 'unscoped') throw new Error('no scope')
+      return { store: directory }
+    })
     const fiber = ctx.plugin({ inject: [...inject], apply })
     await fiber.await()
     expect(dictionaries.get('claudeCodeUsage')).toEqual({ zh, en })
     const face = entries[0]!.inject()
+    current.set({ key: 'session-1' })
+    expect(face.hooks.route.getSnapshot()).toBeUndefined()
+    ctx.provide('modelDirectories', { directoryFor } as never)
+    expect(face.hooks.route.getSnapshot()).toBe('codex')
+    current.set({ key: 'unscoped' })
+    expect(face.hooks.route.getSnapshot()).toBeUndefined()
+    const listener = vi.fn()
+    face.hooks.route.subscribe(listener)()
     await vi.waitFor(() => { expect(face.hooks.usage.getSnapshot()).toEqual({ phase: 'ready', view }) })
     expect(face.hooks.display.getSnapshot()).toBe('remaining')
     face.setDisplay('used')

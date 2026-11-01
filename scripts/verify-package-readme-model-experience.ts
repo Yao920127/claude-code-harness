@@ -54,6 +54,7 @@ const SENTENCE_MODEL_EXPERIENCE: Readonly<Record<string, SentenceContract>> = {
   'packages/api/terminal-controller': { kind: 'none', reason: 'User-owned terminal processes and screen streams never enter model requests or Session events.' },
   'packages/client/ui-terminal-panel': { kind: 'none', reason: 'The browser renders user terminal screens without exposing them to the model.' },
   'packages/client/ui-claude-code-usage': { kind: 'none', reason: 'The browser shows account plan usage that never enters a model request.' },
+  'packages/client/ui-coding-cli-tools': { kind: 'none', reason: 'The browser renders log-only coding-cli/tool events that never enter a model request.' },
   'packages/client/ui-git': { kind: 'none', reason: 'User-initiated Git and GitHub commands return their output only to the browser.' },
   'packages/ssh/ssh': { kind: 'none', reason: 'The connection owner transports private provider operations; consumers own all model-facing content.' },
   'packages/ssh/fs-ssh': { kind: 'indirect', reason: 'The remote filesystem delegates model rendering to the existing filesystem consumers.' },

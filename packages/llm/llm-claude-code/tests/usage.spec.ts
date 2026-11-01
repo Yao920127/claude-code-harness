@@ -18,7 +18,8 @@ describe('usageView', () => {
       seven_day_opus: null,
       seven_day_sonnet: { utilization: null, resets_at: null },
       model_scoped: [{ display_name: 'Fable', utilization: 12, resets_at: null }],
-    }), READ_AT)).toEqual({
+    }), READ_AT, 'claude-code')).toEqual({
+      provider: 'claude-code',
       subscription: 'max',
       available: true,
       readAt: '2026-09-29T00:00:00.000Z',
@@ -32,8 +33,8 @@ describe('usageView', () => {
   })
 
   it('reports no windows for sign-ins without plan limits', () => {
-    expect(usageView(usage(null, false), READ_AT)).toMatchObject({ available: false, windows: [] })
-    expect(usageView(usage({}), READ_AT)).toMatchObject({ available: true, windows: [] })
+    expect(usageView(usage(null, false), READ_AT, 'claude-code')).toMatchObject({ available: false, windows: [] })
+    expect(usageView(usage({}), READ_AT, 'claude-code')).toMatchObject({ available: true, windows: [] })
   })
 })
 
@@ -41,7 +42,7 @@ describe('ClaudeCodeUsageController', () => {
   function controller(read: () => Promise<SDKControlGetUsageResponse>) {
     let now = 0
     const ctx = new Context()
-    const service = new ClaudeCodeUsageController(ctx, { read, freshMs: 1_000, now: () => now })
+    const service = new ClaudeCodeUsageController(ctx, { provider: 'claude-code', read, freshMs: 1_000, now: () => now })
     return { service, advance: (ms: number) => { now += ms } }
   }
 

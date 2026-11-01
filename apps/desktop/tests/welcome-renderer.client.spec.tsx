@@ -23,11 +23,11 @@ function mount(language = 'zh-CN', takeNotice = vi.fn<() => Promise<WelcomeNotic
     ...resolveDesktopLocale(language),
     saveApiKey: vi.fn<(value: string) => Promise<WelcomeSaveResult>>().mockResolvedValue({ ok: true }),
     skip: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
-    claudeCode: false,
-    claudeCodeStatus: vi.fn(async () => ({ state: 'signed-out' as const })),
-    claudeCodeSignIn: vi.fn(async () => 'signed-in' as const),
-    claudeCodeSubmitCode: vi.fn(async () => true),
-    claudeCodeCancel: vi.fn(async () => undefined),
+    cliLogin: false,
+    cliStatus: vi.fn(async () => ({ state: 'signed-out' as const })),
+    cliSignIn: vi.fn(async () => 'signed-in' as const),
+    cliSubmitCode: vi.fn(async () => true),
+    cliCancel: vi.fn(async () => undefined),
   }
   const mounted = render(<Welcome api={api} />)
   const input = document.querySelector('input')!

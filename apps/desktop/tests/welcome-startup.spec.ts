@@ -33,9 +33,9 @@ const state = vi.hoisted(() => ({
   preference: 'zh',
   hasApiKey: false,
   claudeCodeRoute: false,
-  claudeCodeStatus: vi.fn(async (): Promise<{ state: 'signed-in' | 'signed-out' | 'unavailable' }> => ({ state: 'signed-out' })),
-  claudeCodeCancel: vi.fn(),
-  welcomeClaudeCode: undefined as boolean | undefined,
+  cliStatus: vi.fn(async (_provider: string): Promise<{ state: 'signed-in' | 'signed-out' | 'unavailable' }> => ({ state: 'signed-out' })),
+  cliCancel: vi.fn(),
+  welcomeCliLogin: undefined as boolean | undefined,
   handlers: new Map<string, (...args: unknown[]) => unknown>(),
   listeners: new Map<string, (...args: unknown[]) => void>(),
   contents: undefined as { mainFrame: { url: string } } | undefined,
@@ -155,20 +155,20 @@ vi.mock('../src/update-coordinator.ts', () => ({ DesktopUpdateCoordinator: class
   check = vi.fn(async () => this.state)
   dispose = vi.fn()
 } }))
-vi.mock('../src/claude-code-login.ts', () => ({
-  claudeCodeExecutable: () => '/runtime/claude',
-  ClaudeCodeLogin: class {
-    status = state.claudeCodeStatus
-    signIn = vi.fn(async () => 'signed-in')
-    submitCode = vi.fn(() => true)
-    cancel = state.claudeCodeCancel
-  },
+vi.mock('../src/claude-code-login.ts', () => ({ claudeCodeExecutable: () => '/runtime/claude' }))
+vi.mock('../src/cli-login.ts', () => ({
+  createCliLogins: () => Object.fromEntries(['claude-code', 'codex', 'antigravity', 'grok', 'opencode'].map(id => [id, {
+    status: () => state.cliStatus(id),
+    signIn: vi.fn(async () => 'signed-in'),
+    submitCode: vi.fn(() => true),
+    cancel: () => { state.cliCancel(id) },
+  }])),
 }))
 vi.mock('../src/welcome-window.ts', () => ({
-  openWelcomeWindow: async (locale: DesktopLocale, operations: WelcomeOperations, claudeCode?: boolean) => {
+  openWelcomeWindow: async (locale: DesktopLocale, operations: WelcomeOperations, cliLogin?: boolean) => {
     state.welcomeLocale = locale
     state.operations = operations
-    state.welcomeClaudeCode = claudeCode
+    state.welcomeCliLogin = cliLogin
     await state.beforeWelcome()
     return { once: vi.fn(), close: state.closeWelcome, isDestroyed: () => false,
       show: vi.fn(), focus: vi.fn(), webContents: { send: vi.fn() } }
@@ -311,15 +311,15 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
 
 })
 
-it.each(['signed-out', 'unavailable'] as const)('opens the Claude Code welcome while the Claude Code CLI is %s', async (claudeState) => {
+it.each(['signed-out', 'unavailable'] as const)('opens the CLI welcome while every offered CLI is %s', async (cliState) => {
   vi.resetModules()
   vi.clearAllMocks()
   state.preference = 'zh'
   state.hasApiKey = true
   state.claudeCodeRoute = true
   state.operations = undefined
-  state.welcomeClaudeCode = undefined
-  state.claudeCodeStatus.mockResolvedValue({ state: claudeState })
+  state.welcomeCliLogin = undefined
+  state.cliStatus.mockResolvedValue({ state: cliState })
   vi.stubEnv('DSH_DESKTOP_DSH_DIR', '/runtime/dsh')
   vi.stubEnv('DSH_DESKTOP_PNPM_ENTRY', '/runtime/pnpm')
   vi.stubEnv('DSH_DESKTOP_PRIMARY_RUNTIME_DIR', '/runtime/primary-runtime')
@@ -329,27 +329,27 @@ it.each(['signed-out', 'unavailable'] as const)('opens the Claude Code welcome w
   try {
     await import('../src/main.ts')
     await vi.waitFor(() => { expect(state.operations).toBeDefined() })
-    expect(state.welcomeClaudeCode).toBe(true)
+    expect(state.welcomeCliLogin).toBe(true)
     expect(state.showWorkspace).not.toHaveBeenCalled()
-    expect(await state.operations!.claudeCodeStatus()).toEqual({ state: claudeState })
-    expect(await state.operations!.claudeCodeSignIn()).toBe('signed-in')
-    expect(await state.operations!.claudeCodeSubmitCode('code')).toBe(true)
-    await state.operations!.claudeCodeCancel()
-    expect(state.claudeCodeCancel).toHaveBeenCalledOnce()
+    expect(await state.operations!.cliStatus('codex')).toEqual({ state: cliState })
+    expect(await state.operations!.cliSignIn('codex')).toBe('signed-in')
+    expect(await state.operations!.cliSubmitCode('claude-code', 'code')).toBe(true)
+    await state.operations!.cliCancel('grok')
+    expect(state.cliCancel).toHaveBeenCalledWith('grok')
   } finally {
     state.claudeCodeRoute = false
     state.hasApiKey = false
   }
 })
 
-it('enters the workspace without the welcome when the Claude Code CLI is signed in', async () => {
+it.each(['claude-code', 'codex'])('enters the workspace without the welcome when only %s is signed in', async (signedIn) => {
   vi.resetModules()
   vi.clearAllMocks()
   state.preference = 'zh'
   state.hasApiKey = false
   state.claudeCodeRoute = true
   state.operations = undefined
-  state.claudeCodeStatus.mockResolvedValue({ state: 'signed-in' })
+  state.cliStatus.mockImplementation(async provider => ({ state: provider === signedIn ? 'signed-in' : 'signed-out' }))
   vi.stubEnv('DSH_DESKTOP_DSH_DIR', '/runtime/dsh')
   vi.stubEnv('DSH_DESKTOP_PNPM_ENTRY', '/runtime/pnpm')
   vi.stubEnv('DSH_DESKTOP_PRIMARY_RUNTIME_DIR', '/runtime/primary-runtime')
@@ -362,5 +362,7 @@ it('enters the workspace without the welcome when the Claude Code CLI is signed 
     expect(state.operations).toBeUndefined()
   } finally {
     state.claudeCodeRoute = false
+    state.cliStatus.mockReset()
+    state.cliStatus.mockResolvedValue({ state: 'signed-out' })
   }
 })

@@ -23,7 +23,7 @@ describe('desktop locale dictionaries', () => {
     expect(resolveDesktopLocale('zh-Hans').id).toBe('zh-CN')
     expect(resolveDesktopLocale('zh-TWX').id).toBe('zh-CN')
     expect(zhTW.quitApplication).toBe('結束 Claude Code Harness')
-    expect(zhTW.claudeCodeSignIn).toBe('登入 Claude Code')
+    expect(zhTW.cliSignIn).toBe('登入')
   })
 
   it('prefers an explicit supported choice, then the first supported system language', () => {

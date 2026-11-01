@@ -4,7 +4,7 @@ import '@deepseek-ai/dsh-client-ui-theme/src/styles/gradient-shadow-text.css'
 import { createRoot } from 'react-dom/client'
 import { flushSync } from 'react-dom'
 import { Welcome } from './WelcomePage.tsx'
-import { ClaudeCodeWelcome } from './ClaudeCodeWelcome.tsx'
+import { CliWelcome } from './CliWelcome.tsx'
 import type { WelcomeApi } from '../welcome-api.ts'
 
 declare global {
@@ -23,5 +23,5 @@ const container = document.getElementById('root')
 if (container === null) throw new Error('desktop welcome: missing React root')
 const root = createRoot(container)
 const api = window.dshWelcome
-flushSync(() => { root.render(api.claudeCode ? <ClaudeCodeWelcome api={api} /> : <Welcome api={api} />) })
+flushSync(() => { root.render(api.cliLogin ? <CliWelcome api={api} /> : <Welcome api={api} />) })
 window.addEventListener('pagehide', () => { root.unmount() }, { once: true })

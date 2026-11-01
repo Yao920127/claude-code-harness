@@ -446,3 +446,64 @@ body:has(.claude-code) {
 .claude-code .key-field input:focus {
   box-shadow: 0 0 0 3px rgb(204 120 92 / 15%);
 }
+
+.cli-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 8px;
+}
+
+.cli-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 12px 0 16px;
+  font-family: var(--dsw-font-family);
+  font-size: 14px;
+}
+
+.cli-row + .cli-row {
+  border-top: 1px solid var(--dsw-alias-border-l2);
+}
+
+.cli-name {
+  color: var(--dsw-alias-label-primary);
+  font-weight: 500;
+}
+
+.cli-state {
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+}
+
+.cli-row[data-state='signed-in'] .cli-state {
+  color: var(--dsw-alias-brand-primary);
+}
+
+.cli-sign-in {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--dsw-alias-border-l4);
+  border-radius: 6px;
+  background: var(--dsw-alias-button-elevated-fill);
+  color: var(--dsw-alias-label-primary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cli-sign-in:hover:not(:disabled) {
+  background: var(--dsw-alias-button-floating-hover);
+}
+
+.cli-sign-in:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary);
+  outline-offset: 2px;
+}

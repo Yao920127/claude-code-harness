@@ -12,20 +12,50 @@ export const WELCOME_IPC = {
   copyLink: 'dsh-welcome:copy-link',
   state: 'dsh-welcome:state',
   takeNotice: 'dsh-welcome:take-notice',
-  claudeCodeStatus: 'dsh-welcome:claude-code-status',
-  claudeCodeSignIn: 'dsh-welcome:claude-code-sign-in',
-  claudeCodeSubmitCode: 'dsh-welcome:claude-code-submit-code',
-  claudeCodeCancel: 'dsh-welcome:claude-code-cancel',
+  cliStatus: 'dsh-welcome:cli-status',
+  cliSignIn: 'dsh-welcome:cli-sign-in',
+  cliSubmitCode: 'dsh-welcome:cli-submit-code',
+  cliCancel: 'dsh-welcome:cli-cancel',
 } as const
 
-/** Sign-in state reported by `claude auth status`; `unavailable` means the CLI could not run or answer. */
-export type ClaudeCodeStatus =
+/** Coding-agent CLIs the welcome offers, in display order; signing in to any one of them is optional. */
+export const CLI_PROVIDERS = ['claude-code', 'codex', 'antigravity', 'grok', 'opencode'] as const
+
+/** One coding-agent CLI the welcome can sign in to. */
+export type CliProviderId = typeof CLI_PROVIDERS[number]
+
+/**
+ * How a CLI's login proceeds: `browser-code` accepts a pasted authorization code, `browser` completes through the
+ * browser redirect alone, and `terminal` continues in a terminal window the user drives.
+ */
+export type CliLoginMode = 'browser-code' | 'browser' | 'terminal'
+
+/** Product name and login mode of each CLI. */
+export const CLI_PROVIDER_INFO: { readonly [Id in CliProviderId]: { readonly name: string; readonly mode: CliLoginMode } } = {
+  'claude-code': { name: 'Claude Code', mode: 'browser-code' },
+  codex: { name: 'Codex', mode: 'browser' },
+  antigravity: { name: 'Antigravity', mode: 'terminal' },
+  grok: { name: 'Grok', mode: 'browser' },
+  opencode: { name: 'OpenCode', mode: 'terminal' },
+}
+
+/**
+ * Check a renderer-supplied CLI id.
+ * @param value - IPC argument.
+ * @returns Whether the value names an offered CLI.
+ */
+export function isCliProvider(value: unknown): value is CliProviderId {
+  return typeof value === 'string' && (CLI_PROVIDERS as readonly string[]).includes(value)
+}
+
+/** Sign-in state reported by a CLI; `unavailable` means the CLI is not installed or could not run or answer. */
+export type CliStatus =
   | { readonly state: 'signed-in'; readonly email?: string }
   | { readonly state: 'signed-out' }
   | { readonly state: 'unavailable' }
 
-/** Outcome of one `claude auth login` run. */
-export type ClaudeCodeLoginResult = 'signed-in' | 'failed' | 'cancelled'
+/** Outcome of one CLI login; `terminal` means the login continues in a terminal window and its outcome is unknown. */
+export type CliLoginResult = 'signed-in' | 'failed' | 'cancelled' | 'terminal'
 
 /** Credential writes return a safe outcome without exposing Host diagnostics. */
 export type WelcomeSaveResult = { readonly ok: true } | { readonly ok: false }
@@ -55,20 +85,24 @@ export interface WelcomeOperations {
    * @returns completion after the workspace opens.
    */
   skip(): Promise<void>
-  /** @returns the Claude Code CLI's current sign-in state. */
-  claudeCodeStatus(): Promise<ClaudeCodeStatus>
-  /** @returns how the browser login started by the Claude Code CLI ended. */
-  claudeCodeSignIn(): Promise<ClaudeCodeLoginResult>
-  /** @param code - authorization code shown by the browser. @returns whether a running login received it. */
-  claudeCodeSubmitCode(code: string): Promise<boolean>
-  /** Stop the running Claude Code login. */
-  claudeCodeCancel(): Promise<void>
+  /** @param provider - CLI to read. @returns the CLI's current sign-in state. */
+  cliStatus(provider: CliProviderId): Promise<CliStatus>
+  /** @param provider - CLI to sign in to. @returns how the login started by the CLI ended. */
+  cliSignIn(provider: CliProviderId): Promise<CliLoginResult>
+  /**
+   * @param provider - CLI whose running login receives the code.
+   * @param code - authorization code shown by the browser.
+   * @returns whether a running login received it.
+   */
+  cliSubmitCode(provider: CliProviderId, code: string): Promise<boolean>
+  /** @param provider - CLI whose running login stops. */
+  cliCancel(provider: CliProviderId): Promise<void>
 }
 
 /** The renderer receives localized copy, login operations, and safe account snapshots. */
 export type WelcomeApi = DesktopLocale & WelcomeOperations & {
-  /** Whether the profile uses the Claude Code model route, which replaces the account and API-key pages. */
-  readonly claudeCode: boolean
+  /** Whether the profile uses the Claude Code model route, whose CLI sign-in choices replace the account and API-key pages. */
+  readonly cliLogin: boolean
   /** @param listener - safe account snapshot recipient. @returns subscription disposer. */
   onAccountState(listener: (state: AccountView) => void): () => void
 }
@@ -77,17 +111,17 @@ export type WelcomeApi = DesktopLocale & WelcomeOperations & {
 export interface WelcomeAuthentication {
   readonly loggedIn: boolean
   readonly hasApiKey: boolean
-  /** `absent` when the profile has no Claude Code model route; otherwise the Claude Code CLI's sign-in state. */
-  readonly claudeCode: 'absent' | ClaudeCodeStatus['state']
+  /** `absent` when the profile has no Claude Code model route; otherwise whether any offered CLI is signed in. */
+  readonly cli: 'absent' | 'signed-in' | 'signed-out'
 }
 
 /**
  * Decide whether a startup or sign-out requires the welcome entry.
- * A profile with the Claude Code route serves the workspace only through a signed-in Claude Code CLI.
+ * A profile with the Claude Code route opens the workspace directly once any offered CLI is signed in.
  * @param authentication - current account, independently stored API-key, and Claude Code facts.
  * @returns true only when the profile's model routes cannot serve the workspace.
  */
 export function needsWelcome(authentication: WelcomeAuthentication): boolean {
-  if (authentication.claudeCode !== 'absent') return authentication.claudeCode !== 'signed-in'
+  if (authentication.cli !== 'absent') return authentication.cli !== 'signed-in'
   return !authentication.loggedIn && !authentication.hasApiKey
 }

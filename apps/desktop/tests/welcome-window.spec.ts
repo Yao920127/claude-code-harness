@@ -46,10 +46,10 @@ const operations = {
   copySignInLink: async () => undefined,
   saveApiKey: () => Promise.resolve({ ok: true as const }),
   skip: () => Promise.resolve(),
-  claudeCodeStatus: async () => ({ state: 'signed-out' as const }),
-  claudeCodeSignIn: async () => 'signed-in' as const,
-  claudeCodeSubmitCode: async () => true,
-  claudeCodeCancel: async () => undefined,
+  cliStatus: async () => ({ state: 'signed-out' as const }),
+  cliSignIn: async () => 'signed-in' as const,
+  cliSubmitCode: async () => true,
+  cliCancel: async () => undefined,
 }
 
 describe('desktop welcome window', () => {
@@ -78,31 +78,34 @@ describe('desktop welcome window', () => {
     }
   })
 
-  it('starts the renderer in the Claude Code view only when asked', () => {
+  it('starts the renderer in the CLI sign-in view only when asked', () => {
     expect(welcomeWindowOptions('darwin', resolveDesktopLocale('en'), true).webPreferences?.additionalArguments)
-      .toEqual(['--dsh-welcome-locale=en', '--dsh-welcome-claude-code'])
+      .toEqual(['--dsh-welcome-locale=en', '--dsh-welcome-cli'])
   })
 
-  it('routes Claude Code sign-in actions from its own frame and rejects malformed codes', async () => {
+  it('routes CLI sign-in actions from its own frame and rejects unknown CLIs and malformed codes', async () => {
     const window = createWindow()
     electron.create.mockReturnValue(window)
-    const claudeCodeSubmitCode = vi.fn(operations.claudeCodeSubmitCode)
-    const claudeCodeCancel = vi.fn(operations.claudeCodeCancel)
-    await openWelcomeWindow(resolveDesktopLocale('en'), { ...operations, claudeCodeSubmitCode, claudeCodeCancel }, true)
-    expect(electron.create.mock.calls[0]![0]).toMatchObject({ webPreferences: { additionalArguments: ['--dsh-welcome-locale=en', '--dsh-welcome-claude-code'] } })
+    const cliStatus = vi.fn(operations.cliStatus)
+    const cliSubmitCode = vi.fn(operations.cliSubmitCode)
+    const cliCancel = vi.fn(operations.cliCancel)
+    await openWelcomeWindow(resolveDesktopLocale('en'), { ...operations, cliStatus, cliSubmitCode, cliCancel }, true)
+    expect(electron.create.mock.calls[0]![0]).toMatchObject({ webPreferences: { additionalArguments: ['--dsh-welcome-locale=en', '--dsh-welcome-cli'] } })
     const own = { sender: window.webContents, senderFrame: window.webContents.mainFrame }
-    const status = electron.handlers.get(WELCOME_IPC.claudeCodeStatus)!
-    await expect(status({ ...own, senderFrame: {} })).rejects.toThrow('unowned frame')
-    expect(await status(own)).toEqual({ state: 'signed-out' })
-    expect(await electron.handlers.get(WELCOME_IPC.claudeCodeSignIn)!(own)).toBe('signed-in')
-    const submit = electron.handlers.get(WELCOME_IPC.claudeCodeSubmitCode)!
-    expect(await submit(own, 'has space')).toBe(false)
-    expect(await submit(own, 42)).toBe(false)
-    expect(claudeCodeSubmitCode).not.toHaveBeenCalled()
-    expect(await submit(own, 'code#123')).toBe(true)
-    expect(claudeCodeSubmitCode).toHaveBeenCalledWith('code#123')
-    expect(await electron.handlers.get(WELCOME_IPC.claudeCodeCancel)!(own)).toBeUndefined()
-    expect(claudeCodeCancel).toHaveBeenCalledOnce()
+    const status = electron.handlers.get(WELCOME_IPC.cliStatus)!
+    await expect(status({ ...own, senderFrame: {} }, 'codex')).rejects.toThrow('unowned frame')
+    await expect(status(own, 'unknown-cli')).rejects.toThrow('invalid CLI')
+    expect(await status(own, 'codex')).toEqual({ state: 'signed-out' })
+    expect(cliStatus).toHaveBeenCalledWith('codex')
+    expect(await electron.handlers.get(WELCOME_IPC.cliSignIn)!(own, 'grok')).toBe('signed-in')
+    const submit = electron.handlers.get(WELCOME_IPC.cliSubmitCode)!
+    expect(await submit(own, 'claude-code', 'has space')).toBe(false)
+    expect(await submit(own, 'claude-code', 42)).toBe(false)
+    expect(cliSubmitCode).not.toHaveBeenCalled()
+    expect(await submit(own, 'claude-code', 'code#123')).toBe(true)
+    expect(cliSubmitCode).toHaveBeenCalledWith('claude-code', 'code#123')
+    expect(await electron.handlers.get(WELCOME_IPC.cliCancel)!(own, 'opencode')).toBeUndefined()
+    expect(cliCancel).toHaveBeenCalledWith('opencode')
   })
 
   it('waits for its local document and blocks renderer navigation', async () => {
@@ -210,13 +213,12 @@ describe('desktop welcome window', () => {
     expect(electron.handlers.size).toBe(0)
   })
 
-  it('shows the entry only when no route can serve the workspace, and requires a Claude Code sign-in when that route exists', () => {
-    expect(needsWelcome({ loggedIn: true, hasApiKey: false, claudeCode: 'absent' })).toBe(false)
-    expect(needsWelcome({ loggedIn: false, hasApiKey: false, claudeCode: 'absent' })).toBe(true)
-    expect(needsWelcome({ loggedIn: false, hasApiKey: true, claudeCode: 'absent' })).toBe(false)
-    expect(needsWelcome({ loggedIn: true, hasApiKey: true, claudeCode: 'absent' })).toBe(false)
-    expect(needsWelcome({ loggedIn: false, hasApiKey: false, claudeCode: 'signed-in' })).toBe(false)
-    expect(needsWelcome({ loggedIn: true, hasApiKey: true, claudeCode: 'signed-out' })).toBe(true)
-    expect(needsWelcome({ loggedIn: true, hasApiKey: true, claudeCode: 'unavailable' })).toBe(true)
+  it('shows the entry only when no route can serve the workspace, and opens it on a CLI profile only while no CLI is signed in', () => {
+    expect(needsWelcome({ loggedIn: true, hasApiKey: false, cli: 'absent' })).toBe(false)
+    expect(needsWelcome({ loggedIn: false, hasApiKey: false, cli: 'absent' })).toBe(true)
+    expect(needsWelcome({ loggedIn: false, hasApiKey: true, cli: 'absent' })).toBe(false)
+    expect(needsWelcome({ loggedIn: true, hasApiKey: true, cli: 'absent' })).toBe(false)
+    expect(needsWelcome({ loggedIn: false, hasApiKey: false, cli: 'signed-in' })).toBe(false)
+    expect(needsWelcome({ loggedIn: true, hasApiKey: true, cli: 'signed-out' })).toBe(true)
   })
 })

@@ -5,17 +5,17 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { app, BrowserWindow, ipcMain, type BrowserWindowConstructorOptions, type IpcMainInvokeEvent } from 'electron'
 import type { DesktopLocale } from './locale.ts'
-import { WELCOME_IPC, type WelcomeOperations } from './welcome-api.ts'
+import { WELCOME_IPC, isCliProvider, type CliProviderId, type WelcomeOperations } from './welcome-api.ts'
 
 /**
  * Resolve the fixed-size welcome window's native material and controls.
  * @param platform - operating system hosting Electron.
  * @param locale - shell-owned localized copy.
- * @param claudeCode - whether the renderer starts in the Claude Code sign-in view.
+ * @param cliLogin - whether the renderer starts in the CLI sign-in view.
  * @returns sandboxed window options with a locale and view-only preload.
  */
 export function welcomeWindowOptions(
-  platform: NodeJS.Platform, locale: DesktopLocale, claudeCode = false,
+  platform: NodeJS.Platform, locale: DesktopLocale, cliLogin = false,
 ): BrowserWindowConstructorOptions {
   return {
     width: 600,
@@ -41,7 +41,7 @@ export function welcomeWindowOptions(
     } as const : {}),
     webPreferences: {
       preload: fileURLToPath(new URL('./preload-welcome.cjs', import.meta.url)),
-      additionalArguments: [`--dsh-welcome-locale=${locale.id}`, ...(claudeCode ? ['--dsh-welcome-claude-code'] : [])],
+      additionalArguments: [`--dsh-welcome-locale=${locale.id}`, ...(cliLogin ? ['--dsh-welcome-cli'] : [])],
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
@@ -57,11 +57,11 @@ let disposeActiveHandlers: (() => void) | undefined
  * Replaces IPC ownership immediately; the caller closes the previous native window.
  * @param locale - shell-owned localized copy.
  * @param operations - credential write and this-launch-only skip actions.
- * @param claudeCode - whether the renderer starts in the Claude Code sign-in view.
+ * @param cliLogin - whether the renderer starts in the CLI sign-in view.
  * @returns the visible window; a failed load destroys it before rejecting.
  */
-export async function openWelcomeWindow(locale: DesktopLocale, operations: WelcomeOperations, claudeCode = false): Promise<BrowserWindow> {
-  const window = new BrowserWindow(welcomeWindowOptions(process.platform, locale, claudeCode))
+export async function openWelcomeWindow(locale: DesktopLocale, operations: WelcomeOperations, cliLogin = false): Promise<BrowserWindow> {
+  const window = new BrowserWindow(welcomeWindowOptions(process.platform, locale, cliLogin))
   disposeActiveHandlers?.()
   let active = true
   const disposeHandlers = (): void => {
@@ -69,7 +69,7 @@ export async function openWelcomeWindow(locale: DesktopLocale, operations: Welco
     active = false
     for (const channel of [
       WELCOME_IPC.takeNotice, WELCOME_IPC.saveApiKey, WELCOME_IPC.skip, WELCOME_IPC.start, WELCOME_IPC.cancel, WELCOME_IPC.copyLink,
-      WELCOME_IPC.claudeCodeStatus, WELCOME_IPC.claudeCodeSignIn, WELCOME_IPC.claudeCodeSubmitCode, WELCOME_IPC.claudeCodeCancel,
+      WELCOME_IPC.cliStatus, WELCOME_IPC.cliSignIn, WELCOME_IPC.cliSubmitCode, WELCOME_IPC.cliCancel,
     ]) {
       ipcMain.removeHandler(channel)
     }
@@ -102,14 +102,19 @@ export async function openWelcomeWindow(locale: DesktopLocale, operations: Welco
     if (typeof id !== 'string') throw new Error('desktop welcome: invalid attempt')
     return operations.copySignInLink(id as SignInAttemptId)
   })
-  ipcMain.handle(WELCOME_IPC.claudeCodeStatus, async (event) => { assertSender(event); return operations.claudeCodeStatus() })
-  ipcMain.handle(WELCOME_IPC.claudeCodeSignIn, async (event) => { assertSender(event); return operations.claudeCodeSignIn() })
-  ipcMain.handle(WELCOME_IPC.claudeCodeSubmitCode, async (event, code: unknown) => {
+  const provider = (value: unknown): CliProviderId => {
+    if (!isCliProvider(value)) throw new Error('desktop welcome: invalid CLI')
+    return value
+  }
+  ipcMain.handle(WELCOME_IPC.cliStatus, async (event, id: unknown) => { assertSender(event); return operations.cliStatus(provider(id)) })
+  ipcMain.handle(WELCOME_IPC.cliSignIn, async (event, id: unknown) => { assertSender(event); return operations.cliSignIn(provider(id)) })
+  ipcMain.handle(WELCOME_IPC.cliSubmitCode, async (event, id: unknown, code: unknown) => {
     assertSender(event)
+    const cli = provider(id)
     if (typeof code !== 'string' || !/^[\x21-\x7e]+$/.test(code)) return false
-    return operations.claudeCodeSubmitCode(code)
+    return operations.cliSubmitCode(cli, code)
   })
-  ipcMain.handle(WELCOME_IPC.claudeCodeCancel, async (event) => { assertSender(event); await operations.claudeCodeCancel() })
+  ipcMain.handle(WELCOME_IPC.cliCancel, async (event, id: unknown) => { assertSender(event); await operations.cliCancel(provider(id)) })
   window.once('closed', disposeHandlers)
   window.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   window.webContents.on('will-navigate', (event) => { event.preventDefault() })

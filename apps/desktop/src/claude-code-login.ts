@@ -3,7 +3,7 @@
 import { spawn, type ChildProcess } from 'node:child_process'
 import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
-import type { ClaudeCodeLoginResult, ClaudeCodeStatus } from './welcome-api.ts'
+import type { CliLoginResult, CliStatus } from './welcome-api.ts'
 
 const STATUS_TIMEOUT_MS = 20_000
 // The Claude Code model route runs the CLI with these names removed, so status reports the login the route uses.
@@ -44,7 +44,7 @@ export function claudeCodeEnvironment(environment: NodeJS.ProcessEnv): NodeJS.Pr
  * @param output - Complete standard output.
  * @returns The reported sign-in state, or `unavailable` for output without a boolean `loggedIn`.
  */
-export function parseClaudeCodeStatus(output: string): ClaudeCodeStatus {
+export function parseClaudeCodeStatus(output: string): CliStatus {
   let value: unknown
   try {
     value = JSON.parse(output)
@@ -84,7 +84,7 @@ export class ClaudeCodeLogin {
    * Run `claude auth status --json`; it reads the stored login without contacting a model.
    * @returns The current sign-in state; a missing CLI, start failure, or timeout is `unavailable`.
    */
-  status(): Promise<ClaudeCodeStatus> {
+  status(): Promise<CliStatus> {
     const executable = this.executable
     if (executable === undefined) return Promise.resolve({ state: 'unavailable' })
     return new Promise((resolve) => {
@@ -105,7 +105,7 @@ export class ClaudeCodeLogin {
    * A second call while one login runs joins nothing and reports `failed`.
    * @returns How the login process ended.
    */
-  signIn(): Promise<ClaudeCodeLoginResult> {
+  signIn(): Promise<CliLoginResult> {
     const executable = this.executable
     if (executable === undefined || this.login !== undefined) return Promise.resolve('failed')
     this.cancelled = false
@@ -117,7 +117,7 @@ export class ClaudeCodeLogin {
       child.stdin.on('error', (_closedInput: Error) => {
         // The CLI may exit before a pasted code reaches it; its exit status reports the outcome.
       })
-      const settle = (result: ClaudeCodeLoginResult): void => {
+      const settle = (result: CliLoginResult): void => {
         if (this.login === child) this.login = undefined
         resolve(result)
       }

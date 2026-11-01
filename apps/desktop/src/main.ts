@@ -36,8 +36,9 @@ import { serveWebDocument, authenticateWebHost, forwardWebRequest } from './web-
 import { DesktopFatalRecovery } from './fatal-recovery.ts'
 import { pruneCrashReports, RendererConsoleTail, writeCrashReport, type CrashReportSource } from './crash-report.ts'
 import { openWelcomeWindow } from './welcome-window.ts'
-import { ClaudeCodeLogin, claudeCodeExecutable } from './claude-code-login.ts'
-import { WELCOME_IPC, needsWelcome, type WelcomeAuthentication, type WelcomeNotice } from './welcome-api.ts'
+import { claudeCodeExecutable } from './claude-code-login.ts'
+import { createCliLogins } from './cli-login.ts'
+import { CLI_PROVIDERS, WELCOME_IPC, needsWelcome, type WelcomeAuthentication, type WelcomeNotice } from './welcome-api.ts'
 import { connectDesktopWelcome, type DesktopWelcomeBackend, type WelcomeState } from './welcome-backend.ts'
 import { DesktopUpdateJournal } from './update-journal.ts'
 import { DesktopUpdatePreparationError } from './update-error.ts'
@@ -321,14 +322,18 @@ async function main(): Promise<void> {
     : join(process.resourcesPath, 'runtime', 'primary-runtime')
   const activeProject = paths.profile
   const manager = new DesktopProjectManager(paths, resources)
-  const claudeCode = new ClaudeCodeLogin(claudeCodeExecutable(resources.dsh, process.platform, process.arch))
+  const cliLogins = createCliLogins(claudeCodeExecutable(resources.dsh, process.platform, process.arch), {
+    environment: process.env, home: app.getPath('home'), platform: process.platform,
+  })
+  const anyCliSignedIn = async (): Promise<boolean> =>
+    (await Promise.all(CLI_PROVIDERS.map(id => cliLogins[id].status()))).some(status => status.state === 'signed-in')
   let claudeCodeRoute = false
   const welcomeAuthentication = async (state: WelcomeState): Promise<WelcomeAuthentication> => {
     claudeCodeRoute = state.claudeCodeRoute
     return {
       loggedIn: state.loggedIn,
       hasApiKey: state.hasApiKey,
-      claudeCode: state.claudeCodeRoute ? (await claudeCode.status()).state : 'absent',
+      cli: !state.claudeCodeRoute ? 'absent' : await anyCliSignedIn() ? 'signed-in' : 'signed-out',
     }
   }
   let quitting = false
@@ -1133,13 +1138,13 @@ async function main(): Promise<void> {
           return { ok: true }
         },
         skip: enterWorkspace,
-        claudeCodeStatus: () => claudeCode.status(),
-        claudeCodeSignIn: () => claudeCode.signIn(),
-        claudeCodeSubmitCode: code => Promise.resolve(claudeCode.submitCode(code)),
-        claudeCodeCancel: () => { claudeCode.cancel(); return Promise.resolve() },
+        cliStatus: provider => cliLogins[provider].status(),
+        cliSignIn: provider => cliLogins[provider].signIn(),
+        cliSubmitCode: (provider, code) => Promise.resolve(cliLogins[provider].submitCode(code)),
+        cliCancel: (provider) => { cliLogins[provider].cancel(); return Promise.resolve() },
       }, claudeCodeRoute)
       const window = welcomeWindow
-      window.once('closed', () => { claudeCode.cancel() })
+      window.once('closed', () => { for (const id of CLI_PROVIDERS) cliLogins[id].cancel() })
       window.once('closed', () => {
         void welcomeBackend?.account.state().then((state) => {
           if (state.attempt !== null && !enteredWorkspace) return welcomeBackend?.account.cancel(state.attempt.id)

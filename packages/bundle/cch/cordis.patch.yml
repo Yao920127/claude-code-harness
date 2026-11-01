@@ -23,7 +23,7 @@
 - id: ui-brand-official
   disabled: true
 
-# CCH signs in only through Claude Code, so the DeepSeek account settings card is not offered.
+# CCH signs in through coding CLIs such as Claude Code, so the DeepSeek account settings card is not offered.
 - id: ui-settings-account
   disabled: true
 

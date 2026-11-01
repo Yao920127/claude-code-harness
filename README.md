@@ -12,7 +12,7 @@ Claude Code Harness (CCH) is a fork of [DeepSeek Harness](https://github.com/dee
 - **Claude Code as the default** — the [`dsh-cch`](packages/bundle/cch/README.md) bundle makes Claude Code the default model and removes the DeepSeek model routes and DeepSeek account sign-in.
 - **Traditional Chinese interface** — [`dsh-client-locale-zh-hant`](packages/client/locale-zh-hant/README.md) adds a 繁體中文 language that converts the Simplified Chinese dictionaries with OpenCC, and the app starts in it by default; the desktop menus, dialogs, and sign-in screen use Traditional Chinese too.
 - **Claude look** — [`dsh-client-ui-brand-claude`](packages/client/ui-brand-claude/README.md) shows the Claude mark and applies a cream-and-coral palette with Inter and EB Garamond, following [DESIGN.md](DESIGN.md). Light, dark, and system appearance all work.
-- **Desktop app** — the Electron app is named Claude Code Harness. It checks your Claude Code sign-in at startup and offers the official browser sign-in when you are signed out. It keeps its data in `~/.cch`, separate from a DeepSeek Harness installation, and builds as an unsigned macOS disk image.
+- **Desktop app** — the Electron app is named Claude Code Harness. At startup it checks the sign-in of Claude Code, Codex, Antigravity, Grok, and OpenCode; when none is signed in it offers each CLI's own login, and you can also continue without signing in. It keeps its data in `~/.cch`, separate from a DeepSeek Harness installation, and builds as an unsigned macOS disk image.
 
 ## Before you start
 
@@ -33,7 +33,7 @@ pnpm install
 pnpm run package:desktop:mac:arm64:unsigned
 ```
 
-The disk image is written to `apps/desktop/.desktop-build/targets/mac-arm64/unsigned-artifacts/`. Drag Claude Code Harness to Applications. Because the app has no Apple Developer signature, macOS blocks its first launch: right-click the app in Finder and choose **Open**, or allow it in **System Settings → Privacy & Security**. If you are not signed in to Claude Code, the app shows a sign-in screen before the workspace. See the [desktop README](apps/desktop/README.md) for packaging details.
+The disk image is written to `apps/desktop/.desktop-build/targets/mac-arm64/unsigned-artifacts/`. Drag Claude Code Harness to Applications. Because the app has no Apple Developer signature, macOS blocks its first launch: right-click the app in Finder and choose **Open**, or allow it in **System Settings → Privacy & Security**. If none of those CLIs is signed in, the app shows a sign-in screen you can skip before the workspace. See the [desktop README](apps/desktop/README.md) for packaging details.
 
 ### Run from source
 

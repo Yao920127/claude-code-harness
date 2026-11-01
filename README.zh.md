@@ -12,7 +12,7 @@ Claude Code Harness（CCH）是 [DeepSeek Harness](https://github.com/deepseek-a
 - **預設使用 Claude Code**——[`dsh-cch`](packages/bundle/cch/README.zh.md) bundle 把 Claude Code 設為預設模型，並移除 DeepSeek 模型路由與 DeepSeek 帳號登入。
 - **繁體中文介面**——[`dsh-client-locale-zh-hant`](packages/client/locale-zh-hant/README.zh.md) 新增「繁體中文」語言，以 OpenCC 轉換簡體中文詞典，App 預設即使用繁體中文；桌面 App 的選單、對話框與登入畫面也使用繁體中文。
 - **Claude 外觀**——[`dsh-client-ui-brand-claude`](packages/client/ui-brand-claude/README.zh.md) 顯示 Claude 標誌，並依照 [DESIGN.md](DESIGN.md) 套用奶油色與珊瑚色配色，以及 Inter 與 EB Garamond 字體。淺色、深色與跟隨系統外觀都可使用。
-- **桌面 App**——Electron App 名稱為 Claude Code Harness。啟動時會檢查 Claude Code 登入狀態，未登入時提供官方瀏覽器登入。資料存放在 `~/.cch`，與 DeepSeek Harness 安裝分開，並可打包成未簽名的 macOS 磁碟映像檔。
+- **桌面 App**——Electron App 名稱為 Claude Code Harness。啟動時會檢查 Claude Code、Codex、Antigravity、Grok 與 OpenCode 的登入狀態；都未登入時提供各 CLI 自己的登入，也可以不登入直接繼續。資料存放在 `~/.cch`，與 DeepSeek Harness 安裝分開，並可打包成未簽名的 macOS 磁碟映像檔。
 
 ## 開始之前
 
@@ -35,7 +35,7 @@ pnpm install
 pnpm run package:desktop:mac:arm64:unsigned
 ```
 
-磁碟映像檔會輸出到 `apps/desktop/.desktop-build/targets/mac-arm64/unsigned-artifacts/`。把 Claude Code Harness 拖到「應用程式」。由於 App 沒有 Apple 開發者簽名，macOS 會阻擋第一次開啟：請在 Finder 中對 App 按右鍵並選擇「打開」，或到「系統設定 → 隱私權與安全性」允許開啟。若尚未登入 Claude Code，App 會在進入工作區前顯示登入畫面。打包細節見[桌面 README](apps/desktop/README.zh.md)。
+磁碟映像檔會輸出到 `apps/desktop/.desktop-build/targets/mac-arm64/unsigned-artifacts/`。把 Claude Code Harness 拖到「應用程式」。由於 App 沒有 Apple 開發者簽名，macOS 會阻擋第一次開啟：請在 Finder 中對 App 按右鍵並選擇「打開」，或到「系統設定 → 隱私權與安全性」允許開啟。若上述 CLI 都未登入，App 會在進入工作區前顯示可略過的登入畫面。打包細節見[桌面 README](apps/desktop/README.zh.md)。
 
 <a id="run-from-source"></a>
 

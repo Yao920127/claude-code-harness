@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/bug-fix/2026-08-20-attachment-read-quarantine.md
 /agent-note-quarantine-unreadable-historical-attachments:
   en: 044cc37c349ad018
-  zh: ba3336ebf923aeeb
+  zh: 56c0abbc7e350c26
 /agent-note-quarantine-unreadable-historical-attachments/problem:
   en: 8652fbd5afd34170
-  zh: b6399f48311b0a7d
+  zh: 20d5c045a5b81a76
 /agent-note-quarantine-unreadable-historical-attachments/proposal:
   en: 2a7c272551d37bba
-  zh: cf58b062d716d301
+  zh: adb899c67ae5bd2a
 /agent-note-quarantine-unreadable-historical-attachments/alternatives-considered:
   en: bac910fed94331cd
-  zh: 6e9ea388c407e3a7
+  zh: 901ee2a8fb3bd833
 /agent-note-quarantine-unreadable-historical-attachments/acceptance-criteria:
   en: 862b6f6077457010
-  zh: 0b4fad8dc4cb0f46
+  zh: eb7f77cdfa9590cf
 /agent-note-quarantine-unreadable-historical-attachments/risks:
   en: 17a076b575e981e9
-  zh: 15961b94d93cffac
+  zh: 51947545cbbb5284

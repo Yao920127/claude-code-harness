@@ -1,4 +1,4 @@
-# Agent Note: 移除 Desktop 生产启动前的核心包清理
+# Agent Note: 移除 Desktop 生產啟動前的核心包清理
 
 Status: implemented
 
@@ -6,35 +6,35 @@ Status: implemented
 
 ## Problem
 
-2026-09-15 起，生产版 Desktop 在启动 Host 前按运行时描述符列出的包名清理 profile：删除 `$DSH_HOME/profiles/desktop/node_modules` 里的同名条目，剪掉 manifest 对这些名字的依赖声明与 pnpm overrides，包状态变化时丢弃锁文件，并按 `desktop-runtime-state.json` 记录一次性移除开发期链接。它针对两类残留：更早的 Desktop 曾把核心包做成本地 tarball 用 pnpm 装进 profile 并写入声明、overrides 与锁文件；Link 后端的开发模式曾把安装闭包投影进同一个 profile 的 `node_modules`。在最近者优先的解析下，这些副本会压过应用自带的运行时，把旧 Web 前端与新插件组合在一起。
+2026-09-15 起，生產版 Desktop 在啟動 Host 前按執行時描述符列出的包名清理 profile：刪除 `$DSH_HOME/profiles/desktop/node_modules` 裡的同名條目，剪掉 manifest 對這些名字的依賴宣告與 pnpm overrides，包狀態變化時丟棄鎖檔案，並按 `desktop-runtime-state.json` 記錄一次性移除開發期連結。它針對兩類殘留：更早的 Desktop 曾把核心包做成本地 tarball 用 pnpm 裝進 profile 並寫入宣告、overrides 與鎖檔案；Link 後端的開發模式曾把安裝閉包投影進同一個 profile 的 `node_modules`。在最近者優先的解析下，這些副本會壓過應用自帶的執行時，把舊 Web 前端與新外掛組合在一起。
 
-这两类残留只存在于内部开发与测试机器上，Desktop 没有对外发布过。运行时随应用打包后，新 profile 不再包含核心包；[Link 后端删除](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)后，开发模式不再向 profile 写任何链接。清理每次生产启动都要重跑，并与下一次 pnpm 操作按保留的依赖重新安装形成拉锯。
+這兩類殘留只存在於內部開發與測試機器上，Desktop 沒有對外發布過。執行時隨應用打包後，新 profile 不再包含核心包；[Link 後端刪除](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)後，開發模式不再向 profile 寫任何連結。清理每次生產啟動都要重跑，並與下一次 pnpm 操作按保留的依賴重新安裝形成拉鋸。
 
 ## Decision
 
-删除 `apps/desktop/src/profile-core-cleanup.ts`、`apps/desktop/src/profile-packages.ts` 及其两个 spec。`DesktopProjectManager.applyRelease` 校验运行时描述符、迁移 profile 设置、创建 profile 文件，并通过共享的 `removeLinkProjections` 删除 Link 后端启动写下的投影；除此之外，生产与开发启动都不改动 profile 的 `node_modules`、manifest、overrides、锁文件与 `desktop-runtime-state.json`。
+刪除 `apps/desktop/src/profile-core-cleanup.ts`、`apps/desktop/src/profile-packages.ts` 及其兩個 spec。`DesktopProjectManager.applyRelease` 驗證執行時描述符、遷移 profile 設定、建立 profile 檔案，並透過共享的 `removeLinkProjections` 刪除 Link 後端啟動寫下的投影；除此之外，生產與開發啟動都不改動 profile 的 `node_modules`、manifest、overrides、鎖檔案與 `desktop-runtime-state.json`。
 
-profile 内的解析按[查找顺序 Note](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)：profile 自己 `node_modules` 里的包最近者优先，本体包名在 `$DSH_HOME/profiles/node_modules` 的位置由 generation 占据。装进 profile 的包若在 `dependencies` 里声明了 `@deepseek-ai/*`，pnpm 会把副本装进 profile，这些副本按其自身版本运行。官方包只把纯函数包放在 `dependencies`，带模块级身份的包一律声明为 peer；第三方插件把身份敏感的 dsh 包写成实依赖，是该插件自身的打包选择。
+profile 內的解析按[查詢順序 Note](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)：profile 自己 `node_modules` 裡的包最近者優先，本體包名在 `$DSH_HOME/profiles/node_modules` 的位置由 generation 佔據。裝進 profile 的包若在 `dependencies` 裡宣告瞭 `@deepseek-ai/*`，pnpm 會把副本裝進 profile，這些副本按其自身版本執行。官方包只把純函式包放在 `dependencies`，帶模組級身份的包一律宣告為 peer；第三方外掛把身份敏感的 dsh 包寫成實依賴，是該外掛自身的打包選擇。
 
-放弃的能力：旧版 Desktop 装进 profile 的核心包副本及其声明需要手工删除一次；`desktop-runtime-state.json` 不再被读取或删除。Link 后端写下的投影由共享的 profile 加载一次性删除，见[查找顺序 Note](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)。
+放棄的能力：舊版 Desktop 裝進 profile 的核心包副本及其宣告需要手工刪除一次；`desktop-runtime-state.json` 不再被讀取或刪除。Link 後端寫下的投影由共享的 profile 載入一次性刪除，見[查詢順序 Note](../architecture/2026-09-19-profile-resolution-lookup-order.zh.md)。
 
-重新引入的条件：外部用户的 profile 曾被某个发布版 Desktop 写入核心包副本，或官方包改变依赖声明约定，使 profile 内出现与运行时争抢身份的副本。
+重新引入的條件：外部使用者的 profile 曾被某個釋出版 Desktop 寫入核心包副本，或官方包改變依賴宣告約定，使 profile 內出現與執行時爭搶身份的副本。
 
 ## Alternatives considered
 
-**保留原清理。** 它服务的残留不再产生，却在每次生产启动删除目录、剪声明并丢弃锁文件，与随后的 pnpm 操作反复拉锯。
+**保留原清理。** 它服務的殘留不再產生，卻在每次生產啟動刪除目錄、剪宣告並丟棄鎖檔案，與隨後的 pnpm 操作反覆拉鋸。
 
-**只删除 profile `node_modules` 里的同名目录，不动声明与锁文件。** 2026-09-15 的决策已经否决：pnpm 会按保留的声明与 overrides 重装相同的旧包。
+**只刪除 profile `node_modules` 裡的同名目錄，不動宣告與鎖檔案。** 2026-09-15 的決策已經否決：pnpm 會按保留的宣告與 overrides 重灌相同的舊包。
 
-**让 generation 中的 `@deepseek-ai/*` 条目绝对优先于 profile 内的同名副本。** 这会覆盖插件自带的版本，是解析规则的新决策，不在移除清理的范围内。
+**讓 generation 中的 `@deepseek-ai/*` 條目絕對優先於 profile 內的同名副本。** 這會覆蓋外掛自帶的版本，是解析規則的新決策，不在移除清理的範圍內。
 
-**只在安装器中清理。** 2026-09-15 的决策已经否决：遗漏其他 profile，也管不到安装后重新产生的副本。
+**只在安裝器中清理。** 2026-09-15 的決策已經否決：遺漏其他 profile，也管不到安裝後重新產生的副本。
 
 ## Verification
 
-- [project-manager.spec.ts](../../../../apps/desktop/tests/project-manager.spec.ts) 断言一次启动准备后，profile 里已安装的核心包目录、第三方插件目录、manifest 声明、`desktop-runtime-state.json` 与锁文件逐字节不变。
-- 仓库中不再有 `cleanProfileCorePackages`、`migrateDesktopProfileLinks`、`CLEAN_PROFILE_CORE_PACKAGES` 与 `DESKTOP_PROFILE_STATE` 的引用。
+- [project-manager.spec.ts](../../../../apps/desktop/tests/project-manager.spec.ts) 斷言一次啟動準備後，profile 裡已安裝的核心包目錄、第三方外掛目錄、manifest 宣告、`desktop-runtime-state.json` 與鎖檔案逐位元組不變。
+- 儲存庫中不再有 `cleanProfileCorePackages`、`migrateDesktopProfileLinks`、`CLEAN_PROFILE_CORE_PACKAGES` 與 `DESKTOP_PROFILE_STATE` 的引用。
 
 ## Consequences
 
-买到的：生产启动不再写 profile，没有临时启用开关，Desktop 与 CLI 对 profile 内副本采用同一套规则。付出的：旧版 Desktop 装进 profile 的核心包副本靠手工清理；第三方插件以实依赖带进 profile 的 dsh 副本按其自身版本运行。
+買到的：生產啟動不再寫 profile，沒有臨時啟用開關，Desktop 與 CLI 對 profile 內副本採用同一套規則。付出的：舊版 Desktop 裝進 profile 的核心包副本靠手工清理；第三方外掛以實依賴帶進 profile 的 dsh 副本按其自身版本執行。

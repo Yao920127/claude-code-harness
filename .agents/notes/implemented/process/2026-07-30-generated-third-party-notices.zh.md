@@ -1,61 +1,61 @@
-# Agent Note: 生成的第三方声明
+# Agent Note: 生成的第三方宣告
 
 Status: implemented
 
 [English](2026-07-30-generated-third-party-notices.md) | 中文
 
-## 问题
+## 問題
 
-本仓库开源需要披露所依赖的第三方软件及各自的许可证。这份披露必须完整，必须随依赖变化保持为真，还必须给出读者用得上的信息：哪些包最终会进到用户机器上，哪些只用于构建和测试。
+本儲存庫開源需要披露所依賴的第三方軟體及各自的許可證。這份披露必須完整，必須隨依賴變化保持為真，還必須給出讀者用得上的資訊：哪些包最終會進到使用者機器上，哪些只用於建置和測試。
 
-手写清单无法长期满足其中任何一条。约一百行从各 manifest（元数据清单）推导出来的包名与许可证标识，只要有依赖新增、移除或换用许可证就会悄悄失真，而没有任何检查会察觉。
+手寫清單無法長期滿足其中任何一條。約一百行從各 manifest（中繼資料清單）推匯出來的包名與許可證標識，只要有依賴新增、移除或換用許可證就會悄悄失真，而沒有任何檢查會察覺。
 
-## 决策
+## 決策
 
-[`THIRD_PARTY_NOTICES.md`](../../../../THIRD_PARTY_NOTICES.md) 由 [`scripts/gen-third-party-notices.ts`](../../../../scripts/gen-third-party-notices.ts) 依据各工作区 manifest、`vendor/README.md`、`pyproject.toml`、`pnpm-workspace.yaml` 与 [共享运行时锁文件](../../../../scripts/primary-runtime/lock.json)生成。根 README 双语两侧都从「许可证」一节链到该文件。
+[`THIRD_PARTY_NOTICES.md`](../../../../THIRD_PARTY_NOTICES.md) 由 [`scripts/gen-third-party-notices.ts`](../../../../scripts/gen-third-party-notices.ts) 依據各工作區 manifest、`vendor/README.md`、`pyproject.toml`、`pnpm-workspace.yaml` 與 [共享執行時鎖檔案](../../../../scripts/primary-runtime/lock.json)生成。根 README 雙語兩側都從「許可證」一節鏈到該檔案。
 
-**新鲜度会得到维护，而非仅靠校验。** 只要暂存了生成器的任一输入——任何 manifest、工作区声明、根锁文件或共享运行时锁文件、`vendor/README.md`、某个 `pyproject.toml`、生成器自身，或持有构建期 pin 的脚本——pre-commit 任务就会重新生成该文件并将其暂存，改依赖的人不必事后再折返跑一次生成器。已提交的字节随后由 [`scripts/gen-third-party-notices.spec.ts`](../../../../scripts/gen-third-party-notices.spec.ts) 断言，而测试 lane 本就会跑这个文件——这项校验不增加门禁进程、不占调度位、也不新增 CI 步骤。需要单独校验时，`pnpm run verify-third-party-notices` 仍然可用。
+**新鮮度會得到維護，而非僅靠驗證。** 只要暫存了生成器的任一輸入——任何 manifest、工作區宣告、根鎖檔案或共享執行時鎖檔案、`vendor/README.md`、某個 `pyproject.toml`、生成器自身，或持有建置期 pin 的腳本——pre-commit 任務就會重新生成該檔案並將其暫存，改依賴的人不必事後再折返跑一次生成器。已提交的位元組隨後由 [`scripts/gen-third-party-notices.spec.ts`](../../../../scripts/gen-third-party-notices.spec.ts) 斷言，而測試 lane 本就會跑這個檔案——這項驗證不增加門禁程序、不佔排程位、也不新增 CI 步驟。需要單獨驗證時，`pnpm run verify-third-party-notices` 仍然可用。
 
-有一处触发缺口是接受而非绕过的：lefthook 只检视磁盘上存在的文件，因此**删除** manifest 不会触发任何任务，移除一个包会落到测试 lane 的断言上。重构暂存文件列表以纳入删除的做法不成立——无论怎么给列表，lefthook 都会拿工作树过滤一遍。这个场景正由断言兜底。
+有一處觸發缺口是接受而非繞過的：lefthook 只檢視磁碟上存在的檔案，因此**刪除** manifest 不會觸發任何任務，移除一個包會落到測試 lane 的斷言上。重構暫存檔案列表以納入刪除的做法不成立——無論怎麼給列表，lefthook 都會拿工作樹過濾一遍。這個情境正由斷言後備。
 
-文件默认只披露**直接**依赖；完整的 npm 与 Python SDK 闭包保留在各自锁文件中。两组独立分发的载荷会明确列出：`@anthropic-ai/claude-agent-sdk` 声明的官方 Claude 可执行包，以及共享运行时锁文件 `pythonPackages` 中的每个分发包。内置条目包含归一化名称、精确版本和已记录的许可证元数据；元数据缺失、归一化后名称重复或版本冲突都会使生成失败。共享 wheel 集合独立于 `python/` 下的 manifest，仅扫描后者会遗漏已打包的 Office 库。内置分发包同样通过运行时许可证检查，其中包括 Pillow 与 typing-extensions 声明的宽松许可证标识 `MIT-CMU` 和 `PSF-2.0`。
+檔案預設只披露**直接**依賴；完整的 npm 與 Python SDK 閉包保留在各自鎖檔案中。兩組獨立分發的載荷會明確列出：`@anthropic-ai/claude-agent-sdk` 宣告的官方 Claude 可執行包，以及共享執行時鎖檔案 `pythonPackages` 中的每個分發包。內建條目包含歸一化名稱、精確版本和已記錄的許可證中繼資料；中繼資料缺失、歸一化後名稱重複或版本衝突都會使生成失敗。共享 wheel 集合獨立於 `python/` 下的 manifest，僅掃描後者會遺漏已打包的 Office 庫。內建分發包同樣透過執行時許可證檢查，其中包括 Pillow 與 typing-extensions 宣告的寬鬆許可證標識 `MIT-CMU` 和 `PSF-2.0`。
 
-**分层依据是分发内容，而非 manifest 字段名。** 安装的运行时库由 `DEV_ONLY_AREAS` 之外的 `dependencies` 或 `optionalDependencies` 识别；排除区域为根 manifest、`packages/test-support/`、`packages/test-support/client-runtime/`、`website/`、`native/`。发布所用的 tsdown 与 Vite 配置解析到的浏览器输入也属于运行时，即使它们位于 `devDependencies`；[浏览器第三方构建输入](2026-09-08-browser-third-party-build-inputs.zh.md)拥有这项分类。测试支撑依赖不会仅因字段写成 `dependencies` 就被交付，而生成器显式披露 `tsx`，因为源码启动通过其 ESM 钩子执行。
+**分層依據是分發內容，而非 manifest 欄位名。** 安裝的執行時庫由 `DEV_ONLY_AREAS` 之外的 `dependencies` 或 `optionalDependencies` 識別；排除區域為根 manifest、`packages/test-support/`、`packages/test-support/client-runtime/`、`website/`、`native/`。釋出所用的 tsdown 與 Vite 設定解析到的瀏覽器輸入也屬於執行時，即使它們位於 `devDependencies`；[瀏覽器第三方建置輸入](2026-09-08-browser-third-party-build-inputs.zh.md)擁有這項分類。測試支撐依賴不會僅因欄位寫成 `dependencies` 就被交付，而生成器顯式披露 `tsx`，因為原始碼啟動透過其 ESM 掛鉤執行。
 
-运行时层刻意覆盖**所有可挂载的插件**，而不止 CLI、Web UI 与 Python 运行时默认加载的那些。从源码运行时，用户可以通过 `cordis.yml` 挂载任何插件包；因此，`@modelcontextprotocol/sdk` 与 OpenTelemetry 系列即使没有任何默认装配引入，也会触达真实用户。对法务披露而言，披露不足才是代价更高的那个方向。
+執行時層刻意覆蓋**所有可掛載的外掛**，而不止 CLI、Web UI 與 Python 執行時預設載入的那些。從原始碼執行時，使用者可以透過 `cordis.yml` 掛載任何外掛包；因此，`@modelcontextprotocol/sdk` 與 OpenTelemetry 系列即使沒有任何預設裝配引入，也會觸達真實使用者。對法務披露而言，披露不足才是代價更高的那個方向。
 
-manifest 集合由根 `pnpm-workspace.yaml` 声明的 `packages:` 成员派生，其中包括 Landlock 工作区及其公开包，因此新增成员区域在声明当天就会被读取，而不必等谁想起来去补一份列表。许可证与仓库地址取自根工作区已安装的 pnpm store 和包本地链接场；某个包两处都解析不到时直接失败，而不是留下空单元格。`OVERRIDES` 收录已发布 manifest 答不上来的包：用 Rust 构建、发布时省略 `license` 字段的 npm 可执行包，以及 `modelcontextprotocol/servers` 系列——该仓库正处在 MIT 向 Apache-2.0 的重新许可过程中，实际条款按贡献逐条而定。运行时依赖的许可证若不在宽松清单内即为硬失败：交付 copyleft 是一项分发决策，不该被一次重新生成悄悄吸收。被源码收编的包会与 `vendor/README.md` 交叉核对，出现非 MIT 即报错；`pnpm-workspace.yaml` 的 `patchedDependencies` 列入运行时表格，因为 pnpm 在安装期就会打上这些补丁——交付产物携带的是改动过的 `@earendil-works/pi-tui` 与 `node-pty`，补丁文件本身就是改动的完整记录。
+manifest 集合由根 `pnpm-workspace.yaml` 宣告的 `packages:` 成員派生，其中包括 Landlock 工作區及其公開包，因此新增成員區域在宣告當天就會被讀取，而不必等誰想起來去補一份列表。許可證與儲存庫地址取自根工作區已安裝的 pnpm store 和包本地連結場；某個包兩處都解析不到時直接失敗，而不是留下空單元格。`OVERRIDES` 收錄已釋出 manifest 答不上來的包：用 Rust 建置、釋出時省略 `license` 欄位的 npm 可執行包，以及 `modelcontextprotocol/servers` 系列——該儲存庫正處在 MIT 向 Apache-2.0 的重新許可過程中，實際條款按貢獻逐條而定。執行時依賴的許可證若不在寬鬆清單內即為硬失敗：交付 copyleft 是一項分發決策，不該被一次重新生成悄悄吸收。被原始碼收編的包會與 `vendor/README.md` 交叉核對，出現非 MIT 即報錯；`pnpm-workspace.yaml` 的 `patchedDependencies` 列入執行時表格，因為 pnpm 在安裝期就會打上這些補丁——交付產物攜帶的是改動過的 `@earendil-works/pi-tui` 與 `node-pty`，補丁檔案本身就是改動的完整記錄。
 
-项目所有者另行授权分发每个官方 `@anthropic-ai/claude-agent-sdk` 版本，以及该版本通过 `optionalDependencies` 声明的官方 Claude Code CLI 与平台载荷。生成器将其表示为一项精确匹配直接包身份的例外，而非宽松许可证覆盖项：`SEE LICENSE IN README.md` 与 `SEE LICENSE IN LICENSE.md` 仍归类为非宽松，所有无关的非宽松运行时依赖仍以默认拒绝方式失败。存在该 SDK 时，生成器会读取其已安装 manifest，拒绝不符合官方 SDK 载荷前缀的可选包身份，推导当前 SDK、CLI 与载荷版本，核验已安装宿主载荷的身份、版本和声明许可证字段，并在单独的声明章节中渲染 SDK 声明的完整载荷集合。版本、声明许可证和载荷集合发生变化时无需新的身份授权，但仍须经过常规的依赖、锁文件、兼容性、条款和声明评审。
+專案所有者另行授權分發每個官方 `@anthropic-ai/claude-agent-sdk` 版本，以及該版本透過 `optionalDependencies` 宣告的官方 Claude Code CLI 與平臺載荷。生成器將其表示為一項精確匹配直接包身份的例外，而非寬鬆許可證覆蓋項：`SEE LICENSE IN README.md` 與 `SEE LICENSE IN LICENSE.md` 仍歸類為非寬鬆，所有無關的非寬鬆執行時依賴仍以預設拒絕方式失敗。存在該 SDK 時，生成器會讀取其已安裝 manifest，拒絕不符合官方 SDK 載荷字首的可選包身份，推導目前 SDK、CLI 與載荷版本，核驗已安裝主機載荷的身份、版本和宣告許可證欄位，並在單獨的宣告章節中渲染 SDK 宣告的完整載荷集合。版本、宣告許可證和載荷集合發生變化時無需新的身份授權，但仍須經過常規的依賴、鎖檔案、相容性、條款和宣告評審。
 
-## 测试
+## 測試
 
-断言新鲜度的同一个 spec 也用 fixture（测试前置数据）manifest 钉住分层规则，覆盖促成该规则的两个场景：测试支撑包的 `dependencies` 条目，以及没有任何应用挂载的插件包。它还把各解析器钉在那些原本会让某个包无声消失的形态上：不再覆盖全部收编目录的 `vendor/README.md` 表、含 extras 的依赖数组（`"httpx[http2]"`）、完全不带版本的依赖、作者自取名字的 `[dependency-groups]` 表，以及任何硬编码列表都不含的工作区成员区域。这些都是静默漏报路径——正是披露文件最担不起的失败方式。
+斷言新鮮度的同一個 spec 也用 fixture（測試前置資料）manifest 釘住分層規則，覆蓋促成該規則的兩個情境：測試支撐包的 `dependencies` 條目，以及沒有任何應用掛載的外掛包。它還把各解析器釘在那些原本會讓某個包無聲消失的形態上：不再覆蓋全部收編目錄的 `vendor/README.md` 表、含 extras 的依賴陣列（`"httpx[http2]"`）、完全不帶版本的依賴、作者自取名字的 `[dependency-groups]` 表，以及任何硬編碼列表都不含的工作區成員區域。這些都是靜默漏報路徑——正是披露檔案最擔不起的失敗方式。
 
-Claude 分发测试证明：只有精确匹配的直接 SDK 身份会绕过通常的非宽松运行时拒绝；该绕过不会改变许可证分类；载荷集合来自 SDK manifest，而非版本或平台允许列表。SDK 身份错误、载荷缺失或存在无关的可选包身份时，测试都会失败。
+Claude 分發測試證明：只有精確匹配的直接 SDK 身份會繞過通常的非寬鬆執行時拒絕；該繞過不會改變許可證分類；載荷集合來自 SDK manifest，而非版本或平臺允許列表。SDK 身份錯誤、載荷缺失或存在無關的可選包身份時，測試都會失敗。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**保留手写文件，发版时人工过一遍。** 用肉眼审阅上百行推导数据，恰恰是生成器能做对的活；而且在两次发版之间，文件自称「列出全部直接依赖」这句话无人验证。
+**保留手寫檔案，發版時人工過一遍。** 用肉眼審閱上百行推導資料，恰恰是生成器能做對的活；而且在兩次發版之間，檔案自稱「列出全部直接依賴」這句話無人驗證。
 
-**用专门的 `doc-sync`（文档同步门禁）校验。** 仓库里其他生成产物都是这么把关的，本次改动最初也是这个形态。但它要在本已冗长的矩阵里再占一个门禁进程和一个调度位；更糟的是，它唯一的失败方式，就是在别人推完一个无关的依赖升级几分钟后，通知对方回去重跑一次生成器。改为提交时重新生成消除了这次打断，而把断言放进测试 lane 本就会跑的 spec 里，则以零额外 CI 成本保住了这项保证。
+**用專門的 `doc-sync`（文件同步門禁）驗證。** 儲存庫裡其他生成產物都是這麼把關的，本次改動最初也是這個形態。但它要在本已冗長的矩陣裡再佔一個門禁程序和一個排程位；更糟的是，它唯一的失敗方式，就是在別人推完一個無關的依賴升級幾分鐘後，通知對方回去重跑一次生成器。改為提交時重新生成消除了這次打斷，而把斷言放進測試 lane 本就會跑的 spec 裡，則以零額外 CI 成本保住了這項保證。
 
-**列出完整传递闭包。** 闭包有数千个包，锁文件里已带精确版本，铺开只会淹没读者真正要评估的直接依赖。文件转而指向锁文件与 `pnpm licenses list`。
+**列出完整傳遞閉包。** 閉包有數千個包，鎖檔案裡已帶精確版本，鋪開只會淹沒讀者真正要評估的直接依賴。檔案轉而指向鎖檔案與 `pnpm licenses list`。
 
-**按 manifest 字段分层（`dependencies` 与 `devDependencies`）。** 机械上最省事，但在真实数据上两个方向都会出错，理由见上文分层段落。
+**按 manifest 欄位分層（`dependencies` 與 `devDependencies`）。** 機械上最省事，但在真實資料上兩個方向都會出錯，理由見上文分層段落。
 
-**只按已交付装配的可达性分层**（`apps/*` 加 `python/sdk-runtime`）。这样得到的运行时层更紧凑，但会把 MCP 客户端与 OpenTelemetry 导出器判为仅开发用途——而运行已安装仓库的用户完全可以挂载它们。这会低估披露，对法务通告来说错在了更危险的一侧。
+**只按已交付裝配的可達性分層**（`apps/*` 加 `python/sdk-runtime`）。這樣得到的執行時層更緊湊，但會把 MCP 用戶端與 OpenTelemetry 匯出器判為僅開發用途——而執行已安裝儲存庫的使用者完全可以掛載它們。這會低估披露，對法務通告來說錯在了更危險的一側。
 
-**将 Claude SDK 条款视为宽松条款，或新增可复用的非宽松允许列表。** 两种方案都会误述上游声明，并让无关运行时依赖继承从未授予它的授权。这项窄例外只匹配官方直接 SDK 身份；其可选载荷身份仅作为该 SDK 声明的数据被接受，并继续明确归类为非宽松。
+**將 Claude SDK 條款視為寬鬆條款，或新增可複用的非寬鬆允許列表。** 兩種方案都會誤述上游宣告，並讓無關執行時依賴繼承從未授予它的授權。這項窄例外只匹配官方直接 SDK 身份；其可選載荷身份僅作為該 SDK 宣告的資料被接受，並繼續明確歸類為非寬鬆。
 
-**把披露文件做成双语对。** 其他根文档都是成对的，但这份文件是上游包名、SPDX 标识与网址构成的表格，可翻译的只有寥寥几段章节导语。`scripts/translation-pairing.ts` 的发现范围限定在 `README*`、`.agents/notes/**`、`docs/**` 与 `python/**`，根目录下的非 README 文件在构造上就不属于双语语料；双语入口由 README 对承担。
+**把披露檔案做成雙語對。** 其他根文件都是成對的，但這份檔案是上游包名、SPDX 標識與網址構成的表格，可翻譯的只有寥寥幾段章節導語。`scripts/translation-pairing.ts` 的發現範圍限定在 `README*`、`.agents/notes/**`、`docs/**` 與 `python/**`，根目錄下的非 README 檔案在建構上就不屬於雙語語料；雙語入口由 README 對承擔。
 
-## 后果
+## 後果
 
-此后改动依赖时，重新生成的披露文件会随同一个提交入库。触及 manifest 的提交多付一次生成器运行——约一秒；其余提交不受影响。若禁用钩子提交，代价推迟为一次测试 lane 失败，其报错会指明补救命令。
+此後改動依賴時，重新生成的披露檔案會隨同一個提交入庫。觸及 manifest 的提交多付一次生成器執行——約一秒；其餘提交不受影響。若停用掛鉤提交，代價推遲為一次測試 lane 失敗，其報錯會指明補救命令。
 
-生成器需要已安装的依赖树，因此比纯源码生成器更重；发布元数据不可用的新包需要补一条 `OVERRIDES`，而不是默默渲染出空白许可证。这两类失败都会明确报错并指出补救方式。
+生成器需要已安裝的依賴樹，因此比純原始碼生成器更重；釋出中繼資料不可用的新包需要補一條 `OVERRIDES`，而不是默默渲染出空白許可證。這兩類失敗都會明確報錯並指出補救方式。
 
-分层规则是编码在一个常量里的策略。若新增了不参与交付的工作区区域——第二层测试基础设施、另一个站点——就要同步扩展 `DEV_ONLY_AREAS`，否则其依赖会被当作运行时依赖披露出去。
+分層規則是編碼在一個常數裡的策略。若新增了不參與交付的工作區區域——第二層測試基礎設施、另一個站點——就要同步擴充功能 `DEV_ONLY_AREAS`，否則其依賴會被當作執行時依賴披露出去。
 
-Claude 身份例外刻意比其启用的载荷披露范围更窄。升级 SDK 无需新的所有者授权，但如果已安装的 SDK 未公开自身版本、CLI 版本和至少一个官方平台载荷，或当前宿主载荷与 SDK 声明不符，重新生成就会失败。维护者仍须评审发生变化的条款与兼容性；生成器会阻止授权悄然扩大到其他包。
+Claude 身份例外刻意比其啟用的載荷披露範圍更窄。升級 SDK 無需新的所有者授權，但如果已安裝的 SDK 未公開自身版本、CLI 版本和至少一個官方平臺載荷，或目前主機載荷與 SDK 宣告不符，重新生成就會失敗。維護者仍須評審發生變化的條款與相容性；生成器會阻止授權悄然擴大到其他包。

@@ -1,47 +1,47 @@
-# 通过 GitHub Webhook 创建评审会话
+# 透過 GitHub Webhook 建立評審工作階段
 
 [English](github-review.md) | 中文
 
-此可选 overlay 会为 `dsh web` 增加一个签名 GitHub 端点。当已配置仓库中的 pull request 从 draft 变为 ready for review 时，规则会在该仓库的 Web Workspace 下创建带标题的根 Session，并启动只读评审提示词。
+此可選 overlay 會為 `dsh web` 增加一個簽名 GitHub 端點。當已設定儲存庫中的 pull request 從 draft 變為 ready for review 時，規則會在該儲存庫的 Web Workspace 下建立帶標題的根 Session，並啟動只讀評審提示詞。
 
-## 前置条件
+## 前置條件
 
-- 一个可由 DSH 注册为 Web Workspace 的本地 checkout。
-- 一个可通过 `DSH_GITHUB_WEBHOOK_SECRET` 凭据引用访问的高熵 GitHub webhook 密钥。
-- 一个可以把单个公共 URL 转发到 loopback 监听器的 TLS 反向代理或 tunnel。
-- GitHub webhook 订阅 Pull requests 事件，且 content type 为 `application/json`。
+- 一個可由 DSH 註冊為 Web Workspace 的本地 checkout。
+- 一個可透過 `DSH_GITHUB_WEBHOOK_SECRET` 憑證引用存取的高熵 GitHub webhook 金鑰。
+- 一個可以把單個公共 URL 轉發到 loopback 監聽器的 TLS 反向代理或 tunnel。
+- GitHub webhook 訂閱 Pull requests 事件，且 content type 為 `application/json`。
 
-overlay 默认使用启动目录作为 Workspace，并监听 `127.0.0.1:3081`。可通过 `DSH_GITHUB_REVIEW_WORKSPACE` 与 `DSH_GITHUB_WEBHOOK_PORT` 覆盖它们。
+overlay 預設使用啟動目錄作為 Workspace，並監聽 `127.0.0.1:3081`。可透過 `DSH_GITHUB_REVIEW_WORKSPACE` 與 `DSH_GITHUB_WEBHOOK_PORT` 覆蓋它們。
 
-## 启动 DSH
+## 啟動 DSH
 
-生成密钥，并在重启后继续使用同一值：
+生成金鑰，並在重新啟動後繼續使用同一值：
 
 ```sh
 export DSH_GITHUB_WEBHOOK_SECRET="$(openssl rand -hex 32)"
 printf '%s\n' "$DSH_GITHUB_WEBHOOK_SECRET"
 ```
 
-在开发 checkout 中运行：
+在開發 checkout 中執行：
 
 ```sh
 export DSH_GITHUB_REVIEW_WORKSPACE=/path/to/deepseek-harness
 pnpm dsh web --patch apps/cli/config/examples/github-review/cordis.yml
 ```
 
-安装版 DSH 通过绝对路径使用同一 overlay：
+安裝版 DSH 透過絕對路徑使用同一 overlay：
 
 ```sh
 dsh web --patch /absolute/path/to/github-review/cordis.yml
 ```
 
-对于永久 profile，把 `github-ready-review-rule.mjs` 放在 `$DSH_HOME/profiles/web/cordis.patch.yml` 旁边，把 `cordis.yml` 中的行追加到该 patch，然后运行 `dsh web`。随附 CLI 已经包含两个 webhook 包；只需 overlay 即可激活它们。
+對於永久 profile，把 `github-ready-review-rule.mjs` 放在 `$DSH_HOME/profiles/web/cordis.patch.yml` 旁邊，把 `cordis.yml` 中的行追加到該 patch，然後執行 `dsh web`。隨附 CLI 已經包含兩個 webhook 包；只需 overlay 即可啟用它們。
 
-## 暴露专用端点
+## 暴露專用端點
 
-主 Web UI 与 `/api` 继续位于端口 3080。overlay 会在隔离 realm 中挂载第二个 WebServer；其中只注册 `POST /github`，其他路径均返回 `404`。
+主 Web UI 與 `/api` 繼續位於埠 3080。overlay 會在隔離 realm 中掛載第二個 WebServer；其中只註冊 `POST /github`，其他路徑均返回 `404`。
 
-Caddy 配置可以只暴露该监听器：
+Caddy 設定可以只暴露該監聽器：
 
 ```caddyfile
 hooks.example.com {
@@ -53,7 +53,7 @@ hooks.example.com {
 }
 ```
 
-GitHub 配置如下：
+GitHub 設定如下：
 
 ```text
 Payload URL:  https://hooks.example.com/github
@@ -63,17 +63,17 @@ Events:       Pull requests
 Active:       yes
 ```
 
-## 规则行为
+## 規則行為
 
-规则只接受来源 `primary-github`、仓库 `deepseek-harness/deepseek-harness`、事件 `pull_request` 与动作 `ready_for_review`。它会把精确 head SHA 和选定 PR 字段传给评审提示词，把 JSON 标为不受信任的元数据，并禁止修改文件、分支、PR 或 GitHub 状态。
+規則只接受來源 `primary-github`、儲存庫 `deepseek-harness/deepseek-harness`、事件 `pull_request` 與動作 `ready_for_review`。它會把精確 head SHA 和選定 PR 欄位傳給評審提示詞，把 JSON 標為不受信任的中繼資料，並禁止修改檔案、分支、PR 或 GitHub 狀態。
 
-Session 请求选择 `standard` agent preset 与 `read-only` permission preset。`workspacePath` 通过 `WorkspaceRegistry.create()` 规范化，因此第一次匹配交付会在 Workspace 不存在时创建它，后续交付会复用它。
+Session 請求選擇 `standard` agent preset 與 `read-only` permission preset。`workspacePath` 透過 `WorkspaceRegistry.create()` 規範化，因此第一次匹配交付會在 Workspace 不存在時建立它，後續交付會複用它。
 
-HTTP 响应刻意弱于 Agent 结果：`202` 表示签名与 JSON 已被接受，规则调用已在内存中调度。它不表示此规则已经匹配，也不表示已创建 Session。
+HTTP 回應刻意弱於 Agent 結果：`202` 表示簽名與 JSON 已被接受，規則呼叫已在記憶體中排程。它不表示此規則已經匹配，也不表示已建立 Session。
 
-## 程序化扩展
+## 程式化擴充功能
 
-`run()` 是普通受信任 JavaScript。部署可以在返回 Session 请求前查询内部策略服务：
+`run()` 是普通受信任 JavaScript。部署可以在返回 Session 請求前查詢內部策略服務：
 
 ```js
 const response = await fetch('https://policy.internal/pr-review', {
@@ -85,7 +85,7 @@ const response = await fetch('https://policy.internal/pr-review', {
 if (!response.ok || (await response.json()).automaticReview !== true) return null
 ```
 
-它还可以把仓库映射到不同本地路径：
+它還可以把儲存庫對映到不同本地路徑：
 
 ```js
 const workspacePath = {
@@ -95,8 +95,8 @@ const workspacePath = {
 if (workspacePath === undefined) return null
 ```
 
-## 交付语义
+## 交付語義
 
-webhook runtime 不存储交付或执行状态。重复交付会运行规则，并可能创建另一个 Session。崩溃会丢失尚未接纳提示词的规则调用。提示词接纳后，工作由普通 Session 日志、persistence、Workspace 与 Agent 生命周期拥有。
+webhook runtime 不儲存交付或執行狀態。重複交付會執行規則，並可能建立另一個 Session。崩潰會丟失尚未接納提示詞的規則呼叫。提示詞接納後，工作由普通 Session 日誌、persistence、Workspace 與 Agent 生命週期擁有。
 
-webhook 密钥只验证入站 GitHub 数据。它不会向规则代码或所创建 Agent 授予出站 GitHub 访问权；规则或 Agent 需要时应单独配置该权限。
+webhook 金鑰只驗證入站 GitHub 資料。它不會向規則程式碼或所建立 Agent 授予出站 GitHub 存取權；規則或 Agent 需要時應單獨設定該權限。

@@ -1,8 +1,8 @@
-- dialog "正在准备安装…":
-  - button "取消安装并返回编辑"
-  - button "取消安装并关闭"
-  - status: 正在准备安装…
+- dialog "正在準備安裝…":
+  - button "取消安裝並返回編輯"
+  - button "取消安裝並關閉"
+  - status: 正在準備安裝…
   - paragraph: slow-package
   - paragraph: 版本 1.0.0
-  - button "查看安装详情"
-  - button "取消安装"
+  - button "檢視安裝詳情"
+  - button "取消安裝"

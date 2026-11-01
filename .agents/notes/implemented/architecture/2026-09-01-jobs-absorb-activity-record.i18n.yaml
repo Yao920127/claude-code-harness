@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-01-jobs-absorb-activity-record.md
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed:
   en: f407477a58d20fb6
-  zh: b65bc22b9e1e21c3
+  zh: 1fed944ddcd842c9
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed/problem:
   en: a4008f3bcd1e3bd0
-  zh: fa8432ddc47003c4
+  zh: 44a93c50d062e03f
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed/decision:
   en: c7ada6a40d92daf4
-  zh: bd16a02f295c4ae2
+  zh: adab846e1ff03deb
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed/alternatives-considered:
   en: 00067552f2fcb740
-  zh: aa23082899db1a1a
+  zh: 6ec2c7c2fbc1aca2
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed/review-corrections:
   en: 93db5342c848587a
-  zh: d4e67a47d573eb39
+  zh: a89e4b7896f3b129
 /agent-note-the-job-registry-absorbs-the-observation-record-the-standalone-activity-seam-is-removed/consequences:
   en: c1df52910a1ee554
-  zh: 50fd15ed06f07f76
+  zh: 6c2f4f7b6fa3a44c

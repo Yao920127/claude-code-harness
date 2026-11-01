@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-03-semantic-issue-templates-and-policy.md
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy:
   en: e1e183193c798bf4
-  zh: db76ac954cd3038f
+  zh: 800530bc054697d5
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy/problem:
   en: 5da7b92d65316469
-  zh: 30bc615947b3a8aa
+  zh: 9ef867db717e9a1a
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy/decision:
   en: a351c272ef520bb9
-  zh: 98db942d18da7565
+  zh: 8f8a405ad3a5fa91
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy/verification:
   en: 90912d4c58b9e35d
-  zh: 811eaab5bdd54ab4
+  zh: 2d55a116b30ac59b
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy/alternatives-considered:
   en: 520ba80ce03e05b4
-  zh: 50df33c59c4c837d
+  zh: 9db04c8801ba81eb
 /agent-note-semantic-issue-templates-and-presentation-neutral-policy/consequences:
   en: c762b95945320c61
-  zh: 935f6e7290c06811
+  zh: 317445b9558240d5

@@ -1,56 +1,56 @@
-# Agent Note: Windows 沙箱删除约束：强制完整性 + 环境性删除拒绝
+# Agent Note: Windows 沙箱刪除約束：強制完整性 + 環境性刪除拒絕
 
 Status: implemented
 
 [English](2026-09-19-windows-acl-mandatory-integrity-confinement.md) | 中文
 
-## 问题
+## 問題
 
-[受限令牌档](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)通过把请求的访问掩码与 restricting SIDs 求交集来约束写入。该交集只覆盖针对对象**自身**安全描述符的那次访问检查：Windows 也会依据**父目录**的 `FILE_DELETE_CHILD` 权限批准写入或删除，而这项权限不需要任何 restricting SID 副署。因此 `cmd /c del` 与 `[System.IO.File]::Delete`——凡走 `DeleteFileW` 的路径——在两种受限模式下都能删除工作区之外的文件（issue #4581），而同一子进程的普通写入却被拒绝。
+[受限權杖檔](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)透過把請求的存取掩碼與 restricting SIDs 求交集來約束寫入。該交集只覆蓋針對物件**自身**安全描述符的那次存取檢查：Windows 也會依據**父目錄**的 `FILE_DELETE_CHILD` 權限批准寫入或刪除，而這項權限不需要任何 restricting SID 副署。因此 `cmd /c del` 與 `[System.IO.File]::Delete`——凡走 `DeleteFileW` 的路徑——在兩種受限模式下都能刪除工作區之外的檔案（issue #4581），而同一子程序的普通寫入卻被拒絕。
 
-## 决策
+## 決策
 
-每次授权现在都在一次 `SetNamedSecurityInfoW` 调用中施加三项编辑，并把受限令牌降到同一级别：
+每次授權現在都在一次 `SetNamedSecurityInfoW` 呼叫中施加三項編輯，並把受限權杖降到同一級別：
 
-1. 能力 SID 的允许 ACE（`GRANT_MASK`，`OI|CI`）——写权限本身，未变；
-2. 对 world SID 的 `FILE_DELETE_CHILD` 拒绝 ACE，带 `CONTAINER_INHERIT_ACE`——能力 ACE 的 DELETE 位成为授权根内唯一的删除授权来源；
-3. Low 完整性强制标签（`S-1-16-4096`、`SYSTEM_MANDATORY_LABEL_NO_WRITE_UP`、`OI|CI`）——并用 `SetTokenInformation(TokenIntegrityLevel)` 把受限令牌降到同一级别。
+1. 能力 SID 的允許 ACE（`GRANT_MASK`，`OI|CI`）——寫權限本身，未變；
+2. 對 world SID 的 `FILE_DELETE_CHILD` 拒絕 ACE，帶 `CONTAINER_INHERIT_ACE`——能力 ACE 的 DELETE 位成為授權根內唯一的刪除授權來源；
+3. Low 完整性強制標籤（`S-1-16-4096`、`SYSTEM_MANDATORY_LABEL_NO_WRITE_UP`、`OI|CI`）——並用 `SetTokenInformation(TokenIntegrityLevel)` 把受限權杖降到同一級別。
 
-三者都不可省。标签是唯一能触及父目录 `FILE_DELETE_CHILD` 路径的手段：无论权限来自哪一项，内核都在访问检查内部执行强制策略，因此授权根之外的 Medium 对象不仅防写、也防删。拒绝项则负责隔开**各个**授权根：所有授权根都带 Low 标签，仅靠完整性检查它们之间仍会放行。而拒绝项只做容器继承，是为了不破坏环境 ACL 的可用性：`0x40` 是 `FILE_ALL_ACCESS` 的成员，若落到文件上会让授权根内每次 `GENERIC_ALL`／`FullControl` 打开都被拒绝——收窄标志之前已在真实 runner 上实测确认。
+三者都不可省。標籤是唯一能觸及父目錄 `FILE_DELETE_CHILD` 路徑的手段：無論權限來自哪一項，核心都在存取檢查內部執行強制策略，因此授權根之外的 Medium 物件不僅防寫、也防刪。拒絕項則負責隔開**各個**授權根：所有授權根都帶 Low 標籤，僅靠完整性檢查它們之間仍會放行。而拒絕項只做容器繼承，是為了不破壞環境 ACL 的可用性：`0x40` 是 `FILE_ALL_ACCESS` 的成員，若落到檔案上會讓授權根內每次 `GENERIC_ALL`／`FullControl` 開啟都被拒絕——收窄標誌之前已在真實 runner 上實測確認。
 
-标签在工作区根上**常驻**，与能力 ACE 同理：按会话回收会导致每次供给都重新传播整棵树，并与并发会话竞争。`revokeWrite` 只在该目录上不再留有其他能力授权时才清除标签，因此同一目录上的两份授权仍可独立撤销。幂等跳过要求精确 ACE、精确拒绝与精确标签三者齐备，因此早前版本已授权的工作区会在下次供给时补上拒绝项。
+標籤在工作區根上**常駐**，與能力 ACE 同理：按工作階段回收會導致每次供給都重新傳播整棵樹，並與並行工作階段競爭。`revokeWrite` 只在該目錄上不再留有其他能力授權時才清除標籤，因此同一目錄上的兩份授權仍可獨立撤銷。冪等跳過要求精確 ACE、精確拒絕與精確標籤三者齊備，因此早前版本已授權的工作區會在下次供給時補上拒絕項。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-### 为什么不让标签按会话回收？
+### 為什麼不讓標籤按工作階段回收？
 
-那样可以消除下面的外部性，但每次供给都要付出确定性工作区 SID 本要避免的急切全树传播（大型工作区上以数十秒计），而且并发会话或崩溃会话会让标签反复消失与重建。
+那樣可以消除下面的外部性，但每次供給都要付出確定性工作區 SID 本要避免的急切全樹傳播（大型工作區上以數十秒計），而且並行工作階段或崩潰工作階段會讓標籤反覆消失與重建。
 
-### 为什么 read-only 模式不用 Untrusted 完整性？
+### 為什麼 read-only 模式不用 Untrusted 完整性？
 
-本机实测：Untrusted（`S-1-16-0`）令牌根本无法启动 `pwsh`——DLL 初始化失败（`0x8007045A`，`BCrypt.dll`）——该模式将没有可用的 shell。
+本機實測：Untrusted（`S-1-16-0`）權杖根本無法啟動 `pwsh`——DLL 初始化失敗（`0x8007045A`，`BCrypt.dll`）——該模式將沒有可用的 shell。
 
-### 为什么不用 `OI|CI` 施加 `FILE_DELETE_CHILD` 拒绝？
+### 為什麼不用 `OI|CI` 施加 `FILE_DELETE_CHILD` 拒絕？
 
-那样拒绝项也会落到授权根内的每个**文件**上（用 `icacls` 观察到的正是 `Everyone:(I)(DENY)(DC)`），而 `0x40` 属于 `FILE_ALL_ACCESS`，于是这些文件上的 `CreateFileW(GENERIC_ALL)` 会对用户、Administrators、SYSTEM 与 DSH host 一并返回 `ERROR_ACCESS_DENIED`。收窄标志消除了这一类影响；授权根内**目录**的 FullControl 打开仍被拒绝，这是拒绝一项属于完全访问掩码的权限所无法避免的代价。
+那樣拒絕項也會落到授權根內的每個**檔案**上（用 `icacls` 觀察到的正是 `Everyone:(I)(DENY)(DC)`），而 `0x40` 屬於 `FILE_ALL_ACCESS`，於是這些檔案上的 `CreateFileW(GENERIC_ALL)` 會對使用者、Administrators、SYSTEM 與 DSH host 一併返回 `ERROR_ACCESS_DENIED`。收窄標誌消除了這一類影響；授權根內**目錄**的 FullControl 開啟仍被拒絕，這是拒絕一項屬於完全存取掩碼的權限所無法避免的代價。
 
-### 为什么不干脆去掉这层约束、只把逃逸写进文档？
+### 為什麼不乾脆去掉這層約束、只把逃逸寫進文件？
 
-逃逸本身就是报告内容：`cmd /c del` 删除工作区之外的文件，恰恰是沙箱承诺不允许的事；而仅靠读侧或纯 ACL 的改动关不掉它——restricting SID 交集在构造上就触及不到父目录路径。
+逃逸本身就是報告內容：`cmd /c del` 刪除工作區之外的檔案，恰恰是沙箱承諾不允許的事；而僅靠讀側或純 ACL 的改動關不掉它——restricting SID 交集在建構上就觸及不到父目錄路徑。
 
-### 为什么不让每个工作区拥有自己的完整性级别？
+### 為什麼不讓每個工作區擁有自己的完整性級別？
 
-强制完整性控制只有五个固定级别（Untrusted、Low、Medium、High、System），无法像 `S-1-4-x-y` 能力 SID 那样按工作区派生。
+強制完整性控制只有五個固定級別（Untrusted、Low、Medium、High、System），無法像 `S-1-4-x-y` 能力 SID 那樣按工作區派生。
 
-## 后果
+## 後果
 
-所得：删除在 Windows 接受的每条授权路径上都被约束，且被约束在各自的授权根内；此前记录的 Everyone 写边界被关闭；写入、读取与进程可见性其余部分不变；每次 Win32 调用失败都 fail-closed。所失（全部记录在包 README 中）：常驻 Low 标签会向**任何**以同一用户身份运行在 Low 完整性的进程放宽该工作区树，并比 DSH 生命期更长（这是在该完整性级别上拥有写边界本身的代价）；被授权目录现在还必须授予 `WRITE_OWNER` 才能写入标签（完全控制的工作区具备，仅授予 Modify 的会大声失败）；授权根内目录的 FullControl 打开被拒绝；被其他 AppContainer 工具以包 SID 标记过的目录树对 Low 子进程不可读；FAT 类目标仍未验证。[受限令牌档笔记](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)仍是该档令牌列表、runner 约定与授权生命周期的归属者；本笔记只负责删除路径与封闭它的完整性层。
+所得：刪除在 Windows 接受的每條授權路徑上都被約束，且被約束在各自的授權根內；此前記錄的 Everyone 寫邊界被關閉；寫入、讀取與程序可見性其餘部分不變；每次 Win32 呼叫失敗都 fail-closed。所失（全部記錄在包 README 中）：常駐 Low 標籤會向**任何**以同一使用者身份執行在 Low 完整性的程序放寬該工作區樹，並比 DSH 生命期更長（這是在該完整性級別上擁有寫邊界本身的代價）；被授權目錄現在還必須授予 `WRITE_OWNER` 才能寫入標籤（完全控制的工作區具備，僅授予 Modify 的會大聲失敗）；授權根內目錄的 FullControl 開啟被拒絕；被其他 AppContainer 工具以包 SID 標記過的目錄樹對 Low 子程序不可讀；FAT 類目標仍未驗證。[受限權杖檔筆記](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)仍是該檔權杖列表、runner 約定與授權生命週期的歸屬者；本筆記只負責刪除路徑與封閉它的完整性層。
 
-## 测试
+## 測試
 
-`runner.spec.ts` 以真实 runner 与真实受限令牌钉住行为：两种模式下经 `cmd`、.NET、`Remove-Item` 与 libuv 的越界删除全部被拒且**宿主侧文件仍存在**；一个会话无法删除另一个授权根内的文件；NUL 在两种模式下仍可写；授权根内**文件**的 `GENERIC_ALL` 打开成功，而**目录**的同一打开被拒绝；同一目录上两份授权之一被撤销后，存留的授权仍可用。`acl.spec.ts` 钉住真实 DACL／标签生命周期、拒绝项只继承到容器、以及共享标签的撤销规则；`token-failure-paths.spec.ts` 钉住 `TokenIntegrityLevel` 的精确载荷；失败路径套件覆盖每处新增分配与提前退出，包括标签 ACL 与描述符的释放。
+`runner.spec.ts` 以真實 runner 與真實受限權杖釘住行為：兩種模式下經 `cmd`、.NET、`Remove-Item` 與 libuv 的越界刪除全部被拒且**主機側檔案仍存在**；一個工作階段無法刪除另一個授權根內的檔案；NUL 在兩種模式下仍可寫；授權根內**檔案**的 `GENERIC_ALL` 開啟成功，而**目錄**的同一開啟被拒絕；同一目錄上兩份授權之一被撤銷後，存留的授權仍可用。`acl.spec.ts` 釘住真實 DACL／標籤生命週期、拒絕項只繼承到容器、以及共享標籤的撤銷規則；`token-failure-paths.spec.ts` 釘住 `TokenIntegrityLevel` 的精確載荷；失敗路徑套件覆蓋每處新增分配與提前退出，包括標籤 ACL 與描述符的釋放。
 
-## 相关
+## 相關
 
-- [Windows sandbox 档：原始 ACL 受限令牌](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)——本次改动所扩展的档（保持 active；本笔记只取代其删除路径边界）。
-- [沙箱决策](2026-07-06-sandbox.zh.md)——平台链与 `partial` 强制执行词汇。
+- [Windows sandbox 檔：原始 ACL 受限權杖](2026-08-08-windows-acl-restricted-token-sandbox.zh.md)——本次改動所擴充功能的檔（保持 active；本筆記只取代其刪除路徑邊界）。
+- [沙箱決策](2026-07-06-sandbox.zh.md)——平臺鏈與 `partial` 強制執行詞彙。

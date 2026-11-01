@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-15-narrow-pi-ai-runtime-imports.md
 /agent-note-narrow-pi-ai-runtime-imports:
   en: d29340bbc4bf0e5b
-  zh: 12a39c4efe53b580
+  zh: 5c147a928f358e30
 /agent-note-narrow-pi-ai-runtime-imports/problem:
   en: 4b2048b356064ada
-  zh: 9926d7c54da73852
+  zh: b1465e04b3991d59
 /agent-note-narrow-pi-ai-runtime-imports/decision:
   en: d425c01ec05ee7f2
-  zh: 8d58d6db913720c4
+  zh: a1fa3ddde6da419a
 /agent-note-narrow-pi-ai-runtime-imports/alternatives-considered:
   en: c663ce67f3831d3f
-  zh: de280dc149d5a6a0
+  zh: b94a9df67371c8f3
 /agent-note-narrow-pi-ai-runtime-imports/consequences:
   en: 9707284a83c1294a
-  zh: c53be621aac00fc9
+  zh: 93ac3cb9aad732d3

@@ -1,5 +1,5 @@
 ---
-description: "冻结的已发布 v0 会话标头、事件与打包行解码器，以及到 v1 的恒等转换。"
+description: "凍結的已釋出 v0 工作階段標頭、事件與打包行解碼器，以及到 v1 的恆等轉換。"
 kind: "package-library"
 ---
 
@@ -9,25 +9,25 @@ kind: "package-library"
 
 ## 概述
 
-本包逐个物理行解码已发布的 v0 会话 JSONL，并生成共享布局的 v1 格式，以还原历史会话。除把版本从 0 改为 1 外，它会保留经过校验的标头与事件，并仅应用 v0 持久化接受的有限旧格式规范化。畸形或不支持的历史记录会在当前还原器运行前使迁移失败，同时保留源文件以便恢复。该迁移只接受冻结的第一方事件清单，且不发布或选择后续格式迁移。
+本包逐個物理行解碼已釋出的 v0 工作階段 JSONL，並生成共享佈局的 v1 格式，以還原歷史工作階段。除把版本從 0 改為 1 外，它會保留經過驗證的標頭與事件，並僅應用 v0 持久化接受的有限舊格式規範化。畸形或不支援的歷史記錄會在目前還原器執行前使遷移失敗，同時保留原始檔以便恢復。該遷移只接受凍結的第一方事件清單，且不釋出或選擇後續格式遷移。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-### 何时使用
+### 何時使用
 
-持久化通过 `dsh-session-format-catalog` 获取该迁移边；功能组合不会挂载它。只有在装配或测试静态已发布格式目录时，才直接导入本包。它不发布运行时不变式伴生入口，因为本包没有状态可能彼此分歧的、可独立观测的运行时注册项；decoder 与 migration stage 的状态只属于一次还原。
+持久化透過 `dsh-session-format-catalog` 取得該遷移邊；功能組合不會掛載它。只有在裝配或測試靜態已釋出格式目錄時，才直接匯入本包。它不釋出執行時不變式伴生入口，因為本包沒有狀態可能彼此分歧的、可獨立觀測的執行時註冊項；decoder 與 migration stage 的狀態只屬於一次還原。
 
 ### 入口
 
@@ -40,74 +40,74 @@ stage.transformEvent(event, migrationContext)
 const targetInheritedEventCount = stage.finish(migrationContext)
 ```
 
-`releasedV0SessionFormatCodec` 读取精确的 v0 header 与物理行，包括打包的 Assistant 增量和范围编码的来源序号。它的 decoder 通过 `emitEvent()` 与 `emitRun()` 发出单个事件或 codec 自有的紧凑 run。`sessionFormatV0ToV1` 为每次还原创建一个有状态 Stage；静态 catalog 连接该 decoder 与 Stage，使迁移无需保留物理行数组。`releasedV1SessionFormatCodec` 为 v1 物理布局暴露相同的逐行 decoder，同时不冻结普通事件词表。
+`releasedV0SessionFormatCodec` 讀取精確的 v0 header 與物理行，包括打包的 Assistant 增量和範圍編碼的來源序號。它的 decoder 透過 `emitEvent()` 與 `emitRun()` 發出單個事件或 codec 自有的緊湊 run。`sessionFormatV0ToV1` 為每次還原建立一個有狀態 Stage；靜態 catalog 連線該 decoder 與 Stage，使遷移無需保留物理行陣列。`releasedV1SessionFormatCodec` 為 v1 物理佈局暴露相同的逐行 decoder，同時不凍結普通事件詞表。
 
-Alpha 迁移边会拒绝冻结清单之外的所有事件类型，包括带有 `ignorable: true` 标记的未知事件。它也会拒绝意外的 payload 成员。`tool/result.meta` 与嵌套 PTC `arguments` 是显式的不透明 JSON 字段；迁移会原样保留它们，不把其中的数字解释为会话序号。内容块中未知的 `type` 分支、消息来源中未知的 `kind` 分支、assistant 结束原因中未知的 `kind` 分支与 `turn/end` 原因中未知的 `kind` 分支保持 owner-opaque JSON，已知分支则接受结构校验。
+Alpha 遷移邊會拒絕凍結清單之外的所有事件型別，包括帶有 `ignorable: true` 標記的未知事件。它也會拒絕意外的 payload 成員。`tool/result.meta` 與巢狀 PTC `arguments` 是顯式的不透明 JSON 欄位；遷移會原樣保留它們，不把其中的數字解釋為工作階段序號。內容塊中未知的 `type` 分支、訊息來源中未知的 `kind` 分支、assistant 結束原因中未知的 `kind` 分支與 `turn/end` 原因中未知的 `kind` 分支保持 owner-opaque JSON，已知分支則接受結構驗證。
 
-有限的历史规范化会把 `steering/message` 转换为 `user/message`、把 `compact/*` 事件重命名为 `compaction/*`、移除 `turn/start.trigger`、转换已停用的 `turn/end` reason、添加当前消息包装层，并为旧消息、retry chain 与压缩（compaction）组补充确定性 id，同时移除已停用且重复的 `request/header.header.messagePrefix`。已停用的 `request/header-delta`、`mode/set` 和 `request/header` fallback reason 会使迁移失败。除此之外，任何事件、引用、来源或 payload 事实都不得改变。
+有限的歷史規範化會把 `steering/message` 轉換為 `user/message`、把 `compact/*` 事件重新命名為 `compaction/*`、移除 `turn/start.trigger`、轉換已停用的 `turn/end` reason、新增目前訊息包裝層，併為舊訊息、retry chain 與壓縮（compaction）組補充確定性 id，同時移除已停用且重複的 `request/header.header.messagePrefix`。已停用的 `request/header-delta`、`mode/set` 和 `request/header` fallback reason 會使遷移失敗。除此之外，任何事件、引用、來源或 payload 事實都不得改變。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-物理 codec 会以行为原子单位校验每个打包行，以紧凑 run 发出它，且绝不修改已解析输入。可恢复解码会丢弃完整的故障行并保留此前前缀，除非后续成功解码的 `turn/end` 证明故障区域已经提交。增量 normalizer 只保留 message、retry 与未结束的压缩 identity；catalog 会在最终当前产物上执行完整关系校验。
+物理 codec 會以行為原子單位驗證每個打包行，以緊湊 run 發出它，且絕不修改已解析輸入。可恢復解碼會丟棄完整的故障行並保留此前字首，除非後續成功解碼的 `turn/end` 證明故障區域已經提交。增量 normalizer 只保留 message、retry 與未結束的壓縮 identity；catalog 會在最終目前產物上執行完整關係驗證。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/codec.ts`](src/codec.ts) | 冻结的 v0/v1 物理标头、打包行与来源序号范围 |
-| [`src/dispositions.ts`](src/dispositions.ts) | 已发布 v0 事件与 payload 成员清单 |
-| [`src/payload-validation.ts`](src/payload-validation.ts) | 每种已发布 v0/v1 事件类型的冻结嵌套 payload 语义 |
-| [`src/relationships.ts`](src/relationships.ts) | 冻结的跨事件配对：轮次、步骤、工具开始与结果、重试、压缩、标题 |
-| [`src/migration.ts`](src/migration.ts) | 恒等迁移边与旧格式规范化 |
-| [`src/validation.ts`](src/validation.ts) | 精确的源与目标校验 |
+| [`src/codec.ts`](src/codec.ts) | 凍結的 v0/v1 物理標頭、打包行與來源序號範圍 |
+| [`src/dispositions.ts`](src/dispositions.ts) | 已釋出 v0 事件與 payload 成員清單 |
+| [`src/payload-validation.ts`](src/payload-validation.ts) | 每種已釋出 v0/v1 事件型別的凍結巢狀 payload 語義 |
+| [`src/relationships.ts`](src/relationships.ts) | 凍結的跨事件配對：輪次、步驟、工具開始與結果、重試、壓縮、標題 |
+| [`src/migration.ts`](src/migration.ts) | 恆等遷移邊與舊格式規範化 |
+| [`src/validation.ts`](src/validation.ts) | 精確的源與目標驗證 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [迁移机制](../session-format/README.zh.md)——纯迁移链与编解码约定。
-- [静态目录](../session-format-catalog/README.zh.md)——由构建负责的装配。
-- [会话子系统](../../../docs/subsystems/session.zh.md)——当前逻辑会话语义。
+- [遷移機制](../session-format/README.zh.md)——純遷移鏈與編解碼約定。
+- [靜態目錄](../session-format-catalog/README.zh.md)——由建置負責的裝配。
+- [工作階段子系統](../../../docs/subsystems/session.zh.md)——目前邏輯工作階段語義。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 历史还原
+### 歷史還原
 
-#### 模型看到什么
+#### 模型看到什麼
 
-没有直接内容。还原后，`deriveMessages()` 会看到在 v1 下保持不变的规范已发布 v0 事件；有限历史结构会通过规定的当前包装层产生相同的模型可见内容。
+沒有直接內容。還原後，`deriveMessages()` 會看到在 v1 下保持不變的規範已釋出 v0 事件；有限歷史結構會透過規定的目前包裝層產生相同的模型可見內容。
 
-#### Token 影响
+#### Token 影響
 
-不直接产生 token。
+不直接產生 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-对规范 v0 历史没有直接影响。有限 normalizer 会在生成当前包装层与确定性标识时保留模型可见内容。
+對規範 v0 歷史沒有直接影響。有限 normalizer 會在生成目前包裝層與確定性標識時保留模型可見內容。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **封闭的第一方清单**——按照当前 Alpha 策略，未知的外部插件事件会使迁移失败。
-- **单个相邻迁移边**——本包不执行发布，也不选择后续迁移。
+- **封閉的第一方清單**——按照目前 Alpha 策略，未知的外部外掛事件會使遷移失敗。
+- **單個相鄰遷移邊**——本包不執行釋出，也不選擇後續遷移。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

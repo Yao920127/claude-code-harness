@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-desktop-build-release-validation.md
 /agent-note-verify-desktop-release-compatibility-during-packaging:
   en: 4183cb362d89a8fb
-  zh: ede5e45ba6245b6b
+  zh: 965cb6ae9bc46a14
 /agent-note-verify-desktop-release-compatibility-during-packaging/problem:
   en: ae3f1e31ba929c0e
-  zh: 1a42684e41531547
+  zh: 4c1c7d2a71d542db
 /agent-note-verify-desktop-release-compatibility-during-packaging/decision:
   en: 352372f213c43a76
-  zh: 54dc9826254e56f2
+  zh: f4eefe3ec723e8b1
 /agent-note-verify-desktop-release-compatibility-during-packaging/alternatives-considered:
   en: 515cec0d22c8373c
-  zh: e3a5b3058b6316c2
+  zh: 08bdd176bed35bc8
 /agent-note-verify-desktop-release-compatibility-during-packaging/consequences:
   en: 5193e3ce82faa984
-  zh: 1bd7a31152e3b71c
+  zh: 3c32323f9e826b91

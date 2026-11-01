@@ -3,13 +3,13 @@
 layout: doc
 ---
 
-# 快照说明
+# 快照說明
 
-agent（智能体）执行一个步骤。
+agent（智慧代理）執行一個步驟。
 </translation>
 
 <review>
-- 无修正
+- 無修正
 </review>
 
 <final>
@@ -17,7 +17,7 @@ agent（智能体）执行一个步骤。
 layout: doc
 ---
 
-# 快照说明
+# 快照說明
 
-agent（智能体）执行一个步骤。
+agent（智慧代理）執行一個步驟。
 </final>

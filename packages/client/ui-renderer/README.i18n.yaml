@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-renderer/README.md
 /:
   en: 06bd9d926c743736
-  zh: 39acdcb577fd8c6d
+  zh: 22c3523449b2683f
 /deepseek-ai-dsh-client-ui-renderer:
   en: 9ec624489bbbdf7e
   zh: 076b6a71841ea0cf
 /deepseek-ai-dsh-client-ui-renderer/summary:
   en: 1ba1a4112d222f62
-  zh: c1b7601dfe949711
+  zh: 13d8e77435950eb7
 /deepseek-ai-dsh-client-ui-renderer/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-renderer/use-this-package:
   en: 39d5f36f7cb7d680
-  zh: a61f0aa8b339e06f
+  zh: e27d29cc8ed32590
 /deepseek-ai-dsh-client-ui-renderer/use-this-package/what-mounting-does:
   en: 1d5350799ce072d0
-  zh: 942e543fdab51818
+  zh: eed55e168e460dc5
 /deepseek-ai-dsh-client-ui-renderer/use-this-package/for-business-plugins:
   en: 15a2bfee2c0bd051
-  zh: 0c5b336fc5afbbc6
+  zh: 6b57f61122e47c8c
 /deepseek-ai-dsh-client-ui-renderer/understand-the-implementation:
   en: 0de0a8ad857b93f6
-  zh: 98a0fae2d6606a7d
+  zh: 46210d5ed3a44124
 /deepseek-ai-dsh-client-ui-renderer/understand-the-implementation/activation-and-mount:
   en: 002496a4609490f6
-  zh: bab3626fbe30ff55
+  zh: 2fe70561f25db251
 /deepseek-ai-dsh-client-ui-renderer/understand-the-implementation/slot-bindings:
   en: 6ab26cf5744a23d4
-  zh: 84a531322a724a84
+  zh: d227fca2e75c0b02
 /deepseek-ai-dsh-client-ui-renderer/understand-the-implementation/identity:
   en: 2a349d500ead79cb
-  zh: ac49c8b1d73dcd6c
+  zh: faf9a84b7829a5de
 /deepseek-ai-dsh-client-ui-renderer/further-exploration:
   en: 77b43b2f3d55c933
-  zh: 9847b53486372aeb
+  zh: f1a57432e1170c90
 /deepseek-ai-dsh-client-ui-renderer/model-experience:
   en: ca4e29db08d34e6d
-  zh: de6ec680414b1d54
+  zh: 04cb141361cc7ccb
 /deepseek-ai-dsh-client-ui-renderer/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-renderer/known-limitations-and-deferred-work:
   en: 5ebaf02736035a44
-  zh: 3c04f28da7ec6c40
+  zh: b7830bf09aad32a1
 /deepseek-ai-dsh-client-ui-renderer/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-09-08-desktop-update-policy-and-installation.md
 /agent-note-desktop-update-policy-and-installation:
   en: 250865822f42a08a
-  zh: f7fab178a4835c04
+  zh: 08306e24b2993f6b
 /agent-note-desktop-update-policy-and-installation/problem:
   en: 96e7c7a206e06f15
-  zh: 189133653543a98c
+  zh: dd6f0ac7795ca009
 /agent-note-desktop-update-policy-and-installation/proposal:
   en: 73b06c4b868250d5
-  zh: 947419d367f6c7e9
+  zh: 37430cf88e62083e
 /agent-note-desktop-update-policy-and-installation/proposal/release-and-backend-qualification:
   en: 03612a65e4a65939
-  zh: 4d45467930e9f364
+  zh: 2b2da67b0c6de9f3
 /agent-note-desktop-update-policy-and-installation/proposal/open-product-choices:
   en: 1ced7c2ababf429f
-  zh: 9879fba6f288236c
+  zh: d80198ab0b7656d8
 /agent-note-desktop-update-policy-and-installation/proposal/cdn-and-capacity-qualification:
   en: a857e8c566e0cbd2
-  zh: 6b4fd99b7482c2b1
+  zh: f73fb08640353cd3
 /agent-note-desktop-update-policy-and-installation/alternatives-considered:
   en: ff419f29cfc6702b
-  zh: dc79b9d3d9bef98f
+  zh: 9a62cce8f3ea1c59
 /agent-note-desktop-update-policy-and-installation/acceptance-criteria:
   en: db7d20578a44d2ca
-  zh: 81b71132c9c08725
+  zh: 05f2545c7341d138
 /agent-note-desktop-update-policy-and-installation/risks:
   en: c518abbbfd98b9ca
-  zh: 0d325d2b825eee87
+  zh: f0287af347b9adc3

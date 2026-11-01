@@ -11,7 +11,7 @@ import type { WelcomeSaveResult, WelcomeNotice } from '../src/welcome-api.ts'
 const html = readFileSync(join(import.meta.dirname, '../renderer/welcome.html'), 'utf8')
 afterEach(cleanup)
 
-function mount(language = 'zh-CN', takeNotice = vi.fn<() => Promise<WelcomeNotice | undefined>>().mockResolvedValue(undefined)) {
+function mount(language = 'zh-TW', takeNotice = vi.fn<() => Promise<WelcomeNotice | undefined>>().mockResolvedValue(undefined)) {
   cleanup()
   const stopAccount = vi.fn()
   const api = {
@@ -51,7 +51,7 @@ function mount(language = 'zh-CN', takeNotice = vi.fn<() => Promise<WelcomeNotic
 }
 
 describe('desktop welcome presentation', () => {
-  it.each(['zh-CN', 'en'])('renders the %s entry and API-key step', async (language) => {
+  it.each(['zh-TW', 'en'])('renders the %s entry and API-key step', async (language) => {
     const view = mount(language)
     expect(view.document.documentElement.lang).toBe(language)
     expect(view.document.querySelector('img')!.getAttribute('src')).toBe('assets/welcome-brand.svg')
@@ -83,7 +83,7 @@ describe('desktop welcome presentation', () => {
     expect(view.document.body.textContent).not.toContain('sk-desktop-example')
   })
 
-  it.each(['', 'bad key', '密钥', 'DEEPSEEK_API_KEY=sk-example', '"sk-example"', '`sk-example`'])(
+  it.each(['', 'bad key', '金鑰', 'DEEPSEEK_API_KEY=sk-example', '"sk-example"', '`sk-example`'])(
     'rejects invalid input before sending it: %s', (value) => {
       const view = mount()
       fireEvent.click(view.button('#api-key'))
@@ -159,7 +159,7 @@ describe('desktop welcome presentation', () => {
   })
 })
 
-it.each(['zh-CN', 'en'])('renders %s timeout with manual retry and API-key alternative', async (language) => {
+it.each(['zh-TW', 'en'])('renders %s timeout with manual retry and API-key alternative', async (language) => {
   const view = mount(language)
   const receive = (state: AccountView) => { act(() => { view.api.onAccountState.mock.calls[0]![0](state) }) }
   receive({ status: 'signed-out', links: { usageUrl: '', topUpUrl: '' }, attempt: { id: 'expired' as NonNullable<AccountView['attempt']>['id'], phase: 'expired' } })
@@ -172,7 +172,7 @@ it.each(['zh-CN', 'en'])('renders %s timeout with manual retry and API-key alter
   expect(view.document.querySelector('#key-form')!.hasAttribute('hidden')).toBe(false)
 })
 
-it.each(['zh-CN', 'en'])('renders %s browser fallback and copies only the active login link', async (language) => {
+it.each(['zh-TW', 'en'])('renders %s browser fallback and copies only the active login link', async (language) => {
   const view = mount(language)
   const receive = (state: AccountView) => { act(() => { view.api.onAccountState.mock.calls[0]![0](state) }) }
   const waiting: AccountView = { status: 'signed-out', links: { usageUrl: '', topUpUrl: '' },
@@ -267,7 +267,7 @@ it.each(['copied', 'failed'] as const)('restores the copy action after %s feedba
   }
 })
 
-it.each(['zh-CN', 'en'])('keeps the expiry notice visible after returning to Welcome: %s', async (language) => {
+it.each(['zh-TW', 'en'])('keeps the expiry notice visible after returning to Welcome: %s', async (language) => {
   vi.useFakeTimers()
   try {
     const takeNotice = vi.fn<() => Promise<WelcomeNotice | undefined>>().mockResolvedValue(undefined).mockResolvedValueOnce('session-expired')
@@ -319,7 +319,7 @@ it('ignores a notification received after its renderer unmounts', async () => {
 })
 
 
-it.each(['zh-CN', 'en'])('returns from completed sign-in to the initial page after sign-out: %s', async (language) => {
+it.each(['zh-TW', 'en'])('returns from completed sign-in to the initial page after sign-out: %s', async (language) => {
   const view = mount(language)
   const publish = view.api.onAccountState.mock.calls[0]![0]
   const links = { usageUrl: 'https://example.test/usage', topUpUrl: 'https://example.test/top_up' }

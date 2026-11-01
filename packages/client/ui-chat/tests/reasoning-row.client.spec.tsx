@@ -124,7 +124,7 @@ describe('ReasoningRow', () => {
         renderMessageImages={renderMessageImages}
       />,
     )
-    expect(view.getByText('运行中')).toBeTruthy()
+    expect(view.getByText('執行中')).toBeTruthy()
     expect(view.getByRole('button').getAttribute('aria-expanded')).toBe('false')
     expect(view.getByText('Newest reasoning tokens').parentElement?.getAttribute('data-streaming'))
       .toBe('true')
@@ -166,7 +166,7 @@ describe('ReasoningRow', () => {
     )
     const settledSummary = view.getByText('Inspect the session')
     expect(view.getByRole('button').getAttribute('aria-expanded')).toBe('false')
-    expect(view.queryByText('运行中')).toBeNull()
+    expect(view.queryByText('執行中')).toBeNull()
     expect(settledSummary.parentElement?.hasAttribute('data-streaming')).toBe(false)
   })
 

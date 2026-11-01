@@ -130,7 +130,7 @@ describe('ui-sidebar-browser apply', () => {
       .toEqual([[30, 'guide.title', 'guide.description']])
     expect(dictionaries.get('sidebarBrowser')).toEqual({ zh, en })
     expect(dictionaries.get('sidebarBrowser')).toMatchObject({
-      zh: { 'guide.description': '浏览网页' },
+      zh: { 'guide.description': '瀏覽網頁' },
       en: { 'guide.description': 'Browse web pages' },
     })
     expect(registered.map(entry => [entry.name, entry.key, entry.locale, entry.component])).toEqual([

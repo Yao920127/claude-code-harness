@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-17-web-feature-routes-and-route-gate.md
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there:
   en: ca746e8d558cfc31
-  zh: 3524931b0bf9991f
+  zh: c5f9c8e5ea65e086
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there/problem:
   en: d4a1124ae3b6f6a8
-  zh: 4814da5d08947bc7
+  zh: 28c6fa1054f831ff
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there/decision:
   en: 5b89e02010c2da46
-  zh: d11e67d86ef27908
+  zh: 2e9700013c7d126a
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there/alternatives-considered:
   en: d90dbd0c95914085
-  zh: 6256f4fd76a7cb55
+  zh: c198eba039d9d907
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there/consequences:
   en: 94530852d7746ddb
-  zh: ad2383c465053822
+  zh: 96bd35434dacad8d
 /agent-note-feature-routes-follow-the-document-base-and-a-gate-keeps-them-there/testing:
   en: 95c952092857cb53
-  zh: 232cd731afcd3288
+  zh: e92553dbdba43efb

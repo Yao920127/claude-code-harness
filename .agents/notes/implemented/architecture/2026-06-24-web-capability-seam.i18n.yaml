@@ -4,73 +4,73 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-24-web-capability-seam.md
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers:
   en: ca120635fc40431c
-  zh: 6be7c5ae3c86cdcc
+  zh: e260fd928e00677f
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/problem:
   en: c8b932b02a4e1c80
-  zh: 96c466be1a521f3f
+  zh: fddedb48377fb28d
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/decision:
   en: b57eb0f268033ff1
-  zh: 4143382a50181414
+  zh: 7bddeceeaf397014
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/package-topology:
   en: 5ea3ddfae82df181
-  zh: 2d05d95e51081696
+  zh: ca1dd94b469cc711
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/ctx-web-contract:
   en: b432f80a424c3e49
-  zh: faa26925fdd98387
+  zh: 6d21d2f821b60d56
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/provider-availability-and-selection:
   en: dff78c46432311a1
-  zh: 58d5db4c3c85b886
+  zh: 43db5f487f738116
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/search-request-and-result-schema:
   en: ec3703b7e7c6b23d
-  zh: 325755e6e90092da
+  zh: 395886436032a15a
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/fetch-request-and-result-schema:
   en: f734fdc57a6546c9
-  zh: 027c28cbc584a8c2
+  zh: 6b171eaa5e798e87
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/tool-consumer-behavior:
   en: 62127883453dd79c
-  zh: 01503a8177a0ddab
+  zh: 712d84f5821378d1
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/errors:
   en: 3440f2b34b93f4a1
-  zh: 57a8f784c7e26eff
+  zh: 35620a96dfdb7fac
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/testing:
   en: 7f73699ac4459432
-  zh: c16be49ac50c34c8
+  zh: 73e356968a29c7cf
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered:
   en: 6119e2aff3b6be5a
-  zh: 76136ef5249c23eb
+  zh: 1e7ac42370899b04
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/let-each-provider-register-its-own-model-facing-tool:
   en: e0d84a9b1b9c2123
-  zh: 9e116a7b96751563
+  zh: 0d465c60f3aada99
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/put-provider-dispatch-directly-in-dsh-tool-web:
   en: dc01d014d03b49d2
-  zh: b956b02f41c62682
+  zh: 05737b7154ad8697
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/split-search-and-fetch-into-two-seams-dsh-search-dsh-fetch:
   en: 3fb72ba3e554f20a
-  zh: aff5f0add5773388
+  zh: 52b2a64056a66600
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/choose-the-first-registered-provider:
   en: 1800706ea0f6b90b
-  zh: ced985b7657e2d7f
+  zh: 1ddff5356c6a2530
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/treat-firecrawl-exa-tavily-parallel-extraction-as-fetch:
   en: fc22e6a8bfaeaa20
-  zh: 64032ea6ab61b836
+  zh: 431810823168824e
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/mirror-claude-code-s-url-prompt-webfetch-shape:
   en: 56a080de39e96056
-  zh: ae4d070aa7657503
+  zh: ac15cac05573e075
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/validate-dns-and-then-call-an-ordinary-fetch:
   en: aa6c1e7e6374a875
-  zh: 045c8af6cd44c3e1
+  zh: 35f6a2dc192883c0
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/block-private-looking-hostname-strings-without-pinning-resolved-addresses:
   en: 3d906f3056733479
-  zh: d652723eb5372007
+  zh: 1b59c5461efa22b6
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/alternatives-considered/require-per-call-approval-before-public-fetches:
   en: f8d1fc8e9c9659cf
-  zh: da5792520e35cba0
+  zh: 913fea7e70725c66
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/consequences:
   en: 12fd20ba54818215
-  zh: c1ca000b13666701
+  zh: cb907760f14a2dce
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/deferred-work:
   en: 48b7b8e7310cd56b
-  zh: d406cd6a8a649e58
+  zh: 5ed3524042d4afcc
 /agent-note-web-capability-seam-stable-tools-over-multiple-providers/open-questions:
   en: 63848c6ef9a6ab44
-  zh: 041b340802091e60
+  zh: 274d6bb4da36c20e

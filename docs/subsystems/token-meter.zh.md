@@ -1,10 +1,10 @@
-# Token 计量
+# Token 計量
 
 [English](token-meter.md) | 中文
 
-`@deepseek-ai/dsh-token-meter` 公开一个独立的回放快照，用于表示请求压力与按位置计算的表层定价。`logRevision` 表示生成该计量中每个字段时所消费的持久事件数量。
+`@deepseek-ai/dsh-token-meter` 公開一個獨立的回放快照，用於表示請求壓力與按位置計算的表層定價。`logRevision` 表示生成該計量中每個欄位時所消費的持久事件數量。
 
-来源：[`packages/llm/token-meter/src/types.ts`](../../packages/llm/token-meter/src/types.ts)
+來源：[`packages/llm/token-meter/src/types.ts`](../../packages/llm/token-meter/src/types.ts)
 
 ## `TokenMeasurement`
 
@@ -26,7 +26,7 @@ interface TokenMeasurement {
 }
 ```
 
-每次计量都会通过 `ctx.llm` 把生效信封的路由 provider/model 解析为该路由声明的请求图片定价，因此图片出现处按请求实际发送的视觉 token 加模型可见文本计价；未声明定价的路由与组合保持固定启发式规则。`baseline.kind === 'usage'` 表示最近一次成功的提供方调用具有相同的规范请求 envelope，且该调用的总量不低于其完整路由定价锚点。`estimated` 表示不存在可复用的保守 usage 锚点，因此服务自行对完整信封和表层定价。后续成功请求会替换早先的锚点；有符号的 `surfaceDeltaTokens` 会保留相对于匹配锚点的增长与缩减，且两侧按同一路由重新定价。`totalTokens` 仍表示请求与响应压力，`surfaceTokens` 则是表层的路由定价总量，等于所有节点价格之和。
+每次計量都會透過 `ctx.llm` 把生效信封的路由 provider/model 解析為該路由宣告的請求圖片定價，因此圖片出現處按請求實際傳送的視覺 token 加模型可見文字計價；未宣告定價的路由與組合保持固定啟發式規則。`baseline.kind === 'usage'` 表示最近一次成功的提供者呼叫具有相同的規範請求 envelope，且該呼叫的總量不低於其完整路由定價錨點。`estimated` 表示不存在可複用的保守 usage 錨點，因此服務自行對完整信封和表層定價。後續成功請求會替換早先的錨點；有符號的 `surfaceDeltaTokens` 會保留相對於匹配錨點的增長與縮減，且兩側按同一路由重新定價。`totalTokens` 仍表示請求與回應壓力，`surfaceTokens` 則是表層的路由定價總量，等於所有節點價格之和。
 
 ## `TokenSurfaceNode`
 
@@ -51,7 +51,7 @@ interface TokenSurfaceNode {
 }
 ```
 
-表层顺序具有权威性；替换节点的持久 seq 可能高于位置排在其后的节点。该快照不可变，不会随底层回放折叠推进而增长。
+表層順序具有權威性；替換節點的持久 seq 可能高於位置排在其後的節點。該快照不可變，不會隨底層回放摺疊推進而增長。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

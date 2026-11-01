@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-18-windows-directory-junction-listing.md
 /agent-note-list-directory-links-in-the-workspace-file-tree:
   en: 70fbeeae3fa4a6e6
-  zh: 6ed08f09c9d1d02e
+  zh: 8305306bd8f2475d
 /agent-note-list-directory-links-in-the-workspace-file-tree/problem:
   en: eec5c2e8edd0e0ff
-  zh: 03c0f3490bb891c0
+  zh: f59673db3c40cf80
 /agent-note-list-directory-links-in-the-workspace-file-tree/decision:
   en: ad36ceb185d15d69
-  zh: 71847eaa4641a9d7
+  zh: 5f3b905dc2e6c1b6
 /agent-note-list-directory-links-in-the-workspace-file-tree/alternatives-considered:
   en: 8a9daf7bd2d78b65
-  zh: 69f46ee1108c2747
+  zh: a01a5c94542d41ba
 /agent-note-list-directory-links-in-the-workspace-file-tree/consequences:
   en: 3cbc15d04a639292
-  zh: 4a9c94a1a1e8aeca
+  zh: 9cc88470000a9b9c

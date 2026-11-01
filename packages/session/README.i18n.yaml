@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/session/README.md
 /:
   en: 4301d9cb9fc0a0e9
-  zh: 3127f24ac355656b
+  zh: 88cecf7505aa7709
 /session-durable-session-data-plane:
   en: 16a515a77b72eab0
-  zh: 005647121230f6ec
+  zh: c9ed55c16b724925
 /session-durable-session-data-plane/summary:
   en: 4cced6bd65f9b42c
-  zh: 1e5c5fd08f3e2655
+  zh: 0c4805f45535bd75
 /session-durable-session-data-plane/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /session-durable-session-data-plane/packages:
   en: 7be50f4cafe40dab
-  zh: a6f06f187e686c05
+  zh: dd81d9daf2ea4d82
 /session-durable-session-data-plane/packages/persistence:
   en: 15b33178262b3852
-  zh: 2df9aecdd82067ec
+  zh: edf3dd51d2ac22b3
 /session-durable-session-data-plane/packages/projection:
   en: f1a70897ba39ef57
-  zh: ba88ad9bbbc5c0ec
+  zh: 254d0db5f0b77d81
 /session-durable-session-data-plane/packages/titles:
   en: b59b3cf49aef2a4b
-  zh: d6078f3c96e4f5d1
+  zh: ff4392cc7e732d8a
 /session-durable-session-data-plane/packages/telemetry:
   en: e0edfc0566463495
-  zh: 4af9904d7ba97d97
+  zh: d48cad4a4e2fa5c3
 /session-durable-session-data-plane/related-documentation:
   en: 9f19e2ae661f6405
-  zh: 0cab6d3836b26b09
+  zh: fc0f14ef64a1c0bc
 /session-durable-session-data-plane/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

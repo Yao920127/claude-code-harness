@@ -1,5 +1,5 @@
 ---
-description: "用户交互式终端：执行环境默认 shell、有界屏幕恢复和类型化 Remote 控制。"
+description: "使用者互動式終端：執行環境預設 shell、有界螢幕恢復和型別化 Remote 控制。"
 kind: "package-reference"
 ---
 
@@ -9,94 +9,94 @@ kind: "package-reference"
 
 ## 概述
 
-从 Web 终端面板在会话工作区打开执行环境的默认 shell。重新连接已有进程，并关闭 provider 管理的完整进程范围。终端输出不进入 Agent 对话记录。保留终端会占用进程和有界屏幕缓存。
+從 Web 終端面板在工作階段工作區開啟執行環境的預設 shell。重新連線已有程序，並關閉 provider 管理的完整程序範圍。終端輸出不進入 Agent 對話記錄。保留終端會佔用程序和有界螢幕快取。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [了解实现](#understand-the-implementation)
-- [延伸阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [瞭解實作](#understand-the-implementation)
+- [延伸閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-Web bundle 将此包与 subprocess provider、sandbox policy 和 Typert Gateway 一起挂载。Sandbox policy 仅为没有 cwd 的 Session 提供默认工作目录。`remote.terminal` 提供 `environment`、`shells`、`list`、`create`、`retain`、`follow`、`write`、`resize`、`rename` 和 `close`；每个操作均按 Session 标识限定范围。列表直接读取 Host 保留的终端，因此查看离线 Session 不会激活 Agent，也不会产生恢复错误。
+Web bundle 將此包與 subprocess provider、sandbox policy 和 Typert Gateway 一起掛載。Sandbox policy 僅為沒有 cwd 的 Session 提供預設工作目錄。`remote.terminal` 提供 `environment`、`shells`、`list`、`create`、`retain`、`follow`、`write`、`resize`、`rename` 和 `close`；每個操作均按 Session 標識限定範圍。列表直接讀取 Host 保留的終端，因此檢視離線 Session 不會啟用 Agent，也不會產生恢復錯誤。
 
-Shell 探测结果首先列出执行环境声明的默认 shell。仅当 provider 未声明默认值时，才在 POSIX 使用 `/bin/sh`，在 Windows 使用 `cmd.exe`。可选的 `shell` profile 通过可执行路径 `path`、显示名称 `name` 和参数 `args`（默认 `[]`）覆盖这一选择。选择器还会通过执行 provider 探测 `shellCandidates`，仅省略确定未找到的候选。创建请求接受探测返回的 `shellPath` 并再次验证；解析或传输失败会直接报告，不启动其他 shell。环境查询只返回工作目录和限制，不解析 shell，因此默认 shell 不可用时仍可重新连接已有进程。POSIX 自动 profile 以交互模式启动，PowerShell 使用 `-NoLogo`，补全和启动配置仍由 shell 提供。初始目录来自 Session 工作区。用户终端使用执行环境中系统用户的权限，独立于 Agent 的沙箱模式和审批策略。操作系统和容器的限制仍然生效；DSH 不提升用户权限。Subprocess provider 继续清除环境中的凭据变量。
+Shell 探測結果首先列出執行環境宣告的預設 shell。僅當 provider 未宣告預設值時，才在 POSIX 使用 `/bin/sh`，在 Windows 使用 `cmd.exe`。可選的 `shell` profile 透過可執行路徑 `path`、顯示名稱 `name` 和參數 `args`（預設 `[]`）覆蓋這一選擇。選擇器還會透過執行 provider 探測 `shellCandidates`，僅省略確定未找到的候選。建立請求接受探測返回的 `shellPath` 並再次驗證；解析或傳輸失敗會直接報告，不啟動其他 shell。環境查詢只返回工作目錄和限制，不解析 shell，因此預設 shell 不可用時仍可重新連線已有程序。POSIX 自動 profile 以互動模式啟動，PowerShell 使用 `-NoLogo`，補全和啟動設定仍由 shell 提供。初始目錄來自 Session 工作區。使用者終端使用執行環境中系統使用者的權限，獨立於 Agent 的沙箱模式和審批策略。作業系統和容器的限制仍然生效；DSH 不提升使用者權限。Subprocess provider 繼續清除環境中的憑證變數。
 
-| 配置 | 默认值 | 含义 |
+| 設定 | 預設值 | 含義 |
 |---|---|---|
-| `shell` | 省略 | 使用执行环境默认 shell，或指定一个 profile |
-| `shellCandidates` | `zsh`、`bash`、`fish`、`pwsh`、`powershell`、`cmd` | 已安装时供用户选择的额外可执行名称或路径 |
-| `maxTerminals` | `8` | 每个 Session 保留的终端和创建请求上限 |
+| `shell` | 省略 | 使用執行環境預設 shell，或指定一個 profile |
+| `shellCandidates` | `zsh`、`bash`、`fish`、`pwsh`、`powershell`、`cmd` | 已安裝時供使用者選擇的額外可執行名稱或路徑 |
+| `maxTerminals` | `8` | 每個 Session 保留的終端和建立請求上限 |
 | `maxCols`、`maxRows` | `500`、`200` | PTY 最大尺寸 |
-| `scrollback` | `1000` | 屏幕历史行数 |
-| `maxBufferedBytes` | `2097152` | 单个订阅者的输出排队上限 |
-| `maxInputBytes` | `65536` | 单次输入请求的字节上限 |
-| `disposeGraceMs` | `1000` | provider 终止宽限期，单位毫秒 |
-| `unattendedTimeoutMs` | `7200000` | 无窗口持有且持续确认空闲后开始清理的时长；`0` 禁用自动回收 |
-| `activityPollIntervalMs` | `30000` | 无窗口持有时的活动观察间隔 |
-| `cleanupRetryMs` | `60000` | 清理失败后的重试间隔 |
+| `scrollback` | `1000` | 螢幕歷史行數 |
+| `maxBufferedBytes` | `2097152` | 單個訂閱者的輸出排隊上限 |
+| `maxInputBytes` | `65536` | 單次輸入請求的位元組上限 |
+| `disposeGraceMs` | `1000` | provider 終止寬限期，單位毫秒 |
+| `unattendedTimeoutMs` | `7200000` | 無視窗持有且持續確認空閒後開始清理的時長；`0` 停用自動回收 |
+| `activityPollIntervalMs` | `30000` | 無視窗持有時的活動觀察間隔 |
+| `cleanupRetryMs` | `60000` | 清理失敗後的重試間隔 |
 
-任何已连接窗口中的打开标签页都会持有其终端，包括隐藏标签和非当前 Session。最后一个持有关系消失后，只有明确确认空闲的时间才计入回收期限。运行中、停止、等待输入和后台执行的任务都会受到保护；活动状态未知时清除空闲截止时间。任务完成后重新给予完整宽限期。Host 使用单调时钟，在清理前重新检查持有关系和当前活动；观察间隔超过轮询周期的两倍时丢弃旧证据。时间字段使用毫秒和安全整数，轮询及重试间隔必须为正数。
+任何已連線視窗中的開啟標籤頁都會持有其終端，包括隱藏標籤和非目前 Session。最後一個持有關係消失後，只有明確確認空閒的時間才計入回收期限。執行中、停止、等待輸入和後臺執行的任務都會受到保護；活動狀態未知時清除空閒截止時間。任務完成後重新給予完整寬限期。Host 使用單調時鐘，在清理前重新檢查持有關係和目前活動；觀察間隔超過輪詢週期的兩倍時丟棄舊證據。時間欄位使用毫秒和安全整數，輪詢及重試間隔必須為正數。
 
 <a id="understand-the-implementation"></a>
-## 了解实现
+## 瞭解實作
 
 <details>
-<summary>实现细节</summary>
+<summary>實作細節</summary>
 
-Host 通过 `ctx.subprocess.spawnTerminal` 创建 `TERM=xterm-256color` 的终端，不启动桌面终端应用。流式 UTF-8 解码保留跨块字符和开头的 BOM，并在 EOF 将不完整的尾部字节替换为替代字符。控制请求走 Gateway，`follow` 使用其复用的 Remote stream。Headless xterm 和序列化 addon 在此前输出写入后生成初始屏幕，后续增量携带单调序号。过慢的订阅者明确失败；重新连接恢复当前屏幕。
+Host 透過 `ctx.subprocess.spawnTerminal` 建立 `TERM=xterm-256color` 的終端，不啟動桌面終端應用。流式 UTF-8 解碼保留跨塊字元和開頭的 BOM，並在 EOF 將不完整的尾部位元組替換為替代字元。控制請求走 Gateway，`follow` 使用其複用的 Remote stream。Headless xterm 和序列化 addon 在此前輸出寫入後生成初始螢幕，後續增量攜帶單調序號。過慢的訂閱者明確失敗；重新連線恢復目前螢幕。
 
-最新连接持有输入和尺寸控制权。断开连接只释放输入权，不结束进程。显式关闭等待进程清理和最后输出；清理失败时保留资源以便重试。Session 记住已关闭的标识并拒绝迟到或重复的创建请求，包括关闭到达时仍在进行的创建。新终端使用新标识。取消创建且清理失败时，已分配的进程仍有所有者。Session owner 和 controller 卸载也会终止所拥有的进程。改变 Session 的沙箱模式时，用户终端继续以原有权限运行。控制权转移或进程退出后被拒绝的输入和尺寸请求保留输出连接并禁用输入，不重发被拒绝的输入。
+最新連線持有輸入和尺寸控制權。斷開連線只釋放輸入權，不結束程序。顯式關閉等待程序清理和最後輸出；清理失敗時保留資源以便重試。Session 記住已關閉的標識並拒絕遲到或重複的建立請求，包括關閉到達時仍在進行的建立。新終端使用新標識。取消建立且清理失敗時，已分配的程序仍有所有者。Session owner 和 controller 解除安裝也會終止所擁有的程序。改變 Session 的沙箱模式時，使用者終端繼續以原有權限執行。控制權轉移或程序退出後被拒絕的輸入和尺寸請求保留輸出連線並停用輸入，不重發被拒絕的輸入。
 
-Client 在分配前将每条 Session/内容与终端身份的关联保存到独立的 localStorage key `dsh.terminal.binding.v1.*`。内容身份全局唯一；面板内的 tab key 只标识活动视图 occurrence。逐条记录的写入和删除会保留其他窗口的关联。恢复视图复用该身份；终端面板先恢复自己的视图，再查询尚无视图的 Host 终端。新视图可以创建进程，恢复视图在目标缺失时显示错误，不创建替代进程。显式关闭先保存清理请求，再删除关联。当前进程元数据和屏幕内容由 Host 提供，不保存在浏览器中。Client 模型在浏览器完成屏幕解析后确认帧，按序发送输入，并忽略旧连接迟到的响应。Client 自产错误携带本地化键。插件卸载等待活跃及先前断开的输出流结束，不关闭 Host 进程。
+Client 在分配前將每條 Session/內容與終端身份的關聯儲存到獨立的 localStorage key `dsh.terminal.binding.v1.*`。內容身份全域唯一；面板內的 tab key 只標識活動檢視 occurrence。逐條記錄的寫入和刪除會保留其他視窗的關聯。恢復檢視複用該身份；終端面板先恢復自己的檢視，再查詢尚無檢視的 Host 終端。新檢視可以建立程序，恢復檢視在目標缺失時顯示錯誤，不建立替代程序。顯式關閉先儲存清理請求，再刪除關聯。目前程序中繼資料和螢幕內容由 Host 提供，不儲存在瀏覽器中。Client 模型在瀏覽器完成螢幕解析後確認幀，按序傳送輸入，並忽略舊連線遲到的回應。Client 自產錯誤攜帶在地化鍵。外掛解除安裝等待活躍及先前斷開的輸出流結束，不關閉 Host 程序。
 
-独立的 `retain(sessionId, id, signal)` Remote 流确认窗口持有关系，不激活 Agent、发送屏幕输出、转移输入权或创建进程。终端面板提供所有 Session 已保存的标签页，Client 将其与自己保存的身份取交集。同一窗口中的重复 occurrence 共用一个持有流；孤立的旧关联不会保活任何终端。恢复输出连接前必须等待当前持有关系确认。传输取消只释放对应的物理流代次；插件卸载等待全部持有流结束。清理失败时保留所有权并重试，不重新接受连接，也不重新计算空闲宽限期。
+獨立的 `retain(sessionId, id, signal)` Remote 流確認視窗持有關係，不啟用 Agent、傳送螢幕輸出、轉移輸入權或建立程序。終端面板提供所有 Session 已儲存的標籤頁，Client 將其與自己儲存的身份取交集。同一視窗中的重複 occurrence 共用一個持有流；孤立的舊關聯不會保活任何終端。恢復輸出連線前必須等待目前持有關係確認。傳輸取消只釋放對應的物理流代次；外掛解除安裝等待全部持有流結束。清理失敗時保留所有權並重試，不重新接受連線，也不重新計算空閒寬限期。
 
-新视图自动启动，使用开始页明确选中的 shell，或上次选择且仍可用的 shell。上次选择的路径保存在当前站点 localStorage 的 `dsh.terminal.shell` 中。默认启动通过 Host 探测验证保存的路径，不可用时回到当前默认项。开始页在打开标签页前记录选择，每个新标签页保留自己的 shell 路径和分配身份。存储失败不影响启动。恢复已有终端既不读取这一偏好，也不探测 shell。
+新檢視自動啟動，使用開始頁明確選中的 shell，或上次選擇且仍可用的 shell。上次選擇的路徑儲存在目前站點 localStorage 的 `dsh.terminal.shell` 中。預設啟動透過 Host 探測驗證儲存的路徑，不可用時回到目前預設項。開始頁在開啟標籤頁前記錄選擇，每個新標籤頁保留自己的 shell 路徑和分配身份。儲存失敗不影響啟動。恢復已有終端既不讀取這一偏好，也不探測 shell。
 
-关闭时先保存未完成的清理请求并释放标签页，再在后台等待 Host 清理。失败时提供重试通知。每个请求使用独立的终端 ID localStorage key，清理成功或收到明确的 `session/not-found` 响应后删除；启动时重试已保存的请求。传输失败时保留请求。清理请求独立于标签关联和面板状态持久化。浏览器存储不可用时，内存中的清理仍可工作，但刷新后无法恢复该请求。
+關閉時先儲存未完成的清理請求並釋放標籤頁，再在後臺等待 Host 清理。失敗時提供重試通知。每個請求使用獨立的終端 ID localStorage key，清理成功或收到明確的 `session/not-found` 回應後刪除；啟動時重試已儲存的請求。傳輸失敗時保留請求。清理請求獨立於標籤關聯和麵板狀態持久化。瀏覽器儲存不可用時，記憶體中的清理仍可工作，但重新整理後無法恢復該請求。
 
 </details>
 
 <a id="further-exploration"></a>
-## 延伸阅读
+## 延伸閱讀
 
 - [Subprocess](../../subprocess/subprocess/README.zh.md)
 - [Terminal panel](../../client/ui-terminal-panel/README.zh.md)
-- [用户终端权限](../../../.agents/notes/implemented/architecture/2026-09-16-user-terminal-permissions.zh.md)
+- [使用者終端權限](../../../.agents/notes/implemented/architecture/2026-09-16-user-terminal-permissions.zh.md)
 - [Web terminal decision](../../../.agents/notes/implemented/feature/2026-09-09-web-sidebar-terminal.zh.md)
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无；此包只处理用户交互式终端，不向模型请求添加内容。
+無；此包只處理使用者互動式終端，不向模型請求新增內容。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-无；终端输出只在浏览器与 Host 之间传输。
+無；終端輸出只在瀏覽器與 Host 之間傳輸。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 浏览器刷新保留进程和屏幕；Host 或 Session owner 卸载不保留。不提供持久终端恢复或自动重启 shell。 已退出的终端仍计入 `maxTerminals`；关闭不用的标签页可释放其屏幕和名额。
-- 原生 PTY 可用性和进程树清理保证由 subprocess provider 决定。找到可执行文件并不保证 PTY 分配成功。
-- 自动回收依赖 provider [支持的 shell 活动观察](../../subprocess/subprocess-local/README.zh.md#running-terminal-sessions)。不支持的 shell、自定义启动参数和不确定的进程观察可能让资源一直保留到明确关闭或 owner 卸载。运行中的命令没有强制最长执行时间。
-- 屏幕恢复只保留有界历史，不保留完整记录。同一时刻只有一个连接可输入或调整尺寸。
+- 瀏覽器重新整理保留程序和螢幕；Host 或 Session owner 解除安裝不保留。不提供持久終端恢復或自動重新啟動 shell。 已退出的終端仍計入 `maxTerminals`；關閉不用的標籤頁可釋放其螢幕和名額。
+- 原生 PTY 可用性和程序樹清理保證由 subprocess provider 決定。找到可執行檔案並不保證 PTY 分配成功。
+- 自動回收依賴 provider [支援的 shell 活動觀察](../../subprocess/subprocess-local/README.zh.md#running-terminal-sessions)。不支援的 shell、自定義啟動參數和不確定的程序觀察可能讓資源一直保留到明確關閉或 owner 解除安裝。執行中的命令沒有強制最長執行時間。
+- 螢幕恢復只保留有界歷史，不保留完整記錄。同一時刻只有一個連線可輸入或調整尺寸。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护说明</summary>
+<summary>維護說明</summary>
 
-不发布运行时 invariant companion。终端元数据与屏幕更新由同一对象按序写入，没有独立的进程尺寸观测可供比较。
+不釋出執行時 invariant companion。終端中繼資料與螢幕更新由同一物件按序寫入，沒有獨立的程序尺寸觀測可供比較。
 
 </details>

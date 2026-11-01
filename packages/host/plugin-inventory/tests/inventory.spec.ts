@@ -100,7 +100,7 @@ describe('PluginInventoryGateway', () => {
     }))
     writeFileSync(join(dir, 'index.js'), 'throw new Error("metadata must not execute the plugin")\n')
     writeFileSync(join(dir, 'locale', 'en.json'), '{"meta":{"title":"Preset plugin","description":"Preset description"}}')
-    writeFileSync(join(dir, 'locale', 'zh.json'), '{"meta":{"title":"预设插件"}}')
+    writeFileSync(join(dir, 'locale', 'zh.json'), '{"meta":{"title":"預設外掛"}}')
     if (mode === 'runtime') {
       expectUnlinked()
       expect(readPluginMeta('local-plugin/feature', baseUrl)).toBeUndefined()
@@ -124,7 +124,7 @@ describe('PluginInventoryGateway', () => {
         rows: [
           {
             entryId: 'feature', moduleName: 'local-plugin/feature', enabled: false, fiberPhase: null,
-            meta: { title: { en: 'Preset plugin', zh: '预设插件' }, description: { en: 'Preset description' } },
+            meta: { title: { en: 'Preset plugin', zh: '預設外掛' }, description: { en: 'Preset description' } },
           },
           { entryId: null, moduleName: 'local-plugin/private', enabled: false, fiberPhase: null },
         ],
@@ -202,7 +202,7 @@ describe('PluginInventoryGateway', () => {
       compositionInventory: async () => [
         {
           id: 'standard',
-          name: '标准模式',
+          name: '標準模式',
           isDefault: true,
           rows: [
             { entryId: 'alpha', moduleName: 'pkg-alpha', enabled: true, fiberState: FiberState.ACTIVE },
@@ -217,7 +217,7 @@ describe('PluginInventoryGateway', () => {
     expect(snapshot.agentPresets).toEqual([
       {
         id: 'standard',
-        name: '标准模式',
+        name: '標準模式',
         isDefault: true,
         rows: [
           { entryId: 'alpha', moduleName: 'pkg-alpha', enabled: true, fiberPhase: 'active' },

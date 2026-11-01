@@ -1,5 +1,5 @@
 ---
-description: "账号使用方可读取本地登录状态、发起或取消浏览器登录，并在保留 API Key 的情况下退出。Host 模型使用方仅能为提供者配置的推理来源解析账号凭证。"
+description: "帳號使用方可讀取本地登入狀態、發起或取消瀏覽器登入，並在保留 API Key 的情況下退出。Host 模型使用方僅能為提供者設定的推理來源解析帳號憑證。"
 kind: "package-reference"
 ---
 
@@ -7,67 +7,67 @@ kind: "package-reference"
 
 [English](README.md) | 中文
 
-getPlatformSession 为原生 Platform 内嵌提供仅限 Host 的 origin/token 快照，退登时返回 null。其 userId 复制最近一次成功 getProfile 得到的稳定账号 ID；尚无一次成功读取或资料不含 ID 时为 null。快照复用该 ID，不自行发起资料请求，因此 ID 未知时只会让 userId 为 null，而不会延迟调用方；资料读取首次取得稳定 ID 或该 ID 变化时会通知 watch 订阅者，供标识使用方重新读取快照。使用方以 origin 和 userId 作为持久化浏览器偏好存储的键，userId 为 null 时改用临时存储。账号控制器 RPC 和 Client 状态不包含此方法及快照。账号变化时，使用方销毁持有旧快照的文档。快照只携带部署请求头；Platform 客户端身份由发起请求的内嵌客户端自行组装。
+getPlatformSession 為原生 Platform 內嵌提供僅限 Host 的 origin/token 快照，退登時返回 null。其 userId 複製最近一次成功 getProfile 得到的穩定帳號 ID；尚無一次成功讀取或資料不含 ID 時為 null。快照複用該 ID，不自行發起資料請求，因此 ID 未知時只會讓 userId 為 null，而不會延遲呼叫方；資料讀取首次取得穩定 ID 或該 ID 變化時會通知 watch 訂閱者，供標識使用方重新讀取快照。使用方以 origin 和 userId 作為持久化瀏覽器偏好儲存的鍵，userId 為 null 時改用臨時儲存。帳號控制器 RPC 和 Client 狀態不包含此方法及快照。帳號變化時，使用方銷燬持有舊快照的文件。快照只攜帶部署請求頭；Platform 用戶端身份由發起請求的內嵌用戶端自行組裝。
 
-`platformClientHeaders` 依据单次调用的 `AccountClientMetadata` 与组合出的桌面平台生成五个 Platform 客户端请求头：`x-client-bundle-id` 有意保持为空字符串，`x-client-platform` 在没有 Desktop profile 提供 `darwin` 或 `win32` 时为 `web`，`x-client-version` 为调用方构建的版本，`x-client-locale` 通过导出的 `platformWireLocale` 将当前界面语言归约为 `zh_CN` 或 `en_US`，`x-client-timezone-offset` 为东为正的整秒偏移。请求正文需要同一个线上语言值时，消费方复用 `platformWireLocale`，使请求头与正文不会不一致。
+`platformClientHeaders` 依據單次呼叫的 `AccountClientMetadata` 與組合出的桌面平臺生成五個 Platform 用戶端請求頭：`x-client-bundle-id` 有意保持為空字串，`x-client-platform` 在沒有 Desktop profile 提供 `darwin` 或 `win32` 時為 `web`，`x-client-version` 為呼叫方建置的版本，`x-client-locale` 透過匯出的 `platformWireLocale` 將目前介面語言歸約為 `zh_CN` 或 `en_US`，`x-client-timezone-offset` 為東為正的整秒偏移。請求正文需要同一個線上語言值時，消費方複用 `platformWireLocale`，使請求頭與正文不會不一致。
 
-getUnnotifiedBonuses 返回平台尚未记录为已展示的赠金及其所属账号；ackBonusNotified 记录用户实际看到的那一笔赠金。确认请求携带该账号，因此在一个账号下读取的通知绝不会被确认到另一个账号。
+getUnnotifiedBonuses 返回平臺尚未記錄為已展示的贈金及其所屬帳號；ackBonusNotified 記錄使用者實際看到的那一筆贈金。確認請求攜帶該帳號，因此在一個帳號下讀取的通知絕不會被確認到另一個帳號。
 
-`rejectToken` 接收 Host 推理请求被拒绝的 token，仅删除与它匹配的当前登录凭据；延迟返回的拒绝不能清除替换后的凭据。
+`rejectToken` 接收 Host 推理請求被拒絕的 token，僅刪除與它匹配的目前登入憑證；延遲返回的拒絕不能清除替換後的憑證。
 
-`deepseek-account/session-expired` 在移除被拒绝的凭据后，向当前订阅方通知一次。账号快照不携带失效提示，因此重新连接不会重复弹出 toast。
+`deepseek-account/session-expired` 在移除被拒絕的憑證後，向目前訂閱方通知一次。帳號快照不攜帶失效提示，因此重新連線不會重複彈出 toast。
 
 ## 概述
 
-账号使用方可读取本地登录状态、发起或取消浏览器登录，并在保留 API Key 的情况下退出。Host 模型使用方仅能为提供者配置的推理来源解析账号凭证。
+帳號使用方可讀取本地登入狀態、發起或取消瀏覽器登入，並在保留 API Key 的情況下退出。Host 模型使用方僅能為提供者設定的推理來源解析帳號憑證。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [模型体验](#model-experience)
-- [已知限制与后续工作](#known-limitations-and-deferred-work)
+- [模型體驗](#model-experience)
+- [已知限制與後續工作](#known-limitations-and-deferred-work)
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-本地成功退出登录后发出 `deepseek-account/signed-out`。Platform 提供方安装账号模块的取消监听器，根据运行中 Agent 的 `session.requestContext().provider` 判断账号任务，取消时保留收件箱。账号控制器的确认弹窗复用同一判断，不维护额外 Agent 状态。新轮次绑定首请求前，该判断仍读取上一轮的提供方。
+本地成功退出登入後發出 `deepseek-account/signed-out`。Platform 提供者安裝帳號模組的取消監聽器，根據執行中 Agent 的 `session.requestContext().provider` 判斷帳號任務，取消時保留收件箱。帳號控制器的確認彈出視窗複用同一判斷，不維護額外 Agent 狀態。新輪次繫結首請求前，該判斷仍讀取上一輪的提供者。
 
-`AccountProfile.avatarUrl` 是可选的账号头像 URL；为空或缺失时表示没有头像。
+`AccountProfile.avatarUrl` 是可選的帳號大頭貼 URL；為空或缺失時表示沒有大頭貼。
 
-该服务定义账号操作和可重连的状态快照。平台提供者负责协议和授权记录。凭证仅限 Host；API 控制器只导出状态与操作，不导出 resolveToken。
+該服務定義帳號操作和可重連的狀態快照。平臺提供者負責協定和授權記錄。憑證僅限 Host；API 控制器只匯出狀態與操作，不匯出 resolveToken。
 
-账号模型请求以 `ACCOUNT_SIGN_IN_REQUIRED` 失败时，发出 `deepseek-account/model-sign-in-required`，Client 接收该实时事件以提示登录。其他请求错误不触发此事件。
+帳號模型請求以 `ACCOUNT_SIGN_IN_REQUIRED` 失敗時，發出 `deepseek-account/model-sign-in-required`，Client 接收該即時事件以提示登入。其他請求錯誤不觸發此事件。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-服务只定义账号操作，不维护第二份凭证索引，因此不发布 invariant。提供者负责持久化和登录生命周期检查。
+服務只定義帳號操作，不維護第二份憑證索引，因此不釋出 invariant。提供者負責持久化和登入生命週期檢查。
 
 <a id="further-exploration"></a>
 ## 深入探索
 
-[凭证子系统](../../../docs/subsystems/credentials.zh.md)定义存储接口；[架构](../../../docs/architecture.zh.md)说明应用组合。
+[憑證子系統](../../../docs/subsystems/credentials.zh.md)定義儲存介面；[架構](../../../docs/architecture.zh.md)說明應用組合。
 
-AccountDetails.balance 就绪时，value 保存充值钱包，bonusWallets 保存赠送钱包；两个数组均保留十进制金额字符串和币种。查询失败不提供金额。
+AccountDetails.balance 就緒時，value 儲存充值錢包，bonusWallets 儲存贈送錢包；兩個陣列均保留十進位制金額字串和幣種。查詢失敗不提供金額。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为账号凭证只影响 HTTP 认证，不进入模型提示、Session 日志或工具结果。
+無，因為帳號憑證隻影響 HTTP 認證，不進入模型提示、Session 日誌或工具結果。
 
 #### KV Cache effect
 
-不改变模型请求前缀。
+不改變模型請求字首。
 
-## 已知限制与后续工作
+## 已知限制與後續工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 账号 token 没有过期或刷新流程。退出时先移除本地授权，再由提供者在后台撤销；远程退登失败不会恢复本地登录态。资料和余额查询失败保留已存储授权。getProfile / getBalance 分别报告资料和余额的查询结果。
+- 帳號 token 沒有過期或重新整理流程。退出時先移除本地授權，再由提供者在後臺撤銷；遠端退登失敗不會恢復本地登入態。資料和餘額查詢失敗保留已儲存授權。getProfile / getBalance 分別報告資料和餘額的查詢結果。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-[桌面登录决策](../../../.agents/notes/implemented/architecture/2026-09-14-deepseek-account-login.zh.md)记录取消和存储的职责。
+[桌面登入決策](../../../.agents/notes/implemented/architecture/2026-09-14-deepseek-account-login.zh.md)記錄取消和儲存的職責。
 
-PlatformSession 可将仅限 Host 的 requestHeaders 从 Host 传至 Electron 主进程，其中只有部署请求头，因为内嵌文档的客户端身份在其语言、时区和版本可知处组装。消费者必须从渲染层 bootstrap 排除这些请求头，并将其限定于配置来源。userId 同样仅限 Host，绝不进入渲染层 bootstrap。mergePlatformCookies 替换同名 Cookie，同时保留其他 Cookie。
+PlatformSession 可將僅限 Host 的 requestHeaders 從 Host 傳至 Electron 主程序，其中只有部署請求頭，因為內嵌文件的用戶端身份在其語言、時區和版本可知處組裝。消費者必須從渲染層 bootstrap 排除這些請求頭，並將其限定於設定來源。userId 同樣僅限 Host，絕不進入渲染層 bootstrap。mergePlatformCookies 替換同名 Cookie，同時保留其他 Cookie。

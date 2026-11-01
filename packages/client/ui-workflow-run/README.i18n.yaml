@@ -4,46 +4,46 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-workflow-run/README.md
 /:
   en: 1310faa1582887b5
-  zh: 16b77855de7f9292
+  zh: 8248850f395d25e5
 /deepseek-ai-dsh-client-ui-workflow-run:
   en: d606bcab47f1b3f3
   zh: 31fd19010234cbd4
 /deepseek-ai-dsh-client-ui-workflow-run/summary:
   en: bbb41a09daa0ed51
-  zh: db65a976a21b1972
+  zh: eaeb0f39ef92c2e9
 /deepseek-ai-dsh-client-ui-workflow-run/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-workflow-run/use-this-package:
   en: 9712b1ed5f00f24f
-  zh: c8f72b2ef448d9af
+  zh: 6cd2b668803b1560
 /deepseek-ai-dsh-client-ui-workflow-run/use-this-package/navigating-the-node:
   en: ced9d82bdf540585
-  zh: 34651e03ed937508
+  zh: d6ff13e5e4567c8e
 /deepseek-ai-dsh-client-ui-workflow-run/use-this-package/state-and-completion:
   en: 03784e501ae8f70a
-  zh: 90b32daccf577780
+  zh: d98d2c17ee05ccbc
 /deepseek-ai-dsh-client-ui-workflow-run/understand-the-implementation:
   en: d41b996f3fb6727b
-  zh: 6b40fdf1db894fff
+  zh: 2ac14e538403b85a
 /deepseek-ai-dsh-client-ui-workflow-run/understand-the-implementation/disclosure-choices:
   en: adf86d983c51865e
-  zh: 014a4644d55be111
+  zh: fbf6ba0b28367aa3
 /deepseek-ai-dsh-client-ui-workflow-run/understand-the-implementation/composition:
   en: 364d3c38e5f02149
-  zh: ca5dbee6ac27e141
+  zh: 1ed65b0da822703a
 /deepseek-ai-dsh-client-ui-workflow-run/further-exploration:
   en: e95928b8d16b4043
-  zh: 15f74b81c7c7b6df
+  zh: df315cf3b33a2696
 /deepseek-ai-dsh-client-ui-workflow-run/model-experience:
   en: 62a75f801964a0bb
-  zh: a247663753a52ae9
+  zh: 6ba78f8a3e75f52e
 /deepseek-ai-dsh-client-ui-workflow-run/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-workflow-run/known-limitations-and-deferred-work:
   en: 3c5afa2d75f50eb0
-  zh: 84f2e93d6dcb0ada
+  zh: 408176f9c8c257c8
 /deepseek-ai-dsh-client-ui-workflow-run/known-limitations-and-deferred-work/dev-note:
   en: 8e5a74ff5f3bc069
-  zh: b5d05c4d192ac837
+  zh: 46cd708ac96917c5

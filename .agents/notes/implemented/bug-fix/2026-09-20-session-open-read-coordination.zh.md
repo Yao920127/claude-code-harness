@@ -1,88 +1,88 @@
-# Agent Note: 会话首帧读取的缓存身份与调用时序
+# Agent Note: 工作階段首幀讀取的快取身份與呼叫時序
 
 Status: implemented
 
 [English](2026-09-20-session-open-read-coordination.md) | 中文
 
-## 问题
+## 問題
 
-打开历史会话时，`session.follow`、输入框目录预热和依赖 Agent 参数的 RPC 可能同时访问同一份冷日志。`skills/list` 自行请求完整 observation；`commands/list`、`goals/get`、`fileReferences/list` 与 `sessionReferenceResolver/candidates` 则可以在参数解析阶段经 Agent lookup 发起恢复。辅助请求不等待历史首帧，会与主对话争用读取、解析和 projection 计算，而不是复用已经完成的结果。
+開啟歷史工作階段時，`session.follow`、輸入框目錄預熱和依賴 Agent 參數的 RPC 可能同時存取同一份冷日誌。`skills/list` 自行請求完整 observation；`commands/list`、`goals/get`、`fileReferences/list` 與 `sessionReferenceResolver/candidates` 則可以在參數解析階段經 Agent lookup 發起恢復。輔助請求不等待歷史首幀，會與主對話爭用讀取、解析和 projection 計算，而不是複用已經完成的結果。
 
-完成后的 observation 复用还有一个独立问题：Cordis 对同一服务的访问可以返回不同代理对象。以 `ctx.get('sessionPersistence')` 返回对象的引用相等性判断服务身份，会把同一底层服务误判成另一个实例。另一方面，彻底去掉实例身份检查也不安全，因为持久化 revision 只在对应服务实例和 Session 身份内可比较。
+完成後的 observation 複用還有一個獨立問題：Cordis 對同一服務的存取可以返回不同代理物件。以 `ctx.get('sessionPersistence')` 返回物件的引用相等性判斷服務身份，會把同一底層服務誤判成另一個實例。另一方面，徹底去掉實例身份檢查也不安全，因為持久化 revision 只在對應服務實例和 Session 身份內可比較。
 
-子会话导航混合了两种需求：展示一个已知地址的对话，以及发现该会话的父目录或后代目录。已有父子地址的导航再次刷新 parent projection，既增加前置工作，也会在目录缓存缺席时拒绝一个本可由 Host 校验并打开的地址。
+子工作階段導航混合了兩種需求：展示一個已知地址的對話，以及發現該工作階段的父目錄或後代目錄。已有父子地址的導航再次重新整理 parent projection，既增加前置工作，也會在目錄快取缺席時拒絕一個本可由 Host 驗證並開啟的地址。
 
-## 决策
+## 決策
 
-### 用服务自身的 Symbol 标识缓存生产者
+### 用服務自身的 Symbol 標識快取生產者
 
-`SessionPersistence.identity` 是每个服务实例创建一次的 `Symbol('sessionPersistence')`。代理访问保留这个值，服务被替换后新实例获得不同值。Prepared observation cache 按 Session id 查找，并同时比较 `persistence.identity` 与 `stat().revision`；相同实例、相同 revision 可以复用已完成的 preparation。
+`SessionPersistence.identity` 是每個服務實例建立一次的 `Symbol('sessionPersistence')`。代理存取保留這個值，服務被替換後新實例獲得不同值。Prepared observation cache 按 Session id 查詢，並同時比較 `persistence.identity` 與 `stat().revision`；相同實例、相同 revision 可以複用已完成的 preparation。
 
-该身份只存在于进程内，不进入 Session header、事件或持久化文件。现有缓存容量、lease、live 优先级和 revision 失效规则不变。这个修复不增加尚未完成的冷读取之间的 Promise 合并；稳定身份解决的是完成后的误失效，不是所有调用方的并发去重。
+該身份只存在於程序內，不進入 Session header、事件或持久化檔案。現有快取容量、lease、live 優先順序和 revision 失效規則不變。這個修復不增加尚未完成的冷讀取之間的 Promise 合併；穩定身份解決的是完成後的誤失效，不是所有呼叫方的並行去重。
 
-### 辅助 RPC 等待当前对话的首次打开成功
+### 輔助 RPC 等待目前對話的首次開啟成功
 
-Client 在实际 RPC 发送位置使用既有 `sessions.using()`，不只延迟预热钩子。菜单候选、显式引用查询和后续目录刷新因而经过相同的等待入口。每个操作先确认目标已经有 Client binding，不因后台预热重新打开一个已经关闭的会话。
+Client 在實際 RPC 傳送位置使用既有 `sessions.using()`，不只延遲預熱掛鉤。選單候選、顯式引用查詢和後續目錄重新整理因而經過相同的等待入口。每個操作先確認目標已經有 Client binding，不因後臺預熱重新開啟一個已經關閉的工作階段。
 
-| Client 消费方 | 等待后的 RPC | 临时引用来源 |
+| Client 消費方 | 等待後的 RPC | 臨時引用來源 |
 | --- | --- | --- |
-| Skill 目录 | `skills/list` | `skillCatalog` |
-| Command 目录 | `commands/list` | `commandCatalog` |
-| Goal 激活状态 | `goals/get` | `goalActivation` |
-| `@` 文件与会话候选 | `fileReferences/list`、`sessionReferenceResolver/candidates` | 共用 `referenceCandidates` |
+| Skill 目錄 | `skills/list` | `skillCatalog` |
+| Command 目錄 | `commands/list` | `commandCatalog` |
+| Goal 啟用狀態 | `goals/get` | `goalActivation` |
+| `@` 檔案與工作階段候選 | `fileReferences/list`、`sessionReferenceResolver/candidates` | 共用 `referenceCandidates` |
 
-`sessions.using()` 先等待 `reference.ready`，再等待操作返回的 Promise，最后释放自己的引用。`ready` 表示首次 `Session.open()` 尝试已结算，不保证成功；这些消费方还检查 `openState === 'open'`，失败时不发送辅助 RPC。Goal 读方还确认捕获的 binding 未被替代，并记录读取拒绝而不清除已有展示状态。
+`sessions.using()` 先等待 `reference.ready`，再等待操作返回的 Promise，最後釋放自己的引用。`ready` 表示首次 `Session.open()` 嘗試已結算，不保證成功；這些消費方還檢查 `openState === 'open'`，失敗時不傳送輔助 RPC。Goal 讀方還確認捕捉的 binding 未被替代，並記錄讀取拒絕而不清除已有展示狀態。
 
-Skill 保留共享目录请求自己的取消信号；`@` 查询将当前候选请求的信号用于历史等待和两个 RPC。未加引号的 `@` 在等待后仍并行查询文件和会话，加引号的路径仍只查询文件。Command 与 Goal 不新增取消协议。这里的引用持有 Client 数据和跟随流，不赋予 Host Agent 新权限，也不禁止首帧之后发生正常 Agent 恢复。
+Skill 保留共享目錄請求自己的取消訊號；`@` 查詢將目前候選請求的訊號用於歷史等待和兩個 RPC。未加引號的 `@` 在等待後仍並行查詢檔案和工作階段，加引號的路徑仍只查詢檔案。Command 與 Goal 不新增取消協定。這裡的引用持有 Client 資料和跟隨流，不賦予 Host Agent 新權限，也不禁止首幀之後發生正常 Agent 恢復。
 
-### 对话使用 follow，目录分支保留显式读取
+### 對話使用 follow，目錄分支保留顯式讀取
 
-主对话的 `follow` 首帧已经携带该 Session 的完整 projection baseline。后续共享 projection 值变化会通知订阅者，不需要在切换会话或打开菜单时再次读取相同 baseline。
+主對話的 `follow` 首幀已經攜帶該 Session 的完整 projection baseline。後續共享 projection 值變化會通知訂閱者，不需要在切換工作階段或開啟選單時再次讀取相同 baseline。
 
-- 主视图切换不再额外刷新所选 Session 的 projection；恢复保存的子会话地址不再预先刷新其 parent。
-- 侧栏从完整父子地址直接保留目标子会话，不把父目录读取作为打开对话的前提。
-- Header 下拉菜单的 `changeOpen` 只改变展示状态，不刷新 `rootSessionId`。展开子节点和失败重试仍调用显式刷新，UI 回调命名为 `refreshProjection`；底层 `sessions.refreshProjections` API 不改名。
-- Team 点击使用已有 lead 与 roster 成员 id，直接打开 `{ parentSessionId, childSessionId, mode: 'continuable' }`。它不刷新 parent catalog，也不要求目标预先出现在 Client catalog 中；成员角色、主视图持有检查及 UI 对 provisioning、failed 成员的限制保持不变。
+- 主檢視切換不再額外重新整理所選 Session 的 projection；恢復儲存的子工作階段地址不再預先重新整理其 parent。
+- 側欄從完整父子地址直接保留目標子工作階段，不把父目錄讀取作為開啟對話的前提。
+- Header 下拉選單的 `changeOpen` 只改變展示狀態，不重新整理 `rootSessionId`。展開子節點和失敗重試仍呼叫顯式重新整理，UI 回呼命名為 `refreshProjection`；底層 `sessions.refreshProjections` API 不改名。
+- Team 點選使用已有 lead 與 roster 成員 id，直接開啟 `{ parentSessionId, childSessionId, mode: 'continuable' }`。它不重新整理 parent catalog，也不要求目標預先出現在 Client catalog 中；成員角色、主檢視持有檢查及 UI 對 provisioning、failed 成員的限制保持不變。
 
-已知地址不等于免除授权校验。Host 在打开子会话历史时，仍检查目标自身 header 的 parent、origin，以及自身 `subagent` projection 的 mode 和描述符归属。后续 continuation 仍受直接 parent 的既有授权规则约束。
+已知地址不等於免除授權驗證。Host 在開啟子工作階段歷史時，仍檢查目標自身 header 的 parent、origin，以及自身 `subagent` projection 的 mode 和描述符歸屬。後續 continuation 仍受直接 parent 的既有授權規則約束。
 
-## 实现边界
+## 實作邊界
 
-- 没有修改 Session 格式、迁移、Host observation 的 `all | none` 策略或 `session.projections` 返回字段。
-- 没有实现全局 cold-read singleflight，也没有把所有 Agent lookup 改成只读 lookup。
-- 没有删除 `SessionManager.handleConnected()` 对此前请求目录的批量刷新；本决策不保证重连只有一次冷读。
-- 工具侧 `listDescendants` 观察每个可达子级目录。观察可以复用实时状态或有效的 prepared Session，否则会读取冷日志。前端展开子节点也可能冷读该节点。普通主会话首开不等于所有后代枚举场景。
-- `@` 会话候选仍枚举 header，并从 live projection 或 projection cache 取名称；缓存缺失回退到 id。原有排序、默认 50 条上限和直接 subagent 分组规则不变，没有改成沿 `subagentCatalog` 递归发现。
+- 沒有修改 Session 格式、遷移、Host observation 的 `all | none` 策略或 `session.projections` 返回欄位。
+- 沒有實作全域 cold-read singleflight，也沒有把所有 Agent lookup 改成只讀 lookup。
+- 沒有刪除 `SessionManager.handleConnected()` 對此前請求目錄的批次重新整理；本決策不保證重連只有一次冷讀。
+- 工具側 `listDescendants` 觀察每個可達子級目錄。觀察可以複用即時狀態或有效的 prepared Session，否則會讀取冷日誌。前端展開子節點也可能冷讀該節點。普通主工作階段首開不等於所有後代列舉情境。
+- `@` 工作階段候選仍列舉 header，並從 live projection 或 projection cache 取名稱；快取缺失退回到 id。原有排序、預設 50 條上限和直接 subagent 分組規則不變，沒有改成沿 `subagentCatalog` 遞迴發現。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**取消 persistence 实例比较。** 不采用。同一个 Session id 和 revision 不能证明两个持久化服务提供同一份数据；服务替换仍必须使旧 preparation 失效。
+**取消 persistence 實例比較。** 不採用。同一個 Session id 和 revision 不能證明兩個持久化服務提供同一份資料；服務替換仍必須使舊 preparation 失效。
 
-**在调用方解包 Cordis 代理或按 Context 缓存服务对象。** 不采用。缓存需要的是生产者身份，而不是某次服务访问返回对象的身份；每实例 Symbol 足够表达这个要求，不需要传播代理实现细节。
+**在呼叫方解包 Cordis 代理或按 Context 快取服務物件。** 不採用。快取需要的是生產者身份，而不是某次服務存取返回物件的身份；每實例 Symbol 足夠表達這個要求，不需要傳播代理實作細節。
 
-**为所有冷读增加统一 singleflight。** 未纳入本次实现。它可以合并更多并发调用，但需要另外定义独立等待方取消、lease 和服务替换期间的任务归属；它也不能代替“辅助 RPC 不抢在首帧前恢复 Agent”的时序要求。
+**為所有冷讀增加統一 singleflight。** 未納入本次實作。它可以合併更多並行呼叫，但需要另外定義獨立等待方取消、lease 和服務替換期間的任務歸屬；它也不能代替“輔助 RPC 不搶在首幀前恢復 Agent”的時序要求。
 
-**只延迟 warm，或只给额外 projection 请求补 await。** 不采用。显式菜单查询仍能绕过 warm；串行执行一个重复 projection 请求也没有删除重复工作。等待放在实际辅助 RPC 入口，已有 follow 能提供的读取直接取消。
+**只延遲 warm，或只給額外 projection 請求補 await。** 不採用。顯式選單查詢仍能繞過 warm；序列執行一個重複 projection 請求也沒有刪除重複工作。等待放在實際輔助 RPC 入口，已有 follow 能提供的讀取直接取消。
 
-**保留 Team 的父目录存在性检查。** 不采用。Team roster 已给出成员身份，显式地址可以由现有 Host 历史入口验证；把 Client catalog 缓存命中作为导航前提，会把数据尚未加载误当成子会话不存在。
+**保留 Team 的父目錄存在性檢查。** 不採用。Team roster 已給出成員身份，顯式地址可以由現有 Host 歷史入口驗證；把 Client catalog 快取命中作為導航前提，會把資料尚未載入誤當成子工作階段不存在。
 
-## 后果
+## 後果
 
-普通主会话先完成自己的历史和 projection 读取，辅助操作再复用已完成的 observation 或已挂载状态。前端直接子代列表消费主会话的 catalog，不为显示每一行读取对应子会话正文。目录与对话的打开入口分开，导航到一个已知子会话不再附带 parent projection 预热。
+普通主工作階段先完成自己的歷史和 projection 讀取，輔助操作再複用已完成的 observation 或已掛載狀態。前端直接子代列表消費主工作階段的 catalog，不為顯示每一行讀取對應子工作階段正文。目錄與對話的開啟入口分開，導航到一個已知子工作階段不再附帶 parent projection 預熱。
 
-代价是辅助目录首次可用时间晚于对话首帧；操作还会持有临时 Client 引用直到结束。该等待只对应当前 Client generation 的首次打开，不是每次底层 follow 重建的就绪屏障。所有重连和异常重试场景仍需各自验证。
+代價是輔助目錄首次可用時間晚於對話首幀；操作還會持有臨時 Client 引用直到結束。該等待只對應目前 Client generation 的首次開啟，不是每次底層 follow 重建的就緒屏障。所有重連和異常重試情境仍需各自驗證。
 
-Header 根目录缺失仍是明确的覆盖缺口：若它属于未打开的 parent，且没有其他来源提供 catalog，仅打开下拉菜单不会补读；现有 UI 仍可能显示加载提示。本次没有增加新的父目录加载入口，也没有实现统一的 unknown 交互协议。
+Header 根目錄缺失仍是明確的覆蓋缺口：若它屬於未開啟的 parent，且沒有其他來源提供 catalog，僅開啟下拉選單不會補讀；現有 UI 仍可能顯示載入提示。本次沒有增加新的父目錄載入入口，也沒有實作統一的 unknown 互動協定。
 
-## 验证与已知缺口
+## 驗證與已知缺口
 
-用户在本地长历史主会话切换流程中，通过临时 `readColdSessionLog` 计时和调用栈观察到重复调用收敛为一次，并验证了 teammate 直接导航。这个结果只描述该操作的冷读辅助函数调用次数，不代表所有底层文件 I/O、全部重连场景或端到端性能都只有一次成本。诊断期间的私有 Session 内容和身份不作为测试 fixture。
+使用者在本地長曆史主工作階段切換流程中，透過臨時 `readColdSessionLog` 計時和呼叫堆疊觀察到重複呼叫收斂為一次，並驗證了 teammate 直接導航。這個結果只描述該操作的冷讀輔助函式呼叫次數，不代表所有底層檔案 I/O、全部重連情境或端到端效能都只有一次成本。診斷期間的私有 Session 內容和身份不作為測試 fixture。
 
-开发期对相关包执行过定向 TypeScript 构建与打包；尚无这批完整变更的门禁、行为测试或组装 Web 快照验证结果。现有测试只完成部分回调改名，仍有旧 fixture 名称、打开根菜单即刷新、侧栏先刷新 parent，以及 Team 拒绝缺失 catalog 的预期需要调整。这些是已知验证缺口，不是已经通过的检查。
+開發期對相關包執行過定向 TypeScript 建置與打包；尚無這批完整變更的門禁、行為測試或組裝 Web 快照驗證結果。現有測試只完成部分回呼改名，仍有舊 fixture 名稱、開啟根選單即重新整理、側欄先重新整理 parent，以及 Team 拒絕缺失 catalog 的預期需要調整。這些是已知驗證缺口，不是已經透過的檢查。
 
-## 与既有记录的关系
+## 與既有記錄的關係
 
-- [Session observation 与 projection 所有的客户端状态](../architecture/2026-08-25-session-observations-and-projection-owned-client-state.zh.md)继续拥有读取切面和共享值的职责划分。本记录补充缓存生产者身份与首帧消费顺序；旧记录中“包括未完成冷加载的共享”描述与当前 reader 实现不一致，不能作为本次 singleflight 已实现的依据。
-- [Client Session 引用、引用来源与 UI 状态](../architecture/2026-09-15-client-session-references.zh.md)继续拥有 `retain`、`ready`、`using` 与显式地址语义。本记录限定四类辅助读取作为独立异步操作持有临时引用，不把额外引用扩展到所有 UI 动作。
-- [Web 子代理目录消费共享 projection](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md)继续拥有通用 projection store、显式目录读取和 control 更新。本次实现落实“打开会话使用 follow baseline”的规则，不替换整个目录机制。
-- [Web subagent 目录与用户继续交互](../feature/2026-07-27-web-subagent-conversations.zh.md)继续拥有展示和 continuation 授权。本记录只调整导航前置读取及根菜单刷新时机，不取消子会话自身的 Host 校验；旧记录对缺失根目录交互加载的描述需与这里的覆盖缺口一起核对。
+- [Session observation 與 projection 所有的用戶端狀態](../architecture/2026-08-25-session-observations-and-projection-owned-client-state.zh.md)繼續擁有讀取切面和共享值的職責劃分。本記錄補充快取生產者身份與首幀消費順序；舊記錄中“包括未完成冷載入的共享”描述與目前 reader 實作不一致，不能作為本次 singleflight 已實作的依據。
+- [Client Session 引用、引用來源與 UI 狀態](../architecture/2026-09-15-client-session-references.zh.md)繼續擁有 `retain`、`ready`、`using` 與顯式地址語義。本記錄限定四類輔助讀取作為獨立非同步操作持有臨時引用，不把額外引用擴充功能到所有 UI 動作。
+- [Web 子代理目錄消費共享 projection](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md)繼續擁有通用 projection store、顯式目錄讀取和 control 更新。本次實作落實“開啟工作階段使用 follow baseline”的規則，不替換整個目錄機制。
+- [Web subagent 目錄與使用者繼續互動](../feature/2026-07-27-web-subagent-conversations.zh.md)繼續擁有展示和 continuation 授權。本記錄只調整導航前置讀取及根選單重新整理時機，不取消子工作階段自身的 Host 驗證；舊記錄對缺失根目錄互動載入的描述需與這裡的覆蓋缺口一起核對。

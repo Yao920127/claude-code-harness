@@ -321,8 +321,8 @@ describe('PluginManagerPage', () => {
     '@acme/dsh-local-tools',
   ])('localizes Host metadata for %s across cards, details, switches, and uninstall confirmation', (name) => {
     const meta = {
-      title: { en: 'Installed tools', zh: '已安装工具' },
-      description: { en: 'Tools on this host.', zh: '本机工具。' },
+      title: { en: 'Installed tools', zh: '已安裝工具' },
+      description: { en: 'Tools on this host.', zh: '本機工具。' },
     }
     const title = (dict: typeof en): string => dict === zh ? meta.title.zh : meta.title.en
     const description = (dict: typeof en): string => dict === zh ? meta.description.zh : meta.description.en
@@ -427,14 +427,14 @@ describe('PluginManagerPage', () => {
   }>([
     {
       field: 'title',
-      meta: { title: { en: '@acme/dsh-sidebar', zh: '侧栏套件' }, description: 'Package description.' },
-      englishTitle: '@acme/dsh-sidebar', chineseTitle: '侧栏套件',
+      meta: { title: { en: '@acme/dsh-sidebar', zh: '側欄套件' }, description: 'Package description.' },
+      englishTitle: '@acme/dsh-sidebar', chineseTitle: '側欄套件',
       englishDescription: 'Package description.', chineseDescription: 'Package description.',
     },
     {
       field: 'description',
-      meta: { title: { en: 'English title' }, description: { en: '', zh: '中文套件说明。' } },
-      englishTitle: 'English title', chineseTitle: 'English title', chineseDescription: '中文套件说明。',
+      meta: { title: { en: 'English title' }, description: { en: '', zh: '中文套件說明。' } },
+      englishTitle: 'English title', chineseTitle: 'English title', chineseDescription: '中文套件說明。',
     },
   ])('resolves bundle $field independently and hides empty descriptions on cards and details', ({ meta, englishTitle, chineseTitle, englishDescription, chineseDescription }) => {
     const { setLanguage } = renderTab({ packages: [pkg({ name: '@acme/dsh-sidebar', meta })] })
@@ -461,7 +461,7 @@ describe('PluginManagerPage', () => {
       expect(screen.getByRole('heading', { level: 3 }).textContent).toBe(title)
       if (description === undefined) {
         expect(screen.queryByText(chineseDescription)).toBeNull()
-        expect(screen.queryByText(dict === zh ? '暂无描述。' : 'No description.')).toBeNull()
+        expect(screen.queryByText(dict === zh ? '暫無描述。' : 'No description.')).toBeNull()
       } else {
         expect(screen.getByText(description)).toBeTruthy()
       }
@@ -473,7 +473,7 @@ describe('PluginManagerPage', () => {
       row({ moduleName: '@acme/dsh-sidebar/navigation', meta: { description: { en: 'Navigation description.' } } }),
       row({
         rowId: 'theme', entryId: 'include:theme' as PluginEntryId, moduleName: '@acme/dsh-theme/client',
-        meta: { title: { en: '@acme/dsh-theme', zh: '主题插件' }, description: { en: '', zh: '中文主题说明。' } },
+        meta: { title: { en: '@acme/dsh-theme', zh: '主題外掛' }, description: { en: '', zh: '中文主題說明。' } },
       }),
     ]
     const { actions, setLanguage } = renderTab(
@@ -484,7 +484,7 @@ describe('PluginManagerPage', () => {
     fireEvent.click(screen.getByRole('button', { name: en.openDetail.replace('{name}', 'Bundle title') }))
     expect(screen.getByRole('switch', { name: en.partToggle.replace('{name}', '@acme/dsh-sidebar/navigation') })).toBeTruthy()
     expect(screen.getByRole('switch', { name: en.partToggle.replace('{name}', '@acme/dsh-theme') })).toBeTruthy()
-    expect(screen.queryByText('中文主题说明。')).toBeNull()
+    expect(screen.queryByText('中文主題說明。')).toBeNull()
     setLanguage(zh)
     const navigation = document.querySelector('[data-plugin-row="include:sidebar"]') as HTMLElement
     expect(within(navigation).getByText('Navigation description.')).toBeTruthy()
@@ -492,16 +492,16 @@ describe('PluginManagerPage', () => {
     expect(within(navigation).queryByText('Bundle description.')).toBeNull()
     fireEvent.click(within(navigation).getByRole('switch', { name: zh.partToggle.replace('{name}', '@acme/dsh-sidebar/navigation') }))
     expect(actions.setRowEnabled).toHaveBeenCalledExactlyOnceWith('include:sidebar', false)
-    expect(screen.getByText('中文主题说明。')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: zh.configureRow.replace('{name}', '主题插件') }))
+    expect(screen.getByText('中文主題說明。')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: zh.configureRow.replace('{name}', '主題外掛') }))
     expect(document.querySelector('[data-plugin-row-detail]')?.getAttribute('data-plugin-row-detail')).toBe('dsh-better-sidebar#theme')
-    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('主题插件')
-    expect(screen.getByText('中文主题说明。')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('主題外掛')
+    expect(screen.getByText('中文主題說明。')).toBeTruthy()
     setLanguage(en)
     expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('@acme/dsh-theme')
     expect(screen.getByText('@acme/dsh-theme/client')).toBeTruthy()
     expect(screen.getByText('theme')).toBeTruthy()
-    expect(screen.queryByText('中文主题说明。')).toBeNull()
+    expect(screen.queryByText('中文主題說明。')).toBeNull()
     expect(screen.getByRole('form', { name: 'theme settings' })).toBeTruthy()
   })
 
@@ -538,8 +538,8 @@ describe('PluginManagerPage', () => {
     const localized = row({
       moduleName: '@acme/dsh-sidebar-widget',
       meta: {
-        title: { en: 'Sidebar component', zh: '导航组件' },
-        description: { en: 'Sidebar navigation', zh: '侧边导航' },
+        title: { en: 'Sidebar component', zh: '導航元件' },
+        description: { en: 'Sidebar navigation', zh: '側邊導航' },
         error,
       },
     })
@@ -547,23 +547,23 @@ describe('PluginManagerPage', () => {
       rowId: `extra-${String(index)}`, entryId: `include:extra-${String(index)}` as PluginEntryId, moduleName: '@acme/other',
     }))]
     const { actions, setLanguage } = renderTab(
-      { packages: [pkg({ meta: { title: { en: 'Personal tools', zh: '个人工具' } }, rows })] },
+      { packages: [pkg({ meta: { title: { en: 'Personal tools', zh: '個人工具' } }, rows })] },
       { rows: new Set(['dsh-better-sidebar#sidebar']) },
       { 'plugins.row.config:dsh-better-sidebar#sidebar': view => view === 'summary' ? 'Config summary' : <form aria-label="row settings" /> },
     )
     fireEvent.click(screen.getByRole('button', { name: en.openDetail.replace('{name}', 'Personal tools') }))
     setLanguage(zh)
     const search = screen.getByRole('searchbox', { name: zh.partsFilter })
-    for (const query of ['导航组件', '侧边导航', 'sidebar', '@acme/dsh-sidebar-widget']) {
+    for (const query of ['導航元件', '側邊導航', 'sidebar', '@acme/dsh-sidebar-widget']) {
       fireEvent.change(search, { target: { value: query } })
       expect(document.querySelectorAll('[data-plugin-row]')).toHaveLength(1)
-      expect(screen.getByRole('button', { name: zh.configureRow.replace('{name}', '导航组件') })).toBeTruthy()
+      expect(screen.getByRole('button', { name: zh.configureRow.replace('{name}', '導航元件') })).toBeTruthy()
     }
     expect(screen.getByText('sidebar')).toBeTruthy()
     expect(screen.getByText('@acme/dsh-sidebar-widget')).toBeTruthy()
-    expect(screen.getByText('侧边导航')).toBeTruthy()
+    expect(screen.getByText('側邊導航')).toBeTruthy()
     expect(screen.getByText(zh.metadataError.replace('{error}', error))).toBeTruthy()
-    const toggle = screen.getByRole('switch', { name: zh.partToggle.replace('{name}', '导航组件') })
+    const toggle = screen.getByRole('switch', { name: zh.partToggle.replace('{name}', '導航元件') })
     expect(toggle).toHaveProperty('disabled', false)
     fireEvent.click(toggle)
     expect(actions.setRowEnabled).toHaveBeenCalledExactlyOnceWith('include:sidebar', false)
@@ -579,13 +579,13 @@ describe('PluginManagerPage', () => {
     expect(screen.getByText('Sidebar navigation')).toBeTruthy()
     expect(screen.queryByText('Config summary')).toBeNull()
     setLanguage(zh)
-    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('导航组件')
-    expect(screen.getByText('侧边导航')).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('導航元件')
+    expect(screen.getByText('側邊導航')).toBeTruthy()
     expect(screen.getByText('sidebar')).toBeTruthy()
     expect(screen.getByText('@acme/dsh-sidebar-widget')).toBeTruthy()
     expect(screen.getByText(zh.metadataError.replace('{error}', error))).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: zh.backToPackage.replace('{name}', '个人工具') }))
-    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('个人工具')
+    fireEvent.click(screen.getByRole('button', { name: zh.backToPackage.replace('{name}', '個人工具') }))
+    expect(screen.getByRole('heading', { level: 3 }).textContent).toBe('個人工具')
   })
 
   describe('configuration pages', () => {
@@ -1118,8 +1118,8 @@ describe('PluginManagerPage', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: en.cancel }))
     expect(actions.closeInstall).toHaveBeenCalledOnce()
     setLanguage(zh)
-    expect(screen.getByRole('dialog', { name: kind === 'timeout' ? '连接 GitHub 超时' : '无法访问 GitHub' })).toBeTruthy()
-    expect(screen.getByText('请尝试其他安装来源。')).toBeTruthy()
+    expect(screen.getByRole('dialog', { name: kind === 'timeout' ? '連線 GitHub 超時' : '無法存取 GitHub' })).toBeTruthy()
+    expect(screen.getByText('請嘗試其他安裝來源。')).toBeTruthy()
     set({ install: { ...IDLE_INSTALL, open: true, mirrorRecovery: true, registries: REGISTRIES, registry: { kind: 'offered', registry: MIRROR } } })
     const form = within(screen.getByRole('dialog', { name: zh.installTitle }))
     expect(form.queryByText(zh.installDescription)).toBeNull()
@@ -1131,7 +1131,7 @@ describe('PluginManagerPage', () => {
     expect(form.getAllByRole('button')).toEqual([
       form.getByRole('button', { name: zh.close }),
       form.getByRole('button', { name: zh.installGuideToggle }),
-      form.getByRole('button', { name: '安装源 中国大陆镜像源' }),
+      form.getByRole('button', { name: '安裝源 中國大陸映像源' }),
       form.getByRole('button', { name: zh.installRun }),
     ])
   })
@@ -1172,8 +1172,8 @@ describe('PluginManagerPage', () => {
     expect(screen.getByRole('button', { name: en.installUseGithubMirror })).toBeTruthy()
     setLanguage(zh)
     set({ install: failed })
-    expect(screen.getByRole('button', { name: '试试其他方式' })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: '改用国内镜像' })).toBeNull()
+    expect(screen.getByRole('button', { name: '試試其他方式' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '改用國內映像' })).toBeNull()
   })
 
   it('keeps the ordinary failure view for registry errors, other hosts, and unavailable mirrors', () => {

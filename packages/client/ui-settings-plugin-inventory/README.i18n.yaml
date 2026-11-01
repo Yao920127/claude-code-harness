@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-plugin-inventory/README.md
 /:
   en: 9121298d88fe8ea6
-  zh: 5da705491f951d0e
+  zh: b3130978dcf0f65e
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory:
   en: 463eecf002ec0f54
   zh: b8dc6003ddccd14a
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/summary:
   en: 56f5349b6e502525
-  zh: 691a0fe90b739e9d
+  zh: d2349f776b2ebe52
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/use-this-package:
   en: 67637808e7940157
-  zh: d4d0716ea4d33e4a
+  zh: a6a5e78a1bfa2cce
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/use-this-package/reading-a-card:
   en: e615aaa891b5055f
-  zh: 38769e763c8e54ca
+  zh: e62e76b4705c82db
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/use-this-package/the-preset-switcher:
   en: 84e5938329199a22
-  zh: 6f5cfaac56433e8b
+  zh: 043e3133e84d056e
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/use-this-package/retrying-a-failed-read:
   en: 2859449aaae5ab59
-  zh: 06380059ae429026
+  zh: 82d0a99364bea839
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/understand-the-implementation:
   en: cab883d26642c932
-  zh: 54e7321bd781b400
+  zh: 02a477af192707e0
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/understand-the-implementation/registration:
   en: e4792880c5916ce0
-  zh: 4c8171a446dd153f
+  zh: 4dd670139b1d7982
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/understand-the-implementation/rendering:
   en: b9aa850e5f101b68
-  zh: 8a29025f19f6ce37
+  zh: 0ccee38585ee632a
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/further-exploration:
   en: ae3819f0c5da95bd
-  zh: 40972ab96d5c95e2
+  zh: 908476afd790599b
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/model-experience:
   en: 69fb187ac2361233
-  zh: d4d3ec4ed3e3d98d
+  zh: d532ff0ef4bf6542
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/known-limitations-and-deferred-work:
   en: 3d3343d97eb73762
-  zh: 5fc9d1c1f0c4055d
+  zh: 58c32d03a453a2ec
 /deepseek-ai-dsh-client-ui-settings-plugin-inventory/known-limitations-and-deferred-work/dev-note:
   en: 7516b7e39304e5b3
-  zh: 8961c0cefb89ee12
+  zh: 062eca01b7ecf6f4

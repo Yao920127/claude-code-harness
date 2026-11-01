@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/todo/README.md
 /:
   en: f9468c9e9689351a
-  zh: b56e2a1624ef7d3d
+  zh: 08eb39997714b4c3
 /packages-todo:
   en: 9402aaa4ac047a22
   zh: 96ff5f09e974cade
 /packages-todo/summary:
   en: 8e99ed58cb881726
-  zh: a0342c8c1abdb676
+  zh: 5e75aad8939e6362
 /packages-todo/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-todo/packages:
   en: 812e0f54dc1972a2
-  zh: 0acffa7fcffc487f
+  zh: 30fdf587273e0b51
 /packages-todo/related-documentation:
   en: c9e3603df924f7ca
-  zh: 3f46dd9c40365da1
+  zh: 8f4da41376a9dcb2
 /packages-todo/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

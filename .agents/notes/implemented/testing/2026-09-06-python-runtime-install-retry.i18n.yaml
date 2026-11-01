@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-06-python-runtime-install-retry.md
 /agent-note-bounded-retry-for-python-runtime-dependency-install:
   en: 610eeadbda25f100
-  zh: e063790ef0b766c9
+  zh: 6287d107d2d424da
 /agent-note-bounded-retry-for-python-runtime-dependency-install/problem:
   en: ea99de707130a978
-  zh: 0d8d853cf38e903a
+  zh: 0ccc14df7e3bd11c
 /agent-note-bounded-retry-for-python-runtime-dependency-install/decision:
   en: 8a91f9e5ade1fbbe
-  zh: 82851f2d37f6a216
+  zh: 0ffeba2ce364c6ee
 /agent-note-bounded-retry-for-python-runtime-dependency-install/alternatives-considered:
   en: c9bee05dfbb068aa
-  zh: 7f0712a941209116
+  zh: 3bc83649175c6231
 /agent-note-bounded-retry-for-python-runtime-dependency-install/consequences:
   en: 4d036332d39c88a6
-  zh: aac5dd7e7f09df2a
+  zh: 9cff1e4d9bee1c55

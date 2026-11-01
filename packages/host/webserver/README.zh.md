@@ -1,5 +1,5 @@
 ---
-description: "web GUI 宿主的 HTTP 服务器：具名路由与 upgrade 注册、index 转换，以及服务 Web 壳 SPA dist 的唯一回退席位。"
+description: "web GUI 主機的 HTTP 伺服器：具名路由與 upgrade 註冊、index 轉換，以及服務 Web 殼 SPA dist 的唯一退回席位。"
 kind: "package-reference"
 ---
 
@@ -9,25 +9,25 @@ kind: "package-reference"
 
 ## 概述
 
-浏览器经由 `dsh-host-webserver` 通过 HTTP 访问 web GUI：一个 `node:http` 服务器，其他插件在其中注册具名路由、upgrade 路由、index 启动输入与一个回退 handler。它不了解任何 harness 概念，也不提供任何文件服务——`/api` 桥接、插件 bundle、HMR（热模块替换）事件流与 SPA dist 都属于注册它们的插件。路由匹配顺序固定不变：先在整张表中匹配精确 route，再匹配最长前缀，最后交给回退 handler。它只服务浏览器；Electron 通过 `file://` 加载 dist，并经 IPC 桥接承载 fetch。
+瀏覽器經由 `dsh-host-webserver` 透過 HTTP 存取 web GUI：一個 `node:http` 伺服器，其他外掛在其中註冊具名路由、upgrade 路由、index 啟動輸入與一個退回 handler。它不瞭解任何 harness 概念，也不提供任何檔案服務——`/api` 橋接、外掛 bundle、HMR（熱模組替換）事件流與 SPA dist 都屬於註冊它們的外掛。路由匹配順序固定不變：先在整張表中匹配精確 route，再匹配最長字首，最後交給退回 handler。它只服務瀏覽器；Electron 透過 `file://` 載入 dist，並經 IPC 橋接承載 fetch。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-把 webserver 组合为面向浏览器宿主的 HTTP 传输，然后让功能插件认领各自的路由。激活即开始监听；注册顺序不影响请求处理，因为具名路由组合起来互不相交。
+把 webserver 組合為面向瀏覽器主機的 HTTP 傳輸，然後讓功能外掛認領各自的路由。啟用即開始監聽；註冊順序不影響請求處理，因為具名路由組合起來互不相交。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-host-webserver'
@@ -36,89 +36,89 @@ kind: "package-reference"
     port: 3000
 ```
 
-`host` 只接受两个值：`127.0.0.1`（默认姿态，仅回环）与 `0.0.0.0`（有意向网络开放——服务器自身不携带 TLS、认证或来源策略）。`port` 为 0 时请求 OS 分配端口；之后用 `ctx.webServer.port` 读取正在监听的端口。
+`host` 只接受兩個值：`127.0.0.1`（預設姿態，僅迴環）與 `0.0.0.0`（有意向網路開放——伺服器自身不攜帶 TLS、認證或來源策略）。`port` 為 0 時請求 OS 分配埠；之後用 `ctx.webServer.port` 讀取正在監聽的埠。
 
-设置 `compression: 'gzip'` 可以包装符合条件的 socket-backed 响应，而不改变 route API。客户端必须接受 gzip，且媒体类型必须可压缩或为 `multipart/form-data`；已知长度小于 `compressionThresholdBytes` 的响应保持未压缩，未知长度的流则立即符合条件。已有编码、`Cache-Control: no-transform`、range 响应、SSE（Server-Sent Events）、ZIP 与已打包的 `.gz` Worker image 均保持不变。随附 Web bundle 使用 level 1 与 1024 字节阈值；其他组合默认不压缩。
+設定 `compression: 'gzip'` 可以包裝符合條件的 socket-backed 回應，而不改變 route API。用戶端必須接受 gzip，且媒體型別必須可壓縮或為 `multipart/form-data`；已知長度小於 `compressionThresholdBytes` 的回應保持未壓縮，未知長度的流則立即符合條件。已有編碼、`Cache-Control: no-transform`、range 回應、SSE（Server-Sent Events）、ZIP 與已打包的 `.gz` Worker image 均保持不變。隨附 Web bundle 使用 level 1 與 1024 位元組閾值；其他組合預設不壓縮。
 
-### 注册路由
+### 註冊路由
 
-`register(route)` 添加具名的 `exact`／`prefix` HTTP route，`registerUpgrade(route)` 为精确 pathname 添加 upgrade route，两者返回的 disposer 都会移除注册。同一张表内的重复路径会抛错——route 模式是组合层约定，冲突即配置错误。HTTP 匹配先在整张表中匹配精确 route，再匹配最长前缀，最后交给回退 handler；upgrade 只做精确匹配，未命中连接直接关闭。
+`register(route)` 新增具名的 `exact`／`prefix` HTTP route，`registerUpgrade(route)` 為精確 pathname 新增 upgrade route，兩者返回的 disposer 都會移除註冊。同一張表內的重複路徑會拋錯——route 模式是組合層約定，衝突即設定錯誤。HTTP 匹配先在整張表中匹配精確 route，再匹配最長字首，最後交給退回 handler；upgrade 只做精確匹配，未命中連線直接關閉。
 
-### 回退席位
+### 退回席位
 
-`registerFallback(handler)` 认领所有未被具名 route 命中的请求的唯一一个 handler。第二次注册会抛错；没有注册回退时服务器回答 404。在随附的 Web 组合中，[SPA dist 服务器](../frontend-static/README.zh.md)拥有该席位，并对其渲染的每个 index 响应调用 `renderIndex`。
+`registerFallback(handler)` 認領所有未被具名 route 命中的請求的唯一一個 handler。第二次註冊會拋錯；沒有註冊退回時伺服器回答 404。在隨附的 Web 組合中，[SPA dist 伺服器](../frontend-static/README.zh.md)擁有該席位，並對其渲染的每個 index 回應呼叫 `renderIndex`。
 
-index 启动输入分两层。`collectIndexInjections()` 收集一张全新的注入表——每次调用发一次 `webserver/index-inject` 事件，每个订阅方推入其当前行——`renderIndex(html)` 先把这些行渲染进 index.html 正文，再按注册顺序应用原始 `tapIndex(transform)` 转换。`script-preload` 行会渲染为 classic script 的提示性 preload 链接。静态部署会在启动 payload 中携带同一批行。`applyIndexTaps(html)` 只应用原始转换；它是任何行都无法表达的标记的逃生口。
+index 啟動輸入分兩層。`collectIndexInjections()` 收集一張全新的注入表——每次呼叫發一次 `webserver/index-inject` 事件，每個訂閱方推入其目前行——`renderIndex(html)` 先把這些行渲染進 index.html 正文，再按註冊順序應用原始 `tapIndex(transform)` 轉換。`script-preload` 行會渲染為 classic script 的提示性 preload 連結。靜態部署會在啟動 payload 中攜帶同一批行。`applyIndexTaps(html)` 只應用原始轉換；它是任何行都無法表達的標記的逃生口。
 
-### 失败时的行为
+### 失敗時的行為
 
-监听失败（例如 EADDRINUSE）会以绑定诊断信息拒绝插件初始化。handler 抛错的 HTTP 请求会得到 400——若响应头已经发出则销毁 socket——并记录 warning；它绝不会退出进程。upgrade handler 抛错或升级 socket 出现传输错误时，会记录 warning 并销毁对应 socket。
+監聽失敗（例如 EADDRINUSE）會以繫結診斷資訊拒絕外掛初始化。handler 拋錯的 HTTP 請求會得到 400——若回應頭已經發出則銷燬 socket——並記錄 warning；它絕不會退出程序。upgrade handler 拋錯或升級 socket 出現傳輸錯誤時，會記錄 warning 並銷燬對應 socket。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 设计理念
+### 設計理念
 
-本包是一个不带任何 harness 词汇的普通路由注册表：`WebServer` 继承 Cordis `Service`，持有三张路由表、回退 slot、原始 index 转换列表，以及 index 渲染器经其收集行的 `webserver/index-inject` 事件。index 渲染每次响应组合两层：`renderIndex` 先把包含提示性 `script-preload` 行的全新注入表渲染进正文，再按注册顺序应用原始转换；`applyIndexTaps` 只运行转换。upgrade handler 拥有协议握手与连接内容；webserver 只交付原始 socket 与 request。`host` 与 `port` getter 暴露其他插件据以自适应的组合期事实（例如 directory-picker 选择器）。
+本包是一個不帶任何 harness 詞彙的普通路由註冊表：`WebServer` 繼承 Cordis `Service`，持有三張路由表、退回 slot、原始 index 轉換列表，以及 index 渲染器經其收集行的 `webserver/index-inject` 事件。index 渲染每次回應組合兩層：`renderIndex` 先把包含提示性 `script-preload` 行的全新注入表渲染進正文，再按註冊順序應用原始轉換；`applyIndexTaps` 只執行轉換。upgrade handler 擁有協定握手與連線內容；webserver 只交付原始 socket 與 request。`host` 與 `port` getter 暴露其他外掛據以自適應的組合期事實（例如 directory-picker 選擇器）。
 
-### 匹配与生命周期
+### 匹配與生命週期
 
-`match(pathname)` 先查精确表，再遍历前缀表取最长匹配，最后走回退。激活（`[Service.init]`）即开始监听；资源释放会启动 `close()` 与 `closeAllConnections()`，销毁所有受跟踪的升级 socket，并仅在服务器与这些 socket 均已关闭后返回。Node 的 `closeAllConnections()` 不包含升级 socket，因此服务显式跟踪它们。
+`match(pathname)` 先查精確表，再遍歷字首表取最長匹配，最後走退回。啟用（`[Service.init]`）即開始監聽；資源釋放會啟動 `close()` 與 `closeAllConnections()`，銷燬所有受跟蹤的升級 socket，並僅在伺服器與這些 socket 均已關閉後返回。Node 的 `closeAllConnections()` 不包含升級 socket，因此服務顯式跟蹤它們。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `WebServer` 服务：路由表、回退席位、index 渲染、匹配、生命周期 |
-| — | 不发布运行时不变式伴生入口；路由注册与释放通过同一服务修改同一张路由表，register/dispose 探针只会重复执行实现。真实路由与 HMR 测试负责验证该行为。 |
-| [`src/injections.ts`](src/injections.ts) | 结构化 `IndexInjection` 行与 `renderIndexInjections` 行渲染 |
+| [`src/index.ts`](src/index.ts) | `WebServer` 服務：路由表、退回席位、index 渲染、匹配、生命週期 |
+| — | 不釋出執行時不變式伴生入口；路由註冊與釋放透過同一服務修改同一張路由表，register/dispose 探針只會重複執行實作。真實路由與 HMR 測試負責驗證該行為。 |
+| [`src/injections.ts`](src/injections.ts) | 結構化 `IndexInjection` 行與 `renderIndexInjections` 行渲染 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当服务器约定不够用时阅读以下内容：先看子系统参考，再看回退持有者，以及谁注册哪条路由背后的分层决策。
+當伺服器約定不夠用時閱讀以下內容：先看子系統參考，再看退回持有者，以及誰註冊哪條路由背後的分層決策。
 
-- [HTTP 服务器子系统](../../../docs/subsystems/web-server.zh.md)——路由、匹配顺序与服务器接受的配置。
-- [SPA dist 服务器](../frontend-static/README.zh.md)——回退席位的随附持有者。
-- [Web 配置树启动与传输分层](../../../.agents/notes/implemented/architecture/2026-07-24-web-config-tree-boot-and-transport-layering.zh.md)——功能插件为何拥有每条路由。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-webserver)——每个受支持配置字段及其源声明。
+- [HTTP 伺服器子系統](../../../docs/subsystems/web-server.zh.md)——路由、匹配順序與伺服器接受的設定。
+- [SPA dist 伺服器](../frontend-static/README.zh.md)——退回席位的隨附持有者。
+- [Web 設定樹啟動與傳輸分層](../../../.agents/notes/implemented/architecture/2026-07-24-web-config-tree-boot-and-transport-layering.zh.md)——功能外掛為何擁有每條路由。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-webserver)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该 HTTP 载体只桥接浏览器与 API handler，不注册任何面向模型的内容。
+無。該 HTTP 載體只橋接瀏覽器與 API handler，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明服务器在何处有意保持最小。它们是当前包约束，不是任务积压。
+這些限制說明伺服器在何處有意保持最小。它們是目前包約束，不是任務積壓。
 
-- **不提供服务器级 TLS、认证或来源策略**：`dsh-client-connection` 等 route owner 会实施自己的请求策略。绑定非回环地址仍会向该网络公开未受保护的 route 与静态资源。
-- **Socket 选项固定不变**：配置只选择绑定宿主与端口；在具体部署产生需求前，backlog 和其他 socket 设置仍保持内部实现。
+- **不提供伺服器級 TLS、認證或來源策略**：`dsh-client-connection` 等 route owner 會實施自己的請求策略。繫結非迴環地址仍會向該網路公開未受保護的 route 與靜態資源。
+- **Socket 選項固定不變**：設定只選擇繫結主機與埠；在具體部署產生需求前，backlog 和其他 socket 設定仍保持內部實作。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

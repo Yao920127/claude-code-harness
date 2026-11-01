@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/api/gateway/README.md
 /:
   en: 6ffef394821a2841
-  zh: 1410a5b46b97d9c7
+  zh: f1294c7313ae7084
 /deepseek-ai-dsh-api-gateway:
   en: 7c37b852461967b9
   zh: c6f7a5be7225c73b
 /deepseek-ai-dsh-api-gateway/summary:
   en: 501e60ed5d702873
-  zh: 031d5e35ef579337
+  zh: 075443c6a6b8c753
 /deepseek-ai-dsh-api-gateway/table-of-contents:
   en: d9859219cdb0f367
-  zh: 2a3cfa8cb786e327
+  zh: 5a5ccd86e87eabb9
 /deepseek-ai-dsh-api-gateway/host-service-typertgatewayservice-ctx-key-typertgateway:
   en: 65092c0f187de45c
-  zh: 453bbb826aa7c242
+  zh: f77f8ad7e8681704
 /deepseek-ai-dsh-api-gateway/client-service-clientremote-ctx-key-remote:
   en: c106f0ca3e547f84
-  zh: 833e30d7151c41c7
+  zh: 8d3314ac697fa069
 /deepseek-ai-dsh-api-gateway/model-experience:
   en: 6cb309d3378f035d
-  zh: 998042a02ee32850
+  zh: 8151e55e95f6d361
 /deepseek-ai-dsh-api-gateway/model-experience/kv-cache-effect:
   en: af5abeee32f2d93b
-  zh: b320bb727a223a13
+  zh: 6887b4d2b08af2f0
 /deepseek-ai-dsh-api-gateway/known-limitations-and-deferred-work:
   en: 3ade2903f40a0a98
-  zh: 9af1d557fefdbd89
+  zh: af2c153c46340ead
 /deepseek-ai-dsh-api-gateway/known-limitations-and-deferred-work/dev-note:
   en: 365f5c32056ff39a
-  zh: 9556fd36702f5ecd
+  zh: 640b6f1965301cc0

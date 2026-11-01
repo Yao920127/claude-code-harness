@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-28-skill-invocation-policy.md
 /agent-note-independent-model-and-user-skill-invocation-policy:
   en: d5f87e846ef041b1
-  zh: 273e87043d19a709
+  zh: 976b63faf4e4853b
 /agent-note-independent-model-and-user-skill-invocation-policy/problem:
   en: 9fc564115fca4b22
-  zh: 3a414ee5c1f7f842
+  zh: adb1c778e3eba8cd
 /agent-note-independent-model-and-user-skill-invocation-policy/decision:
   en: dbd7aabf9fdd7c37
-  zh: d71a2fd355e30fd1
+  zh: 53e6d8ef1e7c8d39
 /agent-note-independent-model-and-user-skill-invocation-policy/alternatives-considered:
   en: fdffcd101a494c4a
-  zh: db802bf9bc04ae74
+  zh: 9965e3f829e1b7c9
 /agent-note-independent-model-and-user-skill-invocation-policy/consequences:
   en: 94071073367396eb
-  zh: 5afca22d8140b5c0
+  zh: 72ac3b9090271189

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-27-handle-based-session-persistence.md
 /agent-note-handle-based-session-persistence:
   en: ca49a1cfae00a590
-  zh: f1fe21b5dbaf0d68
+  zh: 1b2aca84e20eed40
 /agent-note-handle-based-session-persistence/problem:
   en: e4a62db37d44cc11
-  zh: 860058651d2817de
+  zh: e1eb7d142a1ec60c
 /agent-note-handle-based-session-persistence/decision:
   en: 52184217a0939497
-  zh: 404783efc001e6cc
+  zh: 562103ed4b1e78cf
 /agent-note-handle-based-session-persistence/alternatives-considered:
   en: f3f7a3abe905c97d
-  zh: 28018bc45290a455
+  zh: 5d5af45998efae56
 /agent-note-handle-based-session-persistence/consequences:
   en: 5917a573cbdc5fa4
-  zh: 3c3769070539a0a9
+  zh: faf55a6c9758d7ae
 /agent-note-handle-based-session-persistence/related:
   en: 07a1b7d5a0f9b0f7
-  zh: 9bfa134b62ff3df7
+  zh: 4e238c06a0d7dc3e

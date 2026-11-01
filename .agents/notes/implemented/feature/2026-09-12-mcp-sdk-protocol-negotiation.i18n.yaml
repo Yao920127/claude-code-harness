@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-12-mcp-sdk-protocol-negotiation.md
 /agent-note-mcp-sdk-protocol-negotiation:
   en: 9228ca2f4da2f41b
-  zh: 7cd10429865c3f2d
+  zh: 45b4a2d1c5947d3f
 /agent-note-mcp-sdk-protocol-negotiation/problem:
   en: bd614e17c62d137e
-  zh: ee71fdcd310a9592
+  zh: 2538e5784151c0ff
 /agent-note-mcp-sdk-protocol-negotiation/decision:
   en: ed7b45ffcaeffedd
-  zh: 2287d525ec04006c
+  zh: 8b0fcd8588c12b09
 /agent-note-mcp-sdk-protocol-negotiation/alternatives-considered:
   en: 1fba2ebdcc100c37
-  zh: 45c384641d3b0300
+  zh: 61f2ad36c731bac3
 /agent-note-mcp-sdk-protocol-negotiation/consequences:
   en: 1a50179c0254517c
-  zh: 046e4f72bfc2ea89
+  zh: f1386bade71cbd5c

@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write packages/runtime-diagnostics/invariants/README.md
 /:
   en: 42e5357bcc6d4525
-  zh: 59891074b3705f9e
+  zh: cb364e1225a427bc
 /deepseek-ai-dsh-invariants:
   en: 355d61820fca8c0b
   zh: c272797e46060b16
 /deepseek-ai-dsh-invariants/summary:
   en: cb7b0a0d555fafa6
-  zh: 23522958d2c367dd
+  zh: 30a8c50f93cd4d77
 /deepseek-ai-dsh-invariants/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-invariants/use-this-package:
   en: f0ff84f9852dca9b
-  zh: dd4ea4390478f0b7
+  zh: e734c8aeb0571ced
 /deepseek-ai-dsh-invariants/use-this-package/when-to-use-it:
   en: 597ae83b2c71897a
-  zh: f740fc18cbd3122f
+  zh: 6ea70d8d8cd6d1ae
 /deepseek-ai-dsh-invariants/use-this-package/enabling-checks-and-selecting-packages:
   en: ca8d647080cfb8c6
-  zh: bbcc004ed3e81fae
+  zh: 43507246bacc02b3
 /deepseek-ai-dsh-invariants/use-this-package/which-checks-run:
   en: 9bb18846b6eeb906
-  zh: fb79a5d6a71988fd
+  zh: 92441e24add83ee0
 /deepseek-ai-dsh-invariants/use-this-package/adding-a-companion-to-a-custom-composition:
   en: 25319ae89e0d6f21
-  zh: e447f24be7b6a2d1
+  zh: 1fa1eaa185e6e49c
 /deepseek-ai-dsh-invariants/use-this-package/when-a-check-fails:
   en: 74ced4bc91ead262
-  zh: 966b5e607f507aee
+  zh: f0936c7a1613f882
 /deepseek-ai-dsh-invariants/understand-the-implementation:
   en: 5b23215f6331afac
-  zh: e2beea6daa73b614
+  zh: 0f097f4d997867d7
 /deepseek-ai-dsh-invariants/understand-the-implementation/design-philosophy:
   en: 556effb42afcaefd
-  zh: ff23afa308434b73
+  zh: 390770f466625c5f
 /deepseek-ai-dsh-invariants/understand-the-implementation/source-map:
   en: 08ade90614209295
-  zh: d4862b249cb44379
+  zh: 36bda6f902e66d33
 /deepseek-ai-dsh-invariants/understand-the-implementation/selection-and-registration-lifecycle:
   en: 314e6dd14cc9228b
-  zh: da047ded06701b40
+  zh: 9b139697c289988c
 /deepseek-ai-dsh-invariants/further-exploration:
   en: 7ed5b0b9908a611f
-  zh: 76a8c00915ccda49
+  zh: d919947d6238f433
 /deepseek-ai-dsh-invariants/model-experience:
   en: 269727a21a370a19
-  zh: 9b9ab038146410cb
+  zh: 11cf7d6548e15069
 /deepseek-ai-dsh-invariants/model-experience/kv-cache-effect:
   en: dffdf5a0451054bb
-  zh: 2a4a419d5b52f85e
+  zh: ed29ccad7d27471c
 /deepseek-ai-dsh-invariants/known-limitations-and-deferred-work:
   en: 668ce3dea799676e
-  zh: 1970fbd1fa11ae17
+  zh: ec3a9a1142e77c05
 /deepseek-ai-dsh-invariants/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

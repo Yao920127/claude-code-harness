@@ -4,94 +4,94 @@
 #   pnpm run verify-translation-pairing --write packages/shell/bash-sandbox/README.md
 /:
   en: 2d1caa2e6179218a
-  zh: 0b51a5dbda727ffa
+  zh: 1fca5cdf95337e2c
 /deepseek-ai-dsh-bash-sandbox:
   en: 63b29753d16046c9
   zh: c7be0b83f0d2911c
 /deepseek-ai-dsh-bash-sandbox/summary:
   en: 37a0fcab18f972c0
-  zh: f7b4222e646e7050
+  zh: b42cdd689afe8ac8
 /deepseek-ai-dsh-bash-sandbox/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-bash-sandbox/use-this-package:
   en: bd59d09bee36362c
-  zh: 7086c8268e7517d5
+  zh: 30baff7949a0e35f
 /deepseek-ai-dsh-bash-sandbox/use-this-package/when-to-choose-it:
   en: af387f23325c1435
-  zh: 7a160aca5edd657e
+  zh: 517818de1ae17b9d
 /deepseek-ai-dsh-bash-sandbox/use-this-package/modes-and-file-effects:
   en: bc096fe6f8eb54cd
-  zh: 1a3e3122ca40b0e5
+  zh: d19672e42e89b928
 /deepseek-ai-dsh-bash-sandbox/use-this-package/minimal-configuration:
   en: 7edc013af7a491f4
-  zh: 7b64bed7e3e0d65d
+  zh: 1b6145b8f29de623
 /deepseek-ai-dsh-bash-sandbox/use-this-package/denials-are-result-facts:
   en: a10127c3fb2869ef
-  zh: 17908b572ddb5507
+  zh: 84d7c9ae6e40004e
 /deepseek-ai-dsh-bash-sandbox/use-this-package/failures-and-recovery:
   en: 0d5b6818c3dad919
-  zh: cd0357477c0726c3
+  zh: 6106b2db1083decb
 /deepseek-ai-dsh-bash-sandbox/understand-the-implementation:
   en: 05e2abe4a25886fd
-  zh: 9240b331c45ac81e
+  zh: 8cede4b7e12b7a23
 /deepseek-ai-dsh-bash-sandbox/understand-the-implementation/design-concept:
   en: e1b1ac62e94ce535
-  zh: 5fa7a0353fbf777d
+  zh: a5bd14fd2b9a6152
 /deepseek-ai-dsh-bash-sandbox/understand-the-implementation/source-map:
   en: 418d9c2a61061adb
-  zh: ffbc0d7723b45017
+  zh: 493f3f6cc388476f
 /deepseek-ai-dsh-bash-sandbox/understand-the-implementation/main-flow:
   en: 731878f592fa79c6
-  zh: 3187f4c6907a13c2
+  zh: 726559c9a285c1c5
 /deepseek-ai-dsh-bash-sandbox/understand-the-implementation/invariants:
   en: 0b6c6d7e216e1d23
-  zh: 15f94cfccf4fa242
+  zh: 4ac173bb3e79b052
 /deepseek-ai-dsh-bash-sandbox/further-exploration:
   en: bc15c70d4fcc63c8
-  zh: 9591b7fa6fdbf4fe
+  zh: 3206f425e10b2429
 /deepseek-ai-dsh-bash-sandbox/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-schema-indirectly:
   en: 8e3df84fdcaeee60
-  zh: 25ad519340c6c232
+  zh: 1d899b62e6fdb301
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-schema-indirectly/what-the-model-sees:
   en: a6d30d6d5f7d2a5e
-  zh: dfc77de2d2d66f9e
+  zh: 5618901cda43c4fe
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-schema-indirectly/token-effect:
   en: 2278530f1f9e93b2
-  zh: 86e2a20746ce3f3c
+  zh: 273018121de53620
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-schema-indirectly/kv-cache-effect:
   en: d25d46a61dc2b0c1
-  zh: e1deea6d70be4691
+  zh: 0c58c107ca0f493d
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-result-indirectly:
   en: ba37fed04252f1eb
-  zh: 0e91d66334ec17c3
+  zh: e1363f872897d1d4
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-result-indirectly/what-the-model-sees:
   en: 6b86ae2b3b41e8b2
-  zh: 825a446625a1d594
+  zh: 2aa646baaf537aa6
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-result-indirectly/token-effect:
   en: b06db71c69ceaf8c
-  zh: e0b8230b993c93cc
+  zh: dfc65be3afc7f831
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-result-indirectly/kv-cache-effect:
   en: f5d5f97a153f7c70
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-error-indirectly:
   en: 8e6caeadd596ea8f
-  zh: fe525ddc52b2d711
+  zh: b52ef20426f72624
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-error-indirectly/what-the-model-sees:
   en: 74fcc73436adbb3b
-  zh: ae1387cf44c6ecb8
+  zh: c20e14ade1cf6ad3
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-error-indirectly/token-effect:
   en: 8f514efe94edfa8a
-  zh: 8a7ae8a2bdb4c01a
+  zh: b7187a14d2a9c22a
 /deepseek-ai-dsh-bash-sandbox/model-experience/bash-tool-error-indirectly/kv-cache-effect:
   en: f5d5f97a153f7c70
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-bash-sandbox/known-limitations-and-deferred-work:
   en: 056f7e09b6ad03f9
-  zh: 2996d78fbe0c70e1
+  zh: c933533496ca1b01
 /deepseek-ai-dsh-bash-sandbox/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

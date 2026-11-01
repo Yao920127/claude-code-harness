@@ -359,7 +359,7 @@ describe('release facts', () => {
     const path = join(data.directory, TAGS[1] + '.zh.md')
     writeFileSync(path, readFileSync(path, 'utf8').replace('Authored summary and evidence.', 'Revised authored explanation.'))
     expect(() => runPersistenceReleases([], data.root)).not.toThrow()
-    writeFileSync(path, readFileSync(path, 'utf8').replace('4 个根类型 / 7 种类型', '4 个根类型 / 999 种类型'))
+    writeFileSync(path, readFileSync(path, 'utf8').replace('4 個根型別 / 7 種型別', '4 個根型別 / 999 種型別'))
     expect(() => runPersistenceReleases([], data.root)).toThrow('Stale persistence release facts')
   })
 

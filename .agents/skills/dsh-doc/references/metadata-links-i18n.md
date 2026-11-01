@@ -64,7 +64,7 @@ The desired internal-link model names a target from the repository root, but a l
 
 ## Bilingual line alignment
 
-Keep English and Simplified Chinese equally authoritative. Match frontmatter key order, headings, blank lines, paragraphs, list items, tables, code fences, link targets, and total physical line count one to one. The English side points every relative link at the `.md` target; the Chinese side points it at the `.zh.md` sibling when that counterpart exists and falls back to the `.md` target otherwise — the pairing gate compares `.md` and `.zh.md` targets as the same document. Translate prose naturally within its corresponding line; do not hard-wrap either language. Keep code blocks byte-identical and reposition first-use terminology annotations without changing line structure.
+Keep English and Traditional Chinese (Taiwan) equally authoritative. Match frontmatter key order, headings, blank lines, paragraphs, list items, tables, code fences, link targets, and total physical line count one to one. The English side points every relative link at the `.md` target; the Chinese side points it at the `.zh.md` sibling when that counterpart exists and falls back to the `.md` target otherwise — the pairing gate compares `.md` and `.zh.md` targets as the same document. Translate prose naturally within its corresponding line; do not hard-wrap either language. Keep code blocks byte-identical and reposition first-use terminology annotations without changing line structure.
 
 Line equality is a structural check, not proof of faithful meaning. Review still owns completeness, terminology, natural language, and whether each line expresses the same proposition.
 

@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/basic/tool.md
 /build-a-tool:
   en: 7cc993f14da8bb11
-  zh: 32cc4de7310ace97
+  zh: 47a84535fe0ce416
 /build-a-tool/create-the-tool-plugin:
   en: ee66fee86af58d93
-  zh: ee7d157e69d01ae4
+  zh: bd090c68a8f607f5
 /build-a-tool/run-and-call-the-tool:
   en: 3bdae6640d729bfc
-  zh: d1e945ac53cbb467
+  zh: 5d9a249a39c5ee29
 /build-a-tool/next-steps:
   en: aba2c55a0ba557f9
-  zh: d4615e9e57c540bd
+  zh: 6436f5381be2346c

@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 subagent 对话目录、续接路由 UI 与 '@' 引用 source。"
+description: "dsh Web 用戶端的 subagent 對話目錄、續接路由 UI 與 '@' 引用 source。"
 kind: "package-reference"
 ---
 
@@ -9,120 +9,120 @@ kind: "package-reference"
 
 ## 概述
 
-使用本包可浏览父会话下的每个 subagent 对话、打开任意后代，并查看其是否正在运行以及 token 用量和活跃轮次耗时。已完成的 one-shot 对话会作为只读执行记录打开。可继续对话在运行期间按提交顺序接收后续提示词，并独立提供 Stop。普通会话侧边栏会省略 subagent 对话，因此父会话页头目录是它们的导航入口。独立的 `@` source 会把运行中 child 的 label 插入用户消息，但不会把它解析成继续执行地址。
+使用本包可瀏覽父工作階段下的每個 subagent 對話、開啟任意後代，並檢視其是否正在執行以及 token 用量和活躍輪次耗時。已完成的 one-shot 對話會作為只讀執行記錄開啟。可繼續對話在執行期間按提交順序接收後續提示詞，並獨立提供 Stop。普通工作階段側邊欄會省略 subagent 對話，因此父工作階段頁頭目錄是它們的導航入口。獨立的 `@` source 會把執行中 child 的 label 插入使用者訊息，但不會把它解析成繼續執行地址。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-会话页头把当前会话标题作为谱系面包屑；当会话的直接目录有子项或读取失败时，后代数量触发器渲染在页头操作区的最前方，不带任何面包屑分隔符。目录缺席、空目录加载中或成功加载为空时，均隐藏数量触发器。触发器打开该直接目录，报告总数与运行数，并且只在行展开时加载嵌套目录。选择任意深度，即可用该子会话的确切 `{parentSessionId, childSessionId, mode}` 地址打开其对话；也可以使用行尾箭头在右侧 Sidebar 打开同一地址，并在空间允许时优先使用独立分栏。
+工作階段頁頭把目前工作階段標題作為譜系麵包屑；當工作階段的直接目錄有子項或讀取失敗時，後代數量觸發器渲染在頁頭操作區的最前方，不帶任何麵包屑分隔符。目錄缺席、空目錄載入中或成功載入為空時，均隱藏數量觸發器。觸發器開啟該直接目錄，報告總數與執行數，並且只在行展開時載入巢狀目錄。選擇任意深度，即可用該子工作階段的確切 `{parentSessionId, childSessionId, mode}` 地址開啟其對話；也可以使用行尾箭頭在右側 Sidebar 開啟同一地址，並在空間允許時優先使用獨立分欄。
 
-本包注册 `dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>` 资源与 builtin Sidebar tab 类型。资源直接根据地址保留 child 的 `SessionReference`，不刷新 parent 目录，并在 tab 记录关闭时释放 reference。tab 通过 `sidebar.chat.conversation` 渲染共享 `conversation.content` Factory，把局部 View 固定为 Chat，并省略主 Conversation 的 Header 与宽度控制。
+本包註冊 `dsh-resource://subagentchat/session/<child>?parent=<parent>&mode=<mode>` 資源與 builtin Sidebar tab 型別。資源直接根據地址保留 child 的 `SessionReference`，不重新整理 parent 目錄，並在 tab 記錄關閉時釋放 reference。tab 透過 `sidebar.chat.conversation` 渲染共享 `conversation.content` Factory，把區域性 View 固定為 Chat，並省略主 Conversation 的 Header 與寬度控制。
 
-### 浏览目录
+### 瀏覽目錄
 
-悬停触发器 150ms 后打开目录；指针离开触发器和目录后，经过 120ms 关闭。点击后代数量触发器会固定目录，直到点击外部，或在触发器或树内按 Escape 关闭。点击面包屑标题会导航至对应会话。
+懸停觸發器 150ms 後開啟目錄；指標離開觸發器和目錄後，經過 120ms 關閉。點選後代數量觸發器會固定目錄，直到點選外部，或在觸發器或樹內按 Escape 關閉。點選麵包屑標題會導航至對應工作階段。
 
-行显示 mode、活动状态与由日志支撑的可选 title；running 使用共享 ongoing loading，最近一个已结束轮次正常完成的 inactive child 使用共享 success 绿点，其他 inactive child 使用共享 idle 灰点。每行都为状态图标预留相同的 14px 列宽，并将较小的圆点居中，使 title 与 loading 状态对齐。紧凑的页头触发器会垂直居中活动图标与数量，并保留 4px 水平间距。尾随列在上行显示提供方的持久化 token 用量总计，在下行显示活跃轮次耗时。键盘导航：ArrowRight/ArrowLeft 展开和折叠分支；ArrowUp/ArrowDown、Home、End 与 Escape 用于导航或关闭树。没有 label 的 one-shot 行回退到其会话 id。只有一行自身的目录加载为空后，它才是已知叶子。
+行顯示 mode、活動狀態與由日誌支撐的可選 title；running 使用共享 ongoing loading，最近一個已結束輪次正常完成的 inactive child 使用共享 success 綠點，其他 inactive child 使用共享 idle 灰點。每行都為狀態圖示預留相同的 14px 列寬，並將較小的圓點居中，使 title 與 loading 狀態對齊。緊湊的頁頭觸發器會垂直居中活動圖示與數量，並保留 4px 水平間距。尾隨列在上行顯示提供者的持久化 token 用量總計，在下行顯示活躍輪次耗時。鍵盤導航：ArrowRight/ArrowLeft 展開和摺疊分支；ArrowUp/ArrowDown、Home、End 與 Escape 用於導航或關閉樹。沒有 label 的 one-shot 行退回到其工作階段 id。只有一行自身的目錄載入為空後，它才是已知葉子。
 
-### 续接对话
+### 續接對話
 
-确切 parent 存活时，可继续 child 保留普通输入 chrome：child 运行期间输入和 Send 保持可用，因为每条后续消息都会进入 child 的 FIFO inbox，而独立的 Stop 经由 `subagents/interruptByParent` 路由。确切 parent 不可用且 child 未在运行的可继续 child 会选用说明恢复路径的只读编辑器；此类 child 仍在运行期间，selector 会让位给普通编辑器——输入区与 Send 被禁用，但独立的 Stop 保持可用。
+確切 parent 存活時，可繼續 child 保留普通輸入 chrome：child 執行期間輸入和 Send 保持可用，因為每條後續訊息都會進入 child 的 FIFO inbox，而獨立的 Stop 經由 `subagents/interruptByParent` 路由。確切 parent 不可用且 child 未在執行的可繼續 child 會選用說明恢復路徑的只讀編輯器；此類 child 仍在執行期間，selector 會讓位給普通編輯器——輸入區與 Send 被停用，但獨立的 Stop 保持可用。
 
 ### `@` 引用 source
 
-`@` source 仍然刻意保持独立且惰性：候选是从 `ctx.sessions.list` 零 RPC 得到的运行中 child；pick 会插入字面文本 `@label `，codec 投影为 `@label`。它不参与命令裁决，也不会把 label 解析成继续执行地址。
+`@` source 仍然刻意保持獨立且惰性：候選是從 `ctx.sessions.list` 零 RPC 得到的執行中 child；pick 會插入字面文字 `@label `，codec 投影為 `@label`。它不參與命令裁決，也不會把 label 解析成繼續執行地址。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-目录与编辑器行为由 [Web subagent 对话笔记](../../../.agents/notes/implemented/feature/2026-07-27-web-subagent-conversations.zh.md) 与[当前轮次中断笔记](../../../.agents/notes/implemented/feature/2026-08-06-continuable-subagent-interrupt.zh.md) 规定。
+目錄與編輯器行為由 [Web subagent 對話筆記](../../../.agents/notes/implemented/feature/2026-07-27-web-subagent-conversations.zh.md) 與[目前輪次中斷筆記](../../../.agents/notes/implemented/feature/2026-08-06-continuable-subagent-interrupt.zh.md) 規定。
 
-### 目录派生
+### 目錄派生
 
-页头谱系 renderer 通过标准 `useSessions` 钩子读取 `projectionsBySession`。renderer 从每个 Session 的共享值中选择 `subagentCatalog`，用于成员关系、展开控件与数量；活动状态优先使用统一 UI status，缺少时使用 Session 摘要；摘要提供标题与用量。展开行会按需加载初始目录。实时 projection 帧更新所有已加载层级，无需菜单订阅或重复成员查询。行在目录缺席、加载中或失败时保持可展开，并在目录就绪且为空后成为已知叶子。
+頁頭譜系 renderer 透過標準 `useSessions` 掛鉤讀取 `projectionsBySession`。renderer 從每個 Session 的共享值中選擇 `subagentCatalog`，用於成員關係、展開控制元件與數量；活動狀態優先使用統一 UI status，缺少時使用 Session 摘要；摘要提供標題與用量。展開行會按需載入初始目錄。即時 projection 幀更新所有已載入層級，無需選單訂閱或重複成員查詢。行在目錄缺席、載入中或失敗時保持可展開，並在目錄就緒且為空後成為已知葉子。
 
-打开目录下拉菜单不会请求其根目录。展开子节点目录或重试失败读取时调用 `refreshProjection`；共享投影值的变化会自动更新显示。
+開啟目錄下拉選單不會請求其根目錄。展開子節點目錄或重試失敗讀取時呼叫 `refreshProjection`；共享投影值的變化會自動更新顯示。
 
-面包屑地址从 Provider 所绑定的 Session 地址和已加载的 parent 目录推导，也包括从未选中过的祖先。
+麵包屑地址從 Provider 所繫結的 Session 地址和已載入的 parent 目錄推導，也包括從未選中過的祖先。
 
-### 耗时、完成状态与 token
+### 耗時、完成狀態與 token
 
-每个可见目录层在包含运行中 child 时独立推进时钟；折叠该层或关闭菜单会释放时钟。token 用量总计为四个互不重叠的 `tokenUsage` 桶之和。`subagentTiming` 投影会累加已结束轮次的耗时，并记录最近一个已结束轮次是否以 `completed` 结束；新轮次开始时会清除该完成状态，直到自身的 `turn/end` 到达。耗时仅在运行中 child 存在未结束轮次时每秒递增一次，并在 child 变为 inactive 后冻结；被中断的未结束轮次以其同一切面的 `active.through` 为上界，绝不使用更新的会话元数据。
+每個可見目錄層在包含執行中 child 時獨立推進時鐘；摺疊該層或關閉選單會釋放時鐘。token 用量總計為四個互不重疊的 `tokenUsage` 桶之和。`subagentTiming` 投影會累加已結束輪次的耗時，並記錄最近一個已結束輪次是否以 `completed` 結束；新輪次開始時會清除該完成狀態，直到自身的 `turn/end` 到達。耗時僅在執行中 child 存在未結束輪次時每秒遞增一次，並在 child 變為 inactive 後凍結；被中斷的未結束輪次以其同一切面的 `active.through` 為上界，絕不使用更新的工作階段中繼資料。
 
-### 编辑器选举
+### 編輯器選舉
 
-one-shot child 始终选用只读编辑器。可继续 child 仅在其确切 parent 不可用且 child 未在运行时选用只读编辑器；否则普通编辑器的会话会经 `subagents/prompt` 路由提示词。本包绝不接收宿主上下文，也不调用面向模型的工具。
+one-shot child 始終選用只讀編輯器。可繼續 child 僅在其確切 parent 不可用且 child 未在執行時選用只讀編輯器；否則普通編輯器的工作階段會經 `subagents/prompt` 路由提示詞。本包絕不接收主機上下文，也不呼叫面向模型的工具。
 
-模式未知的目录项仍可见、可点击，没有标签时显示子会话 id。读取子历史并确认受支持模式前，输入区保持只读；读取失败在该子会话中报告。
+模式未知的目錄項仍可見、可點選，沒有標籤時顯示子工作階段 id。讀取子歷史並確認受支援模式前，輸入區保持只讀；讀取失敗在該子工作階段中報告。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖对话界面、宿主 seam 与设计笔记。
+以下頁面覆蓋對話介面、主機 seam 與設計筆記。
 
-- [ui-conversation](../ui-conversation/README.zh.md)——承载页头操作与编辑器链的聊天界面。
-- [ui-input-trigger](../ui-input-trigger/README.zh.md)——承载 `@` source 的建议机制。
-- [subagent](../../subagent/subagent/README.zh.md)——可继续 child 背后的宿主能力 seam。
-- [Web subagent 对话](../../../.agents/notes/implemented/feature/2026-07-27-web-subagent-conversations.zh.md)——目录与编辑器规范。
-- [当前轮次中断](../../../.agents/notes/implemented/feature/2026-08-06-continuable-subagent-interrupt.zh.md)——独立 Stop 的语义。
+- [ui-conversation](../ui-conversation/README.zh.md)——承載頁頭操作與編輯器鏈的聊天介面。
+- [ui-input-trigger](../ui-input-trigger/README.zh.md)——承載 `@` source 的建議機制。
+- [subagent](../../subagent/subagent/README.zh.md)——可繼續 child 背後的主機能力 seam。
+- [Web subagent 對話](../../../.agents/notes/implemented/feature/2026-07-27-web-subagent-conversations.zh.md)——目錄與編輯器規範。
+- [目前輪次中斷](../../../.agents/notes/implemented/feature/2026-08-06-continuable-subagent-interrupt.zh.md)——獨立 Stop 的語義。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 用户提示词中的 subagent label 文本
+### 使用者提示詞中的 subagent label 文字
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-只有 `@` 引用 source 会影响模型输入：pick 的候选以字面文本 `@label` 进入普通用户消息，没有专用内容块或宿主侧解析。浏览目录、导航 child 与查看持久化 transcript（文本记录）都不会添加提示词 section；已接收的继续交互内容会经宿主 subagent 适配器成为普通 FIFO 用户消息。
+只有 `@` 引用 source 會影響模型輸入：pick 的候選以字面文字 `@label` 進入普通使用者訊息，沒有專用內容塊或主機側解析。瀏覽目錄、導航 child 與檢視持久化 transcript（文字記錄）都不會新增提示詞 section；已接收的繼續互動內容會經主機 subagent 介面卡成為普通 FIFO 使用者訊息。
 
-#### Token 影响
+#### Token 影響
 
-有条件且仅追加：字面 `@label` 或用户后续消息只会向对应的新用户消息增加 token。目录与 transcript 操作增加零模型 token。
+有條件且僅追加：字面 `@label` 或使用者後續訊息只會向對應的新使用者訊息增加 token。目錄與 transcript 操作增加零模型 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加。本包绝不改写更早的请求 token。
+僅追加。本包絕不改寫更早的請求 token。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义目录能显示什么、`@` 引用意味着什么；它们是当前包约束。
+這些限制定義目錄能顯示什麼、`@` 引用意味著什麼；它們是目前包約束。
 
-- **非完成的 inactive 结果仍合并显示**：目录能区分最近一次正常完成与其他 inactive 状态，但不区分失败、取消、拒绝、token 耗尽或尚无已结束轮次的 child；UI 不公开 Activation 身份，停止能力仅限编辑器上针对运行中可继续 child 的当前轮次 Stop。
-- **`@` 引用仍是显示标题文本**：重复或改名后的 label 会有歧义，因此它们刻意不获得继续执行语义。
+- **非完成的 inactive 結果仍合併顯示**：目錄能區分最近一次正常完成與其他 inactive 狀態，但不區分失敗、取消、拒絕、token 耗盡或尚無已結束輪次的 child；UI 不公開 Activation 身份，停止能力僅限編輯器上針對執行中可繼續 child 的目前輪次 Stop。
+- **`@` 引用仍是顯示標題文字**：重複或改名後的 label 會有歧義，因此它們刻意不獲得繼續執行語義。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。插件只注册一个 slash source，其资源释放已由 HMR（热模块替换）安全规范验证；它不发出 Cordis 事件，也不持有跨插件可变状态。
+**執行時不變式：** 不釋出伴生入口。外掛只註冊一個 slash source，其資源釋放已由 HMR（熱模組替換）安全規範驗證；它不發出 Cordis 事件，也不持有跨外掛可變狀態。

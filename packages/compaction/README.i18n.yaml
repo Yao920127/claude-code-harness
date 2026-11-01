@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/compaction/README.md
 /:
   en: 4fe8f6f7b09339c1
-  zh: d138739147e506ef
+  zh: c4568b609eb12669
 /compaction-compaction-capability-family:
   en: 6a34829e201f8502
-  zh: 658ebd87d47af24a
+  zh: b545461fa8e44504
 /compaction-compaction-capability-family/summary:
   en: a0ff7525b70a868b
-  zh: 8f5394af82de6686
+  zh: 4cbc88350a0dca49
 /compaction-compaction-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /compaction-compaction-capability-family/packages:
   en: ff30478097349347
-  zh: ec5c73197eaf1718
+  zh: be8e32e6d299016f
 /compaction-compaction-capability-family/related-documentation:
   en: 4bb1ee8212d9df3c
-  zh: 80ffe4910a29c105
+  zh: 4894e435fa5d67ab
 /compaction-compaction-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

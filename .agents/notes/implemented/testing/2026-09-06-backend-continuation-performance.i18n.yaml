@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-06-backend-continuation-performance.md
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation:
   en: 542fea07db8861a3
-  zh: 3a9d381c2366f5ec
+  zh: 6031b5d433da78d6
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation/problem:
   en: c6a89dac7dea293a
-  zh: b10610932d55996c
+  zh: 09d49b43052bfb22
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation/decision:
   en: 3429525a40e02b95
-  zh: 92f12beb81003101
+  zh: a169c0e093c99a97
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation/calibration-evidence:
   en: 4f47ca6859cc2d70
-  zh: 5bfe8314fd30d82b
+  zh: 557cd72d8df3d87a
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation/alternatives-considered:
   en: 3a61dff7c926eb22
-  zh: 8f2633b16be78233
+  zh: 51d88bbf76f5007d
 /agent-note-performance-baselines-for-tool-heavy-backend-continuation/consequences:
   en: 0ffe42f70b26de41
-  zh: 367038e53dc04ff4
+  zh: 1855b54e7316882c

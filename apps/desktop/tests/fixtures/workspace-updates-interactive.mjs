@@ -9,7 +9,7 @@ import { join } from 'node:path'
  * @returns {Promise<void>} Resolves after operator exit and removal of control listeners.
  */
 export async function runInteractiveUpdates({ mainWindow, server, fixture, checkMenu, control, root }) {
-  const panel = new BrowserWindow({ title: '本地升级验收控制', width: 640, height: 460,
+  const panel = new BrowserWindow({ title: '本地升級驗收控制', width: 640, height: 460,
     webPreferences: { nodeIntegration: false, contextIsolation: true, sandbox: true } })
   const finished = Promise.withResolvers()
   const finish = () => finished.resolve()
@@ -19,53 +19,53 @@ export async function runInteractiveUpdates({ mainWindow, server, fixture, check
   const originalInstall = fixture.updater.quitAndInstall
   fixture.updater.quitAndInstall = (...args) => {
     fixture.installations.push(args)
-    void dialog.showMessageBox(panel, { type: 'info', title: '本地验收结束',
-      message: '已完成下载、校验、安装确认和任务收尾。',
-      detail: '安装器调用已拦截，未安装或重启到新版本。确认后退出本轮演练；重新运行命令可开始下一轮。',
-      buttons: ['结束演练'] }).then(finish).catch(finish)
+    void dialog.showMessageBox(panel, { type: 'info', title: '本地驗收結束',
+      message: '已完成下載、驗證、安裝確認和任務收尾。',
+      detail: '安裝器呼叫已攔截，未安裝或重新啟動到新版本。確認後退出本輪演練；重新執行命令可開始下一輪。',
+      buttons: ['結束演練'] }).then(finish).catch(finish)
   }
   const action = (label, operation) => ({ label, click: () => {
     if (closing) return
     void Promise.resolve().then(operation).catch(error => {
       console.error(error)
-      if (!panel.isDestroyed()) dialog.showErrorBox('本地验收操作失败', String(error))
+      if (!panel.isDestroyed()) dialog.showErrorBox('本地驗收操作失敗', String(error))
     })
   } })
   const select = mode => server.select(mode, '0.1.6-nightly.1')
   select('hold-download')
   const check = () => checkMenu.click()
   panel.setMenu(Menu.buildFromTemplate([
-    { label: '更新场景', submenu: [
-      action('普通更新（点击下载后保持进度）', () => { server.policy('clear'); select('hold-download'); check() }),
-      action('强制更新（点击下载后保持进度）', () => { server.policy('force'); select('hold-download'); check() }),
-      action('放行当前下载 → 校验与安装确认', () => server.release()),
+    { label: '更新情境', submenu: [
+      action('普通更新（點選下載後保持進度）', () => { server.policy('clear'); select('hold-download'); check() }),
+      action('強制更新（點選下載後保持進度）', () => { server.policy('force'); select('hold-download'); check() }),
+      action('放行目前下載 → 驗證與安裝確認', () => server.release()),
       { type: 'separator' },
-      action('下一次下载：校验失败', () => select('corrupt')),
-      action('下一次下载：404 失败', () => select('download-404')),
-      action('下一次下载：恢复正常', () => select('healthy')),
-      action('检查失败', () => { select('feed-404'); check() }),
-      action('没有可用更新（未下载前使用）', () => { server.select('healthy', '0.1.5-rc.1'); check() }),
-      action('解除强更阻塞', () => { server.policy('clear'); check() }),
+      action('下一次下載：驗證失敗', () => select('corrupt')),
+      action('下一次下載：404 失敗', () => select('download-404')),
+      action('下一次下載：恢復正常', () => select('healthy')),
+      action('檢查失敗', () => { select('feed-404'); check() }),
+      action('沒有可用更新（未下載前使用）', () => { server.select('healthy', '0.1.5-rc.1'); check() }),
+      action('解除強更阻塞', () => { server.policy('clear'); check() }),
     ] },
-    { label: '任务状态', submenu: [
-      action('添加排队任务', () => control('queue')),
-      action('清空排队任务', () => control('clear')),
-      action('模拟任务停止失败（本轮有效）', () => control('hold-shutdown')),
+    { label: '任務狀態', submenu: [
+      action('新增排隊任務', () => control('queue')),
+      action('清空排隊任務', () => control('clear')),
+      action('模擬任務停止失敗（本輪有效）', () => control('hold-shutdown')),
     ] },
-    { label: '窗口', submenu: [
-      action('返回应用', () => { mainWindow.restore(); mainWindow.show(); mainWindow.focus() }),
-      action('结束演练', finish),
+    { label: '視窗', submenu: [
+      action('返回應用', () => { mainWindow.restore(); mainWindow.show(); mainWindow.focus() }),
+      action('結束演練', finish),
     ] },
   ]))
   try {
     await panel.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html><html lang="zh-CN">
       <meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
       <style>body{font:16px/1.8 system-ui;padding:24px;color:#222}h2{margin-top:0}strong{color:#165dff}</style>
-      <h2>手动升级验收 · 不执行安装器</h2>
-      <p>使用本窗口顶部的<strong>更新场景</strong>菜单选择普通更新或强制更新，再到应用里点击下载。</p>
-      <p>下载会保持进度，供你查看。回到这里选择<strong>放行当前下载</strong>，才会进入校验和安装确认。</p>
-      <p>用<strong>任务状态</strong>菜单添加排队任务，查看安装前的任务警告。失败模式须在下载前选择。</p>
-      <p>数据和更新服务器均为本地隔离测试。下载地址为示例地址。关闭此窗口结束演练；重跑命令重置状态。</p>
+      <h2>手動升級驗收 · 不執行安裝器</h2>
+      <p>使用本視窗頂部的<strong>更新情境</strong>選單選擇普通更新或強制更新，再到應用裡點選下載。</p>
+      <p>下載會保持進度，供你檢視。回到這裡選擇<strong>放行目前下載</strong>，才會進入總和檢查碼安裝確認。</p>
+      <p>用<strong>任務狀態</strong>選單新增排隊任務，檢視安裝前的任務警告。失敗模式須在下載前選擇。</p>
+      <p>資料和更新伺服器均為本地隔離測試。下載地址為範例地址。關閉此視窗結束演練；重跑命令重置狀態。</p>
       </html>`)}`)
     console.log(`Interactive updater ready: ${root}`)
     await finished.promise

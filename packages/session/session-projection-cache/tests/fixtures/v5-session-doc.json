@@ -11,7 +11,7 @@
       "title": {
         "ver": 1,
         "seq": 71,
-        "val": "验收标题-rc2"
+        "val": "驗收標題-rc2"
       },
       "titleInput": {
         "ver": 3,
@@ -19,7 +19,7 @@
         "val": {
           "first": {
             "seq": 7,
-            "text": "请只回复一个词：pong"
+            "text": "請只回復一個詞：pong"
           },
           "count": 3,
           "lastSeq": 60
@@ -141,19 +141,19 @@
             {
               "turn": 1,
               "seq": 4,
-              "prompt": "请只回复一个词：pong",
+              "prompt": "請只回復一個詞：pong",
               "response": "pong"
             },
             {
               "turn": 2,
               "seq": 40,
-              "prompt": "请只回复一个词：pong2",
+              "prompt": "請只回復一個詞：pong2",
               "response": "pong2"
             },
             {
               "turn": 3,
               "seq": 57,
-              "prompt": "请只回复一个词：pong3",
+              "prompt": "請只回復一個詞：pong3",
               "response": "pong3"
             }
           ],

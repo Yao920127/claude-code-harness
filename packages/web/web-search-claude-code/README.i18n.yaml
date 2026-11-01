@@ -4,55 +4,55 @@
 #   pnpm run verify-translation-pairing --write packages/web/web-search-claude-code/README.md
 /:
   en: e766a50e962ada08
-  zh: 38e0bb431681f9f3
+  zh: 0784b3973693d6ae
 /deepseek-ai-dsh-web-search-claude-code:
   en: 91e4a9fd24cba106
   zh: c01facd141586fcc
 /deepseek-ai-dsh-web-search-claude-code/summary:
   en: 84421ab07d22fafc
-  zh: b971d57cd1a7871c
+  zh: 251a7380ab07daa6
 /deepseek-ai-dsh-web-search-claude-code/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-web-search-claude-code/use-this-package:
   en: df09b0552e08bcd1
-  zh: b8833c719ab39732
+  zh: 1faa2a00b74a3046
 /deepseek-ai-dsh-web-search-claude-code/use-this-package/when-to-choose-it:
   en: 8a96b36044bc0a76
-  zh: 374a35e996634cbe
+  zh: 2835b65a38f733b8
 /deepseek-ai-dsh-web-search-claude-code/use-this-package/minimal-configuration:
   en: 79e838ccce834a52
-  zh: 89a8779e8b860cac
+  zh: d65bd9d452c15460
 /deepseek-ai-dsh-web-search-claude-code/use-this-package/what-a-search-returns:
   en: e49ef5b2b5a90cb4
-  zh: 12f4d98c92bf0db2
+  zh: 2ad18876ed302fba
 /deepseek-ai-dsh-web-search-claude-code/use-this-package/failures-and-recovery:
   en: 70a0123b9eda189c
-  zh: 0e0d665659f75494
+  zh: 5477f07f28e0a8ce
 /deepseek-ai-dsh-web-search-claude-code/understand-the-implementation:
   en: 9842c69ad3636bb3
-  zh: 7d7dbdaf7076ad77
+  zh: 03107bb7015851d3
 /deepseek-ai-dsh-web-search-claude-code/understand-the-implementation/design-philosophy:
   en: 2671aaa0fcbfb69a
-  zh: 9b178def99dc9dd5
+  zh: 104c421ce1f1544f
 /deepseek-ai-dsh-web-search-claude-code/understand-the-implementation/source-map:
   en: 30b2b1e3e834b70c
-  zh: c1dd2627c7768367
+  zh: 7a880080c47ca932
 /deepseek-ai-dsh-web-search-claude-code/further-exploration:
   en: ec62b8a471221480
-  zh: 32dad9f7fa0ffa26
+  zh: 45bb056566575811
 /deepseek-ai-dsh-web-search-claude-code/model-experience:
   en: 36d782b6a6cdc3f9
-  zh: ac33d86e2d2407e4
+  zh: 686bc60960c56ff6
 /deepseek-ai-dsh-web-search-claude-code/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: 751091f575d9d135
+  zh: c0c11b9165e8c4b8
 /deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work:
   en: a122afe1e10cb1c3
-  zh: ac19eab504543184
+  zh: 11b8f7ebd6d15f68
 /deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work/dev-note:
   en: 7f775cc79dbce94b
-  zh: 426439dfd3e40ab9
+  zh: d103990af5f673cb
 /deepseek-ai-dsh-web-search-claude-code/known-limitations-and-deferred-work/dev-note/future-a-reused-process:
   en: 3d686190ad381e59
-  zh: 6752d95a13347063
+  zh: 1cb6a34f6f2b802b

@@ -1,18 +1,18 @@
-# 事故复盘（postmortem）
+# 事故檢討（postmortem）
 
 [English](README.md) | 中文
 
-事故复盘记录的是：一个 bug 出现在了不该出现的地方（真实用户、已合并的 PR（Pull Request）、已发布的版本），值得关注的是*为什么我们的流程放过了它*，而不仅仅是那一行修复。
+事故檢討記錄的是：一個 bug 出現在了不該出現的地方（真實使用者、已合併的 PR（Pull Request）、已釋出的版本），值得關注的是*為什麼我們的流程放過了它*，而不僅僅是那一行修復。
 
-事故复盘不是 [Agent Note](../../.agents/notes/README.zh.md)（Agent Note 记录一个经过深思熟虑的设计决策及其被否决的替代方案，或提出未来工作）。它是一份回顾性的失败记录：什么坏了、机制是什么、为什么每道安全网都没拦住、以及为此新增了哪些具体防护措施，以确保同类 bug 下次出现时会明确报错。
+事故檢討不是 [Agent Note](../../.agents/notes/README.zh.md)（Agent Note 記錄一個經過深思熟慮的設計決策及其被否決的替代方案，或提出未來工作）。它是一份回顧性的失敗記錄：什麼壞了、機制是什麼、為什麼每道安全網都沒攔住、以及為此新增了哪些具體防護措施，以確保同類 bug 下次出現時會明確報錯。
 
-当一个 bug 满足以下条件时，请撰写事故复盘：**隐蔽**（机制不显而易见，即使是细心的工程师也得费力重新推导）、**系统性**（逃逸的原因是测试、工具、约定的缺口，而非一次性的笔误）、**重新发现的代价高**（它消耗了真实的调试时间，且下次还会如此）。请链接该事故复盘所推动建立的防护措施（测试、AGENTS.md 规则、ADR）。
+當一個 bug 滿足以下條件時，請撰寫事故檢討：**隱蔽**（機制不顯而易見，即使是細心的工程師也得費力重新推導）、**系統性**（逃逸的原因是測試、工具、約定的缺口，而非一次性的筆誤）、**重新發現的代價高**（它消耗了真實的除錯時間，且下次還會如此）。請連結該事故檢討所推動建立的防護措施（測試、AGENTS.md 規則、ADR）。
 
-每篇事故复盘以一段**执行摘要**开头：一个简短段落，让忙碌的读者在三十秒内吸收要点——什么坏了、用直白的话说根因是什么、为什么逃逸了、可长期沿用的教训是什么——然后才是后续的详细「概述、时间线、根因、防护措施」各节。
+每篇事故檢討以一段**執行摘要**開頭：一個簡短段落，讓忙碌的讀者在三十秒內吸收要點——什麼壞了、用直白的話說根因是什麼、為什麼逃逸了、可長期沿用的教訓是什麼——然後才是後續的詳細「概述、時間線、根因、防護措施」各節。
 
-| # | 标题 |
+| # | 標題 |
 |---|---|
-| [0001](0001-acp-default-export-drops-inject.zh.md) | ACP（Agent Client Protocol）服务器在连接时崩溃：`export default` 丢失了插件的 `inject` |
-| [0002](0002-js-expression-disabled-filesystem-tools.zh.md) | 文件系统快照工具被一个字面量 `!!js` 对象永久禁用 |
-| [0003](0003-web-agent-gui-feedback-loop.zh.md) | Web agent（智能体）验证了替代服务器，而非承载其会话的 GUI |
-| [0004](0004-landlock-partial-notice-misclassified-child-failures.zh.md) | Landlock 部分强制执行通知导致子进程失败被误归类 |
+| [0001](0001-acp-default-export-drops-inject.zh.md) | ACP（Agent Client Protocol）伺服器在連線時崩潰：`export default` 丟失了外掛的 `inject` |
+| [0002](0002-js-expression-disabled-filesystem-tools.zh.md) | 檔案系統快照工具被一個字面量 `!!js` 物件永久停用 |
+| [0003](0003-web-agent-gui-feedback-loop.zh.md) | Web agent（智慧代理）驗證了替代伺服器，而非承載其工作階段的 GUI |
+| [0004](0004-landlock-partial-notice-misclassified-child-failures.zh.md) | Landlock 部分強制執行通知導致子程序失敗被誤歸類 |

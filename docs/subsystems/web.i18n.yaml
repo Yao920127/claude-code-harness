@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/web.md
 /web-access:
   en: f1a28f6a0c2e2a7a
-  zh: 8a6cdddde6d75acc
+  zh: 7c9e811afb4b32d1
 /web-access/why-one-capability-has-two-operations:
   en: 380da3cd0aabd52b
-  zh: 1317c26089c3ab07
+  zh: decaf81935d17550
 /web-access/search-request-and-result:
   en: 1ad94deb713024e2
-  zh: 9d3df730fa99ad89
+  zh: f089f63974be8177
 /web-access/fetch-request-and-result:
   en: b96bcdf42ced9eab
-  zh: aa927e2450238557
+  zh: 6d847c5f9f148471
 /web-access/provider-availability:
   en: 84e3d6fdb0b2a1d7
-  zh: 6175a9d011152d3d
+  zh: 2fa9b502cb69a60d
 /web-access/fetch-network-policy:
   en: 261fce9249be8b2b
-  zh: bf6abf77679aca6d
+  zh: 141fe3984e24b133
 /web-access/errors:
   en: b07c04f462b4a0d9
-  zh: de5f09cd2fb0324c
+  zh: 05aa3a153116e01d
 /web-access/the-service:
   en: c81fdcdfd6e22861
-  zh: ac906c9148942041
+  zh: f5962da454cfad3d

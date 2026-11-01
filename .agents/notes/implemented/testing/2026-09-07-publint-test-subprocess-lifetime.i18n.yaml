@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-07-publint-test-subprocess-lifetime.md
 /agent-note-publint-test-subprocesses-inherit-the-execution-lane-deadline:
   en: 762197e4e97b62a1
-  zh: a2ac103348f6e692
+  zh: 586ea8184bc82597
 /agent-note-publint-test-subprocesses-inherit-the-execution-lane-deadline/problem:
   en: a5fb106b97023934
-  zh: 537bd40564850192
+  zh: a761175995a9bec5
 /agent-note-publint-test-subprocesses-inherit-the-execution-lane-deadline/decision:
   en: 62cc75fa54d44d80
-  zh: 72d296ea1d5448bc
+  zh: 314f016f0b330661
 /agent-note-publint-test-subprocesses-inherit-the-execution-lane-deadline/alternatives-considered:
   en: 5cc52a67c84dd039
-  zh: 9fdc5ac07da9a056
+  zh: 5b7fdac6570fb504
 /agent-note-publint-test-subprocesses-inherit-the-execution-lane-deadline/consequences:
   en: a2d7dabc61d37634
-  zh: 753addcc45383715
+  zh: 60c6784bc8306d67

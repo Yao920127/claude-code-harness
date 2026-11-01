@@ -1,10 +1,10 @@
-- dialog "添加插件":
-  - heading "添加插件" [level=2]
-  - button "关闭"
-  - paragraph: 输入插件的包名、GitHub 仓库地址或本地目录路径。
+- dialog "新增外掛":
+  - heading "新增外掛" [level=2]
+  - button "關閉"
+  - paragraph: 輸入外掛的包名、GitHub 儲存庫地址或本地目錄路徑。
   - textbox "包名或地址":
     - /placeholder: 例如 @deepseek-ai/dsh-subagent-codex
     - text: slow-package
-  - button "插件安装引导和示例"
-  - button "安装源 默认安装源"
-  - button "安装"
+  - button "外掛安裝引導和範例"
+  - button "安裝源 預設安裝源"
+  - button "安裝"

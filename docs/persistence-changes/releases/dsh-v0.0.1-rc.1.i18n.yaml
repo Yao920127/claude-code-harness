@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/releases/dsh-v0.0.1-rc.1.md
 /:
   en: 6125f163634554a1
-  zh: 8adbf74c8db4b237
+  zh: c6a185bbda21ff89
 /persistence-release-dsh-v0-0-1-rc-1:
   en: 09a360141934a9c0
   zh: 269f005c46926f90
 /persistence-release-dsh-v0-0-1-rc-1/summary:
   en: 445645ae9a94b3fe
-  zh: 9dfd4b2ca15ada5a
+  zh: 3cea84de7280216d
 /persistence-release-dsh-v0-0-1-rc-1/table-of-contents:
   en: 0ff4a6f3c6af323f
-  zh: f5c7bd70cc1585c7
+  zh: 497bfd62b2aae97f
 /persistence-release-dsh-v0-0-1-rc-1/release-evidence:
   en: 79450b92910236e1
-  zh: fe1e61fabc8884ec
+  zh: cb421363f2dc4d95
 /persistence-release-dsh-v0-0-1-rc-1/declaration:
   en: af9cea43334ee692
-  zh: c6c8bd0d6a17718a
+  zh: 32afff9ce660b8c2
 /persistence-release-dsh-v0-0-1-rc-1/structural-changes:
   en: aed15ef7091b8455
-  zh: c44b2756c730d39b
+  zh: 454f9b769b46d9c3
 /persistence-release-dsh-v0-0-1-rc-1/verification:
   en: 8ccca317964523b1
-  zh: 2c8b3e70a3320778
+  zh: e6469bf9d7ed40bb
 /persistence-release-dsh-v0-0-1-rc-1/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

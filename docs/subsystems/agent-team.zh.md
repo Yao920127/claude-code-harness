@@ -2,11 +2,11 @@
 
 [English](agent-team.md) | 中文
 
-实验性隐式 Root Team 领域、模型工具与宿主适配器共享的类型。[Agent Teams Agent Note](../../.agents/notes/implemented/feature/2026-08-05-agent-teams.zh.md)负责身份、mailbox、task 与共享 checkout 决策；本页记录 [`packages/experimental/agent-team/src/types.ts`](../../packages/experimental/agent-team/src/types.ts) 中的持久与客户端可见形式。
+實驗性隱式 Root Team 領域、模型工具與主機介面卡共享的型別。[Agent Teams Agent Note](../../.agents/notes/implemented/feature/2026-08-05-agent-teams.zh.md)負責身份、mailbox、task 與共享 checkout 決策；本頁記錄 [`packages/experimental/agent-team/src/types.ts`](../../packages/experimental/agent-team/src/types.ts) 中的持久與用戶端可見形式。
 
-## 身份与 roster
+## 身份與 roster
 
-`TeamId` 是具有独立[品牌](core.zh.md#branded-ids)的 Root `SessionId`。`TeamTaskId` 在 Team 内按 `task-<n>` 单调分配；`TeamMessageId` 是全局随机值。teammate 的 Session id 始终是持久身份，而 `name` 是不可变的模型／UI 标签。
+`TeamId` 是具有獨立[品牌](core.zh.md#branded-ids)的 Root `SessionId`。`TeamTaskId` 在 Team 內按 `task-<n>` 單調分配；`TeamMessageId` 是全域隨機值。teammate 的 Session id 始終是持久身份，而 `name` 是不可變的模型／UI 標籤。
 
 ```ts type-equiv
 /** Whole durable value written on every teammate lifecycle change. */
@@ -21,11 +21,11 @@ interface TeamMemberSnapshot {
 }
 ```
 
-每个 member 都从 `provisioning` 开始，并且只到达一个终态 roster phase：`active` 或 `failed`。roster 的 `running`／`inactive` 状态单独派生，绝不会重写该记录。
+每個 member 都從 `provisioning` 開始，並且只到達一個終態 roster phase：`active` 或 `failed`。roster 的 `running`／`inactive` 狀態單獨派生，絕不會重寫該記錄。
 
 ## 持久 mailbox
 
-Lead Session 首先存储完整 queued message。只有 target 的 pending inbox 条目或已记录用户消息完成持久化，才会写入独立 acknowledgement event，queued-minus-delivered 因而构成恢复 mailbox。
+Lead Session 首先儲存完整 queued message。只有 target 的 pending inbox 條目或已記錄使用者訊息完成持久化，才會寫入獨立 acknowledgement event，queued-minus-delivered 因而構成恢復 mailbox。
 
 ```ts type-equiv
 /** One peer message retained until its target Session records it. */
@@ -38,9 +38,9 @@ interface TeamMessageSnapshot {
 }
 ```
 
-每条消息都会尝试 Steer 投递。running target 在最近的步骤边界收到消息，inactive target 在已加载时启动一个轮次，否则冷恢复。调用方不能选择其他模式，因此持久记录不存储调度方式。
+每條訊息都會嘗試 Steer 投遞。running target 在最近的步驟邊界收到訊息，inactive target 在已載入時啟動一個輪次，否則冷恢復。呼叫方不能選擇其他模式，因此持久記錄不儲存排程方式。
 
-target Session 会在 pending inbox 条目和最终用户消息上保留消息身份与发送者归因。跨 inbox 与历史折叠该 source 构成 target 侧去重键；模型可见的 framing 会重复 id 和发送者。
+target Session 會在 pending inbox 條目和終端使用者訊息上保留訊息身份與傳送者歸因。跨 inbox 與歷史摺疊該 source 構成 target 側去重鍵；模型可見的 framing 會重複 id 和傳送者。
 
 ```ts type-equiv
 /** Source retained by the target Session for durable mailbox de-duplication. */
@@ -53,9 +53,9 @@ interface TeamMessageSource {
 }
 ```
 
-## 共享任务 DAG
+## 共享任務 DAG
 
-每条 task event 都存储完整快照。`revision` 是 compare-and-set 值，每次变更递增 1。`blockedBy` edge 必须指向未删除任务，并维持无环图。`writeScopes` 是规范化的提示性路径前缀，不是锁。
+每條 task event 都儲存完整快照。`revision` 是 compare-and-set 值，每次變更遞增 1。`blockedBy` edge 必須指向未刪除任務，並維持無環圖。`writeScopes` 是規範化的提示性路徑字首，不是鎖。
 
 ```ts type-equiv
 /** Whole durable task snapshot; every mutation increments {@link revision}. */
@@ -71,13 +71,13 @@ interface TeamTaskSnapshot {
 }
 ```
 
-`pending` 表示尚未开始或已经释放，`in_progress` 携带 owner，`completed` 满足 blocker，`deleted` 是保留的 tombstone。view 会添加 owner name、readiness 和 write-scope 重叠警告，但不会改变持久快照。
+`pending` 表示尚未開始或已經釋放，`in_progress` 攜帶 owner，`completed` 滿足 blocker，`deleted` 是保留的 tombstone。view 會新增 owner name、readiness 和 write-scope 重疊警告，但不會改變持久快照。
 
 <a id="web-projection"></a>
 
 ## Web 投影
 
-Lead Session 通过 `SessionProjectionMap.agentTeam` 发布持久 roster 行与未删除任务视图。`failure` 在最后有效状态旁报告被拒绝的持久记录。成员活动来自 Session 状态；模型标签来自各成员的 `modelSelection` 投影。
+Lead Session 透過 `SessionProjectionMap.agentTeam` 釋出持久 roster 行與未刪除任務檢視。`failure` 在最後有效狀態旁報告被拒絕的持久記錄。成員活動來自 Session 狀態；模型標籤來自各成員的 `modelSelection` 投影。
 
 ```ts type-equiv
 /** One durable roster row published through the `agentTeam` Session projection. */
@@ -122,7 +122,7 @@ interface TeamProjection {
 
 ## 回放
 
-`agentTeam` Session 投影把一个 Root Session 回放成每个 Team 操作所读取的 roster、任务板与 queued-minus-delivered mailbox。它按 `TeamId` 选取记录，因此普通 fork 继承的 event 保留 ancestor id，绝不会进入新 Root 的状态。Session event 的 `seq` 与 `time` 继续负责顺序和时间记录，Team snapshot 不再重复保存它们。roster 与 task 读取以 view 形式到达调用方，而 pending 邮件仅供投递与恢复内部使用。包 [README](../../packages/experimental/agent-team/README.zh.md)负责 operation、authorization、recovery 和限制行为。
+`agentTeam` Session 投影把一個 Root Session 回放成每個 Team 操作所讀取的 roster、任務板與 queued-minus-delivered mailbox。它按 `TeamId` 選取記錄，因此普通 fork 繼承的 event 保留 ancestor id，絕不會進入新 Root 的狀態。Session event 的 `seq` 與 `time` 繼續負責順序和時間記錄，Team snapshot 不再重複儲存它們。roster 與 task 讀取以 view 形式到達呼叫方，而 pending 郵件僅供投遞與恢復內部使用。包 [README](../../packages/experimental/agent-team/README.zh.md)負責 operation、authorization、recovery 和限制行為。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

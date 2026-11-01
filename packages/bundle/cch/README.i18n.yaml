@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/bundle/cch/README.md
 /:
   en: 8754ff4513b7a76a
-  zh: 83933dde3ca4c263
+  zh: 0bb464d64ea112bf
 /deepseek-ai-dsh-cch:
   en: d7f26c559e75bc09
   zh: a53d01334f05a7a9
 /deepseek-ai-dsh-cch/summary:
-  en: 1d6848a27d5f975b
-  zh: e509ed68f09fbd7e
+  en: b957a3e149e510a8
+  zh: c9b829aca683ef48
 /deepseek-ai-dsh-cch/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-cch/use-this-package:
-  en: ba1eec27b98dd2cf
-  zh: 6fa6d215584c3ff9
+  en: 9316d5d9f86acb7c
+  zh: b8a70f0b2362de0f
 /deepseek-ai-dsh-cch/understand-the-implementation:
   en: ad61bb01afa9f1e1
-  zh: 36b312717c1cf861
+  zh: 7e88fd48f8be2c10
 /deepseek-ai-dsh-cch/further-exploration:
   en: bcf1219b43700f45
-  zh: 4c4eefed22e391c8
+  zh: 80e49425c91e2d3d
 /deepseek-ai-dsh-cch/model-experience:
   en: 1f0d7bcafa433c3f
-  zh: 2c34369d6c1831a1
+  zh: 541146ecfc38e912
 /deepseek-ai-dsh-cch/model-experience/kv-cache-effect:
   en: a2d46c77d1791f3e
-  zh: ed5b6684bd432a9f
+  zh: 4d0061fdbbe46fa0
 /deepseek-ai-dsh-cch/known-limitations-and-deferred-work:
   en: a97294a5aadd1f44
-  zh: d0c0fab7df6d8afc
+  zh: 9f16ce4c28694ac2
 /deepseek-ai-dsh-cch/known-limitations-and-deferred-work/dev-note:
   en: 70c0364d206f84ed
-  zh: 5bb5065c3bcbca9e
+  zh: b7be5eca77fc9c21

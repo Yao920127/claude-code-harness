@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/product-telemetry.md
 /product-telemetry:
   en: e1a8950c3b4743ed
-  zh: 3fff7e01a8f271e1
+  zh: 662a9859f73d05f4
 /product-telemetry/record-types:
   en: bf5eadedbc896f5a
-  zh: 158fce1609a85d6d
+  zh: ceec0866832190dd

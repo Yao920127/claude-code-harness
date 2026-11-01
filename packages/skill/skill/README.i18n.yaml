@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/skill/skill/README.md
 /:
   en: ab82ac4bcc012854
-  zh: 3e2a2326e66f4bc3
+  zh: c0f0efb6ec6fc71a
 /deepseek-ai-dsh-skill:
   en: 083f1e1c7ffedaad
   zh: e52812b66ea22539
 /deepseek-ai-dsh-skill/summary:
   en: dac8069f518e183c
-  zh: 2e4f2983030f9270
+  zh: d17a9144f8da03c4
 /deepseek-ai-dsh-skill/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-skill/use-this-package:
   en: cb13ae81a3e0ae68
-  zh: e709d66f4b6b4dd5
+  zh: 2377c42786a4681a
 /deepseek-ai-dsh-skill/use-this-package/when-to-choose-it:
   en: ce05cda6706f18b7
-  zh: 3262ebdaf645cb9a
+  zh: 54aa4b89e2f09dd1
 /deepseek-ai-dsh-skill/use-this-package/mount-and-configure:
   en: b8f130e081d14307
-  zh: d227ad3298b20238
+  zh: 2ca18068e43dc2ac
 /deepseek-ai-dsh-skill/use-this-package/what-the-registry-gives-you:
   en: 0cb7936c76a84e45
-  zh: a1fb8572481af54c
+  zh: 01373bc2945bf072
 /deepseek-ai-dsh-skill/use-this-package/observable-success-and-failures:
   en: b7331b6a9c0d5bb2
-  zh: 3ea0785c3a8c7330
+  zh: f697f57ee271d681
 /deepseek-ai-dsh-skill/understand-the-implementation:
   en: 89be1dad151abb04
-  zh: 9a1915c4d55bb9d2
+  zh: 8d9459eda6465cbc
 /deepseek-ai-dsh-skill/understand-the-implementation/design-concept:
   en: c0fb1850f00f24b1
-  zh: 226883ab5635435d
+  zh: 8e6d8f3447838aec
 /deepseek-ai-dsh-skill/understand-the-implementation/source-map:
   en: 6cfbcb24c960a60c
-  zh: 5db5bd40e76b492a
+  zh: 9e46e1eb4e03ee31
 /deepseek-ai-dsh-skill/understand-the-implementation/catalog-collection:
   en: 58a9b57dc504b69f
-  zh: 8fe8011247bc3f2b
+  zh: 3ac8bbf1733b9930
 /deepseek-ai-dsh-skill/understand-the-implementation/loading-and-staleness:
   en: e855d39692737103
-  zh: 396aa887a78989ec
+  zh: 81d7a8df49153f16
 /deepseek-ai-dsh-skill/understand-the-implementation/invalidation:
   en: d73258316127f5b5
-  zh: ddc6690f88922782
+  zh: 05004bc235bd0771
 /deepseek-ai-dsh-skill/further-exploration:
   en: 3380abc631c2bc2f
-  zh: 00eec8eb8fb425d1
+  zh: e4d77b6626f3a123
 /deepseek-ai-dsh-skill/model-experience:
   en: 84f7d6e986f88425
-  zh: 0fdc2326d8efb13e
+  zh: a7c92495e66c03ce
 /deepseek-ai-dsh-skill/model-experience/kv-cache-effect:
   en: 628a45ff9f6b0e74
-  zh: fda70b0eed2df1d7
+  zh: ceafba3618309af3
 /deepseek-ai-dsh-skill/known-limitations-and-deferred-work:
   en: c5456e001203fd7a
-  zh: 3cc6fa50700eec13
+  zh: 0a67c482debf2080
 /deepseek-ai-dsh-skill/known-limitations-and-deferred-work/dev-note:
   en: 259ce6914314397d
-  zh: d500b1f988a83999
+  zh: c3a6e886780181c3

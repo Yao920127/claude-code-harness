@@ -1,44 +1,44 @@
-# Agent Note: 通过配对兄弟文件与配对门禁实现双语文档
+# Agent Note: 透過配對兄弟檔案與配對門禁實作雙語文件
 
 Status: implemented
 
 [English](2026-07-02-bilingual-docs-and-pairing-gate.md) | 中文
 
-## 问题
+## 問題
 
-本仓库的文档语料会被公司内外的人和 agent（智能体）以中英两种语言阅读。在没有机制的情况下纯靠手工维护第二语言，正是译文腐烂的根源：一侧持续演进，另一侧默默失实，而没有门禁能够发现。对于这类不变式，本仓库一贯的做法是将其编码为机械检查（见[质量门禁](2026-06-11-quality-gates.zh.md)与 [doc-sync（文档同步门禁）强制](../../archived/process/2026-06-11-doc-sync-enforcement.md)），因此双语政策随附一道门禁一起交付。
+本儲存庫的文件語料會被公司內外的人和 agent（智慧代理）以中英兩種語言閱讀。在沒有機制的情況下純靠手工維護第二語言，正是譯文腐爛的根源：一側持續演進，另一側默默失實，而沒有門禁能夠發現。對於這類不變式，本儲存庫一貫的做法是將其編碼為機械檢查（見[品質門禁](2026-06-11-quality-gates.zh.md)與 [doc-sync（文件同步門禁）強制](../../archived/process/2026-06-11-doc-sync-enforcement.md)），因此雙語政策隨附一道門禁一起交付。
 
-## 决策
+## 決策
 
-- **配对兄弟文件，两种语言同权。** 一对文档由三个兄弟文件组成：英文 `foo.md`、中文 `foo.zh.md`，以及一份一致性记录 `foo.i18n.yaml`。没有哪种语言是正典：一篇文档可以先用中文撰写和评审、之后再译成英文，反之亦可；约束配对的是：两侧必须表达相同的内容，且配对整体合并（两种语言加记录，绝不单独落一侧）。政策见 [docs/i18n/README.md](../../../../docs/i18n/README.zh.md)；翻译规则见 [docs/i18n/translation-rules.md](../../../../docs/i18n/translation-rules.zh.md)；术语真源见 [docs/i18n/terminology.md](../../../../docs/i18n/terminology.md)。
-- **伴随记录保存两侧 blob hash，使一致性可检查。** `foo.i18n.yaml` 保存两侧文件在上一次确认一致时各自的完整 Git blob hash。此后修改了任一侧而未重新确认配对，都能被机械检测出来（纯内容比较，无需查询历史），而且同一个 PR（Pull Request）内改动的文件也能计算出 hash，commit hash 式的记录做不到这一点。重新记录（`verify-translation-pairing --write <pair>`，要求点名所确认的配对；批量重新记录是显式的 `--write --all`）会产生一份可评审的 YAML diff：确认一致在 PR 中是一个显式、可见的动作。
-- **`verify-translation-pairing` 加入 `doc-sync`。** 门禁（[scripts/verify-translation-pairing.ts](../../../../scripts/verify-translation-pairing.ts)）强制执行以下规则：每个已发现且未排除的源文档都有完整配对；每个现有配对都完整（三个文件齐全）且一致（两侧的 hash 均与记录匹配、中文侧和所有人工撰写的英文源都带语言切换行而清单内的生成英文源除外、结构签名一致）；被排除的生成文档、指令文档或本身即双语的文档不得配对。目标属于该活跃语料的相对文档链接使用与源文件 locale 相同的目标兄弟文件；结构签名则把 `.md` 与 `.zh.md` 兄弟文件规范化为同一个语义目标，并保留完全相同的 query/fragment 后缀；该细化规则由[双语文档链接本地化决策](../../archived/process/2026-08-18-localized-bilingual-links.md)负责。[scripts/translation-pairing.manifest.json](../../../../scripts/translation-pairing.manifest.json) 只包含显式排除项，因此任何要求都无法绕过发现流程而接受较弱的检查。只有当 `.zh.md` 围栏序列与其无后缀兄弟文件拥有顺序相同、正文按字节一致的同一组受跟踪围栏时，面向源码的代码门禁才会将其作为派生内容消费；不完整、顺序变更、重分类或已改动的序列仍会独立受检，因此由其所属的代码门禁或配对门禁报告不匹配。
-- **全语料统一要求。** 范围内的每篇文档从创建起就必须有完整配对；政策没有逐文件推进状态、日期分界或 README 专用类别。仓库根目录的政策文档会被显式点名：`CONTRIBUTING.md`、`BRAND_GUIDELINES.md` 与 `SAFETY.md` 虽然不在文档目录中，仍遵循同一套发现与配对规则。README 发现会覆盖 vendor 源码、依赖目录与被忽略的构建产物目录之外所有文件名不区分大小写匹配 README 的文件，包括今后新增的顶层目录。发布到文档站的配对使用 `pairedPages()`，由根 locale 投影 `.zh.md`，由 `/en/` 投影 `.md`；仅创建对侧文件并不会发布它。
-- **配对记录是元数据，而不是 Cordis Loader 配置。** Cordis 配置发现会接受实际的 `.cordis.yml` 和 `.cordis.yaml` 文件，同时排除 `*.i18n.yaml`，即使文档名中包含 `cordis` 也不例外。这样既能继续校验可执行的 Loader 配置项，又不会把翻译 hash 当作配置来解析。
-- **翻译是 agent 的工作，由人评审。** 常规改动采用由 [docs/i18n/README.md](../../../../docs/i18n/README.zh.md) 规定的直接单遍路径。[扩展翻译 skill（技能）](../../../skills/dsh-translate-docs/SKILL.md)保留委派翻译和其他较重机制，供用户显式调用；两条路径均以文档契约为真源。
+- **配對兄弟檔案，兩種語言同權。** 一對文件由三個兄弟檔案組成：英文 `foo.md`、中文 `foo.zh.md`，以及一份一致性記錄 `foo.i18n.yaml`。沒有哪種語言是正典：一篇文件可以先用中文撰寫和評審、之後再譯成英文，反之亦可；約束配對的是：兩側必須表達相同的內容，且配對整體合併（兩種語言加記錄，絕不單獨落一側）。政策見 [docs/i18n/README.md](../../../../docs/i18n/README.zh.md)；翻譯規則見 [docs/i18n/translation-rules.md](../../../../docs/i18n/translation-rules.zh.md)；術語真源見 [docs/i18n/terminology.md](../../../../docs/i18n/terminology.md)。
+- **伴隨記錄儲存兩側 blob hash，使一致性可檢查。** `foo.i18n.yaml` 儲存兩側檔案在上一次確認一致時各自的完整 Git blob hash。此後修改了任一側而未重新確認配對，都能被機械檢測出來（純內容比較，無需查詢歷史），而且同一個 PR（Pull Request）內改動的檔案也能計算出 hash，commit hash 式的記錄做不到這一點。重新記錄（`verify-translation-pairing --write <pair>`，要求點名所確認的配對；批次重新記錄是顯式的 `--write --all`）會產生一份可評審的 YAML diff：確認一致在 PR 中是一個顯式、可見的動作。
+- **`verify-translation-pairing` 加入 `doc-sync`。** 門禁（[scripts/verify-translation-pairing.ts](../../../../scripts/verify-translation-pairing.ts)）強制執行以下規則：每個已發現且未排除的源文件都有完整配對；每個現有配對都完整（三個檔案齊全）且一致（兩側的 hash 均與記錄匹配、中文側和所有人工撰寫的英文源都帶語言切換行而清單內的生成英文源除外、結構簽名一致）；被排除的生成文件、指令文件或本身即雙語的文件不得配對。目標屬於該活躍語料的相對文件連結使用與原始檔 locale 相同的目標兄弟檔案；結構簽名則把 `.md` 與 `.zh.md` 兄弟檔案規範化為同一個語義目標，並保留完全相同的 query/fragment 字尾；該細化規則由[雙語文件連結在地化決策](../../archived/process/2026-08-18-localized-bilingual-links.md)負責。[scripts/translation-pairing.manifest.json](../../../../scripts/translation-pairing.manifest.json) 只包含顯式排除項，因此任何要求都無法繞過發現流程而接受較弱的檢查。只有當 `.zh.md` 圍欄序列與其無字尾兄弟檔案擁有順序相同、正文按位元組一致的同一組受跟蹤圍欄時，面向原始碼的程式碼門禁才會將其作為派生內容消費；不完整、順序變更、重分類或已改動的序列仍會獨立受檢，因此由其所屬的程式碼門禁或配對門禁報告不匹配。
+- **全語料統一要求。** 範圍內的每篇文件從建立起就必須有完整配對；政策沒有逐檔案推進狀態、日期分界或 README 專用類別。儲存庫根目錄的政策文件會被顯式點名：`CONTRIBUTING.md`、`BRAND_GUIDELINES.md` 與 `SAFETY.md` 雖然不在文件目錄中，仍遵循同一套發現與配對規則。README 發現會覆蓋 vendor 原始碼、依賴目錄與被忽略的建置產物目錄之外所有檔名不區分大小寫匹配 README 的檔案，包括今後新增的頂層目錄。釋出到文件站的配對使用 `pairedPages()`，由根 locale 投影 `.zh.md`，由 `/en/` 投影 `.md`；僅建立對側檔案並不會釋出它。
+- **配對記錄是中繼資料，而不是 Cordis Loader 設定。** Cordis 設定發現會接受實際的 `.cordis.yml` 和 `.cordis.yaml` 檔案，同時排除 `*.i18n.yaml`，即使文件名中包含 `cordis` 也不例外。這樣既能繼續驗證可執行的 Loader 設定項，又不會把翻譯 hash 當作設定來解析。
+- **翻譯是 agent 的工作，由人評審。** 常規改動採用由 [docs/i18n/README.md](../../../../docs/i18n/README.zh.md) 規定的直接單遍路徑。[擴充功能翻譯 skill（技能）](../../../skills/dsh-translate-docs/SKILL.md)保留委派翻譯和其他較重機制，供使用者顯式呼叫；兩條路徑均以文件契約為真源。
 
-## 验证
+## 驗證
 
-验证约定分别覆盖每个边界。`verify-translation-pairing` 固定配对完整性、hash、语言切换行和结构，其发现测试则固定具名的根目录政策文档与自动 README 覆盖；[`project-doc-site.spec.ts`](../../../../scripts/project-doc-site.spec.ts) 固定已发布配对按 locale 选择对应源文件；[`cordis-config-files.spec.ts`](../../../../scripts/cordis-config-files.spec.ts) 固定 Loader YAML 的发现以及翻译记录的排除；[翻译提示词可运行预期](../../../../scripts/translation-prompt.expected.spec.ts)则固定渲染后的系统消息、五对经评审的示例、源请求和所消费的响应。这些检查共同使配对漂移、发布漂移、配置误分类和模型可见提示词漂移都可在评审中看见。
+驗證約定分別覆蓋每個邊界。`verify-translation-pairing` 固定配對完整性、hash、語言切換行和結構，其發現測試則固定具名的根目錄政策文件與自動 README 覆蓋；[`project-doc-site.spec.ts`](../../../../scripts/project-doc-site.spec.ts) 固定已釋出配對按 locale 選擇對應原始檔；[`cordis-config-files.spec.ts`](../../../../scripts/cordis-config-files.spec.ts) 固定 Loader YAML 的發現以及翻譯記錄的排除；[翻譯提示詞可執行預期](../../../../scripts/translation-prompt.expected.spec.ts)則固定渲染後的系統訊息、五對經評審的範例、源請求和所消費的回應。這些檢查共同使配對漂移、釋出漂移、設定誤分類和模型可見提示詞漂移都可在評審中看見。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **英文为正典源、指纹放在译文内**：`.zh.md` 文件携带一条 HTML 注释记录英文源的 blob hash，翻译只沿 EN → ZH 单向流动。否决：团队需要中文先行的撰写方式（先写、先审中文 Agent Note，再译英文），两种语言同权，而单向正典模型无法表达这一点。覆盖**两侧**的伴随记录取代了文件内的单向指纹；blob hash 的机制本身保持不变。
-- **语言目录（`docs/en/` + `docs/zh/`，Kubernetes/ECharts 模式）**：否决。本仓库没有将 locale 映射到路由的文档站框架；如果移动所有英文文件，所有既有交叉引用都要随之修改；且 `verify-md-links`/`verify-doc-refs` 将需要路径映射逻辑，而非原样工作。
-- **独立翻译仓库（PingCAP `docs`/`docs-cn` 模式）**：否决。适合有独立发布节奏的文档产品，对 monorepo 自身的文档而言过重；还会把译文置于本仓库门禁触及不到的地方。
-- **中英混排单文件（一个文件、两种语言）**：否决。每个 diff 都翻倍，破坏一段一行约定的 diff 易读性，且局部不一致不可见。
-- **Commit hash 式记录（MDN `l10n.sourceCommit` 模式）**：否决，改用 blob hash。同一个 PR 内的改动还没有 commit hash，MDN 模式无法表达「与本 PR 引入的状态一致」，且校验它需要 git 历史而非文件内容。
-- **比较配对两侧的 git 时间戳（无记录）**：否决。纯格式化的改动会误报，一次无关改动之后提交的对侧文件会漏报；只有内容同一性这个信号才与门禁的承诺名实相符。
+- **英文為正典源、指紋放在譯文內**：`.zh.md` 檔案攜帶一條 HTML 註解記錄英文源的 blob hash，翻譯只沿 EN → ZH 單向流動。否決：團隊需要中文先行的撰寫方式（先寫、先審中文 Agent Note，再譯英文），兩種語言同權，而單向正典模型無法表達這一點。覆蓋**兩側**的伴隨記錄取代了檔案內的單向指紋；blob hash 的機制本身保持不變。
+- **語言目錄（`docs/en/` + `docs/zh/`，Kubernetes/ECharts 模式）**：否決。本儲存庫沒有將 locale 對映到路由的文件站框架；如果移動所有英文件案，所有既有交叉引用都要隨之修改；且 `verify-md-links`/`verify-doc-refs` 將需要路徑對映邏輯，而非原樣工作。
+- **獨立翻譯儲存庫（PingCAP `docs`/`docs-cn` 模式）**：否決。適合有獨立釋出節奏的文件產品，對 monorepo 自身的文件而言過重；還會把譯文置於本儲存庫門禁觸及不到的地方。
+- **中英混排單檔案（一個檔案、兩種語言）**：否決。每個 diff 都翻倍，破壞一段一行約定的 diff 易讀性，且區域性不一致不可見。
+- **Commit hash 式記錄（MDN `l10n.sourceCommit` 模式）**：否決，改用 blob hash。同一個 PR 內的改動還沒有 commit hash，MDN 模式無法表達「與本 PR 引入的狀態一致」，且驗證它需要 git 歷史而非檔案內容。
+- **比較配對兩側的 git 時間戳（無記錄）**：否決。純格式化的改動會誤報，一次無關改動之後提交的對側檔案會漏報；只有內容同一性這個訊號才與門禁的承諾名實相符。
 
-## 业界先例
+## 業界先例
 
-带语言后缀的配对兄弟文件是中国大厂的主流约定（ant-design 的 `index.zh-CN.md`/`index.en-US.md`；arco-design 的 `README.zh-CN.md` 加顶部切换行；Apache ShardingSphere 的 387 对 `.cn.md`/`.en.md`），但这些仓库都没有在 CI 中**强制**配对或一致性检查；约定纯靠评审维系。一致性自动化存在于中国以外：MDN 的 `l10n.sourceCommit` front-matter 指纹、Vue 的 Ryu-Cho action（监视上游 commit，为陈旧译文自动开 issue/PR）、Kubernetes 的本地化漂移脚本、微软 Azure co-op-translator（CI 中由源 hash 驱动的 LLM 重译）。本设计将两者结合：中文生态的文件布局，加上 hash 配对门禁，再加一个由 agent 运行的工作流替代 bot 服务。
+帶語言字尾的配對兄弟檔案是中國大廠的主流約定（ant-design 的 `index.zh-CN.md`/`index.en-US.md`；arco-design 的 `README.zh-CN.md` 加頂部切換行；Apache ShardingSphere 的 387 對 `.cn.md`/`.en.md`），但這些儲存庫都沒有在 CI 中**強制**配對或一致性檢查；約定純靠評審維繫。一致性自動化存在於中國以外：MDN 的 `l10n.sourceCommit` front-matter 指紋、Vue 的 Ryu-Cho action（監視上游 commit，為陳舊譯文自動開 issue/PR）、Kubernetes 的在地化漂移腳本、微軟 Azure co-op-translator（CI 中由源 hash 驅動的 LLM 重譯）。本設計將兩者結合：中文生態的檔案佈局，加上 hash 配對門禁，再加一個由 agent 執行的工作流替代 bot 服務。
 
-## 后果
+## 後果
 
-- 修改已配对文档的任一侧，同一个 PR 就有义务更新对侧并重新记录配对。门禁将 doc-sync 规则双语化，不变式由 CI（而非评审者的记忆）承载。
-- 每个配对给目录树多添一个文件。记录由机器写入（`--write`），代价是目录噪音而非维护负担；换来的是「谁在何时确认过这对文档一致」可以从 yaml 的 git blame 直接回答。
-- 两侧说法冲突时，没有机械规则裁决谁赢，由 PR 评审裁决。这是同权的代价，且是有意接受的：另一个选项（正典语言）会禁止中文先行撰写。
-- 生成的英文文档仍由源码派生，并由各自的生成器实施新鲜度门禁。有经评审中文对侧的生成页面遵循三文件配对工作流，但有一项结构例外：生成的英文源文件不含语言切换行，因为添加该行会使生成器新鲜度检查失败；中文对侧仍链接回英文源。没有经评审对侧的生成页面保留为显式排除项，并在网站上投影英文。
-- 只含排除项的 manifest（元数据清单）通过同一路径，要求当前及今后纳入范围的每篇文档都必须配对。不存在显式要求、分界或类别条目可以落在发现范围之外，却看似已经强制执行。
-- 记录的 hash 兼作更新工具：[gen-translation-brief](../../../../docs/i18n/README.zh.md) 会从中还原任一侧上次确认的文本并组装最小更新简报，因此这套机制从不强迫整篇重译。
+- 修改已配對文件的任一側，同一個 PR 就有義務更新對側並重新記錄配對。門禁將 doc-sync 規則雙語化，不變式由 CI（而非評審者的記憶）承載。
+- 每個配對給目錄樹多添一個檔案。記錄由機器寫入（`--write`），代價是目錄噪音而非維護負擔；換來的是「誰在何時確認過這對文件一致」可以從 yaml 的 git blame 直接回答。
+- 兩側說法衝突時，沒有機械規則裁決誰贏，由 PR 評審裁決。這是同權的代價，且是有意接受的：另一個選項（正典語言）會禁止中文先行撰寫。
+- 生成的英文文件仍由原始碼派生，並由各自的生成器實施新鮮度門禁。有經評審中文對側的生成頁面遵循三檔案配對工作流，但有一項結構例外：生成的英文原始檔不含語言切換行，因為新增該行會使生成器新鮮度檢查失敗；中文對側仍連結回英文源。沒有經評審對側的生成頁面保留為顯式排除項，並在網站上投影英文。
+- 只含排除項的 manifest（中繼資料清單）透過同一路徑，要求目前及今後納入範圍的每篇文件都必須配對。不存在顯式要求、分界或類別條目可以落在發現範圍之外，卻看似已經強制執行。
+- 記錄的 hash 兼作更新工具：[gen-translation-brief](../../../../docs/i18n/README.zh.md) 會從中還原任一側上次確認的文字並組裝最小更新簡報，因此這套機制從不強迫整篇重譯。

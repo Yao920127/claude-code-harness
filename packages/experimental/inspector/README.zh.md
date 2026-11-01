@@ -1,5 +1,5 @@
 ---
-description: "面向 Host 与浏览器 Client Cordis 运行时的实验性 Chrome DevTools 检查，包括 Console 求值、Sources、Network 采集、Elements 树和独立于 CDP 的查询 API。"
+description: "面向 Host 與瀏覽器 Client Cordis 執行時的實驗性 Chrome DevTools 檢查，包括 Console 求值、Sources、Network 採集、Elements 樹和獨立於 CDP 的查詢 API。"
 kind: "package-bundle"
 ---
 
@@ -9,77 +9,77 @@ kind: "package-bundle"
 
 ## 概述
 
-在 Chrome DevTools 中检查一个运行中的 dsh Host 及其浏览器 Client：Host 与 Client Console context、Host Sources 与调试、Host fetch 采集和共享 Cordis 树，全部 CDP 状态都在 Worker 中。
+在 Chrome DevTools 中檢查一個執行中的 dsh Host 及其瀏覽器 Client：Host 與 Client Console context、Host Sources 與除錯、Host fetch 採集和共享 Cordis 樹，全部 CDP 狀態都在 Worker 中。
 
-Inspector 不在默认插件列表中显示。使用 `dsh plugin --profile web add @deepseek-ai/dsh-experimental-inspector` 显式安装其 bundle。其 [`cordis.patch.yml`](cordis.patch.yml) 挂载已安装的包；`pnpm run demo:inspector` 则挂载源码树。Host 行需要 Web 服务器。Worker 不访问实时 Cordis 对象；共享 collector 会在传输前把它们投影成已验证快照。
+Inspector 不在預設外掛列表中顯示。使用 `dsh plugin --profile web add @deepseek-ai/dsh-experimental-inspector` 顯式安裝其 bundle。其 [`cordis.patch.yml`](cordis.patch.yml) 掛載已安裝的包；`pnpm run demo:inspector` 則掛載原始碼樹。Host 行需要 Web 伺服器。Worker 不存取即時 Cordis 物件；共享 collector 會在傳輸前把它們投影成已驗證快照。
 
-## 目录
+## 目錄
 
-- [运行时布局](#runtime-layout)
-- [配置](#configuration)
-- [观测 API](#observation-api)
-- [Cordis 树检查](#cordis-tree-inspection)
-- [Host fetch 采集](#host-fetch-capture)
+- [執行時佈局](#runtime-layout)
+- [設定](#configuration)
+- [觀測 API](#observation-api)
+- [Cordis 樹檢查](#cordis-tree-inspection)
+- [Host fetch 採集](#host-fetch-capture)
 - [安全](#security)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="runtime-layout"></a>
-## 运行时布局
+## 執行時佈局
 
-Host 插件启动 Worker 并连接专用 `MessagePort`。Client 插件读取注入的 `globalThis.__DSH_INSPECTOR__` bootstrap，直接向 Worker 打开一条独立、带鉴权的 WebSocket；在 Host 行启用前打开的页面没有 bootstrap，其 Client 插件会以刷新提示失败，刷新后才能被检查。Chrome DevTools 连接 Worker 的 CDP WebSocket。每条 DevTools 连接在 Worker 中独占一个连接 Host 主线程的 `node:inspector.Session`，因此 Host JavaScript 暂停时，Host Console 求值、Sources、断点和 resume 仍然可用。
+Host 外掛啟動 Worker 並連線專用 `MessagePort`。Client 外掛讀取注入的 `globalThis.__DSH_INSPECTOR__` bootstrap，直接向 Worker 開啟一條獨立、帶授權驗證的 WebSocket；在 Host 行啟用前開啟的頁面沒有 bootstrap，其 Client 外掛會以重新整理提示失敗，重新整理後才能被檢查。Chrome DevTools 連線 Worker 的 CDP WebSocket。每條 DevTools 連線在 Worker 中獨佔一個連線 Host 主執行緒的 `node:inspector.Session`，因此 Host JavaScript 暫停時，Host Console 求值、Sources、斷點和 resume 仍然可用。
 
-源码树遵循这些执行环境：`client/` 与 `host/` 提供镜像的适配器 entry path，`worker/` 只包含 Worker thread orchestration 与 Chrome protocol 状态，`shared/` 包含与环境无关的 Cordis 和 network model、规范化 realm 后端接口及内部 bridge protocol。Worker 侧 Client 与 Host 适配器镜像放在 `worker/realms/` 下；其中的 Client 适配器仍然在 Worker 中执行。
+原始碼樹遵循這些執行環境：`client/` 與 `host/` 提供映像的介面卡 entry path，`worker/` 只包含 Worker thread orchestration 與 Chrome protocol 狀態，`shared/` 包含與環境無關的 Cordis 和 network model、規範化 realm 後端介面及內部 bridge protocol。Worker 側 Client 與 Host 介面卡映像放在 `worker/realms/` 下；其中的 Client 介面卡仍然在 Worker 中執行。
 
-Host 与 Client producer 发送内部观测记录，不发送 CDP 消息。记录包含 source generation、sequence、source 时钟时间、topic 和 JSON payload。Worker 验证每个进程或网络帧，独占 source 状态与保留历史，并把已识别 topic 转换成标准 CDP domain。
+Host 與 Client producer 傳送內部觀測記錄，不傳送 CDP 訊息。記錄包含 source generation、sequence、source 時鐘時間、topic 和 JSON payload。Worker 驗證每個程序或網路幀，獨佔 source 狀態與保留歷史，並把已識別 topic 轉換成標準 CDP domain。
 
-Client source 声明类型化 Runtime、Console 和只读 Sources 能力。`Runtime.enable` 发布真实 Host execution context，并为每个已连接的 Client source 发布一个 synthetic context。选择 Client context 后，求值、属性读取、函数调用、Promise await 和对象释放都会路由到该浏览器 realm。Client Console argument 使用同一份会话本地 object table；`Debugger.enable` 发布构建后的 `lib/client.js` catalog，`Debugger.getScriptSource` 读取有界 content chunk。Client script 断点、step 和 call frame 仍不支持；target-wide pause 与 resume 只控制 Host debugger。
+Client source 宣告型別化 Runtime、Console 和只讀 Sources 能力。`Runtime.enable` 釋出真實 Host execution context，併為每個已連線的 Client source 釋出一個 synthetic context。選擇 Client context 後，求值、屬性讀取、函式呼叫、Promise await 和物件釋放都會路由到該瀏覽器 realm。Client Console argument 使用同一份工作階段本地 object table；`Debugger.enable` 釋出建置後的 `lib/client.js` catalog，`Debugger.getScriptSource` 讀取有界 content chunk。Client script 斷點、step 和 call frame 仍不支援；target-wide pause 與 resume 只控制 Host debugger。
 
-两个插件端运行同一份可在浏览器中安全运行的 Cordis collector。它把可达 Context 与 Fiber 对象转换成有版本的 `CordisTreeSnapshot`；Worker 存储这份与 CDP 无关的表示，并把每个 Host 或 Client source 投影到 Elements 面板。
+兩個外掛端執行同一份可在瀏覽器中安全執行的 Cordis collector。它把可達 Context 與 Fiber 物件轉換成有版本的 `CordisTreeSnapshot`；Worker 儲存這份與 CDP 無關的表示，並把每個 Host 或 Client source 投影到 Elements 面板。
 
 <a id="configuration"></a>
-## 配置
+## 設定
 
-Host 插件注入 `webServer`，接受以下字段：
+Host 外掛注入 `webServer`，接受以下欄位：
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---:|---|
-| `host` | `127.0.0.1` | Worker endpoint 监听地址；只接受 loopback |
-| `port` | `9230` | Worker endpoint 起始端口；端口占用时向上递增，`0` 表示由操作系统分配 |
-| `clientOrigins` | `[]` | `/ingest` 额外接受的精确浏览器 origin；loopback origin 始终允许 |
-| `captureFetch` | `true` | 包装 `globalThis.fetch` 并发布之后的每次调用 |
-| `maxRequestBodyBytes` | 8 MiB | 每次请求保留的 request body 前缀 |
-| `maxResponseBodyBytes` | 32 MiB | 每次请求保留的 response body 前缀 |
-| `maxBodyChunkBytes` | 48 KiB | base64 编码前一条 body 记录携带的原始字节数 |
-| `maxJournalBytes` | 256 MiB | Worker 保留的请求与响应 body 总字节数 |
-| `maxRetainedRequests` | `2000` | Worker 保留的进行中与已完成请求总数 |
-| `maxSourceFrameBytes` | 128 KiB | 编码后的 source frame 上限 |
-| `maxSourceRecordsPerFrame` | `128` | 每个 source batch 的记录数 |
-| `maxQueuedRecords` | `2048` | 每个 producer 等待发送的记录数 |
-| `maxQueuedBytes` | 16 MiB | 每个 producer 等待发送的编码字节数 |
-| `startupTimeoutMs` | 10 秒 | Worker ready 截止时间 |
-| `stopTimeoutMs` | 5 秒 | 强制终止前的 Worker 优雅关闭期限 |
-| `clientReconnectBaseMs` | 250 ms | Client 首次重连退避上限 |
-| `clientReconnectMaxMs` | 5 秒 | Client 最大重连退避上限 |
-| `clientRuntimeTimeoutMs` | 30 秒 | 一次 Worker 到 Client Runtime 或 Sources 命令的截止时间 |
-| `queryTimeoutMs` | 10 秒 | 一次非 CDP 语义查询的截止时间 |
-| `maxClientRuntimeObjects` | `10000` | 每条 DevTools 连接保留的 Client 实时对象 handle 数 |
-| `maxClientRuntimeProperties` | `2000` | 单次 Client 对象检查返回的属性描述符数 |
-| `maxClientSourceBytes` | 8 MiB | 单个 Client script 或 source map 允许读取的最大编码字节数 |
-| `maxCordisNodes` | `2048` | 一个 realm 快照截断前允许的 Context 与 Fiber 节点数 |
-| `maxDisconnectedCordisTrees` | `8` | 作为非实时快照保留的最近断联 realm 树数量 |
+| `host` | `127.0.0.1` | Worker endpoint 監聽地址；只接受 loopback |
+| `port` | `9230` | Worker endpoint 起始埠；埠佔用時向上遞增，`0` 表示由作業系統分配 |
+| `clientOrigins` | `[]` | `/ingest` 額外接受的精確瀏覽器 origin；loopback origin 始終允許 |
+| `captureFetch` | `true` | 包裝 `globalThis.fetch` 並行布之後的每次呼叫 |
+| `maxRequestBodyBytes` | 8 MiB | 每次請求保留的 request body 字首 |
+| `maxResponseBodyBytes` | 32 MiB | 每次請求保留的 response body 字首 |
+| `maxBodyChunkBytes` | 48 KiB | base64 編碼前一條 body 記錄攜帶的原始位元組數 |
+| `maxJournalBytes` | 256 MiB | Worker 保留的請求與回應 body 總位元組數 |
+| `maxRetainedRequests` | `2000` | Worker 保留的進行中與已完成請求總數 |
+| `maxSourceFrameBytes` | 128 KiB | 編碼後的 source frame 上限 |
+| `maxSourceRecordsPerFrame` | `128` | 每個 source batch 的記錄數 |
+| `maxQueuedRecords` | `2048` | 每個 producer 等待傳送的記錄數 |
+| `maxQueuedBytes` | 16 MiB | 每個 producer 等待傳送的編碼位元組數 |
+| `startupTimeoutMs` | 10 秒 | Worker ready 截止時間 |
+| `stopTimeoutMs` | 5 秒 | 強制終止前的 Worker 優雅關閉期限 |
+| `clientReconnectBaseMs` | 250 ms | Client 首次重連退避上限 |
+| `clientReconnectMaxMs` | 5 秒 | Client 最大重連退避上限 |
+| `clientRuntimeTimeoutMs` | 30 秒 | 一次 Worker 到 Client Runtime 或 Sources 命令的截止時間 |
+| `queryTimeoutMs` | 10 秒 | 一次非 CDP 語義查詢的截止時間 |
+| `maxClientRuntimeObjects` | `10000` | 每條 DevTools 連線保留的 Client 即時物件 handle 數 |
+| `maxClientRuntimeProperties` | `2000` | 單次 Client 物件檢查返回的屬性描述符數 |
+| `maxClientSourceBytes` | 8 MiB | 單個 Client script 或 source map 允許讀取的最大編碼位元組數 |
+| `maxCordisNodes` | `2048` | 一個 realm 快照截斷前允許的 Context 與 Fiber 節點數 |
+| `maxDisconnectedCordisTrees` | `8` | 作為非即時快照保留的最近斷聯 realm 樹數量 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-experimental-inspector)是全部已接受字段及其声明的详尽来源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-experimental-inspector)是全部已接受欄位及其宣告的詳盡來源。
 
-Worker 监听后，Host 会记录一个 `devtools://` URL。同一个 Worker 提供 `/json`、`/json/list`、`/json/version`、`/devtools/page/<id>` target WebSocket 和 `/ingest` Client source。
+Worker 監聽後，Host 會記錄一個 `devtools://` URL。同一個 Worker 提供 `/json`、`/json/list`、`/json/version`、`/devtools/page/<id>` target WebSocket 和 `/ingest` Client source。
 
 <a id="observation-api"></a>
-## 观测 API
+## 觀測 API
 
-两个插件端都提供同一个服务：
+兩個外掛端都提供同一個服務：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -93,64 +93,64 @@ ctx.inspector.publish(topic, jsonPayload)
 await ctx.inspector.cordis.getTree()
 ```
 
-发布操作先验证无损 JSON，再调度发送，不等待 Worker。每个 source 的队列都有上限；溢出表现为 sequence gap，绝不延迟被观察的应用操作。`cordis.getTree()` 读取 Worker 最新的 detached semantic 快照，不创建 CDP 会话，也不启用 Runtime、Debugger 或 Sources。
+釋出操作先驗證無損 JSON，再排程傳送，不等待 Worker。每個 source 的佇列都有上限；溢位表現為 sequence gap，絕不延遲被觀察的應用操作。`cordis.getTree()` 讀取 Worker 最新的 detached semantic 快照，不建立 CDP 工作階段，也不啟用 Runtime、Debugger 或 Sources。
 
 <a id="cordis-tree-inspection"></a>
-## Cordis 树检查
+## Cordis 樹檢查
 
-Elements document 包含固定的 `<host>` 与 `<clients>` 容器。`<host>` 包含 Host root Context；`<clients>` 为每个 Client source 包含一个 `<client>`，每个 `<client>` 再包含该 realm 的根 Context。Cordis root Fiber 不显示。其他 Fiber 都是 `fiber.parent` 的子节点，并包含唯一一个表示 `fiber.ctx` 的 Context 子节点；Fiber 只携带 `uid="<Cordis Fiber.uid>"`，Context element 不携带 attribute。只有 Context 的 `extend()`、`isolate()` 与 `intercept()` 层仍然是直接 Context 后代。
+Elements document 包含固定的 `<host>` 與 `<clients>` 容器。`<host>` 包含 Host root Context；`<clients>` 為每個 Client source 包含一個 `<client>`，每個 `<client>` 再包含該 realm 的根 Context。Cordis root Fiber 不顯示。其他 Fiber 都是 `fiber.parent` 的子節點，幷包含唯一一個表示 `fiber.ctx` 的 Context 子節點；Fiber 只攜帶 `uid="<Cordis Fiber.uid>"`，Context element 不攜帶 attribute。只有 Context 的 `extend()`、`isolate()` 與 `intercept()` 層仍然是直接 Context 後代。
 
-Host 与 Client 发布同一种嵌套 `CordisTreeSnapshot` 类型。Context 与 Fiber 节点携带用于 realm-local 对象查询的不透明 object 句柄；Fiber 还携带 Cordis `uid`。Worker 把这些 realm 快照组合成一棵 `{ host, clients }` inspection tree。Worker 按 source generation 分配 `BackendNodeId`；每条 DevTools 连接分配自己的 `NodeId`；`DOM.resolveNode` 请求所属 Host 或 Client Runtime 生成连接本地 `RemoteObjectId`。`DOM.requestNode` 把该 object id 映射回同一个 Elements 节点。`ctx.inspector.cordis.getTree()` 与 `DSHInspector.getCordisTree` 读取不含 routing 句柄或 CDP id 的 detached 消费方无关 tree。
+Host 與 Client 釋出同一種巢狀 `CordisTreeSnapshot` 型別。Context 與 Fiber 節點攜帶用於 realm-local 物件查詢的不透明 object 控制代碼；Fiber 還攜帶 Cordis `uid`。Worker 把這些 realm 快照組合成一棵 `{ host, clients }` inspection tree。Worker 按 source generation 分配 `BackendNodeId`；每條 DevTools 連線分配自己的 `NodeId`；`DOM.resolveNode` 請求所屬 Host 或 Client Runtime 生成連線本地 `RemoteObjectId`。`DOM.requestNode` 把該 object id 對映回同一個 Elements 節點。`ctx.inspector.cordis.getTree()` 與 `DSHInspector.getCordisTree` 讀取不含 routing 控制代碼或 CDP id 的 detached 消費方無關 tree。
 
-节点按 DevTools 连接做深度受限下发：调用方省略 `depth` 时 `DOM.getDocument` 提供三层 document，被扣留的层级通过 `childNodeCount` 声明数量，展开时经 `DOM.requestChildNodes` 获取（`depth: -1` 取整棵子树）。经 `DOM.performSearch`、`DOM.requestNode` 或 `DOM.pushNodesByBackendIdsToFrontend` 流出的 NodeId 会先把尚未下发的祖先层级以 `DOM.setChildNodes` 事件推送出去。
+節點按 DevTools 連線做深度受限下發：呼叫方省略 `depth` 時 `DOM.getDocument` 提供三層 document，被扣留的層級透過 `childNodeCount` 宣告數量，展開時經 `DOM.requestChildNodes` 取得（`depth: -1` 取整棵子樹）。經 `DOM.performSearch`、`DOM.requestNode` 或 `DOM.pushNodesByBackendIdsToFrontend` 流出的 NodeId 會先把尚未下發的祖先層級以 `DOM.setChildNodes` 事件推送出去。
 
-source 仍发布完整 snapshot，Worker 在通知 DevTools 前按稳定的 backend node identity 比较差异。无变化的 snapshot 不发送 DOM 事件；新增、移除和 attribute 变化使用节点级 CDP 事件，插入节点的载荷扣留其子树，兄弟节点重排只替换对应 parent 的 children。现有 `NodeId` 与未受影响的 Elements 展开状态保持稳定。
+source 仍釋出完整 snapshot，Worker 在通知 DevTools 前按穩定的 backend node identity 比較差異。無變化的 snapshot 不傳送 DOM 事件；新增、移除和 attribute 變化使用節點級 CDP 事件，插入節點的載荷扣留其子樹，兄弟節點重排只替換對應 parent 的 children。現有 `NodeId` 與未受影響的 Elements 展開狀態保持穩定。
 
-Client 断联时，其 Console execution context 与 live object id 会立即销毁。启用断联树保留后，Elements 会原样保留最后一棵树；连接状态留在 inspection model 中，不会未经审查就成为 DOM attribute。重连会沿用逻辑 source id，为新的 transport generation 创建新的 synthetic CDP context id，并在完整 snapshot 到达后替换旧树。Client 把逻辑 id 保存在 `sessionStorage` 中，并通过 Web Locks 在页面存活期间独占该 id，因此刷新会复用 id，而复制出的另一个 live tab 会取得新 id。Worker 最多保留 `maxDisconnectedCordisTrees` 棵此类 snapshot；设为零会立即移除。
+Client 斷聯時，其 Console execution context 與 live object id 會立即銷燬。啟用斷聯樹保留後，Elements 會原樣保留最後一棵樹；連線狀態留在 inspection model 中，不會未經審查就成為 DOM attribute。重連會沿用邏輯 source id，為新的 transport generation 建立新的 synthetic CDP context id，並在完整 snapshot 到達後替換舊樹。Client 把邏輯 id 儲存在 `sessionStorage` 中，並透過 Web Locks 在頁面存活期間獨佔該 id，因此重新整理會複用 id，而複製出的另一個 live tab 會取得新 id。Worker 最多保留 `maxDisconnectedCordisTrees` 棵此類 snapshot；設為零會立即移除。
 
 <a id="host-fetch-capture"></a>
-## Host fetch 采集
+## Host fetch 採集
 
-fetch 采集默认开启，记录完整 URL、全部请求与响应 headers、请求体、响应体、状态、时间、错误和取消。它不脱敏 credential、Cookie、query value 或 payload。body 采集读取 clone；原始 fetch resolve 后，调用方立即拿到原始 Response。
+fetch 採集預設開啟，記錄完整 URL、全部請求與回應 headers、請求體、回應體、狀態、時間、錯誤和取消。它不脫敏 credential、Cookie、query value 或 payload。body 採集讀取 clone；原始 fetch resolve 後，呼叫方立即拿到原始 Response。
 
-配置的 body 上限限制保留量，而不选择字段：采集保留前缀并标记 truncated。`Network.getRequestPostData` 与 `Network.getResponseBody` 读取 Worker 保留的字节。`Network.streamResourceContent` 返回已缓冲的前缀，并仅为发起调用的 DevTools 连接把后续 response 字节附加到 `Network.dataReceived`，以驱动实时 Response 与 EventStream 视图。直接调用 Undici Client/Dispatcher，以及插件激活前保存的 fetch 引用，不在观察范围内。
+設定的 body 上限限制保留量，而不選擇欄位：採集保留字首並標記 truncated。`Network.getRequestPostData` 與 `Network.getResponseBody` 讀取 Worker 保留的位元組。`Network.streamResourceContent` 返回已緩衝的字首，並僅為發起呼叫的 DevTools 連線把後續 response 位元組附加到 `Network.dataReceived`，以驅動即時 Response 與 EventStream 檢視。直接呼叫 Undici Client/Dispatcher，以及外掛啟用前儲存的 fetch 引用，不在觀察範圍內。
 
-response headers 到达后，调用方 abort 可能会终止 observer clone；已采集的字节仍可通过 `Network.getResponseBody` 读取，采集 metadata 记录错误与截断，并且 CDP 因 fetch 已返回 Response 而发送 `Network.loadingFinished`。response headers 到达前发生的 fetch rejection 会发送 `Network.loadingFailed`，其中 abort 对应 `canceled: true`。
+response headers 到達後，呼叫方 abort 可能會終止 observer clone；已採集的位元組仍可透過 `Network.getResponseBody` 讀取，採集 metadata 記錄錯誤與截斷，並且 CDP 因 fetch 已返回 Response 而傳送 `Network.loadingFinished`。response headers 到達前發生的 fetch rejection 會傳送 `Network.loadingFailed`，其中 abort 對應 `canceled: true`。
 
 <a id="security"></a>
 ## 安全
 
-CDP target 通过 `Runtime.evaluate` 提供 Host 和已连接 Client realm 中的任意代码执行能力，Host Debugger 操作还会提供额外控制，完整 fetch 采集也包含敏感信息。因此 Worker 只接受 `127.0.0.1` 监听地址。Client ingest 还要求 Host 注入的随机 WebSocket subprotocol token；除非配置明确允许，否则拒绝非 loopback origin。CDP socket 本身不携带 token，loopback 监听是它唯一的访问控制。
+CDP target 透過 `Runtime.evaluate` 提供 Host 和已連線 Client realm 中的任意程式碼執行能力，Host Debugger 操作還會提供額外控制，完整 fetch 採集也包含敏感資訊。因此 Worker 只接受 `127.0.0.1` 監聽地址。Client ingest 還要求 Host 注入的隨機 WebSocket subprotocol token；除非設定明確允許，否則拒絕非 loopback origin。CDP socket 本身不攜帶 token，loopback 監聽是它唯一的存取控制。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无：这个仅供开发者使用的 Inspector 只观察运行时活动，不改变模型请求。
+無：這個僅供開發者使用的 Inspector 只觀察執行時活動，不改變模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无：本包既不组装也不发送提供方请求。
+無：本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **Client active debugging 不受支持**——Console event、Runtime 求值、RemoteObject 访问和只读 `lib/client.js` Sources 可用。Client script debugger request 返回明确的 unsupported error；target-wide pause 与 resume 只控制 Host。
-- **Client Sources 只暴露 Inspector bundle**——本包不收录页面中的其他 script。
-- **Client 求值使用页面 JavaScript**——页面 Content Security Policy 可能阻止动态求值；synthetic context 不提供 DevTools command-line helper 或原生 REPL 声明语义。
-- **Client 身份仲裁依赖 Web Locks**——缺少该 API 的浏览器仍会通过 `sessionStorage` 保持重连与刷新身份，但无法区分从同一存储状态复制出的两个同时存活 tab。
-- **fetch 拦截范围是 `globalThis.fetch`**——直接调用 Undici API，以及激活前保存的 fetch 引用不会被观察。
-- **body clone 有运行成本**——完整采集会 tee 请求与响应流，直至达到配置上限，可能增加内存与 I/O 压力。保留 body 的上限不包含流 tee 内部的缓冲，包括来源提供的超大 chunk，或为读取较慢的应用分支排队的数据。
-- **不自动重启 Worker**——Worker 意外退出会使当前 Inspector 实例失败；生命周期恢复留待后续改动。
+- **Client active debugging 不受支援**——Console event、Runtime 求值、RemoteObject 存取和只讀 `lib/client.js` Sources 可用。Client script debugger request 返回明確的 unsupported error；target-wide pause 與 resume 只控制 Host。
+- **Client Sources 只暴露 Inspector bundle**——本包不收錄頁面中的其他 script。
+- **Client 求值使用頁面 JavaScript**——頁面 Content Security Policy 可能阻止動態求值；synthetic context 不提供 DevTools command-line helper 或原生 REPL 宣告語義。
+- **Client 身份仲裁依賴 Web Locks**——缺少該 API 的瀏覽器仍會透過 `sessionStorage` 保持重連與重新整理身份，但無法區分從同一儲存狀態複製出的兩個同時存活 tab。
+- **fetch 攔截範圍是 `globalThis.fetch`**——直接呼叫 Undici API，以及啟用前儲存的 fetch 引用不會被觀察。
+- **body clone 有執行成本**——完整採集會 tee 請求與回應流，直至達到設定上限，可能增加記憶體與 I/O 壓力。保留 body 的上限不包含流 tee 內部的緩衝，包括來源提供的超大 chunk，或為讀取較慢的應用分支排隊的資料。
+- **不自動重新啟動 Worker**——Worker 意外退出會使目前 Inspector 實例失敗；生命週期恢復留待後續改動。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。wire 解析、generation、Worker 生命周期与 CDP 会话会在所属操作中拒绝无效关系。
+**執行時不變式：** 不釋出伴生入口。wire 解析、generation、Worker 生命週期與 CDP 工作階段會在所屬操作中拒絕無效關係。

@@ -1,22 +1,22 @@
-- dialog "添加插件":
-  - heading "添加插件" [level=2]
-  - button "关闭"
-  - textbox "插件包名":
+- dialog "新增外掛":
+  - heading "新增外掛" [level=2]
+  - button "關閉"
+  - textbox "外掛包名":
     - /placeholder: 例如 @deepseek-ai/dsh-subagent-codex
-  - button "收起引导" [expanded]
-  - button "安装源 中国大陆镜像源"
+  - button "收起引導" [expanded]
+  - button "安裝源 中國大陸映像源"
   - list:
     - listitem:
-      - text: 包名 插件包名即 npm 包名（如 dsh-xxx 或 @作者/插件名），社区插件的 README 安装命令中 dsh plugin add 或 pnpm add 之后的部分。 示例：
+      - text: 包名 外掛包名即 npm 包名（如 dsh-xxx 或 @作者/外掛名），社群外掛的 README 安裝命令中 dsh plugin add 或 pnpm add 之後的部分。 範例：
       - code: "@deepseek-ai/dsh-subagent-codex"
-      - button "填入示例 @deepseek-ai/dsh-subagent-codex": 填入示例
+      - button "填入範例 @deepseek-ai/dsh-subagent-codex": 填入範例
     - listitem:
-      - text: GitHub 仓库地址 插件在 GitHub 上的开源仓库地址，也支持其他 Git 仓库。 示例：
+      - text: GitHub 儲存庫地址 外掛在 GitHub 上的開源儲存庫地址，也支援其他 Git 儲存庫。 範例：
       - code: https://github.com/author/dsh-plugin
-      - button "填入示例 https://github.com/author/dsh-plugin": 填入示例
+      - button "填入範例 https://github.com/author/dsh-plugin": 填入範例
     - listitem:
-      - text: 本地插件目录 本机上插件目录的绝对路径，适用于自行开发或已下载的插件。 示例：
+      - text: 本地外掛目錄 本機上外掛目錄的絕對路徑，適用於自行開發或已下載的外掛。 範例：
       - code: /Users/name/my-plugin
-      - button "填入示例 /Users/name/my-plugin": 填入示例
-  - note: 请确认插件来源可信。插件在本机以你的权限运行，来源不明的插件可能损坏 DeepSeek Harness，或读取和泄露你的数据。
-  - button "安装" [disabled]
+      - button "填入範例 /Users/name/my-plugin": 填入範例
+  - note: 請確認外掛來源可信。外掛在本機以你的權限執行，來源不明的外掛可能損壞 DeepSeek Harness，或讀取和洩露你的資料。
+  - button "安裝" [disabled]

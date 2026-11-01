@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/tools.md
 /tools:
   en: e3ecdbc9d7078226
-  zh: 82d609bfd382311e
+  zh: d89879fe40bdeb56
 /tools/tooldefinition-a-registered-tool:
   en: e5ebf149f6783674
-  zh: 062aa8477376f953
+  zh: 4a02cef701927af1
 /tools/the-unified-json-value-schema-dsl:
   en: 9ff354e00a1fbe91
-  zh: b302216d889f9b58
+  zh: 06075d44b365dc97
 /tools/toolrestriction-one-scope-s-live-filter-over-what-it-inherits:
   en: 8c3fc4ca26f7e314
-  zh: 2e27263cb25243b9
+  zh: 4d9543c6bfcbe159
 /tools/execution-extensible-waterfalls-plus-monotonic-policy:
   en: 1ff922c9803d5456
-  zh: 983d71cbbff7b702
+  zh: dd1d092f4f36db23
 /tools/the-enforced-raw-json-schema-subset:
   en: 28e354bfa2f9cebb
-  zh: be1f75abccf8afdf
+  zh: 7641c461055e8813
 /tools/tool-presentation-ui-vocabulary:
   en: 078fac733842b847
-  zh: e8bc6e56ad1932fe
+  zh: 7351771d7e01c227

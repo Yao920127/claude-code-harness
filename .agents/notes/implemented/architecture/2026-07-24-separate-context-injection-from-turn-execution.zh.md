@@ -1,74 +1,74 @@
-# Agent Note: 将上下文注入与轮次执行分离
+# Agent Note: 將上下文注入與輪次執行分離
 
 Status: implemented
 
 [English](2026-07-24-separate-context-injection-from-turn-execution.md) | 中文
 
-## 问题
+## 問題
 
-agent（智能体） API 曾用三种相互重叠的方式表示面向模型的补充输入：调用方通过 `SendOptions.contexts` 附加 `HookContext[]`，拦截钩子和工具钩子返回 `additionalContexts`，插件则调用 `agent.inject()`。这些路径最终都把上下文写入同一份模型历史，但各自携带不同的放置、元数据、准入、队列和轮次生命周期规则。
+agent（智慧代理） API 曾用三種相互重疊的方式表示面向模型的補充輸入：呼叫方透過 `SendOptions.contexts` 附加 `HookContext[]`，攔截掛鉤和工具掛鉤返回 `additionalContexts`，外掛則呼叫 `agent.inject()`。這些路徑最終都把上下文寫入同一份模型歷史，但各自攜帶不同的放置、中繼資料、准入、佇列和輪次生命週期規則。
 
-将上下文原子附加到收件箱消息后，agent loop（智能体循环）曾被迫让上下文跟随提示词准入、steering（中途引导）转换、取消和终止丢弃的完整生命周期。`prompt-prefix` 放置方式又曾把上下文与直接提示词合并为一个事件，因此 transcript（文本记录）消费方不得不依赖模型不可见的封套，才能还原用户实际输入。这样一来，outbox 条目、会话投影和 UI 回放都曾负责处理本应由生产方负责的区分。
+將上下文原子附加到收件箱訊息後，agent loop（智慧代理迴圈）曾被迫讓上下文跟隨提示詞准入、steering（中途引導）轉換、取消和終止丟棄的完整生命週期。`prompt-prefix` 放置方式又曾把上下文與直接提示詞合併為一個事件，因此 transcript（文字記錄）消費方不得不依賴模型不可見的封套，才能還原使用者實際輸入。這樣一來，outbox 條目、工作階段投影和 UI 回放都曾負責處理本應由生產方負責的區分。
 
-空闲状态下的 `inject()` 还暴露了另一处语义错位。注入当时并不请求模型执行，但实现仅为了满足轮次封闭不变量并获得持久性检查点，就会打开并关闭一个零步骤的 `injection` 轮次。于是，当时的轮次有时表示「运行 agent loop」，有时却表示「不运行 agent，仅持久化上下文」。
+空閒狀態下的 `inject()` 還暴露了另一處語義錯位。注入當時並不請求模型執行，但實作僅為了滿足輪次封閉不變數並獲得永續性檢查點，就會開啟並關閉一個零步驟的 `injection` 輪次。於是，當時的輪次有時表示「執行 agent loop」，有時卻表示「不執行 agent，僅持久化上下文」。
 
-`HookContext` 的名字也描述了生产方，而非该值的职责。它可能来自原生插件、钩子桥接、提示词准入或工具后处理；其稳定含义是面向模型的额外上下文，并且 source 会指明生产方。
+`HookContext` 的名字也描述了生產方，而非該值的職責。它可能來自原生外掛、掛鉤橋接、提示詞准入或工具後處理；其穩定含義是面向模型的額外上下文，並且 source 會指明生產方。
 
-## 决策
+## 決策
 
-`inject()` 是调用方交付补充模型输入的唯一操作，而轮次表示一次模型循环执行。
+`inject()` 是呼叫方交付補充模型輸入的唯一操作，而輪次表示一次模型迴圈執行。
 
-拥有上下文的调用方通过 `inject()` 交付带标识且冻结的 `UserMessage`，再独立使用 `followup()` 或 `steer()` 提交直接消息。
+擁有上下文的呼叫方透過 `inject()` 交付帶標識且凍結的 `UserMessage`，再獨立使用 `followup()` 或 `steer()` 提交直接訊息。
 
-pre-step 的 enter 分支会为正在最终确定的请求返回完整的 `PreStepDecision.messages` 批次。工具扩展点仍可返回 `additionalContexts`，这些上下文只会在对应工具结果之后进入 next-step inbox。这些值是扩展点的输出，而不是从调用方 inbox 条目捕获的附件。
+pre-step 的 enter 分支會為正在最終確定的請求返回完整的 `PreStepDecision.messages` 批次。工具擴充功能點仍可返回 `additionalContexts`，這些上下文只會在對應工具結果之後進入 next-step inbox。這些值是擴充功能點的輸出，而不是從呼叫方 inbox 條目捕捉的附件。
 
-每项额外上下文都是独立的 `UserMessage`，其 `source` 会指明生产方，并携带生产方专用字段。inbox 插入会立即持久化；后续准入会将同一个值记录为 `user/message`。不再有 `context/message`、prompt-prefix 放置方式、稳定请求分隔符或提示词封套。transcript 与 UI 消费方通过 `source` 区分直接用户消息和注入上下文。
+每項額外上下文都是獨立的 `UserMessage`，其 `source` 會指明生產方，並攜帶生產方專用欄位。inbox 插入會立即持久化；後續准入會將同一個值記錄為 `user/message`。不再有 `context/message`、prompt-prefix 放置方式、穩定請求分隔符或提示詞封套。transcript 與 UI 消費方透過 `source` 區分直接使用者訊息和注入上下文。
 
-## 注入生命周期
+## 注入生命週期
 
-`inject()` 始终把上下文插入不会唤醒的 `next-step` inbox，并以 `agent/inbox/spliced` 提交该队列变更。运行中的驱动器会在最近的后续 pre-step 边界领取它。idle 驱动器会让它保持待处理，直至 `followup()` 或 `steer()` 提供可唤醒工作；在此之前，取消或 dispose（资源释放）可能将其丢弃，但不会抹除持久队列历史。
+`inject()` 始終把上下文插入不會喚醒的 `next-step` inbox，並以 `agent/inbox/spliced` 提交該佇列變更。執行中的驅動器會在最近的後續 pre-step 邊界領取它。idle 驅動器會讓它保持待處理，直至 `followup()` 或 `steer()` 提供可喚醒工作；在此之前，取消或 dispose（資源釋放）可能將其丟棄，但不會抹除持久佇列歷史。
 
-循环会先领取当前 next-step 批次，再运行 `agent/pre-step`，因此领取后到达的注入可能赶不上正在最终确定的请求，而由下一次边界领取。enter decision 返回的消息会在所属轮次内、消费它们的请求之前追加。在助手工具调用批次期间产生的上下文因此只会出现在该批次全部有序结果之后。
+迴圈會先領取目前 next-step 批次，再執行 `agent/pre-step`，因此領取後到達的注入可能趕不上正在最終確定的請求，而由下一次邊界領取。enter decision 返回的訊息會在所屬輪次內、消費它們的請求之前追加。在助手工具呼叫批次期間產生的上下文因此只會出現在該批次全部有序結果之後。
 
-如果 pre-step reject 或抛错，其已领取的注入上下文、steering 与排队提示词都会保持已删除，也不会追加返回批次。原子领取后插入的消息不受影响，继续保持待处理。
+如果 pre-step reject 或拋錯，其已領取的注入上下文、steering 與排隊提示詞都會保持已刪除，也不會追加返回批次。原子領取後插入的訊息不受影響，繼續保持待處理。
 
-agent loop 只会在轮次内从进入步骤的批次追加注入的 `user/message`。核心执行事件、steering、助手输出和工具事件仍受轮次边界约束；可合并扩展事件的关系由声明它们的插件拥有，而不是采用核心默认规则。
+agent loop 只會在輪次內從進入步驟的批次追加註入的 `user/message`。核心執行事件、steering、助手輸出和工具事件仍受輪次邊界約束；可合併擴充功能事件的關係由宣告它們的外掛擁有，而不是採用核心預設規則。
 
-## 扩展点与调用方语义
+## 擴充功能點與呼叫方語義
 
-enter 分支的 `PreStepDecision.messages` 是拟议步骤的完整批次。waterfall（瀑布式事件）监听器调用 `next()` 委托时，会保留下游消息，除非有意替换；新增消息遵循 waterfall 的自然返回顺序。工具结果的 `additionalContexts` 保留 FIFO 顺序及每条消息的 source。
+enter 分支的 `PreStepDecision.messages` 是擬議步驟的完整批次。waterfall（瀑布式事件）監聽器呼叫 `next()` 委託時，會保留下游訊息，除非有意替換；新增訊息遵循 waterfall 的自然返回順序。工具結果的 `additionalContexts` 保留 FIFO 順序及每條訊息的 source。
 
-调用方主动注入与当前步骤上下文刻意采用不同的时序。`inject()` 会加入下一个可用 pre-step，无法保证正在最终确定的请求会消费它。必须影响该请求的监听器在 `PreStepDecision.messages` 中返回上下文；下游 reject 或失败时，该上下文不会落入日志。
+呼叫方主動注入與目前步驟上下文刻意採用不同的時序。`inject()` 會加入下一個可用 pre-step，無法保證正在最終確定的請求會消費它。必須影響該請求的監聽器在 `PreStepDecision.messages` 中返回上下文；下游 reject 或失敗時，該上下文不會落入日誌。
 
-跨会话引用采用这种领域组合方式：TUI 先准备快照，然后在 idle 直接消息的 pre-step 中把快照与该消息一同返回，或在 running 轮次中先注入快照再唤醒 steering。目标日志包含两条简单消息，因此来源会话后续变化不会改变回放，transcript 消费方也不需要提示词封套。本决策取代[跨会话引用决策](../../archived/feature/2026-07-21-cross-session-references.md)中的附件机制，但保留其快照与信任边界规则。
+跨工作階段引用採用這種領域組合方式：TUI 先準備快照，然後在 idle 直接訊息的 pre-step 中把快照與該訊息一同返回，或在 running 輪次中先注入快照再喚醒 steering。目標日誌包含兩條簡單訊息，因此來源工作階段後續變化不會改變回放，transcript 消費方也不需要提示詞封套。本決策取代[跨工作階段引用決策](../../archived/feature/2026-07-21-cross-session-references.md)中的附件機制，但保留其快照與信任邊界規則。
 
-本决策保留[移除注入内容封套](../simplification/2026-07-20-unwrap-injected-content-envelopes.zh.md)确立的由调用方决定内容框架的原则，以及[一次 send、一个轮次](../simplification/2026-07-17-one-send-one-turn.zh.md)确立的单条目轮次规则。后续的[独立纯日志事件决策](../simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)将同样的「轮次仅表示执行」语义应用于插件所属记录。
+本決策保留[移除注入內容封套](../simplification/2026-07-20-unwrap-injected-content-envelopes.zh.md)確立的由呼叫方決定內容框架的原則，以及[一次 send、一個輪次](../simplification/2026-07-17-one-send-one-turn.zh.md)確立的單條目輪次規則。後續的[獨立純日誌事件決策](../simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)將同樣的「輪次僅表示執行」語義應用於外掛所屬記錄。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**保留 `SendOptions.contexts` 作为原子附件。** 提示词准入阻止消息时，这种方式能保留全有或全无交付，但也会让上下文继续成为收件箱生命周期状态的一部分，并迫使每次队列转换和观察事件携带它。大多数调用方都可以通过先注入上下文、再交付消息来表达需求，通用 agent API 不应内置领域事务。
+**保留 `SendOptions.contexts` 作為原子附件。** 提示詞准入阻止訊息時，這種方式能保留全有或全無交付，但也會讓上下文繼續成為收件箱生命週期狀態的一部分，並迫使每次佇列轉換和觀察事件攜帶它。大多數呼叫方都可以透過先注入上下文、再交付訊息來表達需求，通用 agent API 不應內建領域事務。
 
-**保留独立的 `context/message` 会话事件。** 面向模型的 user-role 输入会再次拥有两个投影完全相同的事件类型。`user/message.source` 已能为策略、transcript 和回放消费方提供所需区分。
+**保留獨立的 `context/message` 工作階段事件。** 面向模型的 user-role 輸入會再次擁有兩個投影完全相同的事件型別。`user/message.source` 已能為策略、transcript 和回放消費方提供所需區分。
 
-**为空闲注入保留一次性轮次。** 持久 inbox 插入已经能在不打开轮次的情况下记录空闲上下文。合成轮次会让轮次计数与观察方报告从未运行模型的工作；不会唤醒的上下文会保持待处理，直至真实的可唤醒工作提供请求。
+**為空閒注入保留一次性輪次。** 持久 inbox 插入已經能在不開啟輪次的情況下記錄空閒上下文。合成輪次會讓輪次計數與觀察方報告從未執行模型的工作；不會喚醒的上下文會保持待處理，直至真實的可喚醒工作提供請求。
 
-**保留 `prompt-prefix` 可选放置方式。** 前缀烘焙可以让上下文和请求位于同一条提供方消息中，但它会引入直接提示词的第二种表示，并把放置处理扩散到准入、steering、日志、回放和 UI 代码。需要文本框架的生产方可以直接把它写入自身上下文内容。
+**保留 `prompt-prefix` 可選放置方式。** 字首烘焙可以讓上下文和請求位於同一條提供者訊息中，但它會引入直接提示詞的第二種表示，並把放置處理擴散到准入、steering、日誌、回放和 UI 程式碼。需要文字框架的生產方可以直接把它寫入自身上下文內容。
 
-**让提示词钩子调用 `inject()`，而不是返回消息。** 注入可能赶不上提示词正在最终确定的请求，也会逃逸下游对该 decision 的阻止。返回完整消息批次能让当前请求上下文继续受 waterfall 约束。
+**讓提示詞掛鉤呼叫 `inject()`，而不是返回訊息。** 注入可能趕不上提示詞正在最終確定的請求，也會逃逸下游對該 decision 的阻止。返回完整訊息批次能讓目前請求上下文繼續受 waterfall 約束。
 
-## 验证
+## 驗證
 
-- 投递输入与 steering inbox 记录不包含附加上下文；`agent/inbox/inserted` 只报告插入消息，目标列表由持久 splice 保留。
-- `UserMessage` 是提示词拦截、工具执行、钩子桥接、guard 和上下文生产方共享的带标识且冻结的形状。
-- 公共类型、持久事件、投影和 UI 回放中均不存在 prompt-prefix 放置方式、提示词封套与 `context/message`。
-- idle 状态下的 `inject()` 会立即追加一条持久 inbox 插入记录，但不会追加模型可见的 `user/message`；后续可唤醒投递可能开始 pre-step 处理。
-- 活跃轮次中的注入会在最近的后续 pre-step 边界领取，并位于完整工具结果批次之后、消费它的请求之前。
-- pre-step reject 或失败会丢弃其已领取批次；领取后插入的输入继续保持待处理。
-- 单元测试、持久化与 resume 测试、不变量测试和 TUI 覆盖会固定事件顺序、领取归属和持久回放。
+- 投遞輸入與 steering inbox 記錄不包含附加上下文；`agent/inbox/inserted` 只報告插入訊息，目標列表由持久 splice 保留。
+- `UserMessage` 是提示詞攔截、工具執行、掛鉤橋接、guard 和上下文生產方共享的帶標識且凍結的形狀。
+- 公共型別、持久事件、投影和 UI 回放中均不存在 prompt-prefix 放置方式、提示詞封套與 `context/message`。
+- idle 狀態下的 `inject()` 會立即追加一條持久 inbox 插入記錄，但不會追加模型可見的 `user/message`；後續可喚醒投遞可能開始 pre-step 處理。
+- 活躍輪次中的注入會在最近的後續 pre-step 邊界領取，並位於完整工具結果批次之後、消費它的請求之前。
+- pre-step reject 或失敗會丟棄其已領取批次；領取後插入的輸入繼續保持待處理。
+- 單元測試、持久化與 resume 測試、不變數測試和 TUI 覆蓋會固定事件順序、領取歸屬和持久回放。
 
-## 后果
+## 後果
 
-- idle 注入只有在后续 pre-step 接纳它后才会对模型可见，并可能被取消或 dispose 丢弃，而其持久 inbox 生命周期仍会保留记录。
-- 两条连续的 user-role 消息会取代一条烘焙后的提示词消息；提供方适配器会保留这一顺序。
-- 必须影响当前请求的上下文要从 `agent/pre-step` 返回；普通注入只支持在最近的后续边界交付。
-- 公共投递约定和收件箱记录保持精简：没有上下文附件、上下文放置元数据、提示词封套或重复的持久事件类型。
+- idle 注入只有在後續 pre-step 接納它後才會對模型可見，並可能被取消或 dispose 丟棄，而其持久 inbox 生命週期仍會保留記錄。
+- 兩條連續的 user-role 訊息會取代一條烘焙後的提示詞訊息；提供者介面卡會保留這一順序。
+- 必須影響目前請求的上下文要從 `agent/pre-step` 返回；普通注入只支援在最近的後續邊界交付。
+- 公共投遞約定和收件箱記錄保持精簡：沒有上下文附件、上下文放置中繼資料、提示詞封套或重複的持久事件型別。

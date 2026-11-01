@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-07-workspace-files-dual-face-package.md
 /agent-note-workspace-files-as-one-dual-face-api-package:
   en: fee20bed1c4f69d2
-  zh: 8897bf7430250d46
+  zh: 790b426ef7354c3c
 /agent-note-workspace-files-as-one-dual-face-api-package/problem:
   en: 057ac188f6269740
-  zh: 4ed1c2f6c3015efb
+  zh: 6f4ce82540f57c71
 /agent-note-workspace-files-as-one-dual-face-api-package/decision:
   en: 36fdbb0b44b1bb5e
-  zh: 87a7a9b45231cf28
+  zh: e7523347ead84d8e
 /agent-note-workspace-files-as-one-dual-face-api-package/alternatives-considered:
   en: 45a93fced31f5980
-  zh: 9283fbda48828416
+  zh: b8cb828a79f854ee
 /agent-note-workspace-files-as-one-dual-face-api-package/consequences:
   en: d4558eea4ac3a00b
-  zh: e625747fd469f146
+  zh: e0e3e8afffda45d7
 /agent-note-workspace-files-as-one-dual-face-api-package/verification:
   en: 4c49a2ec778623e8
-  zh: 94eacb1ee8e4d36d
+  zh: 1ed63fa4797d4913

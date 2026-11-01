@@ -2,17 +2,17 @@
 
 [English](subagent.md) | 中文
 
-subagent seam 让一个 agent（智能体）将工作委派给子 agent。与 [bash](shell.zh.md) 一样，它是**一项可选能力**，不属于 agent loop（智能体循环），因此其类型定义在此而非 [core.md](core.zh.md) 中。它不同于其他能力 seam，因为**同一上下文中可共存多个提供方实现**，并按名称注册（`ctx.subagents`），而 bash 只允许一个执行器。该注册表遵循 [LLM（大语言模型）适配器注册表](llm-streaming.zh.md)，而非单服务的 bash 执行器。
+subagent seam 讓一個 agent（智慧代理）將工作委派給子 agent。與 [bash](shell.zh.md) 一樣，它是**一項可選能力**，不屬於 agent loop（智慧代理迴圈），因此其型別定義在此而非 [core.md](core.zh.md) 中。它不同於其他能力 seam，因為**同一上下文中可共存多個提供者實作**，並按名稱註冊（`ctx.subagents`），而 bash 只允許一個執行器。該註冊表遵循 [LLM（大語言模型）介面卡註冊表](llm-streaming.zh.md)，而非單服務的 bash 執行器。
 
-Service Definition：[dsh-subagent](../../packages/subagent/subagent)（`ctx.subagents` + 下文词汇）。Service Provider 是六个兄弟包：`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`、`dsh-subagent-acp`、`dsh-subagent-codex`、`dsh-subagent-claude-code`、`dsh-subagent-dsh-sdk`；面向模型的 Consumer 包括 [dsh-tool-subagent](../../packages/subagent/tool-subagent)（按提供方委派）和 [dsh-tool-subagent-control](../../packages/subagent/tool-subagent-control)（可选的全局 `send_message`、`interrupt_agent` 与 `list_agents` 控制工具）。同一个 `ctx.subagents` 服务通过内部激活管理器负责可继续子 agent 编排，通过 parent 目录发现直接 child，并通过父目录递归发现后代。产品提供方设计理由见 [Codex 与 Claude Code Agent Note](../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)；通用 seam 的设计理由见 [subagent Agent Note](../../.agents/notes/implemented/feature/2026-06-21-subagent-capability-seam.zh.md)、[可继续 subagent Agent Note](../../.agents/notes/implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)和[相邻 Agent 消息 Agent Note](../../.agents/notes/implemented/architecture/2026-08-27-adjacent-agent-steer-messaging.zh.md)；[已归档的列表身份投影记录](../../.agents/notes/archived/architecture/2026-08-06-subagent-list-identity-projection.md)记录了最初的列表身份决策。
+Service Definition：[dsh-subagent](../../packages/subagent/subagent)（`ctx.subagents` + 下文詞彙）。Service Provider 是六個兄弟包：`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`、`dsh-subagent-acp`、`dsh-subagent-codex`、`dsh-subagent-claude-code`、`dsh-subagent-dsh-sdk`；面向模型的 Consumer 包括 [dsh-tool-subagent](../../packages/subagent/tool-subagent)（按提供者委派）和 [dsh-tool-subagent-control](../../packages/subagent/tool-subagent-control)（可選的全域 `send_message`、`interrupt_agent` 與 `list_agents` 控制工具）。同一個 `ctx.subagents` 服務透過內部啟用管理器負責可繼續子 agent 編排，透過 parent 目錄發現直接 child，並透過父目錄遞迴發現後代。產品提供者設計理由見 [Codex 與 Claude Code Agent Note](../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)；通用 seam 的設計理由見 [subagent Agent Note](../../.agents/notes/implemented/feature/2026-06-21-subagent-capability-seam.zh.md)、[可繼續 subagent Agent Note](../../.agents/notes/implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)和[相鄰 Agent 訊息 Agent Note](../../.agents/notes/implemented/architecture/2026-08-27-adjacent-agent-steer-messaging.zh.md)；[已歸檔的列表身份投影記錄](../../.agents/notes/archived/architecture/2026-08-06-subagent-list-identity-projection.md)記錄了最初的列表身份決策。
 
-源码：[`packages/subagent/subagent/src/types.ts`](../../packages/subagent/subagent/src/types.ts)、[`packages/subagent/subagent/src/index.ts`](../../packages/subagent/subagent/src/index.ts)和 [`packages/subagent/subagent/src/continuation.ts`](../../packages/subagent/subagent/src/continuation.ts)
+原始碼：[`packages/subagent/subagent/src/types.ts`](../../packages/subagent/subagent/src/types.ts)、[`packages/subagent/subagent/src/index.ts`](../../packages/subagent/subagent/src/index.ts)和 [`packages/subagent/subagent/src/continuation.ts`](../../packages/subagent/subagent/src/continuation.ts)
 
-`subagentCatalog` projection 通过 Session 观察和客户端快照暴露按父会话事件排序的 `SubagentCatalogEntry[]`。每个条目包含子级 id、创建时间、模式和依模式确定的标签；fork 继承的目录事实不在其中。[subagent 包](../../packages/subagent/subagent/README.zh.md) 定义目录创建和持久化语义。历史子会话的 descriptor 不可用时使用 `mode: 'unknown'`，保留 header 身份供发现，但不授予继续执行能力。
+`subagentCatalog` projection 透過 Session 觀察和用戶端快照暴露按父工作階段事件排序的 `SubagentCatalogEntry[]`。每個條目包含子級 id、建立時間、模式和依模式確定的標籤；fork 繼承的目錄事實不在其中。[subagent 包](../../packages/subagent/subagent/README.zh.md) 定義目錄建立和持久化語義。歷史子工作階段的 descriptor 不可用時使用 `mode: 'unknown'`，保留 header 身份供發現，但不授予繼續執行能力。
 
-## 两类能力，两种发现方式
+## 兩類能力，兩種發現方式
 
-提供方通过一个静态描述符公布其**启动时**功能，服务会在单次 run 存在之前即行检查；如果请求依赖提供方不具备的功能，会被明确拒绝（`SubagentError('UNSUPPORTED_CAPABILITY')`），绝不会被接受后静默忽略。这些 flag 仅描述单次 [`start()`](#the-provider-contract-subagentprovider) 路径，即由提供方组合子 agent 的路径。**可继续**子 agent 由继续执行管理器自行组合，因此它们由唯一一个可选方法把关，方法存在即为能力，并以 TypeScript 的类型收窄作为发现机制：[`SubagentProvider.prepareContinuable`](#the-provider-contract-subagentprovider)。
+提供者透過一個靜態描述符公佈其**啟動時**功能，服務會在單次 run 存在之前即行檢查；如果請求依賴提供者不具備的功能，會被明確拒絕（`SubagentError('UNSUPPORTED_CAPABILITY')`），絕不會被接受後靜默忽略。這些 flag 僅描述單次 [`start()`](#the-provider-contract-subagentprovider) 路徑，即由提供者組合子 agent 的路徑。**可繼續**子 agent 由繼續執行管理器自行組合，因此它們由唯一一個可選方法把關，方法存在即為能力，並以 TypeScript 的型別收窄作為發現機制：[`SubagentProvider.prepareContinuable`](#the-provider-contract-subagentprovider)。
 
 ```ts type-equiv
 /**
@@ -35,9 +35,9 @@ interface SubagentCapabilities {
 }
 ```
 
-## 单次启动请求
+## 單次啟動請求
 
-工具层根据模型输入和自身配置构建此请求；服务在 `start` 之前针对指定提供方进行校验。必填的 `parent` 提供会话 cwd、谱系与委派深度。可选的 Agent 提供方、模型、推理强度与 token 覆盖、output schema、depth、工具过滤器和 persona 需要对应的能力 flag 匹配。进程内后端会把 `agentOptions` 合并到父 Agent 选项之上，将 filter 和 persona 的作用域限定在子 agent 创建阶段，并通过强制 capture 工具实现所支持的 object-rooted schema。DSH SDK 后端会把四个 Agent 路由字段合并到实例默认值之上，并在子运行时初始化期间校验；ACP、Codex 与 Claude Code 会在启动传输前拒绝 `agentOptions`。
+工具層根據模型輸入和自身設定建置此請求；服務在 `start` 之前針對指定提供者進行驗證。必填的 `parent` 提供工作階段 cwd、譜系與委派深度。可選的 Agent 提供者、模型、推理強度與 token 覆蓋、output schema、depth、工具過濾器和 persona 需要對應的能力 flag 匹配。程序內後端會把 `agentOptions` 合併到父 Agent 選項之上，將 filter 和 persona 的作用域限定在子 agent 建立階段，並透過強制 capture 工具實作所支援的 object-rooted schema。DSH SDK 後端會把四個 Agent 路由欄位合併到實例預設值之上，並在子執行時初始化期間驗證；ACP、Codex 與 Claude Code 會在啟動傳輸前拒絕 `agentOptions`。
 
 ```ts type-equiv
 /**
@@ -106,9 +106,9 @@ interface SubagentStartRequest {
 }
 ```
 
-`signal` 是就绪前后唯一的取消通道。[subagent 组合控制 Agent Note](../../.agents/notes/implemented/feature/2026-07-12-subagent-persona-tool-filter-and-depth.zh.md)规定 persona、live 全局工具过滤、绝对深度以及「可见性而非权限」的设计理由。
+`signal` 是就緒前後唯一的取消通道。[subagent 組合控制 Agent Note](../../.agents/notes/implemented/feature/2026-07-12-subagent-persona-tool-filter-and-depth.zh.md)規定 persona、live 全域工具過濾、絕對深度以及「可見性而非權限」的設計理由。
 
-面向调用方的请求不携带目录格式细节或继续执行状态。`SubagentRuntime.start()` 会在能力检查后解析分离的一次性描述符，再将以下面向提供方的请求传给所选传输；可继续子 agent 绝不会到达 `SubagentProvider.start()`：
+面向呼叫方的請求不攜帶目錄格式細節或繼續執行狀態。`SubagentRuntime.start()` 會在能力檢查後解析分離的一次性描述符，再將以下面向提供者的請求傳給所選傳輸；可繼續子 agent 絕不會到達 `SubagentProvider.start()`：
 
 ```ts type-equiv
 /**
@@ -121,9 +121,9 @@ interface ResolvedSubagentStartRequest extends SubagentStartRequest {
 }
 ```
 
-## 可继续子 agent 与激活
+## 可繼續子 agent 與啟用
 
-**可继续后台 subagent** 是一份持久化子 agent 会话（Session），至多关联一个进程内的 **Activation（激活）**，即被重建的子 Agent 处于驻留状态的时段。Activation 不是请求、结果、取消或 Task：它可以执行多个 FIFO 轮次，并在其创建的后代仍在运行期间保持驻留。继续执行管理器负责 activation 准入、直接父级鉴权、实时所有权图、冷恢复（cold resume）与子级优先释放；agent loop 负责一切轮次排序与执行。任何可继续路径都不会创建 Task，也不会创建承载中间结果的包装层。
+**可繼續後臺 subagent** 是一份持久化子 agent 工作階段（Session），至多關聯一個程序內的 **Activation（啟用）**，即被重建的子 Agent 處於駐留狀態的時段。Activation 不是請求、結果、取消或 Task：它可以執行多個 FIFO 輪次，並在其建立的後代仍在執行期間保持駐留。繼續執行管理器負責 activation 准入、直接父級授權驗證、即時所有權圖、冷恢復（cold resume）與子級優先釋放；agent loop 負責一切輪次排序與執行。任何可繼續路徑都不會建立 Task，也不會建立承載中間結果的包裝層。
 
 ```text
 persisted Session
@@ -133,27 +133,27 @@ persisted Session
        -> zero or more owned child Activations
 ```
 
-`SubagentRuntime.startContinuable()` 会预留稳定的子 agent id，对版本化的 `subagent/descriptor` payload 建立快照，向指定提供方索取其分离的 `ContinuableCreateSpec`，通过私有的 activation-owner 作用域创建子 Agent，建立任何可继续父级的所有权，并提交初始提示词。当收件箱（inbox）准入产出消息 id 时，它以 `{ childId, messageId }` resolve——无需等待轮次开始，也无需等待消息进入会话日志。在该准入之前的任何失败都会以两个 id 都不返回的方式 reject，并 dispose（资源释放）任何已创建的 handle，回滚 Activation 与父级所有权。
+`SubagentRuntime.startContinuable()` 會預留穩定的子 agent id，對版本化的 `subagent/descriptor` payload 建立快照，向指定提供者索取其分離的 `ContinuableCreateSpec`，透過私有的 activation-owner 作用域建立子 Agent，建立任何可繼續父級的所有權，並提交初始提示詞。當收件箱（inbox）准入產出訊息 id 時，它以 `{ childId, messageId }` resolve——無需等待輪次開始，也無需等待訊息進入工作階段日誌。在該准入之前的任何失敗都會以兩個 id 都不返回的方式 reject，並 dispose（資源釋放）任何已建立的 handle，復原 Activation 與父級所有權。
 
-`SubagentRuntime.sendMessage()` 是唯一由模型编写消息的操作。它接收确切在线 sender 与目标 id，只允许直接 parent 或直接可继续 child，自行推导 sender 来源信息，并根据目标 child 的 Activation 驻留状态路由：
+`SubagentRuntime.sendMessage()` 是唯一由模型編寫訊息的操作。它接收確切線上 sender 與目標 id，只允許直接 parent 或直接可繼續 child，自行推導 sender 來源資訊，並根據目標 child 的 Activation 駐留狀態路由：
 
-| 目标 Activation 状态 | `sendMessage` |
+| 目標 Activation 狀態 | `sendMessage` |
 |---|---|
 | `running` | 在同一 Activation 中 steer 最近的 step |
-| `waiting` | 唤醒并 steer 同一 Activation |
-| 无 Activation | 冷恢复新的 Activation，然后 steer |
+| `waiting` | 喚醒並 steer 同一 Activation |
+| 無 Activation | 冷恢復新的 Activation，然後 steer |
 
-`running` 表示 Agent 拥有活跃的 driver 或 maintenance 任务；`waiting` 表示没有活跃的 Agent 工作，但其 Inbox 非空或仍拥有至少一个尚未完成 dispose 的子 Activation；`settled` 表示没有活跃的 Agent 工作、Inbox 为空且其拥有的每个子级都已 dispose，此时管理器会 dispose [`AgentHandle`](core.zh.md#creation-and-ownership) 并移除该 Activation。管理器根据 `Agent.whenIdle()`、`Agent.inbox.hasPending`、其拥有的子级集合，以及让过期观察失效的 Activation generation 推导这些内部条件，而非维护第二套执行状态机。最终 Session flush 之后，child-lock 决策会通过 `Agent.runMaintenance()` 的同步 task 入口占用 idle 阶段，并在同一个 JavaScript turn 内关闭准入。这条保守规则不区分投递模式：`Agent.inject()` 停放的 context 可以让空闲 Activation 及其在线祖先继续驻留，直到唤醒投递将其 claim、queue 变更将其移除，或 manager teardown 将其丢弃。
+`running` 表示 Agent 擁有活躍的 driver 或 maintenance 任務；`waiting` 表示沒有活躍的 Agent 工作，但其 Inbox 非空或仍擁有至少一個尚未完成 dispose 的子 Activation；`settled` 表示沒有活躍的 Agent 工作、Inbox 為空且其擁有的每個子級都已 dispose，此時管理器會 dispose [`AgentHandle`](core.zh.md#creation-and-ownership) 並移除該 Activation。管理器根據 `Agent.whenIdle()`、`Agent.inbox.hasPending`、其擁有的子級集合，以及讓過期觀察失效的 Activation generation 推導這些內部條件，而非維護第二套執行狀態機。最終 Session flush 之後，child-lock 決策會透過 `Agent.runMaintenance()` 的同步 task 入口占用 idle 階段，並在同一個 JavaScript turn 內關閉准入。這條保守規則不區分投遞模式：`Agent.inject()` 停放的 context 可以讓空閒 Activation 及其線上祖先繼續駐留，直到喚醒投遞將其 claim、queue 變更將其移除，或 manager teardown 將其丟棄。
 
-Agent 收件箱是唯一队列。每条 Agent 消息都使用 `Agent.steer()`：空闲目标会启动一个轮次，运行中目标则在最近的 step 边界领取消息。浏览器 `subagent.prompt` Remote 会另行通过同一条内部准入路径携带 `delivery: 'queue' | 'steer'`；Queue 开启后续 FIFO 轮次，Steer 保留 Agent loop 的 best-effort 最近 step 行为以及消息的人类来源。投递成功会返回被接受的 `MessageId`；既有的 `agent/inbox/inserted`、`agent/inbox/claimed` 与 `agent/inbox/discarded` 事件仍是消息生命周期的观测点，继续执行层不定义第二条队列。
+Agent 收件箱是唯一佇列。每條 Agent 訊息都使用 `Agent.steer()`：空閒目標會啟動一個輪次，執行中目標則在最近的 step 邊界領取訊息。瀏覽器 `subagent.prompt` Remote 會另行透過同一條內部准入路徑攜帶 `delivery: 'queue' | 'steer'`；Queue 開啟後續 FIFO 輪次，Steer 保留 Agent loop 的 best-effort 最近 step 行為以及訊息的人類來源。投遞成功會返回被接受的 `MessageId`；既有的 `agent/inbox/inserted`、`agent/inbox/claimed` 與 `agent/inbox/discarded` 事件仍是訊息生命週期的觀測點，繼續執行層不定義第二條佇列。
 
-权限来自确切在线 sender。parent 到 child 的投递要求目标的 `SessionHeader.parentSession` 指向 sender；child 到 parent 的投递要求 sender 的驻留 Activation 指向目标。sibling、相隔多于一条边的 ancestor、self-target、陈旧 Agent 对象与一次性 child 都会被拒绝。每条已接受消息都以 `Agent <sender-id> sent a message:` 作为前缀，并记录 `AgentMessageSource`；来源信息记录 sender，但不授予权限。
+權限來自確切線上 sender。parent 到 child 的投遞要求目標的 `SessionHeader.parentSession` 指向 sender；child 到 parent 的投遞要求 sender 的駐留 Activation 指向目標。sibling、相隔多於一條邊的 ancestor、self-target、陳舊 Agent 物件與一次性 child 都會被拒絕。每條已接受訊息都以 `Agent <sender-id> sent a message:` 作為字首，並記錄 `AgentMessageSource`；來源資訊記錄 sender，但不授予權限。
 
-对于 `startContinuable()`、`sendMessage()` 与浏览器 prompt 投递，调用方 signal 仅在收件箱接受之前掌管查找、物化与准入。此后管理器独立掌管该 Activation：之后的调用方取消既不会取消已接受的轮次，也不会 dispose 子 agent。公开 subagent 服务不暴露由调用方选择的 Agent 消息调度；浏览器人类 Queue 与 Steer 仍是内部适配器选择。
+對於 `startContinuable()`、`sendMessage()` 與瀏覽器 prompt 投遞，呼叫方 signal 僅在收件箱接受之前掌管查詢、物化與准入。此後管理器獨立掌管該 Activation：之後的呼叫方取消既不會取消已接受的輪次，也不會 dispose 子 agent。公開 subagent 服務不暴露由呼叫方選擇的 Agent 訊息排程；瀏覽器人類 Queue 與 Steer 仍是內部介面卡選擇。
 
-在线 queue occurrence 变更属于 Session 域。只有在线 subagent-owned Agent 的当前 projection identity 为 continuable，且其 descriptor 序号位于该 child 自身的非 seed suffix 时，`session.updateQueue` 才会接纳普通 Edit、Remove 与 QueueDock Steer。Identity projection 以 last-wins 方式折叠 descriptor，因此 child descriptor 会覆盖 fork lineage 保留的 descriptor；own-suffix 序号检查会阻止仅来自 seed 的祖先 identity 授权变更。One-shot、缺失、未知、损坏或冷 child 会被拒绝，queue 变更绝不会冷恢复 child。这些变更以目标 Session id 作为人类权限，包括待处理 `nextStep` steering 或注入 context。Steer 要求 queued `MessageId`，且 command 开始时 Agent 必须报告 running；准入后发生取消时，会使用 Agent 已接受的唤醒 `nextTurn` fallback。Edit 会在同一个 `MessageId` 下改写内容，且 Edit 与 Steer 都会同步完成 Inbox 变更，因此 settlement 只会观察最终状态。`agent/inbox/claimed` 与 `agent/inbox/discarded` 都会唤醒 watcher 重新读取是否仍有待处理 occurrence；这样，直接 Agent 投递可以恢复停放工作，而移除最后一个停放 occurrence 可使 idle child 结算。[人类 inbox 控制 Agent Note](../../.agents/notes/implemented/feature/2026-08-27-continuable-subagent-human-inbox-control.zh.md)拥有这些语义。
+線上 queue occurrence 變更屬於 Session 域。只有線上 subagent-owned Agent 的目前 projection identity 為 continuable，且其 descriptor 序號位於該 child 自身的非 seed suffix 時，`session.updateQueue` 才會接納普通 Edit、Remove 與 QueueDock Steer。Identity projection 以 last-wins 方式摺疊 descriptor，因此 child descriptor 會覆蓋 fork lineage 保留的 descriptor；own-suffix 序號檢查會阻止僅來自 seed 的祖先 identity 授權變更。One-shot、缺失、未知、損壞或冷 child 會被拒絕，queue 變更絕不會冷恢復 child。這些變更以目標 Session id 作為人類權限，包括待處理 `nextStep` steering 或注入 context。Steer 要求 queued `MessageId`，且 command 開始時 Agent 必須報告 running；准入後發生取消時，會使用 Agent 已接受的喚醒 `nextTurn` fallback。Edit 會在同一個 `MessageId` 下改寫內容，且 Edit 與 Steer 都會同步完成 Inbox 變更，因此 settlement 只會觀察最終狀態。`agent/inbox/claimed` 與 `agent/inbox/discarded` 都會喚醒 watcher 重新讀取是否仍有待處理 occurrence；這樣，直接 Agent 投遞可以恢復停放工作，而移除最後一個停放 occurrence 可使 idle child 結算。[人類 inbox 控制 Agent Note](../../.agents/notes/implemented/feature/2026-08-27-continuable-subagent-human-inbox-control.zh.md)擁有這些語義。
 
-`SubagentRuntime.interrupt(targetSessionId, authority)` 是唯一的公开停止操作：它同步完成鉴权，对在线目标发出 `Agent.cancel(cause, { keepInbox: true })`，然后不等待完全停稳即返回。Activation、其尚未领取的待处理 inbox 工作与已发布的后代均不受影响；已被领取进入中断轮次的工作不会重新入队。被中断的 driver 进入 idle 后，一次唤醒发送会恢复被暂停的 FIFO 队列。不存在的目标——未知、一次性或已结算——以及未绑定管理器的组合是被接受的 no-op。对在线目标，错误的 parent 地址或不在其在线祖先链中的调用方会以 `UNAUTHORIZED` 拒绝；陈旧的 ancestor 对象和指向自身的 ancestor 请求会在查找目标前拒绝。
+`SubagentRuntime.interrupt(targetSessionId, authority)` 是唯一的公開停止操作：它同步完成授權驗證，對線上目標發出 `Agent.cancel(cause, { keepInbox: true })`，然後不等待完全停穩即返回。Activation、其尚未領取的待處理 inbox 工作與已釋出的後代均不受影響；已被領取進入中斷輪次的工作不會重新入隊。被中斷的 driver 進入 idle 後，一次喚醒傳送會恢復被暫停的 FIFO 佇列。不存在的目標——未知、一次性或已結算——以及未繫結管理器的組合是被接受的 no-op。對線上目標，錯誤的 parent 地址或不在其線上祖先鏈中的呼叫方會以 `UNAUTHORIZED` 拒絕；陳舊的 ancestor 物件和指向自身的 ancestor 請求會在查詢目標前拒絕。
 
 ```ts type-equiv
 /**
@@ -166,9 +166,9 @@ type SubagentInterruptAuthority =
   | { readonly kind: 'ancestor'; readonly agent: Agent }
 ```
 
-每个 Activation 都拥有自己的 `AgentHandle` 和一个 `ownedChildren: Set<SessionId>`；由于一份会话至多有一个存活 Activation，子会话 id 无需另一个运行时化身引用即可标识存活的子 agent。启动子 agent 或提交源自 parent 的工作，会在子 agent 能够运行之前将其注册到受继续执行管理的父级集合中；只要该集合非空，该父级就无法 settle。顶层或其他非继续执行的 Agent 没有 Activation，处于 waiting 图之外。只有当子 Agent 没有活跃工作、其 Inbox 为空、该子 agent 的每个子级都已 dispose、best-effort 的最终会话 flush 结算完毕，且子 agent 的 `AgentHandle` 完成 dispose 之后，才会释放子 agent。
+每個 Activation 都擁有自己的 `AgentHandle` 和一個 `ownedChildren: Set<SessionId>`；由於一份工作階段至多有一個存活 Activation，子工作階段 id 無需另一個執行時化身引用即可標識存活的子 agent。啟動子 agent 或提交源自 parent 的工作，會在子 agent 能夠執行之前將其註冊到受繼續執行管理的父級集合中；只要該集合非空，該父級就無法 settle。頂層或其他非繼續執行的 Agent 沒有 Activation，處於 waiting 圖之外。只有當子 Agent 沒有活躍工作、其 Inbox 為空、該子 agent 的每個子級都已 dispose、best-effort 的最終工作階段 flush 結算完畢，且子 agent 的 `AgentHandle` 完成 dispose 之後，才會釋放子 agent。
 
-最终结算会等待 `ctx.sessions.flush(session)`，但会忽略其参与布尔值，因为任意 listener 都无法证明某个持久化后端已存储该状态。rejection 会被记录，但不会使 Activation 失败；管理器仍会 dispose 该 handle 并释放所有权，此后持久化的子 agent 状态在后续恢复时可能缺失或陈旧。管理器卸载会调用内部的管理器全局 drain，关闭准入并 dispose 每片在线森林；`drainContinuableDescendants(parents)` 只关闭由 host 确切拥有的在线 Agent 之下的准入，并 dispose 其可继续后代，而无关森林保持在线。两者都会等待各自作用域内已获准的物化过程，自顶向下传播取消，按 child-first 顺序释放 handle，并且即使个别分支失败也会等待所有选中分支。持久化子会话不受该进程内拆卸的影响。
+最終結算會等待 `ctx.sessions.flush(session)`，但會忽略其參與布林值，因為任意 listener 都無法證明某個持久化後端已儲存該狀態。rejection 會被記錄，但不會使 Activation 失敗；管理器仍會 dispose 該 handle 並釋放所有權，此後持久化的子 agent 狀態在後續恢復時可能缺失或陳舊。管理器解除安裝會呼叫內部的管理器全域 drain，關閉准入並 dispose 每片線上森林；`drainContinuableDescendants(parents)` 只關閉由 host 確切擁有的線上 Agent 之下的准入，並 dispose 其可繼續後代，而無關森林保持線上。兩者都會等待各自作用域內已獲准的物化過程，自頂向下傳播取消，按 child-first 順序釋放 handle，並且即使個別分支失敗也會等待所有選中分支。持久化子工作階段不受該程序內拆卸的影響。
 
 ```ts type-equiv
 /** Durable attribution for one model-authored message between adjacent Agents. */
@@ -199,7 +199,7 @@ interface ContinuableStart {
 }
 ```
 
-当驻留 Activation 结算时，管理器会向该 child 持久化的直接 parent 投递一条通知，说明该 epoch 如何结束，并携带其最终 assistant 输出中的非空文本块；若没有剩余的非空文本，则携带 `It left no closing message.`。对每个调用方拿到过 id 的 child，这条投递都是无条件的；它发生在会让 parent 被判定为已结算的所有权释放之前，并通过与 Agent 消息相同的唤醒 Agent 投递到达驻留 parent。若 parent 自身所在的谱系已在拆卸中，这条通知会以不唤醒的方式送达，因为唤醒一个 idle Agent 是开启一个轮次，而不是排队等待工作。其来源信息使用一个独立的 kind，因此 transcript（文本记录）绝不会把运行时的记账呈现为 child 自己写下的内容。
+當駐留 Activation 結算時，管理器會向該 child 持久化的直接 parent 投遞一條通知，說明該 epoch 如何結束，並攜帶其最終 assistant 輸出中的非空文字塊；若沒有剩餘的非空文字，則攜帶 `It left no closing message.`。對每個呼叫方拿到過 id 的 child，這條投遞都是無條件的；它發生在會讓 parent 被判定為已結算的所有權釋放之前，並透過與 Agent 訊息相同的喚醒 Agent 投遞到達駐留 parent。若 parent 自身所在的譜系已在拆卸中，這條通知會以不喚醒的方式送達，因為喚醒一個 idle Agent 是開啟一個輪次，而不是排隊等待工作。其來源資訊使用一個獨立的 kind，因此 transcript（文字記錄）絕不會把執行時的記帳呈現為 child 自己寫下的內容。
 
 ```ts type-equiv
 /**
@@ -220,7 +220,7 @@ interface SubagentSettledMessageSource {
 }
 ```
 
-提供方只参与准备初始创建 spec，`spawn` 与 `fork` 在此有所不同。其返回的 spec 只携带分离的、提供方专属的创建输入——即可选的父级历史种子——不含 Agent、`AgentHandle`、提示词投递、结果、dispose 或恢复操作。冷恢复根本不经由提供方分发：管理器折叠通用描述符，通过同一个 activation-owner 作用域调用 `ctx.agents.resume()`，并提交等待中的轮次。
+提供者只參與準備初始建立 spec，`spawn` 與 `fork` 在此有所不同。其返回的 spec 只攜帶分離的、提供者專屬的建立輸入——即可選的父級歷史種子——不含 Agent、`AgentHandle`、提示詞投遞、結果、dispose 或恢復操作。冷恢復根本不經由提供者分發：管理器摺疊通用描述符，透過同一個 activation-owner 作用域呼叫 `ctx.agents.resume()`，並提交等待中的輪次。
 
 ```ts type-equiv
 /**
@@ -260,17 +260,17 @@ interface ContinuableCreateSpec {
 }
 ```
 
-描述符（[descriptor.ts](../../packages/subagent/subagent/src/descriptor.ts) 中的 `SubagentDescriptorData`）是每个由会话支撑的 subagent 所使用、按模式判别的持久化身份。两种模式都携带提供方名称。`one-shot` 描述符可以携带调用方拥有的可选显示 `label`；`continuable` 描述符要求以委派 `description` 作为持久化创建标签，并另外对已解析的子 agent `agentOptions.provider`／`model`／`reasoningEffort` 与可选的 `persona`／`toolFilter` 建立快照，用于冷恢复。它绝不会对可合并扩展的 `AgentOptions` 对象建立快照，因此无关的扩展值不会破坏继续执行，后续新增组合配置输入则是一次有意的版本更改。描述符省略 `subagentDepth`（冷恢复以持久化 header 中的 `delegationDepth` 作为单调下界）和 `outputSchema`（单次运行或 Activation 的结果约定，而非持久化身份）。
+描述符（[descriptor.ts](../../packages/subagent/subagent/src/descriptor.ts) 中的 `SubagentDescriptorData`）是每個由工作階段支撐的 subagent 所使用、按模式判別的持久化身份。兩種模式都攜帶提供者名稱。`one-shot` 描述符可以攜帶呼叫方擁有的可選顯示 `label`；`continuable` 描述符要求以委派 `description` 作為持久化建立標籤，並另外對已解析的子 agent `agentOptions.provider`／`model`／`reasoningEffort` 與可選的 `persona`／`toolFilter` 建立快照，用於冷恢復。它絕不會對可合併擴充功能的 `AgentOptions` 物件建立快照，因此無關的擴充功能值不會破壞繼續執行，後續新增組合設定輸入則是一次有意的版本更改。描述符省略 `subagentDepth`（冷恢復以持久化 header 中的 `delegationDepth` 作為單調下界）和 `outputSchema`（單次執行或 Activation 的結果約定，而非持久化身份）。
 
-本地一次性提供方会在子 agent 的初始轮次内、首次请求前追加描述符。继续执行管理器会在任何提供方提供的谱系之后、初始提示词获准之前追加描述符；`Session.inheritedEventCount` 仍是 fork 谱系边界：恢复时的描述符权威读取子 agent 自身的后缀，而身份投影以 last-wins 折叠 `subagent/descriptor`，子 agent 自己的描述符会覆盖 fork seed 中祖先的描述符。该事件只进入日志：不含 `surfaceOp`，绝不进入模型历史，并由仅追加日志跨压缩保留。格式错误的当前版本描述符属于损坏；本运行时无法对不受支持的版本进行分类。
+本地一次性提供者會在子 agent 的初始輪次內、首次請求前追加描述符。繼續執行管理器會在任何提供者提供的譜系之後、初始提示詞獲准之前追加描述符；`Session.inheritedEventCount` 仍是 fork 譜系邊界：恢復時的描述符權威讀取子 agent 自身的字尾，而身份投影以 last-wins 摺疊 `subagent/descriptor`，子 agent 自己的描述符會覆蓋 fork seed 中祖先的描述符。該事件只進入日誌：不含 `surfaceOp`，絕不進入模型歷史，並由僅追加日誌跨壓縮保留。格式錯誤的目前版本描述符屬於損壞；本執行時無法對不受支援的版本進行分類。
 
-## 持久化枚举：`listChildren()`、`listDescendants()` 与其条目
+## 持久化列舉：`listChildren()`、`listDescendants()` 與其條目
 
-模型侧的 `list_agents` 适配器将当前活动表示为 `running` 或 `inactive`。这些值不描述任务完成情况，也不保证 `send_message` 会成功。
+模型側的 `list_agents` 介面卡將目前活動表示為 `running` 或 `inactive`。這些值不描述任務完成情況，也不保證 `send_message` 會成功。
 
-`SubagentRuntime.listChildren(parentSessionId, signal?)` 通过优先使用在线 Session 的观察读取父会话的 `subagentCatalog` 视图，并在成功或失败时释放观察。它按父会话事件顺序返回直接子级条目，不读取子级日志，也不枚举 Session 语料库。查询失败直接传播；缺少目录投影时显式失败。浏览器条目从共享 projection store 派生成员关系，并从 Session 状态补充活动状态；control stream 推送完整目录更新。`listDescendants()` 递归读取这些目录，并从每个子级目录推导 `hasChildren`。[父目录 Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 说明创建、fork 隔离、排序和持久化成本。
+`SubagentRuntime.listChildren(parentSessionId, signal?)` 透過優先使用線上 Session 的觀察讀取父工作階段的 `subagentCatalog` 檢視，並在成功或失敗時釋放觀察。它按父工作階段事件順序返回直接子級條目，不讀取子級日誌，也不列舉 Session 語料庫。查詢失敗直接傳播；缺少目錄投影時顯式失敗。瀏覽器條目從共享 projection store 派生成員關係，並從 Session 狀態補充活動狀態；control stream 推送完整目錄更新。`listDescendants()` 遞迴讀取這些目錄，並從每個子級目錄推導 `hasChildren`。[父目錄 Agent Note](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 說明建立、fork 隔離、排序和持久化成本。
 
-`SubagentRuntime.listDescendants(rootSessionId)` 以稳定前序递归调用同一目录读取函数，保留每个父级的事件顺序。一次性和未知模式条目仍是遍历节点；未知模式产生 `unsupported` 诊断。无法读取的子级目录产生 `corrupt` 或 `unavailable`，只停止该分支。根读取失败、服务或投影缺失、取消会使整个查询失败。每个可达目录只观察一次，并在下一次读取前释放；重复 id 和循环引用会被跳过。可达目录中不存在的 Session 不会被发现，包括普通 Session fork 及其下的子 agent。每行携带目录中的父级和相对根的深度：
+`SubagentRuntime.listDescendants(rootSessionId)` 以穩定前序遞迴呼叫同一目錄讀取函式，保留每個父級的事件順序。一次性和未知模式條目仍是遍歷節點；未知模式產生 `unsupported` 診斷。無法讀取的子級目錄產生 `corrupt` 或 `unavailable`，只停止該分支。根讀取失敗、服務或投影缺失、取消會使整個查詢失敗。每個可達目錄只觀察一次，並在下一次讀取前釋放；重複 id 和迴圈引用會被跳過。可達目錄中不存在的 Session 不會被發現，包括普通 Session fork 及其下的子 agent。每行攜帶目錄中的父級和相對根的深度：
 
 ```ts type-equiv
 /** One catalog descendant with its direct parent and edge distance from the requested root. */
@@ -285,9 +285,9 @@ type SubagentDescendantListEntry = SubagentListEntry & {
 
 <a id="the-terminal-result-subagentresult"></a>
 
-## 终态结果：`SubagentResult`
+## 終態結果：`SubagentResult`
 
-单次 run 的最终产出，由 `SubagentRun.result` resolve。`structured` 仅在请求了 `outputSchema` 且成功满足时才存在；请求 schema 不保证一定能得到它，当子 agent 失败或结束时未产出有效 capture 时，提供方可能返回 `stopReason: 'error'`。提供方可以为非 `completed` 结果附带安全且不属于 assistant 内容的 `diagnostic`；在消费方将它与 `output` 分开呈现前，提供方会排除工具输入、文件内容、环境值、凭证与原始协议载荷，并把完整值限制在 4096 个 UTF-8 字节以内。非 `completed` 的 `stopReason` 意味着 `output` 可能不完整——消费方将其映射为 `isError` 的工具结果，而非将部分输出报告为成功。
+單次 run 的最終產出，由 `SubagentRun.result` resolve。`structured` 僅在請求了 `outputSchema` 且成功滿足時才存在；請求 schema 不保證一定能得到它，當子 agent 失敗或結束時未產出有效 capture 時，提供者可能返回 `stopReason: 'error'`。提供者可以為非 `completed` 結果附帶安全且不屬於 assistant 內容的 `diagnostic`；在消費方將它與 `output` 分開呈現前，提供者會排除工具輸入、檔案內容、環境值、憑證與原始協定載荷，並把完整值限制在 4096 個 UTF-8 位元組以內。非 `completed` 的 `stopReason` 意味著 `output` 可能不完整——消費方將其對映為 `isError` 的工具結果，而非將部分輸出報告為成功。
 
 ```ts type-equiv
 /**
@@ -322,7 +322,7 @@ interface SubagentResult {
 }
 ```
 
-`SubagentStopReason` 是一个[可合并扩展的派生联合类型](core.zh.md#the-map--derived-union-pattern)——后端可以添加变体，因此消费方应对已知 case 分支处理，将未知的终态原因视为失败：
+`SubagentStopReason` 是一個[可合併擴充功能的派生聯合型別](core.zh.md#the-map--derived-union-pattern)——後端可以新增變體，因此消費方應對已知 case 分支處理，將未知的終態原因視為失敗：
 
 ```ts type-equiv
 /**
@@ -345,9 +345,9 @@ interface SubagentStopReasonMap {
 }
 ```
 
-## 单次 run：`SubagentRun`
+## 單次 run：`SubagentRun`
 
-`SubagentRun` 是消费方持有的、指向一个已发布单次子 agent 的句柄——一次可 dispose 的前台委派，只有一个结果，绝不是持久化子 agent handle。发布后的提示词提交、轮次工作与基础设施故障归 `result` 所有。消费方 await 该结果并始终 dispose 该 run，直至完全停稳。子 agent 失败时以非 completed 的 stop reason resolve；只有无法表示的基础设施故障才会 reject。run 没有 steering，也没有恢复：可继续对话根本没有 run，因为继续执行管理器直接持有它们的 `AgentHandle`，并通过子 agent 自己的收件箱为每个轮次排序。
+`SubagentRun` 是消費方持有的、指向一個已釋出單次子 agent 的控制代碼——一次可 dispose 的前臺委派，只有一個結果，絕不是持久化子 agent handle。釋出後的提示詞提交、輪次工作與基礎設施故障歸 `result` 所有。消費方 await 該結果並始終 dispose 該 run，直至完全停穩。子 agent 失敗時以非 completed 的 stop reason resolve；只有無法表示的基礎設施故障才會 reject。run 沒有 steering，也沒有恢復：可繼續對話根本沒有 run，因為繼續執行管理器直接持有它們的 `AgentHandle`，並透過子 agent 自己的收件箱為每個輪次排序。
 
 ```ts type-equiv
 /**
@@ -388,13 +388,13 @@ interface SubagentRun {
 }
 ```
 
-本地单次 run 必须在 `start()` fulfill 之前发布一个普通子 agent／会话，将该子会话 id 作为 `SubagentRun.id` 返回，以 `localAgent` 暴露确切的子 agent，在子 agent 的 `parentSession` header 中记录 `request.parent.session.id`，并在子 agent 的初始轮次内、首次请求前追加已解析的描述符。运行时所有权可以把子 agent 放在 parent、提供方或 root 作用域下。远程提供方则返回 parent 作用域的生命周期 id 与 `localAgent: undefined`；由于没有本地 child Session，它不会出现在持久化枚举结果中。
+本地單次 run 必須在 `start()` fulfill 之前釋出一個普通子 agent／工作階段，將該子工作階段 id 作為 `SubagentRun.id` 返回，以 `localAgent` 暴露確切的子 agent，在子 agent 的 `parentSession` header 中記錄 `request.parent.session.id`，並在子 agent 的初始輪次內、首次請求前追加已解析的描述符。執行時所有權可以把子 agent 放在 parent、提供者或 root 作用域下。遠端提供者則返回 parent 作用域的生命週期 id 與 `localAgent: undefined`；由於沒有本地 child Session，它不會出現在持久化列舉結果中。
 
 <a id="the-provider-contract-subagentprovider"></a>
 
-## 提供方约定：`SubagentProvider`
+## 提供者約定：`SubagentProvider`
 
-每个提供方都是一个具名的子 agent 传输层，多个提供方可以共存。服务在 `start()` 之前校验请求的启动时能力，并拒绝在没有 `prepareContinuable` 的提供方上发起可继续 start。`inheritsParentContext` 仅描述对话种子注入（`fork`：true；`spawn` 和 `acp`：false），使消费方能生成准确的面向模型措辞，而不暗示继承了工具、服务或权限。如果某个提供方的一次性路由拥有静态的提供方自有默认值，它会公开可选且不可变的 `agentRouteDefaults`，使 Consumer 能够在预检前以正确基线合并模型与工具覆盖。
+每個提供者都是一個具名的子 agent 傳輸層，多個提供者可以共存。服務在 `start()` 之前驗證請求的啟動時能力，並拒絕在沒有 `prepareContinuable` 的提供者上發起可繼續 start。`inheritsParentContext` 僅描述對話種子注入（`fork`：true；`spawn` 和 `acp`：false），使消費方能生成準確的面向模型措辭，而不暗示繼承了工具、服務或權限。如果某個提供者的一次性路由擁有靜態的提供者自有預設值，它會公開可選且不可變的 `agentRouteDefaults`，使 Consumer 能夠在預檢前以正確基線合併模型與工具覆蓋。
 
 ```ts type-equiv
 /**
@@ -454,18 +454,18 @@ interface SubagentProvider {
 }
 ```
 
-提供方的 `start()` 会以已发布的 run fulfill。服务铸造唯一的 `runId`，从提供方确切的 `localAgent` 快照 `local`，观察结果，emit `subagent/start`，并返回同一个 run；`start()` rejection 意味着未发布资源已清理，且不会 emit 生命周期事件对，而发布后的结果 rejection 会结束已经 emit 的事件对。每个可继续 Activation 都会为其驻留纪元 emit 相同的仅观察事件对，因此一次冷恢复就是一段拥有自己 `runId` 的新纪元。配对的 `subagent/end` 携带相同标识与最终输出或基础设施失败。两个事件都仅用于观察，且会隔离各自的 listener 异常。其中的 `provider` 字段标明了启动 run 或 Activation 时段的提供方，并不声明该 edge 发出时提供方仍处于注册状态。
+提供者的 `start()` 會以已釋出的 run fulfill。服務鑄造唯一的 `runId`，從提供者確切的 `localAgent` 快照 `local`，觀察結果，emit `subagent/start`，並返回同一個 run；`start()` rejection 意味著未釋出資源已清理，且不會 emit 生命週期事件對，而釋出後的結果 rejection 會結束已經 emit 的事件對。每個可繼續 Activation 都會為其駐留紀元 emit 相同的僅觀察事件對，因此一次冷恢復就是一段擁有自己 `runId` 的新紀元。配對的 `subagent/end` 攜帶相同標識與最終輸出或基礎設施失敗。兩個事件都僅用於觀察，且會隔離各自的 listener 異常。其中的 `provider` 欄位標明瞭啟動 run 或 Activation 時段的提供者，並不宣告該 edge 發出時提供者仍處於註冊狀態。
 
-## 进程内后端：权限、深度与种子
+## 程序內後端：權限、深度與種子
 
-spawn 和 fork 后端通过 `parent.ctx` 创建一个普通的单次 agent，将取消信号传入核心创建流程，并通过 `AgentHandle` 进行 dispose；而可继续子 agent 则由继续执行管理器通过其自己的 activation-owner 作用域创建。移除提供方会阻止新的 start，但不会撤销已接受的 run。每个子 agent 获得一个新的扁平作用域，而非继承父级注册。权限、深度与 fork 种子注入复用既有的 Session 词汇：
+spawn 和 fork 後端透過 `parent.ctx` 建立一個普通的單次 agent，將取消訊號傳入核心建立流程，並透過 `AgentHandle` 進行 dispose；而可繼續子 agent 則由繼續執行管理器透過其自己的 activation-owner 作用域建立。移除提供者會阻止新的 start，但不會撤銷已接受的 run。每個子 agent 獲得一個新的扁平作用域，而非繼承父級註冊。權限、深度與 fork 種子注入複用既有的 Session 詞彙：
 
-- **委派权限**在首次 await 前捕获。Auto 与 Full access 父级在 fresh child 完成 fork seed 和 sandbox／approval override 后，追加捕获的 `permission/preset` 身份。单次与可继续 child 共用此路径；cold resume 只读取 child 日志。Read Only 与 Workspace Write 保留继承的 sandbox override 加 `approval: never`，不匹配预设的组合仍为 `custom`。每个 Auto child 调用都使用既有 `parentSession`、创建 prompt 和经过核验的 human／直接父级消息独立审查。[Auto review 决策](../../.agents/notes/implemented/feature/2026-08-28-auto-review.zh.md)定义 low／medium／high 语义；不增加 委派记录、receipt、Header 字段、descriptor 字段或 Session format。
+- **委派權限**在首次 await 前捕捉。Auto 與 Full access 父級在 fresh child 完成 fork seed 和 sandbox／approval override 後，追加捕捉的 `permission/preset` 身份。單次與可繼續 child 共用此路徑；cold resume 只讀取 child 日誌。Read Only 與 Workspace Write 保留繼承的 sandbox override 加 `approval: never`，不匹配預設的組合仍為 `custom`。每個 Auto child 呼叫都使用既有 `parentSession`、建立 prompt 和經過核驗的 human／直接父級訊息獨立審查。[Auto review 決策](../../.agents/notes/implemented/feature/2026-08-28-auto-review.zh.md)定義 low／medium／high 語義；不增加 委派記錄、receipt、Header 欄位、descriptor 欄位或 Session format。
 
-- **委派深度**由持久 `SessionHeader.delegationDepth` 与可合并扩展的运行时字段 `AgentOptions.subagentDepth` 共同表示；缺失表示顶层深度为零，存在的较大值具有权威性。两个字段都归该 seam 所有——循环既不设置也不读取它们——因此进程内子 agent 会持久保存 parent 深度 + 1，冷恢复无法降低深度，而且每次 start 都会拒绝超出安全整数域、或高于已定义绝对 `request.maxDepth` 上限的派生深度。
-- **Fork 种子注入**使用 [`CreateAgentOptions.seed`](core.zh.md#creation-and-ownership)（一个 `SessionEvent[]` 前缀，经由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 传递，与 `ctx.agents.resume()` 使用的原语相同）。fork 后端传入父级日志的一段*平衡的已完成轮次前缀*——父级事件直到并包括其最后一个 `turn/end`——因此种子从 0 连续，[invariants](../../packages/runtime-diagnostics/invariants) 回放可以接受它（进行中的、未平衡的轮次被排除在外）。
+- **委派深度**由持久 `SessionHeader.delegationDepth` 與可合併擴充功能的執行時欄位 `AgentOptions.subagentDepth` 共同表示；缺失表示頂層深度為零，存在的較大值具有權威性。兩個欄位都歸該 seam 所有——迴圈既不設定也不讀取它們——因此程序內子 agent 會持久儲存 parent 深度 + 1，冷恢復無法降低深度，而且每次 start 都會拒絕超出安全整數域、或高於已定義絕對 `request.maxDepth` 上限的派生深度。
+- **Fork 種子注入**使用 [`CreateAgentOptions.seed`](core.zh.md#creation-and-ownership)（一個 `SessionEvent[]` 字首，經由 `AgentLoop.createAgent` → `ctx.sessions.prepare({ seed })` 傳遞，與 `ctx.agents.resume()` 使用的原語相同）。fork 後端傳入父級日誌的一段*平衡的已完成輪次字首*——父級事件直到幷包括其最後一個 `turn/end`——因此種子從 0 連續，[invariants](../../packages/runtime-diagnostics/invariants) 回放可以接受它（進行中的、未平衡的輪次被排除在外）。
 
-`SubagentCatalogEntry` 描述一条完整或未知模式的直接子级目录记录；`SubagentCatalogState` 是仅 host 使用的 projection state。`listChildren()` 拥有一次 live-preferred 父 Session observation，不打开子级日志。浏览器消费者通过共享 Session projection store 读取 `subagentCatalog`，并将成员关系与 Session 列表活动状态组合。`SubagentCatalogRow` 属于递归目录列表。[父目录决策](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 规定持久事实与读取语义。
+`SubagentCatalogEntry` 描述一條完整或未知模式的直接子級目錄記錄；`SubagentCatalogState` 是僅 host 使用的 projection state。`listChildren()` 擁有一次 live-preferred 父 Session observation，不開啟子級日誌。瀏覽器消費者透過共享 Session projection store 讀取 `subagentCatalog`，並將成員關係與 Session 列表活動狀態組合。`SubagentCatalogRow` 屬於遞迴目錄列表。[父目錄決策](../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 規定持久事實與讀取語義。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

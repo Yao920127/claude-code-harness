@@ -4,52 +4,52 @@
 #   pnpm run verify-translation-pairing --write packages/context/file-reference/README.md
 /:
   en: 21c486a1839068f4
-  zh: 0333ad7c4f984794
+  zh: 928bfd08ec49c841
 /deepseek-ai-dsh-file-reference:
   en: 304654061fc0503d
   zh: dab669557b3c261f
 /deepseek-ai-dsh-file-reference/summary:
   en: a6ce5c696182da3b
-  zh: 274f9c9613f9df0b
+  zh: 2234de0a26d3a3fa
 /deepseek-ai-dsh-file-reference/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-file-reference/use-this-package:
   en: e37b5d4bf0020063
-  zh: 2eb37494ea43228f
+  zh: 4b8b04d180f63498
 /deepseek-ai-dsh-file-reference/use-this-package/mention-grammar:
   en: efbe0e9233f402a4
-  zh: e3ec7c6ae2335a41
+  zh: f767f69a74c129f3
 /deepseek-ai-dsh-file-reference/use-this-package/getting-candidates:
   en: 4dc2d6289f532225
-  zh: af06ce75299f23e5
+  zh: 7b541478d8aef324
 /deepseek-ai-dsh-file-reference/use-this-package/pairing-with-a-provider:
   en: 2d443c98aca75438
-  zh: 2299ced5c4e315c1
+  zh: 2151a5800d8756fc
 /deepseek-ai-dsh-file-reference/understand-the-implementation:
   en: 92049fb7a6c345c3
-  zh: 86efc4d17127f97f
+  zh: bb7c097ab0f0fbdc
 /deepseek-ai-dsh-file-reference/understand-the-implementation/design-concept:
   en: 191332951f81b136
-  zh: 8336659a9ffa20f1
+  zh: c5afce75fadc4d5f
 /deepseek-ai-dsh-file-reference/understand-the-implementation/source-map:
   en: c4abf9f6f86cf29f
-  zh: 60d15ef1acd20b93
+  zh: 5038705f3672b437
 /deepseek-ai-dsh-file-reference/understand-the-implementation/main-flow:
   en: fd65f309c940de96
-  zh: c1517e592d646d6c
+  zh: 83e5f901437f9d83
 /deepseek-ai-dsh-file-reference/further-exploration:
   en: 90447bd5ebd2c47f
-  zh: dae6d0005ab9779d
+  zh: 5e7e797e2e9d0904
 /deepseek-ai-dsh-file-reference/model-experience:
   en: ab69d93c10a1572c
-  zh: b63720b1e6182805
+  zh: 01db7b94bcdad53b
 /deepseek-ai-dsh-file-reference/model-experience/kv-cache-effect:
   en: 0aba47b2a2828b78
-  zh: 83a1af441dac3074
+  zh: 441e768d095d2cc4
 /deepseek-ai-dsh-file-reference/known-limitations-and-deferred-work:
   en: cc83a00bd7d4ccc9
-  zh: 130ba16bb567db5a
+  zh: 8be6aaa40e56e70a
 /deepseek-ai-dsh-file-reference/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

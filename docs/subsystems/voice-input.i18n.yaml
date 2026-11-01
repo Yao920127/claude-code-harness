@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/voice-input.md
 /voice-input:
   en: b21f58d0dcb90287
-  zh: be60807d02623a87
+  zh: ddfa9acaa087f06f
 /voice-input/provider-selection:
   en: 3a5ec4718b839349
-  zh: a8448bd6064d4c81
+  zh: eb0f4e5dd676dff1
 /voice-input/browser-and-host-ownership:
   en: 404d67d8276522db
-  zh: f653397888d2e616
+  zh: b92490813fd1a5bf
 /voice-input/preparation-and-settings:
   en: 9350b2e58813262e
-  zh: c3b5e5cb100408af
+  zh: 515de8448e60e84b
 /voice-input/design-rationale:
   en: 604b86d95ac007b3
-  zh: 472db5ba5905eddc
+  zh: 4e43a57ffb4c1b14

@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-06-26-fsspec-style-fs-seam.md
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin:
   en: 181df186598c42fc
-  zh: 07b7687434105955
+  zh: ee2cef908c746944
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/problem:
   en: 4069760b095aa1b6
-  zh: ea8baf0050362519
+  zh: dc5bd3cf9f4444b0
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/decision:
   en: 6f6dc20965bb9948
-  zh: 5a858a0359f96a98
+  zh: 3d85b77bd33bc3bf
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/provider-contract:
   en: a04b6ceab91aa265
-  zh: 5fae55161f754f4d
+  zh: d95804370b286c07
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/policy-contract:
   en: bd54f18f4665b1ec
-  zh: eee54b7890c9d8be
+  zh: ab2022210a9f4525
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/tool-contract:
   en: b517106d3e0ac7ef
-  zh: 2b128d7af26ebed2
+  zh: 8dbde523bec987e6
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/concurrency-boundary:
   en: 6a459d121a49988c
-  zh: 048de517a0f952b6
+  zh: b7907fc562b5f0da
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/supersedes:
   en: 780789585ce58330
-  zh: 7b4b8d171dfdefae
+  zh: ec08999e7c773562
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/verification:
   en: ee6e0f4922f991af
-  zh: 3ce55e7b7d0fd431
+  zh: c04b622ee43e18af
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/later-extension:
   en: b56210bf2c8f8dec
-  zh: 27decb39624c0ef7
+  zh: d996c23aa753f2a1
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/alternatives-considered:
   en: 3d169e07a912cbab
-  zh: d8a550835cfe7801
+  zh: 8141b7fcd7103a43
 /agent-note-split-the-filesystem-seam-provider-text-mutations-plus-the-dsh-fs-observation-policy-plugin/consequences:
   en: 70264e0d9422b871
-  zh: ae93add503e8a9bc
+  zh: 2d0e1c0b6e869089

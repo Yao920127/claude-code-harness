@@ -1,42 +1,42 @@
-# Agent Note: follow-up 入队与自有运行边界
+# Agent Note: follow-up 入隊與自有執行邊界
 
 Status: implemented
 
 [English](2026-07-30-followup-enqueue-and-owned-runs.md) | 中文
 
-## 问题
+## 問題
 
-`Agent.followup()` 会标识一条用户消息并将其排入队列，但单次 follow-up 并不拥有随后发生的活动。在 agent（智能体）下一次进入 idle 前，steering（中途引导）、注入的上下文、工具续行、恢复和后续排队消息都可能参与活动。因此，`MessageId` 可以证明消息已获 inbox 准入，但不能标识哪一条 assistant 消息或哪一个 `turn/end` 是该输入的结果。
+`Agent.followup()` 會標識一條使用者訊息並將其排入佇列，但單次 follow-up 並不擁有隨後發生的活動。在 agent（智慧代理）下一次進入 idle 前，steering（中途引導）、注入的上下文、工具續行、恢復和後續排隊訊息都可能參與活動。因此，`MessageId` 可以證明訊息已獲 inbox 准入，但不能標識哪一條 assistant 訊息或哪一個 `turn/end` 是該輸入的結果。
 
-[one-send-one-turn 决策](../simplification/2026-07-17-one-send-one-turn.zh.md) 已经在核心 API 中排除了按 send 返回完成句柄的设计。凡是把一项提示词请求与一个轮次结果配对的协议层和 SDK 层，都会在下游人为构造这一缺失的关系。一旦活动准入更多输入，该配对就会产生歧义，还会把轮次机制暴露为提示词级结果。
+[one-send-one-turn 決策](../simplification/2026-07-17-one-send-one-turn.zh.md) 已經在核心 API 中排除了按 send 返回完成控制代碼的設計。凡是把一項提示詞請求與一個輪次結果配對的協定層和 SDK 層，都會在下游人為建構這一缺失的關係。一旦活動准入更多輸入，該配對就會產生歧義，還會把輪次機制暴露為提示詞級結果。
 
-## 决策
+## 決策
 
-保留 `Agent.followup(message): void`，使其仅执行入队。`Agent.whenIdle()` 和 `agent/status` 仍用于观察整个 agent 的生命周期；二者都不结算单条消息。Inbox 持久性会记录已标识消息及其准入或取消，但不会把后续输出归属于该消息。
+保留 `Agent.followup(message): void`，使其僅執行入隊。`Agent.whenIdle()` 和 `agent/status` 仍用於觀察整個 agent 的生命週期；二者都不結算單條訊息。Inbox 永續性會記錄已標識訊息及其准入或取消，但不會把後續輸出歸屬於該訊息。
 
-底层 SDK 协议在入队成功后立即以 `{ messageId }` 响应 `session/prompt`。它通过 `session.event` 流式传输持久事实，通过 `session.status` 发布整个 agent 的状态转换，且不包含 `session.finished`。底层客户端可以观察该回执和之后的 idle，但不会收到提示词结果。
+底層 SDK 協定在入隊成功後立即以 `{ messageId }` 回應 `session/prompt`。它透過 `session.event` 流式傳輸持久事實，透過 `session.status` 釋出整個 agent 的狀態轉換，且不包含 `session.finished`。底層用戶端可以觀察該回執和之後的 idle，但不會收到提示詞結果。
 
-只有明确拥有一个活动区间时，高层自动化 API 才返回 `RunResult`。TypeScript 和 Python SDK 的 `run()` 方法从已提交消息的持久 inbox 回执开始收集，直至整个 agent 下一次进入 `idle`；其最终响应是该区间内最后一条已提交的 assistant 消息，而不是按因果关系归属于已提交提示词的响应。Python SDK 还把根会话最后一个轮次的结束原因 kind 作为运行级 [`finish_reason`](../../archived/bug-fix/2026-08-11-owned-run-finish-reason.md) 返回，但不会将其归因于已提交的提示词。单次 CLI（命令行界面）拥有相应的 idle 到 idle 区间。隔离的子 agent 运行可以报告结果，因为调用方拥有完整的子级生命周期，任何 steering 都属于该运行。
+只有明確擁有一個活動區間時，高層自動化 API 才返回 `RunResult`。TypeScript 和 Python SDK 的 `run()` 方法從已提交訊息的持久 inbox 回執開始收集，直至整個 agent 下一次進入 `idle`；其最終回應是該區間內最後一條已提交的 assistant 訊息，而不是按因果關係歸屬於已提交提示詞的回應。Python SDK 還把根工作階段最後一個輪次的結束原因 kind 作為執行級 [`finish_reason`](../../archived/bug-fix/2026-08-11-owned-run-finish-reason.md) 返回，但不會將其歸因於已提交的提示詞。單次 CLI（命令列介面）擁有相應的 idle 到 idle 區間。隔離的子 agent 執行可以報告結果，因為呼叫方擁有完整的子級生命週期，任何 steering 都屬於該執行。
 
-ACP（Agent Client Protocol）必须返回协议规定的 `stopReason`。其桥接层对每个 ACP 会话中的提示词进行串行处理，并拥有从准入到整个 Agent idle 和有序更新交付的区间。它会关联准入该已识别 ACP 消息的轮次，但不会声称区间内所有活动都只由该消息引起。关联的 token 上限结尾映射为标准 `max_tokens`；关联模型错误在同一个完全停稳边界拒绝；无轮次 slot 与显式 ACP 取消或 dispose 一样以 `cancelled` 结算。其他正常完全停稳报告 `end_turn`。
+ACP（Agent Client Protocol）必須返回協定規定的 `stopReason`。其橋接層對每個 ACP 工作階段中的提示詞進行序列處理，並擁有從准入到整個 Agent idle 和有序更新交付的區間。它會關聯准入該已識別 ACP 訊息的輪次，但不會聲稱區間內所有活動都只由該訊息引起。關聯的 token 上限結尾對映為標準 `max_tokens`；關聯模型錯誤在同一個完全停穩邊界拒絕；無輪次 slot 與顯式 ACP 取消或 dispose 一樣以 `cancelled` 結算。其他正常完全停穩報告 `end_turn`。
 
-Goal 续行只保留 `MessageId`，用于识别持久排队和已准入的 goal 消息。它在整个 agent 进入 idle 时根据持久 goal 状态推进，不把消息映射到轮次结果。
+Goal 續行只保留 `MessageId`，用於識別持久排隊和已准入的 goal 訊息。它在整個 agent 進入 idle 時根據持久 goal 狀態推進，不把訊息對映到輪次結果。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**将 `MessageId` 映射到准入它的轮次。** 一个轮次可能使用 steering 和注入的上下文，还可能经过多个模型／工具步骤继续执行。该映射只能标识准入，不能确立结果输出或停止原因的因果归属。
+**將 `MessageId` 對映到准入它的輪次。** 一個輪次可能使用 steering 和注入的上下文，還可能經過多個模型／工具步驟繼續執行。該對映只能標識准入，不能確立結果輸出或停止原因的因果歸屬。
 
-**返回按 follow-up 区分的完成句柄。** 这样的句柄暗示共享 agent 生命周期中存在并不实际成立的结果边界。它要么遗漏影响活动的工作，要么在不作说明的情况下吸收后续无关输入。
+**返回按 follow-up 區分的完成控制代碼。** 這樣的控制代碼暗示共享 agent 生命週期中存在並不實際成立的結果邊界。它要麼遺漏影響活動的工作，要麼在不作說明的情況下吸收後續無關輸入。
 
-**使用进入 idle 前观察到的最后一个 `turn/end`。** 对于明确拥有的区间，这是一项有用的运行级观测；但如果将其命名为已提交消息的结果，就会再次作出错误的因果声明。
+**使用進入 idle 前觀察到的最後一個 `turn/end`。** 對於明確擁有的區間，這是一項有用的執行級觀測；但如果將其命名為已提交訊息的結果，就會再次作出錯誤的因果宣告。
 
-## 验证
+## 驗證
 
-- Agent 与 inbox 测试固定 follow-up 仅入队、持久准入或取消以及整个 agent 的 idle 观测。
-- SDK 协议、TypeScript SDK 和 Python SDK 测试固定 `{ messageId }` 回执、`session.status`、不存在 `session.finished`，以及不含提示词级 `status` 或 `reason` 的回执到 idle `RunResult` 收集；Python SDK 测试另行固定其运行级 `finish_reason` 观测。
-- ACP、单次 CLI、goal 续行和 subagent 测试固定各集成实际拥有的不同活动边界。
-- 消费方测试固定生产集成都不会通过关联 `MessageId` 与 `turn/end` 来推导 follow-up 结果。
+- Agent 與 inbox 測試固定 follow-up 僅入隊、持久准入或取消以及整個 agent 的 idle 觀測。
+- SDK 協定、TypeScript SDK 和 Python SDK 測試固定 `{ messageId }` 回執、`session.status`、不存在 `session.finished`，以及不含提示詞級 `status` 或 `reason` 的回執到 idle `RunResult` 收集；Python SDK 測試另行固定其執行級 `finish_reason` 觀測。
+- ACP、單次 CLI、goal 續行和 subagent 測試固定各整合實際擁有的不同活動邊界。
+- 消費方測試固定生產整合都不會透過關聯 `MessageId` 與 `turn/end` 來推導 follow-up 結果。
 
-## 后果
+## 後果
 
-自有活动区间可以包含进入 idle 前提交的 steering、注入上下文或其他工作，因此其最终响应、结束原因和事件有意比初始消息涵盖更广。底层 DSH SDK 结果仍不包含提示词级模型错误和 token 上限分类。ACP 会在区间完全停稳时把关联轮次投影成其必需的标准 error 或 `max_tokens` stop reason，但不增加 DSH 专用结果，也不声称排他因果关系。在同一会话上并发执行自动化操作时，必须采用显式串行或所有权策略，不能依赖隐式的逐 follow-up 结果。
+自有活動區間可以包含進入 idle 前提交的 steering、注入上下文或其他工作，因此其最終回應、結束原因和事件有意比初始訊息涵蓋更廣。底層 DSH SDK 結果仍不包含提示詞級模型錯誤和 token 上限分類。ACP 會在區間完全停穩時把關聯輪次投影成其必需的標準 error 或 `max_tokens` stop reason，但不增加 DSH 專用結果，也不聲稱排他因果關係。在同一工作階段上並行執行自動化操作時，必須採用顯式序列或所有權策略，不能依賴隱式的逐 follow-up 結果。

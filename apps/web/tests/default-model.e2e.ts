@@ -102,7 +102,7 @@ describe('web e2e: the composer model switch is the default for later sessions',
       reason: 'initial',
     })
 
-    const trigger = page.getByRole('button', { name: /^选择模型/ })
+    const trigger = page.getByRole('button', { name: /^選擇模型/ })
     await trigger.waitFor({ timeout: 15_000 })
     expect(await trigger.evaluate(element => getComputedStyle(element).fontWeight)).toBe('400')
     await trigger.click()
@@ -158,7 +158,7 @@ describe('web e2e: the composer model switch is the default for later sessions',
         baseURL: 'https://gateway.origin.example/v1', models: [{ id: START_MODEL, name: 'Origin Large' }] },
     } })
 
-    const seat = page.getByRole('button', { name: new RegExp(`^选择模型.*${ROUTE}/${MODEL}`) })
+    const seat = page.getByRole('button', { name: new RegExp(`^選擇模型.*${ROUTE}/${MODEL}`) })
     await seat.waitFor()
     expect(await box.isEnabled()).toBe(true)
     expect(scaffold.ctx.agentDefaultModel.currentSelection()).toMatchObject({ provider: ROUTE, model: MODEL })

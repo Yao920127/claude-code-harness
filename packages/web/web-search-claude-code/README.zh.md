@@ -1,5 +1,5 @@
 ---
-description: "ctx.web 的 Claude Code 搜索提供方：已登录 Claude Code 的 Host 如何无需 API 密钥回答网页搜索。"
+description: "ctx.web 的 Claude Code 搜尋提供者：已登入 Claude Code 的 Host 如何無需 API 金鑰回答網頁搜尋。"
 kind: "package-reference"
 ---
 
@@ -9,29 +9,29 @@ kind: "package-reference"
 
 ## 概述
 
-借助 `dsh-web-search-claude-code`，harness 通过 Claude Code 内置的 `WebSearch` 工具回答网页搜索，使用 Host 自己的 Claude Code 登录而不是 API 密钥。每次搜索运行一次 Claude Code 查询，该查询唯一可用的工具是 `WebSearch`，其回答是列出所用页面的结构化输出。Host 已安装并登录 Claude Code 时选择它；CCH bundle 默认选择它。面向模型的 `web_search` 工具位于 `dsh-tool-web`。
+藉助 `dsh-web-search-claude-code`，harness 透過 Claude Code 內建的 `WebSearch` 工具回答網頁搜尋，使用 Host 自己的 Claude Code 登入而不是 API 金鑰。每次搜尋執行一次 Claude Code 查詢，該查詢唯一可用的工具是 `WebSearch`，其回答是列出所用頁面的結構化輸出。Host 已安裝並登入 Claude Code 時選擇它；CCH bundle 預設選擇它。面向模型的 `web_search` 工具位於 `dsh-tool-web`。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在已加载 web 与 subprocess 服务的组合中挂载本提供方；它以 `claude-code` 搜索提供方身份注册。用 web 服务的 `searchProvider` 或插件页的**搜索来源**页面选择它。
+在已載入 web 與 subprocess 服務的組合中掛載本提供者；它以 `claude-code` 搜尋提供者身份註冊。用 web 服務的 `searchProvider` 或外掛頁的**搜尋來源**頁面選擇它。
 
-### 何时选择
+### 何時選擇
 
-希望由 Host 的 Claude Code 登录承担搜索费用、且未配置厂商密钥时选择本提供方。部署持有厂商 API 密钥，或运行环境中 Claude Code 未登录时，改用 [`dsh-web-search-vendors`](../web-search-vendors/README.zh.md) 中的提供方。
+希望由 Host 的 Claude Code 登入承擔搜尋費用、且未設定廠商金鑰時選擇本提供者。部署持有廠商 API 金鑰，或執行環境中 Claude Code 未登入時，改用 [`dsh-web-search-vendors`](../web-search-vendors/README.zh.md) 中的提供者。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-web'
@@ -40,85 +40,85 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-web-search-claude-code'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `model` | 空 | Claude Code 模型；为空时使用 Host 的 Claude Code 设置所选的模型 |
-| `maxTurns` | `4` | 一次搜索的最大 agent 轮数 |
-| `env` | `{}` | 给 Claude Code 进程的额外环境变量 |
-| `disposeGraceMs` | `3000` | 释放时强制结束进程树前的宽限时间 |
+| `model` | 空 | Claude Code 模型；為空時使用 Host 的 Claude Code 設定所選的模型 |
+| `maxTurns` | `4` | 一次搜尋的最大 agent 輪數 |
+| `env` | `{}` | 給 Claude Code 程序的額外環境變數 |
+| `disposeGraceMs` | `3000` | 釋放時強制結束程序樹前的寬限時間 |
 
-### 搜索返回什么
+### 搜尋返回什麼
 
-回答成为 `content`，每个列出的页面成为带 URL、标题与支持片段的来源。URL 无法解析或重复的来源会被丢弃；web 服务施加请求的 `maxResults`，提示词中也会写明该数量。
+回答成為 `content`，每個列出的頁面成為帶 URL、標題與支援片段的來源。URL 無法解析或重複的來源會被丟棄；web 服務施加請求的 `maxResults`，提示詞中也會寫明該數量。
 
-### 失败与恢复
+### 失敗與恢復
 
-非成功的结果、没有结果就结束的查询以及进程失败都以 `WEB_PROVIDER_ERROR` 失败；进程失败的消息会提示用户用 Claude Code CLI 登录。不含任何有效来源的输出同样失败。取消会停止查询并以 `WEB_ABORTED` 失败。
+非成功的結果、沒有結果就結束的查詢以及程序失敗都以 `WEB_PROVIDER_ERROR` 失敗；程序失敗的訊息會提示使用者用 Claude Code CLI 登入。不含任何有效來源的輸出同樣失敗。取消會停止查詢並以 `WEB_ABORTED` 失敗。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节说明提供方背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節說明提供者背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **由官方产品执行搜索。** 提供方经由 Agent SDK 启动固定版本的 Claude Code CLI，而不是读取其保存的登录凭据，与 [Claude Code 模型路由](../../llm/llm-claude-code/README.zh.md)的立场相同。
-- **只提供 `WebSearch`。** 查询限制工具列表且只允许该工具，因此搜索不能在 Host 的主目录中编辑文件或执行命令。
-- **在进程边界校验。** 结构化输出在成为结果前逐字段检查。
+- **由官方產品執行搜尋。** 提供者經由 Agent SDK 啟動固定版本的 Claude Code CLI，而不是讀取其儲存的登入憑證，與 [Claude Code 模型路由](../../llm/llm-claude-code/README.zh.md)的立場相同。
+- **只提供 `WebSearch`。** 查詢限制工具列表且只允許該工具，因此搜尋不能在 Host 的主目錄中編輯檔案或執行命令。
+- **在程序邊界驗證。** 結構化輸出在成為結果前逐欄位檢查。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：配置 schema 与注册提供方 |
-| [`src/provider.ts`](src/provider.ts) | 提供方：查询选项、进程所有权与结果校验 |
-| — | 不发布运行时不变量伴随包；每次搜索自行拥有并释放其进程，因此不存在可能分歧的独立观察。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：設定 schema 與註冊提供者 |
+| [`src/provider.ts`](src/provider.ts) | 提供者：查詢選項、程序所有權與結果驗證 |
+| — | 不釋出執行時不變數伴隨包；每次搜尋自行擁有並釋放其程序，因此不存在可能分歧的獨立觀察。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [Web 包地图](../README.zh.md)——每个搜索与抓取提供方及其职责。
-- [dsh-subagent-claude-code](../../subagent/subagent-claude-code/README.zh.md)——本提供方复用的进程启动与所有权。
-- [多厂商搜索决策](../../../.agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.zh.md)——为什么在厂商提供方之外还有 Claude Code 搜索。
+- [Web 包地圖](../README.zh.md)——每個搜尋與抓取提供者及其職責。
+- [dsh-subagent-claude-code](../../subagent/subagent-claude-code/README.zh.md)——本提供者複用的程序啟動與所有權。
+- [多廠商搜尋決策](../../../.agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.zh.md)——為什麼在廠商提供者之外還有 Claude Code 搜尋。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地，经由 `dsh-tool-web`：它保留本提供方受 `maxResults` 限制的回答文字、URL、标题与片段，或把 `Claude Code search failed: <error>. Sign in with the Claude Code CLI on the host, then retry.`、`Claude Code search ended without a result (<subtype>)`、`Claude Code search returned no web sources` 与 `Claude Code search aborted` 失败包在消费方的错误包装中。
+間接地，經由 `dsh-tool-web`：它保留本提供者受 `maxResults` 限制的回答文字、URL、標題與片段，或把 `Claude Code search failed: <error>. Sign in with the Claude Code CLI on the host, then retry.`、`Claude Code search ended without a result (<subtype>)`、`Claude Code search returned no web sources` 與 `Claude Code search aborted` 失敗包在消費方的錯誤包裝中。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不直接造成失效；请求前缀的变化由上述消费方负责。
+不直接造成失效；請求字首的變化由上述消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **每次搜索都会启动一个 Claude Code 进程。** 搜索比直接调用 API 慢，并计入已登录账号的用量。
-- **搜索请求不是 Session 事件。** 模型发送的查询与收到的结果保留在工具调用与工具结果中；Claude Code 不保留搜索的记录。
-- **向托管部署的其他用户提供 Host 的登录需要 Anthropic 的批准**，与 Claude Code 模型路由相同。
+- **每次搜尋都會啟動一個 Claude Code 程序。** 搜尋比直接呼叫 API 慢，並計入已登入帳號的用量。
+- **搜尋請求不是 Session 事件。** 模型傳送的查詢與收到的結果保留在工具呼叫與工具結果中；Claude Code 不保留搜尋的記錄。
+- **向託管部署的其他使用者提供 Host 的登入需要 Anthropic 的批准**，與 Claude Code 模型路由相同。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作备注——点击展开</summary>
+<summary>維護者工作備註——點選展開</summary>
 
-本开发备注是给维护者的工作背景：未决问题与尚未确定的方向。它明确不具权威性——已发布的行为、限制与理由位于上面各节及所链接的 Agent Note。
+本開發備註是給維護者的工作背景：未決問題與尚未確定的方向。它明確不具權威性——已釋出的行為、限制與理由位於上面各節及所連結的 Agent Note。
 
-#### 后续：复用进程
+#### 後續：複用程序
 
-长期存活的 Claude Code 进程可以省去每次搜索的启动时间，但需要自己的空闲与失败生命周期。
+長期存活的 Claude Code 程序可以省去每次搜尋的啟動時間，但需要自己的空閒與失敗生命週期。
 
 </details>

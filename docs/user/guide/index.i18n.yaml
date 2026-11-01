@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/user/guide/index.md
 /use-the-web-ui:
   en: 0c95e166d018a6e9
-  zh: ffb65573f7af49e7
+  zh: c776bd11094948cf
 /use-the-web-ui/configure-a-model:
   en: 017967a6f7c60eeb
-  zh: 190c812bd8d8a338
+  zh: 468931185a799f9a
 /use-the-web-ui/choose-a-workspace:
   en: ed78cd0a583896ae
-  zh: d713d7a4b5f34e42
+  zh: 742b3ff3b317f95a
 /use-the-web-ui/run-a-task:
   en: e1cb5a05bf6e109d
-  zh: 8b181b0fecbc0517
+  zh: 65faaa7f4ee0491c
 /use-the-web-ui/continue:
   en: 0e74e287e009b401
-  zh: 932f5475154c202c
+  zh: 155c66551858340b

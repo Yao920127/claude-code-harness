@@ -1,12 +1,12 @@
-# 宿主级 Schedule
+# 主機級 Schedule
 
 [English](schedule.md) | 中文
 
-Schedule 独立于 Session 的加载状态存储提醒，并将其投递到原 Session。本页记录 [`types.ts`](../../packages/schedule/schedule/src/types.ts) 中的持久与模型可见类型；[包 README](../../packages/schedule/schedule/README.zh.md) 负责组合方式与提醒文本格式。
+Schedule 獨立於 Session 的載入狀態儲存提醒，並將其投遞到原 Session。本頁記錄 [`types.ts`](../../packages/schedule/schedule/src/types.ts) 中的持久與模型可見型別；[包 README](../../packages/schedule/schedule/README.zh.md) 負責組合方式與提醒文字格式。
 
-## 持久记录
+## 持久記錄
 
-`ScheduleId` 是全局唯一的[品牌化 ID](core.zh.md#branded-ids)。版本 1 的 `schedule` storage domain 的 `tasks` 表将每条 `ScheduleRecord` 与原始 `sessionId` 绑定，并存储 `status: 'active' | 'inactive'` 和可选的 `lastDelivery`。缺少状态的记录规范化为 `active`，不扫描或重建历史 Session。创建时将目标规范化为 RFC 3339 UTC `scheduledAt`；`after` 保留提交的延迟，`every` 保留固定间隔，`daily` 与 `weekly` 保留规范化后的本地 `time` 及显式 `timeZone`，`cron` 保留规范化后的五字段 `expression` 及显式 `timeZone`。每日、每周与 cron 记录解码保留已提交时点及已存储的时区拼写。已存储的任务记录声明必填的 `title`，即任务界面显示的短名称；创建时必须提供该字段，且绝不从指令派生。任何已存储记录都不得缺少标题：`title` 缺失、去除首尾空白后为空、带首尾空白或超过 120 个字符的已存储记录都会以 `ScheduleLogError` 拒绝持久化解码；schedule domain 未声明备份并跳过的策略，因此一条这样的已存储任务会拒绝整个 domain 的打开，而不是被丢弃。仅显式删除会移除任务；此前已物理删除的任务不会被恢复或虚构。
+`ScheduleId` 是全域唯一的[品牌化 ID](core.zh.md#branded-ids)。版本 1 的 `schedule` storage domain 的 `tasks` 表將每條 `ScheduleRecord` 與原始 `sessionId` 繫結，並儲存 `status: 'active' | 'inactive'` 和可選的 `lastDelivery`。缺少狀態的記錄規範化為 `active`，不掃描或重建歷史 Session。建立時將目標規範化為 RFC 3339 UTC `scheduledAt`；`after` 保留提交的延遲，`every` 保留固定間隔，`daily` 與 `weekly` 保留規範化後的本地 `time` 及顯式 `timeZone`，`cron` 保留規範化後的五欄位 `expression` 及顯式 `timeZone`。每日、每週與 cron 記錄解碼保留已提交時點及已儲存的時區拼寫。已儲存的任務記錄宣告必填的 `title`，即任務介面顯示的短名稱；建立時必須提供該欄位，且絕不從指令派生。任何已儲存記錄都不得缺少標題：`title` 缺失、去除首尾空白後為空、帶首尾空白或超過 120 個字元的已儲存記錄都會以 `ScheduleLogError` 拒絕持久化解碼；schedule domain 未宣告備份並跳過的策略，因此一條這樣的已儲存任務會拒絕整個 domain 的開啟，而不是被丟棄。僅顯式刪除會移除任務；此前已物理刪除的任務不會被恢復或虛構。
 
 ```ts type-equiv
 /** Durable one-shot reminder created from a positive delay. */
@@ -95,9 +95,9 @@ type RecurringScheduleRecord = EveryScheduleRecord | DailyScheduleRecord | Weekl
 type ScheduleRecord = OneShotScheduleRecord | RecurringScheduleRecord
 ```
 
-## 绝对时间输入
+## 絕對時間輸入
 
-`at` 选择器可以是严格且带偏移量的 RFC 3339 字符串，也可以是精确的本地日历对象。本地形式让这种解释在工具边界保持显式：
+`at` 選擇器可以是嚴格且帶偏移量的 RFC 3339 字串，也可以是精確的本地日曆物件。本地形式讓這種解釋在工具邊界保持顯式：
 
 ```ts type-equiv
 /** Structured local-calendar input accepted by creation and timing edits. */
@@ -116,14 +116,14 @@ interface LocalAtInput {
 type AtInput = string | LocalAtInput
 ```
 
-发布的 Web bundle 会挂载 time-context，它为每条提示词采样浏览器的 IANA 时区。当 open turn 只有一个无歧义的浏览器时区时，Time-context 会告诉模型按该请求本地时区解释未明确限定时区的自然语言日期和时间；浏览器时区记录混合或缺失时，则告诉模型询问用户。该指引不是持久 Session 默认值：模型仍必须在字符串形式中传入偏移量，或在本地形式中传入 `time_zone`；Schedule 绝不会读取浏览器、Session、进程或模型上下文。
+釋出的 Web bundle 會掛載 time-context，它為每條提示詞采樣瀏覽器的 IANA 時區。當 open turn 只有一個無歧義的瀏覽器時區時，Time-context 會告訴模型按該請求本地時區解釋未明確限定時區的自然語言日期和時間；瀏覽器時區記錄混合或缺失時，則告訴模型詢問使用者。該指引不是持久 Session 預設值：模型仍必須在字串形式中傳入偏移量，或在本地形式中傳入 `time_zone`；Schedule 絕不會讀取瀏覽器、Session、程序或模型上下文。
 
-Schedule 会拒绝无效偏移量与时区、不带偏移量的字符串、非未来目标，以及落在夏令时缺口内的本地时间。遇到夏令时重叠时，会选择第一次出现的较早时点。创建成功后只存储规范化后的 UTC `scheduledAt`，因此回放绝不依赖环境时区状态。
+Schedule 會拒絕無效偏移量與時區、不帶偏移量的字串、非未來目標，以及落在夏令時缺口內的本地時間。遇到夏令時重疊時，會選擇第一次出現的較早時點。建立成功後只儲存規範化後的 UTC `scheduledAt`，因此回放絕不依賴環境時區狀態。
 
 <a id="daily-wall-clock-input"></a>
-## 每日本地钟表时间输入
+## 每日本地鐘錶時間輸入
 
-`daily` 是与 `after_seconds`、`at`、`every_seconds`、`weekly` 和 `cron` 互斥的创建选择器之一。例如，`daily: { time: '23:00:00', time_zone: 'Asia/Shanghai' }` 选择该时区每个符合条件的本地日期的 23:00。对象必须精确包含以下字段，不包含日期、偏移量或间隔：
+`daily` 是與 `after_seconds`、`at`、`every_seconds`、`weekly` 和 `cron` 互斥的建立選擇器之一。例如，`daily: { time: '23:00:00', time_zone: 'Asia/Shanghai' }` 選擇該時區每個符合條件的本地日期的 23:00。物件必須精確包含以下欄位，不包含日期、偏移量或間隔：
 
 ```ts type-equiv
 /** Daily local-time selector accepted by creation and timing edits. */
@@ -135,44 +135,44 @@ interface DailyInput {
 }
 ```
 
-创建时要求 `HH:mm:ss` 及可选的一至三位小数秒，拒绝闰秒和 `24:00`，将显式 IANA 时区规范化，并以 `HH:mm:ss.SSS` 存储 `time`。首个 `scheduledAt` 严格晚于创建时刻。不存在的本地时间或整个日期被跳过；重叠时间选择较早时点，每个本地日期一次。若较早时点已过去，较晚的重复时点不符合条件。仅 UTC 目标年份受 0001–9999 范围约束；UTC 范围边缘的本地日期可以落在第 0 年或第 10000 年。
+建立時要求 `HH:mm:ss` 及可選的一至三位小數秒，拒絕閏秒和 `24:00`，將顯式 IANA 時區規範化，並以 `HH:mm:ss.SSS` 儲存 `time`。首個 `scheduledAt` 嚴格晚於建立時刻。不存在的本地時間或整個日期被跳過；重疊時間選擇較早時點，每個本地日期一次。若較早時點已過去，較晚的重複時點不符合條件。僅 UTC 目標年份受 0001–9999 範圍約束；UTC 範圍邊緣的本地日期可以落在第 0 年或第 10000 年。
 
-已保存的下一目标是已提交的 UTC 时点。宿主解码器与重启保留该时点，不依据时区规则重新解析；规范名称变化后，有效的已存储时区别名仍可读取。后续目标使用宿主当前的 IANA 数据。下一目标必须晚于投递判断时刻，并且其本地日期晚于所选发生时点的日期。没有可表示的未来 UTC 目标时，创建以 `time_out_of_range` 失败。
+已儲存的下一目標是已提交的 UTC 時點。主機解碼器與重新啟動保留該時點，不依據時區規則重新解析；規範名稱變化後，有效的已儲存時區別名仍可讀取。後續目標使用主機目前的 IANA 資料。下一目標必須晚於投遞判斷時刻，並且其本地日期晚於所選發生時點的日期。沒有可表示的未來 UTC 目標時，建立以 `time_out_of_range` 失敗。
 
-## 固定速率输入与补偿
+## 固定速率輸入與補償
 
-`every_seconds` 是至少 60 秒的安全整数间隔，与创建时间对齐。它衡量经过的时间，而不是每日本地钟表时间：发生偏移量变化时，`every_seconds: 86400` 不能替代 `daily`。协议不提供共享冷却时间或跨记录准入规则；下文描述的 cron 选择器是钟表时间语义，不是固定速率间隔。
+`every_seconds` 是至少 60 秒的安全整數間隔，與建立時間對齊。它衡量經過的時間，而不是每日本地鐘錶時間：發生偏移量變化時，`every_seconds: 86400` 不能替代 `daily`。協定不提供共享冷卻時間或跨記錄准入規則；下文描述的 cron 選擇器是鐘錶時間語義，不是固定速率間隔。
 
-宿主启动时若 Every、Daily、Weekly 或 Cron 记录已逾期，只发送最新一次到期发生时点。Every 推进到投递判断时刻之后第一个与当前间隔起算点对齐的目标；Daily、Weekly 和 Cron 遵循上文与下文的本地日期规则。错过的发生时点不会累积。若没有可表示的下一 UTC 目标，投递后保留未运行记录及最近一次回执。
+主機啟動時若 Every、Daily、Weekly 或 Cron 記錄已逾期，只傳送最新一次到期發生時點。Every 推進到投遞判斷時刻之後第一個與目前間隔起算點對齊的目標；Daily、Weekly 和 Cron 遵循上文與下文的本地日期規則。錯過的發生時點不會累積。若沒有可表示的下一 UTC 目標，投遞後保留未執行記錄及最近一次回執。
 
-一次性提醒各自产生一条 follow-up。同一次扫描中属于同一 Session 的到期重复记录共用由 `renderRecurringReminderBatchFraming` 渲染的一条 follow-up，每条记录各包含最新一次触发。一分钟下限仅适用于固定速率间隔；投递不等待目标 Agent 空闲。
+一次性提醒各自產生一條 follow-up。同一次掃描中屬於同一 Session 的到期重複記錄共用由 `renderRecurringReminderBatchFraming` 渲染的一條 follow-up，每條記錄各包含最新一次觸發。一分鐘下限僅適用於固定速率間隔；投遞不等待目標 Agent 空閒。
 
 <a id="cron-wall-clock-input"></a>
-## Cron 钟表时间输入
+## Cron 鐘錶時間輸入
 
-`cron` 是互斥的创建选择器之一。它的对象只携带严格的标准五字段 Vixie 表达式 `minute hour day-of-month month day-of-week` 和显式 IANA 时区，例如 `cron: { expression: '*/15 9-17 * * 1-5', time_zone: 'Asia/Shanghai' }`。字段取值范围如下：
+`cron` 是互斥的建立選擇器之一。它的物件只攜帶嚴格的標準五欄位 Vixie 表示式 `minute hour day-of-month month day-of-week` 和顯式 IANA 時區，例如 `cron: { expression: '*/15 9-17 * * 1-5', time_zone: 'Asia/Shanghai' }`。欄位取值範圍如下：
 
-| 字段 | 取值范围 | 说明 |
+| 欄位 | 取值範圍 | 說明 |
 |---|---|---|
 | minute | 0-59 | |
 | hour | 0-23 | |
 | day-of-month | 1-31 | |
 | month | 1-12 | |
-| day-of-week | 0-7 | `0` 和 `7` 都表示周日。 |
+| day-of-week | 0-7 | `0` 和 `7` 都表示週日。 |
 
-每个字段接受 `*`、单个值、`a-b` 范围、`n >= 1` 的 `*/n` 与 `a-b/n` 步长，以及由这些形式组成的逗号分隔列表。其他写法一律以 `invalid_rule` 拒绝，且错误信息会指出违规字段：`L`、`W`、`#` 运算符，`JAN`/`MON` 名称，`@daily` 风格宏，带秒字段的六字段表达式，超出范围的值、反向范围、零步长和空字段。由于该方言只有五个字段，最小间隔为一分钟；亚分钟级调度仍然不受支持。
+每個欄位接受 `*`、單個值、`a-b` 範圍、`n >= 1` 的 `*/n` 與 `a-b/n` 步長，以及由這些形式組成的逗號分隔列表。其他寫法一律以 `invalid_rule` 拒絕，且錯誤資訊會指出違規欄位：`L`、`W`、`#` 運算子，`JAN`/`MON` 名稱，`@daily` 風格宏，帶秒欄位的六欄位表示式，超出範圍的值、反向範圍、零步長和空欄位。由於該方言只有五個欄位，最小間隔為一分鐘；亞分鐘級排程仍然不受支援。
 
-创建时会先规范化表达式再存储。规范化会把每个字段展开为匹配值集合，再确定性地重新编码该集合：重复值合并，相邻的值与范围合并，均匀步长写为 `a-b/n`，而以 `*` 开头的字段写为星号步长（匹配全部取值时写 `*`，否则写最宽的星号步长并追加其余取值），步长 `1` 被移除，周日统一写为 `0`。不以 `*` 开头的字段绝不会变成星号步长。保留每个字段的星号标志，正是下文 day-of-month/day-of-week 规则在存储的表达式上仍与 Vixie 一致的原因。持久化解码器会拒绝非规范化的已存储表达式。
+建立時會先規範化表示式再儲存。規範化會把每個欄位展開為匹配值集合，再確定性地重新編碼該集合：重複值合併，相鄰的值與範圍合併，均勻步長寫為 `a-b/n`，而以 `*` 開頭的欄位寫為星號步長（匹配全部取值時寫 `*`，否則寫最寬的星號步長並追加其餘取值），步長 `1` 被移除，週日統一寫為 `0`。不以 `*` 開頭的欄位絕不會變成星號步長。保留每個欄位的星號標誌，正是下文 day-of-month/day-of-week 規則在儲存的表示式上仍與 Vixie 一致的原因。持久化解碼器會拒絕非規範化的已儲存表示式。
 
-首个目标是该时区内本地日期与时间匹配的第一个严格未来时点。它复用 Daily 与 Weekly 的本地时间解析：不存在的本地时间被跳过，重叠时间每个日期只取较早一次。已提交的 UTC `scheduledAt` 在重启时绝不重新计算。
+首個目標是該時區內本地日期與時間匹配的第一個嚴格未來時點。它複用 Daily 與 Weekly 的本地時間解析：不存在的本地時間被跳過，重疊時間每個日期只取較早一次。已提交的 UTC `scheduledAt` 在重新啟動時絕不重新計算。
 
-day-of-month 与 day-of-week 遵循 Vixie 语义。字段文本以 `*` 开头即为星号字段，与它匹配的取值集合无关，因此 `*/1` 与 `*/2` 都是星号字段，而 `1-31` 与 `0-7` 受限。任一字段为星号字段时，本地日期只有在两个字段都匹配时才算匹配；两个字段都不是星号字段时，匹配任一字段即算匹配。
+day-of-month 與 day-of-week 遵循 Vixie 語義。欄位文字以 `*` 開頭即為星號欄位，與它匹配的取值集合無關，因此 `*/1` 與 `*/2` 都是星號欄位，而 `1-31` 與 `0-7` 受限。任一欄位為星號欄位時，本地日期只有在兩個欄位都匹配時才算匹配；兩個欄位都不是星號欄位時，匹配任一欄位即算匹配。
 
-cron 解码保留已提交时点及已存储的时区拼写，并拒绝非规范化的已存储表达式。cron 仅属于当前宿主的 `ScheduleRecord`；冻结的历史 Session 解码器不接受它。
+cron 解碼保留已提交時點及已儲存的時區拼寫，並拒絕非規範化的已儲存表示式。cron 僅屬於目前主機的 `ScheduleRecord`；凍結的歷史 Session 解碼器不接受它。
 
-## 历史 Session 变更
+## 歷史 Session 變更
 
-版本 1 的 `schedule/change` 事件仍可作为历史 Session 数据解码。其 create、fold 和 invariant 类型使用 `LegacyScheduleRecord`，仅接受 After、At 和 Every；Daily、Weekly 与 Cron 仅属于当前宿主的 `ScheduleRecord`。宿主记录解码器独立于冻结的历史解码器。在 title 出现之前写入的 create 记录不含 `title`，因此历史解码器接受该缺失成员，而宿主解码器仍要求它。历史事件不会填充 storage domain 或触发投递。这些事件中的已有提醒需要显式通过 `schedule_create` 重新创建；不会隐式迁移 Session 或转换旧 `at` 记录。
+版本 1 的 `schedule/change` 事件仍可作為歷史 Session 資料解碼。其 create、fold 和 invariant 型別使用 `LegacyScheduleRecord`，僅接受 After、At 和 Every；Daily、Weekly 與 Cron 僅屬於目前主機的 `ScheduleRecord`。主機記錄解碼器獨立於凍結的歷史解碼器。在 title 出現之前寫入的 create 記錄不含 `title`，因此歷史解碼器接受該缺失成員，而主機解碼器仍要求它。歷史事件不會填充 storage domain 或觸發投遞。這些事件中的已有提醒需要顯式透過 `schedule_create` 重新建立；不會隱式遷移 Session 或轉換舊 `at` 記錄。
 
 ```ts type-equiv
 /**
@@ -236,11 +236,11 @@ type ScheduleDispatchChange = OneShotScheduleDispatchChange | EveryScheduleDispa
 type ScheduleChange = ScheduleCreateChange | ScheduleDeleteChange | ScheduleDispatchChange
 ```
 
-历史 decoder 与 fold 拒绝未知版本、额外字段、复用 ID 和无效转换。该事件仍编入[持久化目录](../persistence-catalog.zh.md#schedulechange--log-only)。Session 历史不负责决定当前活动任务。
+歷史 decoder 與 fold 拒絕未知版本、額外欄位、複用 ID 和無效轉換。該事件仍編入[持久化目錄](../persistence-catalog.zh.md#schedulechange--log-only)。Session 歷史不負責決定目前活動任務。
 
-## 活动视图与管理
+## 活動檢視與管理
 
-工具值将存储记录与当前墙钟派生的时间状态组合。宿主在投递需要时恢复原 Session；列出和删除任务不会激活该 Session。
+工具值將儲存記錄與目前牆鍾派生的時間狀態組合。主機在投遞需要時恢復原 Session；列出和刪除任務不會啟用該 Session。
 
 ```ts type-equiv
 /** Current delivery timing derived from the durable record and wall clock. */
@@ -262,7 +262,7 @@ type ScheduleView = ScheduleRecord & {
 }
 ```
 
-[工具目录](../tool-catalog.zh.md#deepseek-aidsh-schedule) 负责 `schedule_create`、`schedule_list`、`schedule_delete` 和 `schedule_update` 的 schema。创建、删除和更新在 storage domain 写入确认后返回成功。宿主级队列将这些变更与到期投递串行化；删除任务不会移除已入队消息。模型工具操作当前 Session，共享宿主的 create、list、update 和 delete 方法接受显式 Session 绑定。创建必须提供 `title`，其去除首尾空白后必须非空且不超过 120 个字符；缺失、空白或过长的标题以 `invalid_prompt` 拒绝，且创建过程绝不从指令派生标题。create 和 list 视图在指令之外同时携带已存储的 `title`，且 `title` 缺失或非法的已存储记录在解码时被拒绝。
+[工具目錄](../tool-catalog.zh.md#deepseek-aidsh-schedule) 負責 `schedule_create`、`schedule_list`、`schedule_delete` 和 `schedule_update` 的 schema。建立、刪除和更新在 storage domain 寫入確認後返回成功。主機級佇列將這些變更與到期投遞序列化；刪除任務不會移除已入隊訊息。模型工具操作目前 Session，共享主機的 create、list、update 和 delete 方法接受顯式 Session 繫結。建立必須提供 `title`，其去除首尾空白後必須非空且不超過 120 個字元；缺失、空白或過長的標題以 `invalid_prompt` 拒絕，且建立過程絕不從指令派生標題。create 和 list 檢視在指令之外同時攜帶已儲存的 `title`，且 `title` 缺失或非法的已儲存記錄在解碼時被拒絕。
 
 ```ts type-equiv
 /** Reminder creation selector, shared by the model consumer and Host service. */
@@ -309,9 +309,9 @@ type ScheduleDeleteResult =
   | { readonly id: ScheduleId; readonly deleted: false; readonly code: 'schedule_not_found' }
 ```
 
-## Web 目录
+## Web 目錄
 
-Remote 方法 `schedule.catalog()` 返回活动和未运行的宿主任务及其原始 Session 绑定，先按 `scheduledAt` 升序排列，再按 `id` 字典序排列。它只读取 Schedule domain，不激活 Session 或读取其历史。浏览器消费方接收以下可安全用于浏览器的类型：
+Remote 方法 `schedule.catalog()` 返回活動和未執行的主機任務及其原始 Session 繫結，先按 `scheduledAt` 升序排列，再按 `id` 字典序排列。它只讀取 Schedule domain，不啟用 Session 或讀取其歷史。瀏覽器消費方接收以下可安全用於瀏覽器的型別：
 
 ```ts type-equiv
 /** Durable Session inbox delivery acknowledgment, not model execution completion. */
@@ -337,13 +337,13 @@ type ScheduleCatalogEntry = ScheduleRecord & {
 }
 ```
 
-Remote 方法 `schedule.list({ sessionId })`、模型 `schedule_list` 和 Session 页头目录仅返回活动任务。模型视图派生的时间 `state` 与存储的生命周期 `status` 仍是不同概念。删除通过 `schedule.delete({ sessionId, id })` 使用条目的原始绑定；绑定不匹配时返回未找到。模型工具传入当前 Agent 的 Session，全局用户界面则传入所选任务的绑定。仅校验绑定并不构成调用者鉴权。无 payload 的 `schedule/changed` 事件通知客户端刷新列表；重新连接后，客户端再次获取当前状态。
+Remote 方法 `schedule.list({ sessionId })`、模型 `schedule_list` 和 Session 頁頭目錄僅返回活動任務。模型檢視派生的時間 `state` 與儲存的生命週期 `status` 仍是不同概念。刪除透過 `schedule.delete({ sessionId, id })` 使用條目的原始繫結；繫結不匹配時返回未找到。模型工具傳入目前 Agent 的 Session，全域使用者介面則傳入所選任務的繫結。僅驗證繫結並不構成呼叫者授權驗證。無 payload 的 `schedule/changed` 事件通知用戶端重新整理列表；重新連線後，用戶端再次取得目前狀態。
 
-Web bundle 将 `ui-schedule` 与宿主能力一起挂载。[客户端包](../../packages/client/ui-schedule/README.zh.md) 负责目录、空状态与删除控件。页面单独筛选全部、活动和未运行任务，保留未运行任务详情及详情页签条内的原 Session 入口，并要求显式确认删除。“规则”和“发送记录”将任务设置与按需分页加载的已保存回执分开。回执与未运行状态均不确认模型执行。
+Web bundle 將 `ui-schedule` 與主機能力一起掛載。[用戶端包](../../packages/client/ui-schedule/README.zh.md) 負責目錄、空狀態與刪除控制元件。頁面單獨篩選全部、活動和未執行任務，保留未執行任務詳情及詳情頁籤條內的原 Session 入口，並要求顯式確認刪除。“規則”和“傳送記錄”將任務設定與按需分頁載入的已儲存回執分開。回執與未執行狀態均不確認模型執行。
 
-## 修改时间
+## 修改時間
 
-`schedule.update({ sessionId, id, expected, change })` 修改活动任务，不激活其 Session。`expected` 是完整的已观察 `ScheduleRecord`，不是附带额外元数据的目录条目。Host 在投递和删除共用的 FIFO 内将它与当前记录比较。正常投递可能在编辑期间推进目标；此时旧快照返回 `schedule_conflict`，不会覆盖当前规则。任务不存在或绑定不匹配时返回 `schedule_not_found`，未运行任务返回 `schedule_ended`。
+`schedule.update({ sessionId, id, expected, change })` 修改活動任務，不啟用其 Session。`expected` 是完整的已觀察 `ScheduleRecord`，不是附帶額外中繼資料的目錄條目。Host 在投遞和刪除共用的 FIFO 內將它與目前記錄比較。正常投遞可能在編輯期間推進目標；此時舊快照返回 `schedule_conflict`，不會覆蓋目前規則。任務不存在或繫結不匹配時返回 `schedule_not_found`，未執行任務返回 `schedule_ended`。
 
 ```ts type-equiv
 /** Timing-only edit; it may select a different recurrence kind than the stored record, and one-shot targets use an absolute `at`. */
@@ -373,13 +373,13 @@ type ScheduleUpdateResult =
   | ScheduleToolError
 ```
 
-Daily 规则改变后，沿用本地时间和时区语义计算严格晚于当前时间的首个目标。Cron 规则改变后，先规范化表达式，再按相同的本地日期、缺口与较早重叠规则计算首个严格未来目标。Every 间隔改变后，以接纳保存时刻加该间隔建立新的起点。After 或 At 任务可以在保留 id 的同时，通过 At 记录接收新的绝对目标。这些操作保留已存储的 `title`、指令、原始 Session 绑定、生命周期状态和全部已保存回执。变更也可以选择不同的重复类型，此时按新规则重算目标，并保留同一 id、标题、指令、Session 绑定、状态与全部已保存回执。归一化后等价的规则返回 `updated: false` 及未改变的记录，不重写存储、不重设目标，也不发出变更事件。写法不同但等价的 Cron 表达式就是这样的无变更，因为比较使用规范化表达式与规范化时区。
+Daily 規則改變後，沿用本地時間和時區語義計算嚴格晚於目前時間的首個目標。Cron 規則改變後，先規範化表示式，再按相同的本地日期、缺口與較早重疊規則計算首個嚴格未來目標。Every 間隔改變後，以接納儲存時刻加該間隔建立新的起點。After 或 At 任務可以在保留 id 的同時，透過 At 記錄接收新的絕對目標。這些操作保留已儲存的 `title`、指令、原始 Session 繫結、生命週期狀態和全部已儲存回執。變更也可以選擇不同的重複型別，此時按新規則重算目標，並保留同一 id、標題、指令、Session 繫結、狀態與全部已儲存回執。歸一化後等價的規則返回 `updated: false` 及未改變的記錄，不重寫儲存、不重設目標，也不發出變更事件。寫法不同但等價的 Cron 表示式就是這樣的無變更，因為比較使用規範化表示式與規範化時區。
 
-输入校验复用现有时间错误。改变后的绝对目标在 FIFO 槽位开始执行时仍须位于未来。任务 put 成功后才发出变更通知并重算 timer。存储和生命周期失败会 reject；取消检查发生在排队和初始化等待之后，但不能回滚已经开始的写入。一次性记录保留 UTC 时点，而非编辑表单中的 IANA 时区。时间编辑不追加历史 Session 事件：模型通过 `schedule_update` 做同样的原地修改，它与读取到的记录做比对，而不是删除后重建任务。
+輸入驗證複用現有時間錯誤。改變後的絕對目標在 FIFO 槽位開始執行時仍須位於未來。任務 put 成功後才發出變更通知並重算 timer。儲存和生命週期失敗會 reject；取消檢查發生在排隊和初始化等待之後，但不能復原已經開始的寫入。一次性記錄保留 UTC 時點，而非編輯表單中的 IANA 時區。時間編輯不追加歷史 Session 事件：模型透過 `schedule_update` 做同樣的原地修改，它與讀取到的記錄做比對，而不是刪除後重建任務。
 
-## 已保存的发送记录
+## 已儲存的傳送記錄
 
-`schedule.history({ sessionId, id, limit })` 读取已保存的回执，不激活 Session。显式 limit 必须是 1–100 的安全整数。分页按追加顺序逆序排列，不按墙钟排序；可选的消息 id 游标排除上一页最早的记录。新记录追加不会改变该游标的定位。任务不存在或 Session 绑定错误时返回 `schedule_not_found`；游标未知时返回 `delivery_cursor_not_found`，不会视为查询成功的空页。
+`schedule.history({ sessionId, id, limit })` 讀取已儲存的回執，不啟用 Session。顯式 limit 必須是 1–100 的安全整數。分頁按追加順序逆序排列，不按牆鍾排序；可選的訊息 id 遊標排除上一頁最早的記錄。新記錄追加不會改變該遊標的定位。任務不存在或 Session 繫結錯誤時返回 `schedule_not_found`；遊標未知時返回 `delivery_cursor_not_found`，不會視為查詢成功的空頁。
 
 ```ts type-equiv
 /** Saved inbox delivery with its immutable sent prompt when recorded by this Host. */
@@ -427,15 +427,15 @@ type ScheduleDeliveryHistoryResult =
   | { readonly id: ScheduleId; readonly code: 'schedule_not_found' | 'delivery_cursor_not_found' }
 ```
 
-新任务初始化空历史。缺少历史字段的旧任务仅展示已有的最近一次回执，标明更早记录不可用，且读取不会重写任务行。后续确认会保留该回执，并追加带有指令快照的真实新回执。已丢失的历史与缺失的旧指令快照不会被重建。历史、最近回执、状态和下一目标由同一次任务行写入提交；显式删除任务会停止后续投递、把任务行连同其已保存的回执一并移除，并使其离开 `list` 与 `catalog`；对话消息不受影响。已保存的发送记录在追加确认时按配置的 `deliveryHistoryDays` 窗口（以每条回执的 `deliveredAt` 向前计算）与 `deliveryHistoryRecords` 条数上限裁剪；新追加的最近一次回执始终保留，发生裁剪时标记更早记录不可用。分页限制返回的记录数量，不限制存储大小或指令字节数。
+新任務初始化空歷史。缺少歷史欄位的舊任務僅展示已有的最近一次回執，標明更早記錄不可用，且讀取不會重寫任務行。後續確認會保留該回執，並追加帶有指令快照的真實新回執。已丟失的歷史與缺失的舊指令快照不會被重建。歷史、最近回執、狀態和下一目標由同一次任務行寫入提交；顯式刪除任務會停止後續投遞、把任務行連同其已儲存的回執一併移除，並使其離開 `list` 與 `catalog`；對話訊息不受影響。已儲存的傳送記錄在追加確認時按設定的 `deliveryHistoryDays` 視窗（以每條回執的 `deliveredAt` 向前計算）與 `deliveryHistoryRecords` 條數上限裁剪；新追加的最近一次回執始終保留，發生裁剪時標記更早記錄不可用。分頁限制返回的記錄數量，不限制儲存大小或指令位元組數。
 
-## 宿主投递
+## 主機投遞
 
-宿主启动时读取持久任务，并将定时器设为最早的活动目标。未运行任务仍可查询，但不会再次安排投递。投递时通过 Session controller 获取原 Session，包括尚未加载的 Session。恢复后重新采样实际时间，并排除时钟回拨后尚未到期的成员；这些任务仍保留定时义务。投递不涉及 Goal 或独立的 Run 完成记录。
+主機啟動時讀取持久任務，並將定時器設為最早的活動目標。未執行任務仍可查詢，但不會再次安排投遞。投遞時透過 Session controller 取得原 Session，包括尚未載入的 Session。恢復後重新取樣實際時間，並排除時鐘回呼後尚未到期的成員；這些任務仍保留定時義務。投遞不涉及 Goal 或獨立的 Run 完成記錄。
 
-插件来源的 `followup()` 同步将消息追加到 Session 收件箱。Session flush 成功后，一次任务记录 put 追加带有指令快照的发送记录，并同时存储最新的 `ScheduleDeliveryReceipt`，以及一次性任务的 `inactive` 状态或重复任务的下一目标和状态。同一批次的重复任务共享回执的 `messageId`；每条回执保留该任务已投递的发生时点。投递不会中途引导或取消当前轮次，也不等待模型完成。
+外掛來源的 `followup()` 同步將訊息追加到 Session 收件箱。Session flush 成功後，一次任務記錄 put 追加帶有指令快照的傳送記錄，並同時儲存最新的 `ScheduleDeliveryReceipt`，以及一次性任務的 `inactive` 狀態或重複任務的下一目標和狀態。同一批次的重複任務共享回執的 `messageId`；每條回執保留該任務已投遞的發生時點。投遞不會中途引導或取消目前輪次，也不等待模型完成。
 
-Session 获取、消息入队或持久化确认失败时，任务继续保存在存储中，并报告宿主警告。后续管理变更或宿主重启会重试。Session 持久化与任务 put 不具有跨存储原子性。收件箱已持久化、任务尚未 put 时发生崩溃，可能重复投递；回执并未消除这一间隔。Schedule 不提供模型结果回执、执行取消或外部通知渠道。
+Session 取得、訊息入隊或持久化確認失敗時，任務繼續儲存在儲存中，並報告主機警告。後續管理變更或主機重新啟動會重試。Session 持久化與任務 put 不具有跨儲存原子性。收件箱已持久化、任務尚未 put 時發生崩潰，可能重複投遞；回執並未消除這一間隔。Schedule 不提供模型結果回執、執行取消或外部通知渠道。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

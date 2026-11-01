@@ -9,22 +9,22 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** Simplified Chinese terminal copy. */
 export const zh = {
-  'shortcut.noSession': '请先选择会话',
-  recoveryFailed: '恢复终端失败：{message}', retryRecovery: '重试恢复终端',
-  shell: '选择 Shell', shellLoading: '正在读取 Shell…', shellEmpty: '没有可用的 Shell',
-  title: '终端', guideDescription: '在右侧边栏打开终端', open: '打开终端', new: '新建终端', toggle: '切换终端面板', hide: '隐藏终端面板',
-  tabs: '终端标签', closeTab: '关闭终端「{title}」', resize: '调整终端面板高度',
-  loading: '正在读取终端环境…', creating: '正在启动…',
-  connecting: '正在连接…', disconnected: '连接已断开。', reconnect: '重新连接',
-  readonly: '此页面当前只读。', control: '接管输入',
-  closed: '终端已关闭。', exited: '进程已退出（{code}）', failed: '终端错误：{message}',
-  rename: '终端名称', unavailable: '不可用', retry: '重试',
-  cleanupFailed: '终端「{title}」未能结束：{message}',
-  missingTerminal: '此终端已不存在，请新建终端。',
-  inputFull: '输入缓冲区已满，请重新连接后重试。',
-  attachmentEnded: '终端连接已结束，请重新连接。',
-  invalidOutput: '终端画面传输异常，请重新连接。',
-  terminalLimit: '终端数量已达上限，请关闭不用的终端后重试。已退出的终端也计入数量。',
+  'shortcut.noSession': '請先選擇工作階段',
+  recoveryFailed: '恢復終端失敗：{message}', retryRecovery: '重試恢復終端',
+  shell: '選擇 Shell', shellLoading: '正在讀取 Shell…', shellEmpty: '沒有可用的 Shell',
+  title: '終端', guideDescription: '在右側邊欄開啟終端', open: '開啟終端', new: '新建終端', toggle: '切換終端面板', hide: '隱藏終端面板',
+  tabs: '終端標籤', closeTab: '關閉終端「{title}」', resize: '調整終端面板高度',
+  loading: '正在讀取終端環境…', creating: '正在啟動…',
+  connecting: '正在連線…', disconnected: '連線已斷開。', reconnect: '重新連線',
+  readonly: '此頁面目前只讀。', control: '接管輸入',
+  closed: '終端已關閉。', exited: '程序已退出（{code}）', failed: '終端錯誤：{message}',
+  rename: '終端名稱', unavailable: '不可用', retry: '重試',
+  cleanupFailed: '終端「{title}」未能結束：{message}',
+  missingTerminal: '此終端已不存在，請新建終端。',
+  inputFull: '輸入緩衝區已滿，請重新連線後重試。',
+  attachmentEnded: '終端連線已結束，請重新連線。',
+  invalidOutput: '終端畫面傳輸異常，請重新連線。',
+  terminalLimit: '終端數量已達上限，請關閉不用的終端後重試。已退出的終端也計入數量。',
 } satisfies Record<string, string>
 
 /** English terminal copy. */

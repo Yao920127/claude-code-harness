@@ -193,7 +193,7 @@ describe('Session tail-page seeding', () => {
   it('seeds the store from a history response carrying a projections block', async ({ mock, start }) => {
     const session = await sessionBench(mock, start, SID)
     mock.stream(FOLLOW, followScript(ok({
-      records: entries(plainTurn(SessionSeq(0), 0, '问', '答')) as never[], hasMore: false,
+      records: entries(plainTurn(SessionSeq(0), 0, '問', '答')) as never[], hasMore: false,
       projections: { asOfSeq: 5, values: { 'test/marks': { marks: ['from-baseline'] } } },
     } as never)))
     await session.open()

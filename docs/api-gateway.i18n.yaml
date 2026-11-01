@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/api-gateway.md
 /api-gateway:
   en: 735eb4f22d5f6f71
-  zh: 1ca2759961efdc06
+  zh: c1c4afab55fbd4a6
 /api-gateway/programming-model:
   en: ea12b64211f0d377
-  zh: 032e5c0d799c7529
+  zh: a7029e43cdb84c93
 /api-gateway/component-responsibilities:
   en: e29f1d7026291075
-  zh: 15e361e797d44fce
+  zh: a524961548e443b7
 /api-gateway/strict-generation-pipeline:
   en: cb8da81a92acfa52
-  zh: be5f3c268f8571df
+  zh: ed93bf0ec1f4e5e0
 /api-gateway/runtime-invocation:
   en: 2a2fed340aaa926c
-  zh: 46bb1f500c870a76
+  zh: a80b5a707734ea48
 /api-gateway/src-development-fallback:
   en: 9570ffe7a348e5ac
-  zh: 2b70b61b1ff1fbb0
+  zh: f43a3bf9f50482f2
 /api-gateway/development-mode:
   en: ba090d76471dd663
-  zh: fcddcb232de98248
+  zh: 2dba8cb355ebd74b
 /api-gateway/boundaries:
   en: e6befc5f8c90f97b
-  zh: 3ade08102542a894
+  zh: 3f67bab31e3c45ca

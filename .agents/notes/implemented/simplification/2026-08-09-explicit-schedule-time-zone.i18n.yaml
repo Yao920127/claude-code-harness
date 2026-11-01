@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-08-09-explicit-schedule-time-zone.md
 /agent-note-explicit-schedule-time-zone-boundary:
   en: 475b5512c7155605
-  zh: e564e8c4f718f0c0
+  zh: 1de39bb1f38a5253
 /agent-note-explicit-schedule-time-zone-boundary/problem:
   en: 4a7e52f6a16dec96
-  zh: d558db30801355d9
+  zh: 947b4c2bc1112fc5
 /agent-note-explicit-schedule-time-zone-boundary/decision:
   en: 6f233286c95b5294
-  zh: 5a1f4ba6f5ccbd36
+  zh: 893d516a3b0df84b
 /agent-note-explicit-schedule-time-zone-boundary/alternatives-considered:
   en: 982fe0b8d24a66ce
-  zh: e6dceee1ce776d21
+  zh: ff0c7f5ac16e5f5f
 /agent-note-explicit-schedule-time-zone-boundary/verification:
   en: 56dcb44f09be3713
-  zh: 59a6814a662458ad
+  zh: 5d72487bcd6fc4d0
 /agent-note-explicit-schedule-time-zone-boundary/consequences:
   en: d9358667c58662e4
-  zh: d536bb0fccd9f0a9
+  zh: 0f8d9d1be2b2dcfd

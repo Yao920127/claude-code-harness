@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/util/workspace-path/README.md
 /:
   en: e8d97ffa99a57ab7
-  zh: 2d7247c47412c30a
+  zh: c50af3cfddb0106a
 /dsh-util-workspace-path:
   en: 328c592b68c88e44
   zh: 7a2f03def21b86fe
 /dsh-util-workspace-path/summary:
   en: ffdecddc9c4957ad
-  zh: 33cf84892aa5e669
+  zh: 1e164c922d128f0b
 /dsh-util-workspace-path/table-of-contents:
   en: e8236aa6cbcb7dca
-  zh: 500e57982344c0fa
+  zh: 1aa51d7372bff138
 /dsh-util-workspace-path/file-addresses:
   en: fa695bca8bd534e0
-  zh: d8feffb4794adfcd
+  zh: 15486515fe87b2c8
 /dsh-util-workspace-path/known-limitations-and-deferred-work:
   en: 1e6d448f4f0030c4
-  zh: c050dd5e470fe47b
+  zh: 3810a0307e94cb96
 /dsh-util-workspace-path/known-limitations-and-deferred-work/dev-note:
   en: cfc7173facebc57c
-  zh: 4ea51377d7c9c147
+  zh: 2efef09ea0f9a45e

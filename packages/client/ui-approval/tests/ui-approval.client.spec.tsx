@@ -374,14 +374,14 @@ describe('ApprovalPanel', () => {
     const pending = new PendingApproval(id('s1'), {
       toolName: 'bash',
       reason: 'audit reason',
-      displayReason: { en: 'English explanation', zh: '中文说明' },
+      displayReason: { en: 'English explanation', zh: '中文說明' },
     })
     const props = panelProps(pending)
     const view = render(<ApprovalPanel {...props} />)
     expect(screen.getByText('English explanation')).toBeTruthy()
     expect(screen.queryByText('audit reason')).toBeNull()
     view.rerender(<ApprovalPanel {...props} resolveReason={reason => reason['zh']!} />)
-    expect(screen.getByText('中文说明')).toBeTruthy()
+    expect(screen.getByText('中文說明')).toBeTruthy()
     expect(pending.reason).toBe('audit reason')
   })
 

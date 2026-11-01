@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/runtime-diagnostics/README.md
 /:
   en: 72ac685be7c23a54
-  zh: 8bd65fdc41719ab0
+  zh: 9f8a350d228d96e3
 /packages-runtime-diagnostics:
   en: d6f767a17b54561c
   zh: 44cbd169cba5892b
 /packages-runtime-diagnostics/summary:
   en: 578162d5f05b52d1
-  zh: c0f63fadbc090e4d
+  zh: c5b250cc0b99d6b6
 /packages-runtime-diagnostics/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-runtime-diagnostics/packages:
   en: b8028d51121730a2
-  zh: 1850138a730976c1
+  zh: 40a738ebaf03d876
 /packages-runtime-diagnostics/related-documentation:
   en: 69997d5b7c4c17de
-  zh: 82199b9f1b117210
+  zh: 87a8443e81ef8a64
 /packages-runtime-diagnostics/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

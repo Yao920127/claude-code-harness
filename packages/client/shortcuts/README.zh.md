@@ -1,5 +1,5 @@
 ---
-description: "为每台设备自定义应用键盘命令"
+description: "為每臺裝置自定義應用鍵盤命令"
 kind: "package-reference"
 ---
 
@@ -9,56 +9,56 @@ kind: "package-reference"
 
 ## 概述
 
-为每台设备自定义应用键盘命令。桌面端和 Web 按接收输入的设备选择不同默认键位。自定义键位在同一设备重新加载后保留。命令随所属插件卸载而移除，保存的覆盖仍保留供重新安装使用。
+為每臺裝置自定義應用鍵盤命令。桌面端和 Web 按接收輸入的裝置選擇不同預設鍵位。自定義鍵位在同一裝置重新載入後保留。命令隨所屬外掛解除安裝而移除，儲存的覆蓋仍保留供重新安裝使用。
 
-Windows 在修饰键之间及第一个普通键之前使用 ` + `。Windows 和 macOS Desktop 上同时按下的两个普通键均并排显示，如 `F G`，提示和快捷键速查保持一致。
+Windows 在修飾鍵之間及第一個普通鍵之前使用 ` + `。Windows 和 macOS Desktop 上同時按下的兩個普通鍵均並排顯示，如 `F G`，提示和快捷鍵速查保持一致。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-Web 应用 bundle 自动挂载此包。功能插件在 `ctx.effect()` 中通过 `ctx.shortcuts` 注册命令。每个命令为 `desktop:macos`、`desktop:windows`、`desktop:linux`、`web:macos`、`web:windows` 和 `web:linux` 显式声明默认值；省略的配置不绑定按键。服务接收物理 `code`，按设备展开 `primary`，并拒绝重复 ID 和任一支持配置中重叠的默认键位。同一可观察目录提供名称、键帽、已修改标记和键位冲突。命令 owner 在执行操作前解析当前目标。
+Web 應用 bundle 自動掛載此包。功能外掛在 `ctx.effect()` 中透過 `ctx.shortcuts` 註冊命令。每個命令為 `desktop:macos`、`desktop:windows`、`desktop:linux`、`web:macos`、`web:windows` 和 `web:linux` 顯式宣告預設值；省略的設定不繫結按鍵。服務接收物理 `code`，按裝置展開 `primary`，並拒絕重複 ID 和任一支援設定中重疊的預設鍵位。同一可觀察目錄提供名稱、鍵帽、已修改標記和鍵位衝突。命令 owner 在執行操作前解析目前目標。
 
-功能插件通过 `registerFixed()` 贡献只读序列，通过 `observeFixedInput()` 观察局部控件处理后的输入。固定操作行随所属注册和语言变化；owner 可使用 `application` 展示分组，操作仍不可编辑。每个操作至少声明一个物理按键组合，不保存覆盖配置。这些组合参与冲突校验，不能分配给可编辑命令。Host 的 `stopSequenceMs` 配置控制连续两次 Esc 的最大间隔，默认为 500 毫秒，只接受 1 至 2,147,483,646 的整数，确保过期计时不超过浏览器定时器上限；页面加载时采用已校验的值。
+功能外掛透過 `registerFixed()` 貢獻只讀序列，透過 `observeFixedInput()` 觀察區域性控制元件處理後的輸入。固定操作行隨所屬註冊和語言變化；owner 可使用 `application` 展示分組，操作仍不可編輯。每個操作至少宣告一個物理按鍵組合，不儲存覆蓋設定。這些組合參與衝突驗證，不能分配給可編輯命令。Host 的 `stopSequenceMs` 設定控制連續兩次 Esc 的最大間隔，預設為 500 毫秒，只接受 1 至 2,147,483,646 的整數，確保過期計時不超過瀏覽器定時器上限；頁面載入時採用已驗證的值。
 
-偏好只保存覆盖：缺少命令表示继承默认，`null` 表示清除绑定，恢复默认则删除覆盖。全部恢复只影响当前运行端／平台配置。Web 使用同 origin 的 `dsh.keybindings.v1` 存储；Desktop 使用 Electron 设备本地的 `userData/keybindings.json`，与 Harness home 和工作区设置独立。其 schema 版本与 Session 数据无关。 macOS 和 Windows Desktop 读取版本 1 时不重写，在下次成功编辑时保存为版本 2；版本 2 增加可选的 `secondCode`。Web 和 Linux 保留原有绑定限制。
+偏好只儲存覆蓋：缺少命令表示繼承預設，`null` 表示清除繫結，恢復預設則刪除覆蓋。全部恢復隻影響目前執行端／平臺設定。Web 使用同 origin 的 `dsh.keybindings.v1` 儲存；Desktop 使用 Electron 裝置本地的 `userData/keybindings.json`，與 Harness home 和工作區設定獨立。其 schema 版本與 Session 資料無關。 macOS 和 Windows Desktop 讀取版本 1 時不重寫，在下次成功編輯時儲存為版本 2；版本 2 增加可選的 `secondCode`。Web 和 Linux 保留原有繫結限制。
 
-Windows 和 macOS Desktop 接受一至两个不同的受支持非修饰键，可搭配零至四个修饰键。双键绑定要求按住时间重叠，顺序不限；先后按键不匹配。仅含修饰键的绑定会被拒绝。同一修饰键集合下，单键与包含该键的双键组合冲突，包括固定操作占用的按键。已保存的绑定若与当前挂载的固定操作冲突，会保留显示但不能执行。包括 Command+C 和 Ctrl+C 在内的所有有效绑定优先于原生操作、编辑器、终端、内嵌页面和模态控件。录制和输入法组合状态仍受保护。只有两个键都按住时，双键组合才优先接管；第一个键仍正常处理，可能输入一个字符。
+Windows 和 macOS Desktop 接受一至兩個不同的受支援非修飾鍵，可搭配零至四個修飾鍵。雙鍵繫結要求按住時間重疊，順序不限；先後按鍵不匹配。僅含修飾鍵的繫結會被拒絕。同一修飾鍵集合下，單鍵與包含該鍵的雙鍵組合衝突，包括固定操作佔用的按鍵。已儲存的繫結若與目前掛載的固定操作衝突，會保留顯示但不能執行。包括 Command+C 和 Ctrl+C 在內的所有有效繫結優先於原生操作、編輯器、終端、內嵌頁面和模態控制元件。錄製和輸入法組合狀態仍受保護。只有兩個鍵都按住時，雙鍵組合才優先接管；第一個鍵仍正常處理，可能輸入一個字元。
 
-首次读取完成后激活键位。读取失败保留上次接受的配置；没有已接受配置时使用默认值。偏好不可读时，编辑和全部恢复均保持禁用。修复存储文档后重新打开应用；重置操作不会替换不可读或未来版本的数据。写入失败保留有效键位和草稿。其他浏览器标签页的更新使打开的草稿过期，保存前需要核对最新配置。浏览器写入前重新读取，但同时跨标签页写入仍采用最后一次成功写入。
+首次讀取完成後啟用鍵位。讀取失敗保留上次接受的設定；沒有已接受設定時使用預設值。偏好不可讀時，編輯和全部恢復均保持停用。修復儲存文件後重新開啟應用；重置操作不會替換不可讀或未來版本的資料。寫入失敗保留有效鍵位和草稿。其他瀏覽器標籤頁的更新使開啟的草稿過期，儲存前需要核對最新設定。瀏覽器寫入前重新讀取，但同時跨標籤頁寫入仍採用最後一次成功寫入。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-Host 构建在 Desktop 打包键盘集成之前生成 Node 入口和 `./protocol`；Client 阶段生成浏览器 bundle。
+Host 建置在 Desktop 打包鍵盤整合之前生成 Node 入口和 `./protocol`；Client 階段生成瀏覽器 bundle。
 
-Windows 和 macOS Desktop 在局部处理器之前拦截已接受的完整组合，通过可信 preload 转发。所有平台的 Desktop 启动都要求原生键盘桥接。Windows 和 macOS 的可配置命令只由原生输入分发；DOM 输入继续交给固定操作。适配器仅拦截初次按下事件已被拦截的按键的松开事件。默认绑定与用户保存的绑定优先级一致，均优先于模态控件。其他环境在局部处理器之后分发，并遵守声明的区域。输入法组合、死键、AltGraph 和已消费的输入继续传递；macOS Web 可在输入法组合之外消费已绑定且报告为死键的 Option+Command+N，不保护后续输入。Web 和 Linux 的模态层阻止后台命令。已接管的重复事件仍被消费，但不重复执行。上下文携带原始 DOM 输入元素，包括 shadow root 内的元素。owner 同步解析目标，并负责操作错误。`ctx.shortcuts.closeWindow()` 统一持有 Desktop 键盘桥接，并携带当前已接受的 revision；Web 调用和桥接请求错误均返回失败。纯 `./protocol` 导出不依赖 React、DOM 或 Electron，在两个适配器间共享校验和串行持久化。显式覆盖取代冲突的新默认值；互相冲突的显式覆盖全部禁用。Desktop 拒绝过期版本，并将 IPC 限制在当前产品窗口和顶层 frame。适配器调用被拒绝时会记录日志并返回保存失败；发布已接受命令目录时的错误会向调用方抛出。
+Windows 和 macOS Desktop 在區域性處理器之前攔截已接受的完整組合，透過可信 preload 轉發。所有平臺的 Desktop 啟動都要求原生鍵盤橋接。Windows 和 macOS 的可設定命令只由原生輸入分發；DOM 輸入繼續交給固定操作。介面卡僅攔截初次按下事件已被攔截的按鍵的鬆開事件。預設繫結與使用者儲存的繫結優先順序一致，均優先於模態控制元件。其他環境在區域性處理器之後分發，並遵守宣告的區域。輸入法組合、死鍵、AltGraph 和已消費的輸入繼續傳遞；macOS Web 可在輸入法組合之外消費已繫結且報告為死鍵的 Option+Command+N，不保護後續輸入。Web 和 Linux 的模態層阻止後臺命令。已接管的重複事件仍被消費，但不重複執行。上下文攜帶原始 DOM 輸入元素，包括 shadow root 內的元素。owner 同步解析目標，並負責操作錯誤。`ctx.shortcuts.closeWindow()` 統一持有 Desktop 鍵盤橋接，並攜帶目前已接受的 revision；Web 呼叫和橋接請求錯誤均返回失敗。純 `./protocol` 匯出不依賴 React、DOM 或 Electron，在兩個介面卡間共享總和檢查碼序列持久化。顯式覆蓋取代衝突的新預設值；互相沖突的顯式覆蓋全部停用。Desktop 拒絕過期版本，並將 IPC 限制在目前產品視窗和頂層 frame。介面卡呼叫被拒絕時會記錄日誌並返回儲存失敗；釋出已接受命令目錄時的錯誤會向呼叫方丟擲。
 
-DOM 固定输入观察者在应用分发前收到输入法组合和消费标记。消费事件后，后续观察者和命令不能使用它。焦点、指针、窗口失焦、输入法组合、模态变化和局部停止传播会重置待完成的 DOM 序列。原生双键状态在窗口失焦、焦点 frame 或配置变化、输入法组合、录制和修饰键释放时重置。Electron 在原生拦截后可能省略 keyup；原生绑定完成时立即清空按住状态，因此每次触发双键组合都需要重新按下两个键。释放修饰键会清空按住状态，因为 macOS 在按住 Command 时可能省略字符键的 keyup。适配器释放时移除监听器和模态观察者；单个功能观察者失败不妨碍其他观察者接收输入。
+DOM 固定輸入觀察者在應用分發前收到輸入法組合和消費標記。消費事件後，後續觀察者和命令不能使用它。焦點、指標、視窗失焦、輸入法組合、模態變化和區域性停止傳播會重置待完成的 DOM 序列。原生雙鍵狀態在視窗失焦、焦點 frame 或設定變化、輸入法組合、錄製和修飾鍵釋放時重置。Electron 在原生攔截後可能省略 keyup；原生繫結完成時立即清空按住狀態，因此每次觸發雙鍵組合都需要重新按下兩個鍵。釋放修飾鍵會清空按住狀態，因為 macOS 在按住 Command 時可能省略字元鍵的 keyup。介面卡釋放時移除監聽器和模態觀察者；單個功能觀察者失敗不妨礙其他觀察者接收輸入。
 
-Desktop 原生菜单和内嵌 frame 使用与 DOM 输入相同的命令注册表。Preload 和 Client 将获焦 iframe 的名称或浏览器 webview 租约与原生输入匹配；Client 拒绝旧配置消息。浏览器 guest 的输入监听在租约释放时结束，无需等待 guest 销毁完成。原生菜单选择是显式操作，不依赖快捷键绑定。双键组合没有原生菜单快捷键，其键位仍显示在快捷键速查中。Windows 和 macOS Desktop 之外的终端 Ctrl+W/R 保留为局部输入。显式原生菜单操作保留模态检查；键盘绑定使用对应设备的分发策略。
+Desktop 原生選單和內嵌 frame 使用與 DOM 輸入相同的命令註冊表。Preload 和 Client 將獲焦 iframe 的名稱或瀏覽器 webview 租約與原生輸入匹配；Client 拒絕舊設定訊息。瀏覽器 guest 的輸入監聽在租約釋放時結束，無需等待 guest 銷燬完成。原生選單選擇是顯式操作，不依賴快捷鍵繫結。雙鍵組合沒有原生選單快捷鍵，其鍵位仍顯示在快捷鍵速查中。Windows 和 macOS Desktop 之外的終端 Ctrl+W/R 保留為區域性輸入。顯式原生選單操作保留模態檢查；鍵盤繫結使用對應裝置的分發策略。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步阅读
+## 進一步閱讀
 
 - [Web Client](../../../docs/subsystems/web-client.zh.md)
 - [UI primitives](../ui-primitives/README.zh.md)
@@ -67,28 +67,28 @@ Desktop 原生菜单和内嵌 frame 使用与 DOM 输入相同的命令注册表
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无；此包是浏览器侧 UI 插件，不注册面向模型的内容。
+無；此包是瀏覽器側 UI 外掛，不註冊面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；此包不组装或发送模型提供方请求。
+無；此包不組裝或傳送模型提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 功能 owner 显式声明 Windows 和 macOS Web 的默认键位：Mod+Slash、Mod+Comma、Mod+Backslash 和 Control+Backquote 保持双键；其他不含 Alt 的默认键位使用 Mod+Alt，含 Alt 的使用 Mod+Shift，全屏除外，使用 Mod+Alt+Enter。macOS Web 的“刷新当前页”默认不绑定快捷键，以保留浏览器自身的 Command+Option+R 操作；刷新按钮和用户显式绑定仍然可用。Mod 在 macOS 上为 Command，在 Windows 上为 Control。Windows 和 macOS 的 Web、Desktop 均接受任意三个或四个不同修饰键的组合。Web 还接受上述组合及 Mod+Shift 组合；浏览器或系统能否送达按键需在对应平台测试。Linux Web 接受 Mod+Slash、Mod+Shift+Comma 和 Mod+Shift+Period。未送达窗口的操作系统快捷键无法被拦截。双键组合等待第二个键时，不延迟或消费第一个键；原生操作或焦点变化可能使组合无法完成。命令注册或注销会使打开的编辑草稿过期，即使保存的偏好未改变。Desktop 在每次命令目录更新时重新读取文件，不设置文件 watcher。
+- 功能 owner 顯式宣告 Windows 和 macOS Web 的預設鍵位：Mod+Slash、Mod+Comma、Mod+Backslash 和 Control+Backquote 保持雙鍵；其他不含 Alt 的預設鍵位使用 Mod+Alt，含 Alt 的使用 Mod+Shift，全螢幕除外，使用 Mod+Alt+Enter。macOS Web 的“重新整理目前頁”預設不繫結快捷鍵，以保留瀏覽器自身的 Command+Option+R 操作；重新整理按鈕和使用者顯式繫結仍然可用。Mod 在 macOS 上為 Command，在 Windows 上為 Control。Windows 和 macOS 的 Web、Desktop 均接受任意三個或四個不同修飾鍵的組合。Web 還接受上述組合及 Mod+Shift 組合；瀏覽器或系統能否送達按鍵需在對應平臺測試。Linux Web 接受 Mod+Slash、Mod+Shift+Comma 和 Mod+Shift+Period。未送達視窗的作業系統快捷鍵無法被攔截。雙鍵組合等待第二個鍵時，不延遲或消費第一個鍵；原生操作或焦點變化可能使組合無法完成。命令註冊或登出會使開啟的編輯草稿過期，即使儲存的偏好未改變。Desktop 在每次命令目錄更新時重新讀取檔案，不設定檔案 watcher。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**Runtime invariant:** 不发布配套检查模块。目录和键位索引由私有注册表同步派生，没有独立维护、需要检查的运行时关系。
+**Runtime invariant:** 不釋出配套檢查模組。目錄和鍵位索引由私有註冊表同步派生，沒有獨立維護、需要檢查的執行時關係。

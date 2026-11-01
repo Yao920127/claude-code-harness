@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-05-client-resource-model.md
 /agent-note-client-resource-model:
   en: 48276fc837820219
-  zh: 2d99ee9eae22e1e0
+  zh: bbdb82e0a29b6a29
 /agent-note-client-resource-model/problem:
   en: 22aec3ac5b197342
-  zh: 0cd0b1f8094addb3
+  zh: 8a8470cefabd40fe
 /agent-note-client-resource-model/decision:
   en: 78afa8698a884b98
-  zh: b33cfcae7e75660f
+  zh: 7c941f055e77fda1
 /agent-note-client-resource-model/decision/addresses:
   en: 180e3e39813a93b1
-  zh: 845befb7c760f7e1
+  zh: 605fb2f1f1310115
 /agent-note-client-resource-model/decision/the-service:
   en: f42277e961bb7209
-  zh: 9f3f8a50ad55cf4a
+  zh: 72e56cd0bb141b62
 /agent-note-client-resource-model/decision/the-hook:
   en: 4f082c4f5a44320a
-  zh: eba5449b7a1fd52e
+  zh: 1432934bb0002954
 /agent-note-client-resource-model/decision/frames:
   en: bc1c4e9a9e8e9b20
-  zh: f80a77ee66943ce4
+  zh: e6353b01ca1f199a
 /agent-note-client-resource-model/decision/lifecycle:
   en: 4c11bfba97a54646
-  zh: a07bda77e918d613
+  zh: d0fa365f1639772d
 /agent-note-client-resource-model/alternatives-considered:
   en: 288b448e7f1de8af
-  zh: 997e10c66decce34
+  zh: 45e8c6d7aa274cc1
 /agent-note-client-resource-model/consequences:
   en: 3eda54cb5d74ed00
-  zh: ce60b6fef04acb9a
+  zh: 0bf3219ec01c8d25
 /agent-note-client-resource-model/testing:
   en: ca2c610e4f0352ac
-  zh: fbaa69ee8de7e4c1
+  zh: 5da36a6d59741903
 /agent-note-client-resource-model/deferred:
   en: 312b46f16d88f301
-  zh: a530b3940859079c
+  zh: dd21884f191f48fa

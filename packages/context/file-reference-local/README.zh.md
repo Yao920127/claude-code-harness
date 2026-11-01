@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的本地工作区 @file 补全提供方，用于启用、调整规模或排查 ctx.fileReferences 的发现能力。"
+description: "面向使用者與維護者的本地工作區 @file 補全提供者，用於啟用、調整規模或排查 ctx.fileReferences 的發現能力。"
 kind: "package-reference"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-reference"
 
 ## 概述
 
-agent（智能体）及宿主 UI 可以用各 agent 本地工作区中经过排序的路径补全 `@file` mention；有界发现让大型仓库也能保持响应迅速。结果会在工具活动后刷新且不会阻塞补全，并且始终不会跟随目录符号链接。当 `read` 可用时，模型还会收到关于如何理解引用路径的稳定指引。当 `read` 使用 Harness 宿主文件系统时选择本包；远程或虚拟命名空间需要与之匹配的发现能力。
+agent（智慧代理）及主機 UI 可以用各 agent 本地工作區中經過排序的路徑補全 `@file` mention；有界發現讓大型儲存庫也能保持回應迅速。結果會在工具活動後重新整理且不會阻塞補全，並且始終不會跟隨目錄符號連結。當 `read` 可用時，模型還會收到關於如何理解引用路徑的穩定指引。當 `read` 使用 Harness 主機檔案系統時選擇本包；遠端或虛擬名稱空間需要與之匹配的發現能力。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当 `@file` 补全应发现 Harness 宿主自身的文件系统——即随附 `read` 工具所操作的命名空间——时，挂载此提供方。每个 agent 的工作区从该会话的工作目录开始建立索引；会话没有工作目录时回退到宿主进程目录。
+當 `@file` 補全應發現 Harness 主機自身的檔案系統——即隨附 `read` 工具所操作的名稱空間——時，掛載此提供者。每個 agent 的工作區從該工作階段的工作目錄開始建立索引；工作階段沒有工作目錄時退回到主機程序目錄。
 
-### 启用提供方
+### 啟用提供者
 
-默认设置适合典型工作区，因此最小挂载无需任何配置：
+預設設定適合典型工作區，因此最小掛載無需任何設定：
 
 ```yaml
 - name: '@deepseek-ai/dsh-file-reference-local'
@@ -37,103 +37,103 @@ agent（智能体）及宿主 UI 可以用各 agent 本地工作区中经过排�
     maxResults: 20
 ```
 
-### 你能得到什么
+### 你能得到什麼
 
-在宿主 UI 中输入 `@` 会为指定 agent 返回至多 `maxResults` 个排序路径候选。包含 `/` 的查询直接列出匹配目录的条目；裸查询对有界递归索引做模糊排序。目录候选以尾斜杠保持 mention 开放。任何工具结果之后，该 agent 的索引会被标记为陈旧：下一次查询仍由它作答，其替代品在后台构建，因此重建不会挡在光标前面。
+在主機 UI 中輸入 `@` 會為指定 agent 返回至多 `maxResults` 個排序路徑候選。包含 `/` 的查詢直接列出匹配目錄的條目；裸查詢對有界遞迴索引做模糊排序。目錄候選以尾斜槓保持 mention 開放。任何工具結果之後，該 agent 的索引會被標記為陳舊：下一次查詢仍由它作答，其替代品在後臺建置，因此重建不會擋在游標前面。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `maxResults` | `20` | 单次查询返回的排序候选最大数量 |
-| `maxEntries` | `50000` | 每个 agent 工作区建立索引的文件与目录最大数量 |
-| `excludedDirectories` | `['.git', 'node_modules', 'dist', 'build', 'out', 'coverage', 'target', '.next', '.nuxt', '.turbo', '.venv', '__pycache__', '.pytest_cache', '.mypy_cache', '.gradle']` | 遍历与候选中排除的目录基名 |
+| `maxResults` | `20` | 單次查詢返回的排序候選最大數量 |
+| `maxEntries` | `50000` | 每個 agent 工作區建立索引的檔案與目錄最大數量 |
+| `excludedDirectories` | `['.git', 'node_modules', 'dist', 'build', 'out', 'coverage', 'target', '.next', '.nuxt', '.turbo', '.venv', '__pycache__', '.pytest_cache', '.mypy_cache', '.gradle']` | 遍歷與候選中排除的目錄基名 |
 
-所有数值都必须是正的安全整数，所有排除名都必须是不含 `/` 或 `\` 的非空基名。
+所有數值都必須是正的安全整數，所有排除名都必須是不含 `/` 或 `\` 的非空基名。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方的设计；可观察行为见[使用本包](#use-this-package)。
+本節解釋提供者的設計；可觀察行為見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-提供方为每个 agent 维护一个可复用的 `WorkspaceFileSearch`，以该会话的 `cwd` 为根。目录范围查询（`a/b/...`）列出实时目录状态，裸模糊查询共享一次有界递归遍历。每个工作区仅首次裸查询会等待该遍历；`tool/result` 事件把已完成的条目标记为陈旧，下一次裸查询在替代品构建期间继续由它作答。模型指引是按 agent 的提示词段，仅在指定 agent 拥有 `read` 工具时贡献；创建会等待提示词安装，安装失败会回滚 agent；agent dispose（资源释放）时会同时释放索引与提示词 fiber。
+提供者為每個 agent 維護一個可複用的 `WorkspaceFileSearch`，以該工作階段的 `cwd` 為根。目錄範圍查詢（`a/b/...`）列出即時目錄狀態，裸模糊查詢共享一次有界遞迴遍歷。每個工作區僅首次裸查詢會等待該遍歷；`tool/result` 事件把已完成的條目標記為陳舊，下一次裸查詢在替代品建置期間繼續由它作答。模型指引是按 agent 的提示詞段，僅在指定 agent 擁有 `read` 工具時貢獻；建立會等待提示詞安裝，安裝失敗會復原 agent；agent dispose（資源釋放）時會同時釋放索引與提示詞 fiber。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `LocalFileReferenceService`：配置校验、按 agent 搜索、提示词安装 |
-| [`src/search.ts`](src/search.ts) | `WorkspaceFileSearch`：遍历、排序、排除、陈旧标记与后台重建 |
-| — | 不发布运行时不变式伴生入口；按 agent 的 index 是私有 advisory cache，其失效与 dispose 行为通过服务测试直接观察。 |
+| [`src/index.ts`](src/index.ts) | `LocalFileReferenceService`：設定驗證、按 agent 搜尋、提示詞安裝 |
+| [`src/search.ts`](src/search.ts) | `WorkspaceFileSearch`：遍歷、排序、排除、陳舊標記與後臺重建 |
+| — | 不釋出執行時不變式伴生入口；按 agent 的 index 是私有 advisory cache，其失效與 dispose 行為透過服務測試直接觀察。 |
 
 ### 主要流程
 
-`list(agent, query, signal)` 要么列出某个目录的条目，要么读取共享的有界索引，对候选排序（精确、前缀、子串，再到子序列得分，目录有加成），并按确定性顺序返回至多 `maxResults` 个。`tool/result` 事件把指定 agent 的索引标记为陈旧；下一次裸查询仍从旧索引返回结果，同时在后台构建替代索引。不可读或已排除的子目录不贡献候选，而不可读的根目录则让该次遍历失败：一次瞬时故障不得用空索引覆盖仍然有效的条目。
+`list(agent, query, signal)` 要麼列出某個目錄的條目，要麼讀取共享的有界索引，對候選排序（精確、字首、子串，再到子序列得分，目錄有加成），並按確定性順序返回至多 `maxResults` 個。`tool/result` 事件把指定 agent 的索引標記為陳舊；下一次裸查詢仍從舊索引返回結果，同時在後臺建置替代索引。不可讀或已排除的子目錄不貢獻候選，而不可讀的根目錄則讓該次遍歷失敗：一次瞬時故障不得用空索引覆蓋仍然有效的條目。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-包级约定不够用时阅读以下页面。它们从本提供方所实现的 seam 进入其候选所指向的工具。
+包級約定不夠用時閱讀以下頁面。它們從本提供者所實作的 seam 進入其候選所指向的工具。
 
-- [文件引用 seam](../file-reference/README.zh.md)——本提供方所实现的服务约定与 `@file` 语法。
-- [会话引用子系统](../../../docs/subsystems/session-reference.zh.md)——宿主 UI 背后的共享文件引用约定。
-- [文件系统工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-fs)——发现能力必须匹配其命名空间的 `read` 工具。
-- [上下文组地图](../README.zh.md)——相邻的请求上下文包。
+- [檔案引用 seam](../file-reference/README.zh.md)——本提供者所實作的服務約定與 `@file` 語法。
+- [工作階段引用子系統](../../../docs/subsystems/session-reference.zh.md)——主機 UI 背後的共享檔案引用約定。
+- [檔案系統工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-fs)——發現能力必須匹配其名稱空間的 `read` 工具。
+- [上下文組地圖](../README.zh.md)——相鄰的請求上下文包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### `read` 可用时的文件引用指引
+### `read` 可用時的檔案引用指引
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-当指定 agent 有实际生效的 `read` 工具时，提供方会贡献以下稳定的系统提示词段：
+當指定 agent 有實際生效的 `read` 工具時，提供者會貢獻以下穩定的系統提示詞段：
 
-##### 文件引用指令
+##### 檔案引用指令
 
 ```markdown
 Tokens prefixed with @ are paths the user explicitly referenced. Relative paths resolve from the workspace root; absolute paths identify files or directories on the host. A trailing slash marks a directory: list it when its contents matter. Anything else is a file: use the read tool when its contents are needed, and do not claim to have inspected it before reading. @"..." quotes a path containing spaces.
 ```
 
-#### Token 影响
+#### Token 影響
 
-该影响有条件且固定：只要 `read` 对指定 agent 可见，这一句就会存在；候选查询本身不增加 token，所选路径只会贡献普通用户消息中的对应字符。
+該影響有條件且固定：只要 `read` 對指定 agent 可見，這一句就會存在；候選查詢本身不增加 token，所選路徑只會貢獻普通使用者訊息中的對應字元。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-该稳定句子会加入系统提示词前缀。挂载或移除此提供方，或者改变 `read` 是否可见，都会改变该前缀；查询、候选项和索引陈旧标记不会改变前缀。
+該穩定句子會加入系統提示詞字首。掛載或移除此提供者，或者改變 `read` 是否可見，都會改變該字首；查詢、候選項和索引陳舊標記不會改變字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该提供方何时不合适。它们是当前包约束。
+這些限制說明該提供者何時不合適。它們是目前包約束。
 
-- **宿主本地命名空间**：提供方扫描 Harness 宿主的文件系统，因此远程或虚拟 `read` 实现需要使用命名空间与该工具一致的提供方。
-- **有界的提示性索引**：超大型工作区可能省略 `maxEntries` 之后的路径；被排除或无法读取的目录不会出现。默认排除项只列没有任何生态用作源码目录的构建产物；`lib` 被刻意排除在外，因此构建进 `lib` 的工作区需通过 `excludedDirectories` 自行加上。
-- **一次失效的陈旧窗口**：紧接工具结果之后的裸查询反映的是上一次遍历时的目录树；下一次查询才看到重建结果。
-- **没有忽略文件语义**：`.gitignore` 和其他项目忽略文件不会影响发现；系统只排除已配置的目录基名。
+- **主機本地名稱空間**：提供者掃描 Harness 主機的檔案系統，因此遠端或虛擬 `read` 實作需要使用名稱空間與該工具一致的提供者。
+- **有界的提示性索引**：超大型工作區可能省略 `maxEntries` 之後的路徑；被排除或無法讀取的目錄不會出現。預設排除項只列沒有任何生態用作原始碼目錄的建置產物；`lib` 被刻意排除在外，因此建置進 `lib` 的工作區需透過 `excludedDirectories` 自行加上。
+- **一次失效的陳舊視窗**：緊接工具結果之後的裸查詢反映的是上一次遍歷時的目錄樹；下一次查詢才看到重建結果。
+- **沒有忽略檔案語義**：`.gitignore` 和其他專案忽略檔案不會影響發現；系統只排除已設定的目錄基名。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

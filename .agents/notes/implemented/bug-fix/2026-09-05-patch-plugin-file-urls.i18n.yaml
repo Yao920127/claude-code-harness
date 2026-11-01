@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-05-patch-plugin-file-urls.md
 /agent-note-file-urls-for-inserted-patch-plugins:
   en: 0da1360de4441566
-  zh: aa617df23150096d
+  zh: 280a471817e20785
 /agent-note-file-urls-for-inserted-patch-plugins/problem:
   en: 68de71db96c5e4b5
-  zh: c88db125cddb54a4
+  zh: 3bba4071731d67ce
 /agent-note-file-urls-for-inserted-patch-plugins/decision:
   en: 09bb824857b8fb60
-  zh: 859da30ff296688c
+  zh: 67f1e828b558e1e5
 /agent-note-file-urls-for-inserted-patch-plugins/alternatives-considered:
   en: e53a86bc1c71a6ff
-  zh: 514b48c8734fca17
+  zh: af2218f2c2862229
 /agent-note-file-urls-for-inserted-patch-plugins/consequences:
   en: 9b9628919e52c617
-  zh: 195935e5d905d81d
+  zh: c0333241a84a058c

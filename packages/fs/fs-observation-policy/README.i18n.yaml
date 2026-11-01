@@ -4,67 +4,67 @@
 #   pnpm run verify-translation-pairing --write packages/fs/fs-observation-policy/README.md
 /:
   en: 2e7d205b959bad5b
-  zh: 78111c063c98c309
+  zh: 510a6f8c679a0fcd
 /deepseek-ai-dsh-fs-observation-policy:
   en: 7fddbb6d5b42812b
   zh: 2894feecfbdcc099
 /deepseek-ai-dsh-fs-observation-policy/summary:
   en: e74517566c1827b2
-  zh: 803c6ddf5cbd3842
+  zh: edd0fb45f78d071c
 /deepseek-ai-dsh-fs-observation-policy/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-fs-observation-policy/use-this-package:
   en: 7c5e3c7e3319f7a9
-  zh: 238ba8275006833a
+  zh: c8addaad05b2081a
 /deepseek-ai-dsh-fs-observation-policy/use-this-package/minimal-composition:
   en: d85e3b814b43768e
-  zh: 89d3672dbb2f6d30
+  zh: f7dae0b27a621eef
 /deepseek-ai-dsh-fs-observation-policy/use-this-package/what-changes-for-the-model:
   en: 91686925a433794d
-  zh: 9ac2a197203d6549
+  zh: 4b734230b9ae1de2
 /deepseek-ai-dsh-fs-observation-policy/use-this-package/failures-and-recovery:
   en: 1ecc7b68f7c7b3f0
-  zh: f6a9800786ed30c0
+  zh: 85a8e3a49d9d0c3f
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation:
   en: 612e69f76edc8795
-  zh: 55edab9956941616
+  zh: 72e6090f6eedfb3f
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation/design-concept:
   en: 54eef802ac087112
-  zh: f30b2ed5dbc268ac
+  zh: b00e56764c736cc0
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation/source-map:
   en: 6a55bd72a91664bf
-  zh: fc22345acfd9d850
+  zh: 408619a4386c37fc
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation/decision-flow:
   en: 79ddd675e3c27d62
-  zh: b9b74b63aad5b42d
+  zh: 8ba48248dd1fdbe1
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation/single-slot-first-wins:
   en: 226bb7885eb147b8
-  zh: 0b68d59ddc55fb07
+  zh: a9392f696c46bd4e
 /deepseek-ai-dsh-fs-observation-policy/understand-the-implementation/lifecycle:
   en: 02a1e3e7707706fb
-  zh: eff587af0445d032
+  zh: 71ea721285ff3d7b
 /deepseek-ai-dsh-fs-observation-policy/further-exploration:
   en: 2b2540c0021ec26d
-  zh: 3669565187886ecf
+  zh: cf15873e743358b6
 /deepseek-ai-dsh-fs-observation-policy/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-fs-observation-policy/model-experience/filesystem-tool-outcome:
   en: ee1f02dc1bb69955
-  zh: 9ba9205a9b15d132
+  zh: d2cf6f1135be2c60
 /deepseek-ai-dsh-fs-observation-policy/model-experience/filesystem-tool-outcome/what-the-model-sees:
   en: d4ec7d7b302845c8
-  zh: 6e412aa23798524e
+  zh: 74cd22a2ffd65079
 /deepseek-ai-dsh-fs-observation-policy/model-experience/filesystem-tool-outcome/token-effect:
   en: 425ccc7dafa6218d
-  zh: d2c1a29955a60e3d
+  zh: 3e9e7f2de9594f54
 /deepseek-ai-dsh-fs-observation-policy/model-experience/filesystem-tool-outcome/kv-cache-effect:
   en: 2fbf2175168e8244
-  zh: 3d6bc05b9eadfbc2
+  zh: a19a3587ca7a5f69
 /deepseek-ai-dsh-fs-observation-policy/known-limitations-and-deferred-work:
   en: 973f6b0e64b1905c
-  zh: 080396a1283fde2b
+  zh: 80bd315e22027574
 /deepseek-ai-dsh-fs-observation-policy/known-limitations-and-deferred-work/dev-note:
   en: 9979632783da7b78
-  zh: c42c1feec2905268
+  zh: 59e5fbc7a8354ecb

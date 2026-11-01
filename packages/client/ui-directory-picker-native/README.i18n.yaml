@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-directory-picker-native/README.md
 /:
   en: 6f45a471a5e9305f
-  zh: d771883685e91a45
+  zh: d76fef7712833cdf
 /deepseek-ai-dsh-client-ui-directory-picker-native:
   en: dd00fd3c4c22a356
   zh: 070b3db2cce5ecc3
 /deepseek-ai-dsh-client-ui-directory-picker-native/summary:
   en: e039fd6b8a89ef2e
-  zh: dd4b40cfc0bc4fd5
+  zh: e5c032c34467079d
 /deepseek-ai-dsh-client-ui-directory-picker-native/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-directory-picker-native/use-this-package:
   en: 1e2172c756246031
-  zh: f33dc7b40b14cceb
+  zh: 6a37f66bf860a341
 /deepseek-ai-dsh-client-ui-directory-picker-native/use-this-package/when-to-choose-it:
   en: bcba761168d2162c
-  zh: d484e2305e074c0b
+  zh: 1403f7b968816eab
 /deepseek-ai-dsh-client-ui-directory-picker-native/understand-the-implementation:
   en: f7a287740b4b08f9
-  zh: 3347375c4e486b22
+  zh: 2dc80930f9a10bfd
 /deepseek-ai-dsh-client-ui-directory-picker-native/further-exploration:
   en: 437668b193c4d141
-  zh: 55ca260fc45a9f54
+  zh: 4df90c45b17ab185
 /deepseek-ai-dsh-client-ui-directory-picker-native/model-experience:
   en: 35d8546cfb4b540b
-  zh: 25e4ce35c66c92e2
+  zh: ed3ecb9a1b86dc16
 /deepseek-ai-dsh-client-ui-directory-picker-native/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: f57cc48a1b5cbfa9
+  zh: fa87630fc3310087
 /deepseek-ai-dsh-client-ui-directory-picker-native/known-limitations-and-deferred-work:
   en: d041273e43ca0541
-  zh: 8b7a718ed22e7f18
+  zh: 289743467493dd20
 /deepseek-ai-dsh-client-ui-directory-picker-native/known-limitations-and-deferred-work/dev-note:
   en: b2aec04118566ad8
-  zh: 15639689899fc5a1
+  zh: db0cda70ca69e801

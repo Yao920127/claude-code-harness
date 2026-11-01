@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端插件页上的 Agent 循环设置页：agent-loop 命名空间的并行工具调用上限。"
+description: "dsh Web 用戶端外掛頁上的 Agent 迴圈設定頁：agent-loop 名稱空間的並行工具呼叫上限。"
 kind: "package-reference"
 ---
 
@@ -9,70 +9,70 @@ kind: "package-reference"
 
 ## 概述
 
-在侧栏打开**插件**，在官方分组里选择 **Agent 循环**，即可设置一步之内最多同时运行多少个可并行的工具调用。页面暂存输入、只在保存时写入，标明用户覆盖过的值，并允许把它重置回部署默认值。页面只在 Host 服务 `agent-loop` 命名空间期间存在。
+在側欄開啟**外掛**，在官方分組裡選擇 **Agent 迴圈**，即可設定一步之內最多同時執行多少個可並行的工具呼叫。頁面暫存輸入、只在儲存時寫入，標明使用者覆蓋過的值，並允許把它重置回部署預設值。頁面只在 Host 服務 `agent-loop` 名稱空間期間存在。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-官方分组里的 **Agent 循环**卡片打开这一页。**并行工具调用数**限制循环在一步之内同时运行的调用数；字段显示生效值，一旦被覆盖就带**已覆盖**标签，旁边是**恢复默认**。点击**保存**之前不会写入任何内容；离开页面即丢弃草稿，清空字段并保存等于重置，填了不是数字的文本则保存被阻止，并在字段下说明原因。
+官方分組裡的 **Agent 迴圈**卡片開啟這一頁。**並行工具呼叫數**限制迴圈在一步之內同時執行的呼叫數；欄位顯示生效值，一旦被覆蓋就帶**已覆蓋**標籤，旁邊是**恢復預設**。點選**儲存**之前不會寫入任何內容；離開頁面即丟棄草稿，清空欄位並儲存等於重置，填了不是數字的文字則儲存被阻止，並在欄位下說明原因。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-宿主半侧是一个空的 `apply`，只为让本包占一条 Loader 行，客户端模块系统据此送出浏览器半侧。浏览器半侧通过 `ctx.configForms.get` 绑定 `agent-loop` 命名空间，用 `ui-primitives` 的共享 `SettingsFormModel` 在 `AgentLoopCardController` 里维护暂存表单，并通过 `ctx.configForms.whileServed` 把 `AgentLoopCard` 注册进插件页的 `plugins.item` slot。页面文案在本包的 `settings.agentLoop` 字典里。
+主機半側是一個空的 `apply`，只為讓本包占一條 Loader 行，用戶端模組系統據此送出瀏覽器半側。瀏覽器半側透過 `ctx.configForms.get` 繫結 `agent-loop` 名稱空間，用 `ui-primitives` 的共享 `SettingsFormModel` 在 `AgentLoopCardController` 裡維護暫存表單，並透過 `ctx.configForms.whileServed` 把 `AgentLoopCard` 註冊進外掛頁的 `plugins.item` slot。頁面文案在本包的 `settings.agentLoop` 字典裡。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——插件页以及本页注册进去的 `plugins.item` slot。
-- [ui-settings](../ui-settings/README.zh.md)——本页依赖的设置 scope 与"命名空间被服务期间"的监视。
-- [ui-primitives](../ui-primitives/README.zh.md)——本页渲染的设置表单模型与字段。
-- [agent-loop](../../core/agent-loop/README.zh.md)——注册 `agent-loop` 命名空间的循环。
+- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——外掛頁以及本頁註冊進去的 `plugins.item` slot。
+- [ui-settings](../ui-settings/README.zh.md)——本頁依賴的設定 scope 與"名稱空間被服務期間"的監視。
+- [ui-primitives](../ui-primitives/README.zh.md)——本頁渲染的設定表單模型與欄位。
+- [agent-loop](../../core/agent-loop/README.zh.md)——註冊 `agent-loop` 名稱空間的迴圈。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，本包是浏览器侧的设置界面，不注册任何模型面。
+無，本包是瀏覽器側的設定介面，不註冊任何模型面。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **只编辑命名空间的一个字段**——Host 的这一节只承载并行上限；组合进来的 `agents` 数组属于启动组合而非用户设置，这里没有对应字段。
-- **运行时不变量：**不发布伴生。本页没有自己拥有的关系：它显示的内容派生自设置镜像，它写入的内容由 Host 校验。
+- **只編輯名稱空間的一個欄位**——Host 的這一節只承載並行上限；組合進來的 `agents` 陣列屬於啟動組合而非使用者設定，這裡沒有對應欄位。
+- **執行時不變數：**不釋出伴生。本頁沒有自己擁有的關係：它顯示的內容派生自設定映像，它寫入的內容由 Host 驗證。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

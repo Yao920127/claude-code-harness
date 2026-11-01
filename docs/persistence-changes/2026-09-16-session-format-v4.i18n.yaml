@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-09-16-session-format-v4.md
 /:
   en: 3d5a424ae7d7e46b
-  zh: c22a8e4a62d8cc1a
+  zh: 630ac71355b9ea16
 /2026-09-16-session-format-v4:
   en: eb866e6ff81b18d6
   zh: 1689de18c9b69db7
 /2026-09-16-session-format-v4/summary:
   en: d941a7e0957adc5c
-  zh: bc3848a302d6497e
+  zh: 9edd406f275cfa8d
 /2026-09-16-session-format-v4/table-of-contents:
   en: 6cf314a069ceb451
-  zh: 9adff678e9ecab3b
+  zh: 378f31ff431be8cb
 /2026-09-16-session-format-v4/declaration:
   en: 6907136f28e48c90
-  zh: 02f8298485f3d8e7
+  zh: c57270ea21c7a438
 /2026-09-16-session-format-v4/compatibility:
   en: 62d76f6b66d04dc4
-  zh: 736b1b7cc2f6084f
+  zh: 489c082be485a7d4
 /2026-09-16-session-format-v4/verification:
   en: f917c71292c98b17
-  zh: 974c65afde0adb22
+  zh: 671eea31b822158a
 /2026-09-16-session-format-v4/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

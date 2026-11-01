@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-12-mcp-resources-and-instructions.md
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions:
   en: 052fc1f95f280688
-  zh: fdfacc841597d4da
+  zh: 64c89c80b0fe23f0
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions/problem:
   en: 0d6c75e85a04c36a
-  zh: fe5043f324369cdd
+  zh: f7d9cf73bc14bc1e
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions/decision:
   en: 69a021dd23820bb8
-  zh: 447d2d8d03f12896
+  zh: 46c570e2d23505a0
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions/alternatives-considered:
   en: 02bc8e76ce4d68ab
-  zh: 0991cc64ff9e3011
+  zh: 57e40af358d28768
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions/verification:
   en: 41694d9121383436
-  zh: 781ea7503ea149f1
+  zh: 79f31cef0b6c649f
 /agent-note-on-demand-mcp-resources-and-scoped-server-instructions/consequences:
   en: 432b24aa763eff2e
-  zh: 236825ede84e2c0d
+  zh: 69a23b3b73c60186

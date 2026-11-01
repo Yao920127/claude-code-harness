@@ -1,5 +1,5 @@
 ---
-description: "test-support 组地图：面向编写与运行仓库测试的开发者，提供无密钥测试 harness、LLM（大语言模型） mock 与回放服务器以及 Loader 冒烟测试辅助。"
+description: "test-support 組地圖：面向編寫與執行儲存庫測試的開發者，提供無金鑰測試 harness、LLM（大語言模型） mock 與回放伺服器以及 Loader 冒煙測試輔助。"
 kind: "package-group"
 ---
 
@@ -9,46 +9,46 @@ kind: "package-group"
 
 ## 概述
 
-test-support 组为仓库测试提供确定且无须密钥的真实产品测试方式。它包含 Loader 应用 harness、session-log 快照适配器、回放 LLM 插件和可通过脚本控制的 OpenAI 兼容故障服务器。每个包都是支持层基础设施；当某个包获得产品约定与产品消费方时，它就会移出本组。
+test-support 組為儲存庫測試提供確定且無須金鑰的真實產品測試方式。它包含 Loader 應用 harness、session-log 快照介面卡、回放 LLM 外掛和可透過腳本控制的 OpenAI 相容故障伺服器。每個包都是支援層基礎設施；當某個包獲得產品約定與產品消費方時，它就會移出本組。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 |
+| 包 | 職責 |
 |---|---|
-| [`session-snapshot`](session-snapshot/README.zh.md) | 为 profile 驱动的测试提供 session-log 快照支持与协议适配器 |
-| [`agent-loop-testkit`](agent-loop-testkit/README.zh.md) | 为运行具体 AgentLoop 的测试提供共享先决服务 |
-| [`client-runtime`](client-runtime/README.zh.md) | 为浏览器功能测试提供 jsdom slot 测试台 |
-| [`remote-mock`](remote-mock/README.zh.md) | 为整体客户端测试提供端点具名的 Typert Remote mock 与它们安装的 Connection 载体面 |
-| [`loader-smoke`](loader-smoke/README.zh.md) | 启动由 Loader 组合的应用并驱动 fixture（测试前置数据）轮次以执行冒烟测试 |
-| [`llm-mock-server`](llm-mock-server/README.zh.md) | 为恢复测试提供可通过脚本控制的 OpenAI 兼容故障服务器 |
-| [`llm-replay`](llm-replay/README.zh.md) | 为无密钥测试与演示回放已记录的模型流 |
+| [`session-snapshot`](session-snapshot/README.zh.md) | 為 profile 驅動的測試提供 session-log 快照支援與協定介面卡 |
+| [`agent-loop-testkit`](agent-loop-testkit/README.zh.md) | 為執行具體 AgentLoop 的測試提供共享先決服務 |
+| [`client-runtime`](client-runtime/README.zh.md) | 為瀏覽器功能測試提供 jsdom slot 測試臺 |
+| [`remote-mock`](remote-mock/README.zh.md) | 為整體用戶端測試提供端點具名的 Typert Remote mock 與它們安裝的 Connection 載體面 |
+| [`loader-smoke`](loader-smoke/README.zh.md) | 啟動由 Loader 組合的應用並驅動 fixture（測試前置資料）輪次以執行冒煙測試 |
+| [`llm-mock-server`](llm-mock-server/README.zh.md) | 為恢復測試提供可透過腳本控制的 OpenAI 相容故障伺服器 |
+| [`llm-replay`](llm-replay/README.zh.md) | 為無金鑰測試與演示回放已記錄的模型流 |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [测试策略](../../docs/testing.zh.md)——这些 harness 所服务的无密钥快照层，以及何时必须使用该层。
-- [运行时不变式子系统](../../docs/subsystems/invariants.zh.md)——包自有运行时检查的注册与执行。
-- [包组](../README.zh.md)——支持组与产品组的关系。
+- [測試策略](../../docs/testing.zh.md)——這些 harness 所服務的無金鑰快照層，以及何時必須使用該層。
+- [執行時不變式子系統](../../docs/subsystems/invariants.zh.md)——包自有執行時檢查的註冊與執行。
+- [包組](../README.zh.md)——支援組與產品組的關係。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

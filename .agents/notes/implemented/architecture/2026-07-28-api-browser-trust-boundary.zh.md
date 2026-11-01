@@ -1,31 +1,31 @@
-# Agent Note: 所有 /api 路由共用一道载体级浏览器信任边界
+# Agent Note: 所有 /api 路由共用一道載體級瀏覽器信任邊界
 
 Status: implemented
 
 [English](2026-07-28-api-browser-trust-boundary.md) | 中文
 
-## 问题
+## 問題
 
-Web GUI 宿主以纯 loopback HTTP 提供 `/api`（默认 `127.0.0.1:3080`；CLI 拒绝 `--host 0.0.0.0`），而这个面上有远程代码执行级别的方法——`session.prompt` 驱动的 agent（智能体）可以运行 bash。浏览器会用两种经典方式把操作者变成攻击此类本地 API 的「混淆代理人」：恶意页面发出跨站「简单请求」 POST（`text/plain`——不经 CORS 预检即发出），其副作用照常执行、只是响应不可读；以及 DNS rebinding 后的源以「同源」身份直连 socket，CORS 整体失效，只有 `Host` 头会暴露攻击者的域名。在本决策之前，系统里唯一的浏览器信任检查（`isTrustedNativeDialogRequest`：回环 socket、同源、回环 Host）只守着一个装饰性的路由——`host.pickDirectory`，其原生对话框弹在宿主屏幕上——而所有真正具有严重后果的方法都没有防护。按 RPC 逐个设防也活不过应用内目录浏览器：它存在的意义就是服务合法的远程客户端，回环规则恰恰会拒绝它们。
+Web GUI 主機以純 loopback HTTP 提供 `/api`（預設 `127.0.0.1:3080`；CLI 拒絕 `--host 0.0.0.0`），而這個面上有遠端程式碼執行級別的方法——`session.prompt` 驅動的 agent（智慧代理）可以執行 bash。瀏覽器會用兩種經典方式把操作者變成攻擊此類本地 API 的「混淆代理人」：惡意頁面發出跨站「簡單請求」 POST（`text/plain`——不經 CORS 預檢即發出），其副作用照常執行、只是回應不可讀；以及 DNS rebinding 後的源以「同源」身份直連 socket，CORS 整體失效，只有 `Host` 頭會暴露攻擊者的域名。在本決策之前，系統裡唯一的瀏覽器信任檢查（`isTrustedNativeDialogRequest`：迴環 socket、同源、迴環 Host）只守著一個裝飾性的路由——`host.pickDirectory`，其原生對話方塊彈在主機螢幕上——而所有真正具有嚴重後果的方法都沒有防護。按 RPC 逐個設防也活不過應用內目錄瀏覽器：它存在的意義就是服務合法的遠端用戶端，迴環規則恰恰會拒絕它們。
 
-## 决策
+## 決策
 
-在载体层对整个 `/api` 前缀一次性执行浏览器信任检查——分为两部分：
+在載體層對整個 `/api` 字首一次性執行瀏覽器信任檢查——分為兩部分：
 
-- **媒体类型栅栏（dsh-client-connection）**：每个 `/api` POST 必须声明 `application/json`，否则在解析前以 415 拒绝。跨站「简单请求」由此不复存在：任何跨站尝试都被逼进一次本服务器从不应答的 CORS 预检。
-- **权威栅栏（dsh-client-connection，`src/api-request-trust.ts`）**：每个请求的 `Host` 都必须是回环地址，或与某个 `trustedHosts` 条目匹配（带端口的 `host:port` 条目精确匹配，不带端口的条目匹配任意端口，均经 WHATWG 归一化；rebinding 防御）。刻意不为无标记请求开捷径：明文 HTTP 下浏览器的读取（EventSource、图片、导航——这些头只发给可信目标）既不带 `Origin` 也不带 Fetch-Metadata，因此无标记请求可能是被重绑页面发起且响应可被读走的读取，而 Host 是重绑唯一伪造不了的请求头；非浏览器客户端经由回环地址、推导的 LAN IP 字面量或已声明的权威通过。若带 `Origin` 则必须与 Host 权威完全一致；`sec-fetch-site: cross-site` 一律拒绝。不是单纯规范化 authority 的 `trustedHosts` 条目会导致插件加载失败——否则 WHATWG 解析会悄悄授权笔误里的 hostname，或放大精确端口授权。`host.pickDirectory` 失去专属守卫，与其他请求同栅而行。
+- **媒體型別柵欄（dsh-client-connection）**：每個 `/api` POST 必須宣告 `application/json`，否則在解析前以 415 拒絕。跨站「簡單請求」由此不復存在：任何跨站嘗試都被逼進一次本伺服器從不應答的 CORS 預檢。
+- **權威柵欄（dsh-client-connection，`src/api-request-trust.ts`）**：每個請求的 `Host` 都必須是迴環地址，或與某個 `trustedHosts` 條目匹配（帶埠的 `host:port` 條目精確匹配，不帶埠的條目匹配任意埠，均經 WHATWG 歸一化；rebinding 防禦）。刻意不為無標記請求開捷徑：明文 HTTP 下瀏覽器的讀取（EventSource、圖片、導航——這些頭只發給可信目標）既不帶 `Origin` 也不帶 Fetch-Metadata，因此無標記請求可能是被重綁頁面發起且回應可被讀走的讀取，而 Host 是重綁唯一偽造不了的請求頭；非瀏覽器用戶端經由迴環地址、推導的 LAN IP 字面量或已宣告的權威透過。若帶 `Origin` 則必須與 Host 權威完全一致；`sec-fetch-site: cross-site` 一律拒絕。不是單純規範化 authority 的 `trustedHosts` 條目會導致外掛載入失敗——否則 WHATWG 解析會悄悄授權筆誤裡的 hostname，或放大精確埠授權。`host.pickDirectory` 失去專屬守衛，與其他請求同柵而行。
 
-可达性由 webserver 的绑定配置（`host: 127.0.0.1 | 0.0.0.0`）控制，这道栅栏是混淆代理人防御，而不是身份。Connection 在栅栏之后应用独立的[浏览器令牌认证](2026-08-24-browser-token-authentication.zh.md)。栅栏不检查对端 socket 地址：绑定表达可达性，`trustedHosts` 点名接受的 authority，socket 地址提供不了 Host/Origin 校验需要的额外信息。
+可達性由 webserver 的繫結設定（`host: 127.0.0.1 | 0.0.0.0`）控制，這道柵欄是混淆代理人防禦，而不是身份。Connection 在柵欄之後應用獨立的[瀏覽器權杖認證](2026-08-24-browser-token-authentication.zh.md)。柵欄不檢查對端 socket 地址：繫結表達可達性，`trustedHosts` 點名接受的 authority，socket 地址提供不了 Host/Origin 驗證需要的額外資訊。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **按 RPC 设防（延续现状）。** 否决：守卫清单永远追着方法清单跑，价值最高的方法本来就没被守住，而 browse RPC 上的回环规则会破坏它们为之存在的远程部署。
-- **CORS 头与省略凭据。** 否决：我们根本不想要任何跨源读取，应答预检只会扩大暴露面；拒绝预检严格更强也更简单。
-- **认证令牌。** 在本变更中否决：令牌签发、存储与轮换属于独立产品决策。后续[浏览器令牌认证](2026-08-24-browser-token-authentication.zh.md)持有这些机制，不改变本栅栏。
+- **按 RPC 設防（延續現狀）。** 否決：守衛清單永遠追著方法清單跑，價值最高的方法本來就沒被守住，而 browse RPC 上的迴環規則會破壞它們為之存在的遠端部署。
+- **CORS 頭與省略憑證。** 否決：我們根本不想要任何跨源讀取，應答預檢只會擴大暴露面；拒絕預檢嚴格更強也更簡單。
+- **認證權杖。** 在本變更中否決：權杖簽發、儲存與輪換屬於獨立產品決策。後續[瀏覽器權杖認證](2026-08-24-browser-token-authentication.zh.md)持有這些機制，不改變本柵欄。
 
-## 后果
+## 後果
 
-- 未来任何 `/api` 方法天然在覆盖范围内；不存在会被遗忘的按路由信任决定。
-- 自定义非 loopback 组合必须信任其服务 authority，否则请求会被拒绝；随后仍像每个 loopback 请求一样满足浏览器认证。随附 CLI 拒绝 `--host 0.0.0.0`；`--trusted-host` 只扩展 Host/Origin 栅栏，绝不授予身份。
-- 客户端必须给 POST 体标注 `application/json`（我们自己的客户端一向如此；裸 fetch 测试补上了该头）。
-- Host 与 Origin 仍只是请求路由证据。进程令牌与签名 cookie 建立每个 Host 方法使用的浏览器身份。
+- 未來任何 `/api` 方法天然在覆蓋範圍內；不存在會被遺忘的按路由信任決定。
+- 自定義非 loopback 組合必須信任其服務 authority，否則請求會被拒絕；隨後仍像每個 loopback 請求一樣滿足瀏覽器認證。隨附 CLI 拒絕 `--host 0.0.0.0`；`--trusted-host` 只擴充功能 Host/Origin 柵欄，絕不授予身份。
+- 用戶端必須給 POST 體標註 `application/json`（我們自己的用戶端一向如此；裸 fetch 測試補上了該頭）。
+- Host 與 Origin 仍只是請求路由證據。程序權杖與簽名 cookie 建立每個 Host 方法使用的瀏覽器身份。

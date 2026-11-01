@@ -1,5 +1,5 @@
 ---
-description: "用于 projection state 的不可变的仅追加列表，提供有界追加复制、按插入顺序迭代和 Zod 检查点校验。"
+description: "用於 projection state 的不可變的僅追加列表，提供有界追加複製、按插入順序迭代和 Zod 檢查點驗證。"
 kind: "package-library"
 ---
 
@@ -9,23 +9,23 @@ kind: "package-library"
 
 ## 概述
 
-`dsh-chunked-list` 让调用方追加值并保留早期列表版本，无需复制整个集合。调用方可以按插入顺序迭代所有值，并使用自己的值 schema 校验 JSON 检查点。subagent 目录用它保存不可变的 projection state。
+`dsh-chunked-list` 讓呼叫方追加值並保留早期列表版本，無需複製整個集合。呼叫方可以按插入順序迭代所有值，並使用自己的值 schema 驗證 JSON 檢查點。subagent 目錄用它儲存不可變的 projection state。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延后工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延後工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-当仅追加集合需要不可变版本和兼容 JSON 的存储时，使用此列表。空列表用 `undefined` 表示；追加返回新的头节点，不修改已有节点。列表按引用共享所存的值，因此调用方必须将这些值视为不可变。
+當僅追加集合需要不可變版本和相容 JSON 的儲存時，使用此列表。空列表用 `undefined` 表示；追加返回新的頭節點，不修改已有節點。列表按引用共享所存的值，因此呼叫方必須將這些值視為不可變。
 
 ```ts
 import { appendChunkedList, iterateChunkedList } from '@deepseek-ai/dsh-chunked-list'
@@ -35,59 +35,59 @@ const second = appendChunkedList(first, 'second')
 console.log([...iterateChunkedList(second)])
 ```
 
-示例输出 `['first', 'second']`；`first` 仍只包含原来的值。`chunkedListSchema(valueSchema)` 校验 JSON 检查点并拒绝未知字段、无效值和空分片或超大分片。当外层字段也允许空列表时，在 schema 上使用 `.optional()`。各操作详见[源码约定](src/index.ts)。
+範例輸出 `['first', 'second']`；`first` 仍只包含原來的值。`chunkedListSchema(valueSchema)` 驗證 JSON 檢查點並拒絕未知欄位、無效值和空分片或超大分片。當外層欄位也允許空列表時，在 schema 上使用 `.optional()`。各操作詳見[原始碼約定](src/index.ts)。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现内部机制——点击展开</summary>
+<summary>實作內部機制——點選展開</summary>
 
-最新的分片最多存储 64 个值。追加最多复制该分片并共享较旧的节点，工作量为有界 O(1)。容量控制存储布局，不限制列表总长度。迭代以 O(N) 时间访问全部 N 个值，并使用 O(N / 64) 临时空间按从旧到新的顺序访问各分片。追加换片与递归 Zod 校验共用一个容量常量。
+最新的分片最多儲存 64 個值。追加最多複製該分片並共享較舊的節點，工作量為有界 O(1)。容量控制儲存佈局，不限制列表總長度。迭代以 O(N) 時間存取全部 N 個值，並使用 O(N / 64) 臨時空間按從舊到新的順序存取各分片。追加換片與遞迴 Zod 驗證共用一個容量常數。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 持久化列表操作与检查点校验 |
-| [`tests/chunked-list.spec.ts`](tests/chunked-list.spec.ts) | 版本隔离、顺序、结构共享与检查点接受条件 |
+| [`src/index.ts`](src/index.ts) | 持久化列表操作與檢查點驗證 |
+| [`tests/chunked-list.spec.ts`](tests/chunked-list.spec.ts) | 版本隔離、順序、結構共享與檢查點接受條件 |
 
-此库没有独立变化的观测值，因此不发布运行时不变式伴随模块；其操作返回调用方拥有的不可变值。
+此庫沒有獨立變化的觀測值，因此不釋出執行時不變式伴隨模組；其操作返回呼用方擁有的不可變值。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [工具包映射](../README.zh.md)——共享原语。
-- [Subagent 目录决策](../../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)——projection state 使用分片的原因。
+- [工具包對映](../README.zh.md)——共享原語。
+- [Subagent 目錄決策](../../../.agents/notes/implemented/architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)——projection state 使用分片的原因。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为此集合不注册任何面向模型的内容。
+無，因為此集合不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-本包没有内容进入模型请求，因此不影响提供方缓存复用。
+本包沒有內容進入模型請求，因此不影響提供者快取複用。
 
-## 已知限制与延后工作
+## 已知限制與延後工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **仅追加访问**——需要删除或随机访问的调用方应使用其他集合。
-- **递归检查点**——JSON 序列化与 schema 校验仍受运行时嵌套深度限制。所存的值本身必须支持调用方的序列化格式。
+- **僅追加存取**——需要刪除或隨機存取的呼叫方應使用其他集合。
+- **遞迴檢查點**——JSON 序列化與 schema 驗證仍受執行時巢狀深度限制。所存的值本身必須支援呼叫方的序列化格式。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

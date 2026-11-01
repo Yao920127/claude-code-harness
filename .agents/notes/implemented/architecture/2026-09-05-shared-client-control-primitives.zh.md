@@ -6,68 +6,68 @@ Status: implemented
 
 ## Problem
 
-客户端功能插件通过 slot 组合，彼此从不 import 对方的值，因此 `@deepseek-ai/dsh-client-ui-primitives` 是它们共享 React 组件的唯一通道。在某个功能包内部长出来的控件，对下一个需要同样东西的包不可见，而复制它的标记与 CSS 是当时最省事的做法。三类控件已经这样分叉：36×20 的开关只存在于 `ui-settings-plugins`；只读胶囊徽章在 `ui-agent-preset`、`ui-settings-plugins`、`ui-settings-plugin-inventory` 里被分别声明了五次，带着两种圆角和各自编写的配色；插件相位状态点在 `ui-settings-plugin-inventory` 里被重新实现，就在它所复制的共享 `StateDot` 旁边。
+用戶端功能外掛透過 slot 組合，彼此從不 import 對方的值，因此 `@deepseek-ai/dsh-client-ui-primitives` 是它們共享 React 元件的唯一通道。在某個功能包內部長出來的控制元件，對下一個需要同樣東西的包不可見，而複製它的標記與 CSS 是當時最省事的做法。三類控制元件已經這樣分叉：36×20 的開關只存在於 `ui-settings-plugins`；只讀膠囊徽章在 `ui-agent-preset`、`ui-settings-plugins`、`ui-settings-plugin-inventory` 裡被分別宣告瞭五次，帶著兩種圓角和各自編寫的配色；外掛相位狀態點在 `ui-settings-plugin-inventory` 裡被重新實作，就在它所複製的共享 `StateDot` 旁邊。
 
-修复所需的两半，作者当时一半也拿不到。没有任何清单要求他们在写控件前先看 `ui-primitives`，而这个包也没给他们可看的东西：README 只列了六个源文件，包却导出了四十多个符号。
+修復所需的兩半，作者當時一半也拿不到。沒有任何清單要求他們在寫控制元件前先看 `ui-primitives`，而這個包也沒給他們可看的東西：README 只列了六個原始檔，包卻匯出了四十多個符號。
 
 ## Decision
 
-**第二个客户端包需要的控件，住在 `ui-primitives`。** 这条规则是对作者的引导，不是门禁：功能包在需求确实特殊时仍可以自己写组件，下面的[保留在原包的控件](#what-stays-local)记录了本次改动中的这些例子。规则禁止的是复制——控件已经存在时，作者要么用它，要么把那处有意的差异提升成一个 prop。
+**第二個用戶端包需要的控制元件，住在 `ui-primitives`。** 這條規則是對作者的引導，不是門禁：功能包在需求確實特殊時仍可以自己寫元件，下面的[保留在原包的控制元件](#what-stays-local)記錄了本次改動中的這些例子。規則禁止的是複製——控制元件已經存在時，作者要麼用它，要麼把那處有意的差異提升成一個 prop。
 
-`Tag` 是只读胶囊徽章。几何锁定在 `ui-agent-preset` 确立的尺寸：`999px` 圆角、`1px 8px` 内边距、11px 字号配 17px 行高、500 字重、`inline-flex`、不换行。单个闭合的 `TagTone` 联合选择配色，每个成员都因为有已发布的调用点需要它而存在：`outline` 与 `solid` 来自 agent preset 区块，`neutral` 与 `quiet` 来自插件设置字段，`success`、`info`、`warning`、`danger` 来自插件清单的启用标签。与所有 Cordis-free 原语一样，这个组件不自带任何文案。
+`Tag` 是隻讀膠囊徽章。幾何鎖定在 `ui-agent-preset` 確立的尺寸：`999px` 圓角、`1px 8px` 內邊距、11px 字號配 17px 行高、500 字重、`inline-flex`、不換行。單個閉合的 `TagTone` 聯合選擇配色，每個成員都因為有已釋出的呼叫點需要它而存在：`outline` 與 `solid` 來自 agent preset 區塊，`neutral` 與 `quiet` 來自外掛設定欄位，`success`、`info`、`warning`、`danger` 來自外掛清單的啟用標籤。與所有 Cordis-free 原語一樣，這個元件不自帶任何文案。
 
-`Switch` 是双态开关，采用 `ui-settings-plugins` 确立的 36×20 轨道与 16px 滑块。`label` 必填且没有默认值，渲染点无法省略无障碍名称；`title` 在部署禁用该控件时承载锁定原因。
+`Switch` 是雙態開關，採用 `ui-settings-plugins` 確立的 36×20 軌道與 16px 滑塊。`label` 必填且沒有預設值，渲染點無法省略無障礙名稱；`title` 在部署停用該控制元件時承載鎖定原因。
 
-`StateDotState` 包含 `idle`，表示一个被跟踪的对象当前没有进行中的活动。插件清单的 `pending` 与 `unloading` 相位需要这个语义成员；没有 `idle`，这两个相位会彻底失去标记。五态联合对消费方保持安全，因为每个包都从自己的闭合状态联合**产生** `StateDotState`，没有任何一个对 `StateDotState` 本身做 switch。当前的纯色点配色与旋转 `ongoing` loading 见 [`ui-primitives` 参考](../../../../packages/client/ui-primitives/README.zh.md)。
+`StateDotState` 包含 `idle`，表示一個被跟蹤的物件目前沒有進行中的活動。外掛清單的 `pending` 與 `unloading` 相位需要這個語義成員；沒有 `idle`，這兩個相位會徹底失去標記。五態聯合對消費方保持安全，因為每個包都從自己的閉合狀態聯合**產生** `StateDotState`，沒有任何一個對 `StateDotState` 本身做 switch。目前的純色點配色與旋轉 `ongoing` loading 見 [`ui-primitives` 參考](../../../../packages/client/ui-primitives/README.zh.md)。
 
-**`ui-primitives` README 里的组件目录，是这条规则得以可用的前提。** 它列出每个导出组件的用途，以及它不适用的场合，并点名三组容易混淆的配对：`Tag` 与 `Pill`、`DisclosureRow` 与卡片式折叠、包内的 `FoldToggle` 与对外导出面。`Pill` 是可选中的胶囊按钮——它接受 `active` 与 `onClick`，用于视图切换与筛选器；`Tag` 是只读徽章，两者都不接受。组件注释使用同一套区分。
+**`ui-primitives` README 裡的元件目錄，是這條規則得以可用的前提。** 它列出每個匯出元件的用途，以及它不適用的場合，並點名三組容易混淆的配對：`Tag` 與 `Pill`、`DisclosureRow` 與卡片式摺疊、包內的 `FoldToggle` 與對外匯出面。`Pill` 是可選中的膠囊按鈕——它接受 `active` 與 `onClick`，用於檢視切換與篩選器；`Tag` 是隻讀徽章，兩者都不接受。元件註解使用同一套區分。
 
-规则写在 [packages/client/AGENTS.md](../../../../packages/client/AGENTS.md) 新组件清单的第一步，[docs/web-styling.md](../../../../docs/web-styling.zh.md) 指向该目录，让从样式一侧进来的作者也能到达。
+規則寫在 [packages/client/AGENTS.md](../../../../packages/client/AGENTS.md) 新元件清單的第一步，[docs/web-styling.md](../../../../docs/web-styling.zh.md) 指向該目錄，讓從樣式一側進來的作者也能到達。
 
-## 如何找出重复
+## 如何找出重複
 
-按名字搜会漏。`.badge`、`.tag`、`.chip`、`.configTag` 找不到以角色而非外观命名的胶囊——`PluginCard` 的未保存标记叫 `.pending`。几何特征才是可靠探针：搜索同时带有 `border-radius: 999px` 与 `padding: 1px 8px` 的 CSS Modules 规则。这个特征属于 `Tag` 与下面那个有意保留在原包的损坏徽章；未保存标记只保留自己的 `flex: none` 布局类。
+按名字搜會漏。`.badge`、`.tag`、`.chip`、`.configTag` 找不到以角色而非外觀命名的膠囊——`PluginCard` 的未儲存標記叫 `.pending`。幾何特徵才是可靠探針：搜尋同時帶有 `border-radius: 999px` 與 `padding: 1px 8px` 的 CSS Modules 規則。這個特徵屬於 `Tag` 與下面那個有意保留在原包的損壞徽章；未儲存標記只保留自己的 `flex: none` 佈局類。
 
 <a id="what-stays-local"></a>
-## 保留在原包的控件
+## 保留在原包的控制元件
 
-机械搜索会把下面这些控件归到被提升的那三类里。它们留在各自的包中，因为那种归并只是表面相似：
+機械搜尋會把下面這些控制元件歸到被提升的那三類裡。它們留在各自的包中，因為那種歸併只是表面相似：
 
-- **`ui-trajectory` 的工具栏开关**带 `role="switch"`，但它是 88px 宽的带标签控件、轨道内联，而且当前渲染为 `hidden`。它和 `Switch` 不是同一个部件。
-- **`ui-plan` 的模式 chip** 与 **`ui-conversation` 的 `ReferenceChip`** 都是可交互的：前者是警告色调的按钮，带 hover、focus、disabled 与关闭操作；后者是带自有截断逻辑的 Lexical 原子节点。两者都不是只读徽章。
-- **`ui-trajectory` 的单元格 tag** 与 **`ui-user-questions` 的推荐徽章**使用各自的几何——一个是表格密度下的 6px 圆角，一个是侧栏强调色上 600 字重的 6px 圆角。把它们塞进胶囊基准，改掉的是有意的设计，不是意外的分歧。
-- **`TerminalBlock` 的退出状态胶囊**保持为静态 `Pill`。它落在 24px 的命令行上、用的是 pill 自己的几何，`Tag` 的 11px 胶囊放不进那一行。只读与可选中的区分是通常的判据，但这一处由尺寸决定，目录里也是这么写的。
-- **`ui-agent-preset` 的损坏徽章**共用胶囊几何，但带着没有第二处使用的实底错误色填充，而且它是自带提示元素的悬停锚点。改用 `Tag` 就得在功能包样式表里保留一份配色覆盖，并依赖跨文件 CSS 顺序来让它生效。
+- **`ui-trajectory` 的工具欄開關**帶 `role="switch"`，但它是 88px 寬的帶標籤控制元件、軌道內聯，而且目前渲染為 `hidden`。它和 `Switch` 不是同一個部件。
+- **`ui-plan` 的模式 chip** 與 **`ui-conversation` 的 `ReferenceChip`** 都是可互動的：前者是警告色調的按鈕，帶 hover、focus、disabled 與關閉操作；後者是帶自有截斷邏輯的 Lexical 原子節點。兩者都不是隻讀徽章。
+- **`ui-trajectory` 的單元格 tag** 與 **`ui-user-questions` 的推薦徽章**使用各自的幾何——一個是表格密度下的 6px 圓角，一個是側欄強調色上 600 字重的 6px 圓角。把它們塞進膠囊基準，改掉的是有意的設計，不是意外的分歧。
+- **`TerminalBlock` 的退出狀態膠囊**保持為靜態 `Pill`。它落在 24px 的命令列上、用的是 pill 自己的幾何，`Tag` 的 11px 膠囊放不進那一行。只讀與可選中的區分是通常的判據，但這一處由尺寸決定，目錄裡也是這麼寫的。
+- **`ui-agent-preset` 的損壞徽章**共用膠囊幾何，但帶著沒有第二處使用的實底錯誤色填充，而且它是自帶提示元素的懸停錨點。改用 `Tag` 就得在功能包樣式表裡保留一份配色覆蓋，並依賴跨檔案 CSS 順序來讓它生效。
 
 ## Alternatives considered
 
-**做一个 `SettingsCard` 原语。** 否决。`.card` 出现在十五个包里，但只有三处带设置页语义，而这三处的差异在行为而不在外观：`ui-settings-plugins` 的 `PluginCard` 暂存编辑，且只在 Host 确认保存后才折叠；`ui-agent-preset` 的卡片可选中；插件清单的卡片是只读的。`PluginCard` 自己的头注释已经记录了它为何不能使用共享折叠行。单个组件将不得不通过 props 接纳全部三种行为，而没有任何一个调用方会用到其中一种以上。
+**做一個 `SettingsCard` 原語。** 否決。`.card` 出現在十五個包裡，但只有三處帶設定頁語義，而這三處的差異在行為而不在外觀：`ui-settings-plugins` 的 `PluginCard` 暫存編輯，且只在 Host 確認儲存後才摺疊；`ui-agent-preset` 的卡片可選中；外掛清單的卡片是隻讀的。`PluginCard` 自己的頭註解已經記錄了它為何不能使用共享摺疊行。單個元件將不得不透過 props 接納全部三種行為，而沒有任何一個呼叫方會用到其中一種以上。
 
-**加门禁，拒绝 `ui-primitives` 之外的 `role="switch"` 或 `.switch` 规则。** 否决。目标是让作者复用已有的东西，不是阻止他们构建。门禁会挂掉一个确实有特殊控件的包——`ui-trajectory` 的带标签工具栏开关正是这种情况——而误拒的代价落在最没法跟它讲道理的作者身上。目录加清单条目针对的是真正的失败原因：作者不知道那个控件存在。
+**加門禁，拒絕 `ui-primitives` 之外的 `role="switch"` 或 `.switch` 規則。** 否決。目標是讓作者複用已有的東西，不是阻止他們建置。門禁會掛掉一個確實有特殊控制元件的包——`ui-trajectory` 的帶標籤工具欄開關正是這種情況——而誤拒的代價落在最沒法跟它講道理的作者身上。目錄加清單條目針對的是真正的失敗原因：作者不知道那個控制元件存在。
 
-**用额外的 `Tag` props 保留现有的每一种外观。** 否决。插件清单的 5px 圆角与 agent preset 的胶囊是同一类标签的两种形状，两处差异都不是决定出来的。两个都留会把一次意外固化进公开联合，并且让下一个作者去猜该挑哪个。
+**用額外的 `Tag` props 保留現有的每一種外觀。** 否決。外掛清單的 5px 圓角與 agent preset 的膠囊是同一類標籤的兩種形狀，兩處差異都不是決定出來的。兩個都留會把一次意外固化進公開聯合，並且讓下一個作者去猜該挑哪個。
 
-**扩展 `Pill` 而不是新增 `Tag`。** 否决。`Pill` 高 24px、圆角 12px、字号 12px；徽章基准更密也更圆。合并会产生一个尺寸取决于是否传了 `onClick` 的组件，并抹掉只读与可选中的区分——而目录正需要这个区分来回答"我该用哪个"。
+**擴充功能 `Pill` 而不是新增 `Tag`。** 否決。`Pill` 高 24px、圓角 12px、字號 12px；徽章基準更密也更圓。合併會產生一個尺寸取決於是否傳了 `onClick` 的元件，並抹掉只讀與可選中的區分——而目錄正需要這個區分來回答"我該用哪個"。
 
-**给 `Tag` 设计 `variant × tone` 双轴 API。** 否决。三个 variant 乘六个 tone 描述十八种组合，其中八种会发布，而且它允许调用方请求没有定义外观的组合。扁平的八成员联合把每个值映射到恰好一种已发布外观。
+**給 `Tag` 設計 `variant × tone` 雙軸 API。** 否決。三個 variant 乘六個 tone 描述十八種組合，其中八種會發布，而且它允許呼叫方請求沒有定義外觀的組合。扁平的八成員聯合把每個值對映到恰好一種已釋出外觀。
 
-**让 `pending` 与 `unloading` 不渲染点，而不是新增 `idle`。** 否决。这些阶段需要紧凑的未活动或过渡标记；在一个目的是统一呈现的改动里把它删掉，等于从清单中拿走信息。
+**讓 `pending` 與 `unloading` 不渲染點，而不是新增 `idle`。** 否決。這些階段需要緊湊的未活動或過渡標記；在一個目的是統一呈現的改動裡把它刪掉，等於從清單中拿走資訊。
 
-**把复用规则写进根 `AGENTS.md`。** 否决。这条规则只管 `packages/client`，而根文件正好处在 `scripts/doc-budgets.manifest.json` 给它的 1950 词上限上，写在那里就必须挤掉一条不相干的仓库级规则。
+**把複用規則寫進根 `AGENTS.md`。** 否決。這條規則只管 `packages/client`，而根檔案正好處在 `scripts/doc-budgets.manifest.json` 給它的 1950 詞上限上，寫在那裡就必須擠掉一條不相干的儲存庫級規則。
 
 ## Testing
 
-`Tag`、`Switch` 与扩展后的 `StateDot` 在 `packages/client/ui-primitives/tests` 中各有组件测试，处于每文件 100% 覆盖率门禁之内。`StateDot` 的配色通过读取其样式表来钉住：CSS Modules 在组件测试里解析为类名映射，因此某个状态缺了配色规则时会落到继承色上，而任何渲染断言都不会察觉。
+`Tag`、`Switch` 與擴充功能後的 `StateDot` 在 `packages/client/ui-primitives/tests` 中各有元件測試，處於每檔案 100% 覆蓋率門禁之內。`StateDot` 的配色透過讀取其樣式表來釘住：CSS Modules 在元件測試裡解析為類名對映，因此某個狀態缺了配色規則時會落到繼承色上，而任何渲染斷言都不會察覺。
 
-迁移后的渲染点保留包级测试，覆盖 role、无障碍名称、状态映射与交互。Web ARIA 快照覆盖装配后的呈现——`Switch` 保留带 `aria-checked` 的 `role="switch"`，而由于 `StateDot` 是 `aria-hidden`，插件清单的相位点把 `role="img"` 名称保留在外层包裹元素上。
+遷移後的渲染點保留包級測試，覆蓋 role、無障礙名稱、狀態對映與互動。Web ARIA 快照覆蓋裝配後的呈現——`Switch` 保留帶 `aria-checked` 的 `role="switch"`，而由於 `StateDot` 是 `aria-hidden`，外掛清單的相位點把 `role="img"` 名稱保留在外層包裹元素上。
 
-组件与样式表测试固定胶囊几何、StateDot 图稿、动画、token 与字重；Web 快照固定无障碍结构。明暗主题下的最终渲染仍由人工视觉检查负责。
+元件與樣式表測試固定膠囊幾何、StateDot 圖稿、動畫、token 與字重；Web 快照固定無障礙結構。明暗主題下的最終渲染仍由人工視覺檢查負責。
 
 ## Consequences
 
-- 新的客户端控件现在有一处可查、一处可加，而目录把这次查询变成读一个文件，而不是在四十多个导出上 `grep`。
-- `TagTone` 有八个成员，因为发布了八种外观。加第九个需要一个真的需要它的渲染点，而不是一个对称性论证。
-- 插件清单使用胶囊标签；"已停用"标签使用 `neutral` 色调下可见的 `--dsw-alias-bg-module-platform` 填充。相位标记使用共享 `StateDot`，活动转换采用旋转 loading。插件设置字段中的"未配置"徽章使用基准 500 字重。
-- 插件清单调色板不含 `#b45309` 字面量。`conditional` 标签使用真实的 `--dsw-alias-state-warn-primary` token，而不是不存在的 `--dsw-alias-state-warning-primary` 别名及其硬编码兜底色。
-- 这条规则无法被机械检查。将来的作者仍然可以复制一个控件，只有评审能拦住。这是不设门禁所接受的代价：另一条路会拒绝正当的工作，而上面那份保留在原包的清单就是正当工作确实存在的证据。
-- `Tag` 与 `Switch` 由多个设置和预设包共享；只有现有 prop 无法表达明确差异时，后续消费方才扩展这些原语。
+- 新的用戶端控制元件現在有一處可查、一處可加，而目錄把這次查詢變成讀一個檔案，而不是在四十多個匯出上 `grep`。
+- `TagTone` 有八個成員，因為釋出了八種外觀。加第九個需要一個真的需要它的渲染點，而不是一個對稱性論證。
+- 外掛清單使用膠囊標籤；"已停用"標籤使用 `neutral` 色調下可見的 `--dsw-alias-bg-module-platform` 填充。相位標記使用共享 `StateDot`，活動轉換採用旋轉 loading。外掛設定欄位中的"未設定"徽章使用基準 500 字重。
+- 外掛清單調色盤不含 `#b45309` 字面量。`conditional` 標籤使用真實的 `--dsw-alias-state-warn-primary` token，而不是不存在的 `--dsw-alias-state-warning-primary` 別名及其硬編碼後備色。
+- 這條規則無法被機械檢查。將來的作者仍然可以複製一個控制元件，只有評審能攔住。這是不設門禁所接受的代價：另一條路會拒絕正當的工作，而上面那份保留在原包的清單就是正當工作確實存在的證據。
+- `Tag` 與 `Switch` 由多個設定和預設包共享；只有現有 prop 無法表達明確差異時，後續消費方才擴充功能這些原語。

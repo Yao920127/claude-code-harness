@@ -1,98 +1,98 @@
-# Agent Note: 基于端点具名 Remote mock 的整机客户端测试档
+# Agent Note: 基於端點具名 Remote mock 的整機用戶端測試檔
 
 Status: implemented
 
 [English](2026-09-06-client-assembly-test-line.md) | 中文
 
-## 问题
+## 問題
 
-浏览器功能 spec 各自手拼测试台：一个裸 Cordis context、`locale`、`connection`、`remote` 的替身，以及本该由真声明者做出的 slot 声明。它们的断言因此描述的是测试台而不是产品：一个插件新增了设置 section、一个声明者经 Loader 重载、一个 Connection 重连，对它们都不可见，而每个测试台都重复着同样的四十行并各有细小漂移。
+瀏覽器功能 spec 各自手拼測試臺：一個裸 Cordis context、`locale`、`connection`、`remote` 的替身，以及本該由真宣告者做出的 slot 宣告。它們的斷言因此描述的是測試臺而不是產品：一個外掛新增了設定 section、一個宣告者經 Loader 過載、一個 Connection 重連，對它們都不可見，而每個測試臺都重複著同樣的四十行並各有細小漂移。
 
-API 客户端 spec 用一个可编程的 Remote 面假件驱动对象。这个假件重新实现了它本该只是调用的 Gateway 语义：从历史列表推导 follow 流的开场快照、切页、带投递 promise 的流泵，以及一层信封。每一样都是产品已有契约的第二份实现，它还让测试描述出生成客户端做不出来的行为，比如一次会 reject 的一元调用。
+API 用戶端 spec 用一個可程式設計的 Remote 面假件驅動物件。這個假件重新實作了它本該只是呼叫的 Gateway 語義：從歷史列表推導 follow 流的開場快照、切頁、帶投遞 promise 的流泵，以及一層信封。每一樣都是產品已有契約的第二份實作，它還讓測試描述出生成用戶端做不出來的行為，比如一次會 reject 的一元呼叫。
 
-没有聚焦源码测试按生产方式起客户端——`bootClient` 按 manifest 每行建一个 Loader entry，再 `mountClient`——插件之间的组合故障会被手工测试台遮住。
+沒有聚焦原始碼測試按生產方式起用戶端——`bootClient` 按 manifest 每行建一個 Loader entry，再 `mountClient`——外掛之間的組合故障會被手工測試臺遮住。
 
-## 决定
+## 決定
 
-整机档放在 `@deepseek-ai/dsh-client-test-runtime` 的深 import `src/assembly/` 下，新的 test-support 包 `@deepseek-ai/dsh-remote-mock` 按端点名应答 Remote 流量。两者的用法由各自 README 描述（[client-runtime](../../../../packages/test-support/client-runtime/README.zh.md)、[remote-mock](../../../../packages/test-support/remote-mock/README.zh.md)）；本文记录它们背后的决定。
+整機檔放在 `@deepseek-ai/dsh-client-test-runtime` 的深 import `src/assembly/` 下，新的 test-support 包 `@deepseek-ai/dsh-remote-mock` 按端點名應答 Remote 流量。兩者的用法由各自 README 描述（[client-runtime](../../../../packages/test-support/client-runtime/README.zh.md)、[remote-mock](../../../../packages/test-support/remote-mock/README.zh.md)）；本文記錄它們背後的決定。
 
-**roster 从 bundle 现读，绝不拷贝。** `bundleRoster(bundles)` 用 include 插件自己的 YAML 方言（带 `!!js` 的 `entryListSchema`）解析每个 bundle 的 `dsh.bundle.patch`，用它的 `applyEntryPatches` 合成各层，再保留每个未禁用且其包声明 `dsh.client.platform === 'web'` 的行，带上该声明的 `inject` 与 `immediately`。`webApp` 是 `web` profile 的 roster（先 `dsh-base`、再 `dsh-web-app`），import 时算出。spec 点名它要测的东西，其余推导：`webApp.closure([row])` 保留一行及其传递 `inject` 锥；`pick` 与 `without` 留给刻意裁剪。测试运行时仍是 Client 面的包：它不 import 任何 Host 模块，此处不用动态 import，其 client 面的 `types` 在 `client-build-environment` 之外加了 `node`，好让读取器使用 `node:fs`。`closure` 把 shell 静态种入的平台模块（`PLATFORM_MODULES`）视为无需行即已满足。
+**roster 從 bundle 現讀，絕不複製。** `bundleRoster(bundles)` 用 include 外掛自己的 YAML 方言（帶 `!!js` 的 `entryListSchema`）解析每個 bundle 的 `dsh.bundle.patch`，用它的 `applyEntryPatches` 合成各層，再保留每個未停用且其包宣告 `dsh.client.platform === 'web'` 的行，帶上該宣告的 `inject` 與 `immediately`。`webApp` 是 `web` profile 的 roster（先 `dsh-base`、再 `dsh-web-app`），import 時算出。spec 點名它要測的東西，其餘推導：`webApp.closure([row])` 保留一行及其傳遞 `inject` 錐；`pick` 與 `without` 留給刻意裁剪。測試執行時仍是 Client 面的包：它不 import 任何 Host 模組，此處不用動態 import，其 client 面的 `types` 在 `client-build-environment` 之外加了 `node`，好讓讀取器使用 `node:fs`。`closure` 把 shell 靜態種入的平臺模組（`PLATFORM_MODULES`）視為無需行即已滿足。
 
-**生产启动路径只替换 Connection 输入适配。** `TestClient.start(plan, mock)` 加载每个 roster 行的 `/client` 模块，用 `installConnection(ctx, { transport: { rpc: mock.rpc } })` 替换 Connection 行的页面全局适配，经生产模块 facade 的 `pendingQueue` 登记这些工厂，经 `bootClient` 启动，可选经 `mountClient` 挂载，然后等 `connected`。`reload(name)` 经 client-hmr 导出的 `tearDownEntryFiber` 重建一个 Loader entry；`unload(name)` 移除它；`dispose()` 拆掉一切，然后对任何没有规则的端点让测试失败。jsdom 没有 `EventSource` 与 `ResizeObserver`；`start` 只对全局缺失的惰性替身做引用计数。模块系统、Connection 载体、Remote mock、重载和销毁都归实例所有，因此客户端可以并行启动，不通过页面全局变量协调。
+**生產啟動路徑只替換 Connection 輸入適應。** `TestClient.start(plan, mock)` 載入每個 roster 行的 `/client` 模組，用 `installConnection(ctx, { transport: { rpc: mock.rpc } })` 替換 Connection 行的頁面全域適應，經生產模組 facade 的 `pendingQueue` 登記這些工廠，經 `bootClient` 啟動，可選經 `mountClient` 掛載，然後等 `connected`。`reload(name)` 經 client-hmr 匯出的 `tearDownEntryFiber` 重建一個 Loader entry；`unload(name)` 移除它；`dispose()` 拆掉一切，然後對任何沒有規則的端點讓測試失敗。jsdom 沒有 `EventSource` 與 `ResizeObserver`；`start` 只對全域缺失的惰性替身做引用計數。模組系統、Connection 載體、Remote mock、過載和銷燬都歸實例所有，因此用戶端可以並行啟動，不透過頁面全域變數協調。
 
-modules 插件激活时从自己的 `ctx.loader.internal` 读取模块系统。重载 bootstrap 行会重新发布同一个实例而不让 bootstrap 代码失效，另一个客户端的 Loader 与 `ctx.modules` 不受影响。
+modules 外掛啟用時從自己的 `ctx.loader.internal` 讀取模組系統。過載 bootstrap 行會重新發布同一個實例而不讓 bootstrap 程式碼失效，另一個用戶端的 Loader 與 `ctx.modules` 不受影響。
 
-**`remote.<ns>` 是无契约代理，不是生成客户端。** `@deepseek-ai/dsh-api-remotes` 行被去掉，因为它生成的客户端只存在于构建后的 `lib/`。对 roster 行注入的每个 `remote.<ns>`，加上 mock 有规则的每个命名空间，本档各提供一个 Proxy：`ctx.remote.<ns>.<method>(...args)` 经 roster 自己的 Connection 用位置参数调用端点 `<ns>/<method>`，mock 为它登记了流脚本就走流、否则走一元。Cordis 把 `ctx.remote.<ns>` 解析到服务 `remote.<ns>`，所以 Gateway 客户端本身不动。一元应答原样返回；一元拒绝按生成客户端折叠载体抛错的方式折叠，经 Gateway 客户端导出的 `carrierFailure` 与 `cancelledFailure`，因此不等待就发出 Remote 调用的产品代码看不到任何 reject。流的项与失败按流吐出的样子直传。
+**`remote.<ns>` 是無契約代理，不是生成用戶端。** `@deepseek-ai/dsh-api-remotes` 行被去掉，因為它生成的用戶端只存在於建置後的 `lib/`。對 roster 行注入的每個 `remote.<ns>`，加上 mock 有規則的每個名稱空間，本檔各提供一個 Proxy：`ctx.remote.<ns>.<method>(...args)` 經 roster 自己的 Connection 用位置參數呼叫端點 `<ns>/<method>`，mock 為它登記了流腳本就走流、否則走一元。Cordis 把 `ctx.remote.<ns>` 解析到服務 `remote.<ns>`，所以 Gateway 用戶端本身不動。一元應答原樣返回；一元拒絕按生成用戶端摺疊載體拋錯的方式摺疊，經 Gateway 用戶端匯出的 `carrierFailure` 與 `cancelledFailure`，因此不等待就發出 Remote 呼叫的產品程式碼看不到任何 reject。流的項與失敗按流吐出的樣子直傳。
 
-**原生 mock 负责响应配置和调用断言。** 测试通过 `mock.remote.<namespace>.<method>` 使用 `mockResolvedValue`、`mockResolvedValueOnce`、`mockReturnValueOnce` 或 `mockImplementation`，签名由生成的 API 提供。每个 mock 实例独立持有原生响应队列。可复用的表只登记默认值或位置参数 handler，每个端点仅保留最新默认响应。有状态回调和 deferred promise 归各测试所有。`ok` 构造成功信封。流需要显式声明，可提供接收打开参数与句柄（`push`、`end`、`fail`）的脚本；无脚本的声明产生流漏配，未声明端点默认走一元。值不校验。`mock.streams` 控制脚本流并提供打开／排空等待；`mock.log` 记录载体调用（`pending`、`answered`、`failed`）、脚本流状态、首参数 `requests(endpoint?)` 和未匹配请求。`RemoteMock.create()` 为 `$events` 应答 ready 帧，让客户端可以连接。
+**原生 mock 負責回應設定和呼叫斷言。** 測試透過 `mock.remote.<namespace>.<method>` 使用 `mockResolvedValue`、`mockResolvedValueOnce`、`mockReturnValueOnce` 或 `mockImplementation`，簽名由生成的 API 提供。每個 mock 實例獨立持有原生回應佇列。可複用的表只登記預設值或位置參數 handler，每個端點僅保留最新預設回應。有狀態回呼和 deferred promise 歸各測試所有。`ok` 建構成功信封。流需要顯式宣告，可提供接收開啟參數與控制代碼（`push`、`end`、`fail`）的腳本；無腳本的宣告產生流漏配，未宣告端點預設走一元。值不驗證。`mock.streams` 控制腳本流並提供開啟／排空等待；`mock.log` 記錄載體呼叫（`pending`、`answered`、`failed`）、腳本流狀態、首參數 `requests(endpoint?)` 和未匹配請求。`RemoteMock.create()` 為 `$events` 應答 ready 幀，讓用戶端可以連線。
 
-**Vitest 拥有每条测试的 mock 和客户端生命周期。** `createClientTest(plan, options)` 增加原生 `mock`、`remote` 与 `start` fixture。mock 每次新建并携带默认响应；`remote` 是它的命名空间 Proxy，显式 `start()` 留出配置启动期应答的时机，同一测试共用一个启动 Promise。不需要 Connection 的对象层 spec 直接使用 `remote`；需要 Gateway `$stream` 的用例调用 `start()`。收尾等待启动，即使断言失败也销毁成功创建的客户端、检查漏配，并拒绝后续启动。启动错误由调用方 await 观察。分别拥有多个客户端时仍用 `TestClient.start`。场景数据直接配置原生 mock；返回 mutation 应答与更新后续 describe 应答仍是两个独立操作。
+**Vitest 擁有每條測試的 mock 和用戶端生命週期。** `createClientTest(plan, options)` 增加原生 `mock`、`remote` 與 `start` fixture。mock 每次新建並攜帶預設回應；`remote` 是它的名稱空間 Proxy，顯式 `start()` 留出設定啟動期應答的時機，同一測試共用一個啟動 Promise。不需要 Connection 的物件層 spec 直接使用 `remote`；需要 Gateway `$stream` 的案例呼叫 `start()`。收尾等待啟動，即使斷言失敗也銷燬成功建立的用戶端、檢查漏配，並拒絕後續啟動。啟動錯誤由呼叫方 await 觀察。分別擁有多個用戶端時仍用 `TestClient.start`。情境資料直接設定原生 mock；返回 mutation 應答與更新後續 describe 應答仍是兩個獨立操作。
 
-**`remoteDefaultResponses` 是启动期 Remote 端点的默认响应。** 这张表恰好列出 `web` roster 在没有 session、没有 workspace、默认设置下启动并渲染时会打的端点，每行注明调用方。spec 在其上叠加自己的 `RemoteTable`；新的启动期调用会在 `dispose()` 时让 spec 失败。
+**`remoteDefaultResponses` 是啟動期 Remote 端點的預設回應。** 這張表恰好列出 `web` roster 在沒有 session、沒有 workspace、預設設定下啟動並渲染時會打的端點，每行註明呼叫方。spec 在其上疊加自己的 `RemoteTable`；新的啟動期呼叫會在 `dispose()` 時讓 spec 失敗。
 
-归应用所有的 built-bundle 测试会在 `AppWebEntry` 启动前通过 `__DSH_TRANSPORT__` 安装一份新的 `RemoteMock`。场景数据留在 `apps/web/tests` 下；生产 Connection 包不包含场景数据集或由 query 选择的测试 transport。需要 Host 行为的浏览器用例使用 `launchWebScaffold()` 和真实 HTTP/WebSocket 路径。
+歸應用所有的 built-bundle 測試會在 `AppWebEntry` 啟動前透過 `__DSH_TRANSPORT__` 安裝一份新的 `RemoteMock`。情境資料留在 `apps/web/tests` 下；生產 Connection 包不包含情境資料集或由 query 選擇的測試 transport。需要 Host 行為的瀏覽器案例使用 `launchWebScaffold()` 和真實 HTTP/WebSocket 路徑。
 
-`mock.remote` 使用直接调用方与 Connection 分发共用的原生 `@vitest/spy.fn` 函数。`MockedRemote` 对完整生成的命名空间映射应用 Vitest 深层 mock 类型转换；映射为空时仅这个 Proxy 弱化为 `any`。生产 `Context` 与 Remote 声明保持严格，不需要命名空间专属类型副本或编译器 Flag。[Proxy 类型指引](../../../../packages/test-support/remote-mock/README.zh.md#remote-proxy)要求即使无构建测试通过，本地也必须执行构建后的类型检查。
+`mock.remote` 使用直接呼叫方與 Connection 分發共用的原生 `@vitest/spy.fn` 函式。`MockedRemote` 對完整生成的名稱空間對映應用 Vitest 深層 mock 型別轉換；對映為空時僅這個 Proxy 弱化為 `any`。生產 `Context` 與 Remote 宣告保持嚴格，不需要名稱空間專屬型別副本或編譯器 Flag。[Proxy 型別指引](../../../../packages/test-support/remote-mock/README.zh.md#remote-proxy)要求即使無建置測試透過，本地也必須執行建置後的型別檢查。
 
-## 为本档新增的产品导出
+## 為本檔新增的產品匯出
 
-- `client/connection`：`ClientTransportHooks.rpc?` 接受由进程内组合持有的已解码载体；`fetch` 可选。`installConnection(ctx, options)` 从实例局部的 transport、recovery 与 location 输入安装同一个生产服务。
-- `client/hmr`：`tearDownEntryFiber(entry)` 就是 `reload` 本来执行的 registry 先行的 fiber 拆除。
-- `client/modules`：`parseDshClient` 与 `exactPackageSpecifier` 从 client 面导出，由 Host 和 roster 读取器共用。测试工厂使用已有注册队列。roster 行到 boot graph 的合成只有测试消费者，放在本档里。
-- `client/web`：`bootClient` 与 `mountClient` 从 `AppWebEntry.run()` 抽出，后者现在调用它们。
-- `api/gateway`：导出 `carrierFailure` 与 `cancelledFailure`，让生成客户端的替身折叠得一模一样。
+- `client/connection`：`ClientTransportHooks.rpc?` 接受由程序內組合持有的已解碼載體；`fetch` 可選。`installConnection(ctx, options)` 從實例區域性的 transport、recovery 與 location 輸入安裝同一個生產服務。
+- `client/hmr`：`tearDownEntryFiber(entry)` 就是 `reload` 本來執行的 registry 先行的 fiber 拆除。
+- `client/modules`：`parseDshClient` 與 `exactPackageSpecifier` 從 client 面匯出，由 Host 和 roster 讀取器共用。測試工廠使用已有註冊佇列。roster 行到 boot graph 的合成只有測試消費者，放在本檔裡。
+- `client/web`：`bootClient` 與 `mountClient` 從 `AppWebEntry.run()` 抽出，後者現在呼叫它們。
+- `api/gateway`：匯出 `carrierFailure` 與 `cancelledFailure`，讓生成用戶端的替身摺疊得一模一樣。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**从构建后的 `lib/` 运行生成的 `/remote` 客户端。** 否决：它让源码面的 spec 依赖构建产物，而代理只需要 mock 已持有的一元或流声明。
+**從建置後的 `lib/` 執行生成的 `/remote` 用戶端。** 否決：它讓原始碼面的 spec 依賴建置產物，而代理只需要 mock 已持有的一元或流宣告。
 
-**带漂移门禁的生成静态 roster 模块。** 评审后否决：它是测试包内的一份 bundle 数据拷贝，基于它写的每个子集都是会漏行的手列清单。用 include 插件自己的 schema 与补丁应用在 import 时读 bundle，把拷贝、生成器和门禁一起去掉。
+**帶漂移門禁的生成靜態 roster 模組。** 評審後否決：它是測試包內的一份 bundle 資料複製，基於它寫的每個子集都是會漏行的手列清單。用 include 外掛自己的 schema 與補丁應用在 import 時讀 bundle，把複製、生成器和門禁一起去掉。
 
-**给测试运行时加 Host 编译面、动态 import 一个 Host 模块，或用 vitest `globalSetup` 经 `provide`/`inject` 传 roster。** 否决：Client 测试运行时不得 import Host 代码，动态 import 藏起依赖，配置层通道藏起 roster 的来源。启动器用的合成函数本就面中立，这些都不需要。
+**給測試執行時加 Host 編譯面、動態 import 一個 Host 模組，或用 vitest `globalSetup` 經 `provide`/`inject` 傳 roster。** 否決：Client 測試執行時不得 import Host 程式碼，動態 import 藏起依賴，設定層通道藏起 roster 的來源。啟動器用的合成函式本就面中立，這些都不需要。
 
-**自写一套测试侧的 YAML 与补丁解析器。** 否决：`entryListSchema` 与 `applyEntryPatches` 就是启动器自己的，不带 Host Context 合并；本档只写读文件、定位 package.json 和 web 行过滤。
+**自寫一套測試側的 YAML 與補丁解析器。** 否決：`entryListSchema` 與 `applyEntryPatches` 就是啟動器自己的，不帶 Host Context 合併；本檔只寫讀檔案、定位 package.json 和 web 行過濾。
 
-**用一个 mock 模块替代 Gateway 客户端。** 否决：mock 不得干涉 Gateway 内部；把它传给生产 Connection 安装函数会让重试、折叠与流语义都保持真实。
+**用一個 mock 模組替代 Gateway 用戶端。** 否決：mock 不得干涉 Gateway 內部；把它傳給生產 Connection 安裝函式會讓重試、摺疊與流語義都保持真實。
 
-**在生产 Connection 包中保留由 query 选择的 fixture transport 与场景数据集。** 否决：这会把交付代码耦合到易变的应用测试数据，并让 URL 标记成为隐藏的 transport 选择器。仅客户端的组装测试注入 `RemoteMock`；拥有 Host 行为的浏览器测试使用真实 Host scaffold。
+**在生產 Connection 包中保留由 query 選擇的 fixture transport 與情境資料集。** 否決：這會把交付程式碼耦合到易變的應用測試資料，並讓 URL 標記成為隱藏的 transport 選擇器。僅用戶端的組裝測試注入 `RemoteMock`；擁有 Host 行為的瀏覽器測試使用真實 Host scaffold。
 
-**用 worker 级启动轮次包住页面全局 Connection 载体。** 否决：客户端会共享可变进程状态，每次启动或 Connection 重载都必须串行安装当事客户端的载体。实例局部的 Connection 安装让独立插件树可以并行启动和重载。
+**用 worker 級啟動輪次包住頁面全域 Connection 載體。** 否決：用戶端會共享可變程序狀態，每次啟動或 Connection 過載都必須序列安裝當事用戶端的載體。實例區域性的 Connection 安裝讓獨立外掛樹可以並行啟動和過載。
 
-**第二套带类型的 Gateway 实现，包含 `Api` 泛型、信封与错误类以及 fixtures 目录。** 否决：它重复 Gateway 声明与编解码。mock 从生成的命名空间映射派生方法类型，运行时只声明一元或流行为。
+**第二套帶型別的 Gateway 實作，包含 `Api` 泛型、信封與錯誤類以及 fixtures 目錄。** 否決：它重複 Gateway 宣告與編解碼。mock 從生成的名稱空間對映派生方法型別，執行時只宣告一元或流行為。
 
-**代理把一元拒绝原样直传。** 否决：产品代码从不等待 Remote 的 reject，因为生成客户端会折叠载体抛错，于是没匹配的端点造成未处理的拒绝；经导出的辅助函数折叠恢复了客户端的面。
+**代理把一元拒絕原樣直傳。** 否決：產品程式碼從不等待 Remote 的 reject，因為生成用戶端會摺疊載體拋錯，於是沒匹配的端點造成未處理的拒絕；經匯出的輔助函式摺疊恢復了用戶端的面。
 
-**保留 CallContext，再用适配器包装原生 spy。** 否决：每个测试都要解开合成调用对象，还保留没有业务 spec 消费者的计数／状态机制。位置参数 handler 直接使用现有测试生态。
+**保留 CallContext，再用介面卡包裝原生 spy。** 否決：每個測試都要解開合成呼叫物件，還保留沒有業務 spec 消費者的計數／狀態機制。位置參數 handler 直接使用現有測試生態。
 
-**独立的 `once` / `sequence` DSL 与回退规则栈。** 否决：按实例持有的原生队列已经能表达消费方使用的延迟响应和临时失败。不可变表声明配合每次登记的游标虽能共享一次性响应表，但当前没有共享表需要它。本档放弃最新登记优先的回退和表级末项重复声明，测试改用原生队列顺序与持续默认响应。响应值和有状态 handler 仍按引用借用，不做克隆。
+**獨立的 `once` / `sequence` DSL 與退回規則棧。** 否決：按實例持有的原生佇列已經能表達消費方使用的延遲回應和臨時失敗。不可變表宣告配合每次登記的遊標雖能共享一次性回應表，但目前沒有共享表需要它。本檔放棄最新登記優先的退回和表級末項重複宣告，測試改用原生佇列順序與持續預設回應。回應值和有狀態 handler 仍按引用借用，不做克隆。
 
-**独立的预加载模块选项或 `staticModules`。** 否决：现有待注册队列能在 Loader 启动前接收同样的工厂。`staticModules` 绕过工厂物化，也不共享图的预取／失效行为；队列在保留这些行为的同时省掉额外选项。仅装配内部使用的 helper 保留在叶模块，不从推荐入口再导出。
+**獨立的預載入模組選項或 `staticModules`。** 否決：現有待註冊佇列能在 Loader 啟動前接收同樣的工廠。`staticModules` 繞過工廠物化，也不共享圖的預取／失效行為；佇列在保留這些行為的同時省掉額外選項。僅裝配內部使用的 helper 保留在葉模組，不從推薦入口再匯出。
 
-**编译器级全局降级 Flag 或私有类型增补包。** 否决：声明合并会影响同一 TypeScript Program 中能够到达该导入的所有文件；`private: true` 只阻止发布。拆分测试编译图或增加策略检查会增加配置维护成本，却不能把降级限制在真正使用它的 Helper 中。局部条件类型只弱化这些消费方的类型推断。
+**編譯器級全域降級 Flag 或私有型別增補包。** 否決：宣告合併會影響同一 TypeScript Program 中能夠到達該匯入的所有檔案；`private: true` 只阻止釋出。拆分測試編譯圖或增加策略檢查會增加設定維護成本，卻不能把降級限制在真正使用它的 Helper 中。區域性條件型別只弱化這些消費方的型別推斷。
 
-**为每个命名空间编写方法清单和独立 spy 别名的 Helper。** 否决：它们重复操作名称和原生 mock 已经提供的控制功能。通用 Proxy 从生产命名空间映射派生每个方法，fixture 拥有返回数据，而不再实现另一份领域写入或发布机制。
+**為每個名稱空間編寫方法清單和獨立 spy 別名的 Helper。** 否決：它們重複操作名稱和原生 mock 已經提供的控制功能。通用 Proxy 從生產名稱空間對映派生每個方法，fixture 擁有返回資料，而不再實作另一份領域寫入或釋出機制。
 
-## 后果
+## 後果
 
-spec 起的是真插件：整个 `web` roster 冷启动约五秒、热启动远低于一秒，三行的锥每例约二十毫秒。断言读的是产品事实——真实的 section 清单、真实的声明者、一次 Loader 重建、重连时的第二代 `$events`——并随产品变化而变化。
+spec 起的是真外掛：整個 `web` roster 冷啟動約五秒、熱啟動遠低於一秒，三行的錐每例約二十毫秒。斷言讀的是產品事實——真實的 section 清單、真實的宣告者、一次 Loader 重建、重連時的第二代 `$events`——並隨產品變化而變化。
 
-代理跳过了生成客户端的 zod 校验、wire 字段名映射与 scoped 身份注入；mock 规则读位置 `args`，生成客户端仍由构建产物 e2e 车道覆盖。插件新增启动期调用时 `remoteDefaultResponses` 必须加一行，加之前会响亮失败。`web` profile 的两个 bundle 名在 `WEB_PROFILE_BUNDLES` 里重复了一次，对应启动器的 `PROFILE_TEMPLATES.web`，且两者之间没有机检联系：客户端测试程序不能 import `@deepseek-ai/dsh-app-boot`（其 Host `Context` 合并与 Client 的冲突），而测试运行时连测试也不引入 Host 依赖。模板变更因此要靠人工带到这个常量。
+代理跳過了生成用戶端的 zod 驗證、wire 欄位名對映與 scoped 身份注入；mock 規則讀位置 `args`，生成用戶端仍由建置產物 e2e 車道覆蓋。外掛新增啟動期呼叫時 `remoteDefaultResponses` 必須加一行，加之前會響亮失敗。`web` profile 的兩個 bundle 名在 `WEB_PROFILE_BUNDLES` 裡重複了一次，對應啟動器的 `PROFILE_TEMPLATES.web`，且兩者之間沒有機檢聯絡：用戶端測試程式不能 import `@deepseek-ai/dsh-app-boot`（其 Host `Context` 合併與 Client 的衝突），而測試執行時連測試也不引入 Host 依賴。範本變更因此要靠人工帶到這個常數。
 
-共享函数让生产和测试调用方使用同一份实现。`AppWebEntry.run()` 在立即层预取落定后挂载 Loader；应用 entry 仍在预取之后创建，因此让 Loader 安装与预取串行不会提前应用激活。
+共享函式讓生產和測試呼叫方使用同一份實作。`AppWebEntry.run()` 在立即層預取落定後掛載 Loader；應用 entry 仍在預取之後建立，因此讓 Loader 安裝與預取序列不會提前應用啟用。
 
-原生流覆盖可以返回自有 iterable，此时调用方负责消费与取消，这些 iterable 不参与脚本流日志或控制。已登记的脚本仍使用受控队列与取消机制。这一区分保留原生 mock 行为，无需再添加 iterator 包装器或改变拉取时机。
+原生流覆蓋可以返回自有 iterable，此時呼叫方負責消費與取消，這些 iterable 不參與腳本流日誌或控制。已登記的腳本仍使用受控佇列與取消機制。這一區分保留原生 mock 行為，無需再新增 iterator 包裝器或改變拉取時機。
 
-## 遗留事项
+## 遺留事項
 
-本档暴露出来、原样保留的产品事实：
+本檔暴露出來、原樣保留的產品事實：
 
-- 没有任何 `declare module` 增强声明 `Context.connection`；消费方一律 `ctx.get('connection') as ConnectionHandle`，`TestClient.connection` 是本档提供的带类型入口。
-- `TestClient.start` 没有页面 URL 选项，需要 `connection` 插件把页面判为 off-loopback 的 spec 只能重配 vitest 挂在 `globalThis.jsdom` 上的 jsdom 实例，这是 jsdom 环境提供者的私有细节。
-- `ISessions` 没有 queue 观察点，queue 帧只能直接经 `handleControlFrame` 到达 `Session`，而不是走 `session/control` 流。
-- 同 seq 的 durable 事件二次推送在 `RemoteJournalStream` 尾部被当作重放丢弃，到不了 `SessionQueueMirror.acceptDurable`。
-- vendored Loader 在模块 import 失败时让 `create()` reject，因此 `assertEntriesActive` 的 import 失败分支经 `create()` 不可达。
-- session-controller 客户端把 `ctx.remote` cast 成 `SessionRemotes`；在客户端测试程序里这个 cast 是多余的，因为生成的 `/remote` 合并在那里可见。
+- 沒有任何 `declare module` 增強宣告 `Context.connection`；消費方一律 `ctx.get('connection') as ConnectionHandle`，`TestClient.connection` 是本檔提供的帶型別入口。
+- `TestClient.start` 沒有頁面 URL 選項，需要 `connection` 外掛把頁面判為 off-loopback 的 spec 只能重配 vitest 掛在 `globalThis.jsdom` 上的 jsdom 實例，這是 jsdom 環境提供者的私有細節。
+- `ISessions` 沒有 queue 觀察點，queue 幀只能直接經 `handleControlFrame` 到達 `Session`，而不是走 `session/control` 流。
+- 同 seq 的 durable 事件二次推送在 `RemoteJournalStream` 尾部被當作重放丟棄，到不了 `SessionQueueMirror.acceptDurable`。
+- vendored Loader 在模組 import 失敗時讓 `create()` reject，因此 `assertEntriesActive` 的 import 失敗分支經 `create()` 不可達。
+- session-controller 用戶端把 `ctx.remote` cast 成 `SessionRemotes`；在用戶端測試程式裡這個 cast 是多餘的，因為生成的 `/remote` 合併在那裡可見。
 
-## 测试
+## 測試
 
-`packages/test-support/remote-mock/tests/` 覆盖规则、流、日志与载体面；`packages/test-support/client-runtime/tests/` 下的 `assembly-` 系列 spec 覆盖在真 bundle 与临时安装上的 roster 读取器、模块加载、含折叠的代理、并行客户端启动、实例局部的模块与 Connection 重载，以及 jsdom 与纯 Node 下的 `TestClient`。`apps/web/tests/` 下归应用所有的 built-client spec 注入一份新的 RemoteMock，并将有状态场景数据留在这些 spec 旁边。`packages/client/ui-settings-general/tests/` 下，shell 与 apply 两条起整个 `web` roster；apply 从 mock 应答的 Host settings 文档读它的中文文案，并为 off-loopback 分支重配 jsdom 页面 URL。`packages/client/ui-message-feedback/tests/` 下，对象层 spec 直接传入 RemoteMock 的 `messageFeedback` 命名空间。`packages/api/session-controller/tests/` 下，Session、queue-store、pending-submission、projection tail-page、sessions-service 以及验证流的 manager 用例启动 Gateway 依赖锥；其余 manager 用例与 projection-store 的 manager-routing 用例直接使用同一组逐测试 Remote fixture，不启动客户端；client-apply 则启动插件的依赖锥，把 Remote 事件作为 `$events` 上的 emit 帧投递。`packages/api/workspace-controller/tests/` 下，transport 的 apply 用例起插件锥、手工构造流与 controller 的用例起 gateway 锥，因为进了 roster 的插件会共用 follow 端点。每个包在 `tests/remote/` 保有自己的默认响应与帧构造。fixture 测试包含预期的断言失败，并独立观察客户端清理完成；settings 重载测试观察注册身份被替换，写入测试断言全部 mutation 参数。teardown 失败测试先执行真实树清理，再报告注入的失败，并观察 `$events` 流的取消状态。
+`packages/test-support/remote-mock/tests/` 覆蓋規則、流、日誌與載體面；`packages/test-support/client-runtime/tests/` 下的 `assembly-` 系列 spec 覆蓋在真 bundle 與臨時安裝上的 roster 讀取器、模組載入、含摺疊的代理、並行用戶端啟動、實例區域性的模組與 Connection 過載，以及 jsdom 與純 Node 下的 `TestClient`。`apps/web/tests/` 下歸應用所有的 built-client spec 注入一份新的 RemoteMock，並將有狀態情境資料留在這些 spec 旁邊。`packages/client/ui-settings-general/tests/` 下，shell 與 apply 兩條起整個 `web` roster；apply 從 mock 應答的 Host settings 文件讀它的中文文案，併為 off-loopback 分支重配 jsdom 頁面 URL。`packages/client/ui-message-feedback/tests/` 下，物件層 spec 直接傳入 RemoteMock 的 `messageFeedback` 名稱空間。`packages/api/session-controller/tests/` 下，Session、queue-store、pending-submission、projection tail-page、sessions-service 以及驗證流的 manager 案例啟動 Gateway 依賴錐；其餘 manager 案例與 projection-store 的 manager-routing 案例直接使用同一組逐測試 Remote fixture，不啟動用戶端；client-apply 則啟動外掛的依賴錐，把 Remote 事件作為 `$events` 上的 emit 幀投遞。`packages/api/workspace-controller/tests/` 下，transport 的 apply 案例起外掛錐、手工建構流與 controller 的案例起 gateway 錐，因為進了 roster 的外掛會共用 follow 端點。每個包在 `tests/remote/` 保有自己的預設回應與幀建構。fixture 測試包含預期的斷言失敗，並獨立觀察用戶端清理完成；settings 過載測試觀察註冊身份被替換，寫入測試斷言全部 mutation 參數。teardown 失敗測試先執行真實樹清理，再報告注入的失敗，並觀察 `$events` 流的取消狀態。

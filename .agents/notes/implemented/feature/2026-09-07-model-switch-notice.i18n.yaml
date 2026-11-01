@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-07-model-switch-notice.md
 /agent-note-model-visible-route-change-notices:
   en: 8e372ee5814c99d1
-  zh: 3fd0faa18fc02f75
+  zh: 3de998dd0c9acee2
 /agent-note-model-visible-route-change-notices/problem:
   en: 0c0be027f271e132
-  zh: c4f6aa9217633f43
+  zh: 00a021544938b980
 /agent-note-model-visible-route-change-notices/decision:
   en: 86dbb17229ae9634
-  zh: 6b0af5f12441461c
+  zh: 9bc42d7e109e8039
 /agent-note-model-visible-route-change-notices/alternatives-considered:
   en: 9e8ac73976d39c99
-  zh: e637370a5f2b0de8
+  zh: 6dc778f015bffa3a
 /agent-note-model-visible-route-change-notices/consequences:
   en: 93976aae03285052
-  zh: 27791c4f1f36dc92
+  zh: 3fd1f2dffb7aefee

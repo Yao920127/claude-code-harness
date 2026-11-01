@@ -625,7 +625,7 @@ export class PlatformAccount extends DeepSeekAccount {
   private finishFailedCallback(attempt: Attempt): void {
     if (attempt.loginSource === 'web') {
       const nonce = randomBytes(16).toString('base64url')
-      const message = attempt.locale === 'zh_CN' ? '登录失败，请关闭此标签页并在原页面重试。'
+      const message = attempt.locale === 'zh_CN' ? '登入失敗，請關閉此標籤頁並在原頁面重試。'
         : 'Sign-in failed. Close this tab and try again in the original tab.'
       attempt.callback?.writeHead(200, {
         'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',

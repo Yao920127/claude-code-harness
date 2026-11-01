@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-20-developer-tools-default-on.md
 /agent-note-developer-tools-default-on-after-preference-resolution:
   en: 9e6062c94dd70c14
-  zh: 3c04f278da2016a5
+  zh: bf98b602b4688c31
 /agent-note-developer-tools-default-on-after-preference-resolution/problem:
   en: 81d08fb192b8e83b
-  zh: 90a841219f86bc12
+  zh: d43148b6bbfa74ac
 /agent-note-developer-tools-default-on-after-preference-resolution/decision:
   en: 8a3fbb5281d1b313
-  zh: 320b845842676375
+  zh: 756404992fa682d9
 /agent-note-developer-tools-default-on-after-preference-resolution/alternatives-considered:
   en: 7d9ecd04554103c4
-  zh: 2706bb78fcc6072d
+  zh: 31d01400e3c619ad
 /agent-note-developer-tools-default-on-after-preference-resolution/consequences:
   en: 54622ff5338afba9
-  zh: 494d55213b2751a0
+  zh: 321ced9b724fe699

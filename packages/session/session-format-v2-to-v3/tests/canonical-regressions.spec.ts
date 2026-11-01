@@ -38,7 +38,7 @@ function reopen(artifact: SessionFormatArtifact): SessionFormatArtifact {
 const opening = [event('turn/start', 0, { turn: 1 }), event('step/start', 1, { turn: 1, step: 1 })]
 const message = {
   id: 'message:code:1', role: 'user', source: { kind: 'plugin', plugin: 'tools-code-mode' },
-  content: [{ type: 'text', text: 'tools-code-mode tool/code-dispatch code 图片' }],
+  content: [{ type: 'text', text: 'tools-code-mode tool/code-dispatch code 圖片' }],
 }
 const dispatch = {
   rootCallId: 'root:code:1', parentCallId: 'root:code:1', subCallId: 'root:code:1:code:2',

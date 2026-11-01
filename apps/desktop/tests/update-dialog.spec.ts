@@ -49,7 +49,7 @@ function setup(locale: DesktopLocale | (() => DesktopLocale) = resolveDesktopLoc
   const parent = new fixture.FakeWindow({})
   dialogs = new DesktopUpdateDialog('preload-update-dialog.cjs', locale, new DesktopUpdateOverlays())
   const show = (signal?: AbortSignal) => dialogs!.show(parent as unknown as BrowserWindow, {
-    message: '下载完成', buttons: ['安装并重启'], cancelId: 1, ...(signal === undefined ? {} : { signal }),
+    message: '下載完成', buttons: ['安裝並重新啟動'], cancelId: 1, ...(signal === undefined ? {} : { signal }),
   })
   const invoke = (channel: string, ...args: unknown[]) => {
     const window = fixture.windows.at(-1)!
@@ -66,7 +66,7 @@ it('accepts only a displayed choice from its own main frame and retains cancella
   const pending = f.show()
   expect(dialogs!.isOpen).toBe(true)
   const window = fixture.windows.at(-1)!
-  expect(f.invoke(UPDATE_DIALOG_IPC.status)).toMatchObject({ closeLabel: '关闭', buttons: ['安装并重启'], cancelId: 1 })
+  expect(f.invoke(UPDATE_DIALOG_IPC.status)).toMatchObject({ closeLabel: '關閉', buttons: ['安裝並重新啟動'], cancelId: 1 })
   const respond = fixture.handlers.get(UPDATE_DIALOG_IPC.respond)!
   expect(() => respond({ sender: {}, senderFrame: window.webContents.mainFrame }, 0)).toThrow(/unowned/)
   expect(() => respond({ sender: window.webContents, senderFrame: { ...window.webContents.mainFrame } }, 0)).toThrow(/unowned/)
@@ -136,10 +136,10 @@ it('denies navigation away from the owned document', async () => {
 it('supplies localized disclosure copy without putting diagnostics in the ordinary detail', async () => {
   const f = setup()
   const pending = dialogs!.show(f.parent as unknown as BrowserWindow, {
-    message: '未能安全停止任务', technicalDetails: 'exit 0; shutdown acknowledged false',
+    message: '未能安全停止任務', technicalDetails: 'exit 0; shutdown acknowledged false',
   })
   expect(f.invoke(UPDATE_DIALOG_IPC.status)).toMatchObject({ detail: '',
-    technicalDetails: 'exit 0; shutdown acknowledged false', technicalDetailsLabel: '查看技术详情' })
+    technicalDetails: 'exit 0; shutdown acknowledged false', technicalDetailsLabel: '檢視技術詳情' })
   dialogs!.cancel()
   await pending
 })

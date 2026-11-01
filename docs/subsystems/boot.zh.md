@@ -2,21 +2,21 @@
 
 [English](boot.md) | 中文
 
-[boot 包组](../../packages/boot/README.zh.md)负责 launcher 提供的 profile 访问与插件管理器。[插件管理器](../../packages/boot/plugin-manager/README.zh.md)文档说明持久化、重载与包操作行为。
+[boot 包組](../../packages/boot/README.zh.md)負責 launcher 提供的 profile 存取與外掛管理器。[外掛管理器](../../packages/boot/plugin-manager/README.zh.md)文件說明持久化、過載與包操作行為。
 
-## 管理记录
+## 管理記錄
 
-`PluginEntryId` 标识一个 Loader 条目；调用方从 `listPlugins` 获取，不自行拼接 patch id。
+`PluginEntryId` 標識一個 Loader 條目；呼叫方從 `listPlugins` 取得，不自行拼接 patch id。
 
-`PluginInfo` 包含模块标识、实际启停状态、fiber 阶段和可选的展示 `meta`，以及唯一的 `patchId` 或 `readOnlyReason`。
+`PluginInfo` 包含模組標識、實際啟停狀態、fiber 階段和可選的展示 `meta`，以及唯一的 `patchId` 或 `readOnlyReason`。
 
-`BundleInfo` 包含包名、可选的安装版本、组合层选择状态、删除可用性及可选的解析错误。它的可选 `meta` 与各行的 `BundleRowInfo.meta` 包含展示文本或元信息诊断；Client 在渲染时选择语言。
+`BundleInfo` 包含包名、可選的安裝版本、組合層選擇狀態、刪除可用性及可選的解析錯誤。它的可選 `meta` 與各行的 `BundleRowInfo.meta` 包含展示文字或元資訊診斷；Client 在渲染時選擇語言。
 
-`InstallBundleOptions.enabled` 默认为 true，false 表示安装但不选择组合包层。`approvedBuilds` 在安装前向指定的待审批包名授予持久脚本权限。`registry` 指定首先询问的注册表；缺省为配置的那个。
+`InstallBundleOptions.enabled` 預設為 true，false 表示安裝但不選擇組合包層。`approvedBuilds` 在安裝前向指定的待審批包名授予持久腳本權限。`registry` 指定首先詢問的註冊表；預設為設定的那個。
 
-`PluginRegistries` 携带配置的第一个注册表（`null` 即 pnpm 自身配置指定的那个）、随后依次询问的备选注册表，以及 `resolved`——pnpm 自身配置指向的 URL，未读到时为 `null`。`InspectOptions.registry` 指定一次查询首先询问的注册表。
+`PluginRegistries` 攜帶設定的第一個註冊表（`null` 即 pnpm 自身設定指定的那個）、隨後依次詢問的備選註冊表，以及 `resolved`——pnpm 自身設定指向的 URL，未讀到時為 `null`。`InspectOptions.registry` 指定一次查詢首先詢問的註冊表。
 
-`ChangeResult.changed` 报告磁盘修改，独立于 `application`：`applied`、`restart-required`、`overridden` 或 `failed`。可选的 `error` 包含可本地化的错误码和外部诊断。`packageResult` 记录 pnpm 退出码、有界输出、截断标志及完整诊断日志路径；当管理器终止了一个停止打印的运行，还记录 `timedOut`。被终止的运行不论信号留下什么退出状态都归类为 `timeout`，因此安装与删除都报告失败而非成功，也不会再询问下一个注册表。`pendingBuilds` 列出整个 profile 尚未决定的包；`approvedBuilds` 记录本次操作授予权限的包名；`registries` 按顺序列出一次安装问过的注册表；`failedAt` 说明最后一次失败的运行连不上的是所问的注册表，还是 git 或 tarball spec 自身拉取的主机。
+`ChangeResult.changed` 報告磁碟修改，獨立於 `application`：`applied`、`restart-required`、`overridden` 或 `failed`。可選的 `error` 包含可在地化的錯誤碼和外部診斷。`packageResult` 記錄 pnpm 結束代碼、有界輸出、截斷標誌及完整診斷日誌路徑；當管理器終止了一個停止列印的執行，還記錄 `timedOut`。被終止的執行不論訊號留下什麼退出狀態都歸類為 `timeout`，因此安裝與刪除都報告失敗而非成功，也不會再詢問下一個註冊表。`pendingBuilds` 列出整個 profile 尚未決定的包；`approvedBuilds` 記錄本次操作授予權限的包名；`registries` 按順序列出一次安裝問過的註冊表；`failedAt` 說明最後一次失敗的執行連不上的是所問的註冊表，還是 git 或 tarball spec 自身拉取的主機。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

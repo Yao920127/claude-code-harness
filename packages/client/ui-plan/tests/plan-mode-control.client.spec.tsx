@@ -33,7 +33,7 @@ function setup(
   return { store, exitPlanMode, view }
 }
 
-const chip = () => screen.getByRole('button', { name: '计划模式已开启，按下关闭' })
+const chip = () => screen.getByRole('button', { name: '計劃模式已開啟，按下關閉' })
 
 describe('PlanChip', () => {
   it('renders nothing for an absent capability or a default-mode target', () => {
@@ -49,10 +49,10 @@ describe('PlanChip', () => {
 
   it('renders the Plan status for active and pending-entry targets', () => {
     setup({ active: true, pending: false })
-    expect(chip().textContent).toBe('计划')
+    expect(chip().textContent).toBe('計劃')
     cleanup()
     setup({ active: false, pending: true })
-    expect(chip().textContent).toBe('计划')
+    expect(chip().textContent).toBe('計劃')
   })
 
   it('leads with the plan glyph and swaps in the circled close only while hovered', () => {
@@ -67,7 +67,7 @@ describe('PlanChip', () => {
     expect(glyphs[0]!.classList.contains(css.restGlyph!)).toBe(true)
     expect(glyphs[1]!.classList.contains(css.hoverGlyph!)).toBe(true)
     expect(glyphs[1]!.parentElement).toBe(slot)
-    expect(chip().lastChild?.textContent).toBe('计划')
+    expect(chip().lastChild?.textContent).toBe('計劃')
   })
 
   it('executes /plan off once and follows the projection down', async () => {
@@ -81,7 +81,7 @@ describe('PlanChip', () => {
     resolve(null)
     store.set({ value: { active: true, pending: true } })
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: '计划模式已开启，按下关闭' })).toBeNull()
+      expect(screen.queryByRole('button', { name: '計劃模式已開啟，按下關閉' })).toBeNull()
     })
   })
 
@@ -97,7 +97,7 @@ describe('PlanChip', () => {
       .mockRejectedValueOnce('socket closed')
     setup({ active: true, pending: false }, exitPlanMode)
     fireEvent.click(chip())
-    expect((await screen.findByText('退出计划模式失败')).getAttribute('title')).toBe('host said no')
+    expect((await screen.findByText('退出計劃模式失敗')).getAttribute('title')).toBe('host said no')
     expect(chip()).toBeTruthy()
 
     fireEvent.click(chip())

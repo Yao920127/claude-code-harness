@@ -14,9 +14,9 @@ export const en: Record<PluginsSettingsLocaleKey, string> = {
 
 /** Simplified Chinese copy. */
 export const zh: Record<PluginsSettingsLocaleKey, string> = {
-  nav: '内置插件',
-  title: '内置插件',
-  intro: '查看内置部署的插件列表',
-  tabs: '插件视图',
-  empty: '本部署没有开放任何插件视图。',
+  nav: '內建外掛',
+  title: '內建外掛',
+  intro: '檢視內建部署的外掛列表',
+  tabs: '外掛檢視',
+  empty: '本部署沒有開放任何外掛檢視。',
 }

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/basic/index.md
 /your-first-plugin:
   en: 66684c875e13acbb
-  zh: 48b5444386cf714c
+  zh: 4a342fd89f4e8106
 /your-first-plugin/create-a-local-project:
   en: 2a9ff85da3a6ea8b
-  zh: 9ac5daf1dd3e3b95
+  zh: 1026a77f09f6585f
 /your-first-plugin/what-is-a-plugin:
   en: 0bca3ea987fecb61
-  zh: b4d398b887da6648
+  zh: 9bee543053c866d4
 /your-first-plugin/create-the-plugin-file:
   en: 80e4e9f139d4773e
-  zh: c045d63ec04a2f3d
+  zh: 304e861e2ce911f9
 /your-first-plugin/register-it-in-cordis-yml:
   en: 216e79287d237f2a
-  zh: 16e5e8ad2b1b9263
+  zh: b35ee822dbf7b15c
 /your-first-plugin/automatic-cleanup:
   en: 0a1486714b9d67d7
-  zh: 544df97baa7a8c59
+  zh: 69cd626118e5cda0
 /your-first-plugin/declare-dependencies:
   en: da59e4c09e258f94
-  zh: 1b3ef70741eccb31
+  zh: 57a62f4583b6914f
 /your-first-plugin/three-plugin-forms:
   en: 155369321743b317
-  zh: e2e98be100be297b
+  zh: 13c1a104d2396bfb
 /your-first-plugin/three-plugin-forms/object-form:
   en: d674c416f5b0fd14
-  zh: a2224f5fe6ceae73
+  zh: 9419660f730b5b1b
 /your-first-plugin/three-plugin-forms/class-form:
   en: 130f504f9ebacebd
-  zh: 4e91d3fa2555390d
+  zh: 9d64ab63ae6dc299
 /your-first-plugin/next-steps:
   en: 9836e246d8279c8b
-  zh: 681475e2251ba006
+  zh: d7d5c6a713f0ae38

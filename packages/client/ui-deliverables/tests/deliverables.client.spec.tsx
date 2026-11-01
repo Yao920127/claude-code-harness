@@ -514,7 +514,7 @@ describe('ChangedFiles card', () => {
     const card = view.container.querySelector('[data-changed-files]')!
     expect(within(card as HTMLElement).getByText(t('changes.singleTitle', { name: 'example.scss' }))).toBeTruthy()
     expect(card.querySelector('ul')).toBeNull()
-    expect(view.queryByRole('button', { name: /Show all|Collapse changed|展开全部|收起改动/ })).toBeNull()
+    expect(view.queryByRole('button', { name: /Show all|Collapse changed|展開全部|收起改動/ })).toBeNull()
     expect(card.querySelector('svg [data-file-type-mark]')?.children).toHaveLength(3)
     const open = view.getByRole('button', { name: t('changes.viewDiff', { name: 'src/example.scss' }) })
     expect(open.getAttribute('aria-describedby')).toBeTruthy()
@@ -659,17 +659,17 @@ describe('ChangedFiles card', () => {
     const { openFile, props, view } = renderCard(controller, zh)
     controller.host.set('error')
     view.rerender(<Deliverables {...props} matched={{ changes, presented: [] }} openFile={openFile} sessionId={SessionId('child-session')} t={makeTranslate(zh)} />)
-    expect(view.getByRole('button', { name: '在侧边栏查看本轮改动' })).toBeTruthy()
+    expect(view.getByRole('button', { name: '在側邊欄檢視本輪改動' })).toBeTruthy()
     controller.host.set({ name: 'server', available: false, fileManager: null })
     view.rerender(<Deliverables {...props} matched={{ changes, presented: [] }} openFile={openFile} sessionId={SessionId('child-session')} t={makeTranslate(zh)} />)
-    expect(view.getByText('已编辑 11 个文件')).toBeTruthy()
-    fireEvent.click(view.getByRole('button', { name: '在侧边栏查看本轮改动' }))
+    expect(view.getByText('已編輯 11 個檔案')).toBeTruthy()
+    fireEvent.click(view.getByRole('button', { name: '在側邊欄檢視本輪改動' }))
     expect(props.openChangesReview).toHaveBeenLastCalledWith({ sessionId: 'child-session', seq: 5, turn: 1 }, 0)
-    fireEvent.click(view.getByRole('button', { name: '查看 config/design-token 的改动' }))
+    fireEvent.click(view.getByRole('button', { name: '檢視 config/design-token 的改動' }))
     expect(props.openChangesReview).toHaveBeenLastCalledWith({ sessionId: 'child-session', seq: 5, turn: 1 }, 0)
     expect(openFile).not.toHaveBeenCalled()
     expect(props.openChanged).not.toHaveBeenCalled()
-    expect(view.getByRole('button', { name: '展开全部 5 个改动文件' }).textContent).toContain('全部 5 个文件')
+    expect(view.getByRole('button', { name: '展開全部 5 個改動檔案' }).textContent).toContain('全部 5 個檔案')
   })
 
   it('preserves expanded rows when the served announcement changes', () => {
@@ -712,7 +712,7 @@ describe('ChangedFiles card', () => {
 })
 
 describe('producedFileMentions resolver', () => {
-  const label = (path: string) => `打开 ${path}`
+  const label = (path: string) => `開啟 ${path}`
 
   it('resolves exact paths and unique basenames; ambiguity and unknowns stay unresolved', () => {
     const opened: string[] = []
@@ -723,7 +723,7 @@ describe('producedFileMentions resolver', () => {
     )
     // Unique basename resolves to its full path; the full path rides title.
     const byBasename = resolver.resolve('index.html')
-    expect(byBasename?.label).toBe('打开 out/index.html')
+    expect(byBasename?.label).toBe('開啟 out/index.html')
     expect(byBasename?.title).toBe('out/index.html')
     byBasename?.open()
     expect(opened).toEqual(['out/index.html'])

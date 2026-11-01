@@ -1,19 +1,19 @@
 body {
   --dsw-linear-gradient-think: linear-gradient(180deg, #fff 20.19%, rgba(255, 255, 255, 0) 100%);
   --dsw-linear-think-select: linear-gradient(180deg, #f5f6f7 20.19%, rgba(245, 246, 247, 0) 100%);
-  /* 阴影 */
+  /* 陰影 */
   --dsw-shadow-lv1: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
   --dsw-shadow-lv1-blur: 0 4px 12px 0 rgba(0, 0, 0, 0.02);
   --dsw-shadow-lv2: 0 4px 12px 0 rgba(0, 0, 0, 0.02), 0 2px 8px 0 rgba(0, 0, 0, 0.04);
   --dsw-shadow-lv3:
     0 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 4px 0 rgba(0, 0, 0, 0.02), 0 12px 32px 0 rgba(0, 0, 0, 0.08);
-  /* Elevation：浮层/面板/面型按钮的描边+投影三件套。0.5px 发丝描边画在
-     box-shadow 里（组件配 border: 0，不占布局），叠两层极淡柔光；深色主题下
-     柔光几乎不可见，由描边承担分离。描边颜色经 --dsw-elevation-stroke-color
-     间接，组件可重绑（菜单面重绑最浅的 l1、输入框重绑 l2，输入框的
-     workspace-trigger 态置 transparent 只保留柔光）。soft 供输入框：更大
-     模糊、更低透明度的柔光。默认色只声明在 body 上，让表面的重绑沿继承
-     传给真正消费投影的后代。 */
+  /* Elevation：浮層/面板/面型按鈕的描邊+投影三件套。0.5px 髮絲描邊畫在
+     box-shadow 裡（元件配 border: 0，不佔佈局），疊兩層極淡柔光；深色主題下
+     柔光幾乎不可見，由描邊承擔分離。描邊顏色經 --dsw-elevation-stroke-color
+     間接，元件可重綁（選單面重綁最淺的 l1、輸入框重綁 l2，輸入框的
+     workspace-trigger 態置 transparent 只保留柔光）。soft 供輸入框：更大
+     模糊、更低透明度的柔光。預設色只宣告在 body 上，讓表面的重綁沿繼承
+     傳給真正消費投影的後代。 */
   --dsw-elevation-stroke-color: var(--dsw-alias-border-l4);
   /* Blocking masks dim the page; menu backgrounds retain their blur. */
   --dsw-mask-blur: none;
@@ -24,10 +24,10 @@ body[data-ds-dark-theme] [data-menu-material] {
   --dsw-elevation-stroke-color: var(--dsw-alias-border-l3);
 }
 
-/* 派生 elevation 值逐元素声明而非从 body 继承：继承传下来的是在 body 上就
-   已替换完 var() 的值，组件重绑 --dsw-elevation-stroke-color 将无法进入
-   var(--dsw-elevation-*)；逐元素声明让每个元素按自己看到的描边色重新替换
-   （同 scrollbar.css 对 --dsh-scrollbar-thumb 的处理）。 */
+/* 派生 elevation 值逐元素宣告而非從 body 繼承：繼承傳下來的是在 body 上就
+   已替換完 var() 的值，元件重綁 --dsw-elevation-stroke-color 將無法進入
+   var(--dsw-elevation-*)；逐元素宣告讓每個元素按自己看到的描邊色重新替換
+   （同 scrollbar.css 對 --dsh-scrollbar-thumb 的處理）。 */
 body,
 body * {
   --dsw-elevation-stroke: 0 0 0 0.5px var(--dsw-elevation-stroke-color);
@@ -44,18 +44,18 @@ body[data-ds-dark-theme] {
   --dsw-linear-think-select: linear-gradient(180deg, #232325 20.19%, rgba(35, 35, 37, 0) 100%);
 }
 
-/* ---------- 字体 ---------- */
-/* 由 @deepseek-figma-plugin/custom-variable-name 插件导出 */
-/* Markdown 阶梯整体按 0.875（正文 16 → 14）等比缩放，四舍五入到整数像素；
-   重新从 Figma 导出时需要保留这一缩放。 */
-/* 正文字号调节：--dsh-content-font-size 由主题 bootstrap 与 ThemePresenter
-   写在 body 上（整数 px，12–17，默认 14）。标题与正文变体按同一像素增量
-   （--dsh-content-font-delta）随动，保持层级。低一档文本（think、工具/bash
-   行的标题与摘要、markdown 表格、流内次级说明等）统一读
-   --dsh-content-font-size-secondary：设置 ≤14 时为设置值 −1，>14 时为
-   设置值 −2（12→11、13→12、14→13、15→13、16→14、17→15）。式中
-   max(13px,·) 的作用是让低设置取 −1 而非 −2，不是结果下限——12 设置下
-   层级触底 11px。small、code 属于密集次级文本，保持固定。 */
+/* ---------- 字型 ---------- */
+/* 由 @deepseek-figma-plugin/custom-variable-name 外掛匯出 */
+/* Markdown 階梯整體按 0.875（正文 16 → 14）等比縮放，四捨五入到整數畫素；
+   重新從 Figma 匯出時需要保留這一縮放。 */
+/* 正文字號調節：--dsh-content-font-size 由主題 bootstrap 與 ThemePresenter
+   寫在 body 上（整數 px，12–17，預設 14）。標題與正文變體按同一畫素增量
+   （--dsh-content-font-delta）隨動，保持層級。低一檔文字（think、工具/bash
+   行的標題與摘要、markdown 表格、流內次級說明等）統一讀
+   --dsh-content-font-size-secondary：設定 ≤14 時為設定值 −1，>14 時為
+   設定值 −2（12→11、13→12、14→13、15→13、16→14、17→15）。式中
+   max(13px,·) 的作用是讓低設定取 −1 而非 −2，不是結果下限——12 設定下
+   層級觸底 11px。small、code 屬於密集次級文字，保持固定。 */
 body {
   --dsh-content-font-delta: calc(var(--dsh-content-font-size, 14px) - 14px);
   --dsh-content-font-size-secondary: min(calc(var(--dsh-content-font-size, 14px) - 1px), max(13px, calc(var(--dsh-content-font-size, 14px) - 2px)));
@@ -173,7 +173,7 @@ body {
   --dsw-font-markdown-code-block-font-size: 11px;
   --dsw-font-markdown-code-block-font-style: normal;
 
-  /* 手工补充（非插件导出）：tool row 展开卡片内的小号 code 字体。 */
+  /* 手工補充（非外掛匯出）：tool row 展開卡片內的小號 code 字型。 */
   --dsw-font-markdown-code-block-small: 11px/16px var(--ds-font-family-code);
   --dsw-font-markdown-code-block-small-font-family: var(--ds-font-family-code);
   --dsw-font-markdown-code-block-small-font-weight: 400;

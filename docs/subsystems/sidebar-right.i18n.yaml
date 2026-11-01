@@ -4,40 +4,40 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/sidebar-right.md
 /right-sidebar:
   en: e84f3719f0a99a63
-  zh: 387656d860d3c2c4
+  zh: 1e46acaecef2b63f
 /right-sidebar/position-and-ownership:
   en: 35e347438a6ea22f
-  zh: a33a57edd698a6ec
+  zh: ff64ce3ec4e4bc92
 /right-sidebar/addresses:
   en: 465f0c330fc1054b
-  zh: bd0b68a05790fff8
+  zh: 7faef2d5c8a0bd52
 /right-sidebar/tab-type-registration:
   en: 1e01c817c5879c40
-  zh: a79abd92ee4c8f85
+  zh: d9f9a4c3611dc8fe
 /right-sidebar/navigation-ctx-sidebarright:
   en: 0f80b5364cbad804
-  zh: db81652a5374fad1
+  zh: 49d223151f16bb8a
 /right-sidebar/slots-and-owner-props:
   en: f58dc6ff6b0027a7
-  zh: 707722fcbd096efc
+  zh: 2c0fc2f21c7553e1
 /right-sidebar/document-renderers:
   en: 2bf47a890fce175e
-  zh: 45f81c579b8939a8
+  zh: 01509bc458a863be
 /right-sidebar/resource-model:
   en: 2916306e6cb9282c
-  zh: cdec047989860202
+  zh: 7469a32e68f45d3f
 /right-sidebar/workspace-files:
   en: 2b1b49dbba9cc9ee
-  zh: 13d2a45224743b37
+  zh: 70a5e944f85d4cc7
 /right-sidebar/shipped-types:
   en: 05d32027885d711e
-  zh: 0905ed46fef4b833
+  zh: d96227ce52e7bdf2
 /right-sidebar/agent-open-requests:
   en: 47863624e70ef428
-  zh: 431194cd35178387
+  zh: c4b78a1dc434a4b7
 /right-sidebar/cordis-api/ctx-sidebarbrowser-sidebarbrowseropener:
   en: 5884db3d97e5d118
   zh: 5884db3d97e5d118
 /right-sidebar/not-built:
   en: 65e86c293eb99242
-  zh: 852dfe7713848453
+  zh: 4fb0b726dff2d54c

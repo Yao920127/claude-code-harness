@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.md
 /agent-note-multi-vendor-web-search:
   en: 046ae5d3fbddca9b
-  zh: 9b9e95a76947a774
+  zh: 364a3d4964aea213
 /agent-note-multi-vendor-web-search/problem:
   en: 5d58d63a7f540b4e
-  zh: 306071bb23ee3bc8
+  zh: f9b7198391213d6a
 /agent-note-multi-vendor-web-search/decision:
   en: edfd9d64d981fb88
-  zh: 034a531b5fbf2ea1
+  zh: 128ed150192e5664
 /agent-note-multi-vendor-web-search/alternatives-considered:
   en: 51f036b14d33b1cc
-  zh: 6531df5b2d7585d6
+  zh: c007dc874dfb8cbd
 /agent-note-multi-vendor-web-search/consequences:
   en: 404a6cf50087f126
-  zh: a2a37ad52a08e701
+  zh: fc96d4269b33d518

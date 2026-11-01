@@ -4,52 +4,52 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-chat/src/client/conversation-nodes/README.md
 /:
   en: d7bf1c268431c860
-  zh: dec11c9713bb28de
+  zh: 26800a69d75ecb18
 /chat-conversation-node-rules:
   en: 31db799cfabb71c0
-  zh: dfcdaacbc093cbf6
+  zh: 760a8a3d4daa4516
 /chat-conversation-node-rules/summary:
   en: 660130914d717369
-  zh: 7e0161dbfe788e96
+  zh: 8eb493f0b84fc8cd
 /chat-conversation-node-rules/table-of-contents:
   en: 84f7d8e6c5d73b94
-  zh: 593e9ee2c70468be
+  zh: f73c5a59fd6d0a7a
 /chat-conversation-node-rules/how-one-turn-becomes-a-transcript:
   en: 4248ac4fbe0876ff
-  zh: 620c8eb9ea8e5a15
+  zh: 6938b8d0e7605935
 /chat-conversation-node-rules/how-one-turn-becomes-a-transcript/a-complete-example:
   en: 82d9651b9d284c1f
-  zh: ec1adc15b33a27cf
+  zh: 24301efe292cef29
 /chat-conversation-node-rules/how-one-turn-becomes-a-transcript/what-the-reader-sees:
   en: 91b35cbebe8c2a1d
-  zh: a4fee6d7102bc874
+  zh: 27905c7263e0ec5d
 /chat-conversation-node-rules/whole-turn-folding:
   en: 8db4991626210708
-  zh: e18c8aa3cb434980
+  zh: 681c44b9ea75635f
 /chat-conversation-node-rules/display-modes:
   en: 42342a06ef189075
-  zh: 1a554b50125fcdda
+  zh: b4849f3244da6da5
 /chat-conversation-node-rules/display-modes/group-title-rules:
   en: a6d29a5ea3fd2362
-  zh: dbd07bf82cdd61b1
+  zh: a1ad1b03432edba9
 /chat-conversation-node-rules/process-grouping:
   en: 276a97b95610f5e8
-  zh: 7627b2afb0a7c0f4
+  zh: e04af0c22b3344bd
 /chat-conversation-node-rules/process-grouping/examples:
   en: 2a550f7e04bce4b0
-  zh: b8f95b687448cd77
+  zh: 2a541c51dbdc8571
 /chat-conversation-node-rules/activity-summaries:
   en: 0e1861c354e73f98
-  zh: 397ee5caa0b2e8be
+  zh: 97560d944c5e57a9
 /chat-conversation-node-rules/activity-summaries/category-counts:
   en: 131811a8a12c9d81
-  zh: f8a8c1e02a5787f8
+  zh: f503a160a2f12595
 /chat-conversation-node-rules/activity-summaries/tool-name-classification:
   en: a962c232f916bfff
-  zh: 2e80754623c3f14d
+  zh: e9d184df29e5a985
 /chat-conversation-node-rules/activity-summaries/subagents-background-jobs-and-nested-calls:
   en: e7796e7ba825c3d6
-  zh: c377d9eab0a8869f
+  zh: 900cf596f5dedc6c
 /chat-conversation-node-rules/activity-summaries/live-activity-and-detail:
   en: d4256eadd2e9ba96
-  zh: ff6eeb1187ac683a
+  zh: 6243a0c5dccff813

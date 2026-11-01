@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-19-session-local-subagent-migration.md
 /agent-note-complete-parent-catalogs-without-migrating-child-catalogs:
   en: 352c234841bc0905
-  zh: 89be7b695aec5931
+  zh: b64fac1819022d8e
 /agent-note-complete-parent-catalogs-without-migrating-child-catalogs/problem:
   en: 5ca0c3232895a9dd
-  zh: cb89e5464d4a5f99
+  zh: 8b76662c76c94364
 /agent-note-complete-parent-catalogs-without-migrating-child-catalogs/decision:
   en: 7a368a5ad8dc3e0c
-  zh: 11ca2af33de30d8f
+  zh: 7e31dacd31276c28
 /agent-note-complete-parent-catalogs-without-migrating-child-catalogs/alternatives-considered:
   en: 7272107ab68ceefd
-  zh: 8b8bba44c9e0c402
+  zh: 07bbbb464feac4dd
 /agent-note-complete-parent-catalogs-without-migrating-child-catalogs/consequences:
   en: 7caecc8516419375
-  zh: cc966c325896737d
+  zh: b081ac8ed608b5c0

@@ -1,29 +1,29 @@
-# Agent Note：Desktop 主进程在工作区 tsdown 阶段之后再打 bundle
+# Agent Note：Desktop 主程序在工作區 tsdown 階段之後再打 bundle
 
 Status: implemented
 
 [English](2026-09-22-desktop-main-bundle-after-workspace-tsdown.md) | 中文
 
-## 问题
+## 問題
 
-从全新 worktree 打出的 macOS Desktop 安装包启动即崩：`ERR_MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-home-paths' imported from app.asar/lib/main.js`。打包日志给出了原因：rolldown 报告了 `[UNRESOLVED_IMPORT] Could not resolve '@deepseek-ai/dsh-home-paths' … treating it as an external dependency`，`@deepseek-ai/dsh-app-boot` 与 `@deepseek-ai/dsh-deepseek-account` 也是同样情况。这三个包是 `apps/desktop` 的工作区 devDependencies，主进程 bundle 必须把它们内联，因为 electron-builder 只把清单中的 `dependencies` 复制进 `app.asar/node_modules`。
+從全新 worktree 打出的 macOS Desktop 安裝檔啟動即崩：`ERR_MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/dsh-home-paths' imported from app.asar/lib/main.js`。打包日誌給出了原因：rolldown 報告了 `[UNRESOLVED_IMPORT] Could not resolve '@deepseek-ai/dsh-home-paths' … treating it as an external dependency`，`@deepseek-ai/dsh-app-boot` 與 `@deepseek-ai/dsh-deepseek-account` 也是同樣情況。這三個包是 `apps/desktop` 的工作區 devDependencies，主程序 bundle 必須把它們內聯，因為 electron-builder 只把清單中的 `dependencies` 複製進 `app.asar/node_modules`。
 
-根 tsdown 配置并发构建所有匹配到的 workspace 成员（tsdown 0.22 对解析出的配置做 `Promise.all`，没有任何依赖排序），而 `apps/desktop` 是其中一员。它的 bundle 通过这三个包的 `exports` 解析到 `lib/index.js`，而其他并发构建此时还没有写出这些文件。在此前构建过的检出目录里，陈旧的 `lib/` 产物存在，bundle 会把它们内联，因此缺陷只在干净树上出现；两份配置里的 `clean: false` 一直掩盖着它。坏的 bundle 也更小（189 KB 而不是 315 KB），并且打包流程通过了所有已有检查，因为运行时载荷 smoke 检验的是 dsh 运行时，不是 Electron 主进程。
+根 tsdown 設定並行建置所有匹配到的 workspace 成員（tsdown 0.22 對解析出的設定做 `Promise.all`，沒有任何依賴排序），而 `apps/desktop` 是其中一員。它的 bundle 透過這三個包的 `exports` 解析到 `lib/index.js`，而其他並行建置此時還沒有寫出這些檔案。在此前建置過的檢出目錄裡，陳舊的 `lib/` 產物存在，bundle 會把它們內聯，因此缺陷只在乾淨樹上出現；兩份設定裡的 `clean: false` 一直掩蓋著它。壞的 bundle 也更小（189 KB 而不是 315 KB），並且打包流程透過了所有已有檢查，因為執行時載荷 smoke 檢驗的是 dsh 執行時，不是 Electron 主程序。
 
-## 决策
+## 決策
 
-`apps/desktop` 退出根 tsdown 的 `workspace` 列表。根 `build:lib:host` 脚本先跑 Host tsdown 阶段，再执行 `pnpm --filter @deepseek-ai/dsh-desktop run bundle`，让主进程 bundle 解析的是已经存在的工作区 `lib/` 产物。该包自己的 `build` 脚本为本地使用保留同样的先 `tsc -b` 再 `bundle` 的顺序。单独运行 Desktop 配置得到的产物与此前 workspace 模式下的产物逐字节一致：该配置本来就是自足的，根配置的插件没有为它贡献任何内容。
+`apps/desktop` 退出根 tsdown 的 `workspace` 列表。根 `build:lib:host` 腳本先跑 Host tsdown 階段，再執行 `pnpm --filter @deepseek-ai/dsh-desktop run bundle`，讓主程序 bundle 解析的是已經存在的工作區 `lib/` 產物。該包自己的 `build` 腳本為本地使用保留同樣的先 `tsc -b` 再 `bundle` 的順序。單獨執行 Desktop 設定得到的產物與此前 workspace 模式下的產物逐位元組一致：該設定本來就是自足的，根設定的外掛沒有為它貢獻任何內容。
 
-Desktop 配置同时断言这次崩溃所违反的不变量。[`desktop-bundle-imports`](../../../../apps/desktop/scripts/desktop-bundle-imports.mjs) 是挂在每个 Desktop bundle 上的 rolldown 插件，其 `moduleParsed` 钩子在某个模块以静态 import、动态 `import()` 或 `require()` 导入了打包应用无法解析的裸说明符时让构建失败：主进程 bundle 可以导入 `electron`、Node 内置模块与清单的 `dependencies`；沙箱 preload 只能导入 `electron`、`events`、`timers` 与 `url`，即 Electron 沙箱 `require` polyfill 能解析的模块。该钩子读取每个模块的导入记录，其中外部导入保留裸说明符、被打包的导入带有绝对 id；chunk 元数据（`imports`/`dynamicImports`）不包含外部的 `import()` 与 `require()` 目标，无法用于这项检查。这项检查陈述的是真正的要求而非症状，因此它同样拒绝被移出 `dependencies` 的工作区包或损坏的 `exports` 条目，且被拒绝的 bundle 不写出任何产物。
+Desktop 設定同時斷言這次崩潰所違反的不變數。[`desktop-bundle-imports`](../../../../apps/desktop/scripts/desktop-bundle-imports.mjs) 是掛在每個 Desktop bundle 上的 rolldown 外掛，其 `moduleParsed` 掛鉤在某個模組以靜態 import、動態 `import()` 或 `require()` 匯入了打包應用無法解析的裸說明符時讓建置失敗：主程序 bundle 可以匯入 `electron`、Node 內建模組與清單的 `dependencies`；沙箱 preload 只能匯入 `electron`、`events`、`timers` 與 `url`，即 Electron 沙箱 `require` polyfill 能解析的模組。該掛鉤讀取每個模組的匯入記錄，其中外部匯入保留裸說明符、被打包的匯入帶有絕對 id；chunk 中繼資料（`imports`/`dynamicImports`）不包含外部的 `import()` 與 `require()` 目標，無法用於這項檢查。這項檢查陳述的是真正的要求而非症狀，因此它同樣拒絕被移出 `dependencies` 的工作區包或損壞的 `exports` 條目，且被拒絕的 bundle 不寫出任何產物。
 
-## 备选方案
+## 備選方案
 
-**把这三个包声明为运行时 `dependencies`，让 electron-builder 装进 asar。** `@deepseek-ai/cordis` 与 `@deepseek-ai/dsh-api-gateway` 今天就是这样进入 asar 的，这也消除了顺序问题。但 `dsh-app-boot` 会把一棵很大的依赖树带进 `app.asar/node_modules`，与 packed dsh 运行时内已有的副本重复，并扩大运行时文件策略必须筛查的载荷。
+**把這三個包宣告為執行時 `dependencies`，讓 electron-builder 裝進 asar。** `@deepseek-ai/cordis` 與 `@deepseek-ai/dsh-api-gateway` 今天就是這樣進入 asar 的，這也消除了順序問題。但 `dsh-app-boot` 會把一棵很大的依賴樹帶進 `app.asar/node_modules`，與 packed dsh 執行時內已有的副本重複，並擴大執行時檔案策略必須篩查的載荷。
 
-**通过 `inputOptions.onLog` 或 `failOnWarn` 让 rolldown 的 `UNRESOLVED_IMPORT` warning 直接失败。** 它只覆盖未解析这一种情况，覆盖不了被误声明为 devDependency 的依赖：产物存在时它会被解析并内联，不存在时才留成外部导入。打包导入检查用一条规则同时覆盖两者。
+**透過 `inputOptions.onLog` 或 `failOnWarn` 讓 rolldown 的 `UNRESOLVED_IMPORT` warning 直接失敗。** 它只覆蓋未解析這一種情況，覆蓋不了被誤宣告為 devDependency 的依賴：產物存在時它會被解析並內聯，不存在時才留成外部匯入。打包匯入檢查用一條規則同時覆蓋兩者。
 
-**按依赖图给 workspace 构建排序。** tsdown 不提供这种排序，而其他每个成员要么不从工作区内联任何内容，要么把已声明的 `dependencies` 留成外部导入，都不需要排序。为唯一需要它的包多加一步，比通用调度器更小。
+**按依賴圖給 workspace 建置排序。** tsdown 不提供這種排序，而其他每個成員要麼不從工作區內聯任何內容，要麼把已宣告的 `dependencies` 留成外部匯入，都不需要排序。為唯一需要它的包多加一步，比通用排程器更小。
 
-## 后果
+## 後果
 
-干净的检出目录（包括 CI 与全新 worktree）产出的 Desktop 主进程 bundle 与长期使用的检出目录一致。缺失或误声明的运行时导入现在会让 `pnpm run build` 和每条打包命令在签名与公证耗时之前失败，并报出导入方模块与违规说明符。Host 构建多出一个串行步骤，在开发机上约一秒。`docs/development.md` 在根构建顺序中列出了 desktop bundle 步骤，`scripts/wine-windows-gates.sh` 与之保持一致，导入规则由 [Desktop README](../../../../apps/desktop/README.zh.md#bundled-workspace-dependencies) 负责。
+乾淨的檢出目錄（包括 CI 與全新 worktree）產出的 Desktop 主程序 bundle 與長期使用的檢出目錄一致。缺失或誤宣告的執行時匯入現在會讓 `pnpm run build` 和每條打包命令在簽名與公證耗時之前失敗，並報出匯入方模組與違規說明符。Host 建置多出一個序列步驟，在開發機上約一秒。`docs/development.md` 在根建置順序中列出了 desktop bundle 步驟，`scripts/wine-windows-gates.sh` 與之保持一致，匯入規則由 [Desktop README](../../../../apps/desktop/README.zh.md#bundled-workspace-dependencies) 負責。

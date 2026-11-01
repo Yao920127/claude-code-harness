@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-31-even-out-shipped-tool-rosters.md
 /agent-note-even-out-the-shipped-tool-rosters:
   en: aa8ec8438dc609aa
-  zh: 28172207b09ea3ad
+  zh: 171130afcd124e12
 /agent-note-even-out-the-shipped-tool-rosters/problem:
   en: 69e127b53366cf66
-  zh: 63f783ac453d4cbe
+  zh: a6a24403f920d16c
 /agent-note-even-out-the-shipped-tool-rosters/decision:
   en: 45662b711bd9a201
-  zh: 845cd2a9193cbe0f
+  zh: b989d15966a329c2
 /agent-note-even-out-the-shipped-tool-rosters/decision/what-stays-unmounted-and-why:
   en: 7a74b42b428b9cf9
-  zh: 4f534ccd26b9ecc4
+  zh: 5149c5b4e6e42f73
 /agent-note-even-out-the-shipped-tool-rosters/decision/mcp-is-a-dependency-not-a-row:
   en: 45358314e6adae26
-  zh: 85ca6a6ce7bbf947
+  zh: 45702b22aa3b58fe
 /agent-note-even-out-the-shipped-tool-rosters/testing:
   en: 07e46125d49a2068
-  zh: 83a1b2737768651b
+  zh: 9bfc1a274d96039c
 /agent-note-even-out-the-shipped-tool-rosters/alternatives-considered:
   en: cf41f0bf700af59c
-  zh: 1dcaafe6bb944d92
+  zh: 96206950fb771b06
 /agent-note-even-out-the-shipped-tool-rosters/consequences:
   en: cf1821c985507b13
-  zh: 0f7396a06d1b19fb
+  zh: b11e4b4206970afb

@@ -1,42 +1,42 @@
-# 浏览器操作
+# 瀏覽器操作
 
 [English](browser-use.md) | 中文
 
-浏览器操作让模型通过配置的后端检查与操作网页。DSH 拥有任务循环；提供方提供浏览器操作，并在一个实时 Session 的多个轮次之间保留浏览器状态。
+瀏覽器操作讓模型透過設定的後端檢查與操作網頁。DSH 擁有任務迴圈；提供者提供瀏覽器操作，並在一個即時 Session 的多個輪次之間保留瀏覽器狀態。
 
-## 选择提供方
+## 選擇提供者
 
-在同一组合中挂载 [`dsh-browser-use`](../../packages/browser-use/browser-use/README.zh.md) 和一个提供方。这些提供方是实验性公共 npm 包，需要显式激活。它们最初支持的浏览器引擎是 Chromium。
+在同一組閤中掛載 [`dsh-browser-use`](../../packages/browser-use/browser-use/README.zh.md) 和一個提供者。這些提供者是實驗性公共 npm 包，需要顯式啟用。它們最初支援的瀏覽器引擎是 Chromium。
 
-| 提供方 | 集成方式 |
+| 提供者 | 整合方式 |
 |---|---|
-| [Playwright MCP](../../packages/experimental/browser-use-playwright-mcp/README.zh.md) | Playwright 的浏览器控制 MCP 工具 |
-| [Chrome DevTools MCP](../../packages/experimental/browser-use-chrome-devtools-mcp/README.zh.md) | 通过 MCP 进行 Chrome DevTools 检查与控制 |
-| [Stagehand](../../packages/experimental/browser-use-stagehand-native/README.zh.md) | 原生浏览器操作，支持 AI（人工智能）辅助的动作、观测与提取 |
+| [Playwright MCP](../../packages/experimental/browser-use-playwright-mcp/README.zh.md) | Playwright 的瀏覽器控制 MCP 工具 |
+| [Chrome DevTools MCP](../../packages/experimental/browser-use-chrome-devtools-mcp/README.zh.md) | 透過 MCP 進行 Chrome DevTools 檢查與控制 |
+| [Stagehand](../../packages/experimental/browser-use-stagehand-native/README.zh.md) | 原生瀏覽器操作，支援 AI（人工智慧）輔助的動作、觀測與提取 |
 
-共享服务只注册名称，并拒绝任何第二次提供方注册，包括同名实例。它不包含通用浏览器操作方法、浏览器资源或模型控制的选择器。Profile 或 preset 中的提供方配置为此次激活选择启动或附加模式。
+共享服務只註冊名稱，並拒絕任何第二次提供者註冊，包括同名實例。它不包含通用瀏覽器操作方法、瀏覽器資源或模型控制的選擇器。Profile 或 preset 中的提供者設定為此次啟用選擇啟動或附加模式。
 
-## Session 所有权
+## Session 所有權
 
-启动的浏览器属于使用它的确切实时 Agent 与 Session。跨轮次的调用复用该浏览器。Session 运行时释放时关闭其启动的资源；重新加载或 fork Session 时创建全新浏览器状态。浏览器 profile 和登录状态不会从 Session 日志恢复。
+啟動的瀏覽器屬於使用它的確切即時 Agent 與 Session。跨輪次的呼叫複用該瀏覽器。Session 執行時釋放時關閉其啟動的資源；重新載入或 fork Session 時建立全新瀏覽器狀態。瀏覽器 profile 和登入狀態不會從 Session 日誌恢復。
 
-附加的浏览器仍归外部所有。提供方在该提供方实例内将浏览器保留给一个 Session，保留现有浏览器状态，并拒绝另一个 Session 同时附加。清理会断开连接并保持外部浏览器运行。独立 DSH 进程与其他客户端不受此保留约束。
+附加的瀏覽器仍歸外部所有。提供者在該提供者實例內將瀏覽器保留給一個 Session，保留現有瀏覽器狀態，並拒絕另一個 Session 同時附加。清理會斷開連線並保持外部瀏覽器執行。獨立 DSH 程序與其他用戶端不受此保留約束。
 
-提供方关闭时先停止接收工具调用，并等待自有工作与资源清理完成，再释放共享提供方注册。取消无法撤销已交付的浏览器操作。
+提供者關閉時先停止接收工具呼叫，並等待自有工作與資源清理完成，再釋放共享提供者註冊。取消無法撤銷已交付的瀏覽器操作。
 
 ## MCP 初始化
 
-MCP 提供方为其加载后创建的每个活动 Agent 初始化一个客户端。现有的串行 `agent/created` 事件等待连接和发现结束后，创建或恢复才完成，排队输入才开始运行。客户端跨轮次归 Session 所有。启动失败或取消会拒绝创建或恢复，并触发客户端清理。
+MCP 提供者為其載入後建立的每個活動 Agent 初始化一個用戶端。現有的序列 `agent/created` 事件等待連線和發現結束後，建立或恢復才完成，排隊輸入才開始執行。用戶端跨輪次歸 Session 所有。啟動失敗或取消會拒絕建立或恢復，並觸發用戶端清理。
 
-如果附加连接已被占用，本次激活不使用浏览器，但继续运行，后续轮次不会重试。连接释放后，新创建或恢复的激活可以获取它。加载或重新加载提供方不会接管已经活动的 Session；[共享运行时](../../packages/experimental/browser-use-runtime/README.zh.md)拥有这些初始化规则。
+如果附加連線已被佔用，本次啟用不使用瀏覽器，但繼續執行，後續輪次不會重試。連線釋放後，新建立或恢復的啟用可以取得它。載入或重新載入提供者不會接管已經活動的 Session；[共享執行時](../../packages/experimental/browser-use-runtime/README.zh.md)擁有這些初始化規則。
 
-## 工具与记录结果
+## 工具與記錄結果
 
-提供方工具使用常规 DSH 执行管线与 Session 日志。提供方拥有自己的工具 schema、结果渲染、图像支持、配置和上游限制；共享服务不添加模型可见内容。Stagehand 的 AI 辅助操作使用其显式配置的原生模型，DSH 保留任务循环。DSH 模型路由、凭据复用、底层推理请求/响应捕获，以及与 Session 用量计量的集成均属暂缓工作；返回的 SDK 数据和元数据仍作为普通工具结果记录。
+提供者工具使用常規 DSH 執行管線與 Session 日誌。提供者擁有自己的工具 schema、結果渲染、影象支援、設定和上游限制；共享服務不新增模型可見內容。Stagehand 的 AI 輔助操作使用其顯式設定的原生模型，DSH 保留任務迴圈。DSH 模型路由、憑證複用、底層推理請求/回應捕捉，以及與 Session 用量計量的整合均屬暫緩工作；返回的 SDK 資料和中繼資料仍作為普通工具結果記錄。
 
-浏览器 MCP 连接还提供[资源和服务器指令](mcp.zh.md)。发往浏览器服务器的资源调用使用其 Session 队列，并拒绝其他 Session 的请求；服务器指令只会组装到所属 Session 的提示词中。
+瀏覽器 MCP 連線還提供[資源和伺服器指令](mcp.zh.md)。發往瀏覽器伺服器的資源呼叫使用其 Session 佇列，並拒絕其他 Session 的請求；伺服器指令只會組裝到所屬 Session 的提示詞中。
 
-[决策记录](../../.agents/notes/implemented/architecture/2026-09-12-browser-use-provider-registration.zh.md)解释只注册名称的服务与按 Session 管理的所有权。
+[決策記錄](../../.agents/notes/implemented/architecture/2026-09-12-browser-use-provider-registration.zh.md)解釋只註冊名稱的服務與按 Session 管理的所有權。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

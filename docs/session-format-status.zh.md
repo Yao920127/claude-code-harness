@@ -1,63 +1,63 @@
-# Session 格式版本与发布状态
+# Session 格式版本與釋出狀態
 
 [English](session-format-status.md) | 中文
 
 ## 概述
 
-本参考区分工作区写入器、已接受兼容性基线与最新已发布的 Session 格式。代码常量拥有写入器版本；下方定稿记录和发布记录分别标识已接受历史与发布证据。其他文档链接到这里，不重复这些值。
+本參考區分工作區寫入器、已接受相容性基線與最新已釋出的 Session 格式。程式碼常數擁有寫入器版本；下方定稿記錄和釋出記錄分別標識已接受歷史與釋出證據。其他文件連結到這裡，不重複這些值。
 
-## 目录
+## 目錄
 
-- [单一真源](#sources-of-truth)
-- [定稿记录](#finalization-record)
-- [发布记录](#release-record)
-- [更新记录](#updating-the-record)
-- [开发备注](#dev-note)
+- [單一真源](#sources-of-truth)
+- [定稿記錄](#finalization-record)
+- [釋出記錄](#release-record)
+- [更新記錄](#updating-the-record)
+- [開發備註](#dev-note)
 
 <a id="sources-of-truth"></a>
-## 单一真源
+## 單一真源
 
-- **工作区写入器：**[核心 Session 类型](../packages/core/session/src/types.ts)中的 `SESSION_FORMAT_VERSION` 是代码中唯一手工维护的当前写入器版本号。[目录生成器](../scripts/gen-session-format-catalog.ts)推导 codec 顺序，并检查相邻迁移是否到达该版本。包版本、codec 导出名称、fixture（测试前置数据）文件名或投影缓存版本都不是写入器版本的权威来源。
-- **最新已发布格式：**下方记录中的 `latestReleasedVersion` 标识已发布的 Session 格式。`evidenceTag` 指定一个已发布的产品版本，其标签对应的写入器具有该值；它不必是首次携带该格式的发布。双语副本按同一记录校验，不作为独立决策维护。
-- **发布状态：**比较写入器常量与已核实的发布记录。相等表示写入器格式已经发布。写入器版本更高表示发布记录尚未收录它；独立的定稿记录标识已接受的兼容性基线。用较新分支中已核实的记录对比旧工作区时，较低的写入器版本表示较旧的写入器格式；本地一致性门禁会拒绝同一工作区内的这种大小关系。不另行维护 released 布尔值。在声明更高版本尚未发布前，必须核实是否已有产品发布推进了记录。
+- **工作區寫入器：**[核心 Session 型別](../packages/core/session/src/types.ts)中的 `SESSION_FORMAT_VERSION` 是程式碼中唯一手工維護的目前寫入器版本號。[目錄生成器](../scripts/gen-session-format-catalog.ts)推導 codec 順序，並檢查相鄰遷移是否到達該版本。包版本、codec 匯出名稱、fixture（測試前置資料）檔名或投影快取版本都不是寫入器版本的權威來源。
+- **最新已釋出格式：**下方記錄中的 `latestReleasedVersion` 標識已釋出的 Session 格式。`evidenceTag` 指定一個已釋出的產品版本，其標籤對應的寫入器具有該值；它不必是首次攜帶該格式的釋出。雙語副本按同一記錄驗證，不作為獨立決策維護。
+- **釋出狀態：**比較寫入器常數與已核實的釋出記錄。相等表示寫入器格式已經發布。寫入器版本更高表示釋出記錄尚未收錄它；獨立的定稿記錄標識已接受的相容性基線。用較新分支中已核實的記錄對比舊工作區時，較低的寫入器版本表示較舊的寫入器格式；本地一致性門禁會拒絕同一工作區內的這種大小關係。不另行維護 released 布林值。在宣告更高版本尚未釋出前，必須核實是否已有產品釋出推進了記錄。
 
-产品的 alpha、beta 或 release-candidate 发布都会确立已发布 Session 格式的义务。GitHub 的 prerelease 标记不会让持久化用户数据成为可丢弃数据。缺少发布记录不代表尚未发布。[版本与真源决策](../.agents/notes/implemented/architecture/2026-08-10-session-log-version-mechanism.zh.md)拥有兼容性决策；[已发布格式迁移](../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)拥有不可变代际与相邻转换规则。
+產品的 alpha、beta 或 release-candidate 釋出都會確立已釋出 Session 格式的義務。GitHub 的 prerelease 標記不會讓持久化使用者資料成為可丟棄資料。缺少釋出記錄不代表尚未釋出。[版本與真源決策](../.agents/notes/implemented/architecture/2026-08-10-session-log-version-mechanism.zh.md)擁有相容性決策；[已釋出格式遷移](../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)擁有不可變代際與相鄰轉換規則。
 
-[格式参考](persistence-changes/historical-formats/README.zh.md)记录从零到工作区写入器的每个整数版本，提供历史 schema 并引用现有的当前目录。
+[格式參考](persistence-changes/historical-formats/README.zh.md)記錄從零到工作區寫入器的每個整數版本，提供歷史 schema 並引用現有的目前目錄。
 
 <a id="finalization-record"></a>
-## 定稿记录
+## 定稿記錄
 
 ```yaml session-format-finalization
 latestFinalizedVersion: 4
 ```
 
-V4 的已接受兼容性基线保存在[检查点](persistence-changes/finalized/v4.json)中。向后兼容的 schema 变更可以通过新的确认记录保留 V4。破坏性变更要求更高的写入器版本及自身的头版本转换，不能复用已接受的 3→4 转换。已接受的机器记录与变更后 schema 保持不可变。[检查点规则](persistence-changes/README.zh.md#compatibility-rules)规定比较方法。
+V4 的已接受相容性基線儲存在[檢查點](persistence-changes/finalized/v4.json)中。向後相容的 schema 變更可以透過新的確認記錄保留 V4。破壞性變更要求更高的寫入器版本及自身的頭版本轉換，不能複用已接受的 3→4 轉換。已接受的機器記錄與變更後 schema 保持不可變。[檢查點規則](persistence-changes/README.zh.md#compatibility-rules)規定比較方法。
 
-定稿不冻结 V4 之后的每项新增，也不表示已发布。下方发布记录保留独立验证的已发布版本。普通注释、别名、源码位置，以及保留已接受含义的实现修复，不改变该基线。
+定稿不凍結 V4 之後的每項新增，也不表示已釋出。下方釋出記錄保留獨立驗證的已釋出版本。普通註解、別名、原始碼位置，以及保留已接受含義的實作修復，不改變該基線。
 
-首次发布 V4 前，每次集成仍写入 V3 的较新 master 都必须对已记录的本地源提交执行[显式 V3 词汇校验](cookbook/adding-a-session-format-version.zh.md#final-v3-vocabulary)。更新迁移所有的集合前，要核验源 pin 的新鲜度并审查新事件 payload 的转换。发布后，最终 V3 词汇保持为历史定义，与当前 V4 新增事件无关。
+首次釋出 V4 前，每次整合仍寫入 V3 的較新 master 都必須對已記錄的本地源提交執行[顯式 V3 詞彙驗證](cookbook/adding-a-session-format-version.zh.md#final-v3-vocabulary)。更新遷移所有的集合前，要核驗源 pin 的新鮮度並審查新事件 payload 的轉換。釋出後，最終 V3 詞彙保持為歷史定義，與目前 V4 新增事件無關。
 
 <a id="release-record"></a>
-## 发布记录
+## 釋出記錄
 
 ```yaml session-format-release
 latestReleasedVersion: 3
 evidenceTag: dsh-v0.1.5-alpha.1
 ```
 
-证据：已发布产品标签 `dsh-v0.1.5-alpha.1`；该标签的写入器路径：`packages/core/session/src/types.ts`。
+證據：已釋出產品標籤 `dsh-v0.1.5-alpha.1`；該標籤的寫入器路徑：`packages/core/session/src/types.ts`。
 
 <a id="updating-the-record"></a>
-## 更新记录
+## 更新記錄
 
-实现结构性写入器变更时，一起更新代码常量与相邻迁移目录；不要在产品发布前推进此发布记录。当产品首次发布更高的 Session 格式时，确认发布事实及对应标签的写入器，然后在同一次双语更新中推进本记录与证据标签及该标签的写入器路径。后续携带相同格式的产品发布无需改变此记录。开发主干上的记录绝不降低。
+實作結構性寫入器變更時，一起更新程式碼常數與相鄰遷移目錄；不要在產品釋出前推進此釋出記錄。當產品首次釋出更高的 Session 格式時，確認釋出事實及對應標籤的寫入器，然後在同一次雙語更新中推進本記錄與證據標籤及該標籤的寫入器路徑。後續攜帶相同格式的產品釋出無需改變此記錄。開發主幹上的記錄絕不降低。
 
-[文档标准测试](../scripts/doc-standard.spec.ts)检查记录结构、双语一致性、证据标签及写入器路径一致性，以及文档中的已发布版本不高于工作区写入器。这个无密钥检查不会查询 GitHub，也不能证明记录是最新的；核实发布事实仍属于发布更新的一部分。
+[文件標準測試](../scripts/doc-standard.spec.ts)檢查記錄結構、雙語一致性、證據標籤及寫入器路徑一致性，以及文件中的已釋出版本不高於工作區寫入器。這個無金鑰檢查不會查詢 GitHub，也不能證明記錄是最新的；核實釋出事實仍屬於釋出更新的一部分。
 
-一般行为使用“当前格式”和“下一条相邻版本”等表述。固定迁移的输入与输出、协议 schema、历史证据及针对特定版本的测试保留明确版本号。[格式版本实操手册](cookbook/adding-a-session-format-version.zh.md)用 N 表示最新已定稿或已发布格式，用 N+1 表示其后继版本。
+一般行為使用“目前格式”和“下一條相鄰版本”等表述。固定遷移的輸入與輸出、協定 schema、歷史證據及針對特定版本的測試保留明確版本號。[格式版本實操手冊](cookbook/adding-a-session-format-version.zh.md)用 N 表示最新已定稿或已釋出格式，用 N+1 表示其後繼版本。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

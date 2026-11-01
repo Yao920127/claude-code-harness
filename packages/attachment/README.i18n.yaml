@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/attachment/README.md
 /:
   en: 45edc3b0f7e4c61f
-  zh: 34032617b731defb
+  zh: f560b1145d888062
 /attachment-durable-attachment-capability-family:
   en: 10d0411d511b2bcf
   zh: e1638ec309de04cc
 /attachment-durable-attachment-capability-family/summary:
   en: a34dd6206d6b3ae8
-  zh: acbff9279eb83953
+  zh: b2baba1ba66690e9
 /attachment-durable-attachment-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /attachment-durable-attachment-capability-family/packages:
   en: ad42a47e03cfe15e
-  zh: 29757f523d316c4c
+  zh: f9f29ac331c3ca27
 /attachment-durable-attachment-capability-family/related-documentation:
   en: 266c2248482f594e
-  zh: ad5a2668505373a0
+  zh: 1b44d2492ba5d6d0
 /attachment-durable-attachment-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

@@ -1,5 +1,5 @@
 ---
-description: "设置领域底座插件：共享配置表单、schema 服务，以及 dsh Web 客户端的规范设置 slot 类型约定。"
+description: "設定領域底座外掛：共享設定表單、schema 服務，以及 dsh Web 用戶端的規範設定 slot 型別約定。"
 kind: "package-reference"
 ---
 
@@ -9,110 +9,110 @@ kind: "package-reference"
 
 ## 概述
 
-本包使 Web 客户端功能能够公开由宿主设置文档支持的可编辑偏好设置，而无需自行实现传输或 schema 处理。每项功能都可按命名空间读写、原子更新多个字段、校验 schema，并避免静默覆盖并发更改。它还为设置界面框架、页面、标题栏操作、插件标签页和引导流程提供标准扩展点，但自身不渲染任何界面。任何持有偏好设置的功能都可在不依赖呈现包的情况下使用它；设置外壳由单独的包提供。
+本包使 Web 用戶端功能能夠公開由主機設定文件支援的可編輯偏好設定，而無需自行實作傳輸或 schema 處理。每項功能都可按名稱空間讀寫、原子更新多個欄位、驗證 schema，並避免靜默覆蓋並行更改。它還為設定介面框架、頁面、標題欄操作、外掛標籤頁和引導流程提供標準擴充功能點，但自身不渲染任何介面。任何持有偏好設定的功能都可在不依賴呈現包的情況下使用它；設定外殼由單獨的包提供。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-功能插件用本包存储与编辑自己的偏好设置，而无需重新实现传输层或 schema 处理。每个组合挂载一次即可；它注入 `remote` 服务及其 `settings` 命名空间，并持有浏览器中唯一的 `settings.describe` 读取方。
+功能外掛用本包儲存與編輯自己的偏好設定，而無需重新實作傳輸層或 schema 處理。每個組合掛載一次即可；它注入 `remote` 服務及其 `settings` 名稱空間，並持有瀏覽器中唯一的 `settings.describe` 讀取方。
 
-### 配置表单
+### 設定表單
 
-`ctx.configForms.developerTools` 管理代码工作工具开关与 Web 和桌面端共享的偏好 `ui-settings.enabled`，默认为 `true`。其 `enabled` 可观察值发布已接受的选择，`setEnabled` 使用相同的有序设置写入。桌面端和回环 Web 将设置持久化到 Host 文档；远程 Web 将此选择保存在单个浏览器本地可观察值中，刷新后重置，不发送 Host 写入。此设置控制界面展示和 HTML 预览权限，不控制 Host 授权或 Session 记录。 使用 Host 偏好的客户端在首个经过 schema 解析并接受的值到达前保持开发者功能关闭；首次响应缺失或失败不会启用它们。后续刷新保留已接受的选择。
+`ctx.configForms.developerTools` 管理程式碼工作工具開關與 Web 和桌面端共享的偏好 `ui-settings.enabled`，預設為 `true`。其 `enabled` 可觀察值釋出已接受的選擇，`setEnabled` 使用相同的有序設定寫入。桌面端和迴環 Web 將設定持久化到 Host 文件；遠端 Web 將此選擇儲存在單個瀏覽器本地可觀察值中，重新整理後重置，不傳送 Host 寫入。此設定控制介面展示和 HTML 預覽權限，不控制 Host 授權或 Session 記錄。 使用 Host 偏好的用戶端在首個經過 schema 解析並接受的值到達前保持開發者功能關閉；首次回應缺失或失敗不會啟用它們。後續重新整理保留已接受的選擇。
 
-功能适配器使用 `ctx.configForms.get(entryId)` 获取该 Host 条目所有编辑器共享的已接受值和写入队列。快照包含解析后的 `value`、继承 `base`、原始 `user`、修订号、可写性和持久化模式。`set` 与 `unset` 提交单个操作，`mutate` 提交一个原子操作列表。暂存编辑器传入编辑前读取的修订号；冲突时保留草稿。清除操作移除覆盖并恢复继承。
+功能介面卡使用 `ctx.configForms.get(entryId)` 取得該 Host 條目所有編輯器共享的已接受值和寫入佇列。快照包含解析後的 `value`、繼承 `base`、原始 `user`、修訂號、可寫性和持久化模式。`set` 與 `unset` 提交單個操作，`mutate` 提交一個原子操作列表。暫存編輯器傳入編輯前讀取的修訂號；衝突時保留草稿。清除操作移除覆蓋並恢復繼承。
 
-### 跟随被服务的命名空间
+### 跟隨被服務的名稱空間
 
-编辑另一个插件所拥有命名空间的页面通过 `ctx.configForms.whileServed(namespaces, register)` 注册：只要所列命名空间中的任一个进入共享镜像，`register` 就运行一次，收到 Host 当前服务的命名空间集合，并返回该注册的 disposer；当它们全都不再被服务，或 `whileServed` 返回的 disposer 被调用时，这个 disposer 就运行。调用方持有返回的 disposer 并把它包进 `ctx.effect`；与 `get` 不同，服务不会在调用方的 context 上注册任何东西。因此从未组合过所有者的部署看不到该页面的任何痕迹，Host 停止服务的命名空间会撤下它。插件页上的四个官方页面各自通过一个伴生包走这条路径。
+編輯另一個外掛所擁有名稱空間的頁面透過 `ctx.configForms.whileServed(namespaces, register)` 註冊：只要所列名稱空間中的任一個進入共享映像，`register` 就執行一次，收到 Host 目前服務的名稱空間集合，並返回該註冊的 disposer；當它們全都不再被服務，或 `whileServed` 返回的 disposer 被呼叫時，這個 disposer 就執行。呼叫方持有返回的 disposer 並把它包進 `ctx.effect`；與 `get` 不同，服務不會在呼叫方的 context 上註冊任何東西。因此從未組合過所有者的部署看不到該頁面的任何痕跡，Host 停止服務的名稱空間會撤下它。外掛頁上的四個官方頁面各自透過一個伴生包走這條路徑。
 
-### 填充设置 slot
+### 填充設定 slot
 
-设置界面会注册进本包声明的 slot 类型。外壳（`sidebar.settings` 占位方、导航、界面框架）位于 ui-settings-general；功能页面注册 `settings.section` 贡献；「插件」分区承载 `settings.plugins.tab` 页面；首次使用引导步骤注册 `settings.onboarding`。跨命名空间的表面（schema 内省、已服务命名空间目录、`hasDocument`）通过 `ctx.configForms.describe()` 读同一面镜像。
+設定介面會註冊進本包宣告的 slot 型別。外殼（`sidebar.settings` 佔位方、導航、介面框架）位於 ui-settings-general；功能頁面註冊 `settings.section` 貢獻；「外掛」分割槽承載 `settings.plugins.tab` 頁面；首次使用引導步驟註冊 `settings.onboarding`。跨名稱空間的表面（schema 內省、已服務名稱空間目錄、`hasDocument`）透過 `ctx.configForms.describe()` 讀同一面映像。
 
-### 可观察的成功与失败
+### 可觀察的成功與失敗
 
-已提交的写入将应答合入共享镜像。被拒绝的写入刷新最新 Host 值。浏览器使用序列化的 Config schema 校验；Host 校验完整配置，包括无法序列化的检查。
+已提交的寫入將應答合入共享映像。被拒絕的寫入重新整理最新 Host 值。瀏覽器使用序列化的 Config schema 驗證；Host 驗證完整設定，包括無法序列化的檢查。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-可选的 `settings.launcher` 贡献接收侧栏布局、设置面板是否覆盖侧栏、设置导航回调，以及有效的设置键位标签和无障碍组合。命令未绑定时，外壳不传快捷键展示信息；未注册入口时，外壳保留普通设置按钮。
+可選的 `settings.launcher` 貢獻接收側欄佈局、設定面板是否覆蓋側欄、設定導航回呼，以及有效的設定鍵位標籤和無障礙組合。命令未繫結時，外殼不傳快捷鍵展示資訊；未註冊入口時，外殼保留普通設定按鈕。
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本包实现一条归属规则：浏览器保留设置文档的一面共享镜像，每个派生表面都读这同一真源，因此任一时刻看到的都是同一份文档 revision。
+本包實作一條歸屬規則：瀏覽器保留設定文件的一面共享映像，每個派生表面都讀這同一真源，因此任一時刻看到的都是同一份文件 revision。
 
-### Describe 镜像
+### Describe 映像
 
-`ui-settings` 条目的 Host Config 声明默认开启的 `enabled` 偏好。Client 插件注入 `remote` 及其 `settings` 命名空间，从固定的 `remote.$host` 事实一次性解析 Host 持久化模式，并持有浏览器中唯一的 `settings.describe` 读取方：一面共享镜像，在每次转发的 `settings/document-updated` 事件与 `connection/reset` 时刷新（首次连接也包含在内，关闭「提交落在急切读取与 SSE 订阅之间」的窗口）。跨命名空间表面通过 `ctx.configForms.describe()` 读它，这是一个读取/折叠面（`getSnapshot`/`subscribe`/`ensure`，另有把写应答折入的 `acceptView`）。
+`ui-settings` 條目的 Host Config 宣告預設開啟的 `enabled` 偏好。Client 外掛注入 `remote` 及其 `settings` 名稱空間，從固定的 `remote.$host` 事實一次性解析 Host 持久化模式，並持有瀏覽器中唯一的 `settings.describe` 讀取方：一面共享映像，在每次轉發的 `settings/document-updated` 事件與 `connection/reset` 時重新整理（首次連線也包含在內，關閉「提交落在急切讀取與 SSE 訂閱之間」的視窗）。跨名稱空間表面透過 `ctx.configForms.describe()` 讀它，這是一個讀取/摺疊面（`getSnapshot`/`subscribe`/`ensure`，另有把寫應答折入的 `acceptView`）。
 
-### 共享条目写入
+### 共享條目寫入
 
-提供者为每个 Host 条目持有一个控制器，包括其订阅和写入队列；重复调用 `get(entryId)` 返回同一表单。消费者释放自己的视图订阅。不创建调用方作用域的配置绑定。启动 RPC 预算覆盖共享的 describe 读取。
+提供者為每個 Host 條目持有一個控制器，包括其訂閱和寫入佇列；重複呼叫 `get(entryId)` 返回同一表單。消費者釋放自己的檢視訂閱。不建立呼叫方作用域的設定繫結。啟動 RPC 預算覆蓋共享的 describe 讀取。
 
-### Schema 服务
+### Schema 服務
 
-`ctx.settingsSchema` 重建 schema、校验草稿并编辑嵌套值。无效的线路值不会替换已接受值。
+`ctx.settingsSchema` 重建 schema、驗證草稿並編輯巢狀值。無效的線路值不會替換已接受值。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖设置界面家族及其背后的持久化 seam。
+以下頁面覆蓋設定介面家族及其背後的持久化 seam。
 
-- [ui-settings-general](../ui-settings-general/README.zh.md)——设置外壳：触发控件、导航、「通用」分区、引导投影。
-- [ui-settings-plugins](../ui-settings-plugins/README.zh.md)——围绕清单标签页的「内置插件」分区壳。
-- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——插件页上的官方配置页，各自通过 `whileServed` 跟随其命名空间。
-- [ui-settings-models](../ui-settings-models/README.zh.md)——建立在本底座之上的 Models 页面与 DeepSeek 引导。
-- [settings](../../settings/README.zh.md)——持久化用户设置 seam 及其文件提供方。
-- [ui-sidebar](../ui-sidebar/README.zh.md)——底部席位承载设置触发控件的侧边栏外壳。
+- [ui-settings-general](../ui-settings-general/README.zh.md)——設定外殼：觸發控制元件、導航、「通用」分割槽、引導投影。
+- [ui-settings-plugins](../ui-settings-plugins/README.zh.md)——圍繞清單標籤頁的「內建外掛」分割槽殼。
+- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——外掛頁上的官方設定頁，各自透過 `whileServed` 跟隨其名稱空間。
+- [ui-settings-models](../ui-settings-models/README.zh.md)——建立在本底座之上的 Models 頁面與 DeepSeek 引導。
+- [settings](../../settings/README.zh.md)——持久化使用者設定 seam 及其檔案提供者。
+- [ui-sidebar](../ui-sidebar/README.zh.md)——底部席位承載設定觸發控制元件的側邊欄外殼。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端 UI 插件层，不注册任何面向模型的内容。
+無。該包是瀏覽器端 UI 外掛層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明设置传输层够不到的地方；它们是当前包约束。
+這些限制說明設定傳輸層夠不到的地方；它們是目前包約束。
 
-- **非 loopback 页面没有持久化设置**：本 Client 在那里禁用 Host 持久化，因此 表单以 `unavailable` 起步且从不跨线路；尽管 Connection 认证覆盖 API，表单写入仍在那里无效。共享的代码工作工具偏好单独提供浏览器本地变更。
+- **非 loopback 頁面沒有持久化設定**：本 Client 在那裡停用 Host 持久化，因此 表單以 `unavailable` 起步且從不跨線路；儘管 Connection 認證覆蓋 API，表單寫入仍在那裡無效。共享的程式碼工作工具偏好單獨提供瀏覽器本地變更。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包只把 `settings.section` ledger 投影为导航，不发出 Cordis 事件，也不持有跨插件可变关系；slot core 会在加载时拒绝冲突。
+**執行時不變式：** 不釋出伴生入口。本包只把 `settings.section` ledger 投影為導航，不發出 Cordis 事件，也不持有跨外掛可變關係；slot core 會在載入時拒絕衝突。

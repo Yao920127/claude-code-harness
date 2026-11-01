@@ -1,44 +1,44 @@
-# Agent Note: dsh web 的 config-tree boot 与 web 传输分层
+# Agent Note: dsh web 的 config-tree boot 與 web 傳輸分層
 
 Status: implemented
 
 [English](2026-07-24-web-config-tree-boot-and-transport-layering.md) | 中文
 
-> 范围：`dsh web` 如何组合（cordis.yml + cordis 之前的 boot 类 + 配置源），以及 web 传输如何跨包分层（网关 / 载体 / 绑定 / 图 / 开发期重载）。浏览器侧装载链归 [client 插件装载 note](2026-07-23-client-plugin-loading-model.zh.md) 所有，本组合只是它的供给方。
+> 範圍：`dsh web` 如何組合（cordis.yml + cordis 之前的 boot 類 + 設定源），以及 web 傳輸如何跨包分層（閘道 / 載體 / 繫結 / 圖 / 開發期過載）。瀏覽器側裝載鏈歸 [client 外掛裝載 note](2026-07-23-client-plugin-loading-model.zh.md) 所有，本組合只是它的供給方。
 
-## 问题
+## 問題
 
-`dsh web` 曾是仅剩的手工装配面：`bootHost` 逐个挂 32 个插件、config 钉死在代码里（违反 no-hardcoded-tunables），client roster 是 `web.ts` 常量，而 TUI/headless 早已是 yml 组合。传输层的职责错位与之配套：webserver 自称哑载体却认识 `__DSH_BOOT__` 图、拥有 SSE（Server-Sent Events）通道、硬编码 `/api/*` 前缀；dev 的 bundle watch 寄居在 prod 注册表里靠 `watch?` 参数开关、生命周期无主；图注册表对每次 `internal/plugin` 全量重扫；单请求失败与致命 server 错误共用一个一律退出进程的 sink。还有一个用户可见缺陷：web 路径从不加载 `$DSH_HOME/.env`，`DSH_HOME=… dsh web` 读不到自定义 home 下的 API key。
+`dsh web` 曾是僅剩的手工裝配面：`bootHost` 逐個掛 32 個外掛、config 釘死在程式碼裡（違反 no-hardcoded-tunables），client roster 是 `web.ts` 常數，而 TUI/headless 早已是 yml 組合。傳輸層的職責錯位與之配套：webserver 自稱啞載體卻認識 `__DSH_BOOT__` 圖、擁有 SSE（Server-Sent Events）通道、硬編碼 `/api/*` 字首；dev 的 bundle watch 寄居在 prod 註冊表裡靠 `watch?` 參數開關、生命週期無主；圖註冊表對每次 `internal/plugin` 全量重掃；單請求失敗與致命 server 錯誤共用一個一律退出程序的 sink。還有一個使用者可見缺陷：web 路徑從不載入 `$DSH_HOME/.env`，`DSH_HOME=… dsh web` 讀不到自定義 home 下的 API key。
 
-## 决策
+## 決策
 
-**组合结果是一棵平铺配置树。** `apps/cli/config/base.cordis.yml` 与 `apps/cli/config/web.cordis.yml` 共同持有全部行——host 运行时（32 行）、`api-gateway` 行、`webserver` 行、`dsh.client` 行（浏览器 roster；modules 行同时是 host 行）。不做主干 bundle：每插件一行、每个 config 字段 yml 可改。这一立场后来推广到全仓：两个 surface 共享的配置项被抽取进 `apps/cli/config/base.cordis.yml`，各 surface 则收敛为一份 overlay（[共享 base overlay](../../archived/simplification/2026-07-29-shared-base-config-overlays.md)）。`dsh-client-hmr` 行是普通的始终启用的 bundle 行（最初由 `--dev` 在代码中追加；该旗标已废除）。行序无装载语义；激活由服务可用性驱动。`auditStartupEntries` 报告 import 失败、读取失败 fiber 的原始激活错误，并列出让 fiber 停在 `PENDING` 的服务。[启动策略](2026-09-09-consumer-owned-startup-strictness.zh.md)将 optional failure 作为 warning，将 required failure 视为致命错误。已报告的 rejection 原因会保持标记至一个进程级检查点，使 `installFailLoud` 合并 Loader 的重复通知，而无关的未处理 rejection 仍然致命。Node app-boot 产物内嵌 `@cordisjs/plugin-include`，但将 `@cordisjs/plugin-loader` 保持为外部依赖，因此 include 的 `EntryTree` 与 host 会绑定到同一个 Loader peer，而不会让一棵配置树横跨两个 Loader 实现。
+**組合結果是一棵平鋪設定樹。** `apps/cli/config/base.cordis.yml` 與 `apps/cli/config/web.cordis.yml` 共同持有全部行——host 執行時（32 行）、`api-gateway` 行、`webserver` 行、`dsh.client` 行（瀏覽器 roster；modules 行同時是 host 行）。不做主幹 bundle：每外掛一行、每個 config 欄位 yml 可改。這一立場後來推廣到全倉：兩個 surface 共享的設定項被抽取進 `apps/cli/config/base.cordis.yml`，各 surface 則收斂為一份 overlay（[共享 base overlay](../../archived/simplification/2026-07-29-shared-base-config-overlays.md)）。`dsh-client-hmr` 行是普通的始終啟用的 bundle 行（最初由 `--dev` 在程式碼中追加；該旗標已廢除）。行序無裝載語義；啟用由服務可用性驅動。`auditStartupEntries` 報告 import 失敗、讀取失敗 fiber 的原始啟用錯誤，並列出讓 fiber 停在 `PENDING` 的服務。[啟動策略](2026-09-09-consumer-owned-startup-strictness.zh.md)將 optional failure 作為 warning，將 required failure 視為致命錯誤。已報告的 rejection 原因會保持標記至一個程序級檢查點，使 `installFailLoud` 合併 Loader 的重複通知，而無關的未處理 rejection 仍然致命。Node app-boot 產物內嵌 `@cordisjs/plugin-include`，但將 `@cordisjs/plugin-loader` 保持為外部依賴，因此 include 的 `EntryTree` 與 host 會繫結到同一個 Loader peer，而不會讓一棵設定樹橫跨兩個 Loader 實作。
 
-**boot 胶水由两个类组成。** `AppCLIEntry`（apps/cli）与 `AppWebEntry`（壳内核）只持有那些必须独立于 cordis、提前存在的东西：argv 事实、合成的 patch 集、解析出的 boot manifest（元数据清单）、模块系统实例、loading 页句柄——其余一律进插件。`AppCLIEntry.run()` 三段：分层 env（ambient > cwd `.env` > `$DSH_HOME/.env`，顺手关掉上述缺陷）→ patch 合成 → Loader include boot 加 activation audit。`AppWebEntry.run()` 在浏览器侧镜像它：把 `window.__DSH_BOOT__` 解析成 `BootManifest`（双视角：npm 包行给模块表、cordis 插件行给 entry 组合；畸形 wire 大声抛）、建模块系统、渲染 loading 页、immediately 层预取与 Context/Loader 准备并行、**create entry 之前等预取齐**（物化是 `tree.import` 的同步 require，不受 fiber inject 等待保护；i18n → runtime/client 这类跨包 require 边要求 immediately 层工厂全部注册完——否则有实测 10–25% 的 boot 竞态）、收编 modules entry、逐一创建图行、settle、sweep。
+**boot 膠水由兩個類組成。** `AppCLIEntry`（apps/cli）與 `AppWebEntry`（殼核心）只持有那些必須獨立於 cordis、提前存在的東西：argv 事實、合成的 patch 集、解析出的 boot manifest（中繼資料清單）、模組系統實例、loading 頁控制代碼——其餘一律進外掛。`AppCLIEntry.run()` 三段：分層 env（ambient > cwd `.env` > `$DSH_HOME/.env`，順手關掉上述缺陷）→ patch 合成 → Loader include boot 加 activation audit。`AppWebEntry.run()` 在瀏覽器側映像它：把 `window.__DSH_BOOT__` 解析成 `BootManifest`（雙視角：npm 包行給模組表、cordis 外掛行給 entry 組合；畸形 wire 大聲拋）、建模組系統、渲染 loading 頁、immediately 層預取與 Context/Loader 準備並行、**create entry 之前等預取齊**（物化是 `tree.import` 的同步 require，不受 fiber inject 等待保護；i18n → runtime/client 這類跨包 require 邊要求 immediately 層工廠全部註冊完——否則有實測 10–25% 的 boot 競態）、收編 modules entry、逐一建立圖行、settle、sweep。
 
-**每个配置源有唯一声明位置。** 组合包 yml 值是工程默认，Settings 分节是可写的用户偏好，CLI（命令行界面）flags 面向其归属的启动器配置行，env 值则通过 yml `!!js` 表达式进入。patch 会整体替换一行的 config。解析后的前端 `distIndex` 通过同一条 patch 通道作为组装事实传递。与传输无关的提供方／模型默认值归 `ctx.agentDefaultModel` 所有；[直接 headless 入口](../../archived/architecture/2026-08-09-headless-direct-core-entry-point.md)与 Session Controller 消费同一份状态。
+**每個設定源有唯一宣告位置。** 組合包 yml 值是工程預設，Settings 分節是可寫的使用者偏好，CLI（命令列介面）flags 面向其歸屬的啟動器設定行，env 值則透過 yml `!!js` 表示式進入。patch 會整體替換一行的 config。解析後的前端 `distIndex` 透過同一條 patch 通道作為組裝事實傳遞。與傳輸無關的提供者／模型預設值歸 `ctx.agentDefaultModel` 所有；[直接 headless 入口](../../archived/architecture/2026-08-09-headless-direct-core-entry-point.md)與 Session Controller 消費同一份狀態。
 
-**传输职责各有明确 owner。** `dsh-client-connection` 持有 `/api` 路由、请求与响应 envelope、浏览器认证、Host/Origin 检查、精确 Fetch 路由注册以及共享 Typert interceptor 席位。`dsh-api-gateway` 持有类型化 Remote 分发和多路复用 WebSocket。`dsh-host-webserver` 是朴素的路由注册插件：`WebServer` provide `ctx.webServer`（`register(route) → disposer`、重复 pattern 即抛、`renderIndex` 渲染——先结构化 `webserver/index-inject` 行、后原始 `tapIndex` 按注册序应用——与 `port`），激活即 listen，单请求失败时答 400 并记日志，且不认识任何 harness 概念。其基于 socket 的 Node HTTP 入口可以通过受维护的中间件应用已配置的 gzip，无需新增响应写出服务方法或改变 route owner；Web Worker 隧道传递 identity 字节。modules node 半（`ClientModuleRegistry`，provide `ctx.clientModules`）持有单包增量扫描、bundle 路由、启动注入行与 `onRebuilt`/`onGraphChanged` 通知。HMR（热模块替换）node 半通过 `fs.watchFile` membership 与 `/plugins/events` SSE 路由持有开发期重载。
+**傳輸職責各有明確 owner。** `dsh-client-connection` 持有 `/api` 路由、請求與回應 envelope、瀏覽器認證、Host/Origin 檢查、精確 Fetch 路由註冊以及共享 Typert interceptor 席位。`dsh-api-gateway` 持有型別化 Remote 分發和多路複用 WebSocket。`dsh-host-webserver` 是樸素的路由註冊外掛：`WebServer` provide `ctx.webServer`（`register(route) → disposer`、重複 pattern 即拋、`renderIndex` 渲染——先結構化 `webserver/index-inject` 行、後原始 `tapIndex` 按註冊序應用——與 `port`），啟用即 listen，單請求失敗時答 400 並記日誌，且不認識任何 harness 概念。其基於 socket 的 Node HTTP 入口可以透過受維護的中介軟體應用已設定的 gzip，無需新增回應寫出服務方法或改變 route owner；Web Worker 隧道傳遞 identity 位元組。modules node 半（`ClientModuleRegistry`，provide `ctx.clientModules`）持有單包增量掃描、bundle 路由、啟動注入行與 `onRebuilt`/`onGraphChanged` 通知。HMR（熱模組替換）node 半透過 `fs.watchFile` membership 與 `/plugins/events` SSE 路由持有開發期過載。
 
-**包出口纪律。** modules 包只暴露 `.`（node 半）与 `./client`（完整浏览器半：`ClientModuleSystem`、`parseBootManifest`、收编插件面）——不设专用子路径；wire 类型经根出口 re-export 给 host 侧消费方。收编握手：内核在 cordis 之前把建好的实例写入 `window.__DSH_MODULES__`；`./client` 的 apply 读取该槽位（缺少时显式抛错）并 provide `ctx.modules`。
+**包出口紀律。** modules 包只暴露 `.`（node 半）與 `./client`（完整瀏覽器半：`ClientModuleSystem`、`parseBootManifest`、收編外掛面）——不設專用子路徑；wire 型別經根出口 re-export 給 host 側消費方。收編握手：核心在 cordis 之前把建好的實例寫入 `window.__DSH_MODULES__`；`./client` 的 apply 讀取該槽位（缺少時顯式拋錯）並 provide `ctx.modules`。
 
-## 后果
+## 後果
 
-- 重组一个 web 部署 = 改 yml/patch；退役件（`mountWebPlugins`、`CLIENT_PACKAGES`、`createHostWebPluginRegistry`、`startWebServer`、webserver 的图/SSE/api 知识）全部删除。
-- [Headless 是直接 core 入口](../../archived/architecture/2026-08-09-headless-direct-core-entry-point.md)：其随附 profile 包含共享的 base Agent 能力，并省去 Host、HTTP、Web 与浏览器层。本笔记的传输划分是浏览器 surface 的约定。
-- 一个值得记住的 TypeScript 坑：`declare module 'cordis'` augmentation 所在文件若**没有任何 cordis import**，会被降级成独立模块声明，无声打散全程序的 `Context` merge（`ctx.on`/`ctx.effect` 全程序消失）。用 `import type {} from 'cordis'` 锚定。
+- 重組一個 web 部署 = 改 yml/patch；退役件（`mountWebPlugins`、`CLIENT_PACKAGES`、`createHostWebPluginRegistry`、`startWebServer`、webserver 的圖/SSE/api 知識）全部刪除。
+- [Headless 是直接 core 入口](../../archived/architecture/2026-08-09-headless-direct-core-entry-point.md)：其隨附 profile 包含共享的 base Agent 能力，並省去 Host、HTTP、Web 與瀏覽器層。本筆記的傳輸劃分是瀏覽器 surface 的約定。
+- 一個值得記住的 TypeScript 坑：`declare module 'cordis'` augmentation 所在檔案若**沒有任何 cordis import**，會被降級成獨立模組宣告，無聲打散全程式的 `Context` merge（`ctx.on`/`ctx.effect` 全程式消失）。用 `import type {} from 'cordis'` 錨定。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-| 弃案 | 一行理由 |
+| 棄案 | 一行理由 |
 |---|---|
-| 专门的 `dsh-host-profile` 受体包 | 用户模型状态归 Settings 支撑的 `ctx.agentDefaultModel` 所有；额外的 Host 受体会重复归属，并排除直接入口 |
-| 运行时里的 `assembly` 垫层插件（provide `apiHandler`） | Connection 已在传输边缘把 Remote interception 与功能自有的精确 Fetch 路由组合成一个 handler |
-| 全量重扫与增量扫描并存 | 两条实现两份语义；单包路径足以覆盖激活初扫 |
-| modules 包特设 `./impl` 出口 | 出口不统一；标准 `./client` 承载完整浏览器半 |
-| dev overlay / `cordis.dev.yml` | 一套 yml；`!!js` 无法条件化行存在性，`--dev` 追加一行就是全部差异 |
-| env 进映射表 | 同一字段将出现 env/json 双源，需再发明优先级 |
-| create 不等预取（以 `arrive()` 去重为安全依据） | 被 10–25% boot 竞态证伪：在途去重只覆盖同包双拉，不覆盖跨包同步 require 边 |
-| json 直接当 loader patches 文件 | json 键名将耦合 yml 行结构，profile 编写者要懂 cordis |
-| 公开响应写出方法并让每条 route 选择接入 | 响应编码属于 Node HTTP 策略；经 `ctx.webServer` 暴露会让每个 route 所有者与测试替身依赖这项策略 |
-| 手写 gzip 协商与流生命周期 | 受维护的中间件已经处理协商、媒体类型筛选、响应头改写、背压与阈值行为 |
+| 專門的 `dsh-host-profile` 受體包 | 使用者模型狀態歸 Settings 支撐的 `ctx.agentDefaultModel` 所有；額外的 Host 受體會重複歸屬，並排除直接入口 |
+| 執行時裡的 `assembly` 墊層外掛（provide `apiHandler`） | Connection 已在傳輸邊緣把 Remote interception 與功能自有的精確 Fetch 路由組合成一個 handler |
+| 全量重掃與增量掃描並存 | 兩條實作兩份語義；單包路徑足以覆蓋啟用初掃 |
+| modules 包特設 `./impl` 出口 | 出口不統一；標準 `./client` 承載完整瀏覽器半 |
+| dev overlay / `cordis.dev.yml` | 一套 yml；`!!js` 無法條件化行存在性，`--dev` 追加一行就是全部差異 |
+| env 進對映表 | 同一欄位將出現 env/json 雙源，需再發明優先順序 |
+| create 不等預取（以 `arrive()` 去重為安全依據） | 被 10–25% boot 競態證偽：在途去重只覆蓋同包雙拉，不覆蓋跨包同步 require 邊 |
+| json 直接當 loader patches 檔案 | json 鍵名將耦合 yml 行結構，profile 編寫者要懂 cordis |
+| 公開回應寫出方法並讓每條 route 選擇接入 | 回應編碼屬於 Node HTTP 策略；經 `ctx.webServer` 暴露會讓每個 route 所有者與測試替身依賴這項策略 |
+| 手寫 gzip 協商與流生命週期 | 受維護的中介軟體已經處理協商、媒體型別篩選、回應頭改寫、背壓與閾值行為 |

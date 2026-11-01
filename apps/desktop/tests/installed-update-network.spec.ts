@@ -9,7 +9,7 @@ import { prepareInstalledUpdateNetwork } from '../scripts/prepare-installed-upda
 import { installedUpdateFileHash } from '../scripts/installed-update-signature.mjs'
 
 async function fixture(body: (manifest: string, executable: string, receipt: string) => Promise<void>): Promise<void> {
-  const root = await mkdtemp(join(tmpdir(), 'dsh-network-plan-试验-'))
+  const root = await mkdtemp(join(tmpdir(), 'dsh-network-plan-試驗-'))
   try {
     const run = await createInstalledUpdateRun(root, ['0.1.6-nightly.20260914.1', '0.1.6-nightly.20260914.2'],
       { version: '0.1.5-rc.2', commit: 'a'.repeat(40), dirtyFiles: [] })

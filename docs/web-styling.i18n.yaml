@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/web-styling.md
 /web-ui-style-reference:
   en: aab8007f4e9287d7
-  zh: 158960e753f32a91
+  zh: 8fe5f93ce5b9b575
 /web-ui-style-reference/ownership:
   en: dc8c41fbf9869179
-  zh: e45976a585cb9c86
+  zh: a490dafe7520b4df
 /web-ui-style-reference/component-rules:
   en: f58a1f367ce09a3e
-  zh: 93a5543e8a7d4984
+  zh: 760c6e9ffd84431b
 /web-ui-style-reference/corner-radii-and-settings-cards:
   en: 118972f6c2bd6ce4
-  zh: 85f8416b03e4dd8b
+  zh: b89ff9c46d6b3d7a
 /web-ui-style-reference/changing-the-system:
   en: ca70c6f962c290c8
-  zh: 800d8289116c1535
+  zh: c64463f74e571d84

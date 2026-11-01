@@ -1,5 +1,5 @@
 ---
-description: "面向部署方与维护者的随产品交付 JSONL 会话持久化后端说明，用于选择、配置或排查带可选 Zstandard 压缩的逐会话持久日志。"
+description: "面向部署方與維護者的隨產品交付 JSONL 工作階段持久化後端說明，用於選擇、設定或排查帶可選 Zstandard 壓縮的逐工作階段持久日誌。"
 kind: "package-reference"
 ---
 
@@ -9,29 +9,29 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-session-persistence-jsonl` 把每个会话存为当前的仅追加 JSONL 日志，并保留不可变的历史格式 generation——默认以带校验和的 Zstandard 帧存储，禁用压缩时以换行分隔的原始文本行存储。它通过持久化句柄提供当前逻辑 `SessionEvent` 流，因此格式迁移、压缩、历史解码与崩溃恢复仍是存储内部细节。当消费方需要按会话的磁盘文件时选择它；选择 `compression: 'none'` 后日志可作为纯文本按行读取。根目录是唯一必填配置；持久性、延迟实体化、[受支持的历史格式迁移](../session-format-catalog/README.zh.md)与撕裂尾部崩溃恢复都随后端提供。
+`dsh-session-persistence-jsonl` 把每個工作階段存為目前的僅追加 JSONL 日誌，並保留不可變的歷史格式 generation——預設以帶總和檢查碼的 Zstandard 幀儲存，停用壓縮時以換行分隔的原始文字行儲存。它透過持久化控制代碼提供目前邏輯 `SessionEvent` 流，因此格式遷移、壓縮、歷史解碼與崩潰恢復仍是儲存內部細節。當消費方需要按工作階段的磁碟檔案時選擇它；選擇 `compression: 'none'` 後日誌可作為純文字按行讀取。根目錄是唯一必填設定；永續性、延遲實體化、[受支援的歷史格式遷移](../session-format-catalog/README.zh.md)與撕裂尾部崩潰恢復都隨後端提供。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合需要由按会话文件支撑的持久会话时挂载此后端。常用路径是显式的：加载会话服务、挂载后端，然后给出根目录。
+當組合需要由按工作階段檔案支撐的持久工作階段時掛載此後端。常用路徑是顯式的：載入工作階段服務、掛載後端，然後給出根目錄。
 
-### 何时选择
+### 何時選擇
 
-当消费方受益于每会话一份产物——导航、外部工具或可逐行读取的原始日志——时选择此后端。它是唯一的第一方会话持久化提供方。后端把会话保存在部署控制的根下：项目本地、共享、临时或集中式。
+當消費方受益於每工作階段一份產物——導航、外部工具或可逐行讀取的原始日誌——時選擇此後端。它是唯一的第一方工作階段持久化提供者。後端把工作階段儲存在部署控制的根下：專案本地、共享、臨時或集中式。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-session'
@@ -40,20 +40,20 @@ kind: "package-reference"
     root: /absolute/path/to/session-logs
 ```
 
-`root` 必填且无默认值：`process.cwd()` 默认值会随进程 cwd 变更而分散会话文件。现有根必须是可读目录；缺失根在第一次实体化时创建。
+`root` 必填且無預設值：`process.cwd()` 預設值會隨程序 cwd 變更而分散工作階段檔案。現有根必須是可讀目錄；缺失根在第一次實體化時建立。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `root` | 必填 | 所有会话文件的根目录 |
-| `compression` | `'zstd'` | 物理编码：`'zstd'` 带校验和帧，或 `'none'` 换行分隔 UTF-8 文本 |
+| `root` | 必填 | 所有工作階段檔案的根目錄 |
+| `compression` | `'zstd'` | 物理編碼：`'zstd'` 帶總和檢查碼幀，或 `'none'` 換行分隔 UTF-8 文字 |
 
-实时事件的写入批处理不是配置：批处理窗口是该 seam 在每个写句柄内部的调度策略。
+即時事件的寫入批處理不是設定：批處理視窗是該 seam 在每個寫控制代碼內部的排程策略。
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-session-persistence-jsonl)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-session-persistence-jsonl)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 磁盘布局
+### 磁碟佈局
 
-每个会话在可读项目目录下获得一个会话自有目录。每个规范 generation 都以版本与文件名一致的物理 header 开始。当前格式为每个持久事件存储一行；冻结的 v0 与 v1 reader 也能理解其历史 packed Assistant delta 行。当前格式在 header 中存储 `isSeeded`，并从最后一个带标记的 `session/end-seed` 推导 inherited cut；历史 codec 则转换其数字 `seedLength`。格式 catalog 会在句柄暴露当前逻辑值之前完成该转换。当前存储记录使用下文所述的无损来源序列表示：
+每個工作階段在可讀專案目錄下獲得一個工作階段自有目錄。每個規範 generation 都以版本與檔名一致的物理 header 開始。目前格式為每個持久事件儲存一行；凍結的 v0 與 v1 reader 也能理解其歷史 packed Assistant delta 行。目前格式在 header 中儲存 `isSeeded`，並從最後一個帶標記的 `session/end-seed` 推導 inherited cut；歷史 codec 則轉換其數字 `seedLength`。格式 catalog 會在控制代碼暴露目前邏輯值之前完成該轉換。目前儲存記錄使用下文所述的無損來源序列表示：
 
 ```text
 <root>/
@@ -69,112 +69,112 @@ kind: "package-reference"
       session.v3.jsonl           # released v3/current, raw root; later versions use vN
 ```
 
-会话 id 在使用前被单射转义为一个安全路径段（无遍历、无冲突）。规范化 cwd 让项目目录保持可读、便于导航；规范化相同的 cwd 字符串共享项目目录，而会话 id 仍选择不同会话目录。运行时操作选择数值最高的规范 generation，格式拒绝诊断会点名该绝对路径，让操作者能找到构建拒绝解读的原始日志。
+工作階段 id 在使用前被單射轉義為一個安全路徑段（無遍歷、無衝突）。規範化 cwd 讓專案目錄保持可讀、便於導航；規範化相同的 cwd 字串共享專案目錄，而工作階段 id 仍選擇不同工作階段目錄。執行時操作選擇數值最高的規範 generation，格式拒絕診斷會點名該絕對路徑，讓操作者能找到建置拒絕解讀的原始日誌。
 
-### 持久性与崩溃语义
+### 永續性與崩潰語義
 
-会话延迟实体化：`create(header)` 不写入任何内容并返回持有的写句柄，句柄的第一次 `append` 通过无覆盖发布写入并 `fsync` 编码后的 header 与第一批——因此已创建但从未 append 的会话不留下任何磁盘内容，除非其所有者调用 `handle.flush()`，以无事件的单个 header 帧发布它。后续每个批次追加行或一个压缩帧，并在 append 完成前 `fsync`；捕获到写入或同步失败时把文件回滚到之前的字节长度。已提交事件绝不重写。崩溃后，已存储日志保留被中断的最终轮次——已提交前缀中的每条记录都保留下来，由执行恢复的读方通过其写句柄追加合成 closer。不完整的最终原始行会被丢弃。撕裂的最终 Zstandard 帧只贡献其中完整解码出的 JSONL 记录；写句柄会截掉撕裂字节，并在第一次新批次之前持久重写这些恢复出的记录。完整已提交帧中的校验和、解压或结构失败以损坏拒绝。
+工作階段延遲實體化：`create(header)` 不寫入任何內容並返回持有的寫控制代碼，控制代碼的第一次 `append` 透過無覆蓋釋出寫入並 `fsync` 編碼後的 header 與第一批——因此已建立但從未 append 的工作階段不留下任何磁碟內容，除非其所有者呼叫 `handle.flush()`，以無事件的單個 header 幀釋出它。後續每個批次追加行或一個壓縮幀，並在 append 完成前 `fsync`；捕捉到寫入或同步失敗時把檔案復原到之前的位元組長度。已提交事件絕不重寫。崩潰後，已儲存日誌保留被中斷的最終輪次——已提交字首中的每條記錄都保留下來，由執行恢復的讀方透過其寫控制代碼追加合成 closer。不完整的最終原始行會被丟棄。撕裂的最終 Zstandard 幀只貢獻其中完整解碼出的 JSONL 記錄；寫控制代碼會截掉撕裂位元組，並在第一次新批次之前持久重寫這些恢復出的記錄。完整已提交幀中的總和檢查碼、解壓或結構失敗以損壞拒絕。
 
-当前代际扫描器在处理可恢复尾部之前，执行当前编解码器所有者的结构准入检查。已退役的必需 PTC 标签与 `request/header.header.system` 即使出现在较早的畸形行之后也会导致文件被拒绝；恢复绝不将它们作为普通损坏尾部数据截断。
+目前代際掃描器在處理可恢復尾部之前，執行目前編解碼器所有者的結構准入檢查。已退役的必需 PTC 標籤與 `request/header.header.system` 即使出現在較早的畸形行之後也會導致檔案被拒絕；恢復絕不將它們作為普通損壞尾部資料截斷。
 
-### 删除会话
+### 刪除工作階段
 
-`delete(id)` 删除该会话自有的目录，包括所有保留的格式代与锁文件。它先在进程内声明写入权并取得跨进程租约，因此在任何写入者持有该会话、或已创建的会话尚未落盘时，以 `SessionAlreadyOwnedError` 拒绝；持有租约时允许删除目录。共享同一项目目录的其他会话（包括 fork）不受影响。
+`delete(id)` 刪除該工作階段自有的目錄，包括所有保留的格式代與鎖檔案。它先在程序內宣告寫入權並取得跨程序租約，因此在任何寫入者持有該工作階段、或已建立的工作階段尚未寫入磁碟時，以 `SessionAlreadyOwnedError` 拒絕；持有租約時允許刪除目錄。共享同一專案目錄的其他工作階段（包括 fork）不受影響。
 
-### 读取日志
+### 讀取日誌
 
-`open(id, 'read'|'write')` 选择最高规范 generation。当前格式输入走普通快速路径。对于历史输入，只读 open 会单遍解码并迁移源、校验当前逻辑结果，然后在不发布后继的情况下返回。写 open 会在可用时复用按 revision 为键的 preparation，否则执行同一套 preparation，再按有界分片编码同目录临时文件、在 Worker Thread 中校验、复查源修订，并在返回前以不覆盖方式发布当前后继。源保持逐字节不变。如果源在 preparation 后发生变化，该次写 open 会失败，已经返回给读方的逻辑历史不会被替换；后续写 open 会针对新的 revision 重新执行 preparation。后端在 memo 化前冻结已解码的 event graph，并在此时将其标记为 `shared-frozen`；每个嵌套对象和数组都会冻结，句柄读取和 slice 即使为空也保留该状态。只有尚未实体化的 pending 空日志报告 `detached`。`stat(id)` 与 `list()` 只选择并转换最高 generation 的 header，不读取事件行，也不启动迁移；快照携带所选文件的 `sizeBytes` 与尽力而为的修订号。当前格式修订号标识该文件；历史格式修订号还包含持久化根目录中所选文件的指纹，因此子日志变化会使缓存的逻辑事件失效。指纹只读取文件系统元数据；无关变化也会保守地使历史修订号失效。一次 `list()` 为其历史条目共用一个全库指纹。选择 `compression: 'none'` 后，日志是外部读取方可直接消费的换行分隔文本；压缩默认值必须经后端读取。
+`open(id, 'read'|'write')` 選擇最高規範 generation。目前格式輸入走普通快速路徑。對於歷史輸入，只讀 open 會單遍解碼並遷移源、驗證目前邏輯結果，然後在不釋出後繼的情況下返回。寫 open 會在可用時複用按 revision 為鍵的 preparation，否則執行同一套 preparation，再按有界分片編碼同目錄臨時檔案、在 Worker Thread 中驗證、複查源修訂，並在返回前以不覆蓋方式釋出目前後繼。源保持逐位元組不變。如果源在 preparation 後發生變化，該次寫 open 會失敗，已經返回給讀方的邏輯歷史不會被替換；後續寫 open 會針對新的 revision 重新執行 preparation。後端在 memo 化前凍結已解碼的 event graph，並在此時將其標記為 `shared-frozen`；每個巢狀物件和陣列都會凍結，控制代碼讀取和 slice 即使為空也保留該狀態。只有尚未實體化的 pending 空日誌報告 `detached`。`stat(id)` 與 `list()` 只選擇並轉換最高 generation 的 header，不讀取事件行，也不啟動遷移；快照攜帶所選檔案的 `sizeBytes` 與盡力而為的修訂號。目前格式修訂號標識該檔案；歷史格式修訂號還包含持久化根目錄中所選檔案的指紋，因此子日誌變化會使快取的邏輯事件失效。指紋只讀取檔案系統中繼資料；無關變化也會保守地使歷史修訂號失效。一次 `list()` 為其歷史條目共用一個全庫指紋。選擇 `compression: 'none'` 後，日誌是外部讀取方可直接消費的換行分隔文字；壓縮預設值必須經後端讀取。
 
-历史正文准备通过 [V3→V4](../session-format-v3-to-v4/README.zh.md) 补齐父目录：从 header 找到候选直属子 Session，通过历史编解码器逐个读取其自身 descriptor，保留紧凑证据与来源修订。此过程不准备子目录，也不发布子后继。不可读或不支持的 header（包括损坏的 Zstandard header 帧）不参与发现，也不出现在 `list()` 中。直接访问损坏的压缩 header 仍会失败；header 的 I/O 错误与取消错误继续传播。子日志解码或 descriptor 字段失败会产生带子路径的警告；父目录没有完整条目时，通过 `subagent/catalog` 保留 header 身份信息。健康子项和已有父目录项仍可使用。打开损坏子 Session 时仍报告该子会话的错误。缺失、不支持或多个 descriptor 同样生成模式未知的目录项，不编造标签。已发布的未知条目仍可浏览；读取子历史时会重试实际日志，并从有效 descriptor 确定模式。准备返回、复用与发布前会重新检查成员集合及已检查来源的修订，也包括读取失败的子日志，使修复后的子日志能够使旧准备缓存失效。来源变化时只读打开重试一次，写打开拒绝发布。取消仍会中止操作。当前 V4 打开跳过发现，并在暴露事件前校验目录字段、唯一性及当前投递归属。
+歷史正文準備透過 [V3→V4](../session-format-v3-to-v4/README.zh.md) 補齊父目錄：從 header 找到候選直屬子 Session，透過歷史編解碼器逐個讀取其自身 descriptor，保留緊湊證據與來源修訂。此過程不準備子目錄，也不釋出子後繼。不可讀或不支援的 header（包括損壞的 Zstandard header 幀）不參與發現，也不出現在 `list()` 中。直接存取損壞的壓縮 header 仍會失敗；header 的 I/O 錯誤與取消錯誤繼續傳播。子日誌解碼或 descriptor 欄位失敗會產生帶子路徑的警告；父目錄沒有完整條目時，透過 `subagent/catalog` 保留 header 身份資訊。健康子項和已有父目錄項仍可使用。開啟損壞子 Session 時仍報告該子工作階段的錯誤。缺失、不支援或多個 descriptor 同樣生成模式未知的目錄項，不編造標籤。已釋出的未知條目仍可瀏覽；讀取子歷史時會重試實際日誌，並從有效 descriptor 確定模式。準備返回、複用與釋出前會重新檢查成員集合及已檢查來源的修訂，也包括讀取失敗的子日誌，使修復後的子日誌能夠使舊準備快取失效。來源變化時只讀開啟重試一次，寫開啟拒絕釋出。取消仍會中止操作。目前 V4 開啟跳過發現，並在暴露事件前驗證目錄欄位、唯一性及目前投遞迴屬。
 
-历史格式的 `stat` 与 `list` 修订号需要与根目录 Session 数量成正比的元数据工作。首次正文准备扫描所有所选 header 并解码直属子正文；复用准备缓存仍扫描成员集合并检查修订。只读访问从不发布升级，因此冷进程与被淘汰的准备缓存会重复这些工作。当前 V4 正文读取和修订号避开历史全库扫描。见[实测成本与诊断命令](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md#catalog-scan-measurements)。
+歷史格式的 `stat` 與 `list` 修訂號需要與根目錄 Session 數量成正比的中繼資料工作。首次正文準備掃描所有所選 header 並解碼直屬子正文；複用準備快取仍掃描成員集合並檢查修訂。只讀存取從不釋出升級，因此冷程序與被淘汰的準備快取會重複這些工作。目前 V4 正文讀取和修訂號避開歷史全庫掃描。見[實測成本與診斷命令](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md#catalog-scan-measurements)。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节说明物理编码与写入路径；可观察约定已在[使用本包](#use-this-package)中说明。
+本節說明物理編碼與寫入路徑；可觀察約定已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-该后端拥有自己完整的存储运行时（`src/storage.ts`）：`JsonlSessionHandle` 承载逐句柄修改链、带固定批处理窗口与 single-flight 排空的已路由实时事件缓冲、单调读取与幂等 close；一个 tracker 持有进程内单写者认领、teardown 清扫所遍历的打开句柄集合，以及后端自己的会话监听器所路由进的已创建但未实体化待定会话。历史正文读取共享每个 Session 唯一的一次 Decode/Migrate preparation，按 revision 为键的有界 memo 让紧接的观察到恢复交接复用该解析；backend 在 memo 化前只对每个 event graph 深度冻结一次，因此后续 handle read 无需复制或再次冻结。只有写 open 才发布准备好的后继。本包有意只暴露默认插件导出与配置类型——具体类不是具名导出，因此消费方只耦合 `ctx.sessionPersistence`，其可观察行为由共享 seam 测试套件（`runPersistenceContract`/`runLiveWritePathContract`）钉住。物理修订号组合 device、inode、size 与纳秒时间戳，供准备缓存、稳定读取重试及发布检查使用。历史格式的公开修订号还加入所选路径排序后及其物理修订号的 SHA-256 指纹；锁文件与保留但未被选中的代际不参与计算。
+該後端擁有自己完整的儲存執行時（`src/storage.ts`）：`JsonlSessionHandle` 承載逐控制代碼修改鏈、帶固定批處理視窗與 single-flight 排空的已路由即時事件緩衝、單調讀取與冪等 close；一個 tracker 持有程序內單寫者認領、teardown 清掃所遍歷的開啟控制代碼集合，以及後端自己的工作階段監聽器所路由進的已建立但未實體化待定工作階段。歷史正文讀取共享每個 Session 唯一的一次 Decode/Migrate preparation，按 revision 為鍵的有界 memo 讓緊接的觀察到恢復交接複用該解析；backend 在 memo 化前只對每個 event graph 深度凍結一次，因此後續 handle read 無需複製或再次凍結。只有寫 open 才釋出準備好的後繼。本包有意只暴露預設外掛匯出與設定型別——具體類不是具名匯出，因此消費方只耦合 `ctx.sessionPersistence`，其可觀察行為由共享 seam 測試套件（`runPersistenceContract`/`runLiveWritePathContract`）釘住。物理修訂號組合 device、inode、size 與納秒時間戳，供準備快取、穩定讀取重試及釋出檢查使用。歷史格式的公開修訂號還加入所選路徑排序後及其物理修訂號的 SHA-256 指紋；鎖檔案與保留但未被選中的代際不參與計算。
 
-### 物理编码
+### 物理編碼
 
-默认产物是独立 [Zstandard 帧](../../../.agents/notes/implemented/architecture/2026-07-19-zstandard-jsonl-session-logs.zh.md) 的标准拼接：一个仅包含 header 行的带校验和帧，后跟每个持久 append 批次一个带校验和帧，使用 Node 内置 Zstandard API 的默认压缩级别（无级别开关）。当前格式为每个事件写一行；`sourceEventSeqs` 使用无损存储形式：至少包含三个序列号的连续段会变成 `[start, end]` 区间对，其他列表原样保留；读取时会展开回精确的内存数组。历史迁移会复用一个 Zstandard decoder，让已解析行流经有状态格式 Stage，并通过一个压缩 context 以约 1 MiB 主线程分片流式写入当前记录，同时只保留最终当前事件、有界 decoder 状态与必需的序号重映射表。列表只读取并验证 header 帧。`compression: 'none'` 保留相同的存储形式逻辑行，但不使用帧压缩。一个根只属于一种编码：启动发现与定向查找会拒绝使用另一后缀的 generation；格式迁移保留已配置编码，而压缩转换、混合根回退与双写仍不受支持。冻结的 v0 与 v1 codec 仅为历史 generation 保留 packed-row decoder。
+預設產物是獨立 [Zstandard 幀](../../../.agents/notes/implemented/architecture/2026-07-19-zstandard-jsonl-session-logs.zh.md) 的標準拼接：一個僅包含 header 行的帶總和檢查碼幀，後跟每個持久 append 批次一個帶總和檢查碼幀，使用 Node 內建 Zstandard API 的預設壓縮級別（無級別開關）。目前格式為每個事件寫一行；`sourceEventSeqs` 使用無損儲存形式：至少包含三個序列號的連續段會變成 `[start, end]` 區間對，其他列表原樣保留；讀取時會展開回精確的記憶體陣列。歷史遷移會複用一個 Zstandard decoder，讓已解析行流經有狀態格式 Stage，並透過一個壓縮 context 以約 1 MiB 主執行緒分片流式寫入目前記錄，同時只保留最終目前事件、有界 decoder 狀態與必需的序號重對映表。列表只讀取並驗證 header 幀。`compression: 'none'` 保留相同的儲存形式邏輯行，但不使用幀壓縮。一個根只屬於一種編碼：啟動發現與定向查詢會拒絕使用另一字尾的 generation；格式遷移保留已設定編碼，而壓縮轉換、混合根退回與雙寫仍不受支援。凍結的 v0 與 v1 codec 僅為歷史 generation 保留 packed-row decoder。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`Config` schema、后端服务类与文件存储原语 |
-| [`src/storage.ts`](src/storage.ts) | JSONL 句柄、已路由实时事件缓冲、进程内写入者记账、监听器、teardown |
-| [`src/format.ts`](src/format.ts) | 日志路径派生、header 编码与当前记录扫描 |
-| [`src/generation.ts`](src/generation.ts) | 单遍历史还原、有界 stage 编码、源 revision 检查与排他后继发布 |
-| [`src/migration-verifier.ts`](src/migration-verifier.ts) | stage 与竞争 generation 校验的 Worker 生命周期 |
-| [`src/zstd.ts`](src/zstd.ts) | Zstandard 帧压缩、解码与帧扫描 |
-| [`src/win32.ts`](src/win32.ts) | Windows write-through 发布与目录创建 |
-| — | 不发布运行时不变式伴生入口；身份在存储层强制；持久化正确性依赖后端往返与崩溃尾部测试，本包不公开可持续观察的进程内关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`Config` schema、後端服務類與檔案儲存原語 |
+| [`src/storage.ts`](src/storage.ts) | JSONL 控制代碼、已路由即時事件緩衝、程序內寫入者記帳、監聽器、teardown |
+| [`src/format.ts`](src/format.ts) | 日誌路徑派生、header 編碼與目前記錄掃描 |
+| [`src/generation.ts`](src/generation.ts) | 單遍歷史還原、有界 stage 編碼、源 revision 檢查與排他後繼釋出 |
+| [`src/migration-verifier.ts`](src/migration-verifier.ts) | stage 與競爭 generation 驗證的 Worker 生命週期 |
+| [`src/zstd.ts`](src/zstd.ts) | Zstandard 幀壓縮、解碼與幀掃描 |
+| [`src/win32.ts`](src/win32.ts) | Windows write-through 釋出與目錄建立 |
+| — | 不釋出執行時不變式伴生入口；身份在儲存層強制；持久化正確性依賴後端往返與崩潰尾部測試，本包不公開可持續觀察的程序內關係。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享持久化模型逐步进入同级后端与物理格式决策。
+當包級約定不夠用時閱讀以下頁面。它們從共享持久化模型逐步進入同級後端與物理格式決策。
 
-- [会话持久化子系统](../../../docs/subsystems/persistence.zh.md)——后端无关的服务语义与提供方关系。
-- [会话持久化 seam](../session-persistence/README.zh.md)——本后端实现的服务约定。
-- [项目会话目录决策](../../../.agents/notes/implemented/architecture/2026-07-24-project-session-directories.zh.md)——项目与会话目录布局背后的取舍。
-- [Zstandard JSONL 会话日志](../../../.agents/notes/implemented/architecture/2026-07-19-zstandard-jsonl-session-logs.zh.md)——带校验和帧编码的理由。
-- [已发布 Session 格式迁移](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)——不可变 generation、相邻迁移边与发布规则。
+- [工作階段持久化子系統](../../../docs/subsystems/persistence.zh.md)——後端無關的服務語義與提供者關係。
+- [工作階段持久化 seam](../session-persistence/README.zh.md)——本後端實作的服務約定。
+- [專案工作階段目錄決策](../../../.agents/notes/implemented/architecture/2026-07-24-project-session-directories.zh.md)——專案與工作階段目錄佈局背後的取捨。
+- [Zstandard JSONL 工作階段日誌](../../../.agents/notes/implemented/architecture/2026-07-19-zstandard-jsonl-session-logs.zh.md)——帶總和檢查碼幀編碼的理由。
+- [已釋出 Session 格式遷移](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)——不可變 generation、相鄰遷移邊與釋出規則。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 恢复的对话历史
+### 恢復的對話歷史
 
-#### 模型看到什么
+#### 模型看到什麼
 
-JSONL 存储不会向实时请求提供提示词或 schema。加载会恢复已存储的表层历史，并保留之前的请求 header 用于重建；新 loop 组合当前 envelope。恢复会用 `TOOL_NOT_STARTED` 平衡没有持久调用的 assistant 请求；持久调用无结果时则变为 `TOOL_OUTCOME_UNKNOWN`，它要求模型只重试只读或幂等工作，并验证可能的副作用或询问用户。嵌入式 Assistant stream 与仅日志 attempt 不会重复生成消息。
+JSONL 儲存不會向即時請求提供提示詞或 schema。載入會恢復已儲存的表層歷史，並保留之前的請求 header 用於重建；新 loop 組合目前 envelope。恢復會用 `TOOL_NOT_STARTED` 平衡沒有持久呼叫的 assistant 請求；持久呼叫無結果時則變為 `TOOL_OUTCOME_UNKNOWN`，它要求模型只重試只讀或冪等工作，並驗證可能的副作用或詢問使用者。嵌入式 Assistant stream 與僅日誌 attempt 不會重複生成訊息。
 
-#### Token 影响
+#### Token 影響
 
-实时请求不新增 token。恢复后的 agent（智能体）会因保留的历史、当前 envelope，以及每个中断调用中以引用形式加入的修复结果文本而消耗 token。
+即時請求不新增 token。恢復後的 agent（智慧代理）會因保留的歷史、目前 envelope，以及每個中斷呼叫中以引用形式加入的修復結果文字而消耗 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-JSONL 存储不修改实时请求前缀。只有重建历史、当前 envelope 与模型路由匹配时，恢复 loop 才能重用提供方缓存；崩溃修复结果仅追加。
+JSONL 儲存不修改即時請求字首。只有重建歷史、目前 envelope 與模型路由匹配時，恢復 loop 才能重用提供者快取；崩潰修復結果僅追加。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本后端何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是任务积压。
+這些限制說明本後端何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是任務積壓。
 
-- **格式迁移保留已配置编码，且只支持 catalog 中的链**——本 build 把受支持的历史代迁移到当前格式；更改压缩需要独立根，保留的旧版本不提供自动 fallback 或 downgrade 支持。
-- **平铺文件存储布局不加载**——加载前使用独立根，或将预发布产物移入项目/会话目录布局。
-- **压缩文件不能直接按行读取**——使用后端加载；或在写入新根前选择 `compression: 'none'`，供外部行读取方使用。
-- **不删除会话文件**——日志在 `root` 下累积，直到外部移除；seam 无删除接口。
-- **每会话一个活动写入方**——写句柄认领在所属后端实例内排除第二个写入方，内核锁（`session.lock` 上的非阻塞 `flock(2)`；Windows 上为由该路径派生的命名内核信号量，零文件系统足迹）排除其他所有实例与进程；锁在以写模式打开既有产物时立即获取，新建会话则仅在首次实体化写入之前获取，因此未实体化的会话不留任何文件系统足迹。崩溃持有者的锁随其进程消亡，会话立即可再写入，而活着但卡死的持有者会阻塞写入方直到其进程退出（POSIX 上删除锁文件即放弃该排他；释放本身从不删除它）。咨询式 `flock` 在部分网络文件系统（NFSv3）上不可靠，Windows 信号量名按登录会话隔离。
-- **POSIX 实体化需要硬链接支持**——第一次 append 使用 `link()`，使同 id 竞态失败而不覆盖已提交日志；Windows 使用无替换 write-through rename。
-- **POSIX 写入需要匹配的预编译系统 addon**——[`node-addon-system`](../../../native/system/README.zh.md) 提供异步 flock，无须在用户侧编译。addon 缺失时拒绝写入所有权；Windows 保留其信号量实现。
+- **格式遷移保留已設定編碼，且只支援 catalog 中的鏈**——本 build 把受支援的歷史代遷移到目前格式；更改壓縮需要獨立根，保留的舊版本不提供自動 fallback 或 downgrade 支援。
+- **平鋪檔案儲存佈局不載入**——載入前使用獨立根，或將預釋出產物移入專案/工作階段目錄佈局。
+- **壓縮檔案不能直接按行讀取**——使用後端載入；或在寫入新根前選擇 `compression: 'none'`，供外部行讀取方使用。
+- **不刪除工作階段檔案**——日誌在 `root` 下累積，直到外部移除；seam 無刪除介面。
+- **每工作階段一個活動寫入方**——寫控制代碼認領在所屬後端實例內排除第二個寫入方，核心鎖（`session.lock` 上的非阻塞 `flock(2)`；Windows 上為由該路徑派生的命名核心訊號量，零檔案系統足跡）排除其他所有實例與程序；鎖在以寫模式開啟既有產物時立即取得，新建工作階段則僅在首次實體化寫入之前取得，因此未實體化的工作階段不留任何檔案系統足跡。崩潰持有者的鎖隨其程序消亡，工作階段立即可再寫入，而活著但卡死的持有者會阻塞寫入方直到其程序退出（POSIX 上刪除鎖檔案即放棄該排他；釋放本身從不刪除它）。諮詢式 `flock` 在部分網路檔案系統（NFSv3）上不可靠，Windows 訊號量名按登入工作階段隔離。
+- **POSIX 實體化需要硬連結支援**——第一次 append 使用 `link()`，使同 id 競態失敗而不覆蓋已提交日誌；Windows 使用無替換 write-through rename。
+- **POSIX 寫入需要匹配的預編譯系統 addon**——[`node-addon-system`](../../../native/system/README.zh.md) 提供非同步 flock，無須在使用者側編譯。addon 缺失時拒絕寫入所有權；Windows 保留其訊號量實作。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

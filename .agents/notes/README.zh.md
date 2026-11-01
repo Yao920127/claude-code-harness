@@ -2,68 +2,68 @@
 
 [English](README.md) | 中文
 
-这里存放一类设计文档。**Agent Note** 记录影响本代码库的决策或提案：代码和文档无法承载的*为什么*以及*放弃了什么*。本文件规定 Agent Note 存放在哪里、何时需要写一份，以及[文件内格式](#the-file-format)。
+這裡存放一類設計文件。**Agent Note** 記錄影響本程式碼庫的決策或提案：程式碼和文件無法承載的*為什麼*以及*放棄了什麼*。本檔案規定 Agent Note 存放在哪裡、何時需要寫一份，以及[檔案內格式](#the-file-format)。
 
-## 布局与命名
+## 佈局與命名
 
-每份 Agent Note 有两个维度，都编码在其**路径**中：`{lifecycle}/{class}/yyyy-mm-dd-topic-title.md`。
+每份 Agent Note 有兩個維度，都編碼在其**路徑**中：`{lifecycle}/{class}/yyyy-mm-dd-topic-title.md`。
 
-- **生命周期**（顶层文件夹）是 Agent Note 的状态，Agent Note 随状态变化在文件夹之间移动：
-  - **`proposed/`**：实施前评审的提案；尚未构建（或仅部分构建）。
-  - **`implemented/`**：决策已交付。文件记录做了什么决定、否决了什么，并**与实际交付的内容保持同步**：当代码后续移动文件、重命名包或更改键名/默认值时，Agent Note 在同一个变更中同步更新（仅限事实——路径、名称、结构——而非决策本身）。见 [implemented/AGENTS.md](implemented/AGENTS.md)。
-  - **`rejected/`**：提案经过讨论后被否决。仅当其决策依据仍能避免一种诱人且影响重大的错误时保留；否则删除完整的英文、中文和伴随记录三文件组。
-- **类别**（嵌套文件夹）是决策的*种类*——见下方[分类](#classification)。
+- **生命週期**（頂層資料夾）是 Agent Note 的狀態，Agent Note 隨狀態變化在資料夾之間移動：
+  - **`proposed/`**：實施前評審的提案；尚未建置（或僅部分建置）。
+  - **`implemented/`**：決策已交付。檔案記錄做了什麼決定、否決了什麼，並**與實際交付的內容保持同步**：當程式碼後續移動檔案、重新命名包或更改鍵名/預設值時，Agent Note 在同一個變更中同步更新（僅限事實——路徑、名稱、結構——而非決策本身）。見 [implemented/AGENTS.md](implemented/AGENTS.md)。
+  - **`rejected/`**：提案經過討論後被否決。僅當其決策依據仍能避免一種誘人且影響重大的錯誤時保留；否則刪除完整的英文、中文和伴隨記錄三檔案組。
+- **類別**（巢狀資料夾）是決策的*種類*——見下方[分類](#classification)。
 
-文件名中的日期是该主题**首次提出**的时间（以 git 历史为准）。Agent Note 之间的交叉引用使用相对 Markdown 链接（`[topic](../../implemented/architecture/2026-…-….md)`），从不使用纯文字或编号，这样既可机械检查，也能在文件夹间移动时保持有效。
+檔名中的日期是該主題**首次提出**的時間（以 git 歷史為準）。Agent Note 之間的交叉引用使用相對 Markdown 連結（`[topic](../../implemented/architecture/2026-…-….md)`），從不使用純文字或編號，這樣既可機械檢查，也能在資料夾間移動時保持有效。
 
-活跃生命周期目录树就是工作清单：浏览其生命周期/类别文件夹，或搜索仓库即可。请勿添加集中式 `INDEX.md`；设计理由见[不设索引的 Agent Note](implemented/process/2026-07-19-remove-generated-agent-note-index.zh.md)。具有历史决策价值但未来指导价值较低的已实施记录会移至下文所述、单独冻结的 [`archived/`](archived/AGENTS.md) 目录树。
+活躍生命週期目錄樹就是工作清單：瀏覽其生命週期/類別資料夾，或搜尋儲存庫即可。請勿新增集中式 `INDEX.md`；設計理由見[不設索引的 Agent Note](implemented/process/2026-07-19-remove-generated-agent-note-index.zh.md)。具有歷史決策價值但未來指導價值較低的已實施記錄會移至下文所述、單獨凍結的 [`archived/`](archived/AGENTS.md) 目錄樹。
 
 <a id="classification"></a>
 
-## 分类
+## 分類
 
-每份 Agent Note 属于 `scripts/agent-note-tree.ts` 中封闭集合里的一个路径编码类别；分类门禁拒绝其他文件夹。新增类别需要同时更新规范集合与本节。
+每份 Agent Note 屬於 `scripts/agent-note-tree.ts` 中封閉集合裡的一個路徑編碼類別；分類門禁拒絕其他資料夾。新增類別需要同時更新規範集合與本節。
 
-| 类别 | 覆盖范围 |
+| 類別 | 覆蓋範圍 |
 |---|---|
-| `feature` | 面向用户或模型的新能力。 |
-| `bug-fix` | 修正缺陷或弥补事故复盘（postmortem）发现的缺口。 |
-| `simplification` | 在不增加能力的前提下移除代码、行为或对外范围。 |
-| `architecture` | 关于**交付源码**的结构性决策：包之间的关系、运行时词汇。 |
-| `process` | 代码**周边**的工具、策略或工作流——门禁、包管理器、vendor 化——不涉及运行时行为。 |
-| `testing` | 测试基础设施与策略。 |
+| `feature` | 面向使用者或模型的新能力。 |
+| `bug-fix` | 修正缺陷或彌補事故檢討（postmortem）發現的缺口。 |
+| `simplification` | 在不增加能力的前提下移除程式碼、行為或對外範圍。 |
+| `architecture` | 關於**交付原始碼**的結構性決策：包之間的關係、執行時詞彙。 |
+| `process` | 程式碼**周邊**的工具、策略或工作流——門禁、包管理器、vendor 化——不涉及執行時行為。 |
+| `testing` | 測試基礎設施與策略。 |
 
-`architecture` 与 `process` 的界线：**architecture** 关乎我们交付的源码；**process** 关乎围绕源码的工具与工作流。（`refactor` 被有意排除：它与 `simplification` 重叠，而后者的判别标准「可观察行为是否改变」已经覆盖了它。）
+`architecture` 與 `process` 的界線：**architecture** 關乎我們交付的原始碼；**process** 關乎圍繞原始碼的工具與工作流。（`refactor` 被有意排除：它與 `simplification` 重疊，而後者的判別標準「可觀察行為是否改變」已經覆蓋了它。）
 
-## 归档与删除
+## 歸檔與刪除
 
-仅描述小型 UI 调整或纯机械变更的 implemented Agent Note 直接删除；一并删除英文、中文和伴随记录文件，并修复或移除入站链接。局部 bug 修复、性能变更、新能力或实质行为决策，不会仅因实现规模小就符合删除条件。其他已实施记录只有在交付决策完整落地、其依据不太可能再指导未来工作，但仍具有历史决策价值时才归档。如果其中的备选方案、归属边界、否定性保证、持久化语义或协议语义、安全规则，或者重新引入条件仍有价值，则继续作为活跃记录保留。绝不归档 proposed Agent Note：过时的提案应转为 rejected。仅当 rejected Agent Note 仍能避免一种可能发生的错误时保留；否则一并删除其英文、中文和伴随记录文件。请使用经过校准的 [`dsh-archive-agent-notes`](../skills/dsh-archive-agent-notes/SKILL.md) 工作流，不要根据字数、存续时间或目标配额来判断。
+僅描述小型 UI 調整或純機械變更的 implemented Agent Note 直接刪除；一併刪除英文、中文和伴隨記錄檔案，並修復或移除入站連結。區域性 bug 修復、效能變更、新能力或實質行為決策，不會僅因實作規模小就符合刪除條件。其他已實施記錄只有在交付決策完整落實、其依據不太可能再指導未來工作，但仍具有歷史決策價值時才歸檔。如果其中的備選方案、歸屬邊界、否定性保證、持久化語義或協定語義、安全規則，或者重新引入條件仍有價值，則繼續作為活躍記錄保留。絕不歸檔 proposed Agent Note：過時的提案應轉為 rejected。僅當 rejected Agent Note 仍能避免一種可能發生的錯誤時保留；否則一併刪除其英文、中文和伴隨記錄檔案。請使用經過校準的 [`dsh-archive-agent-notes`](../skills/dsh-archive-agent-notes/SKILL.md) 工作流，不要根據字數、存續時間或目標配額來判斷。
 
-归档路径编码为 `archived/{class}/yyyy-mm-dd-topic-title.md`；其中有意省略 `implemented`，因为只有 implemented Agent Note 可以进入归档。归档变更会移动完整的英文、中文和伴随记录三个文件，保留 `Status: implemented`，在两种语言的文件中紧接该状态行插入相同的 `Archived: YYYY-MM-DD` 行，重新记录伴随记录，并修复或删除入站链接。归档时只允许对内容做这些更改。 既有标题标点、空行布局和语言切换栏措辞不阻止归档；与正文一起保留。
+歸檔路徑編碼為 `archived/{class}/yyyy-mm-dd-topic-title.md`；其中有意省略 `implemented`，因為只有 implemented Agent Note 可以進入歸檔。歸檔變更會移動完整的英文、中文和伴隨記錄三個檔案，保留 `Status: implemented`，在兩種語言的檔案中緊接該狀態行插入相同的 `Archived: YYYY-MM-DD` 行，重新記錄伴隨記錄，並修復或刪除入站連結。歸檔時只允許對內容做這些更改。 既有標題標點、空行佈局和語言切換欄措辭不阻止歸檔；與正文一起保留。
 
-封存后，每组归档文件都永久冻结。禁止编辑、翻译、重新格式化、更新、移动或删除，也不得将其视为当前行为的权威依据。文档门禁会跳过归档源文件，包括其中的出站链接；当活跃文档有意引用历史时，仍可链接到归档 Agent Note。[`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) 强制执行封闭的类别目录树、完整的三文件配对、归档元数据、伴随记录 hash，以及仅追加的冻结内容 manifest（元数据清单）。[归档政策 Agent Note](implemented/process/2026-07-26-frozen-agent-note-archive.zh.md) 记录了设计依据。
+封存後，每組歸檔檔案都永久凍結。禁止編輯、翻譯、重新格式化、更新、移動或刪除，也不得將其視為目前行為的權威依據。文件門禁會跳過歸檔原始檔，包括其中的出站連結；當活躍文件有意引用歷史時，仍可連結到歸檔 Agent Note。[`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) 強制執行封閉的類別目錄樹、完整的三檔案配對、歸檔中繼資料、伴隨記錄 hash，以及僅追加的凍結內容 manifest（中繼資料清單）。[歸檔政策 Agent Note](implemented/process/2026-07-26-frozen-agent-note-archive.zh.md) 記錄了設計依據。
 
 <a id="when-to-write-one"></a>
 
-## 何时需要写一份
+## 何時需要寫一份
 
-只有代码、测试和现有文档未能解释的决策理由具有长期价值时，才在同一 PR（Pull Request）中新增或更新 Agent Note。对未来重大工作的提案从 `proposed/` 开始；已经做出的决策从 `implemented/` 开始。选择与决策匹配的类别文件夹（见[分类](#classification)）。
+只有程式碼、測試和現有文件未能解釋的決策理由具有長期價值時，才在同一 PR（Pull Request）中新增或更新 Agent Note。對未來重大工作的提案從 `proposed/` 開始；已經做出的決策從 `implemented/` 開始。選擇與決策匹配的類別資料夾（見[分類](#classification)）。
 
-更新已经拥有该决策的 Agent Note 即可满足规则；不要创建重复记录。机械性或局部编辑均可豁免，包括局部 UI 展示和交互调整。Agent Note 永远不会被编辑为一个*不同的决策*：用新 Agent Note 取代旧记录，并让两个记录保持互相链接，除非后续依据下方规则完全合并旧记录。编辑 `implemented/` Agent Note 以跟踪其现有决策的所在位置是必需的，而非禁止的；见 [implemented/AGENTS.md](implemented/AGENTS.md)。
+更新已經擁有該決策的 Agent Note 即可滿足規則；不要建立重複記錄。機械性或區域性編輯均可豁免，包括區域性 UI 展示和互動調整。Agent Note 永遠不會被編輯為一個*不同的決策*：用新 Agent Note 取代舊記錄，並讓兩個記錄保持互相連結，除非後續依據下方規則完全合併舊記錄。編輯 `implemented/` Agent Note 以跟蹤其現有決策的所在位置是必需的，而非禁止的；見 [implemented/AGENTS.md](implemented/AGENTS.md)。
 
-被完全取代的 implemented Agent Note 可以合并到当前持有该决策的记录中，并删除原文件。删除前，当前记录必须保存所有独有的决策依据、备选方案、影响、必需的验证和明确指出的覆盖缺口；修复所有入站链接；并在同一变更中删除中文对侧文件和一致性记录。仅部分被取代的记录不符合此条件：保留两个记录并让它们互相链接，同时更新所有仍然适用的事实。合并不得将旧文件改写成与其相反的决策，也不得让 git 历史成为决策依据的唯一副本。
+被完全取代的 implemented Agent Note 可以合併到目前持有該決策的記錄中，並刪除原檔案。刪除前，目前記錄必須儲存所有獨有的決策依據、備選方案、影響、必需的驗證和明確指出的覆蓋缺口；修復所有入站連結；並在同一變更中刪除中文對側檔案和一致性記錄。僅部分被取代的記錄不符合此條件：保留兩個記錄並讓它們互相連結，同時更新所有仍然適用的事實。合併不得將舊檔案改寫成與其相反的決策，也不得讓 git 歷史成為決策依據的唯一副本。
 
-只有当一项功能已从生产代码、配置、schema、持久化格式或协议格式、迁移和兼容行为中完全消失，当前文档不再将其描述为可用，且没有测试把它作为受支持行为来执行时，新增该功能的 Agent Note 才可合并进后续的移除记录。移除决策的依据和验证该功能已不存在的测试可以保留。移除决策的持有记录必须保留最初动机、为什么该动机已不足以证明保留该功能的合理性、完全移除之外的备选方案、放弃的能力、重新引入的条件，以及证明已彻底移除的验证。过时的实现清单和只验证已删除行为的测试不属于当前验证证据。仅移除一种传输、默认值、实现或展示属于部分取代；仍有任何持久数据或兼容处理也同样如此。
+只有當一項功能已從生產程式碼、設定、schema、持久化格式或協定格式、遷移和相容行為中完全消失，目前文件不再將其描述為可用，且沒有測試把它作為受支援行為來執行時，新增該功能的 Agent Note 才可合併進後續的移除記錄。移除決策的依據和驗證該功能已不存在的測試可以保留。移除決策的持有記錄必須保留最初動機、為什麼該動機已不足以證明保留該功能的合理性、完全移除之外的備選方案、放棄的能力、重新引入的條件，以及證明已徹底移除的驗證。過時的實作清單和只驗證已刪除行為的測試不屬於目前驗證證據。僅移除一種傳輸、預設值、實作或展示屬於部分取代；仍有任何持久資料或相容處理也同樣如此。
 
 <a id="the-file-format"></a>
 
-## 文件格式
+## 檔案格式
 
-每份活跃 Agent Note 遵循统一的文件内格式，由 `pnpm run verify-agent-note-format`（[scripts/verify-agent-note-format.ts](../../scripts/verify-agent-note-format.ts)，`doc-sync`（文档同步门禁）的一环）强制执行；该格式的设计动机及其否决的替代方案见[统一格式 Agent Note](implemented/process/2026-07-05-uniform-agent-note-format.zh.md)。归档记录保留封存时的格式，并增加上述归档日期行。
+每份活躍 Agent Note 遵循統一的檔案內格式，由 `pnpm run verify-agent-note-format`（[scripts/verify-agent-note-format.ts](../../scripts/verify-agent-note-format.ts)，`doc-sync`（文件同步門禁）的一環）強制執行；該格式的設計動機及其否決的替代方案見[統一格式 Agent Note](implemented/process/2026-07-05-uniform-agent-note-format.zh.md)。歸檔記錄保留封存時的格式，並增加上述歸檔日期行。
 
-### 头部块
+### 頭部塊
 
-每份 Agent Note 的前三行严格为：
+每份 Agent Note 的前三行嚴格為：
 
 ```markdown
 # Agent Note: <title>
@@ -71,17 +71,17 @@
 Status: <status>
 ```
 
-后跟一个空行。`Status:` 的值有三种形式，且必须与文件所在的生命周期文件夹一致——门禁会交叉检查：
+後跟一個空行。`Status:` 的值有三種形式，且必須與檔案所在的生命週期資料夾一致——門禁會交叉檢查：
 
 - `Status: proposed`
 - `Status: implemented`
 - `Status: rejected — <why, in one line>`
 
-状态行不带日期、不带括号补充说明：文件名记录首次提出日期，git 记录其余一切；「以修订形式接受」之类的说明属于正文内容（在陈述决策的地方说明修订）。拒绝原因是唯一带内容的状态，因为读者查阅被否决的 Agent Note 时，结论正是他们要找的。
+狀態行不帶日期、不帶括號補充說明：檔名記錄首次提出日期，git 記錄其餘一切；「以修訂形式接受」之類的說明屬於正文內容（在陳述決策的地方說明修訂）。拒絕原因是唯一帶內容的狀態，因為讀者查閱被否決的 Agent Note 時，結論正是他們要找的。
 
 ### 正文骨架
 
-每份 Agent Note 的正文以 `## Problem` 开头：动机，写法上不依赖解决方案即可独立成文。后续内容取决于生命周期；固定章节使用以下规范名称且仅限这些名称，而真正独特的技术章节（包拓扑、协议约定、schema 等）在必需章节之间可自由组织。
+每份 Agent Note 的正文以 `## Problem` 開頭：動機，寫法上不依賴解決方案即可獨立成文。後續內容取決於生命週期；固定章節使用以下規範名稱且僅限這些名稱，而真正獨特的技術章節（包拓撲、協定約定、schema 等）在必需章節之間可自由組織。
 
 #### `proposed/`
 
@@ -94,7 +94,7 @@ Status: <status>
 ## Risks
 ```
 
-`## Proposal` 描述拟议的变更，可以合理地使用将来时态——计划、迁移步骤和待解决问题在工作尚未完成时属于此处。`## Acceptance criteria` 说明什么可观察状态意味着完成。`## Risks` 涵盖可能出错的事项以及该变更有意放弃的东西。
+`## Proposal` 描述擬議的變更，可以合理地使用將來時態——計劃、遷移步驟和待解決問題在工作尚未完成時屬於此處。`## Acceptance criteria` 說明什麼可觀察狀態意味著完成。`## Risks` 涵蓋可能出錯的事項以及該變更有意放棄的東西。
 
 #### `implemented/`
 
@@ -106,26 +106,26 @@ Status: <status>
 ## Consequences
 ```
 
-`## Decision` 以现在时态描述已交付的现实，整个文件按 [implemented/AGENTS.md](implemented/AGENTS.md) 的要求与之保持同步。`## Consequences` 记录权衡的代价**与**收益。提案阶段的标题在此属于规格用语，门禁会拒绝它们：`## Proposal`、`## Plan`、`## Migration plan` 和 `## Acceptance criteria` 不得出现在 implemented Agent Note 中（原因见 [slop 检查清单](../../docs/AGENTS.md)）。`## Testing`、`## Deferred` 或 `## Related` 章节在陈述现在时态的事实时是允许的。
+`## Decision` 以現在時態描述已交付的現實，整個檔案按 [implemented/AGENTS.md](implemented/AGENTS.md) 的要求與之保持同步。`## Consequences` 記錄權衡的代價**與**收益。提案階段的標題在此屬於規格用語，門禁會拒絕它們：`## Proposal`、`## Plan`、`## Migration plan` 和 `## Acceptance criteria` 不得出現在 implemented Agent Note 中（原因見 [slop 檢查清單](../../docs/AGENTS.md)）。`## Testing`、`## Deferred` 或 `## Related` 章節在陳述現在時態的事即時是允許的。
 
 #### `rejected/`
 
-被否决的 Agent Note 是冻结的提案：保留提案时的所有章节（包括 `## Acceptance criteria` 或 `## Plan`），结论写在 `Status:` 行上。仅头部块、`## Problem` 开头、`## Proposal` 章节以及下方的「曾考虑的替代方案」强制要求适用。
+被否決的 Agent Note 是凍結的提案：保留提案時的所有章節（包括 `## Acceptance criteria` 或 `## Plan`），結論寫在 `Status:` 行上。僅頭部塊、`## Problem` 開頭、`## Proposal` 章節以及下方的「曾考慮的替代方案」強制要求適用。
 
-### 曾考虑的替代方案——必需
+### 曾考慮的替代方案——必需
 
-每份 Agent Note 都必须包含 `## Alternatives considered` 章节：每个真实的替代方案及其落选原因，每个替代方案用一个加粗引导的段落，或对争议较大的替代方案用 `### Why not <X>?` 子节。记录决策时不记录它击败了什么，就是在邀请反复争论——这正是 Agent Note 旨在防止的问题。
+每份 Agent Note 都必須包含 `## Alternatives considered` 章節：每個真實的替代方案及其落選原因，每個替代方案用一個加粗引導的段落，或對爭議較大的替代方案用 `### Why not <X>?` 子節。記錄決策時不記錄它擊敗了什麼，就是在邀請反覆爭論——這正是 Agent Note 旨在防止的問題。
 
-替代方案是记录下来的，不是凭空编造的。日期早于 2026-07-05 且替代方案无法从记录中重建的 Agent Note，用以下精确注释代替该章节，门禁仅对格式规范之前的文件接受此注释：
+替代方案是記錄下來的，不是憑空編造的。日期早於 2026-07-05 且替代方案無法從記錄中重建的 Agent Note，用以下精確註解代替該章節，門禁僅對格式規範之前的檔案接受此註解：
 
 ```markdown
 <!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->
 ```
 
-### 在生命周期之间移动
+### 在生命週期之間移動
 
-将文件在生命周期文件夹之间移动意味着在同一个变更中更新 `Status:` 行并满足目标文件夹的骨架要求——否则门禁会失败。具体而言，`proposed/` → `implemented/` 将 `## Proposal` 改写为现在时态的 `## Decision`，将 `## Acceptance criteria` 和 `## Risks` 折入 `## Consequences`（或折入一个现在时态的 `## Testing`/`## Verification` 章节，用于描述现在锁定该行为的内容），并用实际交付的内容替换计划——也就是将 [implemented/AGENTS.md](implemented/AGENTS.md) 所要求的改写变成可机械检查的规则。`proposed/` → `rejected/` 仅在 `Status:` 行添加原因并冻结文件。
+將檔案在生命週期資料夾之間移動意味著在同一個變更中更新 `Status:` 行並滿足目標資料夾的骨架要求——否則門禁會失敗。具體而言，`proposed/` → `implemented/` 將 `## Proposal` 改寫為現在時態的 `## Decision`，將 `## Acceptance criteria` 和 `## Risks` 折入 `## Consequences`（或折入一個現在時態的 `## Testing`/`## Verification` 章節，用於描述現在鎖定該行為的內容），並用實際交付的內容替換計劃——也就是將 [implemented/AGENTS.md](implemented/AGENTS.md) 所要求的改寫變成可機械檢查的規則。`proposed/` → `rejected/` 僅在 `Status:` 行新增原因並凍結檔案。
 
-### 中文对侧文件
+### 中文對側檔案
 
-`.zh.md` 对侧文件按 [i18n 约定](../../docs/i18n/README.zh.md)逐章节与其英文对侧文件保持相同结构；机器检查的头部标记（`# Agent Note: ` 和 `Status:` 行）保持英文原样不翻译。格式门禁跳过 `.zh.md` 文件；配对门禁检查它们的一致性。
+`.zh.md` 對側檔案按 [i18n 約定](../../docs/i18n/README.zh.md)逐章節與其英文對側檔案保持相同結構；機器檢查的頭部標記（`# Agent Note: ` 和 `Status:` 行）保持英文原樣不翻譯。格式門禁跳過 `.zh.md` 檔案；配對門禁檢查它們的一致性。

@@ -1,37 +1,37 @@
-# Agent Note: Alpha Session 迁移拒绝所有未知历史事件
+# Agent Note: Alpha Session 遷移拒絕所有未知歷史事件
 
 Status: implemented
 
 [English](2026-08-31-alpha-historical-unknown-event-refusal.md) | 中文
 
-## 问题
+## 問題
 
-同版本 Session 读取只有在 producer 把信封标记为 `ignorable: true` 时，才可以安全跳过未知事件。保持基数的迁移有更严格义务：它必须证明每个保留 payload 在目标代际中仍具备正确语义。未知 JSON payload 可能包含编译期品牌无法发现的 Session 序号、生命周期事实或模型可见状态。
+同版本 Session 讀取只有在 producer 把信封標記為 `ignorable: true` 時，才可以安全跳過未知事件。保持基數的遷移有更嚴格義務：它必須證明每個保留 payload 在目標代際中仍具備正確語義。未知 JSON payload 可能包含編譯期品牌無法發現的 Session 序號、生命週期事實或模型可見狀態。
 
-静默复制这类事件，会在后续迁移边改变事件位置时留下陈旧数字引用。静默省略它会丢失持久数据。保留精确且不可变的 v0 generation 不能让任何一种转换后的 v1 结果变得无损。
+靜默複製這類事件，會在後續遷移邊改變事件位置時留下陳舊數字引用。靜默省略它會丟失持久資料。保留精確且不可變的 v0 generation 不能讓任何一種轉換後的 v1 結果變得無損。
 
-## 决策
+## 決策
 
-Alpha v0-to-v1 迁移边拥有冻结且完整的已发布 v0 事件与 payload 清单。它在目标 staging 前拒绝每个未知历史事件类型，包括标记了 `ignorable: true` 的事件；除明确分类为 owner 不透明 JSON 的字段外，它也拒绝已知 payload 的意外成员。可合并扩展的嵌套判别字段同样属于这项显式策略：未知 content-block type、message-source kind、assistant finish-reason kind 与 turn-ending reason kind 会作为 owner 不透明 JSON 保留，已知分支则接受结构校验。诊断会点名事件类型、序号和保持不变的源 generation。
+Alpha v0-to-v1 遷移邊擁有凍結且完整的已釋出 v0 事件與 payload 清單。它在目標 staging 前拒絕每個未知歷史事件型別，包括標記了 `ignorable: true` 的事件；除明確分類為 owner 不透明 JSON 的欄位外，它也拒絕已知 payload 的意外成員。可合併擴充功能的巢狀判別欄位同樣屬於這項顯式策略：未知 content-block type、message-source kind、assistant finish-reason kind 與 turn-ending reason kind 會作為 owner 不透明 JSON 保留，已知分支則接受結構驗證。診斷會點名事件型別、序號和保持不變的源 generation。
 
-该规则只适用于跨越历史格式迁移边。普通当前格式读取保留既有信封行为：未知必需事件被拒绝，带 `ignorable: true` 的未知事件仍可读取。因此原生当前格式的外部事件继续使用既有同版本扩展 seam，但不会自动获得未来格式迁移能力。
+該規則只適用於跨越歷史格式遷移邊。普通目前格式讀取保留既有信封行為：未知必需事件被拒絕，帶 `ignorable: true` 的未知事件仍可讀取。因此原生目前格式的外部事件繼續使用既有同版本擴充功能 seam，但不會自動獲得未來格式遷移能力。
 
-每个第一方源事件类型都在迁移边包中拥有可执行 disposition 与目标 validator。catalog 在构建时静态确定且与 profile 无关，因此 producer 插件是否挂载不会改变旧产物能否迁移。
+每個第一方源事件型別都在遷移邊包中擁有可執行 disposition 與目標 validator。catalog 在建置時靜態確定且與 profile 無關，因此 producer 外掛是否掛載不會改變舊產物能否遷移。
 
-## 后果
+## 後果
 
-某些由仓库外信息型插件产生的 v0 Session 可能拒绝 alpha 迁移，即使 v0 codec 能解码它们。拒绝不会发布后继，因此无后缀 v0 路径、字节与 inode 仍然权威且不变。操作者可以从诊断识别阻塞类型，并完整访问其原始文本。
+某些由儲存庫外資訊型外掛產生的 v0 Session 可能拒絕 alpha 遷移，即使 v0 codec 能解碼它們。拒絕不會發布後繼，因此無字尾 v0 路徑、位元組與 inode 仍然權威且不變。操作者可以從診斷識別阻塞型別，並完整存取其原始文字。
 
-社区反馈将决定下一步策略。后续版本可以添加显式外部 owner 迁移接口、在保留精确源代际时允许省略明确 ignorable 的历史事件，或继续严格拒绝。Alpha 标记不预先承诺任何选项。
+社群回饋將決定下一步策略。後續版本可以新增顯式外部 owner 遷移介面、在保留精確源代際時允許省略明確 ignorable 的歷史事件，或繼續嚴格拒絕。Alpha 標記不預先承諾任何選項。
 
-`SessionSeq` 与 `SessionLogOffset` 让已知第一方数字字段可审计，但无法分类未知 runtime 对象中的数字。因此迁移规则不能根据没有识别到品牌字段来推断安全。
+`SessionSeq` 與 `SessionLogOffset` 讓已知第一方數字欄位可審計，但無法分類未知 runtime 物件中的數字。因此遷移規則不能根據沒有識別到品牌欄位來推斷安全。
 
-本记录仅在历史格式迁移方面取代 [保留可忽略外部 Session 事件](2026-08-30-retain-ignorable-external-session-events.zh.md)。原决定对同版本 append 与 reload 仍然有效。
+本記錄僅在歷史格式遷移方面取代 [保留可忽略外部 Session 事件](2026-08-30-retain-ignorable-external-session-events.zh.md)。原決定對同版本 append 與 reload 仍然有效。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **逐字复制未知 ignorable 事件**——保留字节，但不能证明不透明数字或生命周期事实在结构迁移后仍有效。
-- **丢弃未知 ignorable 事件**——让迁移保持可用，但不再无损，并让该标记授权删除数据。
-- **在未知 JSON 中搜索类似数字字段的名称**——启发式无法建立语义身份，还会制造虚假信心。
-- **动态询问已挂载插件**——让迁移可用性取决于某个部署组合，并在缺席 producer 能挂载前失败。
-- **等到第一条结构迁移边再拒绝**——会让 v1 包含从未建立安全解释的历史值；恒等演练正是把策略变成可执行规则的时点。
+- **逐字複製未知 ignorable 事件**——保留位元組，但不能證明不透明數字或生命週期事實在結構遷移後仍有效。
+- **丟棄未知 ignorable 事件**——讓遷移保持可用，但不再無損，並讓該標記授權刪除資料。
+- **在未知 JSON 中搜尋類似數字欄位的名稱**——啟發式無法建立語義身份，還會製造虛假信心。
+- **動態詢問已掛載外掛**——讓遷移可用性取決於某個部署組合，並在缺席 producer 能掛載前失敗。
+- **等到第一條結構遷移邊再拒絕**——會讓 v1 包含從未建立安全解釋的歷史值；恆等演練正是把策略變成可執行規則的時點。

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-05-continuous-client-recovery.md
 /agent-note-continuous-client-connection-recovery:
   en: f0fee6b344250d4c
-  zh: 713ea72ca8d6565a
+  zh: 80f7c295940fe8f6
 /agent-note-continuous-client-connection-recovery/problem:
   en: 70259bdedbf6b449
-  zh: b0a3014c27483a09
+  zh: e4c1e47cba8389b2
 /agent-note-continuous-client-connection-recovery/decision:
   en: db9ac3c08a3eaf0b
-  zh: 68c9ce30d8d5c7e2
+  zh: 4efe494c1d8ccfe7
 /agent-note-continuous-client-connection-recovery/alternatives-considered:
   en: 2e94feca66d912af
-  zh: 8fc4e81b797d4553
+  zh: d922ea1e7316f154
 /agent-note-continuous-client-connection-recovery/consequences:
   en: cd99c771043a23d5
-  zh: 8559757fa8098fbe
+  zh: dccfd2fb687ab221
 /agent-note-continuous-client-connection-recovery/testing:
   en: 39fdcfb5c6b52a96
-  zh: 276de310ed1bbc39
+  zh: 2fa7e526c1a879e3

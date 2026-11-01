@@ -157,7 +157,6 @@ flowchart TD
     pkg_client_file_upload["client-file-upload"]
     pkg_client_hmr["client-hmr"]
     pkg_client_locale["client-locale"]
-    pkg_client_locale_zh_hant["client-locale-zh-hant"]
     pkg_client_modules["client-modules"]
     pkg_client_resources["client-resources"]
     pkg_client_shortcuts["client-shortcuts"]
@@ -1420,7 +1419,6 @@ flowchart TD
 | [`sdk-minimal`](../packages/bundle/sdk-minimal) | `bundle` | — |
 | [`client-hmr`](../packages/client/hmr) | `client` | — |
 | [`client-locale`](../packages/client/locale) | `client` | — |
-| [`client-locale-zh-hant`](../packages/client/locale-zh-hant) | `client` | — |
 | [`client-modules`](../packages/client/modules) | `client` | — |
 | [`client-resources`](../packages/client/resources) | `client` | — |
 | [`client-shortcuts`](../packages/client/shortcuts) | `client` | — |

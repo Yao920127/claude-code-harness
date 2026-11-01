@@ -1,34 +1,34 @@
 # Translation prompt (pipeline asset)
 
-本文件是自动翻译流水线的 prompt 模板；从 `# Translation Prompt` 开始的正文会逐字进入模型请求，因此本文件不参与双语配对（见 [README.md](README.md) 排除清单）。模板正文与内嵌 few-shot 正误例由 jingtingxiang 基于对存量译文的质量评审撰写，是流水线行为的拍板基线。渲染时把 [terminology.md](terminology.md) 整表填入 `{{terminology}}`；除此之外不注入任何其他仓库文件（translation-rules.md 约束人和 agent 的翻译工作，不注入本模板）。[style-samples.md](style-samples.md) 定义文体，模板中的 Examples 只用于说明典型问题，两者冲突时以文体样例为准。本模板遵循 [提示词 v4 约定 Agent Note](../../.agents/notes/archived/process/2026-07-23-translation-prompt-v4-contract.md) 记录的兼容协议。修改本文件会改变翻译行为，需正常经过 PR 评审。
+本檔案是自動翻譯流水線的 prompt 範本；從 `# Translation Prompt` 開始的正文會逐字進入模型請求，因此本檔案不參與雙語配對（見 [README.md](README.md) 排除清單）。範本正文與內嵌 few-shot 正誤例由 jingtingxiang 基於對存量譯文的品質評審撰寫，是流水線行為的拍板基線。渲染時把 [terminology.md](terminology.md) 整表填入 `{{terminology}}`；除此之外不注入任何其他儲存庫檔案（translation-rules.md 約束人和 agent 的翻譯工作，不注入本範本）。[style-samples.md](style-samples.md) 定義文體，範本中的 Examples 只用於說明典型問題，兩者衝突時以文體樣例為準。本範本遵循 [提示詞 v4 約定 Agent Note](../../.agents/notes/archived/process/2026-07-23-translation-prompt-v4-contract.md) 記錄的相容協定。修改本檔案會改變翻譯行為，需正常經過 PR 評審。
 
-## 占位符约定
+## 預留位置約定
 
-流水线渲染模板时替换以下占位符，除此之外不改写系统消息：
+流水線渲染範本時替換以下預留位置，除此之外不改寫系統訊息：
 
-| 占位符 | 填入内容 | 来源 |
+| 預留位置 | 填入內容 | 來源 |
 |---|---|---|
-| `{{source_lang}}` | 源语言名（`English` / `Chinese`） | 由改动侧文件推断：`.zh.md` 被改则为 `Chinese` |
-| `{{target_lang}}` | 目标语言名（`Chinese` / `English`） | 与 `{{source_lang}}` 相对 |
-| `{{terminology}}` | [terminology.md](terminology.md) 的完整表格（Markdown 原文） | 渲染时读取仓库当前版本，不缓存 |
+| `{{source_lang}}` | 源語言名（`English` / `Chinese`） | 由改動側檔案推斷：`.zh.md` 被改則為 `Chinese` |
+| `{{target_lang}}` | 目標語言名（`Chinese` / `English`） | 與 `{{source_lang}}` 相對 |
+| `{{terminology}}` | [terminology.md](terminology.md) 的完整表格（Markdown 原文） | 渲染時讀取儲存庫目前版本，不快取 |
 
-流水线只识别上表中的占位符，并且一次翻译整篇文档。它不支持 `{{to}}`、`{{title_prompt}}`、`{{summary_prompt}}`、`{{terms_prompt}}`、`{{imt_style_guide}}`、`{{translation_rules}}` 或 `%%` 分段协议；输出采用模板正文规定的三段 XML，流水线解析取 `<final>` 段。
+流水線只識別上表中的預留位置，並且一次翻譯整篇文件。它不支援 `{{to}}`、`{{title_prompt}}`、`{{summary_prompt}}`、`{{terms_prompt}}`、`{{imt_style_guide}}`、`{{translation_rules}}` 或 `%%` 分段協定；輸出採用範本正文規定的三段 XML，流水線解析取 `<final>` 段。
 
-语言切换行：已有配对的源文件自带切换行，模型按模板规则翻转即可。全新配对的源文件没有切换行，模型也无从得知文件名——此时由流水线在解析 `<final>` 后按目标文件名插入或校正切换行（机械后处理，配对门禁兜底校验）。
+語言切換行：已有配對的原始檔自帶切換行，模型按範本規則翻轉即可。全新配對的原始檔沒有切換行，模型也無從得知檔名——此時由流水線在解析 `<final>` 後按目標檔名插入或校正切換行（機械後處理，配對門禁後備驗證）。
 
-## Few-shot 金标
+## Few-shot 金標
 
-流水线使用**整篇文档**的中英对照作为 few-shot，不是模板内嵌的句子级正误例。以下 5 组配对文档均经过人工评审，以仓库当前版本为准、随仓库更新：
+流水線使用**整篇文件**的中英對照作為 few-shot，不是範本內嵌的句子級正誤例。以下 5 組配對文件均經過人工評審，以儲存庫目前版本為準、隨儲存庫更新：
 
 - `README.md` ↔ `README.zh.md`
 - `docs/development.md` ↔ `docs/development.zh.md`
 - `docs/i18n/README.md` ↔ `docs/i18n/README.zh.md`
 - `docs/i18n/translation-rules.md` ↔ `docs/i18n/translation-rules.zh.md`
-- `.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md` ↔ 对应 `.zh.md`
+- `.agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md` ↔ 對應 `.zh.md`
 
-注入方式：在系统消息（本模板）之后、待译文档之前，每组作为一轮示例对话——user 消息为源文档全文，assistant 消息为定稿译文全文（裸文本，不带三段 XML 包装；只有真实请求要求三段输出）。上下文不足时按上列顺序从后往前删减组数。这 5 组也是评审校准锚点（见 [style-samples.md](style-samples.md)），改动任何一组即改变流水线行为。
+注入方式：在系統訊息（本範本）之後、待譯文件之前，每組作為一輪範例對話——user 訊息為源文件全文，assistant 訊息為定稿譯文全文（裸文字，不帶三段 XML 包裝；只有真實請求要求三段輸出）。上下文不足時按上列順序從後往前刪減組數。這 5 組也是評審校準錨點（見 [style-samples.md](style-samples.md)），改動任何一組即改變流水線行為。
 
-## 模板正文
+## 範本正文
 
 ````text
 # Translation Prompt
@@ -91,7 +91,8 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 - Avoid repeating the same ordinary verb in close proximity when a natural equivalent preserves the exact meaning. Never vary a terminology-table form, defined concept, or contract verb merely for stylistic variety.
 
 #### When translating into Chinese
-- When a number modifies a noun, include a natural Chinese classifier or measure word when Chinese grammar requires one. For example: "three-role capability seam" → "包含三种角色的能力 seam", not "三角色 seam". Do not add classifiers to code, identifiers, versions, units, or fixed names.
+- Write Traditional Chinese characters with Taiwan technical vocabulary, such as 軟體, 網路, 預設, 程式碼, and 使用者. Never use Simplified characters or mainland Chinese terms such as 預設, 數據, 信息, or 獲取.
+- When a number modifies a noun, include a natural Chinese classifier or measure word when Chinese grammar requires one. For example: "three-role capability seam" → "包含三種角色的能力 seam", not "三角色 seam". Do not add classifiers to code, identifiers, versions, units, or fixed names.
 
 ### Punctuation
 
@@ -103,7 +104,7 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 - Put one half-width space between Chinese text and Latin words or numerals. Do not add a space next to full-width punctuation, and do not leave a meaningless half-width space between two Chinese characters.
 - Markdown emphasis markers do not create a word boundary. Determine spacing from the rendered adjacent characters: Chinese next to Chinese takes no space, while Chinese next to a Latin word or numeral takes one half-width space.
 - Use half-width digits and Latin letters, never full-width forms.
-- For RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY), translate to the corresponding Chinese term (必须、禁止、应当、可以), preserve the SOURCE emphasis span exactly, and do not weaken its normative strength: plain source stays plain (必须), italic source stays italic (*必须*), and bold source stays bold (**必须**).
+- For RFC 2119 keywords (MUST, MUST NOT, SHOULD, MAY), translate to the corresponding Chinese term (必須、禁止、應當、可以), preserve the SOURCE emphasis span exactly, and do not weaken its normative strength: plain source stays plain (必須), italic source stays italic (*必須*), and bold source stays bold (**必須**).
 
 #### When translating into English
 - Use half-width English punctuation and standard English spacing. Preserve full-width punctuation only in verbatim Chinese text.
@@ -116,10 +117,10 @@ A lower-priority rule may refine but never override a higher-priority requiremen
 
 A terminology table is provided below. Follow it strictly:
 - Render every listed term exactly as specified.
-- When the target language is Chinese, use the "中文" column. On the document's first prose occurrence, write the "首次出现" value when one is specified; on later occurrences, write only the part before the parenthetical gloss.
-- When the target language is English, use the "English" column without a Chinese gloss; do not copy the "中文" or "首次出现" value into English prose.
+- When the target language is Chinese, use the "中文" column. On the document's first prose occurrence, write the "首次出現" value when one is specified; on later occurrences, write only the part before the parenthetical gloss.
+- When the target language is English, use the "English" column without a Chinese gloss; do not copy the "中文" or "首次出現" value into English prose.
 - If a term has already been glossed as part of a compound term, do not gloss it again when it appears alone later.
-- NEVER use translations listed in the "不要译作" column.
+- NEVER use translations listed in the "不要譯作" column.
 - Code spans and other protected tokens remain verbatim even when their text resembles a listed term.
 - For an unlisted technical term, use an established target-language technical term when its meaning is unambiguous in context. For a Chinese target, use an established Chinese rendering from a major Chinese-language OSS or vendor source; if you cannot reliably determine such a rendering, preserve the source term and record `[Terminology: pending]` in `<review>` with a tentative rendering for human review. For an English target, use the established English technical term; if the source term has no unambiguous established equivalent, preserve it with the shortest English gloss needed to make it intelligible and record `[Terminology: pending]` in `<review>`. A tentative rendering may appear in `<review>` but must not be silently adopted in `<translation>` or `<final>`, and you must not invent or claim a specific external precedent. This rule applies to terminology only; for general prose, freely restructure and paraphrase for natural expression.
 
@@ -138,11 +139,11 @@ The outer section tags are framing. If Markdown inside any section body contains
 
 <review>
 (Second pass: actual corrections only, one correction per line with a category tag, e.g.)
-- [Tone] "旁挂记录" → "伴随记录"（生造词）
-- [Sentence] 第 3 段补充逗号断句
-- [Punctuation] 两处破折号替换为冒号
+- [Tone] "旁掛記錄" → "伴隨記錄"（生造詞）
+- [Sentence] 第 3 段補充逗號斷句
+- [Punctuation] 兩處破折號替換為冒號
 - [Terminology: pending] source term → tentative rendering
-- 无修正
+- 無修正
 </review>
 
 <final>
@@ -186,7 +187,7 @@ After writing `<translation>`, verify it in two directions. First re-read it in 
 
 **Terminology**
 - For a Chinese target, are first-occurrence glosses correctly applied to the true first prose occurrence, neither missing nor repeated? For an English target, are Chinese glosses absent?
-- Are any "不要译作" forbidden translations present?
+- Are any "不要譯作" forbidden translations present?
 - Do protected tokens remain untouched even when they resemble terminology entries?
 - For an unlisted term, does a Chinese target use an established Chinese rendering or preserve the source term as pending when no reliable rendering is known, and does an English target use the established English technical term or preserve only an ambiguous source term with the shortest necessary gloss and a pending notice?
 
@@ -196,7 +197,7 @@ After writing `<translation>`, verify it in two directions. First re-read it in 
 - Are list-item endings grammatically consistent, with none ending in commas?
 - Do RFC 2119 keywords preserve the source emphasis span and normative strength exactly?
 
-Record actual corrections in `<review>`, then output the corrected complete document in `<final>`. If no correction or pending terminology notice is needed, write exactly `- 无修正` in `<review>` and copy `<translation>` unchanged into `<final>`. If `<review>` contains only pending terminology notices, copy `<translation>` unchanged into `<final>`.
+Record actual corrections in `<review>`, then output the corrected complete document in `<final>`. If no correction or pending terminology notice is needed, write exactly `- 無修正` in `<review>` and copy `<translation>` unchanged into `<final>`. If `<review>` contains only pending terminology notices, copy `<translation>` unchanged into `<final>`.
 
 ## Examples
 
@@ -204,52 +205,52 @@ Below are representative examples of common problems and their corrections. Foll
 
 ### Colloquial verb → Professional verb
 - Source: `The repo pins pnpm@11.7.0 in package.json`
-- Bad: `仓库在 package.json 中钉住 pnpm@11.7.0`
-- Good: `该仓库在 package.json 中固定使用 pnpm@11.7.0`
+- Bad: `儲存庫在 package.json 中釘住 pnpm@11.7.0`
+- Good: `該儲存庫在 package.json 中固定使用 pnpm@11.7.0`
 
 ### Run-on sentence → Natural phrasing with pause
 - Source: `Read docs/architecture.md before changing anything under packages/.`
-- Bad: `改动 packages/ 下的任何东西之前先读 docs/architecture.md。`
-- Good: `在修改 packages/ 目录下的任何内容之前，请先阅读 docs/architecture.md。`
+- Bad: `改動 packages/ 下的任何東西之前先讀 docs/architecture.md。`
+- Good: `在修改 packages/ 目錄下的任何內容之前，請先閱讀 docs/architecture.md。`
 
 ### Stiff passive voice → Active and natural
 - Source: `a green gate means the pair was confirmed consistent at these exact contents, not that the confirmation was sound.`
-- Bad: `门禁绿意味着这对文档曾在当前内容上被确认一致，不意味着这次确认本身是对的。`
-- Good: `门禁通过意味着这组文档在当前内容上的一致性得到了确认，不代表确认本身正确可靠。`
+- Bad: `門禁綠意味著這對文件曾在目前內容上被確認一致，不意味著這次確認本身是對的。`
+- Good: `門禁透過意味著這組文件在目前內容上的一致性得到了確認，不代表確認本身正確可靠。`
 
 ### Invented word → Natural expression
 - Source: `A sidecar record of both blob hashes makes consistency checkable`
-- Bad: `旁挂记录两侧 blob hash，使一致性可检查`
-- Good: `伴随记录保存两侧 blob hash，使一致性可检查`
+- Bad: `旁掛記錄兩側 blob hash，使一致性可檢查`
+- Good: `伴隨記錄儲存兩側 blob hash，使一致性可檢查`
 
 ### Em-dash → Colon/period
 - Source: `FIXME — an issue that should block a new release. A release should not ship with an open FIXME unless reviewers explicitly agree the change can be merged anyway.`
-- Bad: `FIXME——应当阻塞新版本发布的问题。除非评审者明确同意可以照常合入，发布不应带着未解决的 FIXME 出门。`
-- Good: `FIXME：应当阻塞新版本发布的问题。除非评审者明确同意该更改可以合并，否则发布版本不应包含未解决的 FIXME。`
+- Bad: `FIXME——應當阻塞新版本釋出的問題。除非評審者明確同意可以照常合入，釋出不應帶著未解決的 FIXME 出門。`
+- Good: `FIXME：應當阻塞新版本釋出的問題。除非評審者明確同意該更改可以合併，否則釋出版本不應包含未解決的 FIXME。`
 
 ### Overly literal → Meaningful rendering
 - Source: `awkward phrasing is easier to notice when you read the translation without comparing it with the source`
-- Bad: `不把译文和原文比较时，尴尬的措辞更容易被注意`
-- Good: `不对照原文阅读译文时，更容易察觉别扭的表达`
+- Bad: `不把譯文和原文比較時，尷尬的措辭更容易被注意`
+- Good: `不對照原文閱讀譯文時，更容易察覺彆扭的表達`
 
 ### Terminology — do not translate what should be kept in English
 - Source: `typed service seams, and explicit extension points`
-- Bad: `类型化的服务 seam（扩展点）与显式扩展点`
-- Good: `类型化的服务 seam 与显式扩展点`
+- Bad: `型別化的服務 seam（擴充功能點）與顯式擴充功能點`
+- Good: `型別化的服務 seam 與顯式擴充功能點`
 
 ### Slang/jargon → Professional phrasing
 - Source: `The committed agent workflow lives in .agents/skills/dsh-translate-docs`
-- Bad: `进仓的 agent 工作流见 .agents/skills/dsh-translate-docs`
-- Good: `仓库内置的 agent 工作流见 .agents/skills/dsh-translate-docs`
+- Bad: `進倉的 agent 工作流見 .agents/skills/dsh-translate-docs`
+- Good: `儲存庫內建的 agent 工作流見 .agents/skills/dsh-translate-docs`
 
 ### "For humans" — translate the intent, not the word
 - Source: `For humans, start with the development guide`
-- Bad: `对于人工读者，请先从开发指南开始`（"人工读者"生硬）
-- Good: `面向开发者：请先阅读开发指南`（"开发者"自然，且中文里冒号在此处更自然）
+- Bad: `對於人工讀者，請先從開發指南開始`（"人工讀者"生硬）
+- Good: `面向開發者：請先閱讀開發指南`（"開發者"自然，且中文裡冒號在此處更自然）
 
 ### Code block comments — NEVER translate
 - Source code block contains: `# full-screen TUI coding agent (needs DEEPSEEK_API_KEY)`
-- Bad: `# 全屏 TUI coding agent（需要 DEEPSEEK_API_KEY）`
+- Bad: `# 全螢幕 TUI coding agent（需要 DEEPSEEK_API_KEY）`
 - Good: `# full-screen TUI coding agent (needs DEEPSEEK_API_KEY)` (keep exactly as-is, byte-for-byte)
 
 ### Language switcher — flip direction

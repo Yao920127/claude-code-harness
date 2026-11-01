@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/process/2026-07-26-remove-packed-session-fixture-migrator.md
 /agent-note-remove-the-packed-session-fixture-branch-migrator:
   en: 0a308bd6231fb8ad
-  zh: c72bd0f6f327fadd
+  zh: 7224b6489c54bad7
 /agent-note-remove-the-packed-session-fixture-branch-migrator/problem:
   en: 26671139b244f2ad
-  zh: fb2bbcc283b6f108
+  zh: 84ed272f0c5a05bf
 /agent-note-remove-the-packed-session-fixture-branch-migrator/proposal:
   en: 6e9555d667a64807
-  zh: 7d7d59ae0f8859c9
+  zh: 6dfcb50374adc3e2
 /agent-note-remove-the-packed-session-fixture-branch-migrator/alternatives-considered:
   en: 7066942e7b78faba
-  zh: 6174e50357d868c5
+  zh: 40de322c46243b41
 /agent-note-remove-the-packed-session-fixture-branch-migrator/acceptance-criteria:
   en: 2ea0da4f97ecec97
-  zh: 308aed4607df56af
+  zh: ee8068c759638cde
 /agent-note-remove-the-packed-session-fixture-branch-migrator/risks:
   en: ee7d26eb7287179b
-  zh: 96f2cf320cc1adc8
+  zh: 8ecc16184a32a419

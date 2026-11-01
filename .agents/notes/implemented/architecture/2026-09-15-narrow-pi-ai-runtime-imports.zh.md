@@ -1,25 +1,25 @@
-# Agent Note：收窄 pi-ai 运行时 import
+# Agent Note：收窄 pi-ai 執行時 import
 
 Status: implemented
 
 [English](2026-09-15-narrow-pi-ai-runtime-imports.md) | 中文
 
-## 问题
+## 問題
 
-基础 bundle 会在没有配置路由时挂载 `dsh-llm-pi-ai`，让 Models 设置页能够提供 pi-ai provider。为了 model helper 而 import pi-ai 聚合入口还会求值其导出的 TypeBox namespace，即使所有 Session 都使用 `dsh-llm-deepseek`，每次应用启动也会额外加载数百个模块。
+基礎 bundle 會在沒有設定路由時掛載 `dsh-llm-pi-ai`，讓 Models 設定頁能夠提供 pi-ai provider。為了 model helper 而 import pi-ai 聚合入口還會求值其匯出的 TypeBox namespace，即使所有 Session 都使用 `dsh-llm-deepseek`，每次應用啟動也會額外載入數百個模組。
 
-## 决策
+## 決策
 
-`dsh-llm-pi-ai` 不再运行时 import pi-ai 聚合入口。Catalog 与登录元数据继续使用 `providers/all`；协议实现继续使用现有 `api/*.lazy` 入口；overflow 检测使用 `utils/overflow`。包内 `models.ts` 提供适配器所需的三个 model helper。Collection 来自 pi-ai 公开的 `builtinModels()` 实现，并在安装路由 provider 前清空。Provider constructor 实现本适配器传入的静态单协议分支。Reasoning level 选择按照 pi-ai 的升级顺序读取其公开 `Model` 元数据。
+`dsh-llm-pi-ai` 不再執行時 import pi-ai 聚合入口。Catalog 與登入中繼資料繼續使用 `providers/all`；協定實作繼續使用現有 `api/*.lazy` 入口；overflow 檢測使用 `utils/overflow`。包內 `models.ts` 提供介面卡所需的三個 model helper。Collection 來自 pi-ai 公開的 `builtinModels()` 實作，並在安裝路由 provider 前清空。Provider constructor 實作本介面卡傳入的靜態單協定分支。Reasoning level 選擇按照 pi-ai 的升級順序讀取其公開 `Model` 中繼資料。
 
-聚合入口的 type-only import 会被 TypeScript 擦除，因此予以保留。构建产物的 import profile 会解析 153 个 pi-ai 模块，不包含 TypeBox 模块或 pi-ai 聚合入口。
+聚合入口的 type-only import 會被 TypeScript 擦除，因此予以保留。建置產物的 import profile 會解析 153 個 pi-ai 模組，不包含 TypeBox 模組或 pi-ai 聚合入口。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **给 pi-ai 增加 `models` export。** 拒绝，因为本包可以直接使用已经公开的 provider、API、utility 与 model metadata interface，无需修改上游 export map。
-- **动态 import 聚合入口。** 拒绝，因为休眠适配器不需要其中任何内容；完全排除该入口会直接删除工作，而不是把工作移动到之后的操作。
-- **复制 pi-ai 完整的 Models 实现。** 拒绝，因为 `builtinModels()` 已经返回包含其认证与存储行为的上游实现。清空其中的 provider 可以保留该实现，无需维护 fork。
+- **給 pi-ai 增加 `models` export。** 拒絕，因為本包可以直接使用已經公開的 provider、API、utility 與 model metadata interface，無需修改上游 export map。
+- **動態 import 聚合入口。** 拒絕，因為休眠介面卡不需要其中任何內容；完全排除該入口會直接刪除工作，而不是把工作移動到之後的操作。
+- **複製 pi-ai 完整的 Models 實作。** 拒絕，因為 `builtinModels()` 已經返回包含其認證與儲存行為的上游實作。清空其中的 provider 可以保留該實作，無需維護 fork。
 
-## 后果
+## 後果
 
-应用仍会加载 `providers/all`，因此配置与授权界面保留完整的已安装 provider 目录。构建 adapter snapshot 时会短暂构造并清空内置 provider set，再安装已解析的路由 provider。包内 provider constructor 只接受静态 model 和一个协议实现；若要增加动态 model、filter 或多协议自定义路由，必须同时扩展该本地函数及其测试。
+應用仍會載入 `providers/all`，因此設定與授權介面保留完整的已安裝 provider 目錄。建置 adapter snapshot 時會短暫建構並清空內建 provider set，再安裝已解析的路由 provider。包內 provider constructor 只接受靜態 model 和一個協定實作；若要增加動態 model、filter 或多協定自定義路由，必須同時擴充功能該本地函式及其測試。

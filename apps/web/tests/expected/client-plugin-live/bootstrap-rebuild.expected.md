@@ -1,4 +1,4 @@
-- alert: 本页面的插件未能完成同步；服务端的启用状态保持不变。
+- alert: 本頁面的外掛未能完成同步；伺服器端的啟用狀態保持不變。
 - list:
   - listitem: "@deepseek-ai/dsh-client-modules: Error: client-modules: replacing bootstrap module @deepseek-ai/dsh-client-modules requires a page reload"
-- button "重试本页面同步"
+- button "重試本頁面同步"

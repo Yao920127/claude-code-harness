@@ -9,7 +9,7 @@
       "title": {
         "ver": 1,
         "seq": 68,
-        "val": "验收标题-alpha3"
+        "val": "驗收標題-alpha3"
       },
       "titleInput": {
         "ver": 3,
@@ -17,7 +17,7 @@
         "val": {
           "first": {
             "seq": 7,
-            "text": "请只回复一个词：pong"
+            "text": "請只回復一個詞：pong"
           },
           "count": 2,
           "lastSeq": 58
@@ -121,13 +121,13 @@
             {
               "turn": 1,
               "seq": 4,
-              "prompt": "请只回复一个词：pong",
+              "prompt": "請只回復一個詞：pong",
               "response": "pong"
             },
             {
               "turn": 2,
               "seq": 55,
-              "prompt": "请只回复一个词：pong2",
+              "prompt": "請只回復一個詞：pong2",
               "response": "pong2"
             }
           ],

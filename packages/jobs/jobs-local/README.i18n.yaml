@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/jobs/jobs-local/README.md
 /:
   en: 0abe764a4bc3e3db
-  zh: 280ff3a1c1a8bc5c
+  zh: 218a8b379fd96aba
 /deepseek-ai-dsh-jobs-local:
   en: 20bc108b32378c74
   zh: 8d1121f0a70f454a
 /deepseek-ai-dsh-jobs-local/summary:
   en: b76227a7ed290b11
-  zh: 866fd04f48303a89
+  zh: b6a1d52195546107
 /deepseek-ai-dsh-jobs-local/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-jobs-local/use-this-package:
   en: e0e242161dda0c28
-  zh: 30c058b5a3d1cc56
+  zh: 26b71804dda1f303
 /deepseek-ai-dsh-jobs-local/use-this-package/when-to-choose-it:
   en: 17479310883edc0a
-  zh: f1cea41c704dabe2
+  zh: 05088c4b44e646fb
 /deepseek-ai-dsh-jobs-local/use-this-package/minimal-configuration:
   en: 5861bb20182aef3b
-  zh: 23d595dad299b6c8
+  zh: fc91c06bc0a78d7e
 /deepseek-ai-dsh-jobs-local/use-this-package/what-each-owner-gets:
   en: 9ab66aa770694092
-  zh: 38de930bcfbc132c
+  zh: 372d1e91a952f3c4
 /deepseek-ai-dsh-jobs-local/use-this-package/lifecycle:
   en: 91dd372f742dcdb8
-  zh: 58eeee0254d33cd1
+  zh: 9bceb50bd2da7167
 /deepseek-ai-dsh-jobs-local/use-this-package/what-can-go-wrong:
   en: dcf5bc26dbc018e5
-  zh: 3dbe65c2df463ec0
+  zh: e3c48fddbf54f9ad
 /deepseek-ai-dsh-jobs-local/understand-the-implementation:
   en: f782557ca8da3138
-  zh: e8f0082b9692cacc
+  zh: 7790992902ddea33
 /deepseek-ai-dsh-jobs-local/understand-the-implementation/design-philosophy:
   en: b92e6e5415553e2e
-  zh: c3e0be579af4c7fb
+  zh: a8500888eec68fc6
 /deepseek-ai-dsh-jobs-local/understand-the-implementation/source-map:
   en: 6b4071b9c15ee800
-  zh: 40410e03c9a38937
+  zh: cdebecb3ac14dda8
 /deepseek-ai-dsh-jobs-local/understand-the-implementation/scope-layers:
   en: 2c53e11a60965985
-  zh: 63adc1628c71e62e
+  zh: 5ca1f5c9390d0123
 /deepseek-ai-dsh-jobs-local/understand-the-implementation/admission-and-settlement:
   en: b9634939c81b46cb
-  zh: a18f90caf7c61e87
+  zh: 968641376e19fe92
 /deepseek-ai-dsh-jobs-local/understand-the-implementation/teardown:
   en: 49e8bd5e2c1f6ffd
-  zh: ad3e1aa712fd59b3
+  zh: 79b18cb351453a0d
 /deepseek-ai-dsh-jobs-local/further-exploration:
   en: d91bf997352940be
-  zh: 98540d56253fb950
+  zh: 25509ede1ef8b22a
 /deepseek-ai-dsh-jobs-local/model-experience:
   en: 873ef364fc8d6f2f
-  zh: 4d0bb38a9c9639c0
+  zh: 3a71f6505b90b598
 /deepseek-ai-dsh-jobs-local/model-experience/kv-cache-effect:
   en: e290ccc9b3c92c08
-  zh: d75d48f485447a74
+  zh: 3f8f51ffd2cc93ad
 /deepseek-ai-dsh-jobs-local/known-limitations-and-deferred-work:
   en: 5284107cbd22e3dd
-  zh: 9aa0048908c94e25
+  zh: a31f8ebc7a417098
 /deepseek-ai-dsh-jobs-local/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

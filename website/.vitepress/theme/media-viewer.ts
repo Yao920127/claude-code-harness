@@ -8,9 +8,9 @@ const messages = {
     help: 'Scroll or pinch to zoom · Drag or use arrow keys to pan · Esc to close',
   },
   zh: {
-    zoomIn: '放大', zoomOut: '缩小', fit: '适应窗口', original: '原始尺寸（100%），当前{scale}',
-    close: '关闭', helpLabel: '查看器帮助',
-    help: '滚轮或双指缩放 · 拖动或方向键平移 · Esc 关闭',
+    zoomIn: '放大', zoomOut: '縮小', fit: '適應視窗', original: '原始尺寸（100%），目前{scale}',
+    close: '關閉', helpLabel: '檢視器幫助',
+    help: '滾輪或雙指縮放 · 拖曳或方向鍵平移 · Esc 關閉',
   },
 } satisfies Record<string, Record<string, string>>
 

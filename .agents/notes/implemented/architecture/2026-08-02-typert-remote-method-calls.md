@@ -194,13 +194,13 @@ The Host and Client still use only two independent TypeScript Programs, but Type
 ```text
 Host Program
 ├─ typert.host.js / typert.host.d.ts
-│  Host 自身的 Service、Event、Object、schema 和 inbound Gateway 信息
+│  Host 自身的 Service、Event、Object、schema 和 inbound Gateway 資訊
 └─ typert.remote-client.js / typert.remote-client.d.ts / typert.remote-client.d.ts.map
-   Host Remote 对任意消费环境的 wire 投影
+   Host Remote 對任意消費環境的 wire 投影
 
 Client Program
 └─ typert.client.js / typert.client.d.ts
-   Client 自身的 Service、Event、Object 和 schema 信息
+   Client 自身的 Service、Event、Object 和 schema 資訊
 ```
 
 `remote-client` is the Host Program's second emitter, not a third Program or the Client's local face. It contains no Host Cordis merge, Service class, Context class, or implementation code, and it does not enter the Host-local reflection registry.
@@ -210,9 +210,9 @@ The Host lib build performs strict Host analysis and emits both the Host-local a
 ```text
 Host lib build
 → 生成 typert.host.{js,d.ts}
-→ 生成各业务包 lib/typert.remote-client.{js,d.ts,d.ts.map}
-→ 完成 Client lib 和 typert.client 产物
-→ Vite 构建 Web
+→ 生成各業務包 lib/typert.remote-client.{js,d.ts,d.ts.map}
+→ 完成 Client lib 和 typert.client 產物
+→ Vite 建置 Web
 ```
 
 The existing top-level `build` still runs `build:lib` before `build:web`, but `build:lib` must complete the Host and Remote artifacts before starting Client TypeScript compilation. A clean build must not depend on stale `.d.ts` files from an earlier build.
@@ -297,8 +297,8 @@ Every generated method resolves to `Promise<RemoteResult<T>>`: a call reports it
 Typert in a consumer environment maintains both local information and Remote information imported from other environments, but stores them in separate registries:
 
 ```text
-Typert.local    当前环境自己的反射模型
-Typert.remotes  已导入的 Remote contribution
+Typert.local    目前環境自己的反射模型
+Typert.remotes  已匯入的 Remote contribution
 ```
 
 `@deepseek-ai/dsh-api-remotes/client` centrally loads the required Remote contributions:
@@ -325,9 +325,9 @@ root ctx.remote.goals.create(agentId, request)
   → ctx.connection.rpc.call('/api', 'goals/create', { args })
 
 agentCtx.remote.goals.create(request)
-  → remote.goals accessor 捕获 agent Context
-  → agent binder 从 caller Context 取得 agentId
-  → 用 agentId 补入同一 direct descriptor 的 lookup 参数
+  → remote.goals accessor 捕捉 agent Context
+  → agent binder 從 caller Context 取得 agentId
+  → 用 agentId 補入同一 direct descriptor 的 lookup 參數
   → ctx.connection.rpc.call('/api', 'goals/create', { args })
 ```
 
@@ -373,12 +373,12 @@ A `@RemoteScope('agent')` call first asks the Agent Context provider to resolve 
 
 ```text
 ctx.typertGateway.invoke({ namespace, method, args, signal })
-→ 查找本地 InvocationDescriptor 与 live receiver
-→ 按参数 descriptor 读取具名 wire 字段
-→ codec 解码普通值或 lookup ID
-→ lookup provider 把 ID 解析为活对象
+→ 查詢本地 InvocationDescriptor 與 live receiver
+→ 按參數 descriptor 讀取具名 wire 欄位
+→ codec 解碼普通值或 lookup ID
+→ lookup provider 把 ID 解析為活物件
 → direct 使用原 Service；context 先解析 scoped Context 和 Service
-→ cancellation descriptor 存在时把 signal 追加到业务参数末尾
+→ cancellation descriptor 存在時把 signal 追加到業務參數末尾
 → Reflect.apply(receiver[implementation ?? method], receiver, orderedArgs)
 ```
 
@@ -425,16 +425,16 @@ The complete path is:
 
 ```text
 ctx.remote.goals.create(sessionId, request, signal?)
-→ Client InvocationDescriptor 组装 { args: { agentId, request } }
-→ Client 合并 caller signal 与 contribution mount lifetime
+→ Client InvocationDescriptor 組裝 { args: { agentId, request } }
+→ Client 合併 caller signal 與 contribution mount lifetime
 → ctx.connection.rpc.call('/api', 'goals/create', { args }, signal)
-→ Connection 创建 rpcId 和既有 client-request envelope
-→ 当前 carrier 发送 POST /api/goals/create
-→ Connection Host half 执行共享 trust，再由 bridge 创建标准 Request
-→ 复合 FetchHandler 判断 endpoint ownership 并选择目标 FetchHandler
-→ Typert interceptor 调用 ctx.typertGateway.invoke(..., request.signal)
-→ Host InvocationDescriptor 解码、lookup、receiver 解析并把 signal 注入 Reflect.apply
-→ Connection 写入既有 RPC result 并回送相同 rpcId
+→ Connection 建立 rpcId 和既有 client-request envelope
+→ 目前 carrier 傳送 POST /api/goals/create
+→ Connection Host half 執行共享 trust，再由 bridge 建立標準 Request
+→ 複合 FetchHandler 判斷 endpoint ownership 並選擇目標 FetchHandler
+→ Typert interceptor 呼叫 ctx.typertGateway.invoke(..., request.signal)
+→ Host InvocationDescriptor 解碼、lookup、receiver 解析並把 signal 注入 Reflect.apply
+→ Connection 寫入既有 RPC result 並回送相同 rpcId
 → Client 直接返回 CreateGoalResult
 ```
 

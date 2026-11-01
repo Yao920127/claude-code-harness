@@ -1,10 +1,10 @@
-# 实操手册：添加 workspace 包
+# 實操手冊：新增 workspace 包
 
 [English](adding-a-package.md) | 中文
 
-为新建 `@deepseek-ai/dsh-<name>` 包提供的逐文件清单。本清单以 bash 和适配器这两个包为模板进行验证；如果清单与模板有出入，请在此修正。
+為新建 `@deepseek-ai/dsh-<name>` 包提供的逐檔案清單。本清單以 bash 和介面卡這兩個包為範本進行驗證；如果清單與範本有出入，請在此修正。
 
-## 1. 创建包
+## 1. 建立包
 
 ```
 packages/<group>/<pkg>/
@@ -22,60 +22,60 @@ packages/<group>/<pkg>/
                    # (or a whitelist entry in scripts/verify-package-readme-limitations.ts)
 ```
 
-当已有分组与包的角色匹配时，选择该分组（`core`、`llm`、`shell`、`compaction`、`subagent`、`todo`、`session`、`client`/`host`、`util` 或 `test-support`）。允许新建分组，但分组只是纯容器：没有 `package.json`，没有源文件，包仍然恰好位于其下一层。
+當已有分組與包的角色匹配時，選擇該分組（`core`、`llm`、`shell`、`compaction`、`subagent`、`todo`、`session`、`client`/`host`、`util` 或 `test-support`）。允許新建分組，但分組只是純容器：沒有 `package.json`，沒有原始檔，包仍然恰好位於其下一層。
 
-package.json 不变式（由 `pnpm run constraints` / `scripts/check-workspace-constraints.ts` 强制执行）：`private: true`，`version` 与根 `package.json` 一致，`type: module`，`main: "lib/index.js"`，`types: "lib/types/index.d.ts"`，`exports["."].types: "./lib/types/index.d.ts"`，`exports["."].default: "./lib/index.js"`，`@deepseek-ai/cordis` 同时出现在 peerDependencies 和 devDependencies 中（相同范围）。每个 dsh 对等依赖（peer dependency）都要在 devDependencies 中镜像。`@deepseek-ai/schemastery` 放在 `dependencies` 中（它是运行时校验器），与 agent-loop 保持一致。`files` 列表精确包含 `lib/index.js`、`lib/types/**/*.d.ts` 以及门禁认可的包专用运行时产物；发布 `./invariant` 的包还要包含 `lib/invariant.js`。如果包的运行时 export 指向输出树，还要包含 `lib/types/**/*.js`。不要发布 `src`、声明映射、JS map 或陈旧的根声明文件。带有 `bin` 的 CLI 应用包在 `files` 中将 `lib/bin.js` 紧跟在 `lib/index.js` 之后。
+package.json 不變式（由 `pnpm run constraints` / `scripts/check-workspace-constraints.ts` 強制執行）：`private: true`，`version` 與根 `package.json` 一致，`type: module`，`main: "lib/index.js"`，`types: "lib/types/index.d.ts"`，`exports["."].types: "./lib/types/index.d.ts"`，`exports["."].default: "./lib/index.js"`，`@deepseek-ai/cordis` 同時出現在 peerDependencies 和 devDependencies 中（相同範圍）。每個 dsh 對等依賴（peer dependency）都要在 devDependencies 中映像。`@deepseek-ai/schemastery` 放在 `dependencies` 中（它是執行時驗證器），與 agent-loop 保持一致。`files` 列表精確包含 `lib/index.js`、`lib/types/**/*.d.ts` 以及門禁認可的包專用執行時產物；釋出 `./invariant` 的包還要包含 `lib/invariant.js`。如果包的執行時 export 指向輸出樹，還要包含 `lib/types/**/*.js`。不要釋出 `src`、宣告對映、JS map 或陳舊的根宣告檔案。帶有 `bin` 的 CLI 應用包在 `files` 中將 `lib/bin.js` 緊跟在 `lib/index.js` 之後。
 
-包内的相对导入在源码中使用显式 `.ts` 后缀（例如 `export * from './types.ts'`）。编译器在输出的 JS 中将其重写为 `.js`，在声明文件中保留显式 `.ts` 后缀；标准的 NodeNext/Node16 TypeScript 消费方会将其解析到同目录的 `.d.ts` 文件。
+包內的相對匯入在原始碼中使用顯式 `.ts` 字尾（例如 `export * from './types.ts'`）。編譯器在輸出的 JS 中將其重寫為 `.js`，在宣告檔案中保留顯式 `.ts` 字尾；標準的 NodeNext/Node16 TypeScript 消費方會將其解析到同目錄的 `.d.ts` 檔案。
 
-## 2. 在根配置中注册
+## 2. 在根設定中註冊
 
-| 文件 | 变更 |
+| 檔案 | 變更 |
 |---|---|
-| `tsconfig.base.json` | 已有分组无需编辑；新分组需为 `@deepseek-ai/dsh-*` 通配符添加 `./packages/<group>/*/src` 候选路径 |
-| `tsconfig.host.json`（Host 包）或 `tsconfig.client.json`（Client 包） | 在 `references` 中添加 `{ "path": "./packages/<group>/<pkg>" }`——普通包恰好属于一个 aggregate，绝不两个都加。`api/remotes` 因 Host 生成约定与 Client 消费约定之间存在顺序依赖而使用仓库专属拆分，新增包不得仿照（[布局](../development.zh.md#typescript-project-layout)） |
+| `tsconfig.base.json` | 已有分組無需編輯；新分組需為 `@deepseek-ai/dsh-*` 萬用字元新增 `./packages/<group>/*/src` 候選路徑 |
+| `tsconfig.host.json`（Host 包）或 `tsconfig.client.json`（Client 包） | 在 `references` 中新增 `{ "path": "./packages/<group>/<pkg>" }`——普通包恰好屬於一個 aggregate，絕不兩個都加。`api/remotes` 因 Host 生成約定與 Client 消費約定之間存在順序依賴而使用儲存庫專屬拆分，新增包不得仿照（[佈局](../development.zh.md#typescript-project-layout)） |
 
-`packages/client/*` 包改为 extends `tsconfig.base.client.json`（而非 `tsconfig.base.json`）；client 插件包还需在 package.json 声明 `dsh.client`、导出 `./client`、调用共享 tsdown preset（`packages/client/tsdown.client.ts`）——client 侧见 [packages/client/AGENTS.md](../../packages/client/AGENTS.md)。
+`packages/client/*` 包改為 extends `tsconfig.base.client.json`（而非 `tsconfig.base.json`）；client 外掛包還需在 package.json 宣告 `dsh.client`、匯出 `./client`、呼叫共享 tsdown preset（`packages/client/tsdown.client.ts`）——client 側見 [packages/client/AGENTS.md](../../packages/client/AGENTS.md)。
 
-以下内容由 glob 或包 manifest（元数据清单）发现机制自动覆盖，无需手动编辑：根 `package.json` workspaces、`scripts/publint-all.ts`、`tsdown.config.ts`、`.oxlintrc.json`、`scripts/check-workspace-constraints.ts`。
+以下內容由 glob 或包 manifest（中繼資料清單）發現機制自動覆蓋，無需手動編輯：根 `package.json` workspaces、`scripts/publint-all.ts`、`tsdown.config.ts`、`.oxlintrc.json`、`scripts/check-workspace-constraints.ts`。
 
-## 3. 确定包拓扑
+## 3. 確定包拓撲
 
-对于可替换的能力，当 Service Definition／Service Provider／Consumer 角色需要独立演进时，将它们拆分到不同包中（见 docs/architecture.md § "Capability seams"——shell 三组件是模板）。单一用途的插件保持为一个包。
+對於可替換的能力，當 Service Definition／Service Provider／Consumer 角色需要獨立演進時，將它們拆分到不同包中（見 docs/architecture.md § "Capability seams"——shell 三元件是範本）。單一用途的外掛保持為一個包。
 
-### 使用符合实际的角色名称
+### 使用符合實際的角色名稱
 
-名称必须描述当前稳定职责。不要用首个实现、可能的未来扩展或 Cordis 基类命名。接口包使用能力名称。实现包加上能够区分实现的机制、协议、环境或厂商限定词。只有同主机执行属于约定时，才使用 `local`。
+名稱必須描述目前穩定職責。不要用首個實作、可能的未來擴充功能或 Cordis 基類命名。介面包使用能力名稱。實作包加上能夠區分實作的機制、協定、環境或廠商限定詞。只有同主機執行屬於約定時，才使用 `local`。
 
-一个 engine、runtime、policy、controller、resolver、store 或当前配置使用单数 `ctx` key。registry 或拥有多个具名成员的服务使用复数 key。类的角色与 key 的单复数必须一致。不得让不兼容的 host 与 client 声明复用同一个 Cordis `Context` key。即使二者使用独立的运行时 context，TypeScript 声明合并仍会同时看到两种类型。如果自然复数已经属于另一个端面，就增加职责后缀。
+一個 engine、runtime、policy、controller、resolver、store 或目前設定使用單數 `ctx` key。registry 或擁有多個具名成員的服務使用複數 key。類的角色與 key 的單複數必須一致。不得讓不相容的 host 與 client 宣告覆用同一個 Cordis `Context` key。即使二者使用獨立的執行時 context，TypeScript 宣告合併仍會同時看到兩種型別。如果自然複數已經屬於另一個端面，就增加職責字尾。
 
-| 词 | 适用条件 | 不适用条件 |
+| 詞 | 適用條件 | 不適用條件 |
 |---|---|---|
-| `Controller` | 接受命令或用户意图，并改变一项既有领域状态或展示状态。 | 执行任意工作、拥有一组 provider，或只把值转换为展示形式。 |
-| `Store` | 拥有一组数据，主要提供该数据的 CRUD、snapshot 或 subscription 操作。 | 校验状态机、裁决权限、分派工作或拥有 provider 优先级。类中有 map 不等于 store。 |
-| `Directory` | 暴露供发现或选择的条目及其元数据。 | producer 向其中注册任意实现，或调用方通过它执行工作。 |
-| `Presenter` | 将领域值或工具参数纯转换为渲染意图。 | 执行 I/O、订阅、修改状态或拥有生命周期。 |
-| `Registry` | 拥有一组动态具名注册，以及查询、重复项或优先级规则、生命周期和释放。 | 主要约定是分派、执行、取消、策略或编排。 |
-| `Runtime` | 运行实时工作，并跨调用拥有分派、取消、provider 协调或操作生命周期。 | 只存储记录、返回目录、解析一个值或保存配置。 |
-| `Resolver` | 根据输入计算或定位一个答案，但不拥有该答案的生命周期。 | 拥有可变集合或长时间运行的执行过程。 |
-| `Binder` | 把一个已声明接口绑定到调用方的 context 或生命周期，并返回绑定值。 | 把该值作为集合持有、控制其领域状态，或只转换数据。 |
-| `Engine` | 实现领域算法或有状态执行模型。 | 只选择 provider 或跨协议边界转发请求。 |
-| `Policy` | 决定允许、选择、限制或观察什么。 | 执行该决定所允许的机制。 |
-| `Executor` | 在一项能力中运行一个明确请求或已解析 spec。 | 拥有广泛应用生命周期或 provider 目录。 |
-| `Gateway` | 适配进程、网络、RPC 或 API 边界。 | 只注册同进程服务或存储元数据。 |
-| `Provider` | 提供一项能力定义的一个实现。存在多个实现时，加上机制或厂商限定词。 | 表示能力定义、provider registry 或消费方 runtime。 |
-| `Backend` | 在已定义接口之后实现可替换的底层持久化、传输或执行。 | 表示面向用户的服务或一个已返回的实时资源引用。 |
-| `Handle` | 引用一个实时资源，并控制或观察该资源。 | 创建并管理完整资源池。 |
-| `Config` | 拥有一个已解析配置值，或一项边界严格的配置记录及其更新约定。 | 存储通用集合、执行工作或暴露无关设置。 |
-| `Service` | 拥有一项无法用以上更精确角色诚实描述的内聚领域服务。 | 只因为类继承 Cordis `Service` 而使用该名称。 |
+| `Controller` | 接受命令或使用者意圖，並改變一項既有領域狀態或展示狀態。 | 執行任意工作、擁有一組 provider，或只把值轉換為展示形式。 |
+| `Store` | 擁有一組資料，主要提供該資料的 CRUD、snapshot 或 subscription 操作。 | 驗證狀態機、裁決權限、分派工作或擁有 provider 優先順序。類中有 map 不等於 store。 |
+| `Directory` | 暴露供發現或選擇的條目及其中繼資料。 | producer 向其中註冊任意實作，或呼叫方透過它執行工作。 |
+| `Presenter` | 將領域值或工具參數純轉換為渲染意圖。 | 執行 I/O、訂閱、修改狀態或擁有生命週期。 |
+| `Registry` | 擁有一組動態具名註冊，以及查詢、重複項或優先順序規則、生命週期和釋放。 | 主要約定是分派、執行、取消、策略或編排。 |
+| `Runtime` | 執行即時工作，並跨呼叫擁有分派、取消、provider 協調或操作生命週期。 | 只儲存記錄、返回目錄、解析一個值或儲存設定。 |
+| `Resolver` | 根據輸入計算或定位一個答案，但不擁有該答案的生命週期。 | 擁有可變集合或長時間執行的執行過程。 |
+| `Binder` | 把一個已宣告介面繫結到呼叫方的 context 或生命週期，並返回繫結值。 | 把該值作為集合持有、控制其領域狀態，或只轉換資料。 |
+| `Engine` | 實作領域演算法或有狀態執行模型。 | 只選擇 provider 或跨協定邊界轉發請求。 |
+| `Policy` | 決定允許、選擇、限制或觀察什麼。 | 執行該決定所允許的機制。 |
+| `Executor` | 在一項能力中執行一個明確請求或已解析 spec。 | 擁有廣泛應用生命週期或 provider 目錄。 |
+| `Gateway` | 適應程序、網路、RPC 或 API 邊界。 | 只註冊同程序服務或儲存中繼資料。 |
+| `Provider` | 提供一項能力定義的一個實作。存在多個實作時，加上機制或廠商限定詞。 | 表示能力定義、provider registry 或消費方 runtime。 |
+| `Backend` | 在已定義介面之後實作可替換的底層持久化、傳輸或執行。 | 表示面向使用者的服務或一個已返回的即時資源引用。 |
+| `Handle` | 引用一個即時資源，並控制或觀察該資源。 | 建立並管理完整資源池。 |
+| `Config` | 擁有一個已解析設定值，或一項邊界嚴格的設定記錄及其更新約定。 | 儲存通用集合、執行工作或暴露無關設定。 |
+| `Service` | 擁有一項無法用以上更精確角色誠實描述的內聚領域服務。 | 只因為類繼承 Cordis `Service` 而使用該名稱。 |
 
-只对受支持的 Python 与 TypeScript SDK 所使用的 JSON-RPC 客户端／服务器协议使用 `SDK`。DeepSeek Harness 本身是 agent harness，不是 SDK 项目。产品拼写统一使用 `Typert`，不得使用 `TypeRT` 或 `typeRT`。
+只對受支援的 Python 與 TypeScript SDK 所使用的 JSON-RPC 用戶端／伺服器協定使用 `SDK`。DeepSeek Harness 本身是 agent harness，不是 SDK 專案。產品拼寫統一使用 `Typert`，不得使用 `TypeRT` 或 `typeRT`。
 
 <a id="4-write-the-package-readme"></a>
 
-## 4. 编写包 README
+## 4. 編寫包 README
 
-将包特有的服务 API、配置、事件、扩展点和设计说明放在前面。根据 [dsh-doc 元数据参考](../../.agents/skills/dsh-doc/references/metadata-links-i18n.md#the-kind-system)中的四种 kind 标签——组、参考、库或 bundle——选择 frontmatter 的 `kind`，使其匹配包在仓库中的位置与入口形态；每个 kind 恰好对应一个 README 模板。limitations 部分记录持久的消费方缺口和本包拥有的非显而易见的维护者约束；日常清理事项留在源码 TODO 或 Agent Note 中。间接的 Model Experience 语句可以点名暴露本包贡献的消费方，但不重述该消费方的实现。包 README 以如下规范序列结尾：
+將包特有的服務 API、設定、事件、擴充功能點和設計說明放在前面。根據 [dsh-doc 中繼資料參考](../../.agents/skills/dsh-doc/references/metadata-links-i18n.md#the-kind-system)中的四種 kind 標籤——組、參考、庫或 bundle——選擇 frontmatter 的 `kind`，使其匹配包在儲存庫中的位置與入口形態；每個 kind 恰好對應一個 README 範本。limitations 部分記錄持久的消費方缺口和本包擁有的非顯而易見的維護者約束；日常清理事項留在原始碼 TODO 或 Agent Note 中。間接的 Model Experience 語句可以點名暴露本包貢獻的消費方，但不重述該消費方的實作。包 README 以如下規範序列結尾：
 
 ````markdown
 ## Model Experience
@@ -105,15 +105,15 @@ Append-only, prefix-stable, replacing, or independent behavior, including the ex
 - **Consumer-visible gap** — exact missing operation or case, its consequence, and any maintainer constraint.
 ````
 
-根据实现填写 Model Experience。每个直接、条件、上限、生命周期或辅助的模型上下文条目使用一个 H3，包含上述三个有序 H4 字段，每个字段下有一个正文段落。引用包拥有的稳定文本：系统提示词放在引出它的字段下，用带标题的 H5 加 `markdown` 围栏表示，通常归入 `What the model sees`；其他短文本以命名占位符内联，其他长文本使用相同的嵌套形式。仅概述数据依赖或提供方拥有的文本。工具 schema 条目链接到生成的[工具目录](../tool-catalog.zh.md)中对应的锚定章节，仅说明该处缺失的差异。当作用域可以隐藏 prompt 或 schema 其中之一而不影响另一个时，将二者分开。填写 `KV Cache effect` 时，应区分仅追加增长、稳定重复的前缀、替换既有请求 token 和独立模型请求，并列出会使缓存复用失效、且由本包拥有的变化。“不使缓存失效”仅表示本包保留了已有的可复用前缀；缓存是否可用以及何时淘汰不属于本包约定。[行文标准](../../.agents/skills/dsh-prose-standard/SKILL.md)约束完整性与归属；验证器强制执行所需章节结构。
+根據實作填寫 Model Experience。每個直接、條件、上限、生命週期或輔助的模型上下文條目使用一個 H3，包含上述三個有序 H4 欄位，每個欄位下有一個正文段落。引用包擁有的穩定文字：系統提示詞放在引出它的欄位下，用帶標題的 H5 加 `markdown` 圍欄表示，通常歸入 `What the model sees`；其他短文字以命名預留位置內聯，其他長文字使用相同的巢狀形式。僅概述資料依賴或提供者擁有的文字。工具 schema 條目連結到生成的[工具目錄](../tool-catalog.zh.md)中對應的錨定章節，僅說明該處缺失的差異。當作用域可以隱藏 prompt 或 schema 其中之一而不影響另一個時，將二者分開。填寫 `KV Cache effect` 時，應區分僅追加增長、穩定重複的字首、替換既有請求 token 和獨立模型請求，並列出會使快取複用失效、且由本包擁有的變化。“不使快取失效”僅表示本包保留了已有的可複用字首；快取是否可用以及何時淘汰不屬於本包約定。[行文標準](../../.agents/skills/dsh-prose-standard/SKILL.md)約束完整性與歸屬；驗證器強制執行所需章節結構。
 
-没有上下文效果或仅有消费方拥有路径的包使用 [`SENTENCE_MODEL_EXPERIENCE`](../../scripts/verify-package-readme-model-experience.ts) 中经过审计的 `None, as ` 或 `Indirectly, through ` 语句，随后添加 `KV Cache effect` H4 和一个非空正文段落；与模型无关的通用包可以改为加入 `NO_MODEL_EXPERIENCE_SECTION`。两种情况都不要展开为对另一个包工作的描述。limitations [allowlist](../../scripts/verify-package-readme-limitations.ts) 独立管理。[Model Experience Agent Note](../../.agents/notes/implemented/process/2026-07-12-package-model-experience-contract.zh.md) 记录了设计动机。
+沒有上下文效果或僅有消費方擁有路徑的包使用 [`SENTENCE_MODEL_EXPERIENCE`](../../scripts/verify-package-readme-model-experience.ts) 中經過審計的 `None, as ` 或 `Indirectly, through ` 語句，隨後新增 `KV Cache effect` H4 和一個非空正文段落；與模型無關的通用包可以改為加入 `NO_MODEL_EXPERIENCE_SECTION`。兩種情況都不要展開為對另一個包工作的描述。limitations [allowlist](../../scripts/verify-package-readme-limitations.ts) 獨立管理。[Model Experience Agent Note](../../.agents/notes/implemented/process/2026-07-12-package-model-experience-contract.zh.md) 記錄了設計動機。
 
 <a id="plugin-display-metadata"></a>
 
-## 5. 添加可选的插件展示元信息
+## 5. 新增可選的外掛展示元資訊
 
-对于 npm 包插件，在 `locale/en.json` 中定义标题和描述。其他语言文件（如 `locale/zh.json`）使用相同字段：
+對於 npm 包外掛，在 `locale/en.json` 中定義標題和描述。其他語言檔案（如 `locale/zh.json`）使用相同欄位：
 
 ```json
 {
@@ -124,7 +124,7 @@ Append-only, prefix-stable, replacing, or independent behavior, including the ex
 }
 ```
 
-将以下条目合并进 `package.json`，保留已有的运行时 exports 和发布文件：
+將以下條目合併進 `package.json`，保留已有的執行時 exports 和釋出檔案：
 
 ```json
 {
@@ -136,31 +136,31 @@ Append-only, prefix-stable, replacing, or independent behavior, including the ex
 }
 ```
 
-语言文件统一放在 `locale/`，并保留 `en.json` 作为发现入口。字段可选，填写时必须是非空字符串。文件或字段缺失时允许回退，JSON 损坏或字段无效时显示单插件诊断。
+語言檔案統一放在 `locale/`，並保留 `en.json` 作為發現入口。欄位可選，填寫時必須是非空字串。檔案或欄位缺失時允許退回，JSON 損壞或欄位無效時顯示單外掛診斷。
 
-各字段先独立回退，再按页面规则格式化技术名称；回退优先经过现有 locale 语言链：
+各欄位先獨立退回，再按頁面規則格式化技術名稱；退回優先經過現有 locale 語言鏈：
 
-- 标题：locale `meta.title` → `package.json.name` → 完整 Cordis 插件名。
-- 描述：locale `meta.description` → `package.json.description` → 不显示描述。
+- 標題：locale `meta.title` → `package.json.name` → 完整 Cordis 外掛名。
+- 描述：locale `meta.description` → `package.json.description` → 不顯示描述。
 
-导出 `<包名>/locale/en.json` 供 locale 查询；需要包字段回退或声明图标时，开放 `<包名>/package.json`。
+匯出 `<包名>/locale/en.json` 供 locale 查詢；需要包欄位退回或宣告圖示時，開放 `<包名>/package.json`。
 
-要在组合包卡片、详情和组件行显示图片，在该导出清单顶层设置 `"icon": "./icon.svg"`，并将图片加入 `files`。路径相对于声明清单所在目录，独立导出的插件清单也遵循此规则。支持不超过 256 KiB 的 SVG、PNG、JPEG（`.jpg`/`.jpeg`）和 WebP 文件。绝对路径、URL、目录外路径，以及解析到目录外的符号链接均被拒绝。图片不需要单独导出，且必须自包含；SVG 作为图片渲染，不作为内联 HTML。Host 返回 data URL，不激活插件。声明无效或文件不可读时，显示元信息诊断并保留有效文本；图片缺失或无法解码时使用面板的默认插画。
+要在組合包卡片、詳情和元件行顯示圖片，在該匯出清單頂層設定 `"icon": "./icon.svg"`，並將圖片加入 `files`。路徑相對於宣告清單所在目錄，獨立匯出的外掛清單也遵循此規則。支援不超過 256 KiB 的 SVG、PNG、JPEG（`.jpg`/`.jpeg`）和 WebP 檔案。絕對路徑、URL、目錄外路徑，以及解析到目錄外的符號連結均被拒絕。圖片不需要單獨匯出，且必須自包含；SVG 作為圖片渲染，不作為內聯 HTML。Host 返回 data URL，不啟用外掛。宣告無效或檔案不可讀時，顯示元資訊診斷並保留有效文字；圖片缺失或無法解碼時使用面板的預設插畫。
 
-已安装 bundle 的卡片和详情、组件列表与配置详情、设置中的插件清单都展示这些元信息，包括禁用插件和预设内插件。读取时不激活插件。
+已安裝 bundle 的卡片和詳情、元件列表與設定詳情、設定中的外掛清單都展示這些元資訊，包括停用外掛和預設內外掛。讀取時不啟用外掛。
 
-仅设置页会移除字面包名和模块名回退值的 npm scope 与 Cordis/DSH 前缀；插件管理页保留完整名称。locale 标题和描述保持原样。插件没有展示描述时，行配置页可以使用注册组件的摘要。
+僅設定頁會移除字面包名和模組名退回值的 npm scope 與 Cordis/DSH 字首；外掛管理頁保留完整名稱。locale 標題和描述保持原樣。外掛沒有展示描述時，行設定頁可以使用註冊元件的摘要。
 
-Install 界面仍使用 `pnpm view` 返回的 npm registry 信息，不用 locale 元信息替换。
+Install 介面仍使用 `pnpm view` 返回的 npm registry 資訊，不用 locale 元資訊替換。
 
-验证结果：
+驗證結果：
 
-1. 在仓库根目录运行 `pnpm run verify-package-meta`，检查字段、资源 exports 和发布文件覆盖。
-2. 对已安装插件，在适用的插件管理页与设置条目中切换中英文，检查标题、描述、逐字段回退，以及仅设置页使用的技术短名。
+1. 在儲存庫根目錄執行 `pnpm run verify-package-meta`，檢查欄位、資源 exports 和釋出檔案覆蓋。
+2. 對已安裝外掛，在適用的外掛管理頁與設定條目中切換中英文，檢查標題、描述、逐欄位退回，以及僅設定頁使用的技術短名。
 
-资源归属与不激活插件的原因见[插件元信息 Agent Note](../../.agents/notes/implemented/architecture/2026-09-18-localized-package-metadata.zh.md)。
+資源歸屬與不啟用外掛的原因見[外掛元資訊 Agent Note](../../.agents/notes/implemented/architecture/2026-09-18-localized-package-metadata.zh.md)。
 
-## 6. 验证
+## 6. 驗證
 
 ```sh
 pnpm install        # registers the workspace
@@ -169,4 +169,4 @@ pnpm run constraints && pnpm run typecheck && pnpm run lint
 pnpm run build && pnpm run hygiene
 ```
 
-请遵循[仓库测试政策](../testing.zh.md)，执行新包所需的行为专项检查并达到相应覆盖率。
+請遵循[儲存庫測試政策](../testing.zh.md)，執行新包所需的行為專項檢查並達到相應覆蓋率。

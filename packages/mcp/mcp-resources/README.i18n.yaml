@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/mcp/mcp-resources/README.md
 /:
   en: 34b851d97ea0313e
-  zh: 2fa00063647b6eee
+  zh: b9274cd7bae9dea2
 /deepseek-ai-dsh-mcp-resources:
   en: 81abc44a56e1c7d3
   zh: 34bb6d70ea0219a0
 /deepseek-ai-dsh-mcp-resources/summary:
   en: 03c61c0b7beab085
-  zh: 4c5efe7fa7d8da36
+  zh: a946536fc4eb7d32
 /deepseek-ai-dsh-mcp-resources/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 725b47765ee8f30b
+  zh: d6460a652726fe53
 /deepseek-ai-dsh-mcp-resources/use-this-package:
   en: 6df1a242b8679b3d
-  zh: 9dd9363d22d8a660
+  zh: 33561337e010ced2
 /deepseek-ai-dsh-mcp-resources/use-this-package/server-configuration:
   en: ec0195a4ad06b3ab
-  zh: 0b5c41a4f8ff511e
+  zh: 85ae618c075193b2
 /deepseek-ai-dsh-mcp-resources/use-this-package/discover-and-read:
   en: f7fb6597acd3c5dc
-  zh: 9c59219fb4ab00d9
+  zh: 1fe32be16295e15c
 /deepseek-ai-dsh-mcp-resources/understand-the-implementation:
   en: e0e93efbb88e6047
-  zh: b941463944659422
+  zh: 02b8cccc3358ee0a
 /deepseek-ai-dsh-mcp-resources/further-exploration:
   en: 66e212708f2fa883
-  zh: da8e26a414e86d55
+  zh: 1bc0ed5108310a23
 /deepseek-ai-dsh-mcp-resources/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-mcp-resources/model-experience/shared-resource-tools:
   en: 520e0b6cb35e4285
-  zh: 20a323f87e6d12fc
+  zh: 2bd0507fea073084
 /deepseek-ai-dsh-mcp-resources/model-experience/shared-resource-tools/what-the-model-sees:
   en: a4bcd3734a1fbd07
-  zh: abc25fb23ebaf485
+  zh: 1b849da30e039676
 /deepseek-ai-dsh-mcp-resources/model-experience/shared-resource-tools/token-effect:
   en: 92682e15ca9e90a5
-  zh: 3487ef2adb89c9e4
+  zh: 5d5bb7eea5d50008
 /deepseek-ai-dsh-mcp-resources/model-experience/shared-resource-tools/kv-cache-effect:
   en: fdb450babcdf877b
-  zh: f013ae46ce9e1125
+  zh: 18f16b7fa35e65bc
 /deepseek-ai-dsh-mcp-resources/model-experience/resource-results:
   en: f46ae3151a215b4d
-  zh: 8d15019792d3fe61
+  zh: 0f6d5c57ded3bcbb
 /deepseek-ai-dsh-mcp-resources/model-experience/resource-results/what-the-model-sees:
   en: 62d0a18c52283474
-  zh: 70b2fbea70c98818
+  zh: 7cb9a196e1498d4e
 /deepseek-ai-dsh-mcp-resources/model-experience/resource-results/token-effect:
   en: e6fb5043a1ccc6ff
-  zh: d15d2e7b5986d614
+  zh: 419db2e624d9aa79
 /deepseek-ai-dsh-mcp-resources/model-experience/resource-results/kv-cache-effect:
   en: ea0dfc069bf175c0
-  zh: 3e1465e56ff79764
+  zh: ae777e96b0563c0a
 /deepseek-ai-dsh-mcp-resources/known-limitations-and-deferred-work:
   en: 58d13dc99946c11d
-  zh: 4099c46a1ca60512
+  zh: 9559ad7cd24fbabc
 /deepseek-ai-dsh-mcp-resources/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

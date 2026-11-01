@@ -19,7 +19,7 @@ import { openSettings, ZH_BROWSER_LOCALE, saveFailureShot } from './support.ts'
 const SNAPSHOT_DIR = fileURLToPath(new URL('./expected/onboarding-usable-provider', import.meta.url))
 const DISMISSED_EXPECTED = join(SNAPSHOT_DIR, 'dismissed.expected.md')
 const MODE = webSnapshotMode()
-const CREDENTIAL_STEP = '添加一个 API Key 开始使用'
+const CREDENTIAL_STEP = '新增一個 API Key 開始使用'
 
 describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-run onboarding', () => {
   let scaffold: WebScaffold
@@ -46,28 +46,28 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-setup-card-cancel'))
     const credentialStep = page.getByRole('dialog', { name: CREDENTIAL_STEP })
     await credentialStep.waitFor({ timeout: 15_000 })
-    expect(await page.getByRole('dialog', { name: '开始你的创作' }).count()).toBe(0)
-    expect(await page.getByRole('button', { name: '账号菜单', exact: true }).count()).toBe(0)
-    await credentialStep.getByRole('button', { name: '稍后配置' }).click()
+    expect(await page.getByRole('dialog', { name: '開始你的創作' }).count()).toBe(0)
+    expect(await page.getByRole('button', { name: '帳號選單', exact: true }).count()).toBe(0)
+    await credentialStep.getByRole('button', { name: '稍後設定' }).click()
     await credentialStep.waitFor({ state: 'detached', timeout: 15_000 })
 
     await openSettings(page, 'zh')
-    const settings = page.getByRole('dialog', { name: '设置' })
+    const settings = page.getByRole('dialog', { name: '設定' })
     await settings.waitFor({ timeout: 10_000 })
     // Dismissing the onboarding step leaves Settings closed, so enter the
     // Models section explicitly before exercising its normal cards.
     await settings.getByRole('button', { name: '模型', exact: true }).click()
-    const setupKey = settings.getByRole('textbox', { name: 'API 密钥', exact: true })
+    const setupKey = settings.getByRole('textbox', { name: 'API 金鑰', exact: true })
     await setupKey.waitFor({ timeout: 10_000 })
 
-    const add = settings.getByRole('button', { name: '添加模型提供商' })
+    const add = settings.getByRole('button', { name: '新增模型提供商' })
     await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
     await add.click()
     const pick = settings.getByLabel('提供商', { exact: true })
     await pick.waitFor({ timeout: 10_000 })
     await pick.selectOption('minimax-cn')
     await expect.poll(
-      async () => settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count(),
+      async () => settings.getByRole('textbox', { name: 'API 金鑰', exact: true }).count(),
       { timeout: 10_000 },
     ).toBe(2)
 
@@ -76,10 +76,10 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     await settings.getByRole('button', { name: '取消', exact: true }).first().click()
     expect(await settings.getByLabel('提供商', { exact: true }).count()).toBe(1)
     await expect.poll(
-      async () => settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count(),
+      async () => settings.getByRole('textbox', { name: 'API 金鑰', exact: true }).count(),
       { timeout: 10_000 },
     ).toBe(1)
-    await settings.getByRole('button', { name: '编辑 DeepSeek (deepseek-official)' }).waitFor({ timeout: 10_000 })
+    await settings.getByRole('button', { name: '編輯 DeepSeek (deepseek-official)' }).waitFor({ timeout: 10_000 })
     const dismissed = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(DISMISSED_EXPECTED, dismissed, MODE)
 
@@ -89,10 +89,10 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
 
   it('stops prompting for DeepSeek once the other provider can serve requests', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-other-provider'))
-    const settings = page.getByRole('dialog', { name: '设置' })
-    await settings.getByRole('textbox', { name: 'API 密钥', exact: true }).fill('sk-e2e-minimax')
-    await settings.getByRole('button', { name: '保存', exact: true }).click()
-    await settings.getByText('已保存 minimax-cn。', { exact: true }).waitFor({ timeout: 15_000 })
+    const settings = page.getByRole('dialog', { name: '設定' })
+    await settings.getByRole('textbox', { name: 'API 金鑰', exact: true }).fill('sk-e2e-minimax')
+    await settings.getByRole('button', { name: '儲存', exact: true }).click()
+    await settings.getByText('已儲存 minimax-cn。', { exact: true }).waitFor({ timeout: 15_000 })
 
     // Only minimax-cn is reachable; DeepSeek still holds no credential.
     const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
@@ -118,8 +118,8 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
     await openSettings(page, 'zh')
     await settings.waitFor({ timeout: 10_000 })
     await settings.getByRole('button', { name: '模型', exact: true }).click()
-    await settings.getByRole('button', { name: '编辑 DeepSeek (deepseek-official)' }).waitFor({ timeout: 10_000 })
-    expect(await settings.getByRole('textbox', { name: 'API 密钥', exact: true }).count()).toBe(0)
+    await settings.getByRole('button', { name: '編輯 DeepSeek (deepseek-official)' }).waitFor({ timeout: 10_000 })
+    expect(await settings.getByRole('textbox', { name: 'API 金鑰', exact: true }).count()).toBe(0)
 
     expect((await page.content()).includes('sk-e2e-minimax')).toBe(false)
     expect(tripwire.pageErrors).toEqual([])

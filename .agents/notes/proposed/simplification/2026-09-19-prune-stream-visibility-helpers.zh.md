@@ -1,35 +1,35 @@
-# Agent Note: 精简未使用的流可见性辅助函数
+# Agent Note: 精簡未使用的流可見性輔助函式
 
 Status: proposed
 
 [English](2026-09-19-prune-stream-visibility-helpers.md) | 中文
 
-## 问题
+## 問題
 
-[紧凑 Assistant 流实现](../../../../packages/llm/llm/src/assistant-stream.ts)导出五个可见性查询：`isVisibleChunk`、`chunkHasVisibleText`、`runFirstVisibleTime`、`assistantStreamHasVisibleContent` 和 `assistantStreamHasVisibleText`。仓库搜索未找到这组函数之外的生产调用方。其余消费方是[单元测试](../../../../packages/llm/llm/tests/assistant-stream.spec.ts)、包文档和[记录读取器决策](../../implemented/architecture/2026-09-06-embedded-stream-record-readers.zh.md)。包根入口和发布的 `./assistant-stream` 入口向外部调用方暴露这些函数；本次搜索无法确定外部使用情况。
+[緊湊 Assistant 流實作](../../../../packages/llm/llm/src/assistant-stream.ts)匯出五個可見性查詢：`isVisibleChunk`、`chunkHasVisibleText`、`runFirstVisibleTime`、`assistantStreamHasVisibleContent` 和 `assistantStreamHasVisibleText`。儲存庫搜尋未找到這組函式之外的生產呼叫方。其餘消費方是[單元測試](../../../../packages/llm/llm/tests/assistant-stream.spec.ts)、包文件和[記錄讀取器決策](../../implemented/architecture/2026-09-06-embedded-stream-record-readers.zh.md)。包根入口和釋出的 `./assistant-stream` 入口向外部呼叫方暴露這些函式；本次搜尋無法確定外部使用情況。
 
-保留的首 token 读取器已有 [Session Stats](../../../../packages/session/session-stats/src/projection.ts) 和 [Trajectory](../../../../packages/client/ui-trajectory/src/client/trajectory-assistant-definition.ts) 消费方。它们的计时要求不依赖单独区分空白文本的可见性分类。
+保留的首 token 讀取器已有 [Session Stats](../../../../packages/session/session-stats/src/projection.ts) 和 [Trajectory](../../../../packages/client/ui-trajectory/src/client/trajectory-assistant-definition.ts) 消費方。它們的計時要求不依賴單獨區分空白文字的可見性分類。
 
 ## 提案
 
-移除这五个导出的可见性查询及其专用私有辅助函数 `hasNonWhitespace` 和 `blockIsVisible`。这会删除约 77 行源码（含局部文档），无需新增替代机制。保留所有首 token、原始分片、文本拼接和组装读取器，以及累加器和带校验的展开操作。保留直接实现和基于库实现的两个 LLM（大语言模型）适配器及其扩展 API。
+移除這五個匯出的可見性查詢及其專用私有輔助函式 `hasNonWhitespace` 和 `blockIsVisible`。這會刪除約 77 行原始碼（含區域性文件），無需新增替代機制。保留所有首 token、原始分片、文字拼接和組裝讀取器，以及累加器和帶驗證的展開操作。保留直接實作和基於庫實作的兩個 LLM（大語言模型）介面卡及其擴充功能 API。
 
-移除专门的可见性测试；混合读取器测试只删除过时断言。保留验证首 token 计时、提前退出、原始分片、文本拼接和组装等价性的混合 fixture（测试前置数据）与断言。
+移除專門的可見性測試；混合讀取器測試只刪除過時斷言。保留驗證首 token 計時、提前退出、原始分片、文字拼接和組裝等價性的混合 fixture（測試前置資料）與斷言。
 
-记录读取器决策只被部分替代：其分配开销方面的理由和仍被使用的读取器继续有效。实施本提案时，更新该现行说明、[包 README](../../../../packages/llm/llm/README.zh.md) 和 [LLM 子系统页面](../../../../docs/subsystems/llm-streaming.zh.md)及其双语对侧。添加本提案时不删除所属说明，也不修改归档记录。
+記錄讀取器決策只被部分替代：其分配開銷方面的理由和仍被使用的讀取器繼續有效。實施本提案時，更新該現行說明、[包 README](../../../../packages/llm/llm/README.zh.md) 和 [LLM 子系統頁面](../../../../docs/subsystems/llm-streaming.zh.md)及其雙語對側。新增本提案時不刪除所屬說明，也不修改歸檔記錄。
 
-## 备选方案
+## 備選方案
 
-**为外部消费方保留完整的读取器组。** 这能保留方便且经过测试的可见性查询，但也会在缺少已确认仓库消费方的情况下保留公共函数和专门测试。明确的外部需求可以成为保留或重新引入它们的理由。
+**為外部消費方保留完整的讀取器組。** 這能保留方便且經過測試的可見性查詢，但也會在缺少已確認儲存庫消費方的情況下保留公共函式和專門測試。明確的外部需求可以成為保留或重新引入它們的理由。
 
-**用流展开替代可见性查询。** 当前没有需要迁移的生产调用方。新增替代实现会继续保留未使用的 API，并引入记录读取器原本避免的分配开销。
+**用流展開替代可見性查詢。** 目前沒有需要遷移的生產呼叫方。新增替代實作會繼續保留未使用的 API，並引入記錄讀取器原本避免的分配開銷。
 
-## 验收标准
+## 驗收標準
 
-- 源码导出和现行 API 文档中不再包含这五个名称；生产调用方不新增展开操作或替代可见性查询。
-- 针对流读取器、Session Stats 和 Trajectory 计时的检查通过；混合测试保留无关断言。
-- 类型检查、受影响发布入口的构建和文档检查通过。Session 格式、模型输入、transcript（文本记录）内容和首 token 计时保持不变。
+- 原始碼匯出和現行 API 文件中不再包含這五個名稱；生產呼叫方不新增展開操作或替代可見性查詢。
+- 針對流讀取器、Session Stats 和 Trajectory 計時的檢查透過；混合測試保留無關斷言。
+- 型別檢查、受影響釋出入口的建置和文件檢查透過。Session 格式、模型輸入、transcript（文字記錄）內容和首 token 計時保持不變。
 
-## 风险
+## 風險
 
-这会有意收缩导出的稳定前 API。即使仓库中没有消费方，外部导入仍可能失效。实施前重新核对消费方证据，并明确评估发现的外部需求；不得宣称整个生态均未使用这些函数。
+這會有意收縮匯出的穩定前 API。即使儲存庫中沒有消費方，外部匯入仍可能失效。實施前重新核對消費方證據，並明確評估發現的外部需求；不得宣稱整個生態均未使用這些函式。

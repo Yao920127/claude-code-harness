@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/client/README.md
 /:
   en: 8d88d189ae9b47b5
-  zh: c228c9f1732419ad
+  zh: f17032677bfe4f45
 /client-web-gui-browser-half:
   en: 0b0e5d73f258a814
-  zh: 5705a9605c112c44
+  zh: 88518da7de681689
 /client-web-gui-browser-half/summary:
   en: 43e9fd5c8fbcb676
-  zh: 52076d2e78c5d4c1
+  zh: 4035e86462958f3d
 /client-web-gui-browser-half/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /client-web-gui-browser-half/packages:
-  en: 9fadcf2cc8960e6d
-  zh: 402c1cfba4253bd4
+  en: c19fa4bd7469700f
+  zh: 8551f73c18f96451
 /client-web-gui-browser-half/related-documentation:
   en: 598d07b07449128f
-  zh: e8c40708ac0e603e
+  zh: 399163eb1a947386
 /client-web-gui-browser-half/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-18-localized-package-metadata.md
 /agent-note-plugin-owned-localized-display-metadata:
   en: b78ee8e580f068ea
-  zh: 17dd59c9b6273897
+  zh: 74011d31e53feb24
 /agent-note-plugin-owned-localized-display-metadata/problem:
   en: 4022a58baf82e77d
-  zh: 8439268ed4df9b69
+  zh: 42d63805ed4848fd
 /agent-note-plugin-owned-localized-display-metadata/decision:
   en: f6c3e24681977f48
-  zh: 84ae52ec62f4af96
+  zh: 952c9b31a3bb4aaf
 /agent-note-plugin-owned-localized-display-metadata/existing-decisions:
   en: a84f44d6a3179d47
-  zh: 8fb62f08bec5f75d
+  zh: 8d0f9e091d5fa2ff
 /agent-note-plugin-owned-localized-display-metadata/alternatives-considered:
   en: abbdb1b8ab360380
-  zh: edfe6c06b1d67fd7
+  zh: f43db99866410c93
 /agent-note-plugin-owned-localized-display-metadata/verification:
   en: 8541a2431321ef61
-  zh: 77599e0855d93da9
+  zh: 2da97e6c1576d498
 /agent-note-plugin-owned-localized-display-metadata/consequences:
   en: 2a4547c9657038df
-  zh: 1a4bebd06d2b9e38
+  zh: 4335e0bed104f5a0

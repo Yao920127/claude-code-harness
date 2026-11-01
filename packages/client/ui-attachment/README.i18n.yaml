@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-attachment/README.md
 /:
   en: 414cbe20f39f7a82
-  zh: f56ebf03129a29b8
+  zh: 4bb27db82fcf9530
 /deepseek-ai-dsh-client-ui-attachment:
   en: 61096ced1318bcee
   zh: 0682d3d7453659fd
 /deepseek-ai-dsh-client-ui-attachment/summary:
   en: f36aa7a85597dd66
-  zh: f7e87849791fe89a
+  zh: fc188a0222efe918
 /deepseek-ai-dsh-client-ui-attachment/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-attachment/use-this-package:
   en: 15cdd9d52dcc71b8
-  zh: 53933fbbf5d39100
+  zh: eccc7e46af17dc37
 /deepseek-ai-dsh-client-ui-attachment/use-this-package/draft-attachments:
   en: a77c8ec48e219aec
-  zh: 756d4fe881403006
+  zh: 6f4492834aef5d48
 /deepseek-ai-dsh-client-ui-attachment/use-this-package/message-images-and-the-lightbox:
   en: 8b3d7729152d8060
-  zh: 815f932ccc9653f5
+  zh: cc2da294d0a2d020
 /deepseek-ai-dsh-client-ui-attachment/use-this-package/drop-overlay:
   en: 836a62c8f73366ac
-  zh: 35da7836eaf68a67
+  zh: ad81b2702f532bd5
 /deepseek-ai-dsh-client-ui-attachment/understand-the-implementation:
   en: 415bd2b09bb84b6b
-  zh: 2e49a39fb3957b4f
+  zh: 6a4ce0e28bb3cc36
 /deepseek-ai-dsh-client-ui-attachment/further-exploration:
   en: c7d27d71d31227da
-  zh: e07294f4b0b1ed66
+  zh: 27d3c48da3c3fef6
 /deepseek-ai-dsh-client-ui-attachment/model-experience:
   en: 25566605d7b38667
-  zh: 927d3ea272893296
+  zh: 0e86e5cd54e048a0
 /deepseek-ai-dsh-client-ui-attachment/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-attachment/known-limitations-and-deferred-work:
   en: 9a16cb4f174464cf
-  zh: 3de4b8288a74c594
+  zh: 559dae51e93ba404
 /deepseek-ai-dsh-client-ui-attachment/known-limitations-and-deferred-work/dev-note:
   en: a06a37a39a68c325
-  zh: d465458aa4406397
+  zh: 80c38171781194a0

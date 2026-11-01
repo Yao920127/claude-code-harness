@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-26-permanent-default-workspace.md
 /agent-note-permanent-default-workspace:
   en: 89b961fa52c52ee8
-  zh: 3a4a83f32b206a75
+  zh: ef26c64cf6dd5d96
 /agent-note-permanent-default-workspace/problem:
   en: 8c785363f4f77c41
-  zh: adc5939c9729b0a7
+  zh: fb465956c5c8a64b
 /agent-note-permanent-default-workspace/decision:
   en: 7bd2b2a6b9192b90
-  zh: 914b0aab4111ac13
+  zh: c925b00c87c3692c
 /agent-note-permanent-default-workspace/alternatives-considered:
   en: 3a75fd363fcf42db
-  zh: 12834636bf8b270b
+  zh: 0426fd310f19478c
 /agent-note-permanent-default-workspace/consequences:
   en: cd81a53ffc16f8b5
-  zh: a7acbbb259d565cc
+  zh: 3bd28362e6e1b9c4

@@ -1,5 +1,5 @@
 ---
-description: "随包附带的「powered by dsh」徽章 skill（技能），供启用、使用或排查该可选徽章提供方的用户与维护者阅读。"
+description: "隨包附帶的「powered by dsh」徽章 skill（技能），供啟用、使用或排查該可選徽章提供者的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,109 +9,109 @@ kind: "package-reference"
 
 ## 概述
 
-agent（智能体）可以通过该内置提供方加载官方「powered by dsh」徽章 skill，并遵循其指令，给文档、PR（Pull Request）以及其他用 DeepSeek Harness 生成的内容添加署名徽章。该提供方没有配置，随附 CLI（命令行界面）组合以禁用状态包含该插件，因此部署方需要显式启用。该 skill 同时提供 Markdown 片段和随包分发的 PNG，供无法可靠导入远程图片的系统使用。
+agent（智慧代理）可以透過該內建提供者載入官方「powered by dsh」徽章 skill，並遵循其指令，給文件、PR（Pull Request）以及其他用 DeepSeek Harness 生成的內容新增署名徽章。該提供者沒有設定，隨附 CLI（命令列介面）組合以停用狀態包含該外掛，因此部署方需要顯式啟用。該 skill 同時提供 Markdown 片段和隨包分發的 PNG，供無法可靠匯入遠端圖片的系統使用。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-启用插件即可让 `dsh-badge` skill 出现在会话 skill 目录中；随后模型可以像加载任何其他 skill 一样加载它，并遵循其指令添加「powered by dsh」徽章。
+啟用外掛即可讓 `dsh-badge` skill 出現在工作階段 skill 目錄中；隨後模型可以像載入任何其他 skill 一樣載入它，並遵循其指令新增「powered by dsh」徽章。
 
-### 何时选择
+### 何時選擇
 
-当用 DeepSeek Harness 生成的内容应携带官方署名徽章、且部署方希望该徽章 skill 对 agent 可用而无需存入本地 skill 目录时，选择此提供方。当徽章与部署无关时，请跳过——插件默认禁用，启用前不增加任何东西。
+當用 DeepSeek Harness 生成的內容應攜帶官方署名徽章、且部署方希望該徽章 skill 對 agent 可用而無需存入本地 skill 目錄時，選擇此提供者。當徽章與部署無關時，請跳過——外掛預設停用，啟用前不增加任何東西。
 
-### 启用插件
+### 啟用外掛
 
-该插件没有配置。把它的组合行加入组合即可；随附 CLI 组合以 `disabled: true` 携带该行，因此在那里需要显式启用。
+該外掛沒有設定。把它的組合行加入組合即可；隨附 CLI 組合以 `disabled: true` 攜帶該行，因此在那裡需要顯式啟用。
 
 ```yaml
 - name: '@deepseek-ai/dsh-skill-badge'
 ```
 
-启用后，`dsh-badge` 会出现在会话目录的可用 skill 中。该 skill 覆盖远程 Markdown 徽章（基于 Shields.io）和随包分发的 PNG 徽章资源，后者用于无法可靠获取远程图片的目标环境。
+啟用後，`dsh-badge` 會出現在工作階段目錄的可用 skill 中。該 skill 覆蓋遠端 Markdown 徽章（基於 Shields.io）和隨包分發的 PNG 徽章資源，後者用於無法可靠取得遠端圖片的目標環境。
 
-### 徽章 skill 提供什么
+### 徽章 skill 提供什麼
 
-- **Markdown 片段。** 在文档、PR 与 merge request 中嵌入官方徽章标记的指令。
-- **随包分发的 PNG 资源。** `dsh-badge.png`（726×120 源图，按 121×20 渲染），在无法导入远程图片的环境中可用。
+- **Markdown 片段。** 在文件、PR 與 merge request 中嵌入官方徽章標記的指令。
+- **隨包分發的 PNG 資源。** `dsh-badge.png`（726×120 源圖，按 121×20 渲染），在無法匯入遠端圖片的環境中可用。
 
-### 可观察的成功与失败
+### 可觀察的成功與失敗
 
-启用插件会使 `dsh-badge` 出现在目录中并可凭名称加载；禁用或省略该行则它不会出现在任何目录中。由于提供方不可变，发现始终成功且恰好返回一个 skill，绝不会报告部分结果。
+啟用外掛會使 `dsh-badge` 出現在目錄中並可憑名稱載入；停用或省略該行則它不會出現在任何目錄中。由於提供者不可變，發現始終成功且恰好返回一個 skill，絕不會報告部分結果。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释内置提供方如何接线；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋內建提供者如何接線；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该提供方是一个不可变、同步注册的 skill 来源：它以 `dsh-badge` 作为提供方名称、按内置 skill rank（600）注册一个固定候选项，把随包分发的 `assets/` 目录作为该 skill 的目录资源基底公开，并在每次加载时从随包分发的 `assets/dsh-badge.md` 文件读取 skill 正文。
+該提供者是一個不可變、同步註冊的 skill 來源：它以 `dsh-badge` 作為提供者名稱、按內建 skill rank（600）註冊一個固定候選項，把隨包分發的 `assets/` 目錄作為該 skill 的目錄資源基底公開，並在每次載入時從隨包分發的 `assets/dsh-badge.md` 檔案讀取 skill 正文。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口与不可变提供方：一个候选项、资源基底、正文加载 |
-| — | 不发布运行时不变式伴生入口；本包只持有一个不可变的提供方注册，注册唯一性与生命周期检查由 skill 注册表负责。 |
-| [`assets/`](assets/) | 随包分发的 skill 正文（`dsh-badge.md`）与 PNG 资源（`dsh-badge.png`） |
+| [`src/index.ts`](src/index.ts) | 外掛入口與不可變提供者：一個候選項、資源基底、正文載入 |
+| — | 不釋出執行時不變式伴生入口；本包只持有一個不可變的提供者註冊，註冊唯一性與生命週期檢查由 skill 註冊表負責。 |
+| [`assets/`](assets/) | 隨包分發的 skill 正文（`dsh-badge.md`）與 PNG 資源（`dsh-badge.png`） |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时，请阅读以下页面。这些页面先介绍该提供方注册到的注册表，再说明 skill 如何到达模型。
+當包級約定不夠用時，請閱讀以下頁面。這些頁面先介紹該提供者註冊到的註冊表，再說明 skill 如何到達模型。
 
-- [skill 子系统参考](../../../docs/subsystems/skills.zh.md)——该提供方实现的注册表与提供方约定。
-- [skill 包](../skill/README.zh.md)——该提供方注册到的注册表，以及已加载 skill 的共享渲染。
-- [tool-skill 包](../tool-skill/README.zh.md)——徽章 skill 如何到达会话目录与模型。
+- [skill 子系統參考](../../../docs/subsystems/skills.zh.md)——該提供者實作的註冊表與提供者約定。
+- [skill 包](../skill/README.zh.md)——該提供者註冊到的註冊表，以及已載入 skill 的共享渲染。
+- [tool-skill 包](../tool-skill/README.zh.md)——徽章 skill 如何到達工作階段目錄與模型。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-tool-skill` 间接影响模型；该包会把该提供方的目录条目和所选 skill 的正文渲染给模型。
+透過 `dsh-tool-skill` 間接影響模型；該包會把該提供者的目錄條目和所選 skill 的正文渲染給模型。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-该插件默认禁用，不会改变任何请求。启用后，其目录条目和任何已加载正文都会在各自插入点改变提供方的 KV 前缀。
+該外掛預設停用，不會改變任何請求。啟用後，其目錄條目和任何已載入正文都會在各自插入點改變提供者的 KV 字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明内置提供方不做什么。它们是当前包约束，不是任务积压。
+這些限制說明內建提供者不做什麼。它們是目前包約束，不是任務積壓。
 
-- **固定一个 skill，无运行时自定义**——提供方恰好贡献 `dsh-badge` 这一个 skill；需要其他徽章变体的部署请自行编写 skill。
-- **远程 Markdown 依赖 Shields.io**——远程徽章标记内嵌 Shields.io 图片；目标环境无法可靠获取远程图片时，请使用随包分发的 PNG。
+- **固定一個 skill，無執行時自定義**——提供者恰好貢獻 `dsh-badge` 這一個 skill；需要其他徽章變體的部署請自行編寫 skill。
+- **遠端 Markdown 依賴 Shields.io**——遠端徽章標記內嵌 Shields.io 圖片；目標環境無法可靠取得遠端圖片時，請使用隨包分發的 PNG。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -1,20 +1,20 @@
-# 能力的三种角色设计
+# 能力的三種角色設計
 
 [English](index.md) | 中文
 
-本文分为两部分：先参考三种角色能力模式的概念，再通过高级教程构建一项能力。请先完成[基础插件路径](../basic/index.zh.md)和[服务教程](../framework/service.zh.md)。
+本文分為兩部分：先參考三種角色能力模式的概念，再透過高階教學建置一項能力。請先完成[基礎外掛路徑](../basic/index.zh.md)和[服務教學](../framework/service.zh.md)。
 
-## 概念参考
+## 概念參考
 
-当一项能力足够通用，需要支持可替换的提供方时（例如 Bash 执行），harness 会区分三种角色：**Service Definition**、**Service Provider** 和 **Consumer**。角色需要独立演进或替换时，将它们放入不同包；否则一个包可以承担多个角色。完整能力构成其 seam。任何单一角色都不是 seam。
+當一項能力足夠通用，需要支援可替換的提供者時（例如 Bash 執行），harness 會區分三種角色：**Service Definition**、**Service Provider** 和 **Consumer**。角色需要獨立演進或替換時，將它們放入不同包；否則一個包可以承擔多個角色。完整能力構成其 seam。任何單一角色都不是 seam。
 
-## 以 Bash 为例
+## 以 Bash 為例
 
-以 Bash 执行能力为例：
+以 Bash 執行能力為例：
 
-- **Service Definition** (`dsh-shell`)：定义 Cordis 服务以及 Bash 请求和结果类型
-- **Service Provider** (`dsh-bash-local`)：在本地计算机上执行命令
-- **Consumer** (`dsh-tool-bash`)：将该能力公开为模型可调用的工具
+- **Service Definition** (`dsh-shell`)：定義 Cordis 服務以及 Bash 請求和結果型別
+- **Service Provider** (`dsh-bash-local`)：在本地計算機上執行命令
+- **Consumer** (`dsh-tool-bash`)：將該能力公開為模型可呼叫的工具
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌──────────────┐
@@ -26,11 +26,11 @@
                     inject: ['shell']
 ```
 
-## 拆分的好处
+## 拆分的好處
 
-### 提供方可替换
+### 提供者可替換
 
-同一个 Service Definition 可以有多个提供方，可通过 `cordis.yml` 选择：
+同一個 Service Definition 可以有多個提供者，可透過 `cordis.yml` 選擇：
 
 ```yaml
 # Local execution
@@ -39,25 +39,25 @@
 # Replace this row with another package that provides the same service.
 ```
 
-更换提供方时，Service Definition 和工具均保持不变。
+更換提供者時，Service Definition 和工具均保持不變。
 
-### 独立演进
+### 獨立演進
 
-- 调用方开始依赖 Service Definition 的约定后，Service Definition 很少改动。
-- Service Provider 可以独立优化性能和安全性。
-- Consumer 可以调整能力向模型呈现的方式。
+- 呼叫方開始依賴 Service Definition 的約定後，Service Definition 很少改動。
+- Service Provider 可以獨立最佳化效能和安全性。
+- Consumer 可以調整能力向模型呈現的方式。
 
-### 依赖解耦
+### 依賴解耦
 
-- Service Provider 依赖 Service Definition。
-- Consumer 依赖 Service Definition。
-- Service Provider 和 Consumer **互不依赖**。
+- Service Provider 依賴 Service Definition。
+- Consumer 依賴 Service Definition。
+- Service Provider 和 Consumer **互不依賴**。
 
-当前内置系列及其包链接由[能力 seam 参考](../../../capability-seams.zh.md)负责。
+目前內建系列及其包連結由[能力 seam 參考](../../../capability-seams.zh.md)負責。
 
-## 教程：开发三种角色的能力
+## 教學：開發三種角色的能力
 
-### 第一步：编写 Service Definition
+### 第一步：編寫 Service Definition
 
 ```ts ignore-check
 // packages/my-cap/my-cap/src/index.ts
@@ -87,7 +87,7 @@ export interface MyCapResult {
 }
 ```
 
-### 第二步：编写 Service Provider
+### 第二步：編寫 Service Provider
 
 ```ts ignore-check
 // packages/my-cap/my-cap-local/src/index.ts
@@ -108,7 +108,7 @@ export function apply(ctx: Context) {
 }
 ```
 
-### 第三步：编写消费方
+### 第三步：編寫消費方
 
 ```ts ignore-check
 // packages/my-cap/tool-my-cap/src/index.ts
@@ -137,19 +137,19 @@ export function apply(ctx: Context) {
 }
 ```
 
-### 在 cordis.yml 中组合
+### 在 cordis.yml 中組合
 
 ```yaml
 - name: '@deepseek-ai/dsh-my-cap-local'
 - name: '@deepseek-ai/dsh-tool-my-cap'
 ```
 
-## 设计要点
+## 設計要點
 
-- **不要预防性拆分**：只有角色需要独立演进时，才使用不同包。简单的工具插件无需拆分。
-- **Service Definition 拥有 Request/Result 类型**：Service Provider 和 Consumer 只依赖 Service Definition 包。
-- **显式优于隐式**：实现应通过显式的 `resolve(request): Spec` 步骤处理默认值，而不是在 `run()` 中隐藏 `?? default`。
+- **不要預防性拆分**：只有角色需要獨立演進時，才使用不同包。簡單的工具外掛無需拆分。
+- **Service Definition 擁有 Request/Result 型別**：Service Provider 和 Consumer 只依賴 Service Definition 包。
+- **顯式優於隱式**：實作應透過顯式的 `resolve(request): Spec` 步驟處理預設值，而不是在 `run()` 中隱藏 `?? default`。
 
 ## 下一步
 
-- [LLM（大语言模型）适配器](./llm-adapter.zh.md)：实现一个 LLM 提供方
+- [LLM（大語言模型）介面卡](./llm-adapter.zh.md)：實作一個 LLM 提供者

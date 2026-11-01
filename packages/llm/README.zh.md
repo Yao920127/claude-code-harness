@@ -1,5 +1,5 @@
 ---
-description: "LLM（大语言模型）能力包组：一个提供方无关的模型调用服务、DeepSeek、pi-ai 与 Claude Code 提供方适配器、请求重试执行，以及具备回放感知的 token 计量。"
+description: "LLM（大語言模型）能力包組：一個提供者無關的模型呼叫服務、DeepSeek、pi-ai 與 Claude Code 提供者介面卡、請求重試執行，以及具備回放感知的 token 計量。"
 kind: "package-group"
 ---
 
@@ -9,43 +9,43 @@ kind: "package-group"
 
 ## 概述
 
-llm 组提供 harness 的模型调用能力：一个提供方无关的服务，任何组合都可以通过它向模型提供方发起流式请求，外加适配器、提供方专用请求元数据、重试执行与计量。核心 `llm` 包定义所有插件与会话日志使用的消息、内容块与流式分片词汇；提供方适配器把某个提供方的协议格式（wire format）翻译为该词汇；DeepSeek 请求扩展插件在模型输入之外贡献具有生命周期归属的元数据；`llm-retry` 在持久化的 agent（智能体）步骤边界上重跑失败的请求；`token-meter` 从持久化日志测量请求与上下文压力。本页列出该包组的组成；每个包 README 负责各自的包级约定。
+llm 組提供 harness 的模型呼叫能力：一個提供者無關的服務，任何組合都可以透過它向模型提供者發起流式請求，外加介面卡、提供者專用請求中繼資料、重試執行與計量。核心 `llm` 包定義所有外掛與工作階段日誌使用的訊息、內容塊與流式分片詞彙；提供者介面卡把某個提供者的協定格式（wire format）翻譯為該詞彙；DeepSeek 請求擴充功能外掛在模型輸入之外貢獻具有生命週期歸屬的中繼資料；`llm-retry` 在持久化的 agent（智慧代理）步驟邊界上重跑失敗的請求；`token-meter` 從持久化日誌測量請求與上下文壓力。本頁列出該包組的組成；每個包 README 負責各自的包級約定。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | ctx key |
+| 包 | 職責 | ctx key |
 |---|---|---|
-| [`llm/`](llm/README.zh.md) | 通过已注册的提供方适配器流式发起一次模型调用，并共享 harness 的消息、块与分片词汇 | `ctx.llm` |
-| [`llm-deepseek/`](llm-deepseek/README.zh.md) | 共享 Messages 协议、请求配置与模型能力 | — |
-| [`llm-deepseek-api-key/`](llm-deepseek-api-key/README.zh.md) | API key 鉴权与 official 模型发现 | `ctx.llm` |
-| [`llm-deepseek-account/`](llm-deepseek-account/README.zh.md) | 账号 token 鉴权、失效处理与模型发现 | `ctx.llm` |
-| [`llm-pi-ai/`](llm-pi-ai/README.zh.md) | 通过 pi-ai 目录与协议格式服务配置的提供方路由，包括手工声明的网关 | 注册到 `ctx.llm` |
-| [`llm-claude-code/`](llm-claude-code/README.zh.md) | 以宿主机自己的 Claude Code 登录，把每次模型调用作为一个 Claude Code 回合运行，并提供 `claude-code` preset | 注册到 `ctx.llm` |
-| [`deepseek-llm-api-extensions/`](deepseek-llm-api-extensions/README.zh.md) | 在官方 DeepSeek 请求上注册具有生命周期归属的顶层字段 | `ctx.deepseekLlmApiExtensions` |
-| [`plugin-package-inventory-deepseek/`](plugin-package-inventory-deepseek/README.zh.md) | 为官方 DeepSeek 请求贡献当前启用的 Loader 包清单 | 贡献 `dsh_plugin_packages` |
-| [`llm-retry/`](llm-retry/README.zh.md) | 在持久 agent 步骤边界上按各提供方策略重试失败的模型请求 | 监听 `agent/request-error` |
-| [`token-meter/`](token-meter/README.zh.md) | 用固定启发式规则从持久会话日志测量请求与上下文压力 | `ctx.tokenMeter` |
+| [`llm/`](llm/README.zh.md) | 透過已註冊的提供者介面卡流式發起一次模型呼叫，並共享 harness 的訊息、塊與分片詞彙 | `ctx.llm` |
+| [`llm-deepseek/`](llm-deepseek/README.zh.md) | 共享 Messages 協定、請求設定與模型能力 | — |
+| [`llm-deepseek-api-key/`](llm-deepseek-api-key/README.zh.md) | API key 授權驗證與 official 模型發現 | `ctx.llm` |
+| [`llm-deepseek-account/`](llm-deepseek-account/README.zh.md) | 帳號 token 授權驗證、失效處理與模型發現 | `ctx.llm` |
+| [`llm-pi-ai/`](llm-pi-ai/README.zh.md) | 透過 pi-ai 目錄與協定格式服務設定的提供者路由，包括手工宣告的閘道 | 註冊到 `ctx.llm` |
+| [`llm-claude-code/`](llm-claude-code/README.zh.md) | 以主機自己的 Claude Code 登入，把每次模型呼叫作為一個 Claude Code 回合執行，並提供 `claude-code` preset | 註冊到 `ctx.llm` |
+| [`deepseek-llm-api-extensions/`](deepseek-llm-api-extensions/README.zh.md) | 在官方 DeepSeek 請求上註冊具有生命週期歸屬的頂層欄位 | `ctx.deepseekLlmApiExtensions` |
+| [`plugin-package-inventory-deepseek/`](plugin-package-inventory-deepseek/README.zh.md) | 為官方 DeepSeek 請求貢獻目前啟用的 Loader 包清單 | 貢獻 `dsh_plugin_packages` |
+| [`llm-retry/`](llm-retry/README.zh.md) | 在持久 agent 步驟邊界上按各提供者策略重試失敗的模型請求 | 監聽 `agent/request-error` |
+| [`token-meter/`](token-meter/README.zh.md) | 用固定啟發式規則從持久工作階段日誌測量請求與上下文壓力 | `ctx.tokenMeter` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [LLM 流式子系统](../../docs/subsystems/llm-streaming.zh.md)——消息与块类型、组装后的模型请求、`StreamChunk` 协议与适配器约定（adapter contract）。
-- [Token 计量子系统](../../docs/subsystems/token-meter.zh.md)——`ctx.tokenMeter` 背后的测量语义。
-- [孪生 LLM 适配器](../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——为什么 DeepSeek 路由交付两个结构不同的适配器。
-- [按路由的模型上下文](../../.agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.zh.md)——loop 如何路由模型请求并压缩上下文。
+- [LLM 流式子系統](../../docs/subsystems/llm-streaming.zh.md)——訊息與塊型別、組裝後的模型請求、`StreamChunk` 協定與介面卡約定（adapter contract）。
+- [Token 計量子系統](../../docs/subsystems/token-meter.zh.md)——`ctx.tokenMeter` 背後的測量語義。
+- [孿生 LLM 介面卡](../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——為什麼 DeepSeek 路由交付兩個結構不同的介面卡。
+- [按路由的模型上下文](../../.agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.zh.md)——loop 如何路由模型請求並壓縮上下文。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

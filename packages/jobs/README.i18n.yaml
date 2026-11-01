@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/jobs/README.md
 /:
   en: b25bee480c2d5ffb
-  zh: 8c10268ce42d83b1
+  zh: 14ec3548bb20fadd
 /jobs-background-job-capability-family:
   en: d8461ef8c073603a
-  zh: f8aeb3e919c41256
+  zh: e7fd3e1f59fc9520
 /jobs-background-job-capability-family/summary:
   en: 6c7629a9fdaadbe6
-  zh: 60314e79eaec6446
+  zh: cc8dc2d9e642a073
 /jobs-background-job-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /jobs-background-job-capability-family/packages:
   en: 1f71d83d0fdd3108
-  zh: 48ed241913efb8b4
+  zh: 20001ee8d2d88d2a
 /jobs-background-job-capability-family/related-documentation:
   en: 7eee30dc52e856bf
-  zh: a4541c7b6620ea1d
+  zh: 1f17e9f2cee5daf0
 /jobs-background-job-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

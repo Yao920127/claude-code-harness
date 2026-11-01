@@ -1,6 +1,6 @@
-- dialog "删除 minimax-cn？":
-  - heading "删除 minimax-cn？" [level=2]
-  - button "关闭"
-  - paragraph: 删除 minimax-cn 会移除其配置；其使用的凭证（如有）由其他位置管理，将会保留。
+- dialog "刪除 minimax-cn？":
+  - heading "刪除 minimax-cn？" [level=2]
+  - button "關閉"
+  - paragraph: 刪除 minimax-cn 會移除其設定；其使用的憑證（如有）由其他位置管理，將會保留。
   - button "取消"
-  - button "删除 minimax-cn"
+  - button "刪除 minimax-cn"

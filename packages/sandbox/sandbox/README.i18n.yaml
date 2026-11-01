@@ -4,88 +4,88 @@
 #   pnpm run verify-translation-pairing --write packages/sandbox/sandbox/README.md
 /:
   en: 4308065a46738364
-  zh: 2eb6ab7314e74976
+  zh: 1bf93c124de4205a
 /deepseek-ai-dsh-sandbox:
   en: 3d3312b2261f0a60
   zh: 47741e2a3d90da70
 /deepseek-ai-dsh-sandbox/summary:
   en: be0473ca1d2dbb6c
-  zh: 8c6b097438d2c2af
+  zh: a26e7bfc5dcdf263
 /deepseek-ai-dsh-sandbox/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-sandbox/use-this-package:
   en: 5fbf0b48effb1143
-  zh: 5c570dcc1a17e0ad
+  zh: a64109017f8a5029
 /deepseek-ai-dsh-sandbox/use-this-package/when-to-choose-it:
   en: 4ddc504d2626fe3e
-  zh: ceb3dd93fb3835db
+  zh: 4b4c4d0849d4499b
 /deepseek-ai-dsh-sandbox/use-this-package/confining-a-command:
   en: c5540889017b6a7f
-  zh: 679bfbd5254bf92d
+  zh: 7f1b4b7223d0ea3e
 /deepseek-ai-dsh-sandbox/use-this-package/modes-and-enforcement:
   en: ab093e9042b86b99
-  zh: d173df7cb3649446
+  zh: 0e436d8000539f2c
 /deepseek-ai-dsh-sandbox/use-this-package/denied-calls-and-escalation:
   en: 92cf42bad65d112c
-  zh: 60fa2cb7e9c4c556
+  zh: b80f66bea16bd576
 /deepseek-ai-dsh-sandbox/use-this-package/fail-closed-behavior:
   en: 6bf240632a7a6bf5
-  zh: ebf414f5cf435875
+  zh: 8638ad8308303493
 /deepseek-ai-dsh-sandbox/understand-the-implementation:
   en: 7e13d669ecc96d59
-  zh: b5fe7ae65812d926
+  zh: 121b4748848d0874
 /deepseek-ai-dsh-sandbox/understand-the-implementation/design-philosophy:
   en: 0fc96495c192b513
-  zh: 38b51b9b3c208012
+  zh: b11a009f5b1bbc41
 /deepseek-ai-dsh-sandbox/understand-the-implementation/source-map:
   en: 54cab3e684afb031
-  zh: b49b476d2f965985
+  zh: 974df66a4496aec7
 /deepseek-ai-dsh-sandbox/understand-the-implementation/escalation-choreography:
   en: 1b418d41f571ab3d
-  zh: 62b289cdd6f4d272
+  zh: f847816eaf401551
 /deepseek-ai-dsh-sandbox/understand-the-implementation/writable-roots:
   en: 956d3195cf7a35f8
-  zh: f83d8342e22bb7cd
+  zh: d034bb67781c494d
 /deepseek-ai-dsh-sandbox/further-exploration:
   en: 9f0d57097c678a25
-  zh: 58e765bf1b223215
+  zh: d89b02a347992449
 /deepseek-ai-dsh-sandbox/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-sandbox/model-experience/confinement-error-indirectly:
   en: 35e1ea00601f4003
-  zh: 08152430b840ea05
+  zh: b40906988b44f88e
 /deepseek-ai-dsh-sandbox/model-experience/confinement-error-indirectly/what-the-model-sees:
   en: 15bcb0abf4a06983
-  zh: 801c506e47f8b063
+  zh: 2f93799c6ac1ccf9
 /deepseek-ai-dsh-sandbox/model-experience/confinement-error-indirectly/what-the-model-sees/exact-error:
   en: e8b03df128b832a6
-  zh: dc89500c436a39cf
+  zh: 8594ff4258ae5d37
 /deepseek-ai-dsh-sandbox/model-experience/confinement-error-indirectly/token-effect:
   en: 8f514efe94edfa8a
-  zh: a46f9f4cd4527f4e
+  zh: a8213cc943531f11
 /deepseek-ai-dsh-sandbox/model-experience/confinement-error-indirectly/kv-cache-effect:
   en: 2fbf2175168e8244
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-sandbox/model-experience/escalation-request-and-outcome:
   en: 67c621ef55ec8320
-  zh: ae4bb9162a49e9fb
+  zh: b39d16d998f91474
 /deepseek-ai-dsh-sandbox/model-experience/escalation-request-and-outcome/what-the-model-sees:
   en: c20128fa8f79c491
-  zh: 96173408d176b9e6
+  zh: defa58142a72aea5
 /deepseek-ai-dsh-sandbox/model-experience/escalation-request-and-outcome/token-effect:
   en: 1a7b54d68b045beb
-  zh: 5dc6e824110c8fd8
+  zh: 88e4fa347fecd7ca
 /deepseek-ai-dsh-sandbox/model-experience/escalation-request-and-outcome/kv-cache-effect:
   en: ea21ed3a768ed4b8
-  zh: 8e2f396a6875420e
+  zh: 10f5c57dfa8700af
 /deepseek-ai-dsh-sandbox/known-limitations-and-deferred-work:
   en: 63ff67b6fd13b4b0
-  zh: 6c8efa9ee99ea9bf
+  zh: fe3f1f0a0a60871f
 /deepseek-ai-dsh-sandbox/known-limitations-and-deferred-work/dev-note:
   en: cc273320f6a1beaf
-  zh: 5c57a312ddc50651
+  zh: d0b9653f2c274b52
 /deepseek-ai-dsh-sandbox/known-limitations-and-deferred-work/dev-note/future-consumers-and-environments:
   en: a7bc10cf027a51b8
-  zh: 2562dd32d3859205
+  zh: 873a950898265390

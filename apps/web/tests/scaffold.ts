@@ -116,9 +116,9 @@ export const WELCOME_NOTICE_ACK_FIELD = 'welcomeNoticeVersion'
 export const WELCOME_NOTICE_VERSION = '2026-08-13.1'
 export const WELCOME_NOTICE_COPY = {
   zh: {
-    title: '内测声明',
-    body: 'DeepSeek Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 DeepSeek Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。\n\n我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 DSH 插件生态。',
-    continueLabel: '继续',
+    title: '內測宣告',
+    body: 'DeepSeek Harness 目前的 0.1 版本仍處在面向 Harness 開發者進行測試的階段，還有許多地方需要持續改進和打磨，希望聽取廣大開發者的回饋建議。預計 DeepSeek Harness 的核心外掛以及基礎 API 都會在接下來的一段時間內快速迭代、持續演化。\n\n我們期待與全球開發者一起，在開源、開放、可複用、可組合的基礎設施之上，共同探索智慧上限。歡迎全球 Harness 開發者加入 DSH 外掛生態。',
+    continueLabel: '繼續',
   },
 } as const
 
@@ -1545,7 +1545,7 @@ export async function readPersistedEvents(scaffold: WebScaffold, id: SessionId):
  * closing quote, where the bucket is always last.
  */
 const ARIA_AGE =
-  /(?:now|\d+min|\d+h|\d+d|\d+mo|\d+y|刚刚|\d+分钟|\d+小时|\d+天|\d+个月|\d+年)(?=")/g
+  /(?:now|\d+min|\d+h|\d+d|\d+mo|\d+y|剛剛|\d+分鐘|\d+小時|\d+天|\d+個月|\d+年)(?=")/g
 
 function normalizeAria(snapshot: string, workspaceCwd: string, age: boolean): string {
   // The session heading renders the workspace's basename, not the full
@@ -1563,8 +1563,8 @@ function normalizeAria(snapshot: string, workspaceCwd: string, age: boolean): st
     )
     .replace(/\b\d[\d,]*(?:\.\d+)? ms\b/g, '{{duration}}')
     .replace(
-      /约\d+(?:年(?:\d+个月)?|个月(?:\d+天)?)|\d+(?:天(?:\d+小时(?:\d+分\d+秒)?)?|小时\d+分\d+秒|分\d+秒|(?:\.\d+)?秒)/g,
-      duration => duration.startsWith('约') ? duration : '{{duration}}',
+      /約\d+(?:年(?:\d+個月)?|個月(?:\d+天)?)|\d+(?:天(?:\d+小時(?:\d+分\d+秒)?)?|小時\d+分\d+秒|分\d+秒|(?:\.\d+)?秒)/g,
+      duration => duration.startsWith('約') ? duration : '{{duration}}',
     )
     .replace(/\d+(?:\.\d+)?(?= tok\/s(?!\w))/g, '{{throughput}}')
     // Seeded compaction prices realized file paths, whose length differs

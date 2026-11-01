@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/api/settings-controller/README.md
 /:
   en: a3cc85cfbefc88fe
-  zh: 67550210b403fe0d
+  zh: 5eac58cdf971949c
 /settings-controller:
   en: 7fecb4d8800e8f97
   zh: 3e2c3fdb29b73cd0
 /settings-controller/summary:
   en: e5068267079e62d0
-  zh: 9e2d663a6ca02c58
+  zh: 8446cf47bbc931aa
 /settings-controller/table-of-contents:
   en: 3a654e12f423946b
-  zh: 4e3a19aaee58f8a7
+  zh: ebf4255b92223878
 /settings-controller/use-this-package:
   en: cf2f4de5bee8be55
-  zh: b2630dcba4be5ae8
+  zh: 9fa16b24142b52a3
 /settings-controller/configuration:
   en: e0297f144b649af7
-  zh: e70ed56edffd97f0
+  zh: be1fe2a6b3c30760
 /settings-controller/model-experience:
   en: 78e9a59c64ef808a
-  zh: 48b8b611da537891
+  zh: 7d08684eaf499bb3
 /settings-controller/model-experience/kv-cache-effect:
   en: 740c7814748fc2d1
-  zh: 0cff374d4e5272ff
+  zh: 70c1411f1eb29f7a
 /settings-controller/known-limitations-and-deferred-work:
   en: a7475fd8aedf0830
-  zh: add1adce9d320baa
+  zh: 3b907b099dc732b1
 /settings-controller/known-limitations-and-deferred-work/dev-note:
   en: b684658b106c5d16
-  zh: 1ba652cf16d8418b
+  zh: f4b4d71d6fa193bd

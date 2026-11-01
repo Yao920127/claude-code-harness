@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-18-declarative-agent-presets.md
 /agent-note-declarative-agent-presets-and-retained-revisions:
   en: 0a9b9ab7a29ddce9
-  zh: 10893a464cde0f97
+  zh: 90ae2e75c7eb2345
 /agent-note-declarative-agent-presets-and-retained-revisions/problem:
   en: 725f773bb350218e
-  zh: dd8fbc09ef48208d
+  zh: a843f31f26ccd335
 /agent-note-declarative-agent-presets-and-retained-revisions/decision:
   en: 2a2489303fc76fc0
-  zh: 1a760e9a5edfccc8
+  zh: bd2e53ecd405e1fe
 /agent-note-declarative-agent-presets-and-retained-revisions/alternatives-considered:
   en: 09f40eab4659e9f6
-  zh: 7a70da0d0ae6845b
+  zh: 764df0db393d767b
 /agent-note-declarative-agent-presets-and-retained-revisions/consequences:
   en: 24179c31261b0942
-  zh: 651c61bb5e53fd78
+  zh: 99354e70c21ce429
 /agent-note-declarative-agent-presets-and-retained-revisions/testing:
   en: d1a38a45212d4ebd
-  zh: 6ca7a86078515284
+  zh: f9b7ae58583cd228

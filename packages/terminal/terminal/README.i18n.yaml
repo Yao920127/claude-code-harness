@@ -4,76 +4,76 @@
 #   pnpm run verify-translation-pairing --write packages/terminal/terminal/README.md
 /:
   en: 3d90ab1819787962
-  zh: d5279e899341168a
+  zh: a02f69fcf4b74cb2
 /deepseek-ai-dsh-terminal:
   en: 51faab4a45b4d0a3
   zh: c026cbe279584a55
 /deepseek-ai-dsh-terminal/summary:
   en: b275cca5aa0ccbd6
-  zh: 0452420c4b45c7db
+  zh: 05cf316c83d8ca85
 /deepseek-ai-dsh-terminal/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-terminal/use-this-package:
   en: 51bfe428d2b44ee2
-  zh: 557154468269985e
+  zh: 55c28e7b14b11b47
 /deepseek-ai-dsh-terminal/use-this-package/when-to-choose-it:
   en: c4244a1757ca3584
-  zh: b6fb10e30146b347
+  zh: e2120a81ea3b6948
 /deepseek-ai-dsh-terminal/use-this-package/composition:
   en: c6562461d8c66517
-  zh: 8bab392367901144
+  zh: 966fcb69ba780c35
 /deepseek-ai-dsh-terminal/use-this-package/what-sessions-give-you:
   en: 6527302f4ad84cbb
-  zh: 8edc988f1d0a3cee
+  zh: cee9f1dfe6efaf0c
 /deepseek-ai-dsh-terminal/use-this-package/ownership-and-isolation:
   en: 47820d85ea37cb36
-  zh: 857686d08af67fcb
+  zh: 2ce60aab2b6a5220
 /deepseek-ai-dsh-terminal/use-this-package/observable-outcomes-and-failures:
   en: 4fcedb18b5e8d5f2
-  zh: d72bb1a45e45cfff
+  zh: 38749f4628e97146
 /deepseek-ai-dsh-terminal/understand-the-implementation:
   en: 0d0669b98b14a3dd
-  zh: 57416c205270e4e1
+  zh: 5641afecc9a3789c
 /deepseek-ai-dsh-terminal/understand-the-implementation/design-concept:
   en: 6bae42fb7275816f
-  zh: 5f75e1b26074108c
+  zh: c94ad7bf95d85176
 /deepseek-ai-dsh-terminal/understand-the-implementation/source-map:
   en: a958f52bab5cf58d
-  zh: 5ae1e96dc2a5a09c
+  zh: fae2f698cc5481b6
 /deepseek-ai-dsh-terminal/understand-the-implementation/data-model-and-lifecycle:
   en: a2adfa2708882e19
-  zh: 002f257fd8c4addb
+  zh: 3b07e0a35b2c0a11
 /deepseek-ai-dsh-terminal/understand-the-implementation/ownership-and-cleanup-rules:
   en: 7af36e58919e41d5
-  zh: 4fe7b4db1099bcbf
+  zh: 1830d2e0b8850b34
 /deepseek-ai-dsh-terminal/understand-the-implementation/send-reservation:
   en: 5815723cd0c6089c
-  zh: 0c612ffa4b8c466c
+  zh: 1c8be8725adabb33
 /deepseek-ai-dsh-terminal/further-exploration:
   en: 0e744f900665e8ad
-  zh: bd7b20a82fad207e
+  zh: a7581c066e6ca260
 /deepseek-ai-dsh-terminal/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-terminal/model-experience/indirect-consumer:
   en: a601a3c4f5b848cd
-  zh: ec617f79f706aaa1
+  zh: a0472a624f0e24cf
 /deepseek-ai-dsh-terminal/model-experience/indirect-consumer/what-the-model-sees:
   en: be5049f4851a1b2a
-  zh: 056ddf9f9f1fc112
+  zh: 75ac9107e7298a49
 /deepseek-ai-dsh-terminal/model-experience/indirect-consumer/token-effect:
   en: 477da21b0a5be3a6
-  zh: 3ae1d37fe671ef96
+  zh: ea1619a83055c8cc
 /deepseek-ai-dsh-terminal/model-experience/indirect-consumer/kv-cache-effect:
   en: 2d1f12c1eb4164e5
-  zh: 7d22b2cd3f9649ff
+  zh: bac115396777a2f0
 /deepseek-ai-dsh-terminal/known-limitations-and-deferred-work:
   en: a133ebc47a4df34f
-  zh: 9bb949487ee566d5
+  zh: 07a4eddb45d3e5d4
 /deepseek-ai-dsh-terminal/known-limitations-and-deferred-work/dev-note:
   en: 112f870e68bd1ff3
-  zh: 693f37bbd32497a0
+  zh: f9c630f52466fc32
 /deepseek-ai-dsh-terminal/known-limitations-and-deferred-work/dev-note/undecided-directions:
   en: 3c5203a9c40a38ef
-  zh: a7660ca08bd0d279
+  zh: bbed8090f31cba1b

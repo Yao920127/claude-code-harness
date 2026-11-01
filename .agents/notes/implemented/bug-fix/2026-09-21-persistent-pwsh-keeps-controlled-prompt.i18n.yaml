@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-21-persistent-pwsh-keeps-controlled-prompt.md
 /agent-note-persistent-pwsh-keeps-the-backend-s-controlled-prompt:
   en: 78c6e7e3340581dc
-  zh: 64e16ab608caa610
+  zh: 294eb09d4327aa9d
 /agent-note-persistent-pwsh-keeps-the-backend-s-controlled-prompt/problem:
   en: 0cd51c293e96d9eb
-  zh: 6eb89ee3f1b7a851
+  zh: b9dd52634d3bd7ac
 /agent-note-persistent-pwsh-keeps-the-backend-s-controlled-prompt/decision:
   en: edd5cbb51ddad62f
-  zh: d7c41f09a9453992
+  zh: 42abe67d6b2e7afb
 /agent-note-persistent-pwsh-keeps-the-backend-s-controlled-prompt/alternatives-considered:
   en: a3920fa51dd5ac79
-  zh: 29c3f8364f64115e
+  zh: 39a930d72d106693
 /agent-note-persistent-pwsh-keeps-the-backend-s-controlled-prompt/consequences:
   en: d43b72fb5aa0c6da
-  zh: c4c9a27d5c7c6338
+  zh: 36f4c34abbbc76d3

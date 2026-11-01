@@ -1,10 +1,10 @@
-# 工具编写参考
+# 工具編寫參考
 
 [English](adding-a-tool.md) | 中文
 
-面向模型的工具必须满足哪些约定，均以本文为准。如需按步骤构建第一个工具，请阅读[构建工具](../user/develop/basic/tool.zh.md)。`packages/shell/tool-bash` 是生产级的三包示例。
+面向模型的工具必須滿足哪些約定，均以本文為準。如需按步驟建置第一個工具，請閱讀[建置工具](../user/develop/basic/tool.zh.md)。`packages/shell/tool-bash` 是生產級的三包範例。
 
-## 最小形态
+## 最小形態
 
 ```ts
 import { readFile } from 'node:fs/promises'
@@ -35,69 +35,69 @@ export function apply(ctx: Context) {
 }
 ```
 
-注册基于副作用：dispose（资源释放）插件 fiber 即注销该工具。schema 会自动流入系统提示词的组装过程。
+註冊基於副作用：dispose（資源釋放）外掛 fiber 即登出該工具。schema 會自動流入系統提示詞的組裝過程。
 
-## execute() 约定的规则
+## execute() 約定的規則
 
-- **参数已为你校验。** `defineTool` 在 `execute` 运行前，会根据统一的 `ParameterSchemaSpec` 校验模型生成的 `arguments`（类型、必填键、字面量约束、恰好匹配一个分支的联合以及嵌套值），因此 `execute` 内的 args 会匹配 `InferArgs`。显式对象节点必须声明 `additionalProperties: true | false`；隐式参数根对象保持开放。你仍需手动检查 schema DSL 无法表达的约束，例如非空字符串、正数或跨字段规则。直接注册的原始 JSON Schema 工具自行负责输入校验。
-- **注册借用你的只读定义。** 类型化的同进程贡献不是序列化边界；注册后不要修改其 schema 或替换回调。`schemas()` 只物化显式的模型可见投影。如需热替换工具，请 dispose 其所属副作用并注册替代品；回调闭包内的可变状态仍是普通的插件状态。
-- **执行身份受保护。** 注册表在一次递归遍历中将 `arguments` 物化为分离的无损 JSON，在策略开始前冻结该值，并分配一个不透明的 `exec.token`；`callId`、`name`、`arguments`、`agent`、`token`、必填且由调用方持有的 `signal`，以及可选的外层传输 `parent` token 在整个分发过程中保持不可变。`parent` 仅用于身份标识，不暴露活跃的外层执行。请将 `args` 视为只读输入。只有 around-dispatch 包装器会收到可变视图；它可以替换并恢复必填的 `exec.signal` 以施加截止时间，但不能移除该信号。
-- **声明并返回一个规范 JSON 值。** `output.schema` 使用 `ValueSchemaSpec`，根可以是对象、数组、标量或 null。`execute` 只返回推导出的值；注册表将其快照为无损 JSON，完成校验和冻结后，再传给 `output.render(args, value)`。工具主体不要返回内容块，也不要迫使调用方从自然语言中解析 id 和字段。
-- **抛出异常或返回无效值意味着 `isError`。** 注册表会捕获异常，并在观察者运行前收敛 schema、渲染器、元数据投影器和无损 JSON 失败。基础设施故障请抛异常。成功的领域结果即使表示不理想的状态，也应写入规范值；其 Native 渲染器可以解释该状态，例如进程以非零状态退出。
-- **遵守 `exec.signal`。** 信号触发时取消进行中的工作。
-- **使用 `presentationMeta` 投影持久化的卡片数据（可选）。** `output.presentationMeta(args, value)` 从同一个规范值派生可回放的 JSON。核心将其持久化在 `tool/result` 上并传给 `presentResult`，因此需要结果期事实的卡片——例如 `write`／`edit` 的已应用 hunk——无需持久化规范值也能在回放中重现。嵌套 Code 分发没有卡片，因此会跳过该投影器。
-- **使用 `exec.agent` 发送异步通知。** `agent.inject({ content, source: { kind: 'plugin', plugin: '<name>' } })` 追加持久化上下文，下一次模型请求会看到它——这不是唤醒（空闲的 agent（智能体）保持空闲）。请防范已 dispose 的 agent（try/catch）。
+- **參數已為你驗證。** `defineTool` 在 `execute` 執行前，會根據統一的 `ParameterSchemaSpec` 驗證模型生成的 `arguments`（型別、必填鍵、字面量約束、恰好匹配一個分支的聯合以及巢狀值），因此 `execute` 內的 args 會匹配 `InferArgs`。顯式物件節點必須宣告 `additionalProperties: true | false`；隱式參數根物件保持開放。你仍需手動檢查 schema DSL 無法表達的約束，例如非空字串、正數或跨欄位規則。直接註冊的原始 JSON Schema 工具自行負責輸入驗證。
+- **註冊借用你的只讀定義。** 型別化的同程序貢獻不是序列化邊界；註冊後不要修改其 schema 或替換回呼。`schemas()` 只物化顯式的模型可見投影。如需熱替換工具，請 dispose 其所屬副作用並註冊替代品；回呼閉包內的可變狀態仍是普通的外掛狀態。
+- **執行身份受保護。** 註冊表在一次遞迴遍歷中將 `arguments` 物化為分離的無損 JSON，在策略開始前凍結該值，並分配一個不透明的 `exec.token`；`callId`、`name`、`arguments`、`agent`、`token`、必填且由呼叫方持有的 `signal`，以及可選的外層傳輸 `parent` token 在整個分發過程中保持不可變。`parent` 僅用於身份標識，不暴露活躍的外層執行。請將 `args` 視為只讀輸入。只有 around-dispatch 包裝器會收到可變檢視；它可以替換並恢復必填的 `exec.signal` 以施加截止時間，但不能移除該訊號。
+- **宣告並返回一個規範 JSON 值。** `output.schema` 使用 `ValueSchemaSpec`，根可以是物件、陣列、標量或 null。`execute` 只返回推匯出的值；註冊表將其快照為無損 JSON，完成總和檢查碼凍結後，再傳給 `output.render(args, value)`。工具主體不要返回內容塊，也不要迫使呼叫方從自然語言中解析 id 和欄位。
+- **丟擲異常或返回無效值意味著 `isError`。** 註冊表會捕捉異常，並在觀察者執行前收斂 schema、渲染器、中繼資料投影器和無損 JSON 失敗。基礎設施故障請拋異常。成功的領域結果即使表示不理想的狀態，也應寫入規範值；其 Native 渲染器可以解釋該狀態，例如程序以非零狀態退出。
+- **遵守 `exec.signal`。** 訊號觸發時取消進行中的工作。
+- **使用 `presentationMeta` 投影持久化的卡片資料（可選）。** `output.presentationMeta(args, value)` 從同一個規範值派生可回放的 JSON。核心將其持久化在 `tool/result` 上並傳給 `presentResult`，因此需要結果期事實的卡片——例如 `write`／`edit` 的已應用 hunk——無需持久化規範值也能在回放中重現。巢狀 Code 分發沒有卡片，因此會跳過該投影器。
+- **使用 `exec.agent` 傳送非同步通知。** `agent.inject({ content, source: { kind: 'plugin', plugin: '<name>' } })` 追加持久化上下文，下一次模型請求會看到它——這不是喚醒（空閒的 agent（智慧代理）保持空閒）。請防範已 dispose 的 agent（try/catch）。
 
-## 长时间运行的工作
+## 長時間執行的工作
 
-通过 producer 配置控制 `run_in_background`，然后使用 `ctx.jobs.start({ kind, label, owner: exec.agent, run })` 注册任务。注册表会在进入 producer 主体前将已预先中止的调用判为失败；运行时会在 `run()` 启动工作前校验 owner 和任务控制器是否可用，随后提供 id、会话围栏、通用控制工具、通知和 owner cleanup。成功的后台分支会返回类型化的规范句柄，如 `{ kind: 'background', jobId }`；其 Native 渲染器可以保留 `started background job bash-1` 这类供人阅读的自然语言，但 PTC mode 绝不能通过解析该文本取得 id。
+透過 producer 設定控制 `run_in_background`，然後使用 `ctx.jobs.start({ kind, label, owner: exec.agent, run })` 註冊任務。註冊表會在進入 producer 主體前將已預先中止的呼叫判為失敗；執行時會在 `run()` 啟動工作前驗證 owner 和任務控制器是否可用，隨後提供 id、工作階段圍欄、通用控制工具、通知和 owner cleanup。成功的後臺分支會返回型別化的規範控制代碼，如 `{ kind: 'background', jobId }`；其 Native 渲染器可以保留 `started background job bash-1` 這類供人閱讀的自然語言，但 PTC mode 絕不能透過解析該文字取得 id。
 
-spec 提供同步的 `cancel`、在资源清理后 settle 且不 reject 的 `done`，以及由注册表泵入 job 输出环的拉取式 `output` 源或经 starter 收到的 `JobHandle` 推送的追加；模型的消费式读取由 `dsh-tool-jobs` 从该环渲染。预先中止的调用属于失败，因为此时没有任务，其 id 无法满足成功输出 schema。`ctx.jobs.start()` 发布 id 后，应使用任务自有的取消信号，而不是 `exec.signal`：之后取消外层调用只会停止等待本次调用，不会终止已经发布的工作；该生命周期归 `job_kill`、owner dispose 和服务 teardown 所有。前台工作仍与 `exec.signal` 耦合。流式 producer 的示例和完整约定见[后台任务运行时 Agent Note](../../.agents/notes/implemented/architecture/2026-06-20-generic-long-running-tool-runtime.zh.md)与 `dsh-tool-bash`。
+spec 提供同步的 `cancel`、在資源清理後 settle 且不 reject 的 `done`，以及由註冊表泵入 job 輸出環的拉取式 `output` 源或經 starter 收到的 `JobHandle` 推送的追加；模型的消費式讀取由 `dsh-tool-jobs` 從該環渲染。預先中止的呼叫屬於失敗，因為此時沒有任務，其 id 無法滿足成功輸出 schema。`ctx.jobs.start()` 釋出 id 後，應使用任務自有的取消訊號，而不是 `exec.signal`：之後取消外層呼叫只會停止等待本次呼叫，不會終止已經發布的工作；該生命週期歸 `job_kill`、owner dispose 和服務 teardown 所有。前臺工作仍與 `exec.signal` 耦合。流式 producer 的範例和完整約定見[後臺任務執行時 Agent Note](../../.agents/notes/implemented/architecture/2026-06-20-generic-long-running-tool-runtime.zh.md)與 `dsh-tool-bash`。
 
 <a id="execution-policy-and-observation"></a>
 
-## 执行策略与观测
+## 執行策略與觀測
 
-尽量不要把部署策略内建到工具中。使用 `tools/pre-execute` 实现可扩展的允许／拒绝／询问策略（见[权限门禁示例](extension-cookbook.zh.md#a-hook-plugin-permission-gate-example)）；使用 `ctx.tools.guard()` 设置最终的单调拒绝，后续监听器无法撤销；使用 `tools/execute` 为分发添加截止时间、重试或指标收集；使用 `tools/post-execute` 替换展示内容或返回值、阻止结果，或附加模型可见上下文；使用 `tools/result` 观测不可变的归一化结果而不改变它。替换内容不会阻止程序化访问 `value`；保密策略会屏蔽或替换该值。沙箱实现也可以在工具的执行器实现中运行；[`dsh-tools` README](../../packages/core/tools/README.zh.md#extension-points) 定义每个扩展点的输入、顺序、返回值和失败行为。
+儘量不要把部署策略內建到工具中。使用 `tools/pre-execute` 實作可擴充功能的允許／拒絕／詢問策略（見[權限門禁範例](extension-cookbook.zh.md#a-hook-plugin-permission-gate-example)）；使用 `ctx.tools.guard()` 設定最終的單調拒絕，後續監聽器無法撤銷；使用 `tools/execute` 為分發新增截止時間、重試或指標收集；使用 `tools/post-execute` 替換展示內容或回傳值、阻止結果，或附加模型可見上下文；使用 `tools/result` 觀測不可變的歸一化結果而不改變它。替換內容不會阻止程式化存取 `value`；保密策略會遮蔽或替換該值。沙箱實作也可以在工具的執行器實作中執行；[`dsh-tools` README](../../packages/core/tools/README.zh.md#extension-points) 定義每個擴充功能點的輸入、順序、回傳值和失敗行為。
 
-## PTC mode 自动触达你的工具
+## PTC mode 自動觸達你的工具
 
-在 [PTC mode](../../packages/core/tools/README.zh.md) 中，每个可见的已注册工具都可通过 `await tools.<name>(args)` 调用，无需额外集成。生成的 `ToolArgsMap` 和 `ToolOutputMap` 会根据同一组 schema 分别派生精确的参数类型与规范返回类型，调用则重新进入正常的执行流水线。成功调用会解析为策略处理后的最终规范 JSON 值，而不是渲染后的 Native 内容。失败调用会以真正的 `ToolCallError` reject；程序只能检查其 `name`、`toolName` 和可供人阅读的 `message`，无法取得内部错误代码或失败联合。
+在 [PTC mode](../../packages/core/tools/README.zh.md) 中，每個可見的已註冊工具都可透過 `await tools.<name>(args)` 呼叫，無需額外整合。生成的 `ToolArgsMap` 和 `ToolOutputMap` 會根據同一組 schema 分別派生精確的參數型別與規範返回型別，呼叫則重新進入正常的執行流水線。成功呼叫會解析為策略處理後的最終規範 JSON 值，而不是渲染後的 Native 內容。失敗呼叫會以真正的 `ToolCallError` reject；程式只能檢查其 `name`、`toolName` 和可供人閱讀的 `message`，無法取得內部錯誤程式碼或失敗聯合。
 
-请把 `output.schema` 设计为实用的程序化 API：直接返回句柄与字段；当标量、数组或 null 确实就是结果时，允许采用相应的根类型；将面向人类的解释放入 `output.render`。中间值只存在于执行期间，不会被持久化或按提示词上限截断，也不设字节上限，因此生产方如实声明的采集边界和进程内存仍然重要。只有外层 `run_code` 日志／结果会受到可配置输出上限和面向模型的 spill 流水线约束。
+請把 `output.schema` 設計為實用的程式化 API：直接返回控制代碼與欄位；當標量、陣列或 null 確實就是結果時，允許採用相應的根型別；將面向人類的解釋放入 `output.render`。中間值只存在於執行期間，不會被持久化或按提示詞上限截斷，也不設位元組上限，因此生產方如實宣告的採集邊界和程序記憶體仍然重要。只有外層 `run_code` 日誌／結果會受到可設定輸出上限和麵向模型的 spill 流水線約束。
 
 ## 工具在 UI 中的渲染方式
 
-工具的 `output.render` 返回模型可见的内容；其 **UI 卡片** 是另一项独立关注点，通过纯展示投影以及可选的 `presentCall`／`presentResult` 方法声明。请将这些内容与规范值一并设计。没有 UI 展示方法的工具会回退到通用卡片（标题 = 工具名，原始 args 作为输入）。
+工具的 `output.render` 返回模型可見的內容；其 **UI 卡片** 是另一項獨立關注點，透過純展示投影以及可選的 `presentCall`／`presentResult` 方法宣告。請將這些內容與規範值一併設計。沒有 UI 展示方法的工具會退回到通用卡片（標題 = 工具名，原始 args 作為輸入）。
 
-两个方法都返回一个 **`card` 标签的渲染意图**——选择与你的工具行为匹配的卡片类型：
+兩個方法都返回一個 **`card` 標籤的渲染意圖**——選擇與你的工具行為匹配的卡片型別：
 
-- `presentCall(args)` → 一个 `ToolCallView`（PENDING 卡片）：
-  - `{ card: 'generic', title, kind?, rawInput?, content?, locations? }`——默认。设置 `kind` 获取图标（`read`／`search`／…）；设置 `locations: [{ path, line? }]` 标注工具涉及的文件，使有能力的编辑器跟随／跳转。
-  - `{ card: 'terminal', title, description?, cwd? }`——你的调用本身就是 shell 命令。`title` 是命令，`description` 渲染在终端卡片上方。（tool-bash。）
-  - `{ card: 'diff', title, diffs, locations? }`——你的调用创建或修改文件。`diffs: [{ path, oldText, newText }]`（新文件时 `oldText: null`）渲染为内联 diff 卡片。（tool-fs `write`／`edit`。）
-- `presentResult(args, { content, isError, meta? })` 返回完成后的卡片：
-  - `generic` 提供可选的标题和内容。
-  - `terminal` 提供原始输出和可选的退出元数据；各 UI 根据自身能力渲染对应视图或回退视图。
-  - `diff` 提供已应用的 hunk，通常由 `output.presentationMeta` 派生并通过持久化的 `result.meta` 携带，使回放能重现它们。变更类工具保留 diff 结果，因为完成后的视图会替换 pending 卡片。
-  - `read` 提供从持久化 `result.meta` 重建的已完成文件窗口：文件 `path`、从 1 开始的 `offset`、返回的 `lines`（每行保留其文件行号）、`totalLines`，以及可选的 `lang` 高亮提示；不具备 `read` 能力的 UI 回退到原始结果内容。没有 `read` 调用视图——读取调用的 pending 状态保持为 generic 卡片，因为内容只在 `execute` 之后才存在。（tool-fs `read`。）
-  - `search` 提供从持久化 `result.meta` 重建的发现型结果：按文件分组的匹配（`shape: 'matches'`，grep）或扁平路径列表（`shape: 'paths'`，glob），外加 `truncated`／`total` 使 UI 永不把被截断的结果当作完整结果呈现。该视图不携带结果文本（无 search 卡片的 UI 回退到原始结果内容），也没有 `search` 调用视图——发现型调用的 pending 状态保持为 generic 卡片，因为匹配只在 `execute` 之后才存在。（tool-fs-search 的 `grep`／`glob`。）
-  - `web` 提供已完成的 web 检索，以 `kind: 'search' | 'fetch'` 区分（结构化的搜索来源或抓取摘要），由 `result.meta` 派生；它不携带正文副本，因此不具备 `web` 能力的 UI 回退到原始结果内容。（tool-web `web_search`／`web_fetch`。）
+- `presentCall(args)` → 一個 `ToolCallView`（PENDING 卡片）：
+  - `{ card: 'generic', title, kind?, rawInput?, content?, locations? }`——預設。設定 `kind` 取得圖示（`read`／`search`／…）；設定 `locations: [{ path, line? }]` 標註工具涉及的檔案，使有能力的編輯器跟隨／跳轉。
+  - `{ card: 'terminal', title, description?, cwd? }`——你的呼叫本身就是 shell 命令。`title` 是命令，`description` 渲染在終端卡片上方。（tool-bash。）
+  - `{ card: 'diff', title, diffs, locations? }`——你的呼叫建立或修改檔案。`diffs: [{ path, oldText, newText }]`（新檔案時 `oldText: null`）渲染為內聯 diff 卡片。（tool-fs `write`／`edit`。）
+- `presentResult(args, { content, isError, meta? })` 返回完成後的卡片：
+  - `generic` 提供可選的標題和內容。
+  - `terminal` 提供原始輸出和可選的退出中繼資料；各 UI 根據自身能力渲染對應檢視或退回檢視。
+  - `diff` 提供已應用的 hunk，通常由 `output.presentationMeta` 派生並透過持久化的 `result.meta` 攜帶，使回放能重現它們。變更類工具保留 diff 結果，因為完成後的檢視會替換 pending 卡片。
+  - `read` 提供從持久化 `result.meta` 重建的已完成檔案視窗：檔案 `path`、從 1 開始的 `offset`、返回的 `lines`（每行保留其檔案行號）、`totalLines`，以及可選的 `lang` 高亮提示；不具備 `read` 能力的 UI 退回到原始結果內容。沒有 `read` 呼叫檢視——讀取呼叫的 pending 狀態保持為 generic 卡片，因為內容只在 `execute` 之後才存在。（tool-fs `read`。）
+  - `search` 提供從持久化 `result.meta` 重建的發現型結果：按檔案分組的匹配（`shape: 'matches'`，grep）或扁平路徑列表（`shape: 'paths'`，glob），外加 `truncated`／`total` 使 UI 永不把被截斷的結果當作完整結果呈現。該檢視不攜帶結果文字（無 search 卡片的 UI 退回到原始結果內容），也沒有 `search` 呼叫檢視——發現型呼叫的 pending 狀態保持為 generic 卡片，因為匹配只在 `execute` 之後才存在。（tool-fs-search 的 `grep`／`glob`。）
+  - `web` 提供已完成的 web 檢索，以 `kind: 'search' | 'fetch'` 區分（結構化的搜尋來源或抓取摘要），由 `result.meta` 派生；它不攜帶正文副本，因此不具備 `web` 能力的 UI 退回到原始結果內容。（tool-web `web_search`／`web_fetch`。）
 
-硬性规则（违反会出问题）：
+硬性規則（違反會出問題）：
 
-- **纯函数。** 这些方法在实时流式输出和会话日志回放时都会运行，因此必须是 `args`（加 result）的纯函数——不做 I/O、不读会话状态、不用时钟／随机数。diff 从 args 派生（`write` 使用 `oldText: null`，因为调用时的展示器没有文件先前内容）；会话上下文由 UI 适配器而非工具提供。如果你发现自己想在 `presentCall` 内获取文件旧内容或工作目录，请停下：那属于持久结果元数据或适配器，不属于展示器。
-- **UI 格式不进入模型结果。** 围栏 ` ```console ` 块、diff、相对化路径均不应仅为服务 UI 而进入规范值或 Native 内容。`output.render` 负责模型可见的自然语言；`presentationMeta` 和卡片展示器负责可回放的 UI 状态。`terminal` 结果视图携带原始输出，由适配器按需添加回退格式。
-- **`defineTool` 对展示路径做软校验。** 格式错误或旧版日志中的参数会使包装器返回 `undefined`（通用回退）而非抛异常——展示绝不能导致回放崩溃。
+- **純函式。** 這些方法在即時流式輸出和工作階段日誌回放時都會執行，因此必須是 `args`（加 result）的純函式——不做 I/O、不讀工作階段狀態、不用時鐘／隨機數。diff 從 args 派生（`write` 使用 `oldText: null`，因為呼叫時的展示器沒有檔案先前內容）；工作階段上下文由 UI 介面卡而非工具提供。如果你發現自己想在 `presentCall` 內取得檔案舊內容或工作目錄，請停下：那屬於持久結果中繼資料或介面卡，不屬於展示器。
+- **UI 格式不進入模型結果。** 圍欄 ` ```console ` 塊、diff、相對化路徑均不應僅為服務 UI 而進入規範值或 Native 內容。`output.render` 負責模型可見的自然語言；`presentationMeta` 和卡片展示器負責可回放的 UI 狀態。`terminal` 結果檢視攜帶原始輸出，由介面卡按需新增退回格式。
+- **`defineTool` 對展示路徑做軟驗證。** 格式錯誤或舊版日誌中的參數會使包裝器返回 `undefined`（通用退回）而非拋異常——展示絕不能導致回放崩潰。
 
-中性词汇定义在 `dsh-tools` 中；工具绝不导入 UI 或传输类型。使用该 API 的消费方把每个 `card` 映射到自己的视图。设计与原因见[渲染意图联合体 Agent Note](../../.agents/notes/implemented/architecture/2026-07-02-tool-render-intent-union.zh.md)；`dsh-tool-fs`（generic/diff）和 `dsh-tool-bash`（terminal）是参考实现。
+中性詞彙定義在 `dsh-tools` 中；工具絕不匯入 UI 或傳輸型別。使用該 API 的消費方把每個 `card` 對映到自己的檢視。設計與原因見[渲染意圖聯合體 Agent Note](../../.agents/notes/implemented/architecture/2026-07-02-tool-render-intent-union.zh.md)；`dsh-tool-fs`（generic/diff）和 `dsh-tool-bash`（terminal）是參考實作。
 
 ## Web Client 展示
 
-内置 Web Client 不消费 `presentCall` 或 `presentResult`。Session `page` 与 `follow` 运输原始 `tool/call` 和 `tool/result` 事件，包括持久化的 `result.meta`。Client 插件在 keyed slot `tool.call.toolview` 中注册自己的 wire 工具名称，并从 `ToolCallBlock` 的参数、内容、错误、metadata、现有 PTC dispatch `parentCallId` 与 Session 路径事实派生组件 props。插件在本地校验这些 wire 值，并让格式错误或不受支持的输入回退到 generic 行。
+內建 Web Client 不消費 `presentCall` 或 `presentResult`。Session `page` 與 `follow` 運輸原始 `tool/call` 和 `tool/result` 事件，包括持久化的 `result.meta`。Client 外掛在 keyed slot `tool.call.toolview` 中註冊自己的 wire 工具名稱，並從 `ToolCallBlock` 的參數、內容、錯誤、metadata、現有 PTC dispatch `parentCallId` 與 Session 路徑事實派生元件 props。外掛在本地驗證這些 wire 值，並讓格式錯誤或不受支援的輸入退回到 generic 行。
 
-现有 Web 卡片需要模型可见内容无法无损保存的有界结构化结果事实时，使用 `output.presentationMeta(args, value)`。不要在 metadata 中保存 React props 或预选卡片，不要把 Host 工具实现导入浏览器 bundle，也不要建立另一套 Client presenter registry。只定义 Host 展示方法不会增加专用 Web 卡片。[Client 派生展示 Agent Note](../../.agents/notes/implemented/architecture/2026-08-23-client-derived-tool-presentation.zh.md)规定 owner、fallback 与对等要求。
+現有 Web 卡片需要模型可見內容無法無損儲存的有界結構化結果事即時，使用 `output.presentationMeta(args, value)`。不要在 metadata 中儲存 React props 或預選卡片，不要把 Host 工具實作匯入瀏覽器 bundle，也不要建立另一套 Client presenter registry。只定義 Host 展示方法不會增加專用 Web 卡片。[Client 派生展示 Agent Note](../../.agents/notes/implemented/architecture/2026-08-23-client-derived-tool-presentation.zh.md)規定 owner、fallback 與對等要求。
 
-## 验证
+## 驗證
 
-遵循[仓库测试策略](../testing.zh.md)和所属包的测试文档。已交付且面向模型或 UI 的变更必须提供其中规定的组装覆盖。
+遵循[儲存庫測試策略](../testing.zh.md)和所屬包的測試文件。已交付且面向模型或 UI 的變更必須提供其中規定的組裝覆蓋。

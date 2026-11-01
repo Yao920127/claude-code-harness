@@ -1,5 +1,5 @@
 ---
-description: "CPython 子进程 PTC 运行时：为 Python 模型代码实现 dsh-ptc-runtime seam，及其使用的 fd-3 wire 协议。"
+description: "CPython 子程序 PTC 執行時：為 Python 模型程式碼實作 dsh-ptc-runtime seam，及其使用的 fd-3 wire 協定。"
 kind: "package-reference"
 ---
 
@@ -9,133 +9,133 @@ kind: "package-reference"
 
 ## 概述
 
-这个实验包可让显式组合在每次请求时都用全新的 CPython 3.10+ 子进程运行模型生成的 Python。程序可以使用顶层 `await` 和 `return`、调用已配置的 binding、正常写入 stdout/stderr，并获得明确的完成或失败结果。资源预算和进程组拆卸会约束失控的工作，但子进程不是安全边界：直接 Python 操作没有文件系统沙箱，运行之间不保留状态，且没有已发布 profile 启用此 runtime。
+這個實驗包可讓顯式組合在每次請求時都用全新的 CPython 3.10+ 子程序執行模型生成的 Python。程式可以使用頂層 `await` 和 `return`、呼叫已設定的 binding、正常寫入 stdout/stderr，並獲得明確的完成或失敗結果。資源預算和程序組拆卸會約束失控的工作，但子程序不是安全邊界：直接 Python 操作沒有檔案系統沙箱，執行之間不保留狀態，且沒有已釋出 profile 啟用此 runtime。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-仅在显式组合中选择这个已发布的实验包。将 `PythonPtcRuntime` 与 `dsh-tools` 一起注册后，`run(resolve(request))` 会在全新的 CPython 3.10+ 子进程中执行每个程序；成功时以 `result.value` resolve，失败时以 `result.error` resolve（正交的 `PtcRunFailure.kind` 分类涵盖解析失败、抛出异常、无效完成值、输出溢出、预算到期、中止与执行基底终止）。仅有 seam 误用会 reject——binding 命名空间不合法，或在 dispose 后调用。配置在加载期拒绝：非 Unix 平台；不是可执行普通文件的显式 `pythonBin`，或无法在 `PATH` 上解析的裸名；非 CPython、低于 3.10 或探测失败的解释器；非正或非整数预算；低于截断标记下限（64）的 `maxLogBytes`；会被 `setTimeout` 截断的定时器值；超过有效 fd-3 帧上限的预算（宿主堆无法安全解析接近上限的帧时，该上限会降低）；或最坏峰值会突破 `RLIMIT_AS` 的 `addressSpaceMb`／输出预算组合。
+僅在顯式組閤中選擇這個已釋出的實驗包。將 `PythonPtcRuntime` 與 `dsh-tools` 一起註冊後，`run(resolve(request))` 會在全新的 CPython 3.10+ 子程式中執行每個程式；成功時以 `result.value` resolve，失敗時以 `result.error` resolve（正交的 `PtcRunFailure.kind` 分類涵蓋解析失敗、丟擲異常、無效完成值、輸出溢位、預算到期、中止與執行基底終止）。僅有 seam 誤用會 reject——binding 名稱空間不合法，或在 dispose 後呼叫。設定在載入期拒絕：非 Unix 平臺；不是可執行普通檔案的顯式 `pythonBin`，或無法在 `PATH` 上解析的裸名；非 CPython、低於 3.10 或探測失敗的直譯器；非正或非整數預算；低於截斷標記下限（64）的 `maxLogBytes`；會被 `setTimeout` 截斷的定時器值；超過有效 fd-3 幀上限的預算（主機堆無法安全解析接近上限的幀時，該上限會降低）；或最壞峰值會突破 `RLIMIT_AS` 的 `addressSpaceMb`／輸出預算組合。
 
-`resolve(request)` 接受绝对 `cwd`，并使用提供方配置的 `maxWallMs` 截止时间（默认 600,000 ms）。显式 `timeoutMs` 覆盖与沙箱策略不受支持，会在执行前拒绝。本提供方不声明 `sandboxMode`，也不返回约束事实。
+`resolve(request)` 接受絕對 `cwd`，並使用提供者設定的 `maxWallMs` 截止時間（預設 600,000 ms）。顯式 `timeoutMs` 覆蓋與沙箱策略不受支援，會在執行前拒絕。本提供者不宣告 `sandboxMode`，也不返回約束事實。
 
-### 你得到什么
+### 你得到什麼
 
-包的默认导出是 `PythonPtcRuntime` 插件。其公开面还重新导出宿主侧协议词汇：`validateChildFrame`（重建每条入站帧）、无损 JSON codec 与计量器（`encodeJsonPlain`、`checkDoneValue`、`hasUnsafeIntegerToken`、`hasNonLosslessNumber`）、`logTruncationMarker`（共享截断标记文本），以及 `resolvePythonBin`（对照当前 `PATH` 的解释器查找）、`readProcessStart`（供测试用的进程启动统计）、`detachResidual`（已结算运行的资源清理测试 seam）与 `hostFrameParseCeiling`（给定堆上限可容纳的堆推导帧解析上限）。每个上限都是带默认值并经校验的 `Config` 字段：`cpuSeconds`（60）、`maxWallMs`（600000）、`addressSpaceMb`（512，Darwin 上不生效）、`maxLogBytes`（65536）、`maxValueBytes`（32768）、`graceMs`（3000）与 `pythonBin`（`python3`，在加载期解析、检查可执行性，在五秒强制终止期限内探测版本并固定）。每个子进程只接收 `TMPDIR`；环境中的凭证、`PATH`、`HOME` 与其他宿主状态均不可见。
+包的預設匯出是 `PythonPtcRuntime` 外掛。其公開面還重新匯出主機側協定詞彙：`validateChildFrame`（重建每條入站幀）、無損 JSON codec 與計量器（`encodeJsonPlain`、`checkDoneValue`、`hasUnsafeIntegerToken`、`hasNonLosslessNumber`）、`logTruncationMarker`（共享截斷標記文字），以及 `resolvePythonBin`（對照目前 `PATH` 的直譯器查詢）、`readProcessStart`（供測試用的程序啟動統計）、`detachResidual`（已結算執行的資源清理測試 seam）與 `hostFrameParseCeiling`（給定堆上限可容納的堆推導幀解析上限）。每個上限都是帶預設值並經驗證的 `Config` 欄位：`cpuSeconds`（60）、`maxWallMs`（600000）、`addressSpaceMb`（512，Darwin 上不生效）、`maxLogBytes`（65536）、`maxValueBytes`（32768）、`graceMs`（3000）與 `pythonBin`（`python3`，在載入期解析、檢查可執行性，在五秒強制終止期限內探測版本並固定）。每個子程序只接收 `TMPDIR`；環境中的憑證、`PATH`、`HOME` 與其他主機狀態均不可見。
 
 ### wire
 
-帧在子进程 fd 3 上以 JSON-lines 传输——每行一个对象——因此 stdout/stderr 留给程序自己的输出。子进程 → 宿主：`boot-ack`、`call`、`log`、`done`。宿主 → 子进程：`boot`（首帧，携带全部上限与命名空间声明）、`run`（`boot-ack` 之后，只携带程序体）与每个 `call` 一个 `reply`。伪造帧可在 `done` 上同时携带 `value` 与 `error`，因此消费方必须先检查 `error`，在它存在时忽略 `value`。`log` 帧的 `open` 标志标记由显式 flush 提交的未结束行：宿主把下一个 log 帧追加到同一条目，因此 `print('a', end='', flush=True); print('b')` 读回为一条 `'ab'` 条目而不是假换行（拆分计费算术见 fd-3 协议 Agent Note 的 wire-contract 一节）。合并的唯一例外是截断：当后续超预算帧触发账本时，已计费的前缀作为独立条目先提交，截断 marker 跟在后面（marker 保持末位，无重复计费）。
+幀在子程序 fd 3 上以 JSON-lines 傳輸——每行一個物件——因此 stdout/stderr 留給程式自己的輸出。子程序 → 主機：`boot-ack`、`call`、`log`、`done`。主機 → 子程序：`boot`（首幀，攜帶全部上限與名稱空間宣告）、`run`（`boot-ack` 之後，只攜帶程式體）與每個 `call` 一個 `reply`。偽造幀可在 `done` 上同時攜帶 `value` 與 `error`，因此消費方必須先檢查 `error`，在它存在時忽略 `value`。`log` 幀的 `open` 標誌標記由顯式 flush 提交的未結束行：主機把下一個 log 幀追加到同一條目，因此 `print('a', end='', flush=True); print('b')` 讀回為一條 `'ab'` 條目而不是假換行（拆分計費算術見 fd-3 協定 Agent Note 的 wire-contract 一節）。合併的唯一例外是截斷：當後續超預算幀觸發帳本時，已計費的字首作為獨立條目先提交，截斷 marker 跟在後面（marker 保持末位，無重複計費）。
 
-### 可能出错的地方
+### 可能出錯的地方
 
-宿主侧校验在不抛异常的情况下丢弃垃圾，因此畸形或伪造帧永远不会让宿主进程崩溃：`validateChildFrame` 对任何不能干净重建的内容返回 `undefined`，非数字的 call id 永远不会被回显进 reply，伪造的额外字段永远不会被带走。非无损 JSON 或超过配置字节预算的完成值会被显式拒绝（`non-lossless`／`over-budget`），而不是被静默取整或截断。原始长度超过有效帧解析上限（64 MiB，或当宿主的配置堆无法安全解析接近上限的帧时更低——见 `hostFrameParseCeiling`）的 fd-3 帧会让本次运行以 `worker-exit` 结算（接收路径在 `toString`/`JSON.parse` 之前限制原始帧，紧凑宽帧不能解码出远超其线上字节的宿主内存）。
+主機側驗證在不拋異常的情況下丟棄垃圾，因此畸形或偽造幀永遠不會讓主機程序崩潰：`validateChildFrame` 對任何不能幹淨重建的內容返回 `undefined`，非數字的 call id 永遠不會被回顯進 reply，偽造的額外欄位永遠不會被帶走。非無損 JSON 或超過設定位元組預算的完成值會被顯式拒絕（`non-lossless`／`over-budget`），而不是被靜默取整或截斷。原始長度超過有效幀解析上限（64 MiB，或當主機的設定堆無法安全解析接近上限的幀時更低——見 `hostFrameParseCeiling`）的 fd-3 幀會讓本次執行以 `worker-exit` 結算（接收路徑在 `toString`/`JSON.parse` 之前限制原始幀，緊湊寬幀不能解碼出遠超其線上位元組的主機記憶體）。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现内部——点击展开</summary>
+<summary>實作內部——點選展開</summary>
 
-本节解释后端背后的设计；可观察行为在[使用本包](#use-this-package)中完整覆盖。
+本節解釋後端背後的設計；可觀察行為在[使用本包](#use-this-package)中完整覆蓋。
 
-### 设计概念
+### 設計概念
 
-单向信任：宿主把每条入站帧都视为敌意（模型代码可以在 fd 3 上伪造任何内容）并逐字段重建后才读取；Python 侧信任宿主回复。bootstrap（`py/bootstrap.py`）把程序作为 async 函数体执行，因此顶层 `await` 与 `return` 都可用；binding 调用经 fd 3 以 JSON-lines 往返，回复在 pump 中限速，以免大量大回复钉住宿主的 fd-3 可写缓冲。
+單向信任：主機把每條入站幀都視為敵意（模型程式碼可以在 fd 3 上偽造任何內容）並逐欄位重建後才讀取；Python 側信任主機回覆。bootstrap（`py/bootstrap.py`）把程式作為 async 函式體執行，因此頂層 `await` 與 `return` 都可用；binding 呼叫經 fd 3 以 JSON-lines 往返，回覆在 pump 中限速，以免大量大回復釘住主機的 fd-3 可寫緩衝。
 
-### wire 契约
+### wire 契約
 
-帧为 `boot`／`run`（宿主 → 子进程）与 `boot-ack`／`call`／`log`／`done` （子进程 → 宿主），以及每个 `call` 对应一个 `reply`（宿主 → 子进程）。`log` 帧的 `truncated` 标志标记的就是子进程账本自己的截断标记帧，因此宿主在与子进程相同的点停止捕获，而不是从自己的预算推断。`log` 帧的 `open` 标志标记由显式 flush 提交的未结束行：宿主把下一个 log 帧合并进同一条目，因此 `print('a', end='', flush=True); print('b')` 读回为一条 `'ab'` 条目而不是假换行（拆分计费算术在 fd-3 协议 Agent Note 的 wire-contract 段）。合并的唯一例外是截断：当后续超预算帧触发账本时，已计费的前缀作为独立条目先提交，截断 marker 跟在后面（marker 保持末位，无重复计费）。`done.error.kind` 为 `exception`、`invalid-output`、`output-limit` 之一；墙钟／CPU 预算、中止与基底死亡在宿主侧观察，不以帧形式携带。
+幀為 `boot`／`run`（主機 → 子程序）與 `boot-ack`／`call`／`log`／`done` （子程序 → 主機），以及每個 `call` 對應一個 `reply`（主機 → 子程序）。`log` 幀的 `truncated` 標誌標記的就是子程序帳本自己的截斷標記幀，因此主機在與子程序相同的點停止捕捉，而不是從自己的預算推斷。`log` 幀的 `open` 標誌標記由顯式 flush 提交的未結束行：主機把下一個 log 幀合併進同一條目，因此 `print('a', end='', flush=True); print('b')` 讀回為一條 `'ab'` 條目而不是假換行（拆分計費算術在 fd-3 協定 Agent Note 的 wire-contract 段）。合併的唯一例外是截斷：當後續超預算幀觸發帳本時，已計費的字首作為獨立條目先提交，截斷 marker 跟在後面（marker 保持末位，無重複計費）。`done.error.kind` 為 `exception`、`invalid-output`、`output-limit` 之一；牆鍾／CPU 預算、中止與基底死亡在主機側觀察，不以幀形式攜帶。
 
-### 无损 JSON 跨越
+### 無損 JSON 跨越
 
-完成值与 binding 实参以精确 JSON 跨越：值无递归序列化，因此低于字节预算的深层载荷存活，而不会死在 `JSON.stringify` 的栈上限；超出安全范围的整型 double 以精确数字跨越，而不是被静默取整的 token；`src/protocol.ts` 中的计量器在任何其他代码读取载荷之前强制字节预算与数字无损性。
+完成值與 binding 實參以精確 JSON 跨越：值無遞迴序列化，因此低於位元組預算的深層載荷存活，而不會死在 `JSON.stringify` 的棧上限；超出安全範圍的整型 double 以精確數字跨越，而不是被靜默取整的 token；`src/protocol.ts` 中的計量器在任何其他程式碼讀取載荷之前強制位元組預算與數字無損性。
 
-### 镜像对齐
+### 映像對齊
 
-`tests/protocol-mirror.e2e.ts` 启动真实 `python3`，对照 `src/protocol.ts` 断言 `PROTOCOL_FD`／截断标记文本以及 `py/protocol.py` 中每个 `TypedDict` 的必填／可选 wire 字段集，因此字段改名、删除或一侧把另一侧必填的字段变成可选都会使测试失败。字段*类型*不跨语言边界比较；该残留由评审加后端的真实子进程套件（`tests/runtime.spec.ts`）负责。
+`tests/protocol-mirror.e2e.ts` 啟動真實 `python3`，對照 `src/protocol.ts` 斷言 `PROTOCOL_FD`／截斷標記文字以及 `py/protocol.py` 中每個 `TypedDict` 的必填／可選 wire 欄位集，因此欄位改名、刪除或一側把另一側必填的欄位變成可選都會使測試失敗。欄位*型別*不跨語言邊界比較；該殘留由評審加後端的真實子程序套件（`tests/runtime.spec.ts`）負責。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`PythonPtcRuntime`——spawn、帧 pump、预算、隔离、拆卸；重新导出协议词汇 |
-| [`src/protocol.ts`](src/protocol.ts) | 宿主侧：帧 codec、不可信帧校验器、无损 JSON 计量器、共享标记文本 |
-| [`py/bootstrap.py`](py/bootstrap.py) | 子进程侧：fd-3 通道、程序执行、binding 分发、账本与结算 |
-| [`py/protocol.py`](py/protocol.py) | Python 侧：`PROTOCOL_FD`、`TypedDict` 帧镜像、`log_truncation_marker` |
-| [`tests/runtime.spec.ts`](tests/runtime.spec.ts) | 真实子进程套件：预算、隔离、敌意帧、名称重绑 |
-| [`tests/protocol-mirror.e2e.ts`](tests/protocol-mirror.e2e.ts) | 对照真实 `python3` 的跨语言镜像测试 |
-| — | 不发布运行时不变式配套项：帧顺序、预算计量与拆卸发生在 CPython 子进程或 fd 3 上，因此本包没有可供 Cordis listener 比较的同进程事件序列或独立维护的可变关系；协议镜像与真实子进程测试覆盖这些进程边界行为。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`PythonPtcRuntime`——spawn、幀 pump、預算、隔離、拆卸；重新匯出協定詞彙 |
+| [`src/protocol.ts`](src/protocol.ts) | 主機側：幀 codec、不可信幀驗證器、無損 JSON 計量器、共享標記文字 |
+| [`py/bootstrap.py`](py/bootstrap.py) | 子程序側：fd-3 通道、程式執行、binding 分發、帳本與結算 |
+| [`py/protocol.py`](py/protocol.py) | Python 側：`PROTOCOL_FD`、`TypedDict` 幀映像、`log_truncation_marker` |
+| [`tests/runtime.spec.ts`](tests/runtime.spec.ts) | 真實子程序套件：預算、隔離、敵意幀、名稱重綁 |
+| [`tests/protocol-mirror.e2e.ts`](tests/protocol-mirror.e2e.ts) | 對照真實 `python3` 的跨語言映像測試 |
+| — | 不釋出執行時不變式配套項：幀順序、預算計量與拆卸發生在 CPython 子程序或 fd 3 上，因此本包沒有可供 Cordis listener 比較的同程序事件序列或獨立維護的可變關係；協定映像與真實子程序測試覆蓋這些程序邊界行為。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当 runtime 契约不够时阅读这些。它们从 seam 定义走向设计记录与配套后端。
+當 runtime 契約不夠時閱讀這些。它們從 seam 定義走向設計記錄與配套後端。
 
-- [PTC 运行时 seam](../../ptc-runtime/ptc-runtime/README.zh.md) — 本后端实现的抽象契约。
-- [fd-3 协议 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-31-ptc-runtime-python-fd3-protocol.zh.md) — 设计理由与 wire 契约。
-- [结算修复 Agent Note](../../../.agents/notes/archived/bug-fix/2026-07-31-code-runtime-python-settlement-fixes.md) — 结算、计量与隔离修复及其回归用例。
-- [Node 进程后端](../../ptc-runtime/ptc-runtime-node/README.zh.md) — 已发布的 TypeScript 兄弟。
-- [PTC 运行时子系统参考](../../../docs/subsystems/ptc-runtime.zh.md) — 请求／结果词汇、binding 与失败分类。
+- [PTC 執行時 seam](../../ptc-runtime/ptc-runtime/README.zh.md) — 本後端實作的抽象契約。
+- [fd-3 協定 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-31-ptc-runtime-python-fd3-protocol.zh.md) — 設計理由與 wire 契約。
+- [結算修復 Agent Note](../../../.agents/notes/archived/bug-fix/2026-07-31-code-runtime-python-settlement-fixes.md) — 結算、計量與隔離修復及其迴歸案例。
+- [Node 程序後端](../../ptc-runtime/ptc-runtime-node/README.zh.md) — 已釋出的 TypeScript 兄弟。
+- [PTC 執行時子系統參考](../../../docs/subsystems/ptc-runtime.zh.md) — 請求／結果詞彙、binding 與失敗分類。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地，通过 `dsh-tools` 中的 PTC mode；当显式组合挂载本提供方时，它会把程序的完成值或失败渲染成保留的 `run_code` 结果，且已发布 profile 均不挂载这个实验包。
+間接地，透過 `dsh-tools` 中的 PTC mode；當顯式組合掛載本提供者時，它會把程式的完成值或失敗渲染成保留的 `run_code` 結果，且已釋出 profile 均不掛載這個實驗包。
 
-#### KV Cache 效应
+#### KV Cache 效應
 
-无直接失效；指定的消费方拥有任何请求前缀变化。
+無直接失效；指定的消費方擁有任何請求字首變化。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义本包覆盖与不覆盖的内容；它们是当前包约束，不是任务积压。
+這些限制定義本包覆蓋與不覆蓋的內容；它們是目前包約束，不是任務積壓。
 
-- **跨语言 guard 覆盖执行的表面与帧字段形状，而非字段类型**——mirror e2e 比较必填／可选字段集，而非 `cpuSeconds` 在两侧是否都是 `int`；类型级漂移由评审加后端的真实子进程套件捕获。
-- **以 `setsid()` 逃出子进程组后代不被组拆卸回收**——`kill(-pid)` 够不到它；运行仍按 done 帧决定的值结算，若该孤儿持有管道，close 截止兜底会强制结算，但孤儿本身在自行退出前一直存活到 fiber 之外。
-- **结算后到达的 `log` 帧被丢弃**——运行一旦结算，宿主侧捕获即关闭；迟到的 fd-3 `log` 帧（来自比 done 帧存活更久的线程）会被丢弃，而不是追加到 `logs`。
-- **binding 回复值没有 seam 级字节或深度上限**——`maxValueBytes` 只计量 done 帧的完成值；宽 binding 回复在宿主侧重建（`snapshotJsonValue` 遍历）并整帧编码，两侧都只受进程内存约束（与没有子进程侧预算的 binding 实参一样）。
-- **已发布 profile 均不挂载本提供方**——keyless `ptc-python-turn` 快照通过真实 Loader 替换 headless PTC 运行时；已发布 profile 使用沙箱 Node 进程后端。
-- **工作流执行需要 Node**——使用本 Python 提供方的组合禁用 `workflow-ptc`、`tool-workflow` 和 `tool-ralph`；工作流提供方在加载时拒绝不兼容的运行时。
-- **跨通道日志交错由后端决定**——Python stdout、stderr 与 fd-3 日志帧彼此独立传输；每个通道保留自身顺序，但它们在 `result.logs` 中的总顺序可能不同。
-- **需要 CPython 3.10 或更高版本**——配置的可执行文件会在加载期完成解析与版本探测；不受支持的解释器会在 `ctx.ptcRuntime` 注册前失败。
-- **诊断与临时目录前缀省略包名中的 experimental 限定词**——标记 `[dsh-ptc-runtime-python] log capture truncated at <N> bytes` 与 `dsh-ptc-runtime-python-` 目录前缀独立于 npm 包名来标识本提供方。协议镜像检查 TypeScript 与 Python 的标记字节完全相同。
-- **`run()` 是一次性的**——`logs` 只有在 `PtcRunResult` resolve 后才能获得；没有为运行中程序产生的输出提供流式日志或进度接口。
-- **运行之间不保留状态**——每次请求都在全新子进程中执行；持久 REPL 风格内核在某个后端带来自己的日志方案之前保持延期。
-- **原始长度超过有效帧解析上限的 fd-3 帧会让本次运行以 worker-exit 结算**——上限为 64 MiB，或当宿主的配置堆无法安全解析接近上限的帧时更低（`hostFrameParseCeiling`）；`maxLogBytes`/`maxValueBytes` 在加载期被限制到同一上限，因此诚实子进程的帧总能放得下；模型构造的超过该上限的 binding 实参（一个在 seam 层没有预算的值）会触发同一上限——这是该 OOM 防护的已接受残余。
-- **停止读取回复的子进程会在回复积压超过 1024 帧时以 worker-exit 结算运行**——宿主每次写一条回复，管道满时等待 `drain`；只持续发送调用而不消费回复的子进程会让保留的积压（及其钉住的 binding 结果）一直增长到墙钟，因此积压上限让运行提前失败。binding 结果在 seam 层没有字节上限，所以这是计数上限而非字节上限。
-- **向永不结算的 binding 洪泛调用的子进程会在 1024 个调用在途时以 worker-exit 结算运行**——binding 调用在分发前计数、异步体结算时释放，否则 promise 永不 resolve 的 binding 会让每个调用帧累积一个异步闭包直到墙钟。与回复积压一样，这是计数上限而非字节上限。
-- **组合日志与值的峰值不被加载门建模**——持续写入的模型 daemon 线程与完成值计量、分帧相加的峰值没有任何门会放行或拒绝；运行以 `worker-exit` 告终，隔离成立，只有失败分类降级。
-- **1 秒双限 `ulimit -t 1` CPU 超限被报告为 `worker-exit` 而非 timeout**——当宿主在一个与软限相等的硬 CPU 限下启动且该限为 1 时，`_clamped` 无法下调软限，内核在同一 tick SIGKILL 忙循环，SIGXCPU 永远不会送达；隔离成立，只有分类降级。
-- **中间 binding 值没有字节上限**——实现仍受无损 JSON 序列化成本与进程内存约束，提供方或执行器可能应用自己的获取上限。
+- **跨語言 guard 覆蓋執行的表面與幀欄位形狀，而非欄位型別**——mirror e2e 比較必填／可選欄位集，而非 `cpuSeconds` 在兩側是否都是 `int`；型別級漂移由評審加後端的真實子程序套件捕捉。
+- **以 `setsid()` 逃出子程序組後代不被組拆卸回收**——`kill(-pid)` 夠不到它；執行仍按 done 幀決定的值結算，若該孤兒持有管道，close 截止後備會強制結算，但孤兒本身在自行退出前一直存活到 fiber 之外。
+- **結算後到達的 `log` 幀被丟棄**——執行一旦結算，主機側捕捉即關閉；遲到的 fd-3 `log` 幀（來自比 done 幀存活更久的執行緒）會被丟棄，而不是追加到 `logs`。
+- **binding 回覆值沒有 seam 級位元組或深度上限**——`maxValueBytes` 只計量 done 幀的完成值；寬 binding 回覆在主機側重建（`snapshotJsonValue` 遍歷）並整幀編碼，兩側都只受程序記憶體約束（與沒有子程序側預算的 binding 實參一樣）。
+- **已釋出 profile 均不掛載本提供者**——keyless `ptc-python-turn` 快照透過真實 Loader 替換 headless PTC 執行時；已釋出 profile 使用沙箱 Node 程序後端。
+- **工作流執行需要 Node**——使用本 Python 提供者的組合停用 `workflow-ptc`、`tool-workflow` 和 `tool-ralph`；工作流提供者在載入時拒絕不相容的執行時。
+- **跨通道日誌交錯由後端決定**——Python stdout、stderr 與 fd-3 日誌幀彼此獨立傳輸；每個通道保留自身順序，但它們在 `result.logs` 中的總順序可能不同。
+- **需要 CPython 3.10 或更高版本**——設定的可執行檔案會在載入期完成解析與版本探測；不受支援的直譯器會在 `ctx.ptcRuntime` 註冊前失敗。
+- **診斷與臨時目錄字首省略包名中的 experimental 限定詞**——標記 `[dsh-ptc-runtime-python] log capture truncated at <N> bytes` 與 `dsh-ptc-runtime-python-` 目錄字首獨立於 npm 包名來標識本提供者。協定映像檢查 TypeScript 與 Python 的標記位元組完全相同。
+- **`run()` 是一次性的**——`logs` 只有在 `PtcRunResult` resolve 後才能獲得；沒有為執行中程式產生的輸出提供流式日誌或進度介面。
+- **執行之間不保留狀態**——每次請求都在全新子程序中執行；持久 REPL 風格核心在某個後端帶來自己的日誌方案之前保持延期。
+- **原始長度超過有效幀解析上限的 fd-3 幀會讓本次執行以 worker-exit 結算**——上限為 64 MiB，或當主機的設定堆無法安全解析接近上限的幀時更低（`hostFrameParseCeiling`）；`maxLogBytes`/`maxValueBytes` 在載入期被限制到同一上限，因此誠實子程序的幀總能放得下；模型建構的超過該上限的 binding 實參（一個在 seam 層沒有預算的值）會觸發同一上限——這是該 OOM 防護的已接受殘餘。
+- **停止讀取回復的子程序會在回覆積壓超過 1024 幀時以 worker-exit 結算執行**——主機每次寫一條回覆，管道滿時等待 `drain`；只持續傳送呼叫而不消費回覆的子程序會讓保留的積壓（及其釘住的 binding 結果）一直增長到牆鍾，因此積壓上限讓執行提前失敗。binding 結果在 seam 層沒有位元組上限，所以這是計數上限而非位元組上限。
+- **向永不結算的 binding 洪泛呼叫的子程序會在 1024 個呼叫在途時以 worker-exit 結算執行**——binding 呼叫在分發前計數、非同步體結算時釋放，否則 promise 永不 resolve 的 binding 會讓每個呼叫幀累積一個非同步閉包直到牆鍾。與回覆積壓一樣，這是計數上限而非位元組上限。
+- **組合日誌與值的峰值不被載入門建模**——持續寫入的模型 daemon 執行緒與完成值計量、分幀相加的峰值沒有任何門會放行或拒絕；執行以 `worker-exit` 告終，隔離成立，只有失敗分類降級。
+- **1 秒雙限 `ulimit -t 1` CPU 超限被報告為 `worker-exit` 而非 timeout**——當主機在一個與軟限相等的硬 CPU 限下啟動且該限為 1 時，`_clamped` 無法下調軟限，核心在同一 tick SIGKILL 忙迴圈，SIGXCPU 永遠不會送達；隔離成立，只有分類降級。
+- **中間 binding 值沒有位元組上限**——實作仍受無損 JSON 序列化成本與程序記憶體約束，提供者或執行器可能應用自己的取得上限。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

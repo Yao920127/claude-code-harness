@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/ssh.md
 /ssh:
   en: 847a37e7a77c8a3f
-  zh: 33f4de7837ec2faa
+  zh: e894654c637f411d
 /ssh/execution-coordinates:
   en: 77968e8be38ab9be
-  zh: f5bf0f62b32e45c7
+  zh: 369ce2e0da5812b3
 /ssh/transport-and-trust:
   en: e807ecd0222acb80
-  zh: b2077393b549a7fe
+  zh: c40a0a1ac465bef5
 /ssh/process-lifetime-and-cancellation:
   en: 3e29eb0f47ca4d21
-  zh: 9d880e082d39577e
+  zh: 13a2297463e9833d
 /ssh/composition-scope:
   en: 13a012fde5c31dae
-  zh: 52ee73d3be07cec8
+  zh: 9d7d1b916f8dc971
 /ssh/connection-api:
   en: eae91ed9211f563b
-  zh: 78bebc76c4a82306
+  zh: 2a685a7ac44ed9eb

@@ -1,1 +1,1 @@
-开始使用登录 DeepSeek 账号，或添加 API Key，即可开始使用。你的项目和文件保存在本地。添加 API Key登录
+開始使用登入 DeepSeek 帳號，或新增 API Key，即可開始使用。你的專案和檔案儲存在本地。新增 API Key登入

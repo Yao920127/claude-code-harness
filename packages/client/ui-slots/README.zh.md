@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 slot 注册表纯核心：普通扩展 slots、可复用 Component Factory、推导 props 类型、store 席位与渲染器安装约定。"
+description: "dsh Web 用戶端的 slot 註冊表純核心：普通擴充功能 slots、可複用 Component Factory、推導 props 型別、store 席位與渲染器安裝約定。"
 kind: "package-library"
 ---
 
@@ -9,103 +9,103 @@ kind: "package-library"
 
 ## 概述
 
-`dsh-client-ui-slots` 让 Web 客户端插件定义并组合带类型检查的 UI 区域。普通 Slots 提供 parent-owned 扩展位置；Component Factory 提供带调用方所选局部 Component 的可复用装配。两套 API 都从声明合并类型推导 scoped state、injection、locale 与 child-render props，并在插件加载期间报告冲突 definition。客户端需要渲染时，将这个不依赖 React 的包与 `ui-renderer` 配合使用。
+`dsh-client-ui-slots` 讓 Web 用戶端外掛定義並組合帶型別檢查的 UI 區域。普通 Slots 提供 parent-owned 擴充功能位置；Component Factory 提供帶呼叫方所選區域性 Component 的可複用裝配。兩套 API 都從宣告合併型別推導 scoped state、injection、locale 與 child-render props，並在外掛載入期間報告衝突 definition。用戶端需要渲染時，將這個不依賴 React 的包與 `ui-renderer` 配合使用。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-编写客户端插件时都通过本包组合 UI：把组件注册进父级已声明的 slot，或声明组件将要渲染的子 slot。四种 kind 覆盖组合形态——`single`（单个占位者）、`list`（有序条目）、`keyed`（按键分派）与 `chain`（条目自行提名）。
+編寫用戶端外掛時都透過本包組合 UI：把元件註冊進父級已宣告的 slot，或宣告元件將要渲染的子 slot。四種 kind 覆蓋組合形態——`single`（單個佔位者）、`list`（有序條目）、`keyed`（按鍵分派）與 `chain`（條目自行提名）。
 
-### 可复用 Component Factory
+### 可複用 Component Factory
 
-当一个包定义装配、而互不相关的 parents 需要独立渲染它时，使用 Component Factory。在 `SlotFactoryMap` 中声明完整类型，通过 `ctx.slots.registerFactory()` 安装 definition，通过注入的 `renderFactorySlot()` 渲染 occurrences，并通过调用的 `slots` 选项选择每个已声明的局部 Component。definition 通过 `useFactorySlot(name, fallback)` 读取该选择。
+當一個包定義裝配、而互不相關的 parents 需要獨立渲染它時，使用 Component Factory。在 `SlotFactoryMap` 中宣告完整型別，透過 `ctx.slots.registerFactory()` 安裝 definition，透過注入的 `renderFactorySlot()` 渲染 occurrences，並透過呼叫的 `slots` 選項選擇每個已宣告的區域性 Component。definition 透過 `useFactorySlot(name, fallback)` 讀取該選擇。
 
-Factory `children` 仍是普通全局 Slots 且必须与 `SlotMap` 匹配，而局部 `slots` 为每个 occurrence 选择一个 Component。occurrence 继承其渲染位置的 scope；`renderFactorySlot()` 不接受 Session identity。共享 Store handle 使用普通 scope 解析。Store factory 保持 lazy，直到 occurrence 首次物化时才为该渲染位置创建一个 handle；若持久化 Store spec 会让 persistence key 在 occurrences 之间冲突，renderer 会拒绝它。
+Factory `children` 仍是普通全域 Slots 且必須與 `SlotMap` 匹配，而區域性 `slots` 為每個 occurrence 選擇一個 Component。occurrence 繼承其渲染位置的 scope；`renderFactorySlot()` 不接受 Session identity。共享 Store handle 使用普通 scope 解析。Store factory 保持 lazy，直到 occurrence 首次物化時才為該渲染位置建立一個 handle；若持久化 Store spec 會讓 persistence key 在 occurrences 之間衝突，renderer 會拒絕它。
 
-### 五个框架 props share
+### 五個框架 props share
 
-每个已注册组件都会收到由五个框架 share 组合而成的 props：运行时 share（父级 render 调用点的 `owner`，加上会话标准工具包与全局席位）、child render share（静态缩窄到已声明 children 的 `renderSlot`）、Factory render share（`renderFactorySlot`）、store share（已声明 handle 的 selector 钩子与移除 draft 的 actions），以及业务 share（从 `inject` 推导）。组件引用推导出的 props 别名；它们绝不在本地重新定义任何 share 的类型。
+每個已註冊元件都會收到由五個框架 share 組合而成的 props：執行時 share（父級 render 呼叫點的 `owner`，加上工作階段標準工具包與全域席位）、child render share（靜態縮窄到已宣告 children 的 `renderSlot`）、Factory render share（`renderFactorySlot`）、store share（已宣告 handle 的 selector 掛鉤與移除 draft 的 actions），以及業務 share（從 `inject` 推導）。元件引用推匯出的 props 別名；它們絕不在本地重新定義任何 share 的型別。
 
 ### Store 席位
 
-register 调用可以用 `store: defineStore(...)` 声明 store 席位：`init` 推断状态 schema，`actions` 是完整的 draft-transform 写入集合。组件经 selector 钩子读取、经烘焙回调写入；`defineStore` 的引擎实现位于运行时包，并满足这里导出的 `DefineStore` 约定。
+register 呼叫可以用 `store: defineStore(...)` 宣告 store 席位：`init` 推斷狀態 schema，`actions` 是完整的 draft-transform 寫入集合。元件經 selector 掛鉤讀取、經烘焙回呼寫入；`defineStore` 的引擎實作位於執行時包，並滿足這裡匯出的 `DefineStore` 約定。
 
-### 声明纪律
+### 宣告紀律
 
-声明即认领：注册条目成为唯一被允许渲染该键的条目；注册未声明 slot、声明已声明过的子项、在两个 scope 下挂载同一个共享句柄、或注册缺少 `select` 的 chain，都会在加载时抛出。条目的 disposer 会递归移除其声明的子 slot——账本行、贡献与 store 挂载都随同一生命周期结束而移除。
+宣告即認領：註冊條目成為唯一被允許渲染該鍵的條目；註冊未宣告 slot、宣告已宣告過的子項、在兩個 scope 下掛載同一個共享控制代碼、或註冊缺少 `select` 的 chain，都會在載入時丟擲。條目的 disposer 會遞迴移除其宣告的子 slot——帳本行、貢獻與 store 掛載都隨同一生命週期結束而移除。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-普通 Slot 设计就是一张表：声明 = 渲染授权 = 运行时规范。`SlotMap` 在这里声明为空，由消费方通过 `declare module` 增补合并；`SlotFactoryMap` 和标准工具包接口（`SessionStandardProps`、`GlobalStandardProps`）也采用同一方式。Factory definition 使用独立的单 definition ledger，因为其 occurrences 没有 parent 声明。
+普通 Slot 設計就是一張表：宣告 = 渲染授權 = 執行時規範。`SlotMap` 在這裡宣告為空，由消費方透過 `declare module` 增補合併；`SlotFactoryMap` 和標準工具包介面（`SessionStandardProps`、`GlobalStandardProps`）也採用同一方式。Factory definition 使用獨立的單 definition ledger，因為其 occurrences 沒有 parent 宣告。
 
-### 注册与路由
+### 註冊與路由
 
-`SlotCore` 在构造时预置 `'root'` slot，并强制执行加载时验证。`ChainSelect` selector 按升序 `priority` 运行（相同值按注册顺序）；第一个非 null 返回值选中其条目，并成为组件的 `matched` prop；全部返回 null 时使用 owner 的 `renderSlotChain` fallback（`ChainRenderOpts`）。每个 key 都携带一个 declaration epoch，它只在声明与移除时递增；`ui-renderer` 将其用于 `ctx.slots.inject`，且与普通条目版本相互独立。实时检查使用严格的 `type: 'slot' | 'factory'` 节点，并把 Factory-owned child Slots 嵌套在其 definition 下。
+`SlotCore` 在建構時預置 `'root'` slot，並強制執行載入時驗證。`ChainSelect` selector 按升序 `priority` 執行（相同值按註冊順序）；第一個非 null 回傳值選中其條目，併成為元件的 `matched` prop；全部返回 null 時使用 owner 的 `renderSlotChain` fallback（`ChainRenderOpts`）。每個 key 都攜帶一個 declaration epoch，它只在宣告與移除時遞增；`ui-renderer` 將其用於 `ctx.slots.inject`，且與普通條目版本相互獨立。即時檢查使用嚴格的 `type: 'slot' | 'factory'` 節點，並把 Factory-owned child Slots 巢狀在其 definition 下。
 
-### 渲染器约定
+### 渲染器約定
 
-`renderer.ts` 携带安装约定（`SlotRenderer`、`SlotRendererHost`）以及 `StaleAuthorizationError`/`SlotOwnershipError`；ui-renderer 负责实现，并在其插件生命周期中完成安装。引擎产物与渲染器宿主约定携带裸快照 source（`getSnapshot`/`subscribe`），绝不携带 React 钩子——钩子绑定属于渲染机制。Factory 崩溃使用普通监督通道，幂等 effect 仅在 commit 后保留逐渲染位置 Store handle。
+`renderer.ts` 攜帶安裝約定（`SlotRenderer`、`SlotRendererHost`）以及 `StaleAuthorizationError`/`SlotOwnershipError`；ui-renderer 負責實作，並在其外掛生命週期中完成安裝。引擎產物與渲染器主機約定攜帶裸快照 source（`getSnapshot`/`subscribe`），絕不攜帶 React 掛鉤——掛鉤繫結屬於渲染機制。Factory 崩潰使用普通監督通道，冪等 effect 僅在 commit 後保留逐渲染位置 Store handle。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖引擎、渲染器与组合模型。
+以下頁面覆蓋引擎、渲染器與組合模型。
 
-- [ui-renderer](../ui-renderer/README.zh.md)——实现本包安装约定的 React slot 渲染器。
-- [slot 系统标准](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——权威组合模型。
-- [Component Factory](../../../.agents/notes/implemented/architecture/2026-09-10-component-factories-and-local-slots.zh.md)——可复用 definitions、局部 Component 选择与 occurrence 生命周期。
-- [Web 客户端架构](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——本注册表接入的加载链与对象层。
+- [ui-renderer](../ui-renderer/README.zh.md)——實作本包安裝約定的 React slot 渲染器。
+- [slot 系統標準](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——權威組合模型。
+- [Component Factory](../../../.agents/notes/implemented/architecture/2026-09-10-component-factories-and-local-slots.zh.md)——可複用 definitions、區域性 Component 選擇與 occurrence 生命週期。
+- [Web 用戶端架構](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——本註冊表接入的載入鏈與物件層。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端 UI 接线层，不注册任何面向模型的内容。
+無。該包是瀏覽器端 UI 接線層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义注册表的规模扩展特性与已接受的类型噪声；它们是当前包约束。
+這些限制定義註冊表的規模擴充功能特性與已接受的型別噪聲；它們是目前包約束。
 
-- **`isLive` 会线性扫描所有记录**：在 UI 插件的注册规模（数十项）下没有问题；如果账本变得频繁访问，再使用条目→记录反向引用改进。
-- **`__renders` 幻象锚点在 `PropsRenderSlots` 上可见**：这是与类型链设计的 `__accepts` 相同且已接受的噪声；泛型方法签名在 key 联合之间比较宽松，因此必须依靠逆变标记强制执行「组件 key 集合 ⊆ children 声明」。
+- **`isLive` 會線性掃描所有記錄**：在 UI 外掛的註冊規模（數十項）下沒有問題；如果帳本變得頻繁存取，再使用條目→記錄反向引用改進。
+- **`__renders` 幻象錨點在 `PropsRenderSlots` 上可見**：這是與型別鏈設計的 `__accepts` 相同且已接受的噪聲；泛型方法簽名在 key 聯合之間比較寬鬆，因此必須依靠逆變標記強制執行「元件 key 集合 ⊆ children 宣告」。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。这是零依赖的纯注册表核心，本身不发出 Cordis 事件；`ui-renderer` SlotRegistry 负责事件桥及其不变式。本包的行为规范直接断言 define/register/dispose 的执行顺序。
+**執行時不變式：** 不釋出伴生入口。這是零依賴的純註冊表核心，本身不發出 Cordis 事件；`ui-renderer` SlotRegistry 負責事件橋及其不變式。本包的行為規範直接斷言 define/register/dispose 的執行順序。

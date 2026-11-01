@@ -1,4 +1,4 @@
-# Agent Note: Workspace 依赖发布范围
+# Agent Note: Workspace 依賴釋出範圍
 
 Status: implemented
 
@@ -6,22 +6,22 @@ Status: implemented
 
 ## Problem
 
-DSH 包共享同一次产品发布。Cordis、其 vendored 库和 Node Addon System 独立发布；消费者需要接收它们的补丁更新，而不自动接纳新的次版本。
+DSH 包共享同一次產品釋出。Cordis、其 vendored 庫和 Node Addon System 獨立釋出；消費者需要接收它們的補丁更新，而不自動接納新的次版本。
 
 ## Decision
 
-每个 workspace 消费者对 DSH 目标使用 `workspace:*`，对 `vendor/` 下或 `native/system` 包族中的目标使用 `workspace:~`。规则覆盖根目录工具、应用、peer、开发依赖以及原生入口的可选平台依赖。消费者不因目录位置而获得豁免。
+每個 workspace 消費者對 DSH 目標使用 `workspace:*`，對 `vendor/` 下或 `native/system` 包族中的目標使用 `workspace:~`。規則覆蓋根目錄工具、應用、peer、開發依賴以及原生入口的可選平臺依賴。消費者不因目錄位置而獲得豁免。
 
-打包时替换为目标包的当前版本：Cordis 为 `4.0.3` 时，`workspace:~` 转为 `~4.0.3`；Node Addon System 为 `0.1.2` 时转为 `~0.1.2`。DSH 引用仍为精确版本。原生包族的成员仍以同一版本发布，但已安装的入口可以解析到后续的平台包补丁版本。
+打包時替換為目標包的目前版本：Cordis 為 `4.0.3` 時，`workspace:~` 轉為 `~4.0.3`；Node Addon System 為 `0.1.2` 時轉為 `~0.1.2`。DSH 引用仍為精確版本。原生包族的成員仍以同一版本釋出，但已安裝的入口可以解析到後續的平臺包補丁版本。
 
-这套范围策略细化了 [npm 发布序列](2026-08-10-npm-release-sequences.zh.md)和[发布依赖门面](2026-08-26-published-dependency-faces.zh.md)。它们的独立发布族和依赖区段分类保持不变。
+這套範圍策略細化了 [npm 釋出序列](2026-08-10-npm-release-sequences.zh.md)和[釋出依賴門面](2026-08-26-published-dependency-faces.zh.md)。它們的獨立釋出族和依賴區段分類保持不變。
 
 ## Alternatives considered
 
-**Vendor 使用 caret 范围。** 对 Cordis 这类稳定版本的包，caret 范围也会接纳后续次版本。
+**Vendor 使用 caret 範圍。** 對 Cordis 這類穩定版本的包，caret 範圍也會接納後續次版本。
 
-**Vendor 和 native 使用精确范围。** 每次接纳补丁发布都需要修改消费者的依赖声明。
+**Vendor 和 native 使用精確範圍。** 每次接納補丁釋出都需要修改消費者的依賴宣告。
 
 ## Consequences
 
-Vendor 和 native 的补丁发布必须保持面向消费者的 API 和二进制接口兼容。范围转换不改变本地 workspace 链接及锁文件解析结果。Workspace 门禁拒绝 DSH 的 tilde 范围，以及 vendor/native 的 caret 或精确范围；打包清单测试校验最终输出的版本。
+Vendor 和 native 的補丁釋出必須保持面向消費者的 API 和二進位制介面相容。範圍轉換不改變本地 workspace 連結及鎖檔案解析結果。Workspace 門禁拒絕 DSH 的 tilde 範圍，以及 vendor/native 的 caret 或精確範圍；打包清單測試驗證最終輸出的版本。

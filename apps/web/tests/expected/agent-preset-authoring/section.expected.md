@@ -1,47 +1,47 @@
-- dialog "设置":
+- dialog "設定":
   - navigation:
-    - text: 设置
-    - button "通用设置"
+    - text: 設定
+    - button "通用設定"
     - button "模型"
-    - button "内置插件"
-    - button "Agent 预设"
-  - button "打开配置文件"
-  - button "关闭"
-  - heading "Agent 预设" [level=2]
-  - paragraph: 选择 Agent 的工具和工作方式。日常任务用「标准模式」，扩展 DSH 的能力用「创造模式」。
-  - heading "内置" [level=3]
+    - button "內建外掛"
+    - button "Agent 預設"
+  - button "開啟設定檔"
+  - button "關閉"
+  - heading "Agent 預設" [level=2]
+  - paragraph: 選擇 Agent 的工具和工作方式。日常任務用「標準模式」，擴充功能 DSH 的能力用「創造模式」。
+  - heading "內建" [level=3]
   - list:
     - listitem:
-      - 'button "新任务默认: 标准模式" [disabled] [pressed]':
-        - text: 标准模式 新任务默认
+      - 'button "新任務預設: 標準模式" [disabled] [pressed]':
+        - text: 標準模式 新任務預設
         - code: standard
-        - text: 处理代码、文件和资料，适合大多数任务。Agent 会按需使用检索、编辑和终端等工具。
-      - 'button "模式说明: 标准模式"': 模式说明
-      - 'button "如何使用: 标准模式"': 如何使用
-      - 'button "查看配置: 标准模式"': 查看配置
+        - text: 處理程式碼、檔案和資料，適合大多數任務。Agent 會按需使用檢索、編輯和終端等工具。
+      - 'button "模式說明: 標準模式"': 模式說明
+      - 'button "如何使用: 標準模式"': 如何使用
+      - 'button "檢視設定: 標準模式"': 檢視設定
     - listitem:
-      - 'button "设为新任务默认: PTC 模式"':
-        - text: PTC 模式 内置
+      - 'button "設為新任務預設: PTC 模式"':
+        - text: PTC 模式 內建
         - code: ptc
-        - text: 包含标准模式的所有能力，更适合批量调用工具，并对结果进行筛选、整理、去重、统计或汇总的任务。
-      - 'button "模式说明: PTC 模式"': 模式说明
+        - text: 包含標準模式的所有能力，更適合批次呼叫工具，並對結果進行篩選、整理、去重、統計或彙總的任務。
+      - 'button "模式說明: PTC 模式"': 模式說明
       - 'button "如何使用: PTC 模式"': 如何使用
-      - 'button "查看配置: PTC 模式"': 查看配置
+      - 'button "檢視設定: PTC 模式"': 檢視設定
     - listitem:
-      - 'button "设为新任务默认: 极简模式"':
-        - text: 极简模式 内置
+      - 'button "設為新任務預設: 極簡模式"':
+        - text: 極簡模式 內建
         - code: minimal
-        - text: Agent 仅使用终端工具完成任务，适合测试和对比其基础表现。
-      - 'button "模式说明: 极简模式"': 模式说明
-      - 'button "如何使用: 极简模式"': 如何使用
-      - 'button "查看配置: 极简模式"': 查看配置
+        - text: Agent 僅使用終端工具完成任務，適合測試和對比其基礎表現。
+      - 'button "模式說明: 極簡模式"': 模式說明
+      - 'button "如何使用: 極簡模式"': 如何使用
+      - 'button "檢視設定: 極簡模式"': 檢視設定
     - listitem:
-      - 'button "设为新任务默认: 创造模式"':
-        - text: 创造模式 内置
+      - 'button "設為新任務預設: 創造模式"':
+        - text: 創造模式 內建
         - code: cordis
-        - text: 用对话定制 DSH：让 Agent 编写插件，添加新功能或界面；也能组合工具和提示词，创建自己的模式。
-      - 'button "模式说明: 创造模式"': 模式说明
-      - 'button "如何使用: 创造模式"': 如何使用
-      - 'button "查看配置: 创造模式"': 查看配置
-  - heading "自定义" [level=3]
-  - button "让 Agent 帮我创建预设模式"
+        - text: 用對話定製 DSH：讓 Agent 編寫外掛，新增新功能或介面；也能組合工具和提示詞，建立自己的模式。
+      - 'button "模式說明: 創造模式"': 模式說明
+      - 'button "如何使用: 創造模式"': 如何使用
+      - 'button "檢視設定: 創造模式"': 檢視設定
+  - heading "自定義" [level=3]
+  - button "讓 Agent 幫我建立預設模式"

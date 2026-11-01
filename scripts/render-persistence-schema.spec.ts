@@ -322,7 +322,7 @@ describe('current persistence schema anchors', () => {
     const saved = JSON.stringify(inventory)
     expect(currentDefinitions(inventory)).toContain('Source compatibility: `source` — `session-source-attribution` v1; `session.user-message.source`; `kind`; `preserve`.')
     expect(currentDefinitions(inventory)).toContain('Attribution-only additions: `build-context`.')
-    expect(renderPersistenceSchemaDefinitions(inventory, 'zh', undefined, 2, 'current')).toContain('仅表示归属的新增 kind：`build-context`.')
+    expect(renderPersistenceSchemaDefinitions(inventory, 'zh', undefined, 2, 'current')).toContain('僅表示歸屬的新增 kind：`build-context`.')
     expect(renderPersistenceSchemaDefinitions(inventory)).not.toContain('Source compatibility:')
     expect(JSON.stringify(inventory)).toBe(saved)
   })

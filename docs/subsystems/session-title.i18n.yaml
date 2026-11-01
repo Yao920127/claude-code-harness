@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/session-title.md
 /session-titles:
   en: a0ad8d5f000e5258
-  zh: 9527bc25711342de
+  zh: d75fd35a06b06d14
 /session-titles/durable-title-state:
   en: c6be2d86647daa6f
-  zh: fb259d9fb4738f39
+  zh: 1b80cda3b03f2360
 /session-titles/auxiliary-request-record:
   en: 4942bec7a7d1d9de
-  zh: 9edfc1c908577c37
+  zh: a653339c9c8f6b4a
 /session-titles/provider-input-and-output:
   en: 886e036e442ae06a
-  zh: 49f95782b8aa9bf3
+  zh: 6e5ad251a11a7dd2

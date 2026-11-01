@@ -1,5 +1,5 @@
 ---
-description: "面向组合压缩（compaction）部署场景的工具输出修剪：选择大小限制或排查超大工具结果为何被缩短。"
+description: "面向組合壓縮（compaction）部署情境的工具輸出修剪：選擇大小限制或排查超大工具結果為何被縮短。"
 kind: "package-reference"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-compaction-tool-result-pruner` 防止超大工具输出填满上下文窗口。压缩触发条件满足后，它会把超出预算的文本替换为长度受限的头部、简短的「middle pruned」标记与长度受限的尾部；未达到压力阈值的对话保持不变。完整原始结果仍保留在会话日志中，可供精确回放与检查。修剪不发起模型调用，并可能充分缓解 token 压力，使压缩跳过摘要。字符预算只能近似 token 用量；token meter 负责判定压力是否得到缓解。
+`dsh-compaction-tool-result-pruner` 防止超大工具輸出填滿上下文視窗。壓縮觸發條件滿足後，它會把超出預算的文字替換為長度受限的頭部、簡短的「middle pruned」標記與長度受限的尾部；未達到壓力閾值的對話保持不變。完整原始結果仍保留在工作階段日誌中，可供精確回放與檢查。修剪不發起模型呼叫，並可能充分緩解 token 壓力，使壓縮跳過摘要。字元預算只能近似 token 用量；token meter 負責判定壓力是否得到緩解。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当工具输出经常主导对话窗口时，在 `dsh-compaction-basic` 旁挂载本包。修剪会改变模型看到的内容——更短的结果——并让压缩有更少的历史需要压缩。
+當工具輸出經常主導對話視窗時，在 `dsh-compaction-basic` 旁掛載本包。修剪會改變模型看到的內容——更短的結果——並讓壓縮有更少的歷史需要壓縮。
 
-### 最小可用组合
+### 最小可用組合
 
-按此顺序挂载 token 测量、本包与后端：
+按此順序掛載 token 測量、本包與後端：
 
 ```yaml
 - name: '@deepseek-ai/dsh-token-meter'
@@ -37,113 +37,113 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-compaction-basic'
 ```
 
-有了这些配置行，超大工具结果会在压缩过程中自动被修剪。你可以通过检查后续请求是否显示修剪后的结果来确认成功；完整原始内容仍保留在会话日志中。
+有了這些設定行，超大工具結果會在壓縮過程中自動被修剪。你可以透過檢查後續請求是否顯示修剪後的結果來確認成功；完整原始內容仍保留在工作階段日誌中。
 
-### 什么会被修剪
+### 什麼會被修剪
 
-每个文本超过阈值的工具结果都会被替换为修剪版本：配置的头部、简短的「middle pruned」标记与配置的尾部。图片与结构化块等富内容保持原有顺序，并保留日志中的所有图片省略选择。替换保留工具调用、步骤、错误与元数据——只有文本内容发生变化。如果替换无法被记录，运行会失败，已应用的修剪仍会保留。
+每個文字超過閾值的工具結果都會被替換為修剪版本：設定的頭部、簡短的「middle pruned」標記與設定的尾部。圖片與結構化塊等富內容保持原有順序，並保留日誌中的所有圖片省略選擇。替換保留工具呼叫、步驟、錯誤與中繼資料——只有文字內容發生變化。如果替換無法被記錄，執行會失敗，已應用的修剪仍會保留。
 
-### 设置大小限制
+### 設定大小限制
 
-所有设置都可选；默认会把文本超过 8,192 个字符的结果修剪为其前 4,096 加后 1,024 个字符，并用标记连接。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-compaction-tool-result-pruner)是涵盖所有配置字段的真源。
+所有設定都可選；預設會把文字超過 8,192 個字元的結果修剪為其前 4,096 加後 1,024 個字元，並用標記連線。生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-compaction-tool-result-pruner)是涵蓋所有設定欄位的真源。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `thresholdChars` | `8192` | 合并文本超过此 Unicode 码点数时修剪。 |
-| `headChars` | `4096` | 保留的开头 Unicode 码点数。 |
-| `tailChars` | `1024` | 保留的末尾 Unicode 码点数。 |
+| `thresholdChars` | `8192` | 合併文字超過此 Unicode 碼點數時修剪。 |
+| `headChars` | `4096` | 保留的開頭 Unicode 碼點數。 |
+| `tailChars` | `1024` | 保留的末尾 Unicode 碼點數。 |
 
-字符数以 Unicode 码点计，因此切片绝不会拆分 emoji 对，但多字符字素仍可能被切断。头部加标记加尾部之和必须不超过阈值，因此有效配置可以修剪每个超出预算的结果，不会增长或重复改写。未知设置会导致插件在构造时被拒绝。
+字元數以 Unicode 碼點計，因此切片絕不會拆分 emoji 對，但多字元字素仍可能被切斷。頭部加標記加尾部之和必須不超過閾值，因此有效設定可以修剪每個超出預算的結果，不會增長或重複改寫。未知設定會導致外掛在建構時被拒絕。
 
-### 修剪何时运行
+### 修剪何時執行
 
-修剪只在压缩触发条件满足后运行：`dsh-compaction-basic` 在压力或溢出确认后、选择要压缩的内容之前调用它。低于压力时不会修剪任何内容，修剪本身也不发起模型调用。
+修剪只在壓縮觸發條件滿足後執行：`dsh-compaction-basic` 在壓力或溢位確認後、選擇要壓縮的內容之前呼叫它。低於壓力時不會修剪任何內容，修剪本身也不發起模型呼叫。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释修剪器背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋修剪器背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该修剪器建立在三项承诺之上：
+該修剪器建立在三項承諾之上：
 
-- **确定性的单次收敛。** 按 Unicode 码点以固定预算切片，因此每个发出的结果在文本码点上都精确包含已配置的头部、标记与尾部，不大于 `thresholdChars`，且严格小于触发输入。
-- **可安全回放的替换。** 原始事件保留在仅追加日志中；替换通过 `sourceEventSeqs` 引用它，因此回放可以恢复产生已剪枝结果的精确输入。
-- **影子价格协议。** `compaction/prune` 会紧邻替换事件并位于其前，通过注入的 token meter 为被替换的精确范围定价，使纯消费方无需每节点状态即可减去它——即 `compaction/prune` 事件上记录的共享协议。
+- **確定性的單次收斂。** 按 Unicode 碼點以固定預算切片，因此每個發出的結果在文字碼點上都精確包含已設定的頭部、標記與尾部，不大於 `thresholdChars`，且嚴格小於觸發輸入。
+- **可安全回放的替換。** 原始事件保留在僅追加日誌中；替換透過 `sourceEventSeqs` 引用它，因此回放可以恢復產生已剪枝結果的精確輸入。
+- **影子價格協定。** `compaction/prune` 會緊鄰替換事件並位於其前，透過注入的 token meter 為被替換的精確範圍定價，使純消費方無需每節點狀態即可減去它——即 `compaction/prune` 事件上記錄的共享協定。
 
-### 剪枝机制
+### 剪枝機制
 
-剪枝按 Unicode 码点测量 `text` 块（非文本块计为零），生成长度受限的替换——内容已在预算内时则不替换——并把每个超出预算的工具结果换为一条新追加的 `tool/result`，该事件替换原始事件并通过 `sourceEventSeqs` 引用它，前面紧跟一条 `compaction/prune` 影子价格事件。会话拒绝替换时，运行会同步失败；本次扫描中先前已提交的替换仍会保留。非文本块保持原始相对位置，切片绝不会拆分 UTF-16 代理项对。精确签名见 [`src/index.ts`](src/index.ts)。
+剪枝按 Unicode 碼點測量 `text` 塊（非文字塊計為零），生成長度受限的替換——內容已在預算內時則不替換——並把每個超出預算的工具結果換為一條新追加的 `tool/result`，該事件替換原始事件並透過 `sourceEventSeqs` 引用它，前面緊跟一條 `compaction/prune` 影子價格事件。工作階段拒絕替換時，執行會同步失敗；本次掃描中先前已提交的替換仍會保留。非文字塊保持原始相對位置，切片絕不會拆分 UTF-16 代理項對。精確簽名見 [`src/index.ts`](src/index.ts)。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`ToolResultPruner` 服务、`pruneSession` / `pruneContent` / `measureContent` |
-| [`src/config.ts`](src/config.ts) | `PRUNE_MARKER`、默认值、码点计数、预算验证 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`ToolResultPruner` 服務、`pruneSession` / `pruneContent` / `measureContent` |
+| [`src/config.ts`](src/config.ts) | `PRUNE_MARKER`、預設值、碼點計數、預算驗證 |
 | [`src/types.ts`](src/types.ts) | `ToolResultPruneConfig`、`ResolvedConfig`、`PrunedEntry`、`PruneResult` |
-| — | 不发布运行时不变式伴生入口；Session 会验证每次仅改写内容的操作，其伴生条目负责维护跨事件包围关系。 |
+| — | 不釋出執行時不變式伴生入口；Session 會驗證每次僅改寫內容的操作，其伴生條目負責維護跨事件包圍關係。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从消费后端逐步进入共享 seam 与定价服务。
+當包級約定不夠用時閱讀以下頁面；它們從消費後端逐步進入共享 seam 與定價服務。
 
-- [压缩基础后端](../compaction-basic/README.zh.md)——在压缩前修剪超大工具输出的后端。
-- [压缩 seam](../compaction/README.zh.md)——本包接入的压缩约定。
-- [压缩子系统参考](../../../docs/subsystems/compaction.zh.md)——压缩词汇、结果与服务行为。
-- [Token meter](../../llm/token-meter/README.zh.md)——判定修剪是否缓解压力的测量服务。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-compaction-tool-result-pruner)——每个受支持配置字段及其源声明。
+- [壓縮基礎後端](../compaction-basic/README.zh.md)——在壓縮前修剪超大工具輸出的後端。
+- [壓縮 seam](../compaction/README.zh.md)——本包接入的壓縮約定。
+- [壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)——壓縮詞彙、結果與服務行為。
+- [Token meter](../../llm/token-meter/README.zh.md)——判定修剪是否緩解壓力的測量服務。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-compaction-tool-result-pruner)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 已剪枝的工具结果
+### 已剪枝的工具結果
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-一旦满足压缩触发条件，后续请求看到的将是保留的头部、`\n\n[... tool result middle pruned ...]\n\n` 和保留的尾部，而非被移除的文本。富内容块保持原有顺序。模型不会看到原文的第二份副本。
+一旦滿足壓縮觸發條件，後續請求看到的將是保留的頭部、`\n\n[... tool result middle pruned ...]\n\n` 和保留的尾部，而非被移除的文字。富內容塊保持原有順序。模型不會看到原文的第二份副本。
 
-#### Token 影响
+#### Token 影響
 
-每个已改写工具结果最多包含 `thresholdChars` 个文本码点。剪枝本身不会发起模型调用；重新测量的请求低于压力阈值时，compaction-basic 会跳过摘要，否则摘要器会读取已剪枝的表层。
+每個已改寫工具結果最多包含 `thresholdChars` 個文字碼點。剪枝本身不會發起模型呼叫；重新測量的請求低於壓力閾值時，compaction-basic 會跳過摘要，否則摘要器會讀取已剪枝的表層。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-替换较早的结果会使从第一个改变的 token 起的复用失效。当其路由、envelope 与之前的历史保持一致时，已剪枝前缀可以复用。
+替換較早的結果會使從第一個改變的 token 起的複用失效。當其路由、envelope 與之前的歷史保持一致時，已剪枝字首可以複用。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明修剪何时不合适，或何时需要特别注意；它们是当前包约束。
+這些限制說明修剪何時不合適，或何時需要特別注意；它們是目前包約束。
 
-- **字符预算不是 token 预算**——不同提供方的 token 密度各异，因此 `ctx.tokenMeter` 仍负责判定修剪是否缓解了请求压力。
-- **剪枝只基于语法**——它保留开头与结尾，不解释中间哪些行在语义上重要。
-- **字素簇可能被拆分**——按码点切片可保护代理项对，但不会执行考虑区域设置的字素簇分割。
+- **字元預算不是 token 預算**——不同提供者的 token 密度各異，因此 `ctx.tokenMeter` 仍負責判定修剪是否緩解了請求壓力。
+- **剪枝只基於語法**——它保留開頭與結尾，不解釋中間哪些行在語義上重要。
+- **字素簇可能被拆分**——按碼點切片可保護代理項對，但不會執行考慮區域設定的字素簇分割。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性；已交付行为以上文、包代码与所链接的 Agent Note 为准。
+本開發備註是維護者的工作上下文，明確不具權威性；已交付行為以上文、包程式碼與所連結的 Agent Note 為準。
 
-- **语义化中间选择，尚未决定**——剪枝盲目保留头部与尾部；判断中间哪些行重要需要模型或结构化启发式，两者都未随附。
-- **基于 token 的预算，暂缓**——预算以 Unicode 码点计；改为基于 token 的预算需要 token meter 未暴露的估算器约定。
+- **語義化中間選擇，尚未決定**——剪枝盲目保留頭部與尾部；判斷中間哪些行重要需要模型或結構化啟發式，兩者都未隨附。
+- **基於 token 的預算，暫緩**——預算以 Unicode 碼點計；改為基於 token 的預算需要 token meter 未暴露的估算器約定。
 
 </details>

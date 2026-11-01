@@ -1,18 +1,18 @@
-# Shell 执行器
+# Shell 執行器
 
 [English](shell.md) | 中文
 
-shell 执行 seam 由 [dsh-shell](../../packages/shell/shell) 在 `ctx.shell` 上提供 Service Definition。[shell 包组](../../packages/shell/README.zh.md)列出其 Bash 与 PowerShell 提供方以及面向模型的 Consumer。通用后台任务的 id、所有权与控制位于 [jobs.md](jobs.zh.md)；本 seam 返回进程句柄，不注册后台任务。managed-range 机制封装在[子进程 seam](subprocess.zh.md)之后。
+shell 執行 seam 由 [dsh-shell](../../packages/shell/shell) 在 `ctx.shell` 上提供 Service Definition。[shell 包組](../../packages/shell/README.zh.md)列出其 Bash 與 PowerShell 提供者以及面向模型的 Consumer。通用後臺任務的 id、所有權與控制位於 [jobs.md](jobs.zh.md)；本 seam 返回程序控制代碼，不註冊後臺任務。managed-range 機制封裝在[子程序 seam](subprocess.zh.md)之後。
 
-源码：[`packages/shell/shell/src/types.ts`](../../packages/shell/shell/src/types.ts)
+原始碼：[`packages/shell/shell/src/types.ts`](../../packages/shell/shell/src/types.ts)
 
-## 受管 shell 环境命名空间
+## 受管 shell 環境名稱空間
 
-`DSH_*` 变量是归 Harness 所有的子进程事实。面向模型的 bash 工具通过 `ctx.shellEnv` 收集它们，再经由 `ShellExecRequest.dshEnv` 传递；子进程服务在合并当前快照之前会移除继承而来的 `DSH_*` 名称。`DshEnvironmentKey`／`DshEnvironment` 词汇归[子进程 seam](subprocess.zh.md)所有，由 `dsh-shell` 重导出。
+`DSH_*` 變數是歸 Harness 所有的子程序事實。面向模型的 bash 工具透過 `ctx.shellEnv` 收集它們，再經由 `ShellExecRequest.dshEnv` 傳遞；子程序服務在合併目前快照之前會移除繼承而來的 `DSH_*` 名稱。`DshEnvironmentKey`／`DshEnvironment` 詞彙歸[子程序 seam](subprocess.zh.md)所有，由 `dsh-shell` 重匯出。
 
-## 请求与规格：`resolve()` 拆分
+## 請求與規格：`resolve()` 拆分
 
-该 seam 将**面向模型/插件的请求**（`workdir`/`timeoutMs`/`stdoutMaxBytes` 可选，由配置或请求策略补全）与执行器实际使用的**完全解析后的 spec**（这些字段均为必填）分开。工具层在二者之间调用 `ctx.shell.resolve(request)`（仓库的「包边界处显式优于隐式」规则）；`ShellExecSpec` 携带的是已解析的值。
+該 seam 將**面向模型/外掛的請求**（`workdir`/`timeoutMs`/`stdoutMaxBytes` 可選，由設定或請求策略補全）與執行器實際使用的**完全解析後的 spec**（這些欄位均為必填）分開。工具層在二者之間呼叫 `ctx.shell.resolve(request)`（儲存庫的「包邊界處顯式優於隱式」規則）；`ShellExecSpec` 攜帶的是已解析的值。
 
 ```ts type-equiv
 /**
@@ -102,13 +102,13 @@ interface ShellExecSpec {
 }
 ```
 
-`stdin` 和 `env` 是受信任的进程内插件输入，不由 `dsh-tool-bash` 暴露。本地执行器会先清除环境中的凭据，再合并调用方显式提供的 env。
+`stdin` 和 `env` 是受信任的程序內外掛輸入，不由 `dsh-tool-bash` 暴露。本地執行器會先清除環境中的憑證，再合併呼叫方顯式提供的 env。
 
-`stdoutMaxBytes` 同样仅供受信任插件使用。它让前台消费方能在有界解析预算内请求完整 stdout，而不会改变 stderr、后台任务或面向模型的 bash 工具的常规输出上限。
+`stdoutMaxBytes` 同樣僅供受信任外掛使用。它讓前臺消費方能在有界解析預算內請求完整 stdout，而不會改變 stderr、後臺任務或面向模型的 bash 工具的常規輸出上限。
 
-## 前台运行：`ShellRunResult`
+## 前臺執行：`ShellRunResult`
 
-一次已完成（或被终止）的前台运行的结果。正交的结果**独立报告**：一个进程可以同时超时并以退出码 0 退出（因为它捕获了信号），因此 `timedOut`、`aborted`、`signal` 和 `exitCode` 各自独立为一个字段；调用方永远不会把一次被提前中断的运行误读为正常成功。
+一次已完成（或被終止）的前臺執行的結果。正交的結果**獨立報告**：一個程序可以同時超時並以結束代碼 0 退出（因為它捕捉了訊號），因此 `timedOut`、`aborted`、`signal` 和 `exitCode` 各自獨立為一個欄位；呼叫方永遠不會把一次被提前中斷的執行誤讀為正常成功。
 
 ```ts type-equiv
 /** The outcome of a foreground run, including timeout during preparation. */
@@ -140,13 +140,13 @@ interface ShellRunResult {
 }
 ```
 
-每个流是一个 `CollectedOutput`：（可能被截断的）文本加恢复信息；截断时，`text` 是**尾部**，完整流溢出到一个私有文件。这些字段归[子进程 seam](subprocess.zh.md)所有，由 `dsh-shell` 重导出。
+每個流是一個 `CollectedOutput`：（可能被截斷的）文字加恢復資訊；截斷時，`text` 是**尾部**，完整流溢位到一個私有檔案。這些欄位歸[子程序 seam](subprocess.zh.md)所有，由 `dsh-shell` 重匯出。
 
-## 文件沙箱：`ShellSandboxInfo`
+## 檔案沙箱：`ShellSandboxInfo`
 
-使用沙箱的执行器通过 `ShellExecutor.sandboxMode` 暴露其已配置的模式回退值。工具层请求 [`@deepseek-ai/dsh-sandbox-policy`](../../packages/sandbox/sandbox-policy/README.zh.md)，把每个调用会话的持久 `sandbox/mode` 覆盖值与不可变 cwd 解析为 `ShellExecRequest.sandboxPolicy`；经用户批准、严格更宽松的调用只替换模式。模式/root/enforcement 词汇归 [`@deepseek-ai/dsh-sandbox` 沙箱 seam](sandbox.zh.md) 所有；模式仅管辖文件效果。
+使用沙箱的執行器透過 `ShellExecutor.sandboxMode` 暴露其已設定的模式退回值。工具層請求 [`@deepseek-ai/dsh-sandbox-policy`](../../packages/sandbox/sandbox-policy/README.zh.md)，把每個呼叫工作階段的持久 `sandbox/mode` 覆蓋值與不可變 cwd 解析為 `ShellExecRequest.sandboxPolicy`；經使用者批准、嚴格更寬鬆的呼叫只替換模式。模式/root/enforcement 詞彙歸 [`@deepseek-ai/dsh-sandbox` 沙箱 seam](sandbox.zh.md) 所有；模式僅管轄檔案效果。
 
-沙箱化运行会报告其模式、保守的拒绝分类与强制执行完整度。`runnerFailed` 标记命令运行前沙箱 runner 已失败；前台执行会抛出 `SANDBOX_UNAVAILABLE`，而已结束的后台进程只能通过其事实通道报告。
+沙箱化執行會報告其模式、保守的拒絕分類與強制執行完整度。`runnerFailed` 標記命令執行前沙箱 runner 已失敗；前臺執行會丟擲 `SANDBOX_UNAVAILABLE`，而已結束的後臺程序只能透過其事實通道報告。
 
 ```ts type-equiv
 /**
@@ -166,11 +166,11 @@ interface ShellSandboxInfo {
 }
 ```
 
-当受限模式没有可用后端时，`ctx.sandbox` 提供方会抛出、执行器会传播由[沙箱 seam](sandbox.zh.md)所有的 `SANDBOX_UNAVAILABLE` 错误码。选定的 runner 拒绝其 profile 时会触达同一个故障关闭的前台错误；已结束的后台任务则记录 `runnerFailed`。模型会在结果中收到拒绝/runner 事实，仅当拒绝标记指出生效模式时才得知该模式，并可通过 `sandbox_permissions` 加 `justification` 请求一次性、严格更宽松的重试；执行任何操作前，`ctx.approval` 必须批准该次确切调用。完整的策略与切换设计见[沙箱 Agent Note](../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)。
+當受限模式沒有可用後端時，`ctx.sandbox` 提供者會丟擲、執行器會傳播由[沙箱 seam](sandbox.zh.md)所有的 `SANDBOX_UNAVAILABLE` 錯誤碼。選定的 runner 拒絕其 profile 時會觸達同一個故障關閉的前臺錯誤；已結束的後臺任務則記錄 `runnerFailed`。模型會在結果中收到拒絕/runner 事實，僅當拒絕標記指出生效模式時才得知該模式，並可透過 `sandbox_permissions` 加 `justification` 請求一次性、嚴格更寬鬆的重試；執行任何操作前，`ctx.approval` 必須批准該次確切呼叫。完整的策略與切換設計見[沙箱 Agent Note](../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)。
 
-## 后台进程：`ShellProcess`
+## 後臺程序：`ShellProcess`
 
-`start()` 在异步启动准备完成后返回句柄；取消或准备失败会在发布前拒绝调用。该句柄没有 id 或 owner。`dsh-tool-bash` 将它适配为 `ctx.jobs.start()` 钩子；随后由通用运行时拥有任务标识与生命周期。`done` 会在底层进程结算时完成且绝不 reject；subprocess 提供方的 rejection 会生成状态为 `killed` 的进程，并把不声明阶段的错误写入 stderr。进程结算后仍可读取，并且沙箱事实会在 `done` 完成前写入。
+`start()` 在非同步啟動準備完成後返回控制代碼；取消或準備失敗會在釋出前拒絕呼叫。該控制代碼沒有 id 或 owner。`dsh-tool-bash` 將它適應為 `ctx.jobs.start()` 掛鉤；隨後由通用執行時擁有任務標識與生命週期。`done` 會在底層程序結算時完成且絕不 reject；subprocess 提供者的 rejection 會生成狀態為 `killed` 的程序，並把不宣告階段的錯誤寫入 stderr。程序結算後仍可讀取，並且沙箱事實會在 `done` 完成前寫入。
 
 ```ts type-equiv
 /**
@@ -214,7 +214,7 @@ interface ShellProcess {
 }
 ```
 
-`readOutput()` 返回增量内容与 spill 恢复信息：
+`readOutput()` 返回增量內容與 spill 恢復資訊：
 
 ```ts type-equiv
 /** One incremental {@link ShellProcess.readOutput} read. */
@@ -230,9 +230,9 @@ interface ShellProcessRead {
 }
 ```
 
-## 服务
+## 服務
 
-`ShellExecutor` 拥有 `resolve`、前台 `run`、后台进程 `start` 以及 `sandboxMode` 能力事实。`dsh-bash-local` 拥有命令默认值补全、超时/中止分类、终端环境以及后台读取合并；managed-range 终止、有界收集器、spill 文件、凭据清除与 dispose（资源释放）后完全停稳归[子进程服务](subprocess.zh.md)所有。`dsh-tool-bash` 拥有面向模型的渲染，并将后台句柄适配到[通用任务运行时](jobs.zh.md)。`dsh-shell` 拥有 shell 工具共享的退出状态约定：导出的 `parseExitStatus`/`ParsedExitStatus` 是 `dsh-tool-bash` 的 `renderResult` 与 `dsh-tool-pwsh` 的 `renderPwshResult` 所追加的 `[exit code: N]` / `[killed by signal: X]` 标记的逆解析，两个工具的 `presentResult` 都用它把渲染文本拆分为 terminal 卡的输出正文与退出状态 pill。
+`ShellExecutor` 擁有 `resolve`、前臺 `run`、後臺程序 `start` 以及 `sandboxMode` 能力事實。`dsh-bash-local` 擁有命令預設值補全、超時/中止分類、終端環境以及後臺讀取合併；managed-range 終止、有界收集器、spill 檔案、憑證清除與 dispose（資源釋放）後完全停穩歸[子程序服務](subprocess.zh.md)所有。`dsh-tool-bash` 擁有面向模型的渲染，並將後臺控制代碼適應到[通用任務執行時](jobs.zh.md)。`dsh-shell` 擁有 shell 工具共享的退出狀態約定：匯出的 `parseExitStatus`/`ParsedExitStatus` 是 `dsh-tool-bash` 的 `renderResult` 與 `dsh-tool-pwsh` 的 `renderPwshResult` 所追加的 `[exit code: N]` / `[killed by signal: X]` 標記的逆解析，兩個工具的 `presentResult` 都用它把渲染文字拆分為 terminal 卡的輸出正文與退出狀態 pill。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

@@ -160,7 +160,7 @@ export function createElectronBuilderConfig(
       icon: fileURLToPath(new URL('../resources/icon-cch-macos.png', import.meta.url)),
       category: 'public.app-category.developer-tools',
       // macOS matches the application locale against this bundle, not Electron Framework resources.
-      extendInfo: { CFBundleLocalizations: ['en', 'zh_CN'] },
+      extendInfo: { CFBundleLocalizations: ['en', 'zh_TW'] },
       // `-` signs ad hoc: Apple silicon runs only signed code, and an unsigned build has no Developer ID.
       identity: unsigned ? '-' : macOSSigning?.signingIdentity,
       forceCodeSigning: !unsigned,
@@ -254,7 +254,7 @@ export function createElectronBuilderConfig(
       perMachine: false,
       allowElevation: false,
       allowToChangeInstallationDirectory: false,
-      installerLanguages: ['en_US', 'zh_CN'],
+      installerLanguages: ['en_US', 'zh_TW'],
       differentialPackage: true,
     },
     detectUpdateChannel: false,

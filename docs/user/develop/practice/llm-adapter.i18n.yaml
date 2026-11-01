@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/practice/llm-adapter.md
 /llm-adapters:
   en: 3ed9fd352e2c3edd
-  zh: f575c12bb4409a7f
+  zh: c5232abcba0b7907
 /llm-adapters/overview:
   en: 613076de2e5c7c2d
-  zh: 9df5bf6bca93267f
+  zh: fd2b8eaa9e5ab871
 /llm-adapters/minimal-implementation:
   en: 2eeb1c65c2b1e67b
-  zh: 0dbee75ec52aa2d5
+  zh: 9ba27bc3b8fbea24
 /llm-adapters/streamchunk-protocol:
   en: c5b80f3ab607300c
-  zh: 6d143add0d5fc44c
+  zh: 30a2a4473a5af2d5
 /llm-adapters/streamchunk-protocol/key-rules:
   en: c0138e6ba95197fa
-  zh: fc1e2b8047e08d2a
+  zh: 2cb47f0e3a2d3f77
 /llm-adapters/generateoptions:
   en: 5bdb364bd44239c4
-  zh: ca0f2854069aa134
+  zh: a62a9f0e9852e137
 /llm-adapters/register-an-adapter:
   en: 8e0ac8990c049f29
-  zh: f8c3de63ee4d6757
+  zh: 350be264a12f721f
 /llm-adapters/use-it-from-cordis-yml:
   en: b83c91da871dca8c
   zh: d21046627e3cb0c4
 /llm-adapters/reference-implementations:
   en: e05d4b0a901e8ef0
-  zh: 9516cebb3e5c3692
+  zh: 79bac1a1254f0341
 /llm-adapters/error-handling:
   en: d54065c52caf7910
-  zh: 79b3ebc22a38286d
+  zh: d4b0aa1c7792faef

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-18-plugin-install-registries.md
 /agent-note-plugin-install-registries:
   en: 88c789616a978d0c
-  zh: 27c9b37d12be8a6a
+  zh: dcffc92faff19aab
 /agent-note-plugin-install-registries/problem:
   en: 0b7713b33c9b665b
-  zh: eab1dac3e14c8587
+  zh: 684f7d5187e36f86
 /agent-note-plugin-install-registries/decision:
   en: 23bb185c5795943d
-  zh: 7939b6a738290adf
+  zh: 30bf839b693e2c17
 /agent-note-plugin-install-registries/alternatives-considered:
   en: 247f164eaf0196fa
-  zh: 7863dcfed12161c0
+  zh: 7737cf987f32edd7
 /agent-note-plugin-install-registries/consequences:
   en: 9a4c2233b869350a
-  zh: 86562a4c8573d1c1
+  zh: 05ed097de1f90437
 /agent-note-plugin-install-registries/testing:
   en: 6c7a39b22be31df7
-  zh: 6eee9b14ed9be704
+  zh: 33c3c55cc3012641

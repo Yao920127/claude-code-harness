@@ -2,77 +2,77 @@
 
 Status: implemented
 
-Update：本文依赖的 `reported` 位与 `onJobDone` 已随 [jobs seam 收敛](../architecture/2026-09-03-jobs-seam-consolidation.zh.md)离开注册表：`dsh-tool-jobs` 现在持有投递台账（等待或被接受的 `job_kill` 认领任务），并按 `settled` 事件的 cause 跳过 teardown 结算，因此下文唤醒或注入的决策仍然成立，只是它提到的机制是工具的台账而非注册表标志。
+Update：本文依賴的 `reported` 位與 `onJobDone` 已隨 [jobs seam 收斂](../architecture/2026-09-03-jobs-seam-consolidation.zh.md)離開註冊表：`dsh-tool-jobs` 現在持有投遞臺帳（等待或被接受的 `job_kill` 認領任務），並按 `settled` 事件的 cause 跳過 teardown 結算，因此下文喚醒或注入的決策仍然成立，只是它提到的機制是工具的臺帳而非註冊表標誌。
 
 [English](2026-08-11-background-job-completion-wakes-an-idle-owner.md) | 中文
 
-## 问题
+## 問題
 
-`tool-jobs` 对模型承诺「任务完成时你会在会话内收到通知——不要忙轮询，也不要 sleep 等待」。这个承诺只在模型仍在工作时成立。完成经由 `agent.inject()` 交付，它只向 next-step inbox 追加而不预留 driver，因此在轮次结束之后才结算的任务会把通知搁在那里，直到某件无关的事情唤醒 agent。最常见的形态恰恰就是会失效的那一种：模型启动一条长命令，告诉用户已经启动，结束轮次，而命令完成后进入了一个无人领取的 inbox。提示词让模型不要轮询，然后什么也没到。
+`tool-jobs` 對模型承諾「任務完成時你會在工作階段內收到通知——不要忙輪詢，也不要 sleep 等待」。這個承諾只在模型仍在工作時成立。完成經由 `agent.inject()` 交付，它只向 next-step inbox 追加而不預留 driver，因此在輪次結束之後才結算的任務會把通知擱在那裡，直到某件無關的事情喚醒 agent。最常見的形態恰恰就是會失效的那一種：模型啟動一條長命令，告訴使用者已經啟動，結束輪次，而命令完成後進入了一個無人領取的 inbox。提示詞讓模型不要輪詢，然後什麼也沒到。
 
-这个缺口被记为一条限制，而不是被推敲过，于是退路成了 `job_output(wait: true)`——同一段提示词并不鼓励的阻塞等待。
+這個缺口被記為一條限制，而不是被推敲過，於是退路成了 `job_output(wait: true)`——同一段提示詞並不鼓勵的阻塞等待。
 
-本决策取代[后台任务运行时决策](../architecture/2026-06-20-generic-long-running-tool-runtime.zh.md)中的一条事实——完成永不唤醒空闲所有者——并把 teardown 加为 `reported` 的置位方。那份 note 仍拥有其余全部任务运行时决策，因此就地更新而非替换。
+本決策取代[後臺任務執行時決策](../architecture/2026-06-20-generic-long-running-tool-runtime.zh.md)中的一條事實——完成永不喚醒空閒所有者——並把 teardown 加為 `reported` 的置位方。那份 note 仍擁有其餘全部任務執行時決策，因此就地更新而非替換。
 
-交付机制从来不是障碍。自[统一 send 决策](../../archived/architecture/2026-07-22-unified-send-and-coalesced-user-messages.md)起，`Agent.send(message, target, wakeup)` 就覆盖了 `target` × `wakeup` 矩阵，`wakeDriver()` 也已经处理 idle、maintenance 和已取消未收敛三种相位。缺的是「一次完成走哪条通道」这一策略选择，以及该选择所需的界。
+交付機制從來不是障礙。自[統一 send 決策](../../archived/architecture/2026-07-22-unified-send-and-coalesced-user-messages.md)起，`Agent.send(message, target, wakeup)` 就覆蓋了 `target` × `wakeup` 矩陣，`wakeDriver()` 也已經處理 idle、maintenance 和已取消未收斂三種相位。缺的是「一次完成走哪條通道」這一策略選擇，以及該選擇所需的界。
 
-## 决策
+## 決策
 
-尚未报告的完成按所有者当时在做什么来选择通道。繁忙的所有者走注入，保持原样。空闲的所有者用 `followup()` 唤醒。
+尚未報告的完成按所有者當時在做什麼來選擇通道。繁忙的所有者走注入，保持原樣。空閒的所有者用 `followup()` 喚醒。
 
-这采纳了[延续管理器](2026-08-06-manager-owned-subagent-settlement-delivery.zh.md)已经为 subagent 结算所采用的交付规则，那里写着「用 steer 而非 inject 是刻意的……这是一条正确性规则，不是部署偏好」。两条路径不重叠：`tool-subagent` 只为一次性后台子 agent 注册 Task，而 continuable 分支在抵达那段代码之前就已返回，因此一个子 agent 恰好由两种机制中的一种交付。
+這採納了[延續管理器](2026-08-06-manager-owned-subagent-settlement-delivery.zh.md)已經為 subagent 結算所採用的交付規則，那裡寫著「用 steer 而非 inject 是刻意的……這是一條正確性規則，不是部署偏好」。兩條路徑不重疊：`tool-subagent` 只為一次性後臺子 agent 註冊 Task，而 continuable 分支在抵達那段程式碼之前就已返回，因此一個子 agent 恰好由兩種機制中的一種交付。
 
 ### 繁忙的所有者保留注入
 
-对真正在运行的 driver 而言，`steer()` 与 `inject()` 是同一次交付：对于运行中且未中止的相位，`wakeDriver()` 会提前返回且不设置 latch。二者只在一种所有者上有区别——轮次已取消但尚未收敛，此时 steer 会重定向到下一轮并在收敛时重放唤醒。
+對真正在執行的 driver 而言，`steer()` 與 `inject()` 是同一次交付：對於執行中且未中止的相位，`wakeDriver()` 會提前返回且不設定 latch。二者只在一種所有者上有區別——輪次已取消但尚未收斂，此時 steer 會重定向到下一輪並在收斂時重放喚醒。
 
-在那里注入才是对的。轮次被取消意味着用户按了停止，替他们重新开一轮等于把一次中断洗成了他们没有要求的模型请求。普通情形已由轮次循环覆盖：只要 next-step inbox 还有内容，轮次就无法结束，因此在该检查之前抵达的通知会延长当前轮次，同时结算的多个任务只花掉一步而不是各占一轮。
+在那裡注入才是對的。輪次被取消意味著使用者按了停止，替他們重新開一輪等於把一次中斷洗成了他們沒有要求的模型請求。普通情形已由輪次迴圈覆蓋：只要 next-step inbox 還有內容，輪次就無法結束，因此在該檢查之前抵達的通知會延長目前輪次，同時結算的多個任務只花掉一步而不是各佔一輪。
 
-### 连续唤醒上限是可选的，且该界不是时间
+### 連續喚醒上限是可選的，且該界不是時間
 
-除非设置了 `maxConsecutiveWakes`，唤醒没有上限。设置后，该值限制一个所有者由此开启的轮数；超出后通知降级为注入，等待下一轮。领取任何用户撰写的消息都会恢复预算——是领取而非抵达，因为那才是人类输入真正进入某一步的时刻。本插件自己排队的通知永远不会补充它。
+除非設定了 `maxConsecutiveWakes`，喚醒沒有上限。設定後，該值限制一個所有者由此開啟的輪數；超出後通知降級為注入，等待下一輪。領取任何使用者撰寫的訊息都會恢復預算——是領取而非抵達，因為那才是人類輸入真正進入某一步的時刻。本外掛自己排隊的通知永遠不會補充它。
 
-设上限是因为这条链会自激，而 subagent 结算不会。结算受限于模型派生了多少子 agent；被唤醒的一轮却可能启动某个后台任务，而它的完成又会唤醒同一个所有者，且无人旁观。它没有默认值，因为超出上限的通知会让会话不可见地停摆；[默认无上限的决策](2026-09-22-unbounded-completion-wakes-by-default.zh.md)记录了这项取舍。`dsh run` 无论如何都不需要单独策略：headless 在任务轮次空闲后即退出，此后的完成没有可唤醒的所有者。
+設上限是因為這條鏈會自激，而 subagent 結算不會。結算受限於模型派生了多少子 agent；被喚醒的一輪卻可能啟動某個後臺任務，而它的完成又會喚醒同一個所有者，且無人旁觀。它沒有預設值，因為超出上限的通知會讓工作階段不可見地停擺；[預設無上限的決策](2026-09-22-unbounded-completion-wakes-by-default.zh.md)記錄了這項取捨。`dsh run` 無論如何都不需要單獨策略：headless 在任務輪次空閒後即退出，此後的完成沒有可喚醒的所有者。
 
-`completionDelivery: quiet` 为空闲所有者恢复旧通道。它的存在是为了确定性 transcript；后台任务完成会独立保留 `quiet | wakeup`，因为其有界的所有者轮次策略不同于 next-step subagent 报告。
+`completionDelivery: quiet` 為空閒所有者恢復舊通道。它的存在是為了確定性 transcript；後臺任務完成會獨立保留 `quiet | wakeup`，因為其有界的所有者輪次策略不同於 next-step subagent 報告。
 
-### 销毁自行认领报告
+### 銷燬自行認領報告
 
-`cancelForTeardown` 现在会把记录标记为 `reported`，与 `kill()` 在取消之后所做的完全一致。当通知只是一次无害的注入时，这处不对称看不出来；而会唤醒的报告方会把它变成每个 teardown 层级一次模型请求，作用在宿主正要销毁的 agent 上。
+`cancelForTeardown` 現在會把記錄標記為 `reported`，與 `kill()` 在取消之後所做的完全一致。當通知只是一次無害的注入時，這處不對稱看不出來；而會喚醒的報告方會把它變成每個 teardown 層級一次模型請求，作用在主機正要銷燬的 agent 上。
 
-`reported` 本来就是正确的那个 bit——「kill、read 或 wait 已报告或承诺报告终止状态」——而 teardown 是一次没有调用方的 kill。用它可以让该结算的每一个观察者都保持完整：`onJobDone` 仍会触发，因此运行时不变量与强制失败路径依旧被覆盖，只有通知报告方会安静下来。
+`reported` 本來就是正確的那個 bit——「kill、read 或 wait 已報告或承諾報告終止狀態」——而 teardown 是一次沒有呼叫方的 kill。用它可以讓該結算的每一個觀察者都保持完整：`onJobDone` 仍會觸發，因此執行時不變數與強制失敗路徑依舊被覆蓋，只有通知報告方會安靜下來。
 
-### 完成是最后才宣布的
+### 完成是最後才宣佈的
 
-`settle()` 此前释放等待方、标记记录已结算并发布可见集变更的时机，都排在运行完成监听器**之后**。开启轮次的报告方是同步执行的，因此那个顺序会让被唤醒轮次的 `turn/start` 抢在它所响应的那次结算被提交之前落地，也抢在任何 `onJobsChanged` 观察者看到它之前。把完成放到最后宣布，使报告方成为该结算的最后一个观察者，而其他观察者都已先看到它。
+`settle()` 此前釋放等待方、標記記錄已結算並行布可見集變更的時機，都排在執行完成監聽器**之後**。開啟輪次的報告方是同步執行的，因此那個順序會讓被喚醒輪次的 `turn/start` 搶在它所回應的那次結算被提交之前落實，也搶在任何 `onJobsChanged` 觀察者看到它之前。把完成放到最後宣佈，使報告方成為該結算的最後一個觀察者，而其他觀察者都已先看到它。
 
-## 被否决的替代方案
+## 被否決的替代方案
 
-**在 `JobStart` 上加生产方声明的唤醒位**，对应 Codex 的 `trigger_turn` 与 Kimi 的 `admission` 枚举。从长期看这是更好的形状——`tail -f` 流与两小时构建想要不同答案——但当前没有任何生产方需要区分它们，而仓库要求公共面必须有当下的所有者与需求。加它的自然触发点，是第一个「要让某个任务唤醒而另一个不唤醒」的生产方出现时。
+**在 `JobStart` 上加生產方宣告的喚醒位**，對應 Codex 的 `trigger_turn` 與 Kimi 的 `admission` 列舉。從長期看這是更好的形狀——`tail -f` 流與兩小時建置想要不同答案——但目前沒有任何生產方需要區分它們，而儲存庫要求公共面必須有當下的所有者與需求。加它的自然觸發點，是第一個「要讓某個任務喚醒而另一個不喚醒」的生產方出現時。
 
-**一个通用的非请求输入队列**并带优先级通道，正如 Claude Code 用来把后台任务、cron、MCP 推送与 hook 合并进同一次排空。DSH 的 inbox 本身就是那个队列——`next-turn`/`next-step` 之上的持久 `agent/inbox/spliced` splice——因此这等于在既有层之上再加一层，只为决定一个 bit。
+**一個通用的非請求輸入佇列**並帶優先順序通道，正如 Claude Code 用來把後臺任務、cron、MCP 推送與 hook 合併進同一次排空。DSH 的 inbox 本身就是那個佇列——`next-turn`/`next-step` 之上的持久 `agent/inbox/spliced` splice——因此這等於在既有層之上再加一層，只為決定一個 bit。
 
-**拒绝重开一个已经产出可见答复的轮次**，即 Codex 的 `MailboxDeliveryPhase` 闩锁。那条闩锁正是本决策刻意反转的默认值：在模型已经说完话之后唤醒它就是本特性的全部意义，界由可选的唤醒预算来承担。
+**拒絕重開一個已經產出可見答覆的輪次**，即 Codex 的 `MailboxDeliveryPhase` 閂鎖。那條閂鎖正是本決策刻意反轉的預設值：在模型已經說完話之後喚醒它就是本特性的全部意義，界由可選的喚醒預算來承擔。
 
-**在计数之上再加墙钟窗口**。对交互式 agent 而言，慢的那种情形恰恰是想要的——一小时的构建结束、agent 接着干下去，这就是特性本身——而 `dsh run` 无论如何都在任务轮次空闲后退出。只有当出现无人值守的长生命周期部署时才值得重新考虑。
+**在計數之上再加牆鍾視窗**。對互動式 agent 而言，慢的那種情形恰恰是想要的——一小時的建置結束、agent 接著幹下去，這就是特性本身——而 `dsh run` 無論如何都在任務輪次空閒後退出。只有當出現無人值守的長生命週期部署時才值得重新考慮。
 
-**在 owner 排空期间整体压制 `onJobDone`**，与服务级的 `listenersClosed` 对称。它读起来更干净，但会移走一个不只服务于通知的信号：强制失败记录与运行时不变量都会观察 teardown 结算。`reported` 位恰好只否决报告方，别的什么也不否决。
+**在 owner 排空期間整體壓制 `onJobDone`**，與服務級的 `listenersClosed` 對稱。它讀起來更乾淨，但會移走一個不只服務於通知的訊號：強制失敗記錄與執行時不變數都會觀察 teardown 結算。`reported` 位恰好只否決報告方，別的什麼也不否決。
 
-## 影响
+## 影響
 
-- 默认行为改变：空闲所有者现在每次完成会花掉一次模型请求，只有设置了 `maxConsecutiveWakes` 时才按所有者、在两次用户消息之间封顶。想要旧行为的部署设置 `completionDelivery: quiet`。
-- `tool-jobs` 的提示词段落无需改动；「任务完成时你会在会话内收到通知」从愿景变成了事实。
-- `JobSnapshot.reported` 新增 teardown 作为第四个置位方，记录在 Service Definition 与[子系统参考](../../../../docs/subsystems/jobs.zh.md)中。
-- `settle()` 在提交记录并发布可见集变更之后才宣布完成。任何依赖「在释放等待方之前或在 `onJobsChanged` 之前运行」的监听器现在都排在两者之后。
-- `tool-bash` 的 real-composition 测试去掉了第二条用户消息：仅靠结算就能把通知带入一个收集输出的轮次。它断言持久结果而非轮次边界，因为命令是否活得比它的轮次久是一场竞态；通道选择改由 `tool-jobs` 单元测试钉住。
-- 单元覆盖钉住：空闲唤醒、繁忙注入、quiet 交付、预算耗尽、用户输入恢复预算、插件通知不恢复预算，以及 teardown 静默。
+- 預設行為改變：空閒所有者現在每次完成會花掉一次模型請求，只有設定了 `maxConsecutiveWakes` 時才按所有者、在兩次使用者訊息之間封頂。想要舊行為的部署設定 `completionDelivery: quiet`。
+- `tool-jobs` 的提示詞段落無需改動；「任務完成時你會在工作階段內收到通知」從願景變成了事實。
+- `JobSnapshot.reported` 新增 teardown 作為第四個置位方，記錄在 Service Definition 與[子系統參考](../../../../docs/subsystems/jobs.zh.md)中。
+- `settle()` 在提交記錄並行布可見集變更之後才宣佈完成。任何依賴「在釋放等待方之前或在 `onJobsChanged` 之前執行」的監聽器現在都排在兩者之後。
+- `tool-bash` 的 real-composition 測試去掉了第二條使用者訊息：僅靠結算就能把通知帶入一個收集輸出的輪次。它斷言持久結果而非輪次邊界，因為命令是否活得比它的輪次久是一場競態；通道選擇改由 `tool-jobs` 單元測試釘住。
+- 單元覆蓋釘住：空閒喚醒、繁忙注入、quiet 交付、預算耗盡、使用者輸入恢復預算、外掛通知不恢復預算，以及 teardown 靜默。
 
-### 已接受的风险
+### 已接受的風險
 
-在设置了 `maxConsecutiveWakes` 的情况下，已花掉的预算只由用户输入恢复。耗尽预算的无人值守 agent 要等到其他原因开启轮次时才收走剩余通知，在此期间没有任何机制为它重新充能，通知等待时客户端也毫无显示。这正是上限没有默认值的原因。
+在設定了 `maxConsecutiveWakes` 的情況下，已花掉的預算只由使用者輸入恢復。耗盡預算的無人值守 agent 要等到其他原因開啟輪次時才收走剩餘通知，在此期間沒有任何機制為它重新充能，通知等待時用戶端也毫無顯示。這正是上限沒有預設值的原因。
 
-在 `quiet` 下待领于空闲所有者的通知仍会随该所有者释放而消亡，与此前一致：释放时的取消会清空未领取的 inbox，日志保留插入/取消这一对作为记录。[结算交付 note](2026-08-06-manager-owned-subagent-settlement-delivery.zh.md) 承载这需要的离线信箱讨论。
+在 `quiet` 下待領於空閒所有者的通知仍會隨該所有者釋放而消亡，與此前一致：釋放時的取消會清空未領取的 inbox，日誌保留插入/取消這一對作為記錄。[結算交付 note](2026-08-06-manager-owned-subagent-settlement-delivery.zh.md) 承載這需要的離線信箱討論。
 
-对短命任务而言，完成究竟是延长运行中的轮次还是开启新轮次是一场真实竞态，因此没有哪份编写的 transcript 能同时容纳两种顺序。组装态覆盖断言结果；通道选择由单元测试钉住。
+對短命任務而言，完成究竟是延長執行中的輪次還是開啟新輪次是一場真實競態，因此沒有哪份編寫的 transcript 能同時容納兩種順序。組裝態覆蓋斷言結果；通道選擇由單元測試釘住。
 
-还残留一个微任务窗口：结算若落在轮次循环最后一次检查 inbox 之后、driver 提交 idle 相位之前，读到的仍是 `status === 'running'`，于是走注入且无人唤醒。改用 steer 也堵不上——`wakeDriver()` 只为 maintenance 与取消后的相位设置 latch，不为「最后一次检查与自身退休之间」的 driver 设置。要堵上它需要 `agent-loop` 在最后一次领取之前就发布退休状态，那属于核心 agent 的决策，而非交付策略。
+還殘留一個微任務視窗：結算若落在輪次迴圈最後一次檢查 inbox 之後、driver 提交 idle 相位之前，讀到的仍是 `status === 'running'`，於是走注入且無人喚醒。改用 steer 也堵不上——`wakeDriver()` 只為 maintenance 與取消後的相位設定 latch，不為「最後一次檢查與自身退休之間」的 driver 設定。要堵上它需要 `agent-loop` 在最後一次領取之前就釋出退休狀態，那屬於核心 agent 的決策，而非交付策略。

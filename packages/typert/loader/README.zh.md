@@ -1,5 +1,5 @@
 ---
-description: "生成的 Typert 产物所用的 Loader 集成：已挂载的包如何自动把宿主侧反射与 schema 贡献给运行时注册表。"
+description: "生成的 Typert 產物所用的 Loader 整合：已掛載的包如何自動把主機側反射與 schema 貢獻給執行時註冊表。"
 kind: "package-reference"
 ---
 
@@ -9,118 +9,118 @@ kind: "package-reference"
 
 ## 概述
 
-挂载 `dsh-typert-loader` 后，Loader 组合中每个挂载的包都会自动把其生成的 Typert 反射与 schema factory 贡献给运行时注册表——并在包或本插件卸载时自动撤销。没有该导出的包会被跳过，因此在任何 Loader 组合中挂载它都是安全的。显式 `packages` 用于覆盖嵌套在另一 Loader 配置项之下的插件，这些插件的 fiber 不携带可解析的包说明符。它是仅支持 Node 的插件，需要配置树解析锚点才能解析包。
+掛載 `dsh-typert-loader` 後，Loader 組合中每個掛載的包都會自動把其生成的 Typert 反射與 schema factory 貢獻給執行時註冊表——並在包或本外掛解除安裝時自動撤銷。沒有該匯出的包會被跳過，因此在任何 Loader 組合中掛載它都是安全的。顯式 `packages` 用於覆蓋巢狀在另一 Loader 設定項之下的外掛，這些外掛的 fiber 不攜帶可解析的包說明符。它是僅支援 Node 的外掛，需要設定樹解析錨點才能解析包。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在加载发布生成 Typert 产物的包的 Host Loader 组合中挂载本插件。注册表本身来自 `dsh-typert-registry`；本插件只负责发现与注册。
+在載入釋出生成 Typert 產物的包的 Host Loader 組合中掛載本外掛。註冊表本身來自 `dsh-typert-registry`；本外掛只負責發現與註冊。
 
-### 最小配置
+### 最小設定
 
-加载注册表与 loader；loader 默认发现每一个 Loader 配置项：
+載入註冊表與 loader；loader 預設發現每一個 Loader 設定項：
 
 ```yaml
 - name: '@deepseek-ai/dsh-typert-registry'
 - name: '@deepseek-ai/dsh-typert-loader'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `packages` | `[]` | 为嵌套在另一 Loader 配置项下的插件额外注册的包产物；每个包都必须能从配置树解析，并导出 `./typert` |
+| `packages` | `[]` | 為巢狀在另一 Loader 設定項下的外掛額外註冊的包產物；每個包都必須能從設定樹解析，並匯出 `./typert` |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-typert-loader)是所有受支持字段的完整真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-typert-loader)是所有受支援欄位的完整真源。
 
-### 注册什么
+### 註冊什麼
 
-每个符合条件的 Loader 配置项都会把其生成的宿主侧反射与 schema factory 贡献给运行时注册表。注册跟随配置项生命周期：配置项或本插件卸载时撤销；在配置项或本插件任一方卸载后才结束的导入操作会被丢弃。
+每個符合條件的 Loader 設定項都會把其生成的主機側反射與 schema factory 貢獻給執行時註冊表。註冊跟隨設定項生命週期：設定項或本外掛解除安裝時撤銷；在設定項或本外掛任一方解除安裝後才結束的匯入操作會被丟棄。
 
-### 可观察行为与失败
+### 可觀察行為與失敗
 
-没有该导出的包会被静默跳过。解析结论与已导入的 manifest（元数据清单）会在整个进程生命周期内缓存，因此新增 `./typert` 导出后必须重启。已挂载配置项对应的产物格式错误时，激活会明确报错；之后才发生的失败按包记录日志，不会阻止无关包完成注册。无法从配置树解析、或缺少该导出的显式 `packages` 条目会明确报错并指名该包。
+沒有該匯出的包會被靜默跳過。解析結論與已匯入的 manifest（中繼資料清單）會在整個程序生命週期內快取，因此新增 `./typert` 匯出後必須重新啟動。已掛載設定項對應的產物格式錯誤時，啟用會明確報錯；之後才發生的失敗按包記錄日誌，不會阻止無關包完成註冊。無法從設定樹解析、或缺少該匯出的顯式 `packages` 條目會明確報錯並指名該包。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释 loader 如何扫描、校验与注册；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋 loader 如何掃描、驗證與註冊；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-本插件是一个增量扫描器，与 client-modules 的 Node 侧实现对称：每次 Cordis `internal/plugin` 事件都会把该 fiber 的配置项名称标记为脏，微任务 flush 会针对实时 Loader 配置项逐一调和每个脏名称；激活阶段用所有当前配置项填充同一脏集合。
+本外掛是一個增量掃描器，與 client-modules 的 Node 側實作對稱：每次 Cordis `internal/plugin` 事件都會把該 fiber 的設定項名稱標記為髒，微任務 flush 會針對即時 Loader 設定項逐一調和每個髒名稱；啟用階段用所有目前設定項填充同一髒集合。
 
-### Manifest 校验
+### Manifest 驗證
 
-`validateTypertManifest()` 是模块／文件边界：manifest 从构建产物进入类型化注册表，因此每个字段都会被检查。manifest 必须指名导出它的包、携带 `host` face、持有 schema factory，并保持服务、事件、对象、成员、类型与文档记录格式正确；调用描述符必须使用带 factory 的严格编解码器。每次失败都会指名包与缺陷。
+`validateTypertManifest()` 是模組／檔案邊界：manifest 從建置產物進入型別化註冊表，因此每個欄位都會被檢查。manifest 必須指名匯出它的包、攜帶 `host` face、持有 schema factory，並保持服務、事件、物件、成員、型別與文件記錄格式正確；呼叫描述符必須使用帶 factory 的嚴格編解碼器。每次失敗都會指名包與缺陷。
 
-### 缓存与归属
+### 快取與歸屬
 
-结论（可解析说明符、是否导出）与已导入的 manifest 按包名缓存且永不过期。注册按配置项名称键控，并通过 `ctx.typert.register()` 返回的同一资源释放函数撤销；进行中的任务按配置项跟踪，因此迟到的导入不可能在其所有者消失后注册贡献。
+結論（可解析說明符、是否匯出）與已匯入的 manifest 按包名快取且永不過期。註冊按設定項名稱鍵控，並透過 `ctx.typert.register()` 返回的同一資源釋放函式撤銷；進行中的任務按設定項跟蹤，因此遲到的匯入不可能在其所有者消失後註冊貢獻。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`Config`、扫描器、manifest 校验、注册装配逻辑 |
-| — | 不发布运行时不变式伴生入口；Loader 配置项的生命周期直接持有每个对应的注册表资源释放函数，集成测试会观察注册与移除。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`Config`、掃描器、manifest 驗證、註冊裝配邏輯 |
+| — | 不釋出執行時不變式伴生入口；Loader 設定項的生命週期直接持有每個對應的註冊表資源釋放函式，整合測試會觀察註冊與移除。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；这些页面从 loader 开始，依次介绍它注册的内容及其生成方。
+當包級約定不夠用時閱讀以下頁面；這些頁面從 loader 開始，依次介紹它註冊的內容及其生成方。
 
-- [Typert 注册表](../registry/README.zh.md)——本插件所供给的服务。
-- [Typert 生成器](../generator/README.zh.md)——产生 loader 所导入产物的包。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-typert-loader)——`packages` 字段声明及其 JSDoc。
-- [Typert 组地图](../README.zh.md)——完整的类型反射流水线。
+- [Typert 註冊表](../registry/README.zh.md)——本外掛所供給的服務。
+- [Typert 生成器](../generator/README.zh.md)——產生 loader 所匯入產物的包。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-typert-loader)——`packages` 欄位宣告及其 JSDoc。
+- [Typert 組地圖](../README.zh.md)——完整的型別反射流水線。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为 loader 集成只注册生成的产物；任何模型可见投影均由消费方负责。
+無，因為 loader 整合只註冊生成的產物；任何模型可見投影均由消費方負責。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；注册变更只有通过读取注册表的消费方才会影响请求。
+無直接影響；註冊變更只有透過讀取註冊表的消費方才會影響請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明 loader 不会发现或注册什么；它们是当前包约束，不是任务积压。
+這些限制說明 loader 不會發現或註冊什麼；它們是目前包約束，不是任務積壓。
 
-- **仅宿主侧**——发现机制只会导入宿主侧 `./typert` 产物；在为客户端运行时添加等价的发现机制之前，需要先有独立的组合所有者。
-- **嵌套插件需要显式条目**——Loader 配置项会被自动发现，但嵌套在另一配置项之下、或完全不经 Loader 加载的插件，需要显式加入 `packages`，或由其所有者直接调用 `ctx.typert.register()`。
-- **缓存结论永不过期**——进程中途新增 `./typert` 导出的包需要重启后 loader 才会注册它。
+- **僅主機側**——發現機制只會匯入主機側 `./typert` 產物；在為用戶端執行時新增等價的發現機制之前，需要先有獨立的組合所有者。
+- **巢狀外掛需要顯式條目**——Loader 設定項會被自動發現，但巢狀在另一設定項之下、或完全不經 Loader 載入的外掛，需要顯式加入 `packages`，或由其所有者直接呼叫 `ctx.typert.register()`。
+- **快取結論永不過期**——程序中途新增 `./typert` 匯出的包需要重新啟動後 loader 才會註冊它。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

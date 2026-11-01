@@ -189,7 +189,7 @@ it('paginates inventories with an explicit continuation and total', async () => 
 
 it('keeps UI translation metadata out of model-facing plugin and bundle lists', async () => {
   const { call, manager } = await fixture()
-  const meta = { title: { en: 'Plugin', zh: '插件' }, error: 'UI-only diagnostic' }
+  const meta = { title: { en: 'Plugin', zh: '外掛' }, error: 'UI-only diagnostic' }
   manager.listPlugins.mockImplementationOnce(async () => [{ entryId: 'include:plugin', enabled: true, meta }])
   expect(JSON.parse(resultText(await call({ action: 'list_plugins' })))).toEqual({
     entries: [{ entryId: 'include:plugin', enabled: true }], total: 1, nextOffset: null,

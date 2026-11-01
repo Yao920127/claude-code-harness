@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的右侧 Sidebar：每会话一个停靠面、两种呈现形态、导航控制器 ctx.sidebarRight、tab 类型注册表 ctx.sidebarRightTabs 与 Tab 域。"
+description: "dsh Web 用戶端的右側 Sidebar：每工作階段一個停靠面、兩種呈現形態、導航控制器 ctx.sidebarRight、tab 型別註冊表 ctx.sidebarRightTabs 與 Tab 域。"
 kind: "package-reference"
 ---
 
@@ -9,151 +9,151 @@ kind: "package-reference"
 
 ## 概述
 
-右侧 Sidebar：停靠套件与本产品相遇的地方。它为每个会话持有一个停靠面，以两种呈现形态之一把它画成贴靠框架右列边缘的一块面板，把展开按钮放进会话 header，并拥有导航控制器（`ctx.sidebarRight`）、tab 类型注册表（`ctx.sidebarRightTabs`），以及告诉每个已开 tab 它是如何被导航到、能活多久的 Tab 域。
+右側 Sidebar：停靠套件與本產品相遇的地方。它為每個工作階段持有一個停靠面，以兩種呈現形態之一把它畫成貼靠框架右列邊緣的一塊麵板，把展開按鈕放進工作階段 header，並擁有導航控制器（`ctx.sidebarRight`）、tab 型別註冊表（`ctx.sidebarRightTabs`），以及告訴每個已開 tab 它是如何被導航到、能活多久的 Tab 域。
 
-## 目录
+## 目錄
 
-- [什么住在这里，什么不住](#what-lives-here-and-what-does-not)
-- [呈现形态](#presentations)
-- [展开按钮](#the-expand-button)
-- [状态](#state)
-- [扩展席位](#extension-seats)
+- [什麼住在這裡，什麼不住](#what-lives-here-and-what-does-not)
+- [呈現形態](#presentations)
+- [展開按鈕](#the-expand-button)
+- [狀態](#state)
+- [擴充功能席位](#extension-seats)
 - [`ctx.sidebarRight`](#ctxsidebarright)
 - [Tab 域](#the-tab-domain)
-- [引导页](#the-guide)
+- [引導頁](#the-guide)
 - [文案](#copy)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="what-lives-here-and-what-does-not"></a>
-## 什么住在这里，什么不住
+## 什麼住在這裡，什麼不住
 
-布局本身——分裂树、它的操作、拖拽手势、浮窗——属于 `@deepseek-ai/dsh-client-ui-dockkit`，并保持与宿主无关。本包提供套件拒绝知道的一切：产品文案、tab 的 `kind` 是什么意思、新格用哪个 tab 播种、停靠面挂在哪里、其它插件如何触达它。
+佈局本身——分裂樹、它的操作、拖拽手勢、浮窗——屬於 `@deepseek-ai/dsh-client-ui-dockkit`，並保持與主機無關。本包提供套件拒絕知道的一切：產品文案、tab 的 `kind` 是什麼意思、新格用哪個 tab 播種、停靠面掛在哪裡、其它外掛如何觸達它。
 
 <a id="presentations"></a>
-## 呈现形态
+## 呈現形態
 
-普通与全屏共用同一棵面板内容树，切换不会重挂载Tab。普通面板贴靠右栏；全屏面板覆盖窗口并保留宽屏底层列宽。窗口低于768px时打开右栏自动全屏；窄屏退出全屏会收起右栏，变宽不重新打开已关闭的右栏。 全屏打开时，底层列宽保持不变，直到滑入结束后才无过渡地准备普通轨道。 全屏面板退场前，关闭先准备全宽会话区，恢复先准备普通右轨道；退场期间底层不播放宽度动画。
+普通與全螢幕共用同一棵面板內容樹，切換不會重掛載Tab。普通面板貼靠右欄；全螢幕面板覆蓋視窗並保留寬屏底層列寬。視窗低於768px時開啟右欄自動全螢幕；窄屏退出全螢幕會收起右欄，變寬不重新開啟已關閉的右欄。 全螢幕開啟時，底層列寬保持不變，直到滑入結束後才無過渡地準備普通軌道。 全螢幕面板退場前，關閉先準備全寬工作階段區，恢復先準備普通右軌道；退場期間底層不播放寬度動畫。
 
-| 形态 | 轨道 | 面板 |
+| 形態 | 軌道 | 面板 |
 |---|---|---|
-| `push`（默认） | 面板宽度：会话区让出空间 | 在轨道内；它的左缘与会话区的右缘沿框架自己的曲线一起移动 |
-| `fullscreen` | 保留宽屏普通轨道；窄屏自动全屏不占轨道 | 覆盖整个窗口 |
+| `push`（預設） | 面板寬度：工作階段區讓出空間 | 在軌道內；它的左緣與工作階段區的右緣沿框架自己的曲線一起移動 |
+| `fullscreen` | 保留寬屏普通軌道；窄屏自動全螢幕不佔軌道 | 覆蓋整個視窗 |
 
-在 Windows Electron 中，`html[data-windows-titlebar]` 让全屏面板保持在顶栏下方及展开侧栏的右侧。框架的 `--dsh-windows-sidebar-width` 提供该缩进及最大宽度；`--dsh-windows-content-radius` 提供左上圆角。仅全屏面板为该圆角裁剪溢出内容。
+在 Windows Electron 中，`html[data-windows-titlebar]` 讓全螢幕面板保持在頂欄下方及展開側欄的右側。框架的 `--dsh-windows-sidebar-width` 提供該縮排及最大寬度；`--dsh-windows-content-radius` 提供左上圓角。僅全螢幕面板為該圓角裁剪溢位內容。
 
-席位通过 `ctx.layout.openRightbar(track, fullscreen)` / `closeRightbar()` 报告呈现，框架不注入本包。宽屏切换全屏不改变中栏宽度；宽度拖拽区只在普通展开态显示。独立浮窗及 `float`/`dock` 操作保持可用。
+席位透過 `ctx.layout.openRightbar(track, fullscreen)` / `closeRightbar()` 報告呈現，框架不注入本包。寬屏切換全螢幕不改變中欄寬度；寬度拖拽區只在普通展開態顯示。獨立浮窗及 `float`/`dock` 操作保持可用。
 
-面板没有标题行。它的两个控件——形态切换与折叠按钮——搭在套件 chrome 席位上，位于右上格 tab 条的最末端，因此 tab 条就是面板的整条上边。每条 tab 条从左到右读作：在允许时带关闭按钮的 tab 胶囊，添加控件（只在该格没有引导 tab 时绘制；它通过 `ctx.sidebarRight.openTab` 在该格打开引导页），该格的分栏控件，以及右上格里的两个面板控件。窄格里只有 chip 让位；其后的控件从不收缩或被裁切。
+面板沒有標題行。它的兩個控制元件——形態切換與摺疊按鈕——搭在套件 chrome 席位上，位於右上格 tab 條的最末端，因此 tab 條就是面板的整條上邊。每條 tab 條從左到右讀作：在允許時帶關閉按鈕的 tab 膠囊，新增控制元件（只在該格沒有引導 tab 時繪製；它透過 `ctx.sidebarRight.openTab` 在該格開啟引導頁），該格的分欄控制元件，以及右上格里的兩個面板控制元件。窄格里只有 chip 讓位；其後的控制元件從不收縮或被裁切。
 
 <a id="the-expand-button"></a>
-## 展开按钮
+## 展開按鈕
 
-快捷键速查包含右侧栏切换、分栏和面板全屏命令，对应控件显示同一份有效键位。分栏与全屏要求焦点位于可见的停靠分栏内；焦点在聊天区时不可用。不可分栏时控件仍可见，可聚焦的提示显示当前键位，并说明分栏数量上限或宽度要求。文件和浏览器提供者分别注册自己的命令。开始页按钮内以无背景文字显示有效快捷键，不额外弹出重复提示。
+快捷鍵速查包含右側欄切換、分欄和麵板全螢幕命令，對應控制元件顯示同一份有效鍵位。分欄與全螢幕要求焦點位於可見的停靠分欄內；焦點在聊天區時不可用。不可分欄時控制元件仍可見，可聚焦的提示顯示目前鍵位，並說明分欄數量上限或寬度要求。檔案和瀏覽器提供者分別註冊自己的命令。開始頁按鈕內以無背景文字顯示有效快捷鍵，不額外彈出重複提示。
 
-面板隐藏时，会话 header 角落席位里的一个按钮（`conversation.session.header.corner`，在工具组右缘之外，与 Session 日志控件齐平）是回去的路。它的图形是左侧 sidebar 折叠图标的镜像。它使用公共紧凑 Button，与相邻更多操作按钮共用圆角和 hover 底色。它与面板共用一个存储（slot 运行时允许两个同作用域席位共用一个 handle）；面板显示时它什么也不渲染，角落席位随之收起。于是折叠的 Sidebar 不花会话区任何代价：没有轨条、没有宽度，转录的滚动条留在列的边缘。没有会话就没有按钮也没有面板。
+面板隱藏時，工作階段 header 角落席位裡的一個按鈕（`conversation.session.header.corner`，在工具組右緣之外，與 Session 日誌控制元件齊平）是回去的路。它的圖形是左側 sidebar 摺疊圖示的映像。它使用公共緊湊 Button，與相鄰更多操作按鈕共用圓角和 hover 底色。它與面板共用一個儲存（slot 執行時允許兩個同作用域席位共用一個 handle）；面板顯示時它什麼也不渲染，角落席位隨之收起。於是摺疊的 Sidebar 不花工作階段區任何代價：沒有軌條、沒有寬度，轉錄的捲軸留在列的邊緣。沒有工作階段就沒有按鈕也沒有面板。
 
-面板取会话区的底色与正文字号，而不是自成一层浮起的表面：它是页面的一列，不是压在页面上的卡片。
+面板取工作階段區的底色與正文字號，而不是自成一層浮起的表面：它是頁面的一列，不是壓在頁面上的卡片。
 
-root 作用域的 `rightbar` 入口通过独立的 `rightbar.session` 子树渲染选中的 Session，以及拥有已初始化 `keepMounted` 正文的后台 Session。每个 View 拥有自身的 Session reference。只有前台 Conversation 上报框架列宽并绑定公共导航；其他子树保持隐藏，不删除 tab 状态。
+root 作用域的 `rightbar` 入口透過獨立的 `rightbar.session` 子樹渲染選中的 Session，以及擁有已初始化 `keepMounted` 正文的後臺 Session。每個 View 擁有自身的 Session reference。只有前臺 Conversation 上報框架列寬並繫結公共導航；其他子樹保持隱藏，不刪除 tab 狀態。
 
 <a id="state"></a>
-## 状态
+## 狀態
 
-每个会话 id 一个 `SurfaceState`——布局、它记录的序列、以及它已铸造的 id 数——保存在注册时声明的存储里。每个动作都遵循同一形态：铸造意图需要的 id，向套件 planner 询问由哪些操作承载，记录它们，然后把该会话的整个停靠面赋回去。没有任何动作就地编辑布局，这正是让套件的纯函数成为唯一计算布局之处的原因。
+每個工作階段 id 一個 `SurfaceState`——佈局、它記錄的序列、以及它已鑄造的 id 數——儲存在註冊時宣告的儲存裡。每個動作都遵循同一形態：鑄造意圖需要的 id，向套件 planner 詢問由哪些操作承載，記錄它們，然後把該工作階段的整個停靠面賦回去。沒有任何動作就地編輯佈局，這正是讓套件的純函式成為唯一計算佈局之處的原因。
 
-把铸造计数器带在停靠面里，是记录的序列可回放的原因：操作内嵌它们创建的 id，因此从同一初始状态回放能复现同一棵树。每个动作记录一条历史，无论它需要多少操作。展开、折叠与切换形态也都被记录。
+把鑄造計數器帶在停靠面裡，是記錄的序列可回放的原因：操作內嵌它們建立的 id，因此從同一初始狀態回放能復現同一棵樹。每個動作記錄一條歷史，無論它需要多少操作。展開、摺疊與切換形態也都被記錄。
 
-每个动作之后，套件的 settle planner 保证展开的停靠面有内容：最后一个 tab 被搬走或浮出的停靠格会被并掉；根格被清空时填入默认页。折叠的停靠面没有这种回填——会话以折叠且为空的停靠面开始，收起整列的关闭也让它保持为空——首次会展示空布局的那次展开才播种默认页。显式关闭遵循[默认页与关闭规则](#the-guide)。展开期间永远至少有一个 tab，永远没有空格——因此没有单独的「关闭格」手势。
+每個動作之後，套件的 settle planner 保證展開的停靠面有內容：最後一個 tab 被搬走或浮出的停靠格會被並掉；根格被清空時填入預設頁。摺疊的停靠面沒有這種回填——工作階段以摺疊且為空的停靠面開始，收起整列的關閉也讓它保持為空——首次會展示空佈局的那次展開才播種預設頁。顯式關閉遵循[預設頁與關閉規則](#the-guide)。展開期間永遠至少有一個 tab，永遠沒有空格——因此沒有單獨的「關閉格」手勢。
 
-停靠面的最后一个 tab 还多带一条规则，由 store 的 `closeTab` 决定并经 `canCloseTab` 镜像给套件：作为唯一停靠 tab 的引导页不画关闭控件也不画菜单里的关闭项——它的 chip 呈安静样式，在没有扩展条目时次键按下也不弹出菜单——对它的编程式关闭什么都不记录；任何其它 tab 独自留下时，点击关闭会连同整列一起收起，记为一条历史，布局保持为空，直到下次展开时创建当时的默认页。浮动面板不参与这条规则：前台 Session 的浮窗无论列是否展开都会渲染，其 tab 照常关闭。
+停靠面的最後一個 tab 還多帶一條規則，由 store 的 `closeTab` 決定並經 `canCloseTab` 映像給套件：作為唯一停靠 tab 的引導頁不畫關閉控制元件也不畫選單裡的關閉項——它的 chip 呈安靜樣式，在沒有擴充功能條目時次鍵按下也不彈出選單——對它的程式設計式關閉什麼都不記錄；任何其它 tab 獨自留下時，點選關閉會連同整列一起收起，記為一條歷史，佈局保持為空，直到下次展開時建立當時的預設頁。浮動面板不參與這條規則：前臺 Session 的浮窗無論列是否展開都會渲染，其 tab 照常關閉。
 
-store 将每个 Session 的布局、标签身份、选中项、分栏比例、浮窗矩形、呈现方式和身份计数以 JSON 保存到 localStorage 的 `dsh.sidebar-right.v1.<sessionId>`。刷新时在渲染标签正文前恢复布局；不同 Session 的布局独立。provider 根据保留的标签身份和资源地址恢复自身内容。导航参数、资源内容和活动连接不属于布局状态。撤销历史只保留在内存中，刷新后清空。采用布局或启动探测前会校验保存字段类型、节点成员关系、选中项、身份计数，以及单格或左右两格的停靠布局；无效数据只清除对应 Session 的 key。存储失败时，当前布局仍可在内存中使用。同源窗口共享每个 Session 最后保存的布局；活动窗口在刷新前保留各自的当前布局。
+store 將每個 Session 的佈局、標籤身份、選中項、分欄比例、浮窗矩形、呈現方式和身份計數以 JSON 儲存到 localStorage 的 `dsh.sidebar-right.v1.<sessionId>`。重新整理時在渲染標籤正文前恢復佈局；不同 Session 的佈局獨立。provider 根據保留的標籤身份和資源地址恢復自身內容。導航參數、資源內容和活動連線不屬於佈局狀態。撤銷歷史只保留在記憶體中，重新整理後清空。採用佈局或啟動探測前會驗證儲存欄位型別、節點成員關係、選中項、身份計數，以及單格或左右兩格的停靠佈局；無效資料只清除對應 Session 的 key。儲存失敗時，目前佈局仍可在記憶體中使用。同源視窗共享每個 Session 最後儲存的佈局；活動視窗在重新整理前保留各自的目前佈局。
 
-`sidebarRight.openTabs` 发布所有已保存和已采用 Session 的打开标签元数据，并保持快照引用稳定。启动时读取布局 key，不挂载非当前内容、pin 文件或激活 Agent。已采用的 store 在标签成员变化时更新自己的元数据，永久清除的 scope 删除对应记录。其他窗口写入 storage 不会覆盖当前窗口的活动成员关系。provider 使用该清单恢复自己的资源生命周期。
+`sidebarRight.openTabs` 釋出所有已儲存和已採用 Session 的開啟標籤中繼資料，並保持快照引用穩定。啟動時讀取佈局 key，不掛載非目前內容、pin 檔案或啟用 Agent。已採用的 store 在標籤成員變化時更新自己的中繼資料，永久清除的 scope 刪除對應記錄。其他視窗寫入 storage 不會覆蓋目前視窗的活動成員關係。provider 使用該清單恢復自己的資源生命週期。
 
 <a id="extension-seats"></a>
-## 扩展席位
+## 擴充功能席位
 
-tab 类型分两阶段注册，随包发布的引导类型走的正是别的包的类型走的同一条公开路径（`ui-sidebar-documentpreview` 是活的证明）。两个阶段都在类型自己的 `ctx.effect` 里，因此注册与创建它的插件同生共死。
+tab 型別分兩階段註冊，隨包釋出的引導型別走的正是別的包的型別走的同一條公開路徑（`ui-sidebar-documentpreview` 是活的證明）。兩個階段都在型別自己的 `ctx.effect` 裡，因此註冊與建立它的外掛同生共死。
 
-1. **类型**——`ctx.sidebarRightTabs.register({ id, kind, patterns?, priority?, canOpen?, title, guide?, keepMounted? })`，一份没有运行时钩子的静态声明，返回 disposer。`id` 是这个实现在 tab 系统里的身份，在全部注册中唯一（包名是天然取值；随包引导页是 `@deepseek-ai/dsh-client-ui-sidebar-right/guide`）：一旦 extension 可以接管 builtin 的 kind，kind 就不再唯一，所以实现要自己命名，同一 `id` 的第二次注册会 throw。资源类型给出 `patterns`，即作用于 `dsh-resource://` 地址的 glob：含 `:` 的匹配整个地址（`dsh-resource://file/**`）；不含的匹配 URI 路径的任意深度且忽略大小写（`*.md`），不是 URI 的地址不匹配任何这类模式。页类型——引导页、文件树——不给出模式，按 kind 打开。`canOpen(address)` 否决一次命中。`title(address)` 是 tab chip 的文字，在 tab 打开时捕获。`guide` 列出引导页的入口框；选中一个即把贡献它的类型作为页打开。一个 `kind` 最多承载一份 `builtin` 与一份 `extension` 注册（extension 生效；它离开后 builtin 恢复）；kind 上的其它任何撞名都 throw。`id` 同时也是该类型正文与标题注册时用的 key，因此 extension 与它接管的 builtin 各占一个格位，席位渲染生效的那个。
-2. **正文**——`ctx.slots.register({ name: 'sidebar.right.pane.tab', key: definition.id }, Body)` 通过框架注入的 `useTabInfo()` 读取 `{ sidebar, panel, tab }`。`sidebar` 提供开合与全屏信息，`panel.id` 命名所在格，`tab` 包含原记录字段、`visible`、`navigation`、`signal` 和 `actions`。这些字段不再作为平铺owner props传入；类型自己的store仍使用 `useStore`/`actions`。可选标题注册及引导替换共享该hook；未注册标题时使用打开时保存的文本。标题包装保留 tab 与 occurrence 的 DOM 标记，但不引入布局盒，因此停靠 tab 和浮窗标题中的图标间距与垂直对齐由 dockkit 控制。
+1. **型別**——`ctx.sidebarRightTabs.register({ id, kind, patterns?, priority?, canOpen?, title, guide?, keepMounted? })`，一份沒有執行時掛鉤的靜態宣告，返回 disposer。`id` 是這個實作在 tab 系統裡的身份，在全部註冊中唯一（包名是天然取值；隨包引導頁是 `@deepseek-ai/dsh-client-ui-sidebar-right/guide`）：一旦 extension 可以接管 builtin 的 kind，kind 就不再唯一，所以實作要自己命名，同一 `id` 的第二次註冊會 throw。資源型別給出 `patterns`，即作用於 `dsh-resource://` 地址的 glob：含 `:` 的匹配整個地址（`dsh-resource://file/**`）；不含的匹配 URI 路徑的任意深度且忽略大小寫（`*.md`），不是 URI 的地址不匹配任何這類模式。頁型別——引導頁、檔案樹——不給出模式，按 kind 開啟。`canOpen(address)` 否決一次命中。`title(address)` 是 tab chip 的文字，在 tab 開啟時捕捉。`guide` 列出引導頁的入口框；選中一個即把貢獻它的型別作為頁開啟。一個 `kind` 最多承載一份 `builtin` 與一份 `extension` 註冊（extension 生效；它離開後 builtin 恢復）；kind 上的其它任何撞名都 throw。`id` 同時也是該型別正文與標題註冊時用的 key，因此 extension 與它接管的 builtin 各佔一個格位，席位渲染生效的那個。
+2. **正文**——`ctx.slots.register({ name: 'sidebar.right.pane.tab', key: definition.id }, Body)` 透過框架注入的 `useTabInfo()` 讀取 `{ sidebar, panel, tab }`。`sidebar` 提供開合與全螢幕資訊，`panel.id` 命名所在格，`tab` 包含原記錄欄位、`visible`、`navigation`、`signal` 和 `actions`。這些欄位不再作為平鋪owner props傳入；型別自己的store仍使用 `useStore`/`actions`。可選標題註冊及引導替換共享該hook；未註冊標題時使用開啟時儲存的文字。標題包裝保留 tab 與 occurrence 的 DOM 標記，但不引入佈局盒，因此停靠 tab 和浮窗標題中的圖示間距與垂直對齊由 dockkit 控制。
 
-由哪个类型打开资源遵循编辑器解析器的惯例：`patterns` 命中的类型先按 `priority` 档排序——`extension`（产品外的类型，最高档，也是未命名时的默认）、`builtin`、`fallback`（任何更具体的类型都应胜过的通用查看器）——再按命中模式的长度，再按注册顺序；`canOpen` 会剔除候选。各档是字符串字面量，因此别的包里的类型不需要从这里做运行时导入。`candidates(address)` 返回排序，`claim(address, kind?)` 返回决定；指定 `kind` 时跳过它的 glob 但保留它的 `canOpen`。
+由哪個型別開啟資源遵循編輯器解析器的慣例：`patterns` 命中的型別先按 `priority` 檔排序——`extension`（產品外的型別，最高檔，也是未命名時的預設）、`builtin`、`fallback`（任何更具體的型別都應勝過的通用檢視器）——再按命中模式的長度，再按註冊順序；`canOpen` 會剔除候選。各檔是字串字面量，因此別的包裡的型別不需要從這裡做執行時匯入。`candidates(address)` 返回排序，`claim(address, kind?)` 返回決定；指定 `kind` 時跳過它的 glob 但保留它的 `canOpen`。
 
-另有两个席位扩展已有之物：`sidebar.right.tab.guide`（chain）替换引导 tab 的正文而不替换 tab，`sidebar.right.tab.menu.item`（list）在套件自己的布局动作之后向 tab 菜单追加内容级动作。目前没有面向格级动作或折叠态控件的席位，因为还没有东西需要它。
+另有兩個席位擴充功能已有之物：`sidebar.right.tab.guide`（chain）替換引導 tab 的正文而不替換 tab，`sidebar.right.tab.menu.item`（list）在套件自己的佈局動作之後向 tab 選單追加內容級動作。目前沒有面向格級動作或摺疊態控制元件的席位，因為還沒有東西需要它。
 
 <a id="ctxsidebarright"></a>
 ## `ctx.sidebarRight`
 
-`openResource(address, options?)` 与 `openTab(kind, options?)` 是导航控制器，进入该列的每条路都调用其中之一：会话区的文件链接与工具行的行号引用（`openResource(fileAddress, { params: { line } })`），tab 条的添加控件与引导入口框（`openTab`），文件树的行（`tab.actions.openResource`）。资源地址是 `dsh-resource://<type>/…` URI；不带 `options.kind` 时由注册表认领（glob 与 `canOpen`，最高档胜出），带它时由该 kind 生效的类型打开。页按 kind 命名；tab 记录在本包拼出、别处无人书写的地址下（`contract/seed.ts`）。两者以同一组步骤作为一条历史运行：已展示同一 (kind, contentId) 的资源 tab 被聚焦，不限所在分栏，除非 `revealIfOpened: false`；页 tab 始终只在目标分栏内去重，不受该选项影响；否则新 tab 落到 `options.replaceTab` 所在的格与位置（并关掉那个 tab），再退而落到 `options.paneId`，再退而落到活跃停靠格；面板展开，因为用户看不到的内容不算打开。随后 Tab 域记录这次导航——`params` 以 `navigation.params` 抵达正文，`revision` 递增——不进布局历史。`params` 按所开之物定型：某资源类型的查看器把自己那项并入 `SidebarRightResourceParamsMap`（文本预览声明 `{ line?: number }`）；接受参数的页类型按其 kind 并入 `SidebarRightTabParamsMap`；值约定为 JSON 形状，运行时不校验。`dsh-resource://` 之外的地址、无人认领的地址、或未注册的 kind 都会 throw：那是接线错误，不是用户错误。
+`openResource(address, options?)` 與 `openTab(kind, options?)` 是導航控制器，進入該列的每條路都呼叫其中之一：工作階段區的檔案連結與工具行的行號引用（`openResource(fileAddress, { params: { line } })`），tab 條的新增控制元件與引匯入口框（`openTab`），檔案樹的行（`tab.actions.openResource`）。資源地址是 `dsh-resource://<type>/…` URI；不帶 `options.kind` 時由註冊表認領（glob 與 `canOpen`，最高檔勝出），帶它時由該 kind 生效的型別開啟。頁按 kind 命名；tab 記錄在本包拼出、別處無人書寫的地址下（`contract/seed.ts`）。兩者以同一組步驟作為一條歷史執行：已展示同一 (kind, contentId) 的資源 tab 被聚焦，不限所在分欄，除非 `revealIfOpened: false`；頁 tab 始終只在目標分欄內去重，不受該選項影響；否則新 tab 落到 `options.replaceTab` 所在的格與位置（並關掉那個 tab），再退而落到 `options.paneId`，再退而落到活躍停靠格；面板展開，因為使用者看不到的內容不算開啟。隨後 Tab 域記錄這次導航——`params` 以 `navigation.params` 抵達正文，`revision` 遞增——不進佈局歷史。`params` 按所開之物定型：某資源型別的檢視器把自己那項併入 `SidebarRightResourceParamsMap`（文字預覽宣告 `{ line?: number }`）；接受參數的頁型別按其 kind 併入 `SidebarRightTabParamsMap`；值約定為 JSON 形狀，執行時不驗證。`dsh-resource://` 之外的地址、無人認領的地址、或未註冊的 kind 都會 throw：那是接線錯誤，不是使用者錯誤。
 
-`preferNewPane: true` 会先按普通的两格上限与空间规则尝试分割目标停靠格，无法分栏时回退到该格。`replaceTab` 优先并会禁用这项偏好。
+`preferNewPane: true` 會先按普通的兩格上限與空間規則嘗試分割目標停靠格，無法分欄時退回到該格。`replaceTab` 優先並會停用這項偏好。
 
-`close(tabId)` 关闭一个 tab；`active()` 读取活动 tab。`isExpanded()` 与 `toggleExpanded()` 读取并驱动该列的展开；`toggleFullscreen(target)` 对捕获的停靠分栏执行面板控件的显示模式操作。布局操作供以编程方式安排该列的调用方使用，每个都像它替代的手势一样被记录：`focus(tabId)` 聚焦一个 tab 及其格；`split(paneId?)` 在与 tab 条控件相同的格预算与空间规则下分栏一个停靠格（默认活跃格），返回新格的 id，做不到时返回 `undefined`——且不记录任何东西；`float(tabId, rect?)` 把停靠 tab 浮出为浮窗；`dock(paneId)` 把浮窗放回活跃停靠格。不存在的 tab 或格、或已处于调用目标状态的，都原样不动。该接口只暴露操作：没有布局快照、没有操作日志、没有按地址查找。`_undo()` / `_redo()` 步进已挂载停靠面的历史；它们是 `@internal`——序列没有面向用户的控件，这两个只为测试存在。命令需要一个已挂载的会话停靠面；没有时它们 throw，而不是写进一个没人绘制的面里。`mounted` 是「席位正在屏幕上的那个会话」的可观察值，全局面板替代 Conversation 或没有选中会话时为 `undefined`。要在自己的挂载 effect 里打开内容的组件通过绑定的 hook 读取它，并在它有值后再行动：框架把 Conversation 列挂载在这个席位之前，而席位在同一次提交的 passive effect 里才发布绑定，一个假定席位已绑定的 effect 会先运行并 throw。计划审阅的自动打开就是这样读取它的。
+`close(tabId)` 關閉一個 tab；`active()` 讀取活動 tab。`isExpanded()` 與 `toggleExpanded()` 讀取並驅動該列的展開；`toggleFullscreen(target)` 對捕捉的停靠分欄執行面板控制元件的顯示模式操作。佈局操作供以程式設計方式安排該列的呼叫方使用，每個都像它替代的手勢一樣被記錄：`focus(tabId)` 聚焦一個 tab 及其格；`split(paneId?)` 在與 tab 條控制元件相同的格預算與空間規則下分欄一個停靠格（預設活躍格），返回新格的 id，做不到時返回 `undefined`——且不記錄任何東西；`float(tabId, rect?)` 把停靠 tab 浮出為浮窗；`dock(paneId)` 把浮窗放回活躍停靠格。不存在的 tab 或格、或已處於呼叫目標狀態的，都原樣不動。該介面只暴露操作：沒有佈局快照、沒有操作日誌、沒有按地址查詢。`_undo()` / `_redo()` 步進已掛載停靠面的歷史；它們是 `@internal`——序列沒有面向使用者的控制元件，這兩個只為測試存在。命令需要一個已掛載的工作階段停靠面；沒有時它們 throw，而不是寫進一個沒人繪製的面裡。`mounted` 是「席位正在螢幕上的那個工作階段」的可觀察值，全域面板替代 Conversation 或沒有選中工作階段時為 `undefined`。要在自己的掛載 effect 裡開啟內容的元件透過繫結的 hook 讀取它，並在它有值後再行動：框架把 Conversation 列掛載在這個席位之前，而席位在同一次提交的 passive effect 裡才釋出繫結，一個假定席位已繫結的 effect 會先執行並 throw。計劃審閱的自動開啟就是這樣讀取它的。
 
-`focusedTarget(element?)` 解析当前 DOM 分栏和标签页，也接受嵌入 iframe；焦点位于外部时不返回页面。`commandTarget(element?)` 另外允许外部打开动作使用已挂载会话的活动停靠分栏。捕获值包含 occurrence 和导航版本；`isTargetCurrent(target)` 拒绝会话变更、已移动或重新打开的标签页，以及期间发生的导航。焦点和指针激活独立于持久化的布局选择。
+`focusedTarget(element?)` 解析目前 DOM 分欄和標籤頁，也接受嵌入 iframe；焦點位於外部時不返回頁面。`commandTarget(element?)` 另外允許外部開啟動作使用已掛載工作階段的活動停靠分欄。捕捉值包含 occurrence 和導航版本；`isTargetCurrent(target)` 拒絕工作階段變更、已移動或重新開啟的標籤頁，以及期間發生的導航。焦點和指標啟用獨立於持久化的佈局選擇。
 
 <a id="the-tab-domain"></a>
 ## Tab 域
 
-Tab 域按（Session，Tab id）保留品牌化 occurrence id、导航、中止信号与绑定动作。私有装配回调采用各 Session 的 store，立即对齐恢复的记录，再跟随其提交。同一 Session 的 store 重建会替换其 `adopt` 注册，同时释放旧订阅与清理引用。记录消失或插件卸载才中止 signal，收起和切会话不销毁记录；undo 恢复的是新 occurrence。`useTabInfo()` 组合框架绑定的 store 与导航 hook，不在组件中手写订阅或在渲染时创建记录。`tab.actions` 始终作用于自己的会话；`tab.visible` 区分正文与标题，并排除后台 Session；前台浮窗不受整栏收起影响。`adopt` 不在公开控制器上。
+Tab 域按（Session，Tab id）保留品牌化 occurrence id、導航、中止訊號與繫結動作。私有裝配回呼採用各 Session 的 store，立即對齊恢復的記錄，再跟隨其提交。同一 Session 的 store 重建會替換其 `adopt` 註冊，同時釋放舊訂閱與清理引用。記錄消失或外掛解除安裝才中止 signal，收起和切工作階段不銷燬記錄；undo 恢復的是新 occurrence。`useTabInfo()` 組合框架繫結的 store 與導航 hook，不在元件中手寫訂閱或在渲染時建立記錄。`tab.actions` 始終作用於自己的工作階段；`tab.visible` 區分正文與標題，並排除後臺 Session；前臺浮窗不受整欄收起影響。`adopt` 不在公開控制器上。
 
-类型声明 `keepMounted: true` 后，已访问正文会在切 tab、切 Session、收起和停靠切换期间保留。每个 View 通过 owner props 提供自身稳定的持有回调，因此 Session injection binding 重建不会释放正文。未访问的正文不会提前挂载。
+型別宣告 `keepMounted: true` 後，已存取正文會在切 tab、切 Session、收起和停靠切換期間保留。每個 View 透過 owner props 提供自身穩定的持有回呼，因此 Session injection binding 重建不會釋放正文。未存取的正文不會提前掛載。
 
-标签页所有者通过 effect 注册 `registerCloseHandler(kind, handler)`。handler 在允许显式关闭或替换前同步保存后台清理任务。资源所有者跟踪完成和重试，侧栏不等待清理。handler 抛错时保留标签页。折叠、展示方式改变和插件卸载不调用关闭 handler；tab abort signal 标识 occurrence 卸载，不代表显式关闭。
+標籤頁所有者透過 effect 註冊 `registerCloseHandler(kind, handler)`。handler 在允許顯式關閉或替換前同步儲存後臺清理任務。資源所有者跟蹤完成和重試，側欄不等待清理。handler 拋錯時保留標籤頁。摺疊、展示方式改變和外掛解除安裝不呼叫關閉 handler；tab abort signal 標識 occurrence 解除安裝，不代表顯式關閉。
 
-关闭与刷新命令解析聚焦 pane 和 tab occurrence。页面通过 `tab.actions.bindCommands()` 绑定刷新操作，并在卸载时释放；已结束的 occurrence 不能重新获得能力。刷新不会重载应用。通过快捷键打开页面、展开侧栏或执行分栏操作后，焦点在 DOM 提交后移至选中的停靠或浮动分栏，包括显示已有单例页面和替换引导页。展开侧栏时聚焦活动停靠分栏；收起时保留浮动分栏内的焦点。分栏获得焦点时保留现有文本选区。聚焦的页面输入框或 iframe 被替换时，仅在没有其他元素持有焦点的情况下将焦点交还其可见分栏；外部指针操作或显式失焦会取消此次恢复。关闭会再次检查捕获的身份并执行资源清理。通过快捷键或原生菜单关闭后，焦点移至同一 Session 中仍可见的分栏，让连续关闭继续作用于右栏。过期目标和清理失败均不会回退为关窗。模态限制遵循[快捷键服务](../shortcuts/README.zh.md)。关闭命令优先请求前台弹窗的关闭操作；弹窗拒绝关闭、菜单或未注册的对话框都会阻止关闭后方侧栏或窗口。通过快捷键或原生菜单关闭唯一的停靠引导页时，收起右栏并保留引导页。Desktop 仅在没有弹窗且焦点没有所属的右栏页面时通过快捷键服务请求关闭窗口；Web 保留浏览器窗口。
+關閉與重新整理命令解析聚焦 pane 和 tab occurrence。頁面透過 `tab.actions.bindCommands()` 繫結重新整理操作，並在解除安裝時釋放；已結束的 occurrence 不能重新獲得能力。重新整理不會過載應用。透過快捷鍵開啟頁面、展開側欄或執行分欄操作後，焦點在 DOM 提交後移至選中的停靠或浮動分欄，包括顯示已有單例頁面和替換引導頁。展開側欄時聚焦活動停靠分欄；收起時保留浮動分欄內的焦點。分欄獲得焦點時保留現有文字選區。聚焦的頁面輸入框或 iframe 被替換時，僅在沒有其他元素持有焦點的情況下將焦點交還其可見分欄；外部指標操作或顯式失焦會取消此次恢復。關閉會再次檢查捕捉的身份並執行資源清理。透過快捷鍵或原生選單關閉後，焦點移至同一 Session 中仍可見的分欄，讓連續關閉繼續作用於右欄。過期目標和清理失敗均不會退回為關窗。模態限制遵循[快捷鍵服務](../shortcuts/README.zh.md)。關閉命令優先請求前臺彈出視窗的關閉操作；彈出視窗拒絕關閉、選單或未註冊的對話方塊都會阻止關閉後方側欄或視窗。透過快捷鍵或原生選單關閉唯一的停靠引導頁時，收起右欄並保留引導頁。Desktop 僅在沒有彈出視窗且焦點沒有所屬的右欄頁面時透過快捷鍵服務請求關閉視窗；Web 保留瀏覽器視窗。
 
 <a id="the-guide"></a>
-## 引导页
+## 引導頁
 
-每个 `guide` 入口具有 provider 内唯一的 `id`。开始页按当前生效的定义 id 渲染 `sidebar.right.tab.guide.entry`，传入入口 id、解析后的标题、可选描述，以及框架提供的 `useTabInfo` hook。provider 可按自己的定义 id 注册自定义卡片；未注册时使用默认图标与标题按钮。侧栏负责宽度和排列，自定义组件负责内部结构和交互。引导卡片统一使用 R20，包含悬停底色与提供方自有的分体按钮。排序或其他注册变化不会改变入口身份。无背景的快捷键文字右对齐。
+每個 `guide` 入口具有 provider 內唯一的 `id`。開始頁按目前生效的定義 id 渲染 `sidebar.right.tab.guide.entry`，傳入入口 id、解析後的標題、可選描述，以及框架提供的 `useTabInfo` hook。provider 可按自己的定義 id 註冊自定義卡片；未註冊時使用預設圖示與標題按鈕。側欄負責寬度和排列，自定義元件負責內部結構和互動。引導卡片統一使用 R20，包含懸停底色與提供者自有的分體按鈕。排序或其他註冊變化不會改變入口身份。無背景的快捷鍵文字右對齊。
 
-浏览器页面等需要独立实例的 tab 类型可声明 `multiple: true`。每次打开都会获得独立内容地址，因此移动和停靠会保留这些实例；普通页面仍在每个格内去重。
+瀏覽器頁面等需要獨立實例的 tab 型別可宣告 `multiple: true`。每次開啟都會獲得獨立內容地址，因此移動和停靠會保留這些實例；普通頁面仍在每個格內去重。
 
-默认页取决于已注册的引导入口数，不取决于 tab 类型数或已打开的 tab 数。恰好一个入口时直接打开对应页面；没有入口或有多个入口时打开引导页。即使只有一个入口，显式添加引导页仍会打开引导页。只有作为唯一停靠 tab 的引导页不可关闭；关闭其它任何唯一 tab 时会同时收起整列。chip、上下文菜单与 `close` API 使用同一规则。
+預設頁取決於已註冊的引匯入口數，不取決於 tab 型別數或已開啟的 tab 數。恰好一個入口時直接開啟對應頁面；沒有入口或有多個入口時開啟引導頁。即使只有一個入口，顯式新增引導頁仍會開啟引導頁。只有作為唯一停靠 tab 的引導頁不可關閉；關閉其它任何唯一 tab 時會同時收起整列。chip、上下文選單與 `close` API 使用同一規則。
 
-引导 tab 是一枚弱化的罗盘，下方是各已注册类型贡献的每个 `guide` 条目一个入口胶囊，按 `order` 排列并在正文中居中；引导页自己没有文字。胶囊显示条目的图标——条目没注册图标时用引导页自己更浅的立方体占位符——和标题；列出的条目不超过四个时，注册了 `description` 的条目在标题下显示它，更长的列表则去掉所有描述。点击默认胶囊会调用 `tab.actions.openTab(entry.kind, { replaceTab: true })`，于是引导页让位给它打开的页。一个格最多持有一个引导 tab。tab 条的添加控件只在该格没有引导 tab 时绘制，并以 `openTab('guide', { paneId, revealIfOpened: false })` 在该格打开一个，这样别的格里的引导页不会截走这次点击；把引导页开进已有引导页的格则改为聚焦它；把引导页拖入、放入或收回到这样的格会合并进去——来者关闭，该格自己的被聚焦；对引导页 `duplicateTab` 不记录任何东西。分栏、展开且为空的根格、以及唯一 tab 拖到本格边缘分屏后腾出的格使用相同的默认页规则，每个新格一个 tab；这种本格边缘拖放让被拖的 tab 保持聚焦。普通的 `openTab('guide')` 只在活跃或指定分栏内打开或聚焦引导页。对空分栏执行 split 不产生变化，也不返回新分栏。产品最多保留左右两格，默认均分，分隔条限定在 20%～80%。宽度不足以容纳两格时不允许新分栏；已有两格时，正文拖放用于跨格移动，不再创建第三格。达到两格上限时禁用分栏控件并提供可聚焦的原因提示；关闭回单格后重新启用。
+引導 tab 是一枚弱化的羅盤，下方是各已註冊型別貢獻的每個 `guide` 條目一個入口膠囊，按 `order` 排列並在正文中居中；引導頁自己沒有文字。膠囊顯示條目的圖示——條目沒註冊圖示時用引導頁自己更淺的立方體預留位置——和標題；列出的條目不超過四個時，註冊了 `description` 的條目在標題下顯示它，更長的列表則去掉所有描述。點選預設膠囊會呼叫 `tab.actions.openTab(entry.kind, { replaceTab: true })`，於是引導頁讓位給它開啟的頁。一個格最多持有一個引導 tab。tab 條的新增控制元件只在該格沒有引導 tab 時繪製，並以 `openTab('guide', { paneId, revealIfOpened: false })` 在該格開啟一個，這樣別的格里的引導頁不會截走這次點選；把引導頁開進已有引導頁的格則改為聚焦它；把引導頁拖入、放入或收回到這樣的格會合並進去——來者關閉，該格自己的被聚焦；對引導頁 `duplicateTab` 不記錄任何東西。分欄、展開且為空的根格、以及唯一 tab 拖到本格邊緣分屏後騰出的格使用相同的預設頁規則，每個新格一個 tab；這種本格邊緣拖放讓被拖的 tab 保持聚焦。普通的 `openTab('guide')` 只在活躍或指定分欄內開啟或聚焦引導頁。對空分欄執行 split 不產生變化，也不返回新分欄。產品最多保留左右兩格，預設均分，分隔條限定在 20%～80%。寬度不足以容納兩格時不允許新分欄；已有兩格時，正文拖放用於跨格移動，不再建立第三格。達到兩格上限時停用分欄控制元件並提供可聚焦的原因提示；關閉回單格後重新啟用。
 
 <a id="copy"></a>
 ## 文案
 
-该列里的每个字符串都来自 `sidebarRight` 语言命名空间，包括套件的无障碍名称。tab 的标题在 tab 铸造时固定；类型的显示名跟随当前语言。
+該列裡的每個字串都來自 `sidebarRight` 語言名稱空間，包括套件的無障礙名稱。tab 的標題在 tab 鑄造時固定；型別的顯示名跟隨目前語言。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为本包是浏览器侧 UI 插件层，不注册任何面向模型的内容。
+無，因為本包是瀏覽器側 UI 外掛層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **布局保存在当前浏览器。** 布局不跨设备同步；provider 专属状态需要由该 provider 支持恢复。
-- **没有会话就没有停靠面。** 状态按会话 id 键控，因此 hero 画面右侧什么都不显示。
-- **硬编码的层叠。** 内容树使用固定层叠层；浮窗在该层内重排，不会把整层抬到菜单之上。
-- **保活 Session 的删除。** 仅从目录消失不会使已初始化的保活 View 退休；释放由 tab 生命周期和插件卸载负责。
-- **未暴露撤销。** 记录的序列只能通过 `@internal` 服务方法步进；产品控件是有意缺席的。
-- **标题在打开时固定。** 类型的 `title(address)` 被捕获进记录；会变的标题只来自可选的标题席位。
-- **没有内容导航栈。** 后退回放的是布局操作；编辑器式的「已访问内容」前进/后退尚未构建。
+- **佈局儲存在目前瀏覽器。** 佈局不跨裝置同步；provider 專屬狀態需要由該 provider 支援恢復。
+- **沒有工作階段就沒有停靠面。** 狀態按工作階段 id 鍵控，因此 hero 畫面右側什麼都不顯示。
+- **硬編碼的層疊。** 內容樹使用固定層疊層；浮窗在該層內重排，不會把整層抬到選單之上。
+- **保活 Session 的刪除。** 僅從目錄消失不會使已初始化的保活 View 退休；釋放由 tab 生命週期和外掛解除安裝負責。
+- **未暴露撤銷。** 記錄的序列只能透過 `@internal` 服務方法步進；產品控制元件是有意缺席的。
+- **標題在開啟時固定。** 型別的 `title(address)` 被捕捉進記錄；會變的標題只來自可選的標題席位。
+- **沒有內容導航棧。** 後退回放的是佈局操作；編輯器式的「已存取內容」前進/後退尚未建置。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变量：** 不发布 companion。两个服务（`sidebarRight`、`sidebarRightTabs`）在同一个 effect 内经 `ctx.reflect.provide` 提供并随之拆除；席位绑定与 Tab 域 occurrence 的生命周期由本包的 spec 直接断言，不存在会与之分歧的独立观察。
+**執行時不變數：** 不釋出 companion。兩個服務（`sidebarRight`、`sidebarRightTabs`）在同一個 effect 內經 `ctx.reflect.provide` 提供並隨之拆除；席位繫結與 Tab 域 occurrence 的生命週期由本包的 spec 直接斷言，不存在會與之分歧的獨立觀察。

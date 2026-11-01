@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-11-incremental-terminal-retention.md
 /agent-note-incremental-terminal-retention:
   en: b00300b3ace789da
-  zh: c267be719b3c8814
+  zh: 3093af265c642178
 /agent-note-incremental-terminal-retention/problem:
   en: 0c3232a4a2429315
-  zh: c6b3c6224bc9031d
+  zh: 3d3a1b71acd365f8
 /agent-note-incremental-terminal-retention/decision:
   en: 43bb3c2d0d561231
-  zh: 8dacb0720f28d490
+  zh: d56e36adbeb69c73
 /agent-note-incremental-terminal-retention/measurement-design:
   en: 925815f8ae326179
-  zh: 188ee3f695ece8de
+  zh: f97c04eccb67224e
 /agent-note-incremental-terminal-retention/measurement-design/local-reference-measurements:
   en: a049c0a118648de7
-  zh: 2c31044ff11b9029
+  zh: eb4bcd179d65d397
 /agent-note-incremental-terminal-retention/alternatives-considered:
   en: 0af1fcbc28320b5b
-  zh: 8e1cfc843821dd77
+  zh: d04d0142bcb8a5ab
 /agent-note-incremental-terminal-retention/consequences:
   en: c60008ba652dffd2
-  zh: 3210329182096f39
+  zh: b0d2100d98f8c196

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-02-bilingual-docs-and-pairing-gate.md
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate:
   en: 04529b9cc16be36d
-  zh: 5fb4377453231503
+  zh: 12fc80dbd44312f7
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/problem:
   en: 0ca5c6556229e3ee
-  zh: 6dacd60a7dc4bff4
+  zh: e48c9e815c186c4b
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/decision:
   en: 46b0ca2b0f45eb6c
-  zh: 3ddcd36e9ef8d134
+  zh: 0757e1d26a00a148
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/verification:
   en: 8fbf681b863a831c
-  zh: e5ba11a549a92612
+  zh: e9f5299daa310bdd
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/alternatives-considered:
   en: 995a746c59ea7b6c
-  zh: 04a248329dc0d04b
+  zh: e7af35d2ef163e81
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/industry-precedent:
   en: 6b5d62086bfd3868
-  zh: 219dad72943f590a
+  zh: 30ff1fd80c6c9dd9
 /agent-note-bilingual-documentation-via-paired-sibling-files-and-a-pairing-gate/consequences:
   en: 65f9f024d99d438f
-  zh: ff624c8be88c5830
+  zh: 17ff120326367440

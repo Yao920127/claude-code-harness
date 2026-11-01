@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-24-alpha-routed-image-quality-ladders.md
 /agent-note-alpha-routed-image-quality-ladders-replace-colour-count-codec-routing:
   en: b2c958d45911a787
-  zh: b826c61174b3640f
+  zh: 1855a07c82fa243a
 /agent-note-alpha-routed-image-quality-ladders-replace-colour-count-codec-routing/problem:
   en: bcb73f4711d40348
-  zh: 6e26853ea4728e4d
+  zh: 72b018f91c042deb
 /agent-note-alpha-routed-image-quality-ladders-replace-colour-count-codec-routing/decision:
   en: aabf20046a7a15e9
-  zh: dba0c5261a3af1e5
+  zh: c446b3d9ac03738c
 /agent-note-alpha-routed-image-quality-ladders-replace-colour-count-codec-routing/alternatives-considered:
   en: 95a42e3e2313790b
-  zh: 116043c295d7aa12
+  zh: fd1936eae593f02a
 /agent-note-alpha-routed-image-quality-ladders-replace-colour-count-codec-routing/consequences:
   en: 3ce6acd960671b52
-  zh: 1ec81d76130d338d
+  zh: 14d896013fad5d9d

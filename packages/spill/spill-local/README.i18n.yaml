@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/spill/spill-local/README.md
 /:
   en: 081da64c1be2d775
-  zh: cd51e86e3c5c49cf
+  zh: c8ab1b5c0214ac4a
 /deepseek-ai-dsh-spill-local:
   en: 91630ef1d0319ea4
   zh: 0f5efea58fa94bec
 /deepseek-ai-dsh-spill-local/summary:
   en: 1d8b50741c23fe72
-  zh: 9e3eb775ee92d964
+  zh: 1445d015f2fa1ef8
 /deepseek-ai-dsh-spill-local/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-spill-local/use-this-package:
   en: afebd49584624c46
-  zh: d0655462bc01cfc7
+  zh: 183f729dea1e8079
 /deepseek-ai-dsh-spill-local/use-this-package/minimal-configuration:
   en: a1ce98a82eac11cf
-  zh: 8d3abbbc081f1617
+  zh: d0673d757ea3c381
 /deepseek-ai-dsh-spill-local/use-this-package/what-you-get-back:
   en: c8aca7d0d3fe321e
-  zh: b7f7a168d3ca78e0
+  zh: 779e6bf3f48421fd
 /deepseek-ai-dsh-spill-local/use-this-package/where-files-land:
   en: 32262a03c40c49df
-  zh: 9a028fff66aed750
+  zh: 907ee6afc2a3d982
 /deepseek-ai-dsh-spill-local/use-this-package/startup-cleanup:
   en: 33c695953619df83
-  zh: a72ad3865baed8ac
+  zh: 011417653d353626
 /deepseek-ai-dsh-spill-local/use-this-package/failures-and-recovery:
   en: 910bbe363921952d
-  zh: 1c21b9ca1d050a1e
+  zh: 66213b708dc38c8e
 /deepseek-ai-dsh-spill-local/understand-the-implementation:
   en: deb655b3b1860576
-  zh: d83d8a3c24a71a16
+  zh: 01799c9abb3525ae
 /deepseek-ai-dsh-spill-local/understand-the-implementation/design-philosophy:
   en: 905f7242345308cd
-  zh: 66907177a6dd4b94
+  zh: da6e47a7c0a7464f
 /deepseek-ai-dsh-spill-local/understand-the-implementation/source-map:
   en: d7746db31950fddb
-  zh: d7e2190e5c821801
+  zh: 0121f82cef903043
 /deepseek-ai-dsh-spill-local/understand-the-implementation/file-naming-and-write:
   en: cb92a60310c465a8
-  zh: ce474c16abd2df5d
+  zh: 951f1f916e72f9f5
 /deepseek-ai-dsh-spill-local/further-exploration:
   en: 8651e6ea70f0564d
-  zh: ec0bed43293ac04b
+  zh: aa7f13c7e231e91e
 /deepseek-ai-dsh-spill-local/model-experience:
   en: ae2966f8fc63dc5b
-  zh: 141aa4ebbc52574f
+  zh: 964ac3185cab035d
 /deepseek-ai-dsh-spill-local/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: 6b9a967b5b4765e4
+  zh: b2610a3bcd92f69f
 /deepseek-ai-dsh-spill-local/known-limitations-and-deferred-work:
   en: 363cf4b1b822e043
-  zh: c28e52f67ef21400
+  zh: cb636d182f6ffae6
 /deepseek-ai-dsh-spill-local/known-limitations-and-deferred-work/dev-note:
   en: a63e51f03bdb279f
-  zh: 191a48d3bfc4a792
+  zh: df60ff94959ba354
 /deepseek-ai-dsh-spill-local/known-limitations-and-deferred-work/dev-note/future-workspace-confinement-interplay:
   en: 7cc389241a5b9a4c
-  zh: af4b8e65ed565ec6
+  zh: 79d67e8c7b0d7f67

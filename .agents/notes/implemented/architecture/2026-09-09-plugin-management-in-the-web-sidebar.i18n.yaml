@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-plugin-management-in-the-web-sidebar.md
 /agent-note-plugin-management-moves-to-the-web-sidebar:
   en: efdb6c8f366dd2c2
-  zh: 5c55e2882753d481
+  zh: d76696c29c34fc01
 /agent-note-plugin-management-moves-to-the-web-sidebar/problem:
   en: b0d11556425397b0
-  zh: 00968088bec13102
+  zh: e8870ca22b4c380b
 /agent-note-plugin-management-moves-to-the-web-sidebar/decision:
   en: eb93a33f64907b80
-  zh: 4073f2da219ad798
+  zh: 35ddfe76777ad9bc
 /agent-note-plugin-management-moves-to-the-web-sidebar/alternatives-considered:
   en: e5cea1a5e97884be
-  zh: d5544ae935a48f0a
+  zh: c4e09d8a2c5cc6f7
 /agent-note-plugin-management-moves-to-the-web-sidebar/consequences:
   en: 74c0051937f03444
-  zh: 256b38ff34549a4d
+  zh: 3b18b17000e4ff0e
 /agent-note-plugin-management-moves-to-the-web-sidebar/testing:
   en: 9d08eb02abc00595
-  zh: 56c7d26016f9deec
+  zh: 59d27df9a004d382

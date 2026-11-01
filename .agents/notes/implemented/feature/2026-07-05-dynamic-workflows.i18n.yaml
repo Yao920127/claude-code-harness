@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-05-dynamic-workflows.md
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam:
   en: 472dec484bf937c1
-  zh: 1d6c38c699d43828
+  zh: 5d1462611d2ebc20
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/problem:
   en: e890f8ac24054d94
-  zh: 45ec14140f62e1c9
+  zh: 3de4931af1cd5e7e
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision:
   en: 16af14c0c9fc54ee
-  zh: 463dd56b53d05ea7
+  zh: 4af290e74f7e838f
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision/the-script-contract-claude-code-compatible:
   en: 889beb90c3650f25
-  zh: b1ba5dac3c77f8d2
+  zh: 10a06cbe423705e0
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision/the-seam-dsh-workflow:
   en: d37f01afb4d9cd6a
-  zh: 5648b981b61e6624
+  zh: 2cabda5c5c1949d1
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision/the-engine-dsh-workflow-ptc-shared-node-process-execution:
   en: 7567d5fcf218e4b5
-  zh: 2ba33b1237df9e4a
+  zh: 27aa962214e8f597
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision/the-consumer-dsh-tool-workflow:
   en: 00b015ee9db948fb
-  zh: 6dac8d8aaf0b32d2
+  zh: 2c0d264df81195f3
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/decision/the-foundation-structured-output-on-the-subagent-seam:
   en: 40ad0d1f23ffa7db
-  zh: 23a81a277fb24cd9
+  zh: 0eb84e126d46d701
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/testing:
   en: a1607694b584dcbc
-  zh: 29c9c7560f0fcf56
+  zh: 876c540c634509e3
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/deferred-documented-non-goals:
   en: 2bff807d808bfa13
-  zh: add602509c0a826c
+  zh: e0fd4cda3fe3d21b
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/alternatives-considered:
   en: 44a36cb0a91546cc
-  zh: f4ed8c49f3764d7a
+  zh: 6da612e94934eb2b
 /agent-note-dynamic-workflows-a-script-driven-multi-agent-orchestration-seam/consequences:
   en: bfd2d827ffb20587
-  zh: 310c4fe77f48aa4e
+  zh: e38def596d2518c8

@@ -1,5 +1,5 @@
 ---
-description: "面向 Bash、LSP 及 Node 运行时消费方，说明托管 SSH 子进程与终端行为。"
+description: "面向 Bash、LSP 及 Node 執行時消費方，說明託管 SSH 子程序與終端行為。"
 kind: "package-reference"
 ---
 
@@ -9,79 +9,79 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-subprocess-ssh` 使用共享 SSH 辅助进程实现 `ctx.subprocess`。可执行文件查找、普通进程、fd 7 控制流及终端会话与 SSH 文件系统在同一环境中运行。远端原生进程管理器负责终止与静止状态；消费方继续负责命令语义、输出上限与执行截止时限。
+`dsh-subprocess-ssh` 使用共享 SSH 輔助程序實作 `ctx.subprocess`。可執行檔案查詢、普通程序、fd 7 控制流及終端工作階段與 SSH 檔案系統在同一環境中執行。遠端原生程序管理器負責終止與靜止狀態；消費方繼續負責命令語義、輸出上限與執行截止時限。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延后工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延後工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-将本提供方与 [`dsh-ssh`](../ssh/README.zh.md) 及其文件系统提供方一同挂载。本提供方没有独立部署配置。`resolveExecutable()` 检查远端可执行文件命名空间；完整的 spawn 请求提供远端 cwd、环境、流处置方式及清理宽限期。
+將本提供者與 [`dsh-ssh`](../ssh/README.zh.md) 及其檔案系統提供者一同掛載。本提供者沒有獨立部署設定。`resolveExecutable()` 檢查遠端可執行檔案名稱空間；完整的 spawn 請求提供遠端 cwd、環境、流處置方式及清理寬限期。
 
-普通 spawn 在远端分配过程中返回句柄。管道 stdin 和可选双工控制端点在分配过程中接受写入。终端分配、写入、前台检查、信号及终止均保留异步接口。
+普通 spawn 在遠端分配過程中返回控制代碼。管道 stdin 和可選雙工控制端點在分配過程中接受寫入。終端分配、寫入、前臺檢查、訊號及終止均保留非同步介面。
 
-终端请求将 `shellActivity` 转发给执行 provider，`inspectActivity()` 返回经校验的状态和 revision。启用后，根进程退出的终端仍可访问，直到 owner 明确终止；连接级清理仍由 SSH helper 租约控制。
+終端請求將 `shellActivity` 轉發給執行 provider，`inspectActivity()` 返回經驗證的狀態和 revision。啟用後，根程序退出的終端仍可存取，直到 owner 明確終止；連線級清理仍由 SSH helper 租約控制。
 
-`done` 报告的直接进程退出并不证明托管进程范围已经静止；`waitForExit()` 单独观察该状态。其可选信号约束整个观察过程，包括等待分配和终止；取消返回 `false`，不会停止进程。已确认清空的范围返回 `true`，实际观察故障则拒绝。`terminate()` 针对同一个远端管理器。连接丢失会拒绝未确认的操作；启动或修改结果不明确时绝不自动重放。
+`done` 報告的直接程序退出並不證明託管程序範圍已經靜止；`waitForExit()` 單獨觀察該狀態。其可選訊號約束整個觀察過程，包括等待分配和終止；取消返回 `false`，不會停止程序。已確認清空的範圍返回 `true`，實際觀察故障則拒絕。`terminate()` 針對同一個遠端管理器。連線丟失會拒絕未確認的操作；啟動或修改結果不明確時絕不自動重放。
 
 -----
 
-终端 shell 信息与可执行文件验证来自远端 helper。查找未命中与 SSH 故障分别报告。PTY 创建传递调用方的 `terminalType`，`resize()` 更新远端终端尺寸，不替换进程。
+終端 shell 資訊與可執行檔案驗證來自遠端 helper。查詢未命中與 SSH 故障分別報告。PTY 建立傳遞呼叫方的 `terminalType`，`resize()` 更新遠端終端尺寸，不替換程序。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节 — 点击展开</summary>
+<summary>實作細節 — 點選展開</summary>
 
-辅助进程在启动前预留并认证全部所需流。stdout、stderr、stdin 与 fd 7 使用独立 SSH 通道。收集输出会发布最终的有界原始字节尾部与完整流字节偏移，因此网络延迟不会改变已完成的观测。可选 spill 文件使用远端本地提供方的私有保留输出目录。
+輔助程序在啟動前預留並認證全部所需流。stdout、stderr、stdin 與 fd 7 使用獨立 SSH 通道。收集輸出會發布最終的有界原始位元組尾部與完整流位元組偏移，因此網路延遲不會改變已完成的觀測。可選 spill 檔案使用遠端本地提供者的私有保留輸出目錄。
 
-远端执行委托给 [`subprocess-local`](../../subprocess/subprocess-local/README.zh.md)。因此，原生进程归属及平台降级方式与该远端操作系统上的本地执行具有相同含义。SSH 承载请求与观察结果，本身不限制程序权限。
+遠端執行委託給 [`subprocess-local`](../../subprocess/subprocess-local/README.zh.md)。因此，原生程序歸屬及平臺降級方式與該遠端作業系統上的本地執行具有相同含義。SSH 承載請求與觀察結果，本身不限制程式權限。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [子进程子系统](../../../docs/subsystems/subprocess.zh.md) — spawn、输出收集、终端及生命周期 API。
-- [SSH 沙箱提供方](../sandbox-ssh/README.zh.md) — 远端文件效果限制。
+- [子程序子系統](../../../docs/subsystems/subprocess.zh.md) — spawn、輸出收集、終端及生命週期 API。
+- [SSH 沙箱提供者](../sandbox-ssh/README.zh.md) — 遠端檔案效果限制。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接通过 Bash、终端、LSP 和 PTC 运行时消费方产生影响，由它们展示既有结果与远端路径。
+間接透過 Bash、終端、LSP 和 PTC 執行時消費方產生影響，由它們展示既有結果與遠端路徑。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-本提供方不贡献请求前缀内容。面向模型的工具与结果由消费方负责。
+本提供者不貢獻請求字首內容。面向模型的工具與結果由消費方負責。
 
-## 已知限制与延后工作
+## 已知限制與延後工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 已完成的 spill 文件在连接释放后继续保留，直至外部临时文件清理。
-- 调用方必须消费或关闭原始输出流。销毁公开的 stdout 或 stderr 会关闭对应传输，即使销毁发生在远端分配之前也是如此。独立通道允许在 stdout 暂停时继续传输控制消息，但不会消除逐流背压或共享网络拥塞。
-- SSH 连接丢失后，客户端无法确认远端终止；租期清理是远端动作，不等于客户端收到了成功确认。
+- 已完成的 spill 檔案在連線釋放後繼續保留，直至外部臨時檔案清理。
+- 呼叫方必須消費或關閉原始輸出流。銷燬公開的 stdout 或 stderr 會關閉對應傳輸，即使銷燬發生在遠端分配之前也是如此。獨立通道允許在 stdout 暫停時繼續傳輸控制訊息，但不會消除逐流背壓或共享網路擁塞。
+- SSH 連線丟失後，用戶端無法確認遠端終止；租期清理是遠端動作，不等於用戶端收到了成功確認。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文 — 点击展开</summary>
+<summary>維護者工作上下文 — 點選展開</summary>
 
-本包不发布不变式伴随入口。消息校验及所属文件系统、子进程和沙箱提供方执行可观察的约束；此适配器没有增加可独立观察的状态关系。
+本包不釋出不變式伴隨入口。訊息驗證及所屬檔案系統、子程序和沙箱提供者執行可觀察的約束；此介面卡沒有增加可獨立觀察的狀態關係。
 
 </details>

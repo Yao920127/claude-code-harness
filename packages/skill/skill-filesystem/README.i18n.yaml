@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/skill/skill-filesystem/README.md
 /:
   en: ef9fab89ad1a57aa
-  zh: 6d434e8a3dae16ca
+  zh: 34e0ac49b7420758
 /deepseek-ai-dsh-skill-filesystem:
   en: e0af59069c89278b
   zh: 913d0088b2a7296d
 /deepseek-ai-dsh-skill-filesystem/summary:
   en: ef659bb1fd748f41
-  zh: 9d40999be52526f5
+  zh: fee3568e18a05311
 /deepseek-ai-dsh-skill-filesystem/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-skill-filesystem/use-this-package:
   en: 2fcfbaea3c62a766
-  zh: 27c917ba822329e5
+  zh: 1e199dbacef517da
 /deepseek-ai-dsh-skill-filesystem/use-this-package/when-to-choose-it:
   en: 012a123601c7d8f2
-  zh: 0e13f5e0d2e4ea7a
+  zh: 51aff4e39bcdf50e
 /deepseek-ai-dsh-skill-filesystem/use-this-package/skill-format:
   en: 78ac4e731c6a24c1
-  zh: e8c33db4aa0cc527
+  zh: df0ed361b175a2e8
 /deepseek-ai-dsh-skill-filesystem/use-this-package/roots-and-priority:
   en: 265594f30ba5d848
-  zh: 5de6a94864cab8d6
+  zh: c297d3b74cae419d
 /deepseek-ai-dsh-skill-filesystem/use-this-package/mount-and-configure:
   en: 5e7a4ff37f33f8a5
-  zh: 2f6dd45e696cb92b
+  zh: f0e94d0d1407101c
 /deepseek-ai-dsh-skill-filesystem/use-this-package/change-detection:
   en: 77acbd43e89b6043
-  zh: 8169bbbc55f3f114
+  zh: a412d615e51e72ca
 /deepseek-ai-dsh-skill-filesystem/use-this-package/observable-success-and-failures:
   en: 272693c35012ffb5
-  zh: bbbe788b11ef567f
+  zh: 4583816506c6727f
 /deepseek-ai-dsh-skill-filesystem/understand-the-implementation:
   en: a95eb63f5a570c79
-  zh: cd964a36cf8a3715
+  zh: 5095227f24e43ab0
 /deepseek-ai-dsh-skill-filesystem/understand-the-implementation/design-concept:
   en: 8529fb4c1989d5fc
-  zh: 115372aaa959dc6c
+  zh: 0239e489c1ae6e26
 /deepseek-ai-dsh-skill-filesystem/understand-the-implementation/source-map:
   en: 1b1bc2d6b523f308
-  zh: f7d0c0e0ab1adcf0
+  zh: d8b8491739e4ec10
 /deepseek-ai-dsh-skill-filesystem/understand-the-implementation/discovery-flow:
   en: 7e26750408a63587
-  zh: 9eed631a7bdf00ae
+  zh: cde00338df50c5c2
 /deepseek-ai-dsh-skill-filesystem/understand-the-implementation/watching-and-invalidation:
   en: e1f03485692f61a0
-  zh: 7c3ce24eacc3a047
+  zh: 59ebd547ea932276
 /deepseek-ai-dsh-skill-filesystem/further-exploration:
   en: 4d1bb82d69fadd8a
-  zh: 91f6f8fb6533c976
+  zh: 2fa77f1aa667d388
 /deepseek-ai-dsh-skill-filesystem/model-experience:
   en: 2276cca067cd120a
-  zh: 9986d49d39228243
+  zh: 5c01da8292dd5372
 /deepseek-ai-dsh-skill-filesystem/model-experience/kv-cache-effect:
   en: 14ddbda337682082
-  zh: 2e4dc3c26b45f62c
+  zh: b80ad939fc546ee2
 /deepseek-ai-dsh-skill-filesystem/known-limitations-and-deferred-work:
   en: a7f37a7b9e54945d
-  zh: b9d3b15027757301
+  zh: 083073f4458a72d0
 /deepseek-ai-dsh-skill-filesystem/known-limitations-and-deferred-work/dev-note:
   en: 53584bc8292df1f9
-  zh: 921253cd64aa7511
+  zh: 4b068e0d53738771

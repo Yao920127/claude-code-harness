@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-24-browser-token-authentication.md
 /agent-note-browser-launch-token-authentication:
   en: 7ab4daa548c2b5a7
-  zh: 33a76129efc2079a
+  zh: b4a3bc01f5f88c57
 /agent-note-browser-launch-token-authentication/problem:
   en: 01293500639c9d79
-  zh: 6d19e4843955c811
+  zh: 10f29df9c61c281f
 /agent-note-browser-launch-token-authentication/decision:
   en: 063f9698b8a94287
-  zh: 848b2c1134b7a100
+  zh: 051105b23a052760
 /agent-note-browser-launch-token-authentication/verification:
   en: 189b36d0fc5f3a17
-  zh: 08993cb585204fc0
+  zh: fa51d584910a37f5
 /agent-note-browser-launch-token-authentication/alternatives-considered:
   en: 5275c87f19fe6eee
-  zh: ccb922367c4bb3e2
+  zh: 7d7a93b4f04d36cb
 /agent-note-browser-launch-token-authentication/consequences:
   en: 0714a8a7cc74918a
-  zh: 0f3878b09463ab2e
+  zh: 2f53b3c110fe74ba

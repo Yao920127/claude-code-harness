@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-30-retain-ignorable-external-session-events.md
 /agent-note-retain-ignorable-session-events-for-external-plugins:
   en: 09f4f7ee764601c3
-  zh: af6ead8e96015e51
+  zh: 05978b3686b08dba
 /agent-note-retain-ignorable-session-events-for-external-plugins/problem:
   en: d2df1eb3602af45d
-  zh: fd162b1c214f1494
+  zh: 7dafd5b7a8bd55d3
 /agent-note-retain-ignorable-session-events-for-external-plugins/decision:
   en: a4162e65cf6768f3
-  zh: bb700d9630642e7e
+  zh: 3962b0ea78607941
 /agent-note-retain-ignorable-session-events-for-external-plugins/alternatives-considered:
   en: 30ec097e3ba4e951
-  zh: 3e90fc035d04b09b
+  zh: 81bdbbe0b035c6d9
 /agent-note-retain-ignorable-session-events-for-external-plugins/consequences:
   en: 5f65bfb81f172d49
-  zh: 069d41d6bda9f8af
+  zh: 6ac7b96d1f8d4be9

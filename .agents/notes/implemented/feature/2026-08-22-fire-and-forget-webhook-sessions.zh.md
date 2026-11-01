@@ -6,53 +6,53 @@ Status: implemented
 
 ## Problem
 
-外部仓库事件需要启动普通 DSH 工作，同时不能让每个提供方适配器都理解 Agent preset、Workspace 附加、标题、权限与回调 teardown。GitHub pull request 变为 ready for review 是第一个用途：签名事件可以创建一个评审 Session，用户能在仓库 Workspace 下浏览它。
+外部儲存庫事件需要啟動普通 DSH 工作，同時不能讓每個提供者介面卡都理解 Agent preset、Workspace 附加、標題、權限與回呼 teardown。GitHub pull request 變為 ready for review 是第一個用途：簽名事件可以建立一個評審 Session，使用者能在儲存庫 Workspace 下瀏覽它。
 
-如果把它变成持久自动化引擎，就会在 Session 旁引入第二套生命周期：交付记录、执行状态、重试与去重策略、崩溃恢复，以及 HTTP 接受、提示词接纳、Agent idle 或模型输出中究竟哪个表示完成。所请求能力不需要其中任何含义。
+如果把它變成持久自動化引擎，就會在 Session 旁引入第二套生命週期：交付記錄、執行狀態、重試與去重策略、崩潰恢復，以及 HTTP 接受、提示詞接納、Agent idle 或模型輸出中究竟哪個表示完成。所請求能力不需要其中任何含義。
 
 ## Decision
 
-`@deepseek-ai/dsh-webhook` 拥有只有两个操作的 Host runtime：规则通过 `register()` 注册，已验证身份的提供方适配器调用 `dispatch()`。每个匹配回调都作为任意受信任代码独立运行，并返回 `null` 或一个基于 Workspace 的 Session 请求。dispatch 会在回调结算前返回，而 effect disposer 只中止并排空自己拥有的调用。
+`@deepseek-ai/dsh-webhook` 擁有隻有兩個操作的 Host runtime：規則透過 `register()` 註冊，已驗證身份的提供者介面卡呼叫 `dispatch()`。每個匹配回呼都作為任意受信任程式碼獨立執行，並返回 `null` 或一個基於 Workspace 的 Session 請求。dispatch 會在回呼結算前返回，而 effect disposer 只中止並排空自己擁有的呼叫。
 
-runtime 不存储提供方交付或执行记录。它不重试、不去重、不恢复回调工作、不观察 Agent 状态，也不收集结果。重复交付可能创建另一个 Session。`WebhookDeliveryId` 仍可供有意通过自有状态实现幂等性的规则使用。
+runtime 不儲存提供者交付或執行記錄。它不重試、不去重、不恢復回呼工作、不觀察 Agent 狀態，也不收集結果。重複交付可能建立另一個 Session。`WebhookDeliveryId` 仍可供有意透過自有狀態實作冪等性的規則使用。
 
 ## Provider adapters
 
-身份验证属于提供方适配器。`@deepseek-ai/dsh-webhook-github` 会在注入的 WebServer 上注册一条精确路由，限制未改动的 UTF-8 body，为每次请求解析密钥引用，在解析前验证 `X-Hub-Signature-256`，并把签名无损 JSON 对象交给 runtime。`202` 只表示已验证的内存分发；它先于规则匹配、外部调用和 Session 创建。
+身份驗證屬於提供者介面卡。`@deepseek-ai/dsh-webhook-github` 會在注入的 WebServer 上註冊一條精確路由，限制未改動的 UTF-8 body，為每次請求解析金鑰引用，在解析前驗證 `X-Hub-Signature-256`，並把簽名無損 JSON 物件交給 runtime。`202` 只表示已驗證的記憶體分發；它先於規則匹配、外部呼叫和 Session 建立。
 
-普通 Web 组合保持其 UI/API WebServer 独立。GitHub 示例会把另一个 WebServer 及其适配器挂载到只隔离 `webServer` 的 group 中，因此反向代理可以暴露 webhook 端口，而不暴露 `/api`、WebSocket 或前端文件。
+普通 Web 組合保持其 UI/API WebServer 獨立。GitHub 範例會把另一個 WebServer 及其介面卡掛載到只隔離 `webServer` 的 group 中，因此反向代理可以暴露 webhook 埠，而不暴露 `/api`、WebSocket 或前端檔案。
 
-Patch 加载会把插入行中的相对插件名锚定到 patch 文件。因而同一个 `./github-ready-review-rule.mjs` 条目既可用于开发环境的 `--patch` overlay，也可用于永久 profile patch，而无需把规则改成软件包。
+Patch 載入會把插入行中的相對外掛名錨定到 patch 檔案。因而同一個 `./github-ready-review-rule.mjs` 條目既可用於開發環境的 `--patch` overlay，也可用於永久 profile patch，而無需把規則改成軟體包。
 
 ## Session creation
 
-规则结果会指定本地 Workspace 路径、标题、文本提示词、agent preset、permission preset，以及可选的明确提供方／模型路由与输出上限。没有明确路由时，runtime 会快照包含推理强度的完整实时默认选择，直到首个请求记录其持久 header。runtime 会在变更状态前验证 preset，解析或创建规范 Workspace，以该路径作为 Session cwd 创建 Agent，在发布前挂载 preset，并在接纳提示词前附加 Session。
+規則結果會指定本地 Workspace 路徑、標題、文字提示詞、agent preset、permission preset，以及可選的明確提供者／模型路由與輸出上限。沒有明確路由時，runtime 會快照包含推理強度的完整即時預設選擇，直到首個請求記錄其持久 header。runtime 會在變更狀態前驗證 preset，解析或建立規範 Workspace，以該路徑作為 Session cwd 建立 Agent，在釋出前掛載 preset，並在接納提示詞前附加 Session。
 
-初始 follow-up 是普通持久 user-role 消息，并携带 webhook 提供方、来源、交付和规则来源信息。它的 inbox 插入是 webhook 操作的最后边界。之后的工作由普通 Session persistence 与 Agent 生命周期拥有；runtime 既不执行特殊 flush，也不等待轮次。
+初始 follow-up 是普通持久 user-role 訊息，並攜帶 webhook 提供者、來源、交付和規則來源資訊。它的 inbox 插入是 webhook 操作的最後邊界。之後的工作由普通 Session persistence 與 Agent 生命週期擁有；runtime 既不執行特殊 flush，也不等待輪次。
 
 ## Alternatives considered
 
-**持久化交付与执行状态。** 否决，因为 `pending`、`admitted`、`running` 与 `settled` 需要当前能力没有消费方的重试、去重、崩溃和完成语义。
+**持久化交付與執行狀態。** 否決，因為 `pending`、`admitted`、`running` 與 `settled` 需要目前能力沒有消費方的重試、去重、崩潰和完成語義。
 
-**在 Session 创建后再向 GitHub 确认。** 否决，因为任意规则可能调用外部系统并超过提供方 HTTP 时间窗；有效交付不应把传输可用性与后续规则工作耦合。
+**在 Session 建立後再向 GitHub 確認。** 否決，因為任意規則可能呼叫外部系統並超過提供者 HTTP 時間窗；有效交付不應把傳輸可用性與後續規則工作耦合。
 
-**在主 WebServer 上注册路由。** 否决，因为操作者需要暴露 webhook 入口而不同时暴露浏览器 API。隔离的第二个实例会复用现有 HTTP 模块，而不会创建另一套服务器实现。
+**在主 WebServer 上註冊路由。** 否決，因為操作者需要暴露 webhook 入口而不同時暴露瀏覽器 API。隔離的第二個實例會複用現有 HTTP 模組，而不會建立另一套伺服器實作。
 
-**把规则限制为声明式谓词语言。** 否决，因为程序化规则明确需要任意外部调用。受信任 Cordis 插件已经提供所需权限与生命周期。
+**把規則限制為宣告式謂詞語言。** 否決，因為程式化規則明確需要任意外部呼叫。受信任 Cordis 外掛已經提供所需權限與生命週期。
 
-**让每个适配器直接创建 Session。** 否决，因为 Workspace、preset、权限、标题、rollback 与来源信息逻辑会散布到各提供方包。
+**讓每個介面卡直接建立 Session。** 否決，因為 Workspace、preset、權限、標題、rollback 與來源資訊邏輯會散佈到各提供者包。
 
 ## Verification
 
-包级测试固定独立回调执行、fire-and-forget HTTP 时序、取消与静止态释放、请求验证、提示词接纳前的 Workspace 附加、rollback、GitHub HMAC 与 body 限制、凭据轮换和精确 Loader 组合。组装 Web 示例会向隔离的第二监听器发送签名 ready-for-review 交付，并记录所得普通 Workspace 对话。
+包級測試固定獨立回呼執行、fire-and-forget HTTP 時序、取消與靜止態釋放、請求驗證、提示詞接納前的 Workspace 附加、rollback、GitHub HMAC 與 body 限制、憑證輪換和精確 Loader 組合。組裝 Web 範例會向隔離的第二監聽器傳送簽名 ready-for-review 交付，並記錄所得普通 Workspace 對話。
 
-真实 API e2e 测试会通过带 webhook overlay 与隔离监听器的构建产物启动 `dsh web` CLI（命令行界面），只合成带签名的入站 GitHub 交付，通过公开 Web API 观察 Workspace 附加与持久来源信息，并等待真实 DeepSeek 响应。测试不会用 test double 替换任何 DSH 服务、模型适配器或提供方调用。
+真實 API e2e 測試會透過帶 webhook overlay 與隔離監聽器的建置產物啟動 `dsh web` CLI（命令列介面），只合成帶簽名的入站 GitHub 交付，透過公開 Web API 觀察 Workspace 附加與持久來源資訊，並等待真實 DeepSeek 回應。測試不會用 test double 替換任何 DSH 服務、模型介面卡或提供者呼叫。
 
-源码审计会保持执行记录、重试 timer、去重 map、完成事件与 Agent 状态监听器不存在。
+原始碼審計會保持執行記錄、重試 timer、去重 map、完成事件與 Agent 狀態監聽器不存在。
 
 ## Consequences
 
-- 提供方适配器保持小而且只含提供方逻辑，Session 创建只有一个 owner。
-- 用户在 Web Workspace 下获得普通带标题 Session，而不是第二套自动化 UI。
-- HTTP 成功刻意不说明下游匹配或 Agent 成功。
-- 崩溃与重复交付保持简单的进程生命周期内语义；需要持久自动化的部署必须增加单独设计的子系统，而不是重新解释此 runtime。
+- 提供者介面卡保持小而且只含提供者邏輯，Session 建立只有一個 owner。
+- 使用者在 Web Workspace 下獲得普通帶標題 Session，而不是第二套自動化 UI。
+- HTTP 成功刻意不說明下游匹配或 Agent 成功。
+- 崩潰與重複交付保持簡單的程序生命週期內語義；需要持久自動化的部署必須增加單獨設計的子系統，而不是重新解釋此 runtime。

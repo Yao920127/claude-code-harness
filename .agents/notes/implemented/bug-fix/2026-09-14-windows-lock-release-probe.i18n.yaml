@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-14-windows-lock-release-probe.md
 /agent-note-windows-lock-release-before-contention-probing:
   en: ec7e0474bd96df26
-  zh: 20a70a6284cb0269
+  zh: d6d8604371a462bf
 /agent-note-windows-lock-release-before-contention-probing/problem:
   en: cc9630ce8e232e8a
-  zh: 16f3541a58eac0ef
+  zh: d17e68f8cd45f694
 /agent-note-windows-lock-release-before-contention-probing/decision:
   en: 9230417f2af237d4
-  zh: 6fbef7a6d6e1e4d0
+  zh: dc1ef98a87232603
 /agent-note-windows-lock-release-before-contention-probing/alternatives-considered:
   en: ba6d9e4c01c8f25b
-  zh: 8899bcf11d45b258
+  zh: ba49791461ca29cc
 /agent-note-windows-lock-release-before-contention-probing/consequences:
   en: fc268a94ceeb3a96
-  zh: b14be62df4a4bfad
+  zh: 681d5583d1f2864e

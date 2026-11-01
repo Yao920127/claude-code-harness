@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-05-canonical-feedback-log.md
 /agent-note-canonical-feedback-log-and-request-delivery:
   en: 7dd56e2d495370cf
-  zh: 0977ed8b2f45dbe5
+  zh: b32e64951ba00d1a
 /agent-note-canonical-feedback-log-and-request-delivery/problem:
   en: 702e5973c264ec35
-  zh: 71b095565593629c
+  zh: ab401ee320571f1a
 /agent-note-canonical-feedback-log-and-request-delivery/decision:
   en: 7ae952bbc9193865
-  zh: f120bed1d1782470
+  zh: 123d44e3c597fd94
 /agent-note-canonical-feedback-log-and-request-delivery/alternatives-considered:
   en: 9ddfc84ac3a25f3b
-  zh: f185250a0ec512ba
+  zh: 0c661228798317e5
 /agent-note-canonical-feedback-log-and-request-delivery/consequences:
   en: f1f99907cd77bdef
-  zh: e97b76e4a19c5581
+  zh: b430b54efc8d17de

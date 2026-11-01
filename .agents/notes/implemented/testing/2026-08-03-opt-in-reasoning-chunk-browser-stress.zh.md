@@ -1,45 +1,45 @@
-# Agent Note: 推理（reasoning）分片的逐帧累计发布与浏览器压力验证
+# Agent Note: 推理（reasoning）分片的逐幀累計釋出與瀏覽器壓力驗證
 
 Status: implemented
 
 [English](2026-08-03-opt-in-reasoning-chunk-browser-stress.md) | 中文
 
-## 问题
+## 問題
 
-长 reasoning stream 会在一个持久 settlement 前连续产生大量进程本地 `assistant/live-chunk` update。每个 update 都必须保持有序并折叠进 Assistant Definition，以保留实时完整性；settlement 则嵌入精确 stream 供 replay。React 只需要看到当前累计结果，不需要观察同一浏览器帧内每个中间态。
+長 reasoning stream 會在一個持久 settlement 前連續產生大量程序本地 `assistant/live-chunk` update。每個 update 都必須保持有序並摺疊進 Assistant Definition，以保留即時完整性；settlement 則嵌入精確 stream 供 replay。React 只需要看到目前累計結果，不需要觀察同一瀏覽器幀內每個中間態。
 
-异步流的每次 `yield` 都可能形成新的微任务边界，因此仅靠微任务合批的 `Notifier.markDirty()` 会退化为每个分片重建一次 `ConversationSnapshot`、通知一次 `useSyncExternalStore` 并运行一次 React render。即使实时 Think 行保持折叠，100,000 个推理分片仍会让协调、提交和布局工作压住主线程。性能边界必须位于会话接收与 React 发布之间；测试必须保留每个原始事件，并区分单批渲染成本与无限累积的 transport backlog。
+非同步流的每次 `yield` 都可能形成新的微任務邊界，因此僅靠微任務合批的 `Notifier.markDirty()` 會退化為每個分片重建一次 `ConversationSnapshot`、通知一次 `useSyncExternalStore` 並執行一次 React render。即使即時 Think 行保持摺疊，100,000 個推理分片仍會讓協調、提交和佈局工作壓住主執行緒。效能邊界必須位於工作階段接收與 React 釋出之間；測試必須保留每個原始事件，並區分單批渲染成本與無限累積的 transport backlog。
 
-## 决策
+## 決策
 
-Session Controller 把每个 Client-only live chunk 追加到 event source，Conversation 会立即把它折叠进每个匹配 Definition State。Chat 与 Trajectory Definition 为可见 `block-start`、`text-delta`、`reasoning-delta`、`tool-call-delta` 与 `block-end` chunk 请求 `animation-frame` publication；第一项变化调度一次 `requestAnimationFrame`，后续 chunk 继续更新 State，frame callback 再从最新 State materialize 一个累计 snapshot。`usage` 与 `finish` 不请求 publication。持久 `assistant/message` 或 `assistant/attempt` settlement 会立即发布，并在历史 replay 中复现同一最终 stream。
+Session Controller 把每個 Client-only live chunk 追加到 event source，Conversation 會立即把它摺疊進每個匹配 Definition State。Chat 與 Trajectory Definition 為可見 `block-start`、`text-delta`、`reasoning-delta`、`tool-call-delta` 與 `block-end` chunk 請求 `animation-frame` publication；第一項變化排程一次 `requestAnimationFrame`，後續 chunk 繼續更新 State，frame callback 再從最新 State materialize 一個累計 snapshot。`usage` 與 `finish` 不請求 publication。持久 `assistant/message` 或 `assistant/attempt` settlement 會立即釋出，並在歷史 replay 中復現同一最終 stream。
 
-`BoundConversation` 为每个 Session 拥有一个 pending frame。普通结构 event 与持久 settlement 请求 immediate publication，flush 最新 assembled State，并让之后的 frame callback 因没有 dirty Context 而不产生影响。没有 `requestAnimationFrame` 的环境会立即发布。Settlement 可以跳过一个尚未显示的中间 partial，但发布的最终 content 与持久嵌入式 stream 保持完整。
+`BoundConversation` 為每個 Session 擁有一個 pending frame。普通結構 event 與持久 settlement 請求 immediate publication，flush 最新 assembled State，並讓之後的 frame callback 因沒有 dirty Context 而不產生影響。沒有 `requestAnimationFrame` 的環境會立即釋出。Settlement 可以跳過一個尚未顯示的中間 partial，但釋出的最終 content 與持久嵌入式 stream 保持完整。
 
-实时 Think 行对累计文本的横向跟尾属于纯视觉对齐，不需要在每次 React 提交中同步读取布局。组件内调度器将连续请求合并为每三帧一次，从最新 DOM 读取 `scrollWidth` 和 `clientWidth` 并将 `scrollLeft` 直接更新到最新位置；固定的视觉节奏让摘要变化可读，又不会积压浏览器平滑滚动动画。该节流只作用于 Think 的横向摘要，不延迟 Chat 正文滚动、历史 prepend 锚定或用户触发的 `scrollIntoView`。
+即時 Think 行對累計文字的橫向跟尾屬於純視覺對齊，不需要在每次 React 提交中同步讀取佈局。元件內排程器將連續請求合併為每三幀一次，從最新 DOM 讀取 `scrollWidth` 和 `clientWidth` 並將 `scrollLeft` 直接更新到最新位置；固定的視覺節奏讓摘要變化可讀，又不會積壓瀏覽器平滑滾動動畫。該節流只作用於 Think 的橫向摘要，不延遲 Chat 正文滾動、歷史 prepend 錨定或使用者觸發的 `scrollIntoView`。
 
-`pnpm run test:web:stress` 保留为无密钥、需显式启用的浏览器性能证据。测试持有的模型 adapter 通过真实 Host、Gateway、WebSocket、Session 归并和实时 Think 行发出 100,000 个 `reasoning-delta` chunk。每批 128 个 chunk 会等待一次浏览器 timer 轮次后再发下一批，因此 50 毫秒心跳与预先调度的 DOM 事件按 250 毫秒预算测量一个有界接收／渲染区间，而不是累积的 socket backlog。结尾标记证明所有 chunk 都已到达 UI。`DSH_WEB_STRESS_HEADFUL=1` 允许开发者在可见浏览器中使用 Performance 面板分析同一场景。该压力车道是手动性能诊断与修复验收的证据，不是默认 CI 门禁，也不替代确定性的调度单元测试。
+`pnpm run test:web:stress` 保留為無金鑰、需顯式啟用的瀏覽器效能證據。測試持有的模型 adapter 透過真實 Host、Gateway、WebSocket、Session 歸併和即時 Think 行發出 100,000 個 `reasoning-delta` chunk。每批 128 個 chunk 會等待一次瀏覽器 timer 輪次後再發下一批，因此 50 毫秒心跳與預先排程的 DOM 事件按 250 毫秒預算測量一個有界接收／渲染區間，而不是累積的 socket backlog。結尾標記證明所有 chunk 都已到達 UI。`DSH_WEB_STRESS_HEADFUL=1` 允許開發者在可見瀏覽器中使用 Performance 面板分析同一情境。該壓力車道是手動效能診斷與修復驗收的證據，不是預設 CI 門禁，也不替代確定性的排程單元測試。
 
-聚焦测试固定 `Notifier` 的逐帧合并、结构事件抢占、失效回调和无 rAF 回退，并在 `Session` 层证明一帧只发布一次最新累计文本且定稿不会被旧帧回调重复通知。按需启用的浏览器用例持有 adapter 节奏、精确事件数和结尾标记交付，不把 100,000 分片工作负载带入默认测试套件。
+聚焦測試固定 `Notifier` 的逐幀合併、結構事件搶佔、失效回呼和無 rAF 退回，並在 `Session` 層證明一幀只發布一次最新累計文字且定稿不會被舊幀回呼重複通知。按需啟用的瀏覽器案例持有 adapter 節奏、精確事件數和結尾標記交付，不把 100,000 分片工作負載帶入預設測試套件。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**在 React 内对快照使用 transition、deferred value 或组件节流。** 不予采纳：会话源仍会逐分片通知 `useSyncExternalStore`，React render 在组件决定延后展示之前已经发生，且多个消费同一快照的组件需要重复实现策略。Think 摘要的视觉跟尾节流位于快照发布之后，只减少同步布局频率，不承担数据发布策略。
+**在 React 內對快照使用 transition、deferred value 或元件節流。** 不予採納：工作階段源仍會逐分片通知 `useSyncExternalStore`，React render 在元件決定延後展示之前已經發生，且多個消費同一快照的元件需要重複實作策略。Think 摘要的視覺跟尾節流位於快照發布之後，只減少同步佈局頻率，不承擔資料釋出策略。
 
-**在 Definition fold 前丢弃或抽样 live chunk。** 不予采纳：实时累计 State 会与持久嵌入式 stream 分歧，并可能省略可见中间内容。紧凑持久存储与逐 frame 合并 React publication 解决的是不同成本。
+**在 Definition fold 前丟棄或抽樣 live chunk。** 不予採納：即時累計 State 會與持久嵌入式 stream 分歧，並可能省略可見中間內容。緊湊持久儲存與逐 frame 合併 React publication 解決的是不同成本。
 
-**只使用微任务合批。** 不予采纳：连续异步 `yield` 会在相邻分片间排空微任务队列，使微任务合批近似退化为每个分片通知一次。
+**只使用微任務合批。** 不予採納：連續非同步 `yield` 會在相鄰分片間排空微任務佇列，使微任務合批近似退化為每個分片通知一次。
 
-**按动画帧控制测试生产方节奏。** 不予采纳：生产方会在渲染变慢时同步减速，使页面获得真实网络流不存在的隐式背压，并掩盖主线程饥饿。
+**按動畫幀控制測試生產方節奏。** 不予採納：生產方會在渲染變慢時同步減速，使頁面獲得真實網路流不存在的隱式背壓，並掩蓋主執行緒飢餓。
 
-**不等待确认就把原有浏览器本地速率发入 WebSocket。** 不予采纳：transport 工作的排队速度会超过模型可能达到的产出速度，使结果变成 socket backlog 测量。浏览器 timer 确认限制每批工作量，同时 heartbeat 仍能发现一批数据使页面饥饿。
+**不等待確認就把原有瀏覽器本地速率發入 WebSocket。** 不予採納：transport 工作的排隊速度會超過模型可能達到的產出速度，使結果變成 socket backlog 測量。瀏覽器 timer 確認限制每批工作量，同時 heartbeat 仍能發現一批資料使頁面飢餓。
 
-**真实外部模型或录制的 HTTP 字节流。** 不予采纳：外部模型不具确定性，HTTP 录制还会增加第二种 fixture 格式，却不会改进目标断言。测试持有的 adapter 让每个 chunk 经过真实 Host 与浏览器 transport，同时控制工作负载。
+**真實外部模型或錄製的 HTTP 位元組流。** 不予採納：外部模型不具確定性，HTTP 錄製還會增加第二種 fixture 格式，卻不會改進目標斷言。測試持有的 adapter 讓每個 chunk 經過真實 Host 與瀏覽器 transport，同時控制工作負載。
 
-## 后果
+## 後果
 
-流式 `ConversationSnapshot` 的发布频率受浏览器绘制频率约束，React 每帧至多处理一个包含全部已接收文本的累计 partial；结构事件仍可更快发布。接收、排序、日志记录、字符串拼接和累积器更新仍按原始分片执行，因此该决策降低的是快照重建与 React 工作，不把原始流解析成本伪装成已解决。
+流式 `ConversationSnapshot` 的釋出頻率受瀏覽器繪製頻率約束，React 每幀至多處理一個包含全部已接收文字的累計 partial；結構事件仍可更快釋出。接收、排序、日誌記錄、字串拼接和累積器更新仍按原始分片執行，因此該決策降低的是快照重建與 React 工作，不把原始流解析成本偽裝成已解決。
 
-折叠 Think 摘要的横向布局读写最多每三帧执行一次，并直接追上该时刻的最新位置；React 仍按累计快照正常提交，定稿时摘要恢复到首行。该局部视觉策略不会改变正文滚动和用户交互的即时性。
+摺疊 Think 摘要的橫向佈局讀寫最多每三幀執行一次，並直接追上該時刻的最新位置；React 仍按累計快照正常提交，定稿時摘要恢復到首行。該區域性視覺策略不會改變正文滾動和使用者互動的即時性。
 
-浏览器压力车道继续提供真实组装应用与载体上的响应性信号和可见 profiling 入口，但硬件与调度差异使其只适合作为显式性能证据。确定性的 focused tests 负责守住发布次数、累计内容与抢占顺序，默认测试车道保持快速。
+瀏覽器壓力車道繼續提供真實組裝應用與載體上的回應性訊號和可見 profiling 入口，但硬體與排程差異使其只適合作為顯式效能證據。確定性的 focused tests 負責守住釋出次數、累計內容與搶佔順序，預設測試車道保持快速。

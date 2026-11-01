@@ -1,7 +1,7 @@
 {
-  "message": "Claude Code Harness v0.1.99 下载完成",
-  "detail": "安装包已下载完毕，点击“安装并重启”，即刻重启客户端，开始部署。",
+  "message": "Claude Code Harness v0.1.99 下載完成",
+  "detail": "安裝檔已下載完畢，點選“安裝並重新啟動”，即刻重新啟動用戶端，開始部署。",
   "buttons": [
-    "安装并重启"
+    "安裝並重新啟動"
   ]
 }

@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-06-v3-canonical-session-envelopes.md
 /agent-note-canonical-v3-session-event-envelopes:
   en: 17b0c507058d0bba
-  zh: cc281197005d02c8
+  zh: b22f71e2db13ec26
 /agent-note-canonical-v3-session-event-envelopes/problem:
   en: 60cc4d9e1122118f
-  zh: c1e8d767dc1999e8
+  zh: d36a0c219973c342
 /agent-note-canonical-v3-session-event-envelopes/decision:
   en: f75747b415bfd13b
-  zh: 18e5e35853e4b506
+  zh: c2cb1f18696c4af2
 /agent-note-canonical-v3-session-event-envelopes/decision/validation-ownership:
   en: 6fb18468df0b93e1
-  zh: 8dd4dd58a883884f
+  zh: 1e41b01e226dfa10
 /agent-note-canonical-v3-session-event-envelopes/decision/released-v2-to-v3-conversion:
   en: 1f76511cc4c2fcfd
-  zh: 77633f9860f14d9d
+  zh: 8740911a3d1d11c2
 /agent-note-canonical-v3-session-event-envelopes/alternatives-considered:
   en: 08c196bc596a0b2a
-  zh: 55bbbec345e9a078
+  zh: 0961ea02af83b558
 /agent-note-canonical-v3-session-event-envelopes/consequences:
   en: 9e88dd3830fb0522
-  zh: 8be0d8bde8d0d9d2
+  zh: 8ebc9f5fd2ce3d8c
 /agent-note-canonical-v3-session-event-envelopes/verification:
   en: 31ec0b1095035042
-  zh: 05d9f08138da1136
+  zh: 5a965a66bb9ed733

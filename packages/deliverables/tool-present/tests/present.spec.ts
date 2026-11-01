@@ -77,15 +77,15 @@ describe('present', () => {
   it('declares binary files without reading or copying contents, and records one delivery', async () => {
     const { ctx, owner, root, execute, fiber } = await setup()
     const data = Uint8Array.of(80, 75, 0, 255)
-    await writeFile(join(root, '报告.docx'), data)
+    await writeFile(join(root, '報告.docx'), data)
     const read = vi.spyOn(ctx.fs, 'readBytes')
-    const result = await execute([{ path: '报告.docx', description: 'Report' }])
+    const result = await execute([{ path: '報告.docx', description: 'Report' }])
     expect(result.isError).toBe(false)
     if (result.isError) throw new Error('present failed')
     const files = (result.value as unknown as { files: PresentedFile[] }).files
     expect(files).toHaveLength(1)
     expect(owner.session.snapshotEvents().find(event => event.type === 'deliverables/presented')?.data.files).toEqual(files)
-    expect(files).toEqual([{ path: '报告.docx', description: 'Report' }])
+    expect(files).toEqual([{ path: '報告.docx', description: 'Report' }])
     expect(read).not.toHaveBeenCalled()
     expect(ctx.get('attachments')).toBeUndefined()
     await fiber.dispose()

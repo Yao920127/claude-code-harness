@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write native/system/packages/darwin-arm64/README.md
 /:
   en: 934850f4ff9f8858
-  zh: 6910c34a221ae75e
+  zh: 38cc20bbded51377
 /deepseek-ai-node-addon-system-darwin-arm64:
   en: 8ab4b25ce5b7c52f
-  zh: c6d0455f66358390
+  zh: 8386192c26dcb4d3

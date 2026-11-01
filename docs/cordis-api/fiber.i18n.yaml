@@ -4,73 +4,73 @@
 #   pnpm run verify-translation-pairing --write docs/cordis-api/fiber.md
 /:
   en: d2c0c5bce430d1be
-  zh: 2173e2f1a2a3a13a
+  zh: aa42efc79d1e5d5b
 /fiber:
   en: b5b3510f4b6dd13a
-  zh: a0c70471b6d779b5
+  zh: 41bf64df687bca68
 /fiber/ctx-effect-execute-label:
   en: ef3418fd5ffbe86d
-  zh: c98935435da8bc7e
+  zh: 050c63abd0cf4174
 /fiber/ctx-fiber:
   en: a10e38bf26b4ecfe
-  zh: 7c91817984c95c99
+  zh: f6c7c23f33cba476
 /fiber/the-fiber-class:
   en: 0e0fcb134ed44957
-  zh: 326f4232aa0e65d1
+  zh: 0473337fe77f2751
 /fiber/the-fiber-class/fiber-uid:
   en: 2f0eb3658bb8497e
-  zh: 65d3c17ca8bd4f95
+  zh: 142ffa1892a7cbd2
 /fiber/the-fiber-class/fiber-ctx:
   en: 1b527d85759324f9
-  zh: 54aa40db2705b95c
+  zh: 1daa005b74b59e46
 /fiber/the-fiber-class/fiber-config:
   en: ee804c03c39e7806
-  zh: 4353ba7817ec61ec
+  zh: 12f5bc9a80f4e3c9
 /fiber/the-fiber-class/fiber-state:
   en: 999ad29dfc29661b
-  zh: 20245d11c338e3f1
+  zh: 2dde33ce8e8b327f
 /fiber/the-fiber-class/fiber-dispose:
   en: 29e304d183eb9104
-  zh: 9ac5023f518e06c4
+  zh: 967ae20b290ebe8f
 /fiber/the-fiber-class/fiber-store:
   en: c4185e5d051136a2
-  zh: 5714d9e4f5461ca3
+  zh: 6106f57ce5f3ae1b
 /fiber/the-fiber-class/fiber-inertia:
   en: 2a3b1d3bc37bf986
-  zh: 83bd257ee685d38b
+  zh: eaeb6702d60435ce
 /fiber/the-fiber-class/fiber-name:
   en: e5c2ecca13167a32
-  zh: 284a461f0f1cd35b
+  zh: f80deecf7eb7147c
 /fiber/the-fiber-class/fiber-assertactive:
   en: cceb503899634d09
-  zh: a8381af1a23436f3
+  zh: c3c93037239b7367
 /fiber/the-fiber-class/fiber-effect-execute-label:
   en: 55dcfacf295bbcf2
-  zh: 6e3ec27bb8da5a3d
+  zh: 9488c1000486d1f9
 /fiber/the-fiber-class/fiber-geteffects:
   en: 4d739a9c186fd9c2
-  zh: f80fd3b87e79b004
+  zh: 4fd00e13ca246e8f
 /fiber/the-fiber-class/fiber-await:
   en: 1d6258cbea61cd18
-  zh: 2f10dda8918dadc5
+  zh: 567d33e91af90168
 /fiber/the-fiber-class/fiber-restart:
   en: 62d68dedb20b4fa9
-  zh: 5a735ae0ff1266f4
+  zh: 49d0560ebdd84968
 /fiber/the-fiber-class/fiber-update-config-nosave:
   en: b57ce0f6260c2cb8
-  zh: 3bfb6c5bc252a2c2
+  zh: 2a80ffaaf64ddccc
 /fiber/effect:
   en: 007d5b214e8a8610
-  zh: d74c26fbb1b8aeb6
+  zh: de085cdc96d6ea9b
 /fiber/disposable:
   en: 56e4218392fa7234
-  zh: 8fea671180cacf6f
+  zh: d1e9becb212b366b
 /fiber/effectmeta:
   en: 849aa91b8e67809f
-  zh: 4b31d7e2acd2a008
+  zh: aa90a481a9d4c97e
 /fiber/cordiserror:
   en: d276771958d3c05f
-  zh: 0141656ade938d55
+  zh: c958c927f762bdb0
 /fiber/validationerror:
   en: 178782124cc15210
-  zh: 2b226f43f48af555
+  zh: f7f6771ff1017556

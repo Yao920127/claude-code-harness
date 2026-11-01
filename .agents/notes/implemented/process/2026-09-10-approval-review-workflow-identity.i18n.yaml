@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-10-approval-review-workflow-identity.md
 /agent-note-identify-approval-review-workflows-by-file-path:
   en: 8a332b9d080f3d62
-  zh: 29f1de05d7867a77
+  zh: 2a2f31e93ac6882a
 /agent-note-identify-approval-review-workflows-by-file-path/problem:
   en: 6b927a7545ac2c48
-  zh: 0902f03aa478d5ee
+  zh: 051817bf1d63d8a4
 /agent-note-identify-approval-review-workflows-by-file-path/decision:
   en: 82802438f1b8d16c
-  zh: ffe8c1fcbcc39abe
+  zh: 741f35f014aaf989
 /agent-note-identify-approval-review-workflows-by-file-path/alternatives-considered:
   en: f8fdd869a03ac5ff
-  zh: c355eb36e9cba350
+  zh: 9dd6a3135a1d7048
 /agent-note-identify-approval-review-workflows-by-file-path/consequences:
   en: 9f31e023a04a7849
-  zh: 66831c450af4c88f
+  zh: ca0043848c6349c3

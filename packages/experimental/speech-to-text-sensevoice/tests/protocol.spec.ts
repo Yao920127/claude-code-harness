@@ -54,7 +54,7 @@ it('rejects process exit, spawn failure, cancellation and unavailable output', a
 })
 
 it('validates complete worker transcripts and bounded failures', async () => {
-  const value = { text: '测试', audioSeconds: 1, inferenceSeconds: 0.1 }
+  const value = { text: '測試', audioSeconds: 1, inferenceSeconds: 0.1 }
   expect(await readTranscript(Response.json(value), 100)).toEqual(value)
   await expect(readTranscript(new Response(null), 100)).rejects.toThrow('no response')
   await expect(readTranscript(Response.json(value), 1)).rejects.toThrow('byte limit')

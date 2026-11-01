@@ -1,12 +1,12 @@
-# 开发一个工具
+# 開發一個工具
 
 [English](tool.md) | 中文
 
-本教程会在 Web UI 中添加一个 `greet` 工具。请先完成[第一个插件](./index.zh.md)，并保留其中的 `scratch-plugin` 目录。
+本教學會在 Web UI 中新增一個 `greet` 工具。請先完成[第一個外掛](./index.zh.md)，並保留其中的 `scratch-plugin` 目錄。
 
-## 创建工具插件
+## 建立工具外掛
 
-将 `scratch-plugin/src/my-plugin.ts` 替换为：
+將 `scratch-plugin/src/my-plugin.ts` 替換為：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -33,20 +33,20 @@ export function apply(ctx: Context) {
 }
 ```
 
-`inject` 让 Cordis 等待工具注册表就绪。`defineTool` 根据 `parameters` 推导并校验 `args`；`execute` 返回 `output.schema` 声明的规范值，`output.render` 再将该值转换为面向模型的内容。
+`inject` 讓 Cordis 等待工具註冊表就緒。`defineTool` 根據 `parameters` 推導並驗證 `args`；`execute` 返回 `output.schema` 宣告的規範值，`output.render` 再將該值轉換為面向模型的內容。
 
-## 运行并调用工具
+## 執行並呼叫工具
 
-如果开发命令未在运行，请重新启动：
+如果開發命令未在執行，請重新啟動：
 
 ```sh
 pnpm dsh web --patch ./scratch-plugin/cordis.yml
 ```
 
-打开 `http://127.0.0.1:3080`，然后输入：`Use the greet tool to greet Ada.` 模型可以调用 `greet`，并收到 `Hello, Ada!` 这一工具结果。
+開啟 `http://127.0.0.1:3080`，然後輸入：`Use the greet tool to greet Ada.` 模型可以呼叫 `greet`，並收到 `Hello, Ada!` 這一工具結果。
 
 ## 下一步
 
-- [插件配置](./config.zh.md) — 让问候语可配置。
-- [工具编写参考](../../../cookbook/adding-a-tool.zh.md) — 查阅嵌套 schema、规范值、后台工作、策略钩子、PTC mode 和 UI 卡片。
-- [能力分层](../practice/index.zh.md) — 将可替换能力拆分为 Service Definition、Service Provider 和 Consumer 三类包。
+- [外掛設定](./config.zh.md) — 讓問候語可設定。
+- [工具編寫參考](../../../cookbook/adding-a-tool.zh.md) — 查閱巢狀 schema、規範值、後臺工作、策略掛鉤、PTC mode 和 UI 卡片。
+- [能力分層](../practice/index.zh.md) — 將可替換能力拆分為 Service Definition、Service Provider 和 Consumer 三類包。

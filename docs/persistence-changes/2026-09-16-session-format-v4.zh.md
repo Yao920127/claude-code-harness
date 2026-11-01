@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-将 已定稿 V4 写入方声明的 SessionHeader.version 从 3 推进到 4，记录一等 tool 角色结果与生产者拥有的 source，并向 turn/end.reason 添加 forked 变体。 添加 developer 角色的 Session 变更，工具添加仅记录名称并绑定历史请求头，另含工具移除和延迟加载模式标记。
+將 已定稿 V4 寫入方宣告的 SessionHeader.version 從 3 推進到 4，記錄一等 tool 角色結果與生產者擁有的 source，並向 turn/end.reason 新增 forked 變體。 新增 developer 角色的 Session 變更，工具新增僅記錄名稱並繫結歷史請求頭，另含工具移除和延遲載入模式標記。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -85,36 +85,36 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-工具角色声明会改变十个事件根，因为 inbox 条目、消息事件、compaction 摘要、标题请求、团队消息和 PTC dispatch 嵌入了共享的 `Message` 或 `ContentBlock` 声明。从联合中移除 `tool-result` 并按角色细化消息，会改变这些可达 schema，并非新增十套独立事件协议。`turn/end` 的变更单独记录 forked reason；`SessionHeader` 记录版本递增。
+工具角色宣告會改變十個事件根，因為 inbox 條目、訊息事件、compaction 摘要、標題請求、團隊訊息和 PTC dispatch 嵌入了共享的 `Message` 或 `ContentBlock` 宣告。從聯合中移除 `tool-result` 並按角色細化訊息，會改變這些可達 schema，並非新增十套獨立事件協定。`turn/end` 的變更單獨記錄 forked reason；`SessionHeader` 記錄版本遞增。
 
-[原生 V4 校验决策](../../.agents/notes/implemented/architecture/2026-09-17-native-v4-read-validation.zh.md) 负责说明这些当前字段所需的读取接纳规则。
+[原生 V4 驗證決策](../../.agents/notes/implemented/architecture/2026-09-17-native-v4-read-validation.zh.md) 負責說明這些目前欄位所需的讀取接納規則。
 
-V3-to-V4 迁移将已发布的 user 角色工具结果提升为 tool 角色消息，包含必需的 toolCallId 和可选的 isError。工具结果包装不再属于内容块联合。迁移保留每个已接纳源事件和继承切分点，并根据同一持久化根目录中保留的直属子 Session 日志追加缺失的父级 subagent/catalog 记录。历史正文恢复要求显式提供子日志证据集合；没有可供补全的子日志时也须传入空集合。子日志的 descriptor 缺失、多条或版本未知时，跳过该子项的补全；身份、时间戳或模式冲突会拒绝迁移且不发布后继。已有 catalog 事实保持不变。历史读取打开在内存中准备结果。写入打开在重新校验子项成员与修订后，将当前后继发布到未修改的前代文件旁。Delivery generation 校验防止历史确认成为有效的 V4 水位。V3 读取方拒绝更新的 generation。已定稿迁移向 turn/end.reason 添加 forked。精确切点的 fork 在继承标记之后追加子会话自有的错误结果和结束事件。V4 接纳经过校验、使用确定性分支 ID 和文案的未启动 fork 结果；已发布的 V0–V3 校验器和已记录的前驱代际保持不变。
+V3-to-V4 遷移將已釋出的 user 角色工具結果提升為 tool 角色訊息，包含必需的 toolCallId 和可選的 isError。工具結果包裝不再屬於內容塊聯合。遷移保留每個已接納源事件和繼承切分點，並根據同一持久化根目錄中保留的直屬子 Session 日誌追加缺失的父級 subagent/catalog 記錄。歷史正文恢復要求顯式提供子日誌證據集合；沒有可供補全的子日誌時也須傳入空集合。子日誌的 descriptor 缺失、多條或版本未知時，跳過該子項的補全；身份、時間戳或模式衝突會拒絕遷移且不釋出後繼。已有 catalog 事實保持不變。歷史讀取開啟在記憶體中準備結果。寫入開啟在重新驗證子項成員與修訂後，將目前後繼釋出到未修改的前代檔案旁。Delivery generation 驗證防止歷史確認成為有效的 V4 水位。V3 讀取方拒絕更新的 generation。已定稿遷移向 turn/end.reason 新增 forked。精確切點的 fork 在繼承標記之後追加子工作階段自有的錯誤結果和結束事件。V4 接納經過驗證、使用確定性分支 ID 和文案的未啟動 fork 結果；已釋出的 V0–V3 驗證器和已記錄的前驅代際保持不變。
 
-`request/header` schema 还将退役的 `system` 键记录为禁止字段。这项声明记录已有的原生读取拒绝规则，不改变存储数据或提示词重建；以后允许该字段携带值时，必须提升格式版本，而不能归类为普通可选字段添加。
+`request/header` schema 還將退役的 `system` 鍵記錄為禁止欄位。這項宣告記錄已有的原生讀取拒絕規則，不改變儲存資料或提示詞重建；以後允許該欄位攜帶值時，必須提升格式版本，而不能歸類為普通可選欄位新增。
 
-生产者拥有的 source 通过 [V3→V4 迁移](../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)替代已发布的 plugin wrapper。冻结的重命名表和冲突规则保留 source 字段与事件坐标；未知生产者归属保留每个自有 JSON 属性。原生读取和写入打开在公开 Session 之前校验 source 字段。已有 V4 文件不会重新运行迁入边。
+生產者擁有的 source 透過 [V3→V4 遷移](../../packages/session/session-format-v3-to-v4/README.zh.md#v3-to-v4-specification)替代已釋出的 plugin wrapper。凍結的重新命名錶和衝突規則保留 source 欄位與事件座標；未知生產者歸屬保留每個自有 JSON 屬性。原生讀取和寫入開啟在公開 Session 之前驗證 source 欄位。已有 V4 檔案不會重新執行遷入邊。
 
-核心拥有的 user source 属性记录归属保留策略；tmux-context 将位置归属标记为符合条件，同时保留生产者内部的去重。Auto Review 和压缩摘要器使用仅供请求使用的 user 输入，移除其活动 source 注册，同时保留历史迁移支持。这些输入不能写为持久化 Session 消息。目录 formatVersion 2 保存策略元数据，不改变 Session 版本，也不重写冻结的 schema 记录。System、model 和 tool source 保持严格的语义规则。
+核心擁有的 user source 屬性記錄歸屬保留策略；tmux-context 將位置歸屬標記為符合條件，同時保留生產者內部的去重。Auto Review 和壓縮摘要器使用僅供請求使用的 user 輸入，移除其活動 source 註冊，同時保留歷史遷移支援。這些輸入不能寫為持久化 Session 訊息。目錄 formatVersion 2 儲存策略中繼資料，不改變 Session 版本，也不重寫凍結的 schema 記錄。System、model 和 tool source 保持嚴格的語義規則。
 
-Developer 事件保留原始角色，并要求处于打开的 step。每个添加块存储 toolName；developer/message.headerSeq 指向更早且已知的 request/header，其中必须恰好包含一个完整同名 ToolSchema。同一事件的所有添加共用该历史请求头版本，仅移除或其他 developer 消息省略 headerSeq。原生与 Session 接纳拒绝缺失、前向、非请求头、未知请求头、歧义、不完整定义及已退役内嵌定义形式，不解释未知且可忽略的记录，也不丢弃无关 JSON 元数据。同名替换、重启、fork、surface 替换和压缩保留历史模式身份，不查询最新请求头或注册表。通用 sourceEventSeqs 保持独立。Developer source 使用与 user source 相同的已记录归属保留策略。可选的 deferLoading 标记独立于添加历史。已提供的 profile 不发出 developer 记录；提供方序列化、自动发出及 UI 支持仍未启用。
+Developer 事件保留原始角色，並要求處於開啟的 step。每個新增塊儲存 toolName；developer/message.headerSeq 指向更早且已知的 request/header，其中必須恰好包含一個完整同名 ToolSchema。同一事件的所有新增共用該歷史請求頭版本，僅移除或其他 developer 訊息省略 headerSeq。原生與 Session 接納拒絕缺失、前向、非請求頭、未知請求頭、歧義、不完整定義及已退役內嵌定義形式，不解釋未知且可忽略的記錄，也不丟棄無關 JSON 中繼資料。同名替換、重新啟動、fork、surface 替換和壓縮保留歷史模式身份，不查詢最新請求頭或註冊表。通用 sourceEventSeqs 保持獨立。Developer source 使用與 user source 相同的已記錄歸屬保留策略。可選的 deferLoading 標記獨立於新增歷史。已提供的 profile 不發出 developer 記錄；提供者序列化、自動發出及 UI 支援仍未啟用。
 
-PTC 生产者写入 `source.kind: 'ptc-mode'`。V3→V4 迁入边保留 `tools-code-mode` 和 `tools-ptc` 作为历史 plugin 查找键，并将二者映射到该当前 kind。source 策略保留 `ptc-mode`，不允许将其声明为仅用于归属。
+PTC 生產者寫入 `source.kind: 'ptc-mode'`。V3→V4 遷入邊保留 `tools-code-mode` 和 `tools-ptc` 作為歷史 plugin 查詢鍵，並將二者對映到該目前 kind。source 策略保留 `ptc-mode`，不允許將其宣告為僅用於歸屬。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-精确切点 fork 集成后，聚焦的 Session、agent-loop、Session Controller、V4、chat-view 和 compaction 测试共 63 个文件、1,523 个测试通过。V4 fork 测试确认编码、解码和恢复保留原始 ID 与文本，拒绝格式错误的结果，并验证嵌套继承切点。工具角色迁移测试和 SDK 快照刷新也在原始变更中通过；构建后的 Python runtime sdk-snapshot 场景通过，定向 pi-ai 与 auto-review 覆盖率检查通过 351 个测试，三个受影响模块覆盖率均为 100%。
+精確切點 fork 整合後，聚焦的 Session、agent-loop、Session Controller、V4、chat-view 和 compaction 測試共 63 個檔案、1,523 個測試透過。V4 fork 測試確認編碼、解碼和恢復保留原始 ID 與文字，拒絕格式錯誤的結果，並驗證巢狀繼承切點。工具角色遷移測試和 SDK 快照重新整理也在原始變更中透過；建置後的 Python runtime sdk-snapshot 情境透過，定向 pi-ai 與 auto-review 覆蓋率檢查透過 351 個測試，三個受影響模組覆蓋率均為 100%。
 
-生成的请求头保留字段回归测试以及已有的退役语法和 Session surface 测试共通过三个文件中的 65 项测试。生成字段保留可选的 `never`；允许可选字符串会产生必须提升版本的诊断，而原生读取方仍拒绝该退役键。
+生成的請求頭保留欄位迴歸測試以及已有的退役語法和 Session surface 測試共透過三個檔案中的 65 項測試。生成欄位保留可選的 `never`；允許可選字串會產生必須提升版本的診斷，而原生讀取方仍拒絕該退役鍵。
 
-Producer-source 与 request-input 检查共通过 12 个文件中的 447 项测试，覆盖 provider 等价性、仅供请求使用的输入的类型拒绝、user 归属保留、source 迁移及原生 source 准入。与 tool-role 父层的生成目录相比，有四个 root 发生变化，447 个类型指纹保持不变。
+Producer-source 與 request-input 檢查共透過 12 個檔案中的 447 項測試，覆蓋 provider 等價性、僅供請求使用的輸入的型別拒絕、user 歸屬保留、source 遷移及原生 source 准入。與 tool-role 父層的生成目錄相比，有四個 root 發生變化，447 個型別指紋保持不變。
 
-聚焦的 Session、V4 和 request-input 测试共 38 个文件、884 项通过，完整 V3-to-V4 包与 Session surface 的语句、分支、函数及行覆盖率均为 100%。覆盖历史同名模式绑定、复合添加/移除、畸形引用与定义、未知请求头拒绝、未知记录不透明性、元数据保留、fork、替换、压缩引用，以及不重写 generation 的原生 plain/zstd 读写接纳。
+聚焦的 Session、V4 和 request-input 測試共 38 個檔案、884 項透過，完整 V3-to-V4 包與 Session surface 的語句、分支、函式及行覆蓋率均為 100%。覆蓋歷史同名模式繫結、複合新增/移除、畸形引用與定義、未知請求頭拒絕、未知記錄不透明性、中繼資料保留、fork、替換、壓縮引用，以及不重寫 generation 的原生 plain/zstd 讀寫接納。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

@@ -1,49 +1,49 @@
 ---
-description: "plan 组的包映射：引导 agent（智能体）先探索和设计再执行的计划模式功能，供用户和维护者浏览该组。"
+description: "plan 組的包對映：引導 agent（智慧代理）先探索和設計再執行的計劃模式功能，供使用者和維護者瀏覽該組。"
 kind: "package-group"
 ---
 
-# plan/：plan 协作状态
+# plan/：plan 協作狀態
 
 [English](README.md) | 中文
 
 ## 概述
 
-`plan/` 组提供计划模式：激活期间，agent 先探索和设计再执行，遵循部署写入的指令，并在执行前提交完成的计划供你批准。你可以用 `/plan` 命令进入和离开计划模式，批准计划，或让 agent 回去继续规划。计划模式是引导而非限制：每个工具仍然可用，沙箱模式与审批提示等限制需另行配置。该组只包含一个包 `plan-mode`。
+`plan/` 組提供計劃模式：啟用期間，agent 先探索和設計再執行，遵循部署寫入的指令，並在執行前提交完成的計劃供你批准。你可以用 `/plan` 命令進入和離開計劃模式，批准計劃，或讓 agent 回去繼續規劃。計劃模式是引導而非限制：每個工具仍然可用，沙箱模式與審批提示等限制需另行設定。該組只包含一個包 `plan-mode`。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-一个包提供完整的计划模式功能；完整约定以子系统参考为准。
+一個包提供完整的計劃模式功能；完整約定以子系統參考為準。
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`plan-mode/`](plan-mode/README.zh.md) | 提供计划模式：`/plan` 进入和离开，部署写入的指令在规划期间引导 agent，`exit_plan_mode` 把完成的计划呈交你评审 | `ctx.planMode` |
+| [`plan-mode/`](plan-mode/README.zh.md) | 提供計劃模式：`/plan` 進入和離開，部署寫入的指令在規劃期間引導 agent，`exit_plan_mode` 把完成的計劃呈交你評審 | `ctx.planMode` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解共享词汇，再阅读设计说明了解决策。
+先從子系統參考瞭解共享詞彙，再閱讀設計說明了解決策。
 
-- [计划模式子系统参考](../../docs/subsystems/plan.zh.md)——计划模式如何工作、其配置与退出工具的行为。
-- [plan 专用协作状态](../../.agents/notes/implemented/simplification/2026-07-22-plan-specific-collaboration-state.zh.md)——计划模式背后的设计决策。
+- [計劃模式子系統參考](../../docs/subsystems/plan.zh.md)——計劃模式如何工作、其設定與退出工具的行為。
+- [plan 專用協作狀態](../../.agents/notes/implemented/simplification/2026-07-22-plan-specific-collaboration-state.zh.md)——計劃模式背後的設計決策。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -1,12 +1,12 @@
-# 产出物
+# 產出物
 
 [English](deliverables.md) | 中文
 
-记录一轮交给用户的东西，由 [deliverables 包组](../../packages/deliverables/README.zh.md)拥有：模型通过 `present` 工具声明的文件，记在一个只写日志的 Session 事件里；这一轮改动的文件，由轮开始和轮结束时的 git 工作树快照对比得出，git 覆盖不到的路径则由文件工具每次编辑前后的整文件捕获得出，用一个只写日志的事件宣告，并在 Session 存活期间由 Host 服务连同每个所列文件在轮开始与轮结束时的对比一起提供。它们只由客户端读取，Web [产出物插件](../../packages/client/ui-deliverables/README.zh.md)在轮末渲染两者。工具行为、快照机制和配置见 [`tool-present`](../../packages/deliverables/tool-present/README.zh.md) 与 [`workspace-changes`](../../packages/deliverables/workspace-changes/README.zh.md) 的包 README。
+記錄一輪交給使用者的東西，由 [deliverables 包組](../../packages/deliverables/README.zh.md)擁有：模型透過 `present` 工具宣告的檔案，記在一個只寫日誌的 Session 事件裡；這一輪改動的檔案，由輪開始和輪結束時的 git 工作樹快照對比得出，git 覆蓋不到的路徑則由檔案工具每次編輯前後的整檔案捕捉得出，用一個只寫日誌的事件宣告，並在 Session 存活期間由 Host 服務連同每個所列檔案在輪開始與輪結束時的對比一起提供。它們只由用戶端讀取，Web [產出物外掛](../../packages/client/ui-deliverables/README.zh.md)在輪末渲染兩者。工具行為、快照機制和設定見 [`tool-present`](../../packages/deliverables/tool-present/README.zh.md) 與 [`workspace-changes`](../../packages/deliverables/workspace-changes/README.zh.md) 的包 README。
 
-源码：[`packages/deliverables/tool-present/src/types.ts`](../../packages/deliverables/tool-present/src/types.ts)、[`packages/deliverables/workspace-changes/src/types.ts`](../../packages/deliverables/workspace-changes/src/types.ts)
+原始碼：[`packages/deliverables/tool-present/src/types.ts`](../../packages/deliverables/tool-present/src/types.ts)、[`packages/deliverables/workspace-changes/src/types.ts`](../../packages/deliverables/workspace-changes/src/types.ts)
 
-## `PresentedFile`：一条声明的交付
+## `PresentedFile`：一條宣告的交付
 
 ```ts type-equiv
 /** A declared filesystem file whose current contents remain at its source path. */
@@ -18,7 +18,7 @@ interface PresentedFile {
 }
 ```
 
-## `WorkspaceChangedFile`：一个改动的文件
+## `WorkspaceChangedFile`：一個改動的檔案
 
 ```ts type-equiv
 /** One file changed during a turn, with line counts from git or from the whole-file captures around its file-tool edits. */
@@ -42,7 +42,7 @@ interface WorkspaceChangedFile {
 }
 ```
 
-## `WorkspaceChangesSummary`：一轮的改动摘要
+## `WorkspaceChangesSummary`：一輪的改動摘要
 
 ```ts type-equiv
 /** Files changed during one top-level turn, kept on the Host until its Session is disposed. */
@@ -64,7 +64,7 @@ interface WorkspaceChangesSummary {
 }
 ```
 
-## `WorkspaceDiffHunk`：一个 unified diff hunk
+## `WorkspaceDiffHunk`：一個 unified diff hunk
 
 ```ts type-equiv
 /** One unified-diff hunk with three context lines; every line keeps its `+`, `-`, or space prefix. */
@@ -82,7 +82,7 @@ interface WorkspaceDiffHunk {
 }
 ```
 
-## `WorkspaceFileDiff`：一个文件的对比
+## `WorkspaceFileDiff`：一個檔案的對比
 
 ```ts type-equiv
 /** The comparison of one listed file's turn-start and turn-end contents, computed when asked for. */
@@ -108,7 +108,7 @@ type WorkspaceFileDiff =
   | { kind: 'oversized'; path: string; display: string }
 ```
 
-## `WorkspaceChanges`：提供摘要与对比的 Host 服务
+## `WorkspaceChanges`：提供摘要與對比的 Host 服務
 
 ```ts type-equiv
 /** Serves the summaries and file comparisons the recorder keeps for live Sessions. */
@@ -133,9 +133,9 @@ interface WorkspaceChanges {
 }
 ```
 
-## 持久事件与提供的摘要
+## 持久事件與提供的摘要
 
-`tool-present` 通过声明合并把 `deliverables/presented: { turn; callId; files: PresentedFile[] }` 加入 `SessionEventMap`，每次 `present` 的最终结果成功时追加一条。`workspace-changes` 合并 `workspace/changes: { turn }`，在顶层轮停止时追加；该事件宣告的摘要不在日志里，而是由 `workspaceChanges.summary(sessionId, seq)` 按事件序号返回，直到 Session 释放，因此 Host 重启后重新打开的对话，先前轮次没有改动文件卡片。`workspaceChanges.diff(sessionId, seq, index, signal)` 按同样的条件对比一个所列文件。同一轮后来的事件替代先前的，客户端只保留最新一条。生成的[持久化目录](../persistence-catalog.zh.md#deliverablespresented--log-only)记录了两处声明位置。两个事件都不会进入模型请求。
+`tool-present` 透過宣告合併把 `deliverables/presented: { turn; callId; files: PresentedFile[] }` 加入 `SessionEventMap`，每次 `present` 的最終結果成功時追加一條。`workspace-changes` 合併 `workspace/changes: { turn }`，在頂層輪停止時追加；該事件宣告的摘要不在日誌裡，而是由 `workspaceChanges.summary(sessionId, seq)` 按事件序號返回，直到 Session 釋放，因此 Host 重新啟動後重新開啟的對話，先前輪次沒有改動檔案卡片。`workspaceChanges.diff(sessionId, seq, index, signal)` 按同樣的條件對比一個所列檔案。同一輪後來的事件替代先前的，用戶端只保留最新一條。生成的[持久化目錄](../persistence-catalog.zh.md#deliverablespresented--log-only)記錄了兩處宣告位置。兩個事件都不會進入模型請求。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

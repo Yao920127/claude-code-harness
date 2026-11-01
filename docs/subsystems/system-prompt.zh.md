@@ -1,14 +1,14 @@
-# 系统提示词组装
+# 系統提示片語裝
 
 [English](system-prompt.md) | 中文
 
-[system-prompt 包](../../packages/core/system-prompt)负责管理提示词贡献者与一次组装调用之间交换的数据。该包的 [README](../../packages/core/system-prompt/README.zh.md) 记录注册、排序、作用域与渲染行为；本页记录各插件实现或传递的确切跨包类型。
+[system-prompt 包](../../packages/core/system-prompt)負責管理提示詞貢獻者與一次組裝呼叫之間交換的資料。該包的 [README](../../packages/core/system-prompt/README.zh.md) 記錄註冊、排序、作用域與渲染行為；本頁記錄各外掛實作或傳遞的確切跨包型別。
 
-源码：[`packages/core/system-prompt/src/index.ts`](../../packages/core/system-prompt/src/index.ts)。
+原始碼：[`packages/core/system-prompt/src/index.ts`](../../packages/core/system-prompt/src/index.ts)。
 
-## 组装上下文
+## 組裝上下文
 
-`AssembleContext` 标识一次组装所解析的作用域层，并可携带该请求的显式控制信号。它可合并扩展：`dsh-agent` 添加可选字段 `agent`，用于携带当前的 agent（智能体）实例；`assembleContextFor(agent, signal)` 则一起设置这些显式字段。裸组装既没有作用域，也没有信号。
+`AssembleContext` 標識一次組裝所解析的作用域層，並可攜帶該請求的顯式控制訊號。它可合併擴充功能：`dsh-agent` 新增可選欄位 `agent`，用於攜帶目前的 agent（智慧代理）實例；`assembleContextFor(agent, signal)` 則一起設定這些顯式欄位。裸組裝既沒有作用域，也沒有訊號。
 
 ```ts type-equiv
 /** Merge-extensible context for one prompt assembly. */
@@ -23,9 +23,9 @@ interface AssembleContext {
 }
 ```
 
-## 工具提供方结果
+## 工具提供者結果
 
-`ToolProviderResult.schemas` 是当前组装中对模型可见的工具 schema 集合。`knownNames` 是提供方在限制前的名称全集，用于区分「配置名拼写错误」与「已知工具在此作用域中被有意隐藏」。
+`ToolProviderResult.schemas` 是目前組裝中對模型可見的工具 schema 集合。`knownNames` 是提供者在限制前的名稱全集，用於區分「設定名拼寫錯誤」與「已知工具在此作用域中被有意隱藏」。
 
 ```ts type-equiv
 /** Tool schemas visible in one assembly and their pre-restriction name set. */
@@ -37,11 +37,11 @@ interface ToolProviderResult {
 }
 ```
 
-## 提示词段落
+## 提示詞段落
 
-导出的 `PERSONA_PREFIX_SECTION`（`deployment:persona-prefix`）与 `PERSONA_SUFFIX_SECTION`（`deployment:persona-suffix`）为全局配置和带作用域贡献所共享的段落命名。它们对应的 `PromptSectionOrderName` 项为 `DEPLOYMENT_PERSONA_PREFIX` 与 `DEPLOYMENT_PERSONA_SUFFIX`；[包 README](../../packages/core/system-prompt/README.zh.md#configure-the-prompt)规定其位置与模板配置。
+匯出的 `PERSONA_PREFIX_SECTION`（`deployment:persona-prefix`）與 `PERSONA_SUFFIX_SECTION`（`deployment:persona-suffix`）為全域設定和帶作用域貢獻所共享的段落命名。它們對應的 `PromptSectionOrderName` 項為 `DEPLOYMENT_PERSONA_PREFIX` 與 `DEPLOYMENT_PERSONA_SUFFIX`；[包 README](../../packages/core/system-prompt/README.zh.md#configure-the-prompt)規定其位置與範本設定。
 
-`PromptSection` 是一份只读的同进程注册约定。其文本可以是静态的，也可以从当前组装上下文动态解析。各段先按 order 升序排列，再按名称的代码单元顺序排列；仓库贡献方通过 `getSectionOrder()` 解析服务持有的具名分配。Runtime-context 贡献方通过 `getContextOrder()` 解析独立分配。协作式组装完成后，一个有效的 `complete` 段会成为唯一的提示词段落。agent loop（智能体循环）用 `renderPrompt` 渲染组装后的各段，并把文本作为 `system/message` surface 节点提交——首个步骤作为 surface 第 0 号节点追加，之后在渲染文本变化时原地替换，或者当已准备调用声明 `systemPromptUpdate: 'in-history'` 时，在序列延续期间把非空更新追加到已缓存历史之后——因此提示词作为派生历史中的消息而不是请求字段到达模型（[决策](../../.agents/notes/implemented/architecture/2026-09-02-system-prompt-as-surface-node.zh.md)；[决策规则](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）。
+`PromptSection` 是一份只讀的同程序註冊約定。其文字可以是靜態的，也可以從目前組裝上下文動態解析。各段先按 order 升序排列，再按名稱的程式碼單元順序排列；儲存庫貢獻方透過 `getSectionOrder()` 解析服務持有的具名分配。Runtime-context 貢獻方透過 `getContextOrder()` 解析獨立分配。協作式組裝完成後，一個有效的 `complete` 段會成為唯一的提示詞段落。agent loop（智慧代理迴圈）用 `renderPrompt` 渲染組裝後的各段，並把文字作為 `system/message` surface 節點提交——首個步驟作為 surface 第 0 號節點追加，之後在渲染文字變化時原地替換，或者當已準備呼叫宣告 `systemPromptUpdate: 'in-history'` 時，在序列延續期間把非空更新追加到已快取歷史之後——因此提示詞作為派生歷史中的訊息而不是請求欄位到達模型（[決策](../../.agents/notes/implemented/architecture/2026-09-02-system-prompt-as-surface-node.zh.md)；[決策規則](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）。
 
 ```ts type-equiv
 /** One contributed section of the system prompt (registry input). */
@@ -71,9 +71,9 @@ interface PromptSection {
 }
 ```
 
-## 动态提示词上下文
+## 動態提示詞上下文
 
-`PromptContext` 是与 `PromptSection` 对应的缓存安全结构。组装会解析这些贡献并排序；agent loop（智能体循环）仅在完整当前快照发生变化或被压缩（compaction）移除时，才会将其记录在保留的模型历史之后。
+`PromptContext` 是與 `PromptSection` 對應的快取安全結構。組裝會解析這些貢獻並排序；agent loop（智慧代理迴圈）僅在完整目前快照發生變化或被壓縮（compaction）移除時，才會將其記錄在保留的模型歷史之後。
 
 ```ts type-equiv
 /** Dynamic model context materialized as a durable user-role snapshot. */

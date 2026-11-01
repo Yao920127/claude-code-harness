@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/feedback/command-feedback/README.md
 /:
   en: 6fde8a2c01a13756
-  zh: 63b06f1e5373a1f0
+  zh: d67a6b0b902f5045
 /deepseek-ai-dsh-command-feedback:
   en: ba9f49666fd040a4
   zh: 9b2ab90df6a7d96a
 /deepseek-ai-dsh-command-feedback/summary:
   en: b3803d4fff915e52
-  zh: d2584d750443fd91
+  zh: bdd5536f31ce2318
 /deepseek-ai-dsh-command-feedback/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-command-feedback/use-this-package:
   en: 2e9c7334f5ed57b3
-  zh: 8c25b5a898fb5895
+  zh: 37be7e99e035c745
 /deepseek-ai-dsh-command-feedback/use-this-package/the-feedback-command:
   en: 645ee72ee1af491d
-  zh: 32b86c39307093e3
+  zh: b270f9370d352076
 /deepseek-ai-dsh-command-feedback/use-this-package/the-web-feedback-dialog:
   en: 21fae542942446d2
-  zh: 34d83535891dabee
+  zh: 189e8cc97ecf24af
 /deepseek-ai-dsh-command-feedback/use-this-package/recording-feedback-from-your-own-ui:
   en: c6ee98ae5229d76f
-  zh: e058dae4cb5dd254
+  zh: 94dad72dd28879e0
 /deepseek-ai-dsh-command-feedback/understand-the-implementation:
   en: 42b15ac6321706aa
-  zh: 4ed0861911abaf5d
+  zh: 4f54ea29c2200aaf
 /deepseek-ai-dsh-command-feedback/understand-the-implementation/design-concept:
   en: 8363f597c28788d2
-  zh: 9dda2a864a01f4ce
+  zh: 0fa33c5000eea6ab
 /deepseek-ai-dsh-command-feedback/understand-the-implementation/how-a-remark-is-recorded:
   en: 0c6ceecbb1f45224
-  zh: 8138bb0fd3e68317
+  zh: f97119c1a572049e
 /deepseek-ai-dsh-command-feedback/understand-the-implementation/source-map:
   en: 4fd622508f032a28
-  zh: fa336bcbaabca58e
+  zh: 549fab80a300112d
 /deepseek-ai-dsh-command-feedback/further-exploration:
   en: 3f3b9c53cd589403
-  zh: 13ca15c564be3521
+  zh: 98fee56ca7b7d113
 /deepseek-ai-dsh-command-feedback/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-command-feedback/model-experience/human-feedback-capture:
   en: 987bab29bbe8ec43
-  zh: 725efc45361172b5
+  zh: 8a40f0502827d49f
 /deepseek-ai-dsh-command-feedback/model-experience/human-feedback-capture/what-the-model-sees:
   en: 6ad8e2a4f961d2f4
-  zh: b510d05a74d6df0c
+  zh: 0dc3431f6ad31da2
 /deepseek-ai-dsh-command-feedback/model-experience/human-feedback-capture/token-effect:
   en: 1fcbd4d84eff267f
-  zh: 8da9902c44bf8dc4
+  zh: f0fe45879bf6a1e4
 /deepseek-ai-dsh-command-feedback/model-experience/human-feedback-capture/kv-cache-effect:
   en: c72e7dfee7b0957a
-  zh: b122fce5efccfafa
+  zh: 2189bbc2ca9c3ca0
 /deepseek-ai-dsh-command-feedback/known-limitations-and-deferred-work:
   en: b45e656a009e37b7
-  zh: 4949bd712564ee54
+  zh: 8938ede598e6c326
 /deepseek-ai-dsh-command-feedback/known-limitations-and-deferred-work/dev-note:
   en: b4bf58d55f599bc2
-  zh: fea7a6b69b0266e1
+  zh: a2f922fa0d830a26

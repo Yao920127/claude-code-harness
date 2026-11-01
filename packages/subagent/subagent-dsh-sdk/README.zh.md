@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的进程外 SDK subagent 后端，用于选择委派提供方、配置子 Harness 运行时，或排查本地嵌套子 agent（智能体）的运行问题。"
+description: "面向使用者與維護者的程序外 SDK subagent 後端，用於選擇委派提供者、設定子 Harness 執行時，或排查本地巢狀子 agent（智慧代理）的執行問題。"
 kind: "package-reference"
 ---
 
@@ -9,51 +9,51 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-subagent-dsh-sdk` 在全新的 DeepSeek Harness 子进程中运行每个委派任务，子进程拥有自己的 profile、会话、模型路由与工具。父级提供任务与工作目录，每个子进程使用其已配置的运行时，并与父级对话保持隔离。父级只会收到子进程最终的 assistant 文本或安全错误；中间消息与工具流量保留在子进程内。当委派需要完整的 Harness 运行时而不是共享进程内状态时，选择此后端，并接受每次运行都要启动新进程的成本。
+`dsh-subagent-dsh-sdk` 在全新的 DeepSeek Harness 子程序中執行每個委派任務，子程序擁有自己的 profile、工作階段、模型路由與工具。父級提供任務與工作目錄，每個子程序使用其已設定的執行時，並與父級對話保持隔離。父級只會收到子程序最終的 assistant 文字或安全錯誤；中間訊息與工具流量保留在子程序內。當委派需要完整的 Harness 執行時而不是共享程序內狀態時，選擇此後端，並接受每次執行都要啟動新程序的成本。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当委派应以完整 Harness 运行时在独立进程中运行时，挂载本提供方。常用路径是显式的：挂载 seam、挂载本提供方，按需配置 `dshBin`，并选择子级 `profile` 与有序 `patches`。
+當委派應以完整 Harness 執行時在獨立程序中執行時，掛載本提供者。常用路徑是顯式的：掛載 seam、掛載本提供者，按需設定 `dshBin`，並選擇子級 `profile` 與有序 `patches`。
 
-### 何时选择
+### 何時選擇
 
-当子进程必须是完整的 harness 对等体——拥有自己的组合、会话持久化、模型路由与工具——而不是共享父进程的 agent 时，选择此后端。当子进程必须共享父级组合或遵守父级强制的非路由能力时，请选择进程内后端：本提供方接受 agent 路由选项，但会拒绝结构化输出、深度上限、工具过滤或 persona，而不是静默省略。
+當子程序必須是完整的 harness 對等體——擁有自己的組合、工作階段持久化、模型路由與工具——而不是共享父程序的 agent 時，選擇此後端。當子程序必須共享父級組合或遵守父級強制的非路由能力時，請選擇程序內後端：本提供者接受 agent 路由選項，但會拒絕結構化輸出、深度上限、工具過濾或 persona，而不是靜默省略。
 
-提供方声明 `agentOptions: true`，同时保持 `outputSchema`/`depthLimit`/`toolFilter`/`persona` 为 false，并且 `inheritsParentContext: false`。不可变的 `agentRouteDefaults` 会在模型覆盖与确切路由预检前，把配置的 provider／model 基线公开给 `dsh-tool-subagent`；`start()` 则为直接调用方独立应用同一份配置默认值，包括 `maxTokens`。agent 路由值通过显式白名单跨越 SDK 协议；子进程仍是另一进程里的全新运行时，唯一从父 agent 本身派生的值是工作区 cwd。基于本提供方的 `dsh-tool-subagent` 部署应设置 `maxDepth: 'provider-managed'`——子 harness 拥有自己的递归预算。
+提供者宣告 `agentOptions: true`，同時保持 `outputSchema`/`depthLimit`/`toolFilter`/`persona` 為 false，並且 `inheritsParentContext: false`。不可變的 `agentRouteDefaults` 會在模型覆蓋與確切路由預檢前，把設定的 provider／model 基線公開給 `dsh-tool-subagent`；`start()` 則為直接呼叫方獨立應用同一份設定預設值，包括 `maxTokens`。agent 路由值透過顯式白名單跨越 SDK 協定；子程序仍是另一程序裡的全新執行時，唯一從父 agent 本身派生的值是工作區 cwd。基於本提供者的 `dsh-tool-subagent` 部署應設定 `maxDepth: 'provider-managed'`——子 harness 擁有自己的遞迴預算。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `providerName` | `dsh-sdk` | `ctx.subagents` 上的注册表名称 |
-| `dshBin` | SDK 依赖 | 显式 dsh CLI（命令行界面）模块，在插件加载时解析并校验；省略则使用 SDK 依赖 |
+| `providerName` | `dsh-sdk` | `ctx.subagents` 上的註冊表名稱 |
+| `dshBin` | SDK 依賴 | 顯式 dsh CLI（命令列介面）模組，在外掛載入時解析並驗證；省略則使用 SDK 依賴 |
 | `profile` | `sdk` | 具名子 profile |
-| `patches` | `[]` | 每次启动的有序 profile patch 文件，在插件加载时解析并校验 |
-| `dshHome` | 必填 | 每个嵌套子进程的绝对隔离 Harness home |
-| `cwd` | 父会话 cwd | 子进程及其 SDK 会话的工作目录覆盖值 |
-| `provider` | `deepseek-official` | 写入子进程 `initialize` 的提供方路由 |
-| `model` | `deepseek-v4-flash` | 写入子进程 `initialize` 的模型 |
-| `maxTokens` | 适配器／提供方路由默认值 | 写入子进程 `initialize` 的单次请求输出 token 上限 |
-| `env` | `{}` | 叠加在已清理凭据的父环境之上的显式子环境 |
-| `shutdownTimeoutMs` | `1000` | dispose（资源释放）期间协议 `shutdown` 交换的时限 |
-| `disposeEofGraceMs` | `6000` | stdin EOF 之后、平台终止之前的宽限 |
-| `disposeGraceMs` | `3000` | 终止后的退出确认宽限 |
+| `patches` | `[]` | 每次啟動的有序 profile patch 檔案，在外掛載入時解析並驗證 |
+| `dshHome` | 必填 | 每個巢狀子程序的絕對隔離 Harness home |
+| `cwd` | 父工作階段 cwd | 子程序及其 SDK 工作階段的工作目錄覆蓋值 |
+| `provider` | `deepseek-official` | 寫入子程序 `initialize` 的提供者路由 |
+| `model` | `deepseek-v4-flash` | 寫入子程序 `initialize` 的模型 |
+| `maxTokens` | 介面卡／提供者路由預設值 | 寫入子程序 `initialize` 的單次請求輸出 token 上限 |
+| `env` | `{}` | 疊加在已清理憑證的父環境之上的顯式子環境 |
+| `shutdownTimeoutMs` | `1000` | dispose（資源釋放）期間協定 `shutdown` 交換的時限 |
+| `disposeEofGraceMs` | `6000` | stdin EOF 之後、平臺終止之前的寬限 |
+| `disposeGraceMs` | `3000` | 終止後的退出確認寬限 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-dsh-sdk)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-dsh-sdk)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-请求 `agentOptions` 会分别覆盖 `provider`、`model` 与 `maxTokens`。`reasoningEffort` 没有提供方实例默认值：请求省略时保持缺省，由所选子模型解析自身默认值。面向模型的 subagent 工具可在每次调用时选择提供方／模型／推理强度；`maxTokens` 仍由工具配置或本提供方默认值在部署侧控制。
+請求 `agentOptions` 會分別覆蓋 `provider`、`model` 與 `maxTokens`。`reasoningEffort` 沒有提供者實例預設值：請求省略時保持預設，由所選子模型解析自身預設值。面向模型的 subagent 工具可在每次呼叫時選擇提供者／模型／推理強度；`maxTokens` 仍由工具設定或本提供者預設值在部署側控制。
 
 ```yaml
 - id: subagent-dsh-sdk
@@ -71,120 +71,120 @@ kind: "package-reference"
   config: { provider: dsh-sdk, toolName: subagent, maxDepth: 'provider-managed' }
 ```
 
-### 你会得到什么
+### 你會得到什麼
 
-成功的运行会把子进程最终的 assistant 文本（或取消后累积的部分文本）作为结果输出返回。子进程的模型路由、工具与会话来自子运行时自身——父级提供任务、工作目录与 `initialize` 路由。子进程最后一个持久化 `turn/end` 会映射进 seam 词汇：`completed` 与 `max-tokens` 原样通过，`blocked` 变为 `refusal`，意外终态或缺少终态变为 `error`。`aborted` 结果保持中止；只有子进程侧 `disposed` 原因会附加 `child-disposed` 诊断。
+成功的執行會把子程序最終的 assistant 文字（或取消後累積的部分文字）作為結果輸出返回。子程序的模型路由、工具與工作階段來自子執行時自身——父級提供任務、工作目錄與 `initialize` 路由。子程序最後一個持久化 `turn/end` 會對映進 seam 詞彙：`completed` 與 `max-tokens` 原樣透過，`blocked` 變為 `refusal`，意外終態或缺少終態變為 `error`。`aborted` 結果保持中止；只有子程序側 `disposed` 原因會附加 `child-disposed` 診斷。
 
-### 失败与恢复
+### 失敗與恢復
 
-已取消的请求会在路径解析或 spawn 之前失败。路由、spawn、握手或发布前取消失败通常只在子进程被回收后拒绝；如果初始化与清理均失败，有序安全事实会保留两项失败，而不会宣称已完全停稳。子运行时在发布后失败时会通过运行本身结算，而不是拒绝；部分输出与安全诊断保持分离。诊断只公开提供方、`initialize`、`session-run` 或 `shutdown` 阶段，以及固定类别。SDK 消息、stderr、路径、任务内容、环境值、凭据和协议载荷绝不会复制到诊断中。
+已取消的請求會在路徑解析或 spawn 之前失敗。路由、spawn、握手或釋出前取消失敗通常只在子程序被回收後拒絕；如果初始化與清理均失敗，有序安全事實會保留兩項失敗，而不會宣稱已完全停穩。子執行時在釋出後失敗時會透過執行本身結算，而不是拒絕；部分輸出與安全診斷保持分離。診斷只公開提供者、`initialize`、`session-run` 或 `shutdown` 階段，以及固定類別。SDK 訊息、stderr、路徑、任務內容、環境值、憑證和協定載荷絕不會複製到診斷中。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释后端如何驱动子 Harness 运行时，以及可观察行为从何而来；完整约定见[使用本包](#use-this-package)。
+本節解釋後端如何驅動子 Harness 執行時，以及可觀察行為從何而來；完整約定見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-- **完整 harness 对等体。** 每个子进程都是独立进程中的完整 Harness 运行时——拥有自己的组合、会话、模型路由与工具；只有解析后的工作目录与 `initialize` 路由从父级跨越。
-- **每次运行一个运行时。** 每次运行都 spawn 全新运行时进程；没有进程池。
-- **JSON-RPC 协议格式（wire format）是序列化边界。** 同进程 subagent 值不会为防御目的克隆；协议才是校验不可信输入的地方。
+- **完整 harness 對等體。** 每個子程序都是獨立程序中的完整 Harness 執行時——擁有自己的組合、工作階段、模型路由與工具；只有解析後的工作目錄與 `initialize` 路由從父級跨越。
+- **每次執行一個執行時。** 每次執行都 spawn 全新執行時程序；沒有程序池。
+- **JSON-RPC 協定格式（wire format）是序列化邊界。** 同程序 subagent 值不會為防禦目的克隆；協定才是驗證不可信輸入的地方。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：config schema、提供方注册 |
-| [`src/run.ts`](src/run.ts) | SDK 运行生命周期、答案提取与停止原因映射 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：config schema、提供者註冊 |
+| [`src/run.ts`](src/run.ts) | SDK 執行生命週期、答案提取與停止原因對映 |
 
-### 运行流程
+### 執行流程
 
-一次启动会在 spawn 前解析子进程工作目录与一条进程级 SDK 路由。`request.agentOptions` 中每个已声明字段（`provider`、`model`、`reasoningEffort` 或 `maxTokens`）都会覆盖对应的提供方实例默认值；省略时保留已配置的提供方／模型与可选上限，而推理强度只有在请求提供时才会出现。随后，提供方通过 SDK 客户端 spawn 运行时，并在履行前完成 `initialize` 握手，其中包括确切模型与推理强度校验。路由、spawn、握手或发布前取消失败时，只会在子进程被回收后拒绝；工作目录解析失败则会在尚未 spawn 任何内容时拒绝。发布后，提供方拥有一段 SDK 活动，并从子会话事件中读取答案：最后一条完整且非空的 `assistant/message`（记录 usage 的空内容消息会被跳过）；若没有这类消息，则取累积的 `text-delta` 流。dispose 是幂等的：先在本地把结果确定为 `aborted`，发出有界的协议 `shutdown` 请求，再经 stdin EOF → SIGTERM → SIGKILL 升级到实际退出。
+一次啟動會在 spawn 前解析子程序工作目錄與一條程序級 SDK 路由。`request.agentOptions` 中每個已宣告欄位（`provider`、`model`、`reasoningEffort` 或 `maxTokens`）都會覆蓋對應的提供者實例預設值；省略時保留已設定的提供者／模型與可選上限，而推理強度只有在請求提供時才會出現。隨後，提供者透過 SDK 用戶端 spawn 執行時，並在履行前完成 `initialize` 握手，其中包括確切模型與推理強度驗證。路由、spawn、握手或釋出前取消失敗時，只會在子程序被回收後拒絕；工作目錄解析失敗則會在尚未 spawn 任何內容時拒絕。釋出後，提供者擁有一段 SDK 活動，並從子工作階段事件中讀取答案：最後一條完整且非空的 `assistant/message`（記錄 usage 的空內容訊息會被跳過）；若沒有這類訊息，則取累積的 `text-delta` 流。dispose 是冪等的：先在本地把結果確定為 `aborted`，發出有界的協定 `shutdown` 請求，再經 stdin EOF → SIGTERM → SIGKILL 升級到實際退出。
 
-### 停止原因映射
+### 停止原因對映
 
-子进程最后一个 `turn/end` 的原因会映射进共享的停止原因词汇，实现见 [`src/run.ts`](src/run.ts)。
+子程序最後一個 `turn/end` 的原因會對映進共享的停止原因詞彙，實作見 [`src/run.ts`](src/run.ts)。
 
-### 进程边界
+### 程序邊界
 
-子进程环境以子进程 seam 中已清除凭据的父环境为基础，并在清除之后合并显式 `config.env` 值。子进程由 SDK 客户端 spawn，而不是经由 `ctx.subprocess`——这是 SDK 托管传输的文档化例外——因此本后端会自行执行环境清理。
+子程序環境以子程序 seam 中已清除憑證的父環境為基礎，並在清除之後合併顯式 `config.env` 值。子程序由 SDK 用戶端 spawn，而不是經由 `ctx.subprocess`——這是 SDK 託管傳輸的文件化例外——因此本後端會自行執行環境清理。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从本后端逐步进入它接入的 seam 与它驱动的 SDK。
+當包級約定不夠用時閱讀以下頁面。它們從本後端逐步進入它接入的 seam 與它驅動的 SDK。
 
-- [Subagent 子系统](../../../docs/subsystems/subagent.zh.md)——服务约定、提供方约定与终态结果语义。
-- [dsh-subagent seam](../subagent/README.zh.md)——本提供方注册于其上的注册表与启动 API。
-- [ACP subagent 后端](../subagent-acp/README.zh.md)——经 Agent Client Protocol 的兄弟进程外提供方。
-- [TypeScript SDK 客户端](../../sdk/client/README.zh.md)——本后端用以驱动子进程的 stdio JSON-RPC 客户端。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-dsh-sdk)——每个受支持配置字段及其源声明。
+- [Subagent 子系統](../../../docs/subsystems/subagent.zh.md)——服務約定、提供者約定與終態結果語義。
+- [dsh-subagent seam](../subagent/README.zh.md)——本提供者註冊於其上的註冊表與啟動 API。
+- [ACP subagent 後端](../subagent-acp/README.zh.md)——經 Agent Client Protocol 的兄弟程序外提供者。
+- [TypeScript SDK 用戶端](../../sdk/client/README.zh.md)——本後端用以驅動子程序的 stdio JSON-RPC 用戶端。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-dsh-sdk)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 子 agent 请求
+### 子 agent 請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-子运行时的模型会收到作为用户消息的独立任务，以及该运行时自身配置的系统提示词、工具和全新会话。它不会收到父级对话。父级工具调用可以为本次运行选择子级提供方、模型与推理强度；所选路由和由部署控制的可选输出上限会固定到这个新子进程。persona、工具过滤、深度强制与结构化输出仍不受支持，并会被拒绝而不是静默省略。
+子執行時的模型會收到作為使用者訊息的獨立任務，以及該執行時自身設定的系統提示詞、工具和全新工作階段。它不會收到父級對話。父級工具呼叫可以為本次執行選擇子級提供者、模型與推理強度；所選路由和由部署控制的可選輸出上限會固定到這個新子程序。persona、工具過濾、深度強制與結構化輸出仍不受支援，並會被拒絕而不是靜默省略。
 
-#### Token 影响
+#### Token 影響
 
-子运行时会为独立的完整上下文及其多步骤历史消耗 token。这些 token 绝不会进入父级上下文。
+子執行時會為獨立的完整上下文及其多步驟歷史消耗 token。這些 token 絕不會進入父級上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与父级请求缓存相互独立。每个 SDK 子进程只能复用其自身提供方、模型、组合和历史均相同时的前缀；除此之外，子 agent 的步骤仅追加增长。
+與父級請求快取相互獨立。每個 SDK 子程序只能複用其自身提供者、模型、組合和歷史均相同時的字首；除此之外，子 agent 的步驟僅追加增長。
 
-### 父级工具结果（间接）
+### 父級工具結果（間接）
 
-#### 模型看到什么
+#### 模型看到什麼
 
-经由 `dsh-tool-subagent`，父级只会收到子运行时最终的 assistant 文本（或累积的部分文本），或该消费方给出的精确停止原因错误；不会收到中间消息或工具流量。带诊断的非完成结果会先呈现安全诊断，再单独呈现保留的部分 assistant 输出；启动与 shutdown 错误使用同一固定事实，不公开原始 SDK 文本。
+經由 `dsh-tool-subagent`，父級只會收到子執行時最終的 assistant 文字（或累積的部分文字），或該消費方給出的精確停止原因錯誤；不會收到中間訊息或工具流量。帶診斷的非完成結果會先呈現安全診斷，再單獨呈現保留的部分 assistant 輸出；啟動與 shutdown 錯誤使用同一固定事實，不公開原始 SDK 文字。
 
-#### Token 影响
+#### Token 影響
 
-父级输入只增加最终结果或错误，其大小取决于数据，并保留到压缩（compaction）为止。本提供方自身不会向父级添加任何 schema。
+父級輸入只增加最終結果或錯誤，其大小取決於資料，並保留到壓縮（compaction）為止。本提供者自身不會向父級新增任何 schema。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新增可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新增可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本后端何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用 SDK 对比或任务积压。
+這些限制說明本後端何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用 SDK 對比或任務積壓。
 
-- **每次运行都使用全新的运行时进程**——不使用进程池；harness 运行时需要启动完整的插件树，因此每次运行的 spawn 成本高于 ACP 后端通常使用的子进程。
-- **不支持路由之外的启动时能力**——父级可以选择子 agent 路由，但无法在子进程内强制执行 `outputSchema`、深度限制、工具过滤或 persona；应改为配置所选子 profile 及其有序 patch。
-- **子进程的 transcript（文本记录）保留在其自身的会话根目录中**——父级日志只记录委派工具调用与结果；流式 `session.event` 通道只用于提取输出，不会桥接到父级日志中。
-- **仅支持本地子进程**——解析出的工作目录是本地路径；远程运行时需要独立的后端。
+- **每次執行都使用全新的執行時程序**——不使用程序池；harness 執行時需要啟動完整的外掛樹，因此每次執行的 spawn 成本高於 ACP 後端通常使用的子程序。
+- **不支援路由之外的啟動時能力**——父級可以選擇子 agent 路由，但無法在子程序內強制執行 `outputSchema`、深度限制、工具過濾或 persona；應改為設定所選子 profile 及其有序 patch。
+- **子程序的 transcript（文字記錄）保留在其自身的工作階段根目錄中**——父級日誌只記錄委派工具呼叫與結果；流式 `session.event` 通道只用於提取輸出，不會橋接到父級日誌中。
+- **僅支援本地子程序**——解析出的工作目錄是本地路徑；遠端執行時需要獨立的後端。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为与限制以上文和包代码为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為與限制以上文和包程式碼為準。
 
-- **Spawn 成本**——每次运行加载完整插件树是彻底隔离的代价；池化会改变这一权衡。
-- **远程运行时**——远程运行时需要独立的后端与工作区映射。
+- **Spawn 成本**——每次執行載入完整外掛樹是徹底隔離的代價；池化會改變這一權衡。
+- **遠端執行時**——遠端執行時需要獨立的後端與工作區對映。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。run 生命周期配对由 subagent seam 的不变式检查；本后端自身的状态位于子进程中，不在当前上下文的事件流内。
+**執行時不變式：** 不釋出伴生入口。run 生命週期配對由 subagent seam 的不變式檢查；本後端自身的狀態位於子程序中，不在目前上下文的事件流內。

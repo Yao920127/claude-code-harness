@@ -1,5 +1,5 @@
 ---
-description: "浏览器操作能力包，用于选择与注册一个浏览器后端。"
+description: "瀏覽器操作能力包，用於選擇與註冊一個瀏覽器後端。"
 kind: "package-group"
 ---
 
@@ -9,32 +9,32 @@ kind: "package-group"
 
 ## 概述
 
-浏览器操作 提供方 让模型检查与操作网页。本组拥有独占 提供方 注册。实验性 提供方 提供浏览器工具，并管理各 Session 的浏览器资源。
+瀏覽器操作 提供者 讓模型檢查與操作網頁。本組擁有獨佔 提供者 註冊。實驗性 提供者 提供瀏覽器工具，並管理各 Session 的瀏覽器資源。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-选择一个 提供方 并挂载共享注册服务。
+選擇一個 提供者 並掛載共享註冊服務。
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`browser-use`](browser-use/README.zh.md) | 独占具名 提供方 注册 | `ctx.browserUse` |
+| [`browser-use`](browser-use/README.zh.md) | 獨佔具名 提供者 註冊 | `ctx.browserUse` |
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [浏览器操作](../../docs/subsystems/browser-use.zh.md) — 能力所有权与 提供方 选择。
-- [实验包](../experimental/README.zh.md) — Playwright MCP、Chrome DevTools MCP 与 Stagehand 提供方。
+- [瀏覽器操作](../../docs/subsystems/browser-use.zh.md) — 能力所有權與 提供者 選擇。
+- [實驗包](../experimental/README.zh.md) — Playwright MCP、Chrome DevTools MCP 與 Stagehand 提供者。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

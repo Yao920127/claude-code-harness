@@ -1,5 +1,5 @@
 ---
-description: "面向发送官方 DeepSeek 请求的部署，说明活跃 Loader 包清单元数据。"
+description: "面向傳送官方 DeepSeek 請求的部署，說明活躍 Loader 包清單中繼資料。"
 kind: "package-reference"
 ---
 
@@ -9,72 +9,72 @@ kind: "package-reference"
 
 ## 概述
 
-用于 DeepSeek 官方 LLM API 请求的完整活跃 Loader 插件包清单。该函数插件注入 Loader、存活 Agent 注册表与 `ctx.deepseekLlmApiExtensions`，并拥有 `dsh_plugin_packages` 字段。当官方 API 需要活动包清单进行请求诊断时，请启用它。
+用於 DeepSeek 官方 LLM API 請求的完整活躍 Loader 外掛包清單。該函式外掛注入 Loader、存活 Agent 註冊表與 `ctx.deepseekLlmApiExtensions`，並擁有 `dsh_plugin_packages` 欄位。當官方 API 需要活動包清單進行請求診斷時，請啟用它。
 
-## 目录
+## 目錄
 
-- [配置](#configuration)
+- [設定](#configuration)
 - [收集](#collection)
-- [模型体验](#model-experience)
-- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [模型體驗](#model-experience)
+- [已知限制與暫緩事項](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="configuration"></a>
-## 配置
+## 設定
 
-| 配置键 | 默认值 | 含义 |
+| 設定鍵 | 預設值 | 含義 |
 |---|---:|---|
-| `enabled` | `true` | 注册 `dsh_plugin_packages` 贡献。将其设为 `false` 可省略包元数据。 |
+| `enabled` | `true` | 註冊 `dsh_plugin_packages` 貢獻。將其設為 `false` 可省略包中繼資料。 |
 
-随附 profile 使用该默认值，因此只要准备成功，每个 DeepSeek 官方请求都会携带包清单。
+隨附 profile 使用該預設值，因此只要準備成功，每個 DeepSeek 官方請求都會攜帶包清單。
 
 <a id="collection"></a>
 ## 收集
 
-每次请求都会重读宿主 Loader 树中的活跃非 group 配置项。存在可选 `ctx.agentPresets` 且 `sessionId` 解析到已加入 standing preset 的存活 Agent 时，该 preset 的独立 Loader 树也会加入同一次收集；未挂载该服务的部署只报告宿主树。只有根 fiber 处于 `ACTIVE` 且 Loader 有效状态为启用的配置项才会纳入。
+每次請求都會重讀主機 Loader 樹中的活躍非 group 設定項。存在可選 `ctx.agentPresets` 且 `sessionId` 解析到已加入 standing preset 的存活 Agent 時，該 preset 的獨立 Loader 樹也會加入同一次收集；未掛載該服務的部署只報告主機樹。只有根 fiber 處於 `ACTIVE` 且 Loader 有效狀態為啟用的設定項才會納入。
 
-插件在激活时读取一次可选的 `ctx.pluginPackages` 服务。随附 app boot 会在 profile Loader 配置项之前挂载该服务，因此裸包和包子路径的身份使用与其 import 相同的权威 runtime resolution，包括它未命中的情况，并且无需包导出 `./package.json`。若该服务不存在，插件会在整个生命周期中保留 Node 原生包搜索，之后再挂载 resolver 也不会切换既有清单。因此，希望使用 runtime resolution 身份的底层嵌入方必须先挂载 `PluginPackages`，再挂载 Loader 配置项和本插件。
+外掛在啟用時讀取一次可選的 `ctx.pluginPackages` 服務。隨附 app boot 會在 profile Loader 設定項之前掛載該服務，因此裸包和包子路徑的身份使用與其 import 相同的權威 runtime resolution，包括它未命中的情況，並且無需包匯出 `./package.json`。若該服務不存在，外掛會在整個生命週期中保留 Node 原生包搜尋，之後再掛載 resolver 也不會切換既有清單。因此，希望使用 runtime resolution 身份的底層嵌入方必須先掛載 `PluginPackages`，再掛載 Loader 設定項和本外掛。
 
-每个普通配置项使用其所属 Loader 树的基址。standing preset 的根配置项使用宿主基址，与 preset Loader 对裸包的显式覆写保持一致；嵌套 include 仍使用自身基址。相对与绝对模块会向上查找最近的 manifest（元数据清单）；没有 `name` 的 manifest 只标记松散模块，不贡献包身份。具名包 manifest 还必须声明非空 `version`，格式错误的包元数据会使请求准备失败。系统使用与 locale 无关的比较按确切名称／版本对去重并排序，同时存活的不同版本仍会分开保留。
+每個普通設定項使用其所屬 Loader 樹的基址。standing preset 的根設定項使用主機基址，與 preset Loader 對裸包的顯式覆寫保持一致；巢狀 include 仍使用自身基址。相對與絕對模組會向上查詢最近的 manifest（中繼資料清單）；沒有 `name` 的 manifest 只標記鬆散模組，不貢獻包身份。具名包 manifest 還必須宣告非空 `version`，格式錯誤的包中繼資料會使請求準備失敗。系統使用與 locale 無關的比較按確切名稱／版本對去重並排序，同時存活的不同版本仍會分開保留。
 
-版本 1 的 `dsh_plugin_packages` 字段只包含 `{ name, version }` 对。系统会排除禁用、pending、failed、disposed、unloading 状态，结构性 `cordis:` 配置项，普通依赖，没有所属包身份的松散文件，以编程方式挂载的子 fiber，以及内存动态插件。
+版本 1 的 `dsh_plugin_packages` 欄位只包含 `{ name, version }` 對。系統會排除停用、pending、failed、disposed、unloading 狀態，結構性 `cordis:` 設定項，普通依賴，沒有所屬包身份的鬆散檔案，以程式設計方式掛載的子 fiber，以及記憶體動態外掛。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 包清单元数据
+### 包清單中繼資料
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-无。`dsh_plugin_packages` 是位于模型消息、系统提示词与工具 schema 之外的提供方元数据。
+無。`dsh_plugin_packages` 是位於模型訊息、系統提示詞與工具 schema 之外的提供者中繼資料。
 
-#### Token 影响
+#### Token 影響
 
-模型输入 token 为零；完整清单只会增加 HTTP 请求字节数。
+模型輸入 token 為零；完整清單隻會增加 HTTP 請求位元組數。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；包生命周期变化不会改变模型可见前缀。
+無；包生命週期變化不會改變模型可見字首。
 
-## 已知限制与暂缓事项
+## 已知限制與暫緩事項
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **仅含 Loader 包来源**——以编程方式创建的子 fiber 与内存动态插件没有权威 NPM 名称／版本来源，因此不在该清单内。
-- **省略松散模块**——没有具名且带版本所属 manifest 的相对文件是插件模块，不是插件包。
-- **原地替换包需要重启**——manifest 身份会在进程存活期内缓存。Loader 的启用、禁用、挂载、卸载与普通源码 HMR 仍会刷新存活配置项集合，但在同一进程中把已挂载包的 manifest 替换为另一版本并不是受支持的升级路径。
+- **僅含 Loader 包來源**——以程式設計方式建立的子 fiber 與記憶體動態外掛沒有權威 NPM 名稱／版本來源，因此不在該清單內。
+- **省略鬆散模組**——沒有具名且帶版本所屬 manifest 的相對檔案是外掛模組，不是外掛包。
+- **原地替換包需要重新啟動**——manifest 身份會在程序存活期內快取。Loader 的啟用、停用、掛載、解除安裝與普通原始碼 HMR 仍會重新整理存活設定項集合，但在同一程序中把已掛載包的 manifest 替換為另一版本並不是受支援的升級路徑。
 
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。每次请求直接读取权威 Loader fiber 状态与 package manifest，插件不保留独立可变 inventory。
+**執行時不變式：** 不釋出伴生入口。每次請求直接讀取權威 Loader fiber 狀態與 package manifest，外掛不保留獨立可變 inventory。

@@ -48,7 +48,7 @@ function comWorld(overrides: Partial<ComWorld> = {}): ComWorld {
   return {
     coInitHr: 0, coCreateHr: 0, showHr: 0, getResultHr: 0, getDisplayNameHr: 0,
     hasThreadDpi: true, supportedDpiContexts: [-4], enumThrows: false,
-    path: 'C:\\选中\\directory',
+    path: 'C:\\選中\\directory',
     titles: [], options: [], dpiContexts: [], freed: [], released: [], posted: [],
     str16PointerSizes: [],
     registered: 0, unregistered: 0, uninitialized: 0,
@@ -192,9 +192,9 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
     const bindings = await loadWin32DialogBindings()
     const showing = vi.fn()
 
-    expect(runFolderDialog(bindings, '选择工作区目录', showing)).toBe('C:\\选中\\directory')
+    expect(runFolderDialog(bindings, '選擇工作區目錄', showing)).toBe('C:\\選中\\directory')
     expect(world.dpiContexts).toEqual([-4])
-    expect(world.titles).toEqual(['选择工作区目录'])
+    expect(world.titles).toEqual(['選擇工作區目錄'])
     expect(world.options).toHaveLength(1)
     expect(showing).toHaveBeenCalledWith(31337)
     // One synthesized Alt press (down, then up) immediately precedes Show, so
@@ -225,10 +225,10 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
   })
 
   it.each([
-    { label: 'zero-low-byte BMP code units', text: 'C:/fixture/安卓开发' },
+    { label: 'zero-low-byte BMP code units', text: 'C:/fixture/安卓開發' },
     { label: 'surrogate pairs', text: 'C:/fixture/😀' },
-    { label: 'more than 32 KiB', text: 'C:/' + '开'.repeat(17_000) },
-    { label: 'NUL termination', text: 'C:/开' + String.fromCharCode(0) + 'ignored' },
+    { label: 'more than 32 KiB', text: 'C:/' + '開'.repeat(17_000) },
+    { label: 'NUL termination', text: 'C:/開' + String.fromCharCode(0) + 'ignored' },
   ])('decodes $label with real Koffi through resultPath', async ({ text }) => {
     const { default: koffi } = await vi.importActual<typeof import('koffi')>('koffi')
     const nul = String.fromCharCode(0)
@@ -270,7 +270,7 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
     const world = comWorld({ supportedDpiContexts: [-3] })
     installFakeKoffi(world)
     const bindings = await (await loadBindingsModule()).loadWin32DialogBindings()
-    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\选中\\directory')
+    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\選中\\directory')
     expect(world.dpiContexts).toEqual([-4, -3])
   })
 
@@ -279,7 +279,7 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
     const rejecting = comWorld({ supportedDpiContexts: [] })
     installFakeKoffi(rejecting)
     let bindings = await (await loadBindingsModule()).loadWin32DialogBindings()
-    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\选中\\directory')
+    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\選中\\directory')
     expect(rejecting.dpiContexts).toEqual([-4, -3, -2])
 
     vi.doUnmock('koffi')
@@ -287,7 +287,7 @@ describe('loadWin32DialogBindings over the fake COM world', () => {
     const preThreadDpi = comWorld({ hasThreadDpi: false })
     installFakeKoffi(preThreadDpi)
     bindings = await (await loadBindingsModule()).loadWin32DialogBindings()
-    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\选中\\directory')
+    expect(runFolderDialog(bindings, 'Pick', vi.fn())).toBe('C:\\選中\\directory')
     expect(preThreadDpi.dpiContexts).toEqual([])
   })
 

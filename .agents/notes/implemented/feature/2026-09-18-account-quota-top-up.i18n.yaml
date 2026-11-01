@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-18-account-quota-top-up.md
 /agent-note-account-quota-top-up-action:
   en: c9f0d30bc28f815c
-  zh: 472505b18ee2e669
+  zh: 4dfd3df8a12be5d6
 /agent-note-account-quota-top-up-action/problem:
   en: 4c0caf28d02faec2
-  zh: a6cc3e175a2f9f4a
+  zh: c5fe3c52df25f478
 /agent-note-account-quota-top-up-action/decision:
   en: d8046306e6488932
-  zh: a0d29f3949c96955
+  zh: 9c315ffecc77f022
 /agent-note-account-quota-top-up-action/alternatives-considered:
   en: ec6731c63d9c42ee
-  zh: 535b67062ce0269b
+  zh: f55babe8190c24bd
 /agent-note-account-quota-top-up-action/consequences:
   en: 72febb3835a50018
-  zh: 0125b875f35b829e
+  zh: 547748a37677a919

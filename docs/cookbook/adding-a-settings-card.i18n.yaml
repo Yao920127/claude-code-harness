@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/cookbook/adding-a-settings-card.md
 /cookbook-live-configuration-forms:
   en: ce4e603c0a07dd43
-  zh: 8609e754f25bdc0c
+  zh: b7d85baebbf6f96f
 /cookbook-live-configuration-forms/1-declare-live-fields:
   en: a758ea63530ecf34
-  zh: 0ce644333a8a4e85
+  zh: 34b163c03612a728
 /cookbook-live-configuration-forms/2-compose-the-plugin:
   en: 9c2680c175632a58
-  zh: 46927fca484b5df0
+  zh: 0a154c738983d8ee
 /cookbook-live-configuration-forms/3-verify-editing:
   en: dc5dc7ab4c211b97
-  zh: 88f8af745c576a6d
+  zh: 5239fe674003ecbf
 /cookbook-live-configuration-forms/4-contribute-to-another-plugin-s-page:
   en: 0abb582a1a25b3d9
-  zh: 6078a707324ec515
+  zh: 8657fd6102f156dc
 /cookbook-live-configuration-forms/5-where-the-browser-half-rides:
   en: 9f0f3808b442dd35
-  zh: a6082cbbe8be3aa6
+  zh: f6051ce1c3f12cf6

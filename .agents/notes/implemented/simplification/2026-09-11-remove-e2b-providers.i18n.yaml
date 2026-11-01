@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-09-11-remove-e2b-providers.md
 /agent-note-remove-the-e2b-execution-providers:
   en: 0f876c637fad20a9
-  zh: a7616ada505f0bc1
+  zh: 8f581c63a673f361
 /agent-note-remove-the-e2b-execution-providers/problem:
   en: 92edfc6f0da7a874
-  zh: 21487929a5631087
+  zh: f3b1055ebf57dfca
 /agent-note-remove-the-e2b-execution-providers/decision:
   en: 924d9953c601a131
-  zh: 6bb14feef8f4238a
+  zh: 83a2b564aac85578
 /agent-note-remove-the-e2b-execution-providers/alternatives-considered:
   en: dc8a267887d4a65c
-  zh: 806f4a6c844b6284
+  zh: 3cce52776f2b0ebe
 /agent-note-remove-the-e2b-execution-providers/consequences:
   en: ec119616577fb094
-  zh: 4dafe3fd08e11b79
+  zh: 11fef77c81fbfa9e
 /agent-note-remove-the-e2b-execution-providers/reintroduction-conditions:
   en: ddc5f44430a6b6d5
-  zh: 372f28000c98cbd6
+  zh: b2e6588f0ca0a122
 /agent-note-remove-the-e2b-execution-providers/verification:
   en: d4f3b559dd32d80a
-  zh: c4ba5b64178faf81
+  zh: b2ced14c00001abd

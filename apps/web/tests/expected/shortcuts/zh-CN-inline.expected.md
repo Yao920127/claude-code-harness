@@ -1,5 +1,5 @@
-- group "展开／收起左侧栏":
-  - button "恢复默认"
+- group "展開／收起左側欄":
+  - button "恢復預設"
   - button "移除"
-  - button "按下快捷键"
-  - text: 可设置 Command+/、Command+,、Command+反斜杠、Control+反引号、Command+Option+按键或 Command+Shift+按键。也支持三个或四个不同修饰键的组合。浏览器或系统占用的组合可能无法送达页面。
+  - button "按下快捷鍵"
+  - text: 可設定 Command+/、Command+,、Command+反斜槓、Control+反引號、Command+Option+按鍵或 Command+Shift+按鍵。也支援三個或四個不同修飾鍵的組合。瀏覽器或系統佔用的組合可能無法送達頁面。

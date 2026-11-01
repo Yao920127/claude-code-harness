@@ -22,10 +22,10 @@ it('rejects unsupported filename suffixes', () => {
 
 it.each([false, true])('reads BIFF values, formulas, merges, layout, and dates with 1904 epoch %s', async (date1904) => {
   const { sheets, missingResults } = await convertExcel(xlsFixture(legacyWorkbook(date1904)), 'xls', limits)
-  expect(sheets.map(sheet => [sheet.name, sheet.hide, sheet.status])).toEqual([['预算', 0, 1], ['明细', 0, 0], ['隐藏', 1, 0]])
+  expect(sheets.map(sheet => [sheet.name, sheet.hide, sheet.status])).toEqual([['預算', 0, 1], ['明細', 0, 0], ['隱藏', 1, 0]])
   const first = sheets[0]!
   const cell = (r: number, c: number) => first.celldata!.find(cell => cell.r === r && cell.c === c)!.v!
-  expect(cell(0, 0)).toMatchObject({ v: '旧版预算', mc: { r: 0, c: 0, rs: 1, cs: 3 } })
+  expect(cell(0, 0)).toMatchObject({ v: '舊版預算', mc: { r: 0, c: 0, rs: 1, cs: 3 } })
   expect(cell(0, 1)).toEqual({ mc: { r: 0, c: 0 } })
   expect(cell(2, 1)).toMatchObject({ v: 1234.5, m: '1,234.50' })
   expect(cell(2, 2)).toMatchObject({ v: 0.25, m: '25.0%' })
@@ -47,7 +47,7 @@ it('reads an independently generated Office XLS fixture', async () => {
 it('maps optional row metadata, empty formula caches, errors, and Date values', () => {
   // SheetJS reads row metadata but its BIFF writer omits ROW records.
   const workbook = legacyWorkbook()
-  const sheet = workbook.Sheets['预算']!
+  const sheet = workbook.Sheets['預算']!
   sheet['!rows'] = [{ hpt: 30 }, { hpx: 18 }, { hidden: true }, {}]
   sheet['!cols'] = [{ wpx: 130 }, { hidden: true }, {}]
   sheet['B4'] = { t: 'n', f: '1+2' }
@@ -98,16 +98,16 @@ it('opens raw BIFF and empty legacy worksheets', async () => {
 
 it.each(['csv', 'tsv'] as const)('preserves %s strings, quoted separators, newlines, empty fields, and ragged rows', async (format) => {
   const delimiter = format === 'csv' ? ',' : '\t'
-  const text = ['编号', '说明', '值'].join(delimiter) + '\r\n'
-    + ['00123', `"中文${delimiter}字段\n第二行 ""引号"""`, '=SUM(1,2)'].map((field, index) => index === 2 ? '"' + field + '"' : field).join(delimiter) + '\r\n'
+  const text = ['編號', '說明', '值'].join(delimiter) + '\r\n'
+    + ['00123', `"中文${delimiter}欄位\n第二行 ""引號"""`, '=SUM(1,2)'].map((field, index) => index === 2 ? '"' + field + '"' : field).join(delimiter) + '\r\n'
     + ['2024-03-01', '', 'TRUE', '99999999999999999999'].join(delimiter) + '\r\nshort\r\n\r\n'
   const result = await convertExcel(encode(text), format, limits)
   const sheet = result.sheets[0]!
   const cell = (r: number, c: number) => sheet.celldata!.find(cell => cell.r === r && cell.c === c)!.v!
   expect(sheet.column).toBe(4)
-  expect(cell(0, 0).v).toBe('编号')
+  expect(cell(0, 0).v).toBe('編號')
   expect(cell(1, 0)).toMatchObject({ v: '00123', ct: { t: 's', fa: '@' } })
-  expect(cell(1, 1).v).toBe(`中文${delimiter}字段\n第二行 "引号"`)
+  expect(cell(1, 1).v).toBe(`中文${delimiter}欄位\n第二行 "引號"`)
   expect(cell(1, 2)).toMatchObject({ v: '=SUM(1,2)', m: '=SUM(1,2)' })
   expect(cell(1, 2)).not.toHaveProperty('f')
   expect(cell(2, 0).v).toBe('2024-03-01')
@@ -120,11 +120,11 @@ it.each(['csv', 'tsv'] as const)('preserves %s strings, quoted separators, newli
 })
 
 it.each(['utf8', 'le', 'be'] as const)('decodes BOM-marked %s text', async (encoding) => {
-  const text = '\ufeff名称,编号\n中文,001'
+  const text = '\ufeff名稱,編號\n中文,001'
   const bytes = encoding === 'utf8' ? encode(text) : new Uint8Array(Buffer.from(text, 'utf16le'))
   if (encoding === 'be') for (let i = 0; i < bytes.length; i += 2) [bytes[i], bytes[i + 1]] = [bytes[i + 1]!, bytes[i]!]
   const sheet = (await convertExcel(bytes, 'csv', limits)).sheets[0]!
-  expect(sheet.celldata![0]!.v!.v).toBe('名称')
+  expect(sheet.celldata![0]!.v!.v).toBe('名稱')
   expect(sheet.celldata!.find(cell => cell.r === 1 && cell.c === 0)!.v!.v).toBe('中文')
 })
 

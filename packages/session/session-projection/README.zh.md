@@ -1,5 +1,5 @@
 ---
-description: "面向开发者与维护者的会话投影注册表说明，用于向客户端载体提供日志派生逐会话状态的完整当前值，或维护驱动约定。"
+description: "面向開發者與維護者的工作階段投影註冊表說明，用於向用戶端載體提供日誌派生逐工作階段狀態的完整目前值，或維護驅動約定。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-当客户端需要当前的逐会话状态（例如待办事项、目标或对话统计）而不应自行重放原始事件日志时，使用 `dsh-session-projection`。领域根据已提交的会话事件定义同步投影，客户端则通过快照与变更通知接收经过 schema 校验的完整 JSON 值。快照标明所有返回值共同反映到的最后一个事件，因此载体可以把状态与对应的历史切面配对。投影状态可以通过检查点加快冷读，而仅供 host 使用的投影不会暴露给客户端。
+當用戶端需要目前的逐工作階段狀態（例如待辦事項、目標或對話統計）而不應自行重放原始事件日誌時，使用 `dsh-session-projection`。領域根據已提交的工作階段事件定義同步投影，用戶端則透過快照與變更通知接收經過 schema 驗證的完整 JSON 值。快照標明所有回傳值共同反映到的最後一個事件，因此載體可以把狀態與對應的歷史切面配對。投影狀態可以透過檢查點加快冷讀，而僅供 host 使用的投影不會暴露給用戶端。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在客户端载体需要日志派生会话状态的当前值处挂载 `dsh-session-projection`。领域插件注册单元；载体读取快照并订阅变更流；两侧互不相识。
+在用戶端載體需要日誌派生工作階段狀態的目前值處掛載 `dsh-session-projection`。領域外掛註冊單元；載體讀取快照並訂閱變更流；兩側互不相識。
 
-### 何时选择
+### 何時選擇
 
-当领域保存客户端应看到、但不应自行重新派生的状态——todo 清单、goal 快照、对话统计——时选择本包。注册表在已提交事件上主动驱动单元，因此任何已注册单元的值按构造即为当前值。当维护的是无客户端读取的 host-only 记账时跳过：不带 `wire` 块的单元保持 host-only。host 读取方要么在插件 `inject` 中声明 `sessionProjections`，要么在注册表或必需 key 缺席时明确失败。贡献方可以继续通过 `ctx.inject(['sessionProjections'], ...)` 保持可选注册。
+當領域儲存用戶端應看到、但不應自行重新派生的狀態——todo 清單、goal 快照、對話統計——時選擇本包。註冊表在已提交事件上主動驅動單元，因此任何已註冊單元的值按建構即為目前值。當維護的是無用戶端讀取的 host-only 記帳時跳過：不帶 `wire` 塊的單元保持 host-only。host 讀取方要麼在外掛 `inject` 中宣告 `sessionProjections`，要麼在註冊表或必需 key 缺席時明確失敗。貢獻方可以繼續透過 `ctx.inject(['sessionProjections'], ...)` 保持可選註冊。
 
-### 定义投影单元
+### 定義投影單元
 
-领域为每个状态键贡献一个 `ProjectionDefinition`：一个 key、状态 schema、初始状态、同步折叠 `apply(state, event)`、可选的 `wire` 块（把状态投影为客户端视图），以及状态字段或折叠语义变化时递增的 `stateVersion`：
+領域為每個狀態鍵貢獻一個 `ProjectionDefinition`：一個 key、狀態 schema、初始狀態、同步摺疊 `apply(state, event)`、可選的 `wire` 塊（把狀態投影為用戶端檢視），以及狀態欄位或摺疊語義變化時遞增的 `stateVersion`：
 
 ```text
 const definition = {
@@ -51,94 +51,94 @@ const definition = {
 }
 ```
 
-`init(header, inheritedEventCount)` 同时接收轻量元数据与精确的 fork 继承切点；它不得从 `firstLiveSeq` 或 `session/end-seed` 推断该切点。`apply` 必须同步，且对与单元无关的事件必须返回同一个状态引用——引用不变意味着零下游工作。注册表用 `Object.is` 比较相邻的 `wire.view` 原始结果；对象或数组 view 若要在仅内部 state 变化时抑制发布，就必须复用引用，结构相同的新对象仍算变化。携带状态的日志事件必须携带变更后的完整状态，绝不携带裸增量。
+`init(header, inheritedEventCount)` 同時接收輕量中繼資料與精確的 fork 繼承切點；它不得從 `firstLiveSeq` 或 `session/end-seed` 推斷該切點。`apply` 必須同步，且對與單元無關的事件必須返回同一個狀態引用——引用不變意味著零下游工作。註冊表用 `Object.is` 比較相鄰的 `wire.view` 原始結果；物件或陣列 view 若要在僅內部 state 變化時抑制釋出，就必須複用引用，結構相同的新物件仍算變化。攜帶狀態的日誌事件必須攜帶變更後的完整狀態，絕不攜帶裸增量。
 
-### 注册与读取
+### 註冊與讀取
 
-`register(definition)` 安装单元；具有相同 key 和 `stateVersion` 的注册方共享其 cell，版本不兼容或 `stateVersion` 非法时会 throw。注册是挂在调用方 fiber 上的 effect，因此最后一个注册方卸载后会移除 key 及其缓存 cell。载体用 `snapshot(session)` 对每个客户端可见单元读取一致的同步切面——`{ asOfSeq, values }`，其中 `asOfSeq` 是所有值共同反映到的最后一个事件的 seq——并用 `onChanged(listener)` 订阅逐变更通知。`stateOf(session, key)` 读取一个单元的实时只读 host 状态，不计算无关视图。
+`register(definition)` 安裝單元；具有相同 key 和 `stateVersion` 的註冊方共享其 cell，版本不相容或 `stateVersion` 非法時會 throw。註冊是掛在呼叫方 fiber 上的 effect，因此最後一個註冊方解除安裝後會移除 key 及其快取 cell。載體用 `snapshot(session)` 對每個用戶端可見單元讀取一致的同步切面——`{ asOfSeq, values }`，其中 `asOfSeq` 是所有值共同反映到的最後一個事件的 seq——並用 `onChanged(listener)` 訂閱逐變更通知。`stateOf(session, key)` 讀取一個單元的即時只讀 host 狀態，不計算無關檢視。
 
 ```text
 const dispose = ctx.sessionProjections.register(definition)
 const { asOfSeq, values } = ctx.sessionProjections.snapshot(session)
 ```
 
-必须使用投影状态的领域把 `sessionProjections` 声明为 Cordis 服务依赖；可选贡献方可以在 `ctx.inject(['sessionProjections'], …)` 下注册。载体使用 `ctx.get('sessionProjections')`，注册表缺席时省略自己的块或帧。
+必須使用投影狀態的領域把 `sessionProjections` 宣告為 Cordis 服務依賴；可選貢獻方可以在 `ctx.inject(['sessionProjections'], …)` 下注冊。載體使用 `ctx.get('sessionProjections')`，註冊表缺席時省略自己的塊或幀。
 
-### 持久检查点
+### 持久檢查點
 
-系统通过 `checkpoint(session)` 为每个单元的状态创建检查点，client-visible 与 host-only 一视同仁；同级包 [session-projection-cache](../session-projection-cache/README.zh.md) 持久化这些检查点，使冷读跳过全量日志加载。检查点水位使用 `SessionSeqCursor`（空日志为 `-1`），回放起点使用 `SessionLogOffset`；`restoreFloor` 与 `restore` 实现读取流程，且不会混淆已有事件与日志间隙。
+系統透過 `checkpoint(session)` 為每個單元的狀態建立檢查點，client-visible 與 host-only 一視同仁；同級包 [session-projection-cache](../session-projection-cache/README.zh.md) 持久化這些檢查點，使冷讀跳過全量日誌載入。檢查點水位使用 `SessionSeqCursor`（空日誌為 `-1`），回放起點使用 `SessionLogOffset`；`restoreFloor` 與 `restore` 實作讀取流程，且不會混淆已有事件與日誌間隙。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节说明驱动机制与单元约定；可观察约定已在[使用本包](#use-this-package)中说明。
+本節說明驅動機制與單元約定；可觀察約定已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-本包是能力 seam 的 Service Definition 与驱动角色：框架负责驱动，领域负责计算。注册表只订阅一次 `session/event`；每个已提交事件都会主动经过每个已注册单元的 `apply`（cell 在首次触达时惰性构建）。第一层 `Object.is` 闸门在 state 引用不变时跳过 view 工作；live drive 的双槽缓存复用前一个原始 view，第二层 `Object.is` 闸门在原始 view 引用不变时抑制发布。载体在切出页面切片的同一 tick 内读取 `snapshot()`，`asOfSeq` 之所以是一个一致切面正系于此；误写成异步的 view 会返回 Promise，并被 `wire.viewSchema.parse` 拒绝。
+本包是能力 seam 的 Service Definition 與驅動角色：框架負責驅動，領域負責計算。註冊表只訂閱一次 `session/event`；每個已提交事件都會主動經過每個已註冊單元的 `apply`（cell 在首次觸達時惰性建置）。第一層 `Object.is` 閘門在 state 引用不變時跳過 view 工作；live drive 的雙槽快取複用前一個原始 view，第二層 `Object.is` 閘門在原始 view 引用不變時抑制釋出。載體在切出頁面切片的同一 tick 內讀取 `snapshot()`，`asOfSeq` 之所以是一個一致切面正繫於此；誤寫成非同步的 view 會返回 Promise，並被 `wire.viewSchema.parse` 拒絕。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`SessionProjectionRegistry` 服务、`ProjectionDefinition`、快照与检查点机制 |
-| [`src/types.ts`](src/types.ts) | 可合并扩展的 `SessionProjectionMap` 与 `SessionProjectionStateMap` 类型表 |
-| — | 不发布运行时不变式伴生入口；注册表自身的约定（拒绝重复键和非法 stateVersion、随 effect 移除、以 `Object.is` 把守变更）由服务同步强制执行并经其规范验证；驱动关系若要检查就必须重新运行驱动，从而重复实现逻辑；所服务值之间的关系由载体协议路径负责。同步单元纪律则尽可能由边界 `schema.parse` 强制执行。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`SessionProjectionRegistry` 服務、`ProjectionDefinition`、快照與檢查點機制 |
+| [`src/types.ts`](src/types.ts) | 可合併擴充功能的 `SessionProjectionMap` 與 `SessionProjectionStateMap` 型別表 |
+| — | 不釋出執行時不變式伴生入口；註冊表自身的約定（拒絕重複鍵和非法 stateVersion、隨 effect 移除、以 `Object.is` 把守變更）由服務同步強制執行並經其規範驗證；驅動關係若要檢查就必須重新執行驅動，從而重複實作邏輯；所服務值之間的關係由載體協定路徑負責。同步單元紀律則儘可能由邊界 `schema.parse` 強制執行。 |
 
-### 驱动与检查点流程
+### 驅動與檢查點流程
 
-一个已提交事件按注册顺序驱动每个已注册单元；原始 view 通过 `Object.is` 判定为变化的客户端可见单元会以经 schema 校验的视图与致因 seq 通知变更流。live drive 保留前后两个原始 view；snapshot 与冷读仍是彼此独立的完整读取。`checkpoint(session)` 为持久缓存返回每个单元一份独立的 `(key → {ver, seq, val})` 行；`restoreFloor` 把尾部读取锚定在最低可用水位之前一个事件处，使缩短的日志可被检出；`restore` 把持久行在存储后缀上重新折叠，丢弃任何 `ver` 不匹配或声称越过存储末尾的行。
+一個已提交事件按註冊順序驅動每個已註冊單元；原始 view 透過 `Object.is` 判定為變化的用戶端可見單元會以經 schema 驗證的檢視與致因 seq 通知變更流。live drive 保留前後兩個原始 view；snapshot 與冷讀仍是彼此獨立的完整讀取。`checkpoint(session)` 為持久快取返回每個單元一份獨立的 `(key → {ver, seq, val})` 行；`restoreFloor` 把尾部讀取錨定在最低可用水位之前一個事件處，使縮短的日誌可被檢出；`restore` 把持久行在儲存字尾上重新摺疊，丟棄任何 `ver` 不匹配或聲稱越過儲存末尾的行。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从单元约定逐步进入读模型子系统与持久缓存。
+當包級約定不夠用時閱讀以下頁面。它們從單元約定逐步進入讀模型子系統與持久快取。
 
-- [会话投影子系统](../../../docs/subsystems/session-projection.zh.md)——投影单元约定、驱动语义与生成的服务 API。
-- [会话持久化子系统](../../../docs/subsystems/persistence.zh.md)——投影折叠其上的事件日志。
-- [会话投影缓存](../session-projection-cache/README.zh.md)——让冷读跳过全量日志加载的持久检查点。
-- [会话包映射](../README.zh.md)——相邻的持久化、标题与遥测包。
-- [会话投影 RFC](../../../.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md)——投影与命令日志的设计理由。
+- [工作階段投影子系統](../../../docs/subsystems/session-projection.zh.md)——投影單元約定、驅動語義與生成的服務 API。
+- [工作階段持久化子系統](../../../docs/subsystems/persistence.zh.md)——投影摺疊其上的事件日誌。
+- [工作階段投影快取](../session-projection-cache/README.zh.md)——讓冷讀跳過全量日誌載入的持久檢查點。
+- [工作階段包對映](../README.zh.md)——相鄰的持久化、標題與遙測包。
+- [工作階段投影 RFC](../../../.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md)——投影與命令日誌的設計理由。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无——注册表只为已入日志的会话状态提供面向客户端的读模型，不注册任何模型可见内容。
+無——註冊表只為已入日誌的工作階段狀態提供面向用戶端的讀模型，不註冊任何模型可見內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；投影从不组装或发送提供方请求。
+無；投影從不組裝或傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明投影注册表在大规模下何时需要特别处理。它们是当前包约束，不是任务积压。
+這些限制說明投影註冊表在大規模下何時需要特別處理。它們是目前包約束，不是任務積壓。
 
-- **每个尾页携带每个 client-visible key**——尚无逐 key 的 opt-out 或惰性 key 请求形状；在值都是 UI 量级的全量状态时可以接受，若某领域的值变大再重议。
-- **单元表是进程级的，因此 key 是否存在不能当作逐会话的能力信号**——任何 agent preset 注册的 key 都会出现在每个会话的快照里；客户端必须读值，不能把 key 缺席当作功能缺席。
-- **主动驱动逐事件触达每个单元**——按构造开销很低（全量值规则与 state/view 引用闸门），但若出现热点路径，可加按单元的事件类型预过滤。
-- **注册表 cell 只活在内存里**——重启后首次触达时靠折叠日志重建；挂载了 `dsh-session-projection-cache` 的组合改由持久行播种该折叠。
-- **单元同步纪律只有部分可机械把关**——`wire.viewSchema.parse` 能拒绝返回 Promise 的 view，但阻塞的 `apply`、或读取撕裂的非会话状态的 `apply`，只能靠评审把关。
+- **每個尾頁攜帶每個 client-visible key**——尚無逐 key 的 opt-out 或惰性 key 請求形狀；在值都是 UI 量級的全量狀態時可以接受，若某領域的值變大再重議。
+- **單元表是程序級的，因此 key 是否存在不能當作逐工作階段的能力訊號**——任何 agent preset 註冊的 key 都會出現在每個工作階段的快照裡；用戶端必須讀值，不能把 key 缺席當作功能缺席。
+- **主動驅動逐事件觸達每個單元**——按建構開銷很低（全量值規則與 state/view 引用閘門），但若出現熱點路徑，可加按單元的事件型別預過濾。
+- **註冊表 cell 只活在記憶體裡**——重新啟動後首次觸達時靠摺疊日誌重建；掛載了 `dsh-session-projection-cache` 的組合改由持久行播種該摺疊。
+- **單元同步紀律只有部分可機械把關**——`wire.viewSchema.parse` 能拒絕返回 Promise 的 view，但阻塞的 `apply`、或讀取撕裂的非工作階段狀態的 `apply`，只能靠評審把關。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -1,5 +1,5 @@
 ---
-description: "`ctx.fs` 文件系统服务约定：面向选择或挂载文件系统后端的部署方，以及实现后端的开发者。"
+description: "`ctx.fs` 檔案系統服務約定：面向選擇或掛載檔案系統後端的部署方，以及實作後端的開發者。"
 kind: "package-reference"
 ---
 
@@ -9,119 +9,119 @@ kind: "package-reference"
 
 ## 概述
 
-应用需要在宿主、受限或远程执行环境中使用一致的文件系统操作时，选择 `dsh-fs`。消费方可以解析稳定的文件身份、在受支持时映射共享宿主文件、执行有界的文本与字节读取、列出目录、监听目标，并原子地写入文本及执行字面量编辑。版本防护是可选的，因此后端无需策略强制也能工作；调用方可以提供防护，在文件变化后拒绝变更。在宿主执行时选择 `fs-local` 或 `fs-sandbox`。面向模型的文件系统工具由 `dsh-tool-fs` 单独提供。
+應用需要在主機、受限或遠端執行環境中使用一致的檔案系統操作時，選擇 `dsh-fs`。消費方可以解析穩定的檔案身份、在受支援時對映共享主機檔案、執行有界的文字與位元組讀取、列出目錄、監聽目標，並原子地寫入文字及執行字面量編輯。版本防護是可選的，因此後端無需策略強制也能工作；呼叫方可以提供防護，在檔案變化後拒絕變更。在主機執行時選擇 `fs-local` 或 `fs-sandbox`。面向模型的檔案系統工具由 `dsh-tool-fs` 單獨提供。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-你很少直接加载 `dsh-fs`：你挂载一个注册为 `ctx.fs` 的后端，然后从自己的插件调用该服务，或让 `dsh-tool-fs` 工具替你调用。本页服务于确实接触它的两类读者——选择后端的部署方，以及实现或消费该约定的开发者。
+你很少直接載入 `dsh-fs`：你掛載一個註冊為 `ctx.fs` 的後端，然後從自己的外掛呼叫該服務，或讓 `dsh-tool-fs` 工具替你呼叫。本頁服務於確實接觸它的兩類讀者——選擇後端的部署方，以及實作或消費該約定的開發者。
 
-### 选择并挂载后端
+### 選擇並掛載後端
 
-普通宿主文件选择 [`fs-local`](../fs-local/README.zh.md)，会话变更必须限制在工作区与临时根目录内时选择 [`fs-sandbox`](../fs-sandbox/README.zh.md)。挂载任一后端都会填充 `ctx.fs`；更换后端不会改变策略插件、工具或工具 schema。未挂载任何后端的组合就没有 `ctx.fs`，工具会在注册时失败。
+普通主機檔案選擇 [`fs-local`](../fs-local/README.zh.md)，工作階段變更必須限制在工作區與臨時根目錄內時選擇 [`fs-sandbox`](../fs-sandbox/README.zh.md)。掛載任一後端都會填充 `ctx.fs`；更換後端不會改變策略外掛、工具或工具 schema。未掛載任何後端的組合就沒有 `ctx.fs`，工具會在註冊時失敗。
 
-### 服务能做什么
+### 服務能做什麼
 
-通过 `ctx.fs`，你可以把任意路径解析为稳定的目标身份、完整读取或分片流式读取文本文件、按显式上限读取原始字节、列出一层目录、原子地创建或替换文件，并原子地应用字面量文本编辑。两个变更操作上的版本防护都是可选的：省略它即无条件创建或覆盖，提供它则在文件自上次观察以来发生变化时失败。读取、列出与变更操作的失败使用携带稳定错误码（如 `FS_NOT_FOUND`、`FS_STALE_VERSION`、`FS_AMBIGUOUS_EDIT`）的类型化 `FsError`，调用方依据错误码分支，绝不解析消息文本。
+透過 `ctx.fs`，你可以把任意路徑解析為穩定的目標身份、完整讀取或分片流式讀取文字檔案、按顯式上限讀取原始位元組、列出一層目錄、原子地建立或替換檔案，並原子地應用字面量文字編輯。兩個變更操作上的版本防護都是可選的：省略它即無條件建立或覆蓋，提供它則在檔案自上次觀察以來發生變化時失敗。讀取、列出與變更操作的失敗使用攜帶穩定錯誤碼（如 `FS_NOT_FOUND`、`FS_STALE_VERSION`、`FS_AMBIGUOUS_EDIT`）的型別化 `FsError`，呼叫方依據錯誤碼分支，絕不解析訊息文字。
 
-`watch(target, changed, signal)` 报告单个文件或目录直接子项的失效通知。观察就绪后，它返回调用方必须等待完成的异步关闭函数。signal 取消初始化；不支持监听的提供方直接拒绝，不使用轮询。
+`watch(target, changed, signal)` 報告單個檔案或目錄直接子項的失效通知。觀察就緒後，它返回呼用方必須等待完成的非同步關閉函式。signal 取消初始化；不支援監聽的提供者直接拒絕，不使用輪詢。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释约定背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋約定背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该约定建立在一个分离与三项承诺之上：
+該約定建立在一個分離與三項承諾之上：
 
-- **约定高于机制。** 服务只命名存储层能做什么——解析、stat、读取、列出、监听、写入、编辑——绝不规定如何存储字节。后端拥有目标身份、执行世界坐标、解码、二进制拒绝与原子性。
-- **策略不放在基类上。** 已观察状态、编辑前读取与版本防护的变更是插件（`dsh-fs-observation-policy`）的职责，通过提供可选防护来添加——因此沙箱化或远程后端不会继承任何面向模型的观察策略。
-- **`editText` 留在 seam 上。** 版本校验、字面量匹配与原子重写共享同一个临界区，错误归因与一方胜出/一方陈旧的并发语义因此保持正确；远程后端也可以将其实现为原生比较并编辑操作。
-- **界限制在此 seam 上。** `readBytes` 要求 `maxBytes`，并以 `FS_TOO_LARGE` 失败而不是截断，因此任何后端都不会无界缓冲文件。`readByteRange` 则以窗口为界：后端最多传输所请求的 `length` 字节（外加为到达 `offset` 而跳过的前缀），因此由调用方对 `length` 的上限承担防护。
+- **約定高於機制。** 服務只命名儲存層能做什麼——解析、stat、讀取、列出、監聽、寫入、編輯——絕不規定如何儲存位元組。後端擁有目標身份、執行世界座標、解碼、二進位制拒絕與原子性。
+- **策略不放在基類上。** 已觀察狀態、編輯前讀取與版本防護的變更是外掛（`dsh-fs-observation-policy`）的職責，透過提供可選防護來新增——因此沙箱化或遠端後端不會繼承任何面向模型的觀察策略。
+- **`editText` 留在 seam 上。** 版本驗證、字面量匹配與原子重寫共享同一個臨界區，錯誤歸因與一方勝出/一方陳舊的並行語義因此保持正確；遠端後端也可以將其實作為原生比較並編輯操作。
+- **界限制在此 seam 上。** `readBytes` 要求 `maxBytes`，並以 `FS_TOO_LARGE` 失敗而不是截斷，因此任何後端都不會無界緩衝檔案。`readByteRange` 則以視窗為界：後端最多傳輸所請求的 `length` 位元組（外加為到達 `offset` 而跳過的字首），因此由呼叫方對 `length` 的上限承擔防護。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 服务定义：抽象 `FileSystem` 类、`ctx.fs` 声明与 `fs/*` 事件词汇 |
-| [`src/types.ts`](src/types.ts) | 词汇：`FsTarget`/`FsTargetKey`、`FsVersion`、`FsObservation`、`FsWriteIntent`、`FsError` 及其错误码 |
+| [`src/index.ts`](src/index.ts) | 服務定義：抽象 `FileSystem` 類、`ctx.fs` 宣告與 `fs/*` 事件詞彙 |
+| [`src/types.ts`](src/types.ts) | 詞彙：`FsTarget`/`FsTargetKey`、`FsVersion`、`FsObservation`、`FsWriteIntent`、`FsError` 及其錯誤碼 |
 
-### 调用流程
+### 呼叫流程
 
-每个普通操作都以 `resolve(path, { cwd })` 开始，它产生稳定的 `FsTarget`（不透明 `targetKey` 加用于模型/UI 输出的 `displayPath`）；经不同路径到达同一文件会产生相同 key。`processPathFromHostPath(hostPath)` 在后端共享或显式映射宿主文件时，单独把绝对宿主文件映射进此执行世界，否则返回 `undefined`。读取随后执行 `stat` → `readText`/`streamText`/`readBytes`/`readByteRange`，列出执行 `listDir`，变更则经过每个目标一个临界区：先检查可选防护，应用新内容，再原子发布结果。
+每個普通操作都以 `resolve(path, { cwd })` 開始，它產生穩定的 `FsTarget`（不透明 `targetKey` 加用於模型/UI 輸出的 `displayPath`）；經不同路徑到達同一檔案會產生相同 key。`processPathFromHostPath(hostPath)` 在後端共享或顯式對映主機檔案時，單獨把絕對主機檔案對映進此執行世界，否則返回 `undefined`。讀取隨後執行 `stat` → `readText`/`streamText`/`readBytes`/`readByteRange`，列出執行 `listDir`，變更則經過每個目標一個臨界區：先檢查可選防護，應用新內容，再原子釋出結果。
 
 ### `fs/*` 策略事件
 
-本包声明三个事件，使发出方（`dsh-tool-fs`）与策略监听器（`dsh-fs-observation-policy`）共享词汇，而无需让发出方依赖策略插件。`fs/write-intent` 与 `fs/edit-intent` 是单槽决策 waterfall（瀑布式事件）：第一个监听器直接决策，绝不调用 `next()`。`fs/observed` 是发后即忘的记录事件，携带 `FsObservation`——存在并带版本，或确认缺失。事件只携带 `dsh-fs` 词汇和一个不透明 `object` 参与者。
+本包宣告三個事件，使發出方（`dsh-tool-fs`）與策略監聽器（`dsh-fs-observation-policy`）共享詞彙，而無需讓發出方依賴策略外掛。`fs/write-intent` 與 `fs/edit-intent` 是單槽決策 waterfall（瀑布式事件）：第一個監聽器直接決策，絕不呼叫 `next()`。`fs/observed` 是發後即忘的記錄事件，攜帶 `FsObservation`——存在並帶版本，或確認缺失。事件只攜帶 `dsh-fs` 詞彙和一個不透明 `object` 參與者。
 
-### 不变式
+### 不變式
 
-- `targetKey` 与 `version` 是带品牌的不透明 id：消费方不得解析或解释它们；只有 `displayPath` 用于模型/UI 输出。
-- 读取、列出与变更操作的失败是携带稳定错误码的类型化 `FsError`，绝不是临时拼写的消息字符串；监听初始化可以用普通异常拒绝。
-- 该 seam 不设 I/O deadline；取消是每个原语上可选的 `AbortSignal`。
+- `targetKey` 與 `version` 是帶品牌的不透明 id：消費方不得解析或解釋它們；只有 `displayPath` 用於模型/UI 輸出。
+- 讀取、列出與變更操作的失敗是攜帶穩定錯誤碼的型別化 `FsError`，絕不是臨時拼寫的訊息字串；監聽初始化可以用普通異常拒絕。
+- 該 seam 不設 I/O deadline；取消是每個原語上可選的 `AbortSignal`。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从穷尽式约定逐步进入构建于其上的后端与消费方。
+當包級約定不夠用時閱讀以下頁面。它們從窮盡式約定逐步進入建置於其上的後端與消費方。
 
-- [文件系统子系统](../../../docs/subsystems/filesystem.zh.md)——穷尽式提供方约定、策略事件与错误分类体系。
-- [fs-local](../fs-local/README.zh.md)——实现该约定的宿主文件系统后端。
-- [fs-sandbox](../fs-sandbox/README.zh.md)——实现该约定的沙箱强制后端。
-- [tool-fs](../tool-fs/README.zh.md)——消费 `ctx.fs` 的面向模型工具。
-- [fs-observation-policy](../fs-observation-policy/README.zh.md)——通过 `fs/*` 事件防护变更的策略插件。
-- [能力 seam 笔记](../../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)——文件系统栈为何拆分为约定、提供方、策略与工具。
+- [檔案系統子系統](../../../docs/subsystems/filesystem.zh.md)——窮盡式提供者約定、策略事件與錯誤分類體系。
+- [fs-local](../fs-local/README.zh.md)——實作該約定的主機檔案系統後端。
+- [fs-sandbox](../fs-sandbox/README.zh.md)——實作該約定的沙箱強制後端。
+- [tool-fs](../tool-fs/README.zh.md)——消費 `ctx.fs` 的面向模型工具。
+- [fs-observation-policy](../fs-observation-policy/README.zh.md)——透過 `fs/*` 事件防護變更的策略外掛。
+- [能力 seam 筆記](../../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)——檔案系統棧為何拆分為約定、提供者、策略與工具。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-tool-fs` 间接产生影响；该消费方把提供方文本和错误渲染为有界且保留的文件系统工具结果。
+透過 `dsh-tool-fs` 間接產生影響；該消費方把提供者文字和錯誤渲染為有界且保留的檔案系統工具結果。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接使缓存失效；具名消费方负责请求前缀的任何变化。
+不會直接使快取失效；具名消費方負責請求字首的任何變化。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该约定何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用文件系统对比或任务积压。
+這些限制說明該約定何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用檔案系統對比或任務積壓。
 
-- **变更操作约定只支持文本**：文本读取和两个变更操作都以 `FS_NOT_TEXT` 拒绝二进制/非 UTF-8 内容；`readBytes` 与 `readByteRange` 是原始字节原语，二进制安全的变更操作仍延期。
-- **没有删除、重命名或复制**：`listDir` 只列出一层，递归、glob、分页与搜索不在范围内（见[目录列出笔记](../../../.agents/notes/archived/architecture/2026-07-03-filesystem-directory-listing-seam.md)）。
-- **没有 I/O deadline**：该 seam 不启动超时；取消只是每个原语上尽力而为的可选 `AbortSignal`（见[fs 能力族立场](../README.zh.md)）。
-- **先解析后操作使远程后端每次工具调用需要两次往返**：折叠或缓存解析由这种后端自行决定。
+- **變更操作約定只支援文字**：文字讀取和兩個變更操作都以 `FS_NOT_TEXT` 拒絕二進位制/非 UTF-8 內容；`readBytes` 與 `readByteRange` 是原始位元組原語，二進位制安全的變更操作仍延期。
+- **沒有刪除、重新命名或複製**：`listDir` 只列出一層，遞迴、glob、分頁與搜尋不在範圍內（見[目錄列出筆記](../../../.agents/notes/archived/architecture/2026-07-03-filesystem-directory-listing-seam.md)）。
+- **沒有 I/O deadline**：該 seam 不啟動超時；取消只是每個原語上盡力而為的可選 `AbortSignal`（見[fs 能力族立場](../README.zh.md)）。
+- **先解析後操作使遠端後端每次工具呼叫需要兩次往返**：摺疊或快取解析由這種後端自行決定。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

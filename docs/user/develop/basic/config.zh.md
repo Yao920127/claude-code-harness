@@ -1,12 +1,12 @@
-# 插件配置
+# 外掛設定
 
 [English](config.md) | 中文
 
-让你的插件接受用户在 `cordis.yml` 中传入的配置。
+讓你的外掛接受使用者在 `cordis.yml` 中傳入的設定。
 
-## 定义 Config 类型
+## 定義 Config 型別
 
-在插件中导出一个 `Config` 类型和同名的 Schemastery schema；默认值直接写在 schema 中：
+在外掛中匯出一個 `Config` 型別和同名的 Schemastery schema；預設值直接寫在 schema 中：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -31,7 +31,7 @@ export function apply(ctx: Context, config: Config) {
 }
 ```
 
-在 `scratch-plugin/cordis.yml` 新插入的本地插件行中添加配置：
+在 `scratch-plugin/cordis.yml` 新插入的本地外掛行中新增設定：
 
 ```yaml
 - insert:
@@ -42,11 +42,11 @@ export function apply(ctx: Context, config: Config) {
         maxRetries: 5
 ```
 
-插件加载时，Cordis 会通过导出的 schema 校验配置，并填充未提供字段的默认值。不要导出普通对象作为 `Config`，因为它不满足 Cordis 要求的 Standard Schema 接口。
+外掛載入時，Cordis 會透過匯出的 schema 驗證設定，並填充未提供欄位的預設值。不要匯出普通物件作為 `Config`，因為它不滿足 Cordis 要求的 Standard Schema 介面。
 
-## Schema 校验
+## Schema 驗證
 
-对于需要严格校验的场景，使用 Schemastery 定义 schema：
+對於需要嚴格驗證的情境，使用 Schemastery 定義 schema：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -71,13 +71,13 @@ export function apply(ctx: Context, config: Config) {
 }
 ```
 
-Schema 在插件加载时执行校验。如果配置不合法，插件会加载失败并给出明确错误信息。
+Schema 在外掛載入時執行驗證。如果設定不合法，外掛會載入失敗並給出明確錯誤資訊。
 
-## 设计原则
+## 設計原則
 
-### 无硬编码可调参数
+### 無硬編碼可調參數
 
-Harness 的约定：**凡是不同部署可能需要采用不同值的参数，都必须定义为配置字段**。
+Harness 的約定：**凡是不同部署可能需要採用不同值的參數，都必須定義為設定欄位**。
 
 ```ts
 // Wrong: hardcoded timeout.
@@ -89,18 +89,18 @@ export interface Config {
 }
 ```
 
-检验标准：能否在 `cordis.yml` 中改变这个值，而不需要修改代码？
+檢驗標準：能否在 `cordis.yml` 中改變這個值，而不需要修改程式碼？
 
-### 配置错误要响亮
+### 設定錯誤要響亮
 
-在 schema 中表达自身完备的约束，使无效配置在插件加载时失败。对服务或已注册资源的引用需要依赖注入；[服务教程](../framework/service.zh.md) 会介绍这项约定。
+在 schema 中表達自身完備的約束，使無效設定在外掛載入時失敗。對服務或已註冊資源的引用需要依賴注入；[服務教學](../framework/service.zh.md) 會介紹這項約定。
 
 ## 配合 HMR
 
-配置变更会触发插件热替换：修改 `cordis.yml` 中某个插件的 `config` 后，框架会卸载旧实例并加载新实例。由于注册都属于 effect 并会自动清理，替换后不会保留旧实例的注册。
+設定變更會觸發外掛熱替換：修改 `cordis.yml` 中某個外掛的 `config` 後，框架會解除安裝舊實例並載入新實例。由於註冊都屬於 effect 並會自動清理，替換後不會保留舊實例的註冊。
 
 ## 下一步
 
-- [打包与安装插件](./publish.zh.md) — 把插件以可安装包的形式交付
-- [插件与生命周期](../framework/index.zh.md) — 深入了解插件的完整生命周期
-- [服务与依赖](../framework/service.zh.md) — 让你的插件对外提供服务
+- [打包與安裝外掛](./publish.zh.md) — 把外掛以可安裝檔的形式交付
+- [外掛與生命週期](../framework/index.zh.md) — 深入瞭解外掛的完整生命週期
+- [服務與依賴](../framework/service.zh.md) — 讓你的外掛對外提供服務

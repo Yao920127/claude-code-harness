@@ -73,14 +73,14 @@ describe('JobListAction visibility', () => {
       outputJob(),
       job({ id: 'subagent-1' as JobView['id'], kind: 'subagent', label: 'explore' }),
     ])} />)
-    expect(screen.getByRole('button', { name: '2 个后台任务运行中' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '2 個後臺任務執行中' })).toBeDefined()
   })
 
   it('falls back to the total when nothing is live', () => {
     render(<JobListAction {...props([
       job({ status: 'completed', finishedAt: 1_700_000_003_000 }),
     ])} />)
-    expect(screen.getByRole('button', { name: '1 个后台任务' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '1 個後臺任務' })).toBeDefined()
   })
 })
 
@@ -89,7 +89,7 @@ describe('JobListAction rows', () => {
     render(<JobListAction {...props([
       job({ id: 'subagent-1' as JobView['id'], kind: 'subagent', label: 'explore the repo', status: 'completed', finishedAt: 1_700_000_003_000 }),
     ])} />)
-    expect(screen.getByRole('button', { name: '1 个后台任务' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '1 個後臺任務' })).toBeDefined()
     openList()
     expect(screen.getByText('explore the repo')).toBeDefined()
     expect(screen.queryByRole('button', { name: zh['row.expandAria'].replace('{label}', 'explore the repo') })).toBeNull()
@@ -162,7 +162,7 @@ describe('JobListAction rows', () => {
     fireEvent.click(screen.getByRole('button', { name: zh['section.settledCount'].replace('{count}', '3') }))
     expect(screen.getByText('5秒')).toBeDefined()
     expect(screen.getByText('12秒')).toBeDefined()
-    expect(screen.getByText('1小时3分')).toBeDefined()
+    expect(screen.getByText('1小時3分')).toBeDefined()
     expect(screen.getByText('1分12秒')).toBeDefined()
     act(() => { vi.advanceTimersByTime(1_000) })
     expect(screen.getByText('6秒')).toBeDefined()
@@ -182,7 +182,7 @@ describe('JobListAction rows', () => {
     expect(items[0]?.textContent).toContain('pnpm run build')
     // A live row's second line is kind · duration; the status word only
     // appears through a detail (none while running).
-    expect(items[0]?.textContent).toMatch(/小时|分|秒/)
+    expect(items[0]?.textContent).toMatch(/小時|分|秒/)
     expect(items[2]?.textContent).toContain('exit code: 3')
   })
 
@@ -209,7 +209,7 @@ describe('JobListAction rows', () => {
     const labels = within(screen.getByRole('list', { name: zh['list.aria'] }))
       .getAllByRole('listitem')
       .map(item => item.querySelector('[title]')?.getAttribute('title'))
-      .filter((title): title is string => title != null && !title.startsWith('已运行') && !title.startsWith('耗时'))
+      .filter((title): title is string => title != null && !title.startsWith('已執行') && !title.startsWith('耗時'))
     expect(labels).toEqual([
       'live-2', 'live-1', 'settled-d', 'settled-a', 'settled-c', 'settled-b', 'settled-e',
     ])
@@ -244,7 +244,7 @@ describe('JobListAction rows', () => {
     ])} />)
     openList()
     fireEvent.click(screen.getByRole('button', { name: zh['section.settledCount'].replace('{count}', '3') }))
-    for (const word of ['已完成', '已取消', '已失败']) {
+    for (const word of ['已完成', '已取消', '已失敗']) {
       expect(within(screen.getByRole('list')).getByText(word)).toBeDefined()
     }
     expect([...screen.getByRole('list').querySelectorAll('li [data-state]')].map(node => node.getAttribute('data-state')))
@@ -325,7 +325,7 @@ describe('JobListAction observation', () => {
       outputJob({ id: 'bash-2' as JobView['id'], status: 'completed', finishedAt: 3 }),
     ]
     const { rerender } = render(<JobListAction {...props(settledPair)} />)
-    expect(screen.getByRole('button', { name: '2 个后台任务' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '2 個後臺任務' })).toBeDefined()
     openList()
     const list = screen.getByRole('list', { name: zh['list.aria'] })
     fireEvent.keyDown(list, { key: 'a' })
@@ -380,7 +380,7 @@ describe('JobListAction observation', () => {
     openList()
     fireEvent.click(screen.getByRole('button', { name: zh['row.expandAria'].replace('{label}', 'pnpm run build') }))
     expect(screen.getByText(zh['output.gap'])).toBeDefined()
-    expect(screen.getByText('实时输出流中断：connection lost')).toBeDefined()
+    expect(screen.getByText('即時輸出流中斷：connection lost')).toBeDefined()
   })
 
   it('stops observation when the popover closes via Escape', () => {

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-18-arbitrary-seq-session-fork.md
 /agent-note-exact-event-session-forks-with-shared-crash-repair:
   en: f75e952184cae150
-  zh: 32c2519c85aa6822
+  zh: 058e240ae2209a56
 /agent-note-exact-event-session-forks-with-shared-crash-repair/problem:
   en: e01b73d9d4b50c50
-  zh: 14f7816869b76241
+  zh: 5e3182046c76af50
 /agent-note-exact-event-session-forks-with-shared-crash-repair/decision:
   en: 0b7afc12950ce308
-  zh: 384d26f698a344a7
+  zh: 2bfdeea48bad2dbf
 /agent-note-exact-event-session-forks-with-shared-crash-repair/alternatives-considered:
   en: 49544ba70825c8e9
-  zh: 41c7dceb9241fc5a
+  zh: 7536103afa735010
 /agent-note-exact-event-session-forks-with-shared-crash-repair/consequences:
   en: a829fc736a132d89
-  zh: 03b116766bd44d64
+  zh: ff535a253fd31fcf
 /agent-note-exact-event-session-forks-with-shared-crash-repair/testing:
   en: f15e826fa12a4f55
-  zh: fe053fa01304e072
+  zh: 6fce9958171ab3ad

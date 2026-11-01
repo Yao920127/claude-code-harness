@@ -1,15 +1,15 @@
-<!-- 由 scripts/gen-config-catalog.ts 生成——请勿手工编辑。
-     运行 `pnpm run gen-config-catalog` 重新生成。 -->
+<!-- 由 scripts/gen-config-catalog.ts 生成——請勿手工編輯。
+     執行 `pnpm run gen-config-catalog` 重新生成。 -->
 
-# 插件配置目录
+# 外掛設定目錄
 
 [English](config-catalog.md) | 中文
 
-每个 `config:` 块均可由 `cordis.yml` 条目设置：针对每个可加载的 harness 包，原样列出其 `apply` 函数或服务构造函数接收的配置声明（包括 JSDoc），并附上所有引用类型——包内类型直接粘贴，其他类型则提供链接。粘贴的内容是插件声明的完整配置类型——运行时 schema 有意排除的字段是仅供运行时使用的 seam（其自身的 JSDoc 会如此说明），不能通过 `cordis.yml` 设置。这是以**部署**为轴的参考文档——插件作者所依据的连接方式请参阅各[子系统页面](subsystems/core.zh.md)中的生成 `cordis-surface` 区域，面向模型的工具 schema 请参阅[工具目录](tool-catalog.zh.md)，而 [subsystems/](subsystems/core.zh.md) 则记录了这些声明所引用的类型。
+每個 `config:` 塊均可由 `cordis.yml` 條目設定：針對每個可載入的 harness 包，原樣列出其 `apply` 函式或服務建構函式接收的設定宣告（包括 JSDoc），並附上所有引用型別——包內型別直接貼上，其他型別則提供連結。貼上的內容是外掛宣告的完整設定型別——執行時 schema 有意排除的欄位是僅供執行時使用的 seam（其自身的 JSDoc 會如此說明），不能透過 `cordis.yml` 設定。這是以**部署**為軸的參考文件——外掛作者所依據的連線方式請參閱各[子系統頁面](subsystems/core.zh.md)中的生成 `cordis-surface` 區域，面向模型的工具 schema 請參閱[工具目錄](tool-catalog.zh.md)，而 [subsystems/](subsystems/core.zh.md) 則記錄了這些宣告所引用的型別。
 
-本文件的两种语言版本都由源代码（`scripts/gen-config-catalog.ts`）生成，并通过 `pnpm run verify-config-catalog`（`doc-sync` 的一部分）验证新鲜度——请勿手工编辑。声明块使用 `ts config-catalog` 围栏（doc-typecheck 会跳过它，因为单独引用导入项的声明无法独立编译）。生成器还会将运行时 schemastery schema 与粘贴的声明进行交叉核对——每个经 schema 验证的键（包括嵌套键）都必须能在声明的配置类型中找到——因此，粘贴内容无法隐藏加载器接受的字段。
+本檔案的兩種語言版本都由原始碼（`scripts/gen-config-catalog.ts`）生成，並透過 `pnpm run verify-config-catalog`（`doc-sync` 的一部分）驗證新鮮度——請勿手工編輯。宣告塊使用 `ts config-catalog` 圍欄（doc-typecheck 會跳過它，因為單獨引用匯入項的宣告無法獨立編譯）。生成器還會將執行時 schemastery schema 與貼上的宣告進行交叉核對——每個經 schema 驗證的鍵（包括巢狀鍵）都必須能在宣告的設定型別中找到——因此，貼上內容無法隱藏載入器接受的欄位。
 
-每个包的条目用三个标识符标注：`inject` 列出插件注入的服务键，其 `cordis.yml` 树还必须加载这些服务的提供者；`refs` 列出声明引用、但未粘贴在此处的类型；`source` 链接到声明配置的源文件。范围限定为 harness 层级（`packages/`）；配置树还可能加载的 vendored cordis 插件（控制台日志记录器等）固定为上游源代码（参见 [vendoring policy](../vendor/README.md)），未收录于此目录。
+每個包的條目用三個識別符號標註：`inject` 列出外掛注入的服務鍵，其 `cordis.yml` 樹還必須載入這些服務的提供者；`refs` 列出宣告引用、但未貼上在此處的型別；`source` 連結到宣告設定的原始檔。範圍限定為 harness 層級（`packages/`）；設定樹還可能載入的 vendored cordis 外掛（控制檯日誌記錄器等）固定為上游原始碼（參見 [vendoring policy](../vendor/README.md)），未收錄於此目錄。
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-acp -->
 <a id="deepseek-aidsh-acp"></a>
@@ -4465,9 +4465,9 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-workspace-changes -->
 
-## 无配置的可加载插件
+## 無設定的可載入外掛
 
-这些插件通过 `cordis.yml` 中不含 `config:` 块的条目加载；它们未声明任何配置接口。
+這些外掛透過 `cordis.yml` 中不含 `config:` 塊的條目載入；它們未宣告任何設定介面。
 
 <!-- BEGIN GENERATED config-catalog:no-config -->
 | `package` | `inject` | `source` |
@@ -4480,7 +4480,6 @@ export interface Config {
 | `@deepseek-ai/dsh-browser-use` | — | [`packages/browser-use/browser-use/src/index.ts`](../packages/browser-use/browser-use/src/index.ts) |
 | `@deepseek-ai/dsh-client-file-upload` | `agents` · `attachments` · `commands` · `connection` | [`packages/client/file-upload/src/index.ts`](../packages/client/file-upload/src/index.ts) |
 | `@deepseek-ai/dsh-client-locale` | — | [`packages/client/locale/src/index.ts`](../packages/client/locale/src/index.ts) |
-| `@deepseek-ai/dsh-client-locale-zh-hant` | — | [`packages/client/locale-zh-hant/src/index.ts`](../packages/client/locale-zh-hant/src/index.ts) |
 | `@deepseek-ai/dsh-client-modules` | `loader` | [`packages/client/modules/src/index.ts`](../packages/client/modules/src/index.ts) |
 | `@deepseek-ai/dsh-client-resources` | — | [`packages/client/resources/src/index.ts`](../packages/client/resources/src/index.ts) |
 | `@deepseek-ai/dsh-client-ui-agent-preset` | — | [`packages/client/ui-agent-preset/src/index.ts`](../packages/client/ui-agent-preset/src/index.ts) |
@@ -4573,9 +4572,9 @@ export interface Config {
 | `@deepseek-ai/dsh-workspace` | `storageDomain` · `sessionPersistence` | [`packages/workspace/workspace/src/index.ts`](../packages/workspace/workspace/src/index.ts) |
 <!-- END GENERATED config-catalog:no-config -->
 
-## Seam 包（不可直接加载）
+## Seam 包（不可直接載入）
 
-抽象服务类——部署时应改为加载具体的实现包（参见[能力 seam](../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)）。
+抽象服務類——部署時應改為載入具體的實作包（參見[能力 seam](../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)）。
 
 <!-- BEGIN GENERATED config-catalog:seam -->
 | `package` | `class` | `inject` | `source` |
@@ -4598,9 +4597,9 @@ export interface Config {
 | `@deepseek-ai/dsh-workflow` | `WorkflowEngine` | — | [`packages/workflow/workflow/src/index.ts`](../packages/workflow/workflow/src/index.ts) |
 <!-- END GENERATED config-catalog:seam -->
 
-## 库包（无插件入口）
+## 庫包（無外掛入口）
 
-由其他包作为库导入；`cordis.yml` 无法加载它们。
+由其他包作為庫匯入；`cordis.yml` 無法載入它們。
 
 <!-- BEGIN GENERATED config-catalog:library -->
 | `package` | `inject` | `source` |

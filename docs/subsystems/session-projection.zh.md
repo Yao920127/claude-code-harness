@@ -1,14 +1,14 @@
-# 会话投影
+# 工作階段投影
 
 [English](session-projection.md) | 中文
 
-会话投影 seam 是一项[能力 seam](../capability-seams.zh.md)：领域 host 插件经由它向客户端载体供给按会话的日志派生状态的当前全量值；三方分别是 Service Definition 与注册表（[dsh-session-projection](../../packages/session/session-projection)，`ctx.sessionProjections`）、领域贡献方（每个领域注册一个纯单元）与载体（[dsh-session-controller](../../packages/api/session-controller) 的历史尾页与 `session/projection` 推送帧）。它是一项可选能力，不属于 agent loop（智能体循环）主干。框架负责驱动，领域负责计算：注册表只订阅一次 `session/event`，并把每个已提交事件折叠进每个单元；领域不持有任何订阅，客户端也从不折叠领域事件——它们收到的是成品值。设计权威：[session-projection RFC](../../.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md)；驱动、缓存与变更流约定：[包 README](../../packages/session/session-projection/README.zh.md)。
+工作階段投影 seam 是一項[能力 seam](../capability-seams.zh.md)：領域 host 外掛經由它向用戶端載體供給按工作階段的日誌派生狀態的目前全量值；三方分別是 Service Definition 與註冊表（[dsh-session-projection](../../packages/session/session-projection)，`ctx.sessionProjections`）、領域貢獻方（每個領域註冊一個純單元）與載體（[dsh-session-controller](../../packages/api/session-controller) 的歷史尾頁與 `session/projection` 推送幀）。它是一項可選能力，不屬於 agent loop（智慧代理迴圈）主幹。框架負責驅動，領域負責計算：註冊表只訂閱一次 `session/event`，並把每個已提交事件摺疊進每個單元；領域不持有任何訂閱，用戶端也從不折疊領域事件——它們收到的是成品值。設計權威：[session-projection RFC](../../.agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.zh.md)；驅動、快取與變更流約定：[包 README](../../packages/session/session-projection/README.zh.md)。
 
-源码：[`packages/session/session-projection/src/index.ts`](../../packages/session/session-projection/src/index.ts)
+原始碼：[`packages/session/session-projection/src/index.ts`](../../packages/session/session-projection/src/index.ts)
 
-## 投影单元
+## 投影單元
 
-`SessionProjectionStateMap` 是 host 侧折叠状态的 merge-extensible 类型表，`SessionProjectionMap` 则继续表示客户端可见的全量值。领域为每个状态 key 贡献一个 `ProjectionDefinition`；`wire` 块使该 key 对客户端可见，渲染归 slot 体系管，永远不归本层：
+`SessionProjectionStateMap` 是 host 側摺疊狀態的 merge-extensible 型別表，`SessionProjectionMap` 則繼續表示用戶端可見的全量值。領域為每個狀態 key 貢獻一個 `ProjectionDefinition`；`wire` 塊使該 key 對用戶端可見，渲染歸 slot 體系管，永遠不歸本層：
 
 ```ts type-equiv
 /**
@@ -67,9 +67,9 @@ interface ProjectionDefinition<
 }
 ```
 
-每个对外投影值都是完整读模型。源事件可以携带完整值，也可以携带领域拥有的操作；单元的确定性 `apply` 负责回放，checkpoint 加前向 tail replay 会重建出同一状态。
+每個對外投影值都是完整讀模型。源事件可以攜帶完整值，也可以攜帶領域擁有的操作；單元的確定性 `apply` 負責回放，checkpoint 加前向 tail replay 會重建出同一狀態。
 
-## 快照与变更流
+## 快照與變更流
 
 ```ts type-equiv
 /**
@@ -99,11 +99,11 @@ type ProjectionChangeListener = (
 ) => void
 ```
 
-`snapshot(session)` 完全同步：载体在切出页面切片的同一 tick 内读取它，因此 `asOfSeq` 使两次读取使用同一个序号。它只返回客户端视图，并在返回前通过各单元的 `viewSchema` 校验。`stateOf(session, key)` 可在不计算无关视图的情况下读取一份实时 host 状态；调用方不得修改这一借用引用。state 引用变化时，注册表计算并缓存一次原始 view；只有该结果通过 `Object.is` 判定为变化时才触发变更流，对象 view 若要在仅内部 state 变化时抑制发布就必须保留引用。
+`snapshot(session)` 完全同步：載體在切出頁面切片的同一 tick 內讀取它，因此 `asOfSeq` 使兩次讀取使用同一個序號。它只返回用戶端檢視，並在返回前透過各單元的 `viewSchema` 驗證。`stateOf(session, key)` 可在不計算無關檢視的情況下讀取一份即時 host 狀態；呼叫方不得修改這一借用引用。state 引用變化時，註冊表計算並快取一次原始 view；只有該結果透過 `Object.is` 判定為變化時才觸發變更流，物件 view 若要在僅內部 state 變化時抑制釋出就必須保留引用。
 
-## 注册表：`ctx.sessionProjections`
+## 註冊表：`ctx.sessionProjections`
 
-`SessionProjectionRegistry`（[签名](#ctxsessionprojections--sessionprojectionregistry)）拥有驱动权：一份 `session/event` 订阅、对每个已注册单元即时调用 `apply`，以及每会话每单元的水位线（watermark）cell。cell 惰性构建：在事件流过之后才注册的单元，或比注册表更早的会话，都在首次触达（事件或读取）时从 `init` 出发在内存日志上折叠。注册是一个 effect，其 disposer 随调用方 fiber 走：领域插件卸载后，其 key（连同缓存的 cell）从后续驱动与快照中消失，客户端将其读作能力缺失；key 以不同 `stateVersion` 重复时直接 throw，同版本注册方则共享一个单元并被计数。领域插件在 `ctx.inject(['sessionProjections'], …)` 下注册，因此不带注册表的 headless 组装完全不受影响。
+`SessionProjectionRegistry`（[簽名](#ctxsessionprojections--sessionprojectionregistry)）擁有驅動權：一份 `session/event` 訂閱、對每個已註冊單元即時呼叫 `apply`，以及每工作階段每單元的水位線（watermark）cell。cell 惰性建置：在事件流過之後才註冊的單元，或比註冊表更早的工作階段，都在首次觸達（事件或讀取）時從 `init` 出發在記憶體日誌上摺疊。註冊是一個 effect，其 disposer 隨呼叫方 fiber 走：領域外掛解除安裝後，其 key（連同快取的 cell）從後續驅動與快照中消失，用戶端將其讀作能力缺失；key 以不同 `stateVersion` 重複時直接 throw，同版本註冊方則共享一個單元並被計數。領域外掛在 `ctx.inject(['sessionProjections'], …)` 下注冊，因此不帶註冊表的 headless 組裝完全不受影響。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

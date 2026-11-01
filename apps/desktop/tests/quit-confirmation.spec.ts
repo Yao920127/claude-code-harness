@@ -43,9 +43,9 @@ describe('DesktopQuitConfirmation', () => {
     const f = setup('darwin', async () => ({ activeTasks: true, scheduledTasks: true }))
     expect(await f.confirmation.confirm()).toBe(true)
     expect(f.shown).toEqual([{
-      type: 'warning', title: 'Claude Code Harness', message: '退出 Claude Code Harness？',
-      detail: '当前正在运行的任务将会中断，且应用关闭期间，定时任务不会运行',
-      buttons: ['退出', '取消'], defaultId: 0, cancelId: 1, noLink: true,
+      type: 'warning', title: 'Claude Code Harness', message: '結束 Claude Code Harness？',
+      detail: '目前正在執行的任務將會中斷，且應用關閉期間，排程任務不會執行',
+      buttons: ['結束', '取消'], defaultId: 0, cancelId: 1, noLink: true,
     }])
   })
 
@@ -65,7 +65,7 @@ describe('DesktopQuitConfirmation', () => {
     const f = setup('darwin', async () => { throw new Error('desktop quit: inspection timed out') })
     f.answer(1)
     expect(await f.confirmation.confirm()).toBe(false)
-    expect(f.shown.map(options => options.detail)).toEqual(['当前正在运行的任务将会中断'])
+    expect(f.shown.map(options => options.detail)).toEqual(['目前正在執行的任務將會中斷'])
     expect(console.warn).toHaveBeenCalledWith('desktop quit: task inspection unavailable', expect.any(Error))
   })
 

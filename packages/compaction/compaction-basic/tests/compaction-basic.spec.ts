@@ -1384,7 +1384,7 @@ async function summarizerHarness(
 }
 
 describe('default one-shot summarizer', () => {
-  it.each([undefined, '', 'SYSTEM HEAD\n精确前缀\n'])('preserves the routed prefix through region summarization with system %j', async (system) => {
+  it.each([undefined, '', 'SYSTEM HEAD\n精確字首\n'])('preserves the routed prefix through region summarization with system %j', async (system) => {
     const { adapter, compact } = await summarizerHarness([{ type: 'text', text: 'summary' }])
     const session = conversation(3, undefined, system)
     const tools = [{ name: 'do_thing', description: 'd', parameters: { type: 'object' } }]

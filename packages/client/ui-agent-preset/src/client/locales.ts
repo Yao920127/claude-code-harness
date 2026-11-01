@@ -74,38 +74,38 @@ export const en: Record<AgentPresetSettingsKey, string> = {
 /** Simplified Chinese copy. */
 export const zh: Record<AgentPresetSettingsKey, string> = {
   ...guideZh,
-  builtInGroup: '内置', customGroup: '自定义',
-  sectionIntro: '选择 Agent 的工具和工作方式。日常任务用「标准模式」，扩展 DSH 的能力用「创造模式」。',
+  builtInGroup: '內建', customGroup: '自定義',
+  sectionIntro: '選擇 Agent 的工具和工作方式。日常任務用「標準模式」，擴充功能 DSH 的能力用「創造模式」。',
 
-  seatHint: '选择新任务使用的 Agent 预设',
-  headerHint: '本任务的 Agent 预设，在任务开始时确定',
-  nav: 'Agent 预设',
+  seatHint: '選擇新任務使用的 Agent 預設',
+  headerHint: '本任務的 Agent 預設，在任務開始時確定',
+  nav: 'Agent 預設',
 
-  setDefault: '设为新任务默认',
-  view: '查看配置',
+  setDefault: '設為新任務預設',
+  view: '檢視設定',
 
-  presetStandardName: '标准模式',
-  presetStandardDescription: '处理代码、文件和资料，适合大多数任务。Agent 会按需使用检索、编辑和终端等工具。',
+  presetStandardName: '標準模式',
+  presetStandardDescription: '處理程式碼、檔案和資料，適合大多數任務。Agent 會按需使用檢索、編輯和終端等工具。',
   presetPtcName: 'PTC 模式',
-  presetPtcDescription: '包含标准模式的所有能力，更适合批量调用工具，并对结果进行筛选、整理、去重、统计或汇总的任务。',
-  presetMinimalName: '极简模式',
-  presetMinimalDescription: 'Agent 仅使用终端工具完成任务，适合测试和对比其基础表现。',
-  presetCordisName: '创造模式',
-  presetCordisDescription: '用对话定制 DSH：让 Agent 编写插件，添加新功能或界面；也能组合工具和提示词，创建自己的模式。',
+  presetPtcDescription: '包含標準模式的所有能力，更適合批次呼叫工具，並對結果進行篩選、整理、去重、統計或彙總的任務。',
+  presetMinimalName: '極簡模式',
+  presetMinimalDescription: 'Agent 僅使用終端工具完成任務，適合測試和對比其基礎表現。',
+  presetCordisName: '創造模式',
+  presetCordisDescription: '用對話定製 DSH：讓 Agent 編寫外掛，新增新功能或介面；也能組合工具和提示詞，建立自己的模式。',
 
-  inUse: '新任务默认',
+  inUse: '新任務預設',
 
-  noDescription: '暂无描述。',
-  brokenBadge: '加载失败',
+  noDescription: '暫無描述。',
+  brokenBadge: '載入失敗',
 
-  switchRefused: '无法切换到「{name}」：{reason}',
+  switchRefused: '無法切換到「{name}」：{reason}',
 
-  close: '关闭',
+  close: '關閉',
 
-  creatorDraft: '让 Agent 帮我创建预设模式',
+  creatorDraft: '讓 Agent 幫我建立預設模式',
 
-  enableDevToolsToSetDefault: '请先在通用设置中开启代码工作工具，再设置默认值',
-  enableDevToolsToCreate: '请先在通用设置中开启代码工作工具，再启动创造模式',
+  enableDevToolsToSetDefault: '請先在通用設定中開啟程式碼工作工具，再設定預設值',
+  enableDevToolsToCreate: '請先在通用設定中開啟程式碼工作工具，再啟動創造模式',
 }
 
 // The resolution itself is the shared fold in `dsh-agent-preset-registry/display`,

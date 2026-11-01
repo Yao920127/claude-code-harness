@@ -3,11 +3,11 @@ import { zoomEn, zoomZh } from '../zoom/locales.ts'
 /** Locale-owned image renderer labels and status text. */
 export const zh = {
   ...zoomZh,
-  title: '图片',
-  preview: '图片预览：{name}',
-  loading: '文档渲染中...',
-  failed: '无法显示这张图片',
-  unsupported: '图片预览需要完整文件内容',
+  title: '圖片',
+  preview: '圖片預覽：{name}',
+  loading: '文件渲染中...',
+  failed: '無法顯示這張圖片',
+  unsupported: '圖片預覽需要完整檔案內容',
 } satisfies Record<string, string>
 
 /** Image renderer dictionary keys. */

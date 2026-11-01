@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-12-maintained-repository-references.md
 /agent-note-maintained-repository-references:
   en: 10750a69061b5dd0
-  zh: ab4be61612ead1da
+  zh: 53c8a0a01cbf2fc1
 /agent-note-maintained-repository-references/problem:
   en: 36ca11f2ef3d8b4e
-  zh: 6e6ca6ae00fab2f7
+  zh: c7c83a3651ddce33
 /agent-note-maintained-repository-references/decision:
   en: ec87568d74d5dc5f
-  zh: bc34159aeafa9fcd
+  zh: fe061d48c217a16e
 /agent-note-maintained-repository-references/alternatives-considered:
   en: de1c15bc0d404c41
-  zh: a32a80be126d3d71
+  zh: 77262754b40f8855
 /agent-note-maintained-repository-references/consequences:
   en: 17e87405d1ab8efa
-  zh: d4dbc337733d9a2d
+  zh: 65978a339c28289b

@@ -1,5 +1,5 @@
 ---
-description: "ctx.web 的匿名公共 HTTP(S) 抓取后端：部署方如何挂载有界、安全的 URL 抓取，含同源重定向与仅文本解码。"
+description: "ctx.web 的匿名公共 HTTP(S) 抓取後端：部署方如何掛載有界、安全的 URL 抓取，含同源重定向與僅文字解碼。"
 kind: "package-reference"
 ---
 
@@ -9,138 +9,138 @@ kind: "package-reference"
 
 ## 概述
 
-有了 `dsh-web-fetch-http`，harness 可以通过 web 服务（`ctx.web`）抓取公共 HTTP(S) 页面，并在不发送凭据的情况下获得状态码与有界、解码后的内容。当组合需要 URL 校验、公开地址解析、连接固定、仅同源重定向、字节和字符上限及显式产品 `User-Agent` 时选择它。它把非 2xx 响应作为结果而非错误返回，并拒绝非公开目标、二进制数据与不受支持的内容类型。面向模型的 `web_fetch` 工具位于 `dsh-tool-web`，由它渲染本提供方的正文。
+有了 `dsh-web-fetch-http`，harness 可以透過 web 服務（`ctx.web`）抓取公共 HTTP(S) 頁面，並在不傳送憑證的情況下獲得狀態碼與有界、解碼後的內容。當組合需要 URL 驗證、公開地址解析、連線固定、僅同源重定向、位元組和字元上限及顯式產品 `User-Agent` 時選擇它。它把非 2xx 回應作為結果而非錯誤返回，並拒絕非公開目標、二進位制資料與不受支援的內容型別。面向模型的 `web_fetch` 工具位於 `dsh-tool-web`，由它渲染本提供者的正文。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在已加载 web 服务的组合中挂载本提供方；它以 `http` 抓取提供方身份注册，因此当它是唯一可用的抓取后端时，`ctx.web.fetch()` 会自动解析到它——也可以用 `fetchProvider: http` 固定。
+在已載入 web 服務的組合中掛載本提供者；它以 `http` 抓取提供者身份註冊，因此當它是唯一可用的抓取後端時，`ctx.web.fetch()` 會自動解析到它——也可以用 `fetchProvider: http` 固定。
 
-### 何时选择
+### 何時選擇
 
-当部署必须以有界输出和安全传输抓取公共页面时选择此后端：不发送凭据，每个已解析地址必须是公共地址，每次连接都固定到已校验的地址集合，重定向无法逃出源站，每个响应都有上限。
+當部署必須以有界輸出和安全傳輸抓取公共頁面時選擇此後端：不傳送憑證，每個已解析地址必須是公共地址，每次連線都固定到已驗證的地址集合，重定向無法逃出源站，每個回應都有上限。
 
-### 最小配置
+### 最小設定
 
-加载 web 服务与本提供方；可配置上限都有安全默认值，并在插件构造时验证，因此无效值会直接报错，而不是构造出上限荒谬的提供方。URL 安全上限固定为 2,048 个字符。
+載入 web 服務與本提供者；可設定上限都有安全預設值，並在外掛建構時驗證，因此無效值會直接報錯，而不是建構出上限荒謬的提供者。URL 安全上限固定為 2,048 個字元。
 
 ```yaml
 - name: '@deepseek-ai/dsh-web'
 - name: '@deepseek-ai/dsh-web-fetch-http'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `maxResponseBytes` | `5,000,000` | 响应主体最大字节数 |
-| `maxBodyChars` | `100,000` | 解码主体最大字符数 |
-| `timeoutMs` | `30,000` | 抓取超时——资源兜底，不是面向模型的工具预算 |
-| `maxRedirects` | `5` | 同源重定向最大跳数（`0` 表示不跟随） |
-| `userAgent` | `deepseek-harness/…` | 每次请求发送的 `User-Agent` 标头 |
+| `maxResponseBytes` | `5,000,000` | 回應主體最大位元組數 |
+| `maxBodyChars` | `100,000` | 解碼主體最大字元數 |
+| `timeoutMs` | `30,000` | 抓取超時——資源後備，不是面向模型的工具預算 |
+| `maxRedirects` | `5` | 同源重定向最大跳數（`0` 表示不跟隨） |
+| `userAgent` | `deepseek-harness/…` | 每次請求傳送的 `User-Agent` 標頭 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-fetch-http)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-fetch-http)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 抓取返回什么
+### 抓取返回什麼
 
-成功调用产生 `WebFetchResult`：允许的重定向之后的最终 URL、HTTP 状态码、分类为 `html` 或 `text` 的解码正文，以及 `truncated` 标志。非 2xx 响应是结果而非错误——状态码是被抓取资源状态的一部分；`WebError` 只用于无法安全获取或表示资源的失败。
+成功呼叫產生 `WebFetchResult`：允許的重定向之後的最終 URL、HTTP 狀態碼、分類為 `html` 或 `text` 的解碼正文，以及 `truncated` 標誌。非 2xx 回應是結果而非錯誤——狀態碼是被抓取資源狀態的一部分；`WebError` 只用於無法安全取得或表示資源的失敗。
 
 ```text
 const page = await ctx.web.fetch({ url: 'https://example.com' })
 // page.body.kind === 'html' | 'text'; page.statusCode === 200 | 404 | ...
 ```
 
-### 传输行为
+### 傳輸行為
 
-提供方保持请求匿名且有界：只接受不含内嵌凭据且不超过 2,048 个字符的 `http:` 与 `https:` URL。它只解析一次主机名；只要结果中有任何 IPv4 或 IPv6 地址不是公共单播地址，就拒绝整个结果，并把连接固定到已校验的地址集合。IPv6 检查会发现活动 DNS64 前缀，并拒绝指向非公开 IPv4 的转换地址。每次同源重定向都会重复解析与固定；跨源重定向会失败并要求重新调用。提供方还强制执行字节、字符、跳数和时间上限，拒绝不支持的内容类型，并发送显式产品 `User-Agent`。
+提供者保持請求匿名且有界：只接受不含內嵌憑證且不超過 2,048 個字元的 `http:` 與 `https:` URL。它只解析一次主機名；只要結果中有任何 IPv4 或 IPv6 地址不是公共單播地址，就拒絕整個結果，並把連線固定到已驗證的地址集合。IPv6 檢查會發現活動 DNS64 字首，並拒絕指向非公開 IPv4 的轉換地址。每次同源重定向都會重複解析與固定；跨源重定向會失敗並要求重新呼叫。提供者還強制執行位元組、字元、跳數和時間上限，拒絕不支援的內容型別，併傳送顯式產品 `User-Agent`。
 
-### 失败与恢复
+### 失敗與恢復
 
-失败会抛出 `WebError`，其中包含可供程序路由的错误码：`WEB_INVALID_URL`、`WEB_BLOCKED_URL`、`WEB_FETCH_TOO_LARGE`、`WEB_FETCH_TIMEOUT`、`WEB_REDIRECT_BLOCKED`、`WEB_UNSUPPORTED_CONTENT_TYPE`、`WEB_ABORTED` 或 `WEB_PROVIDER_ERROR`。直接调用方可以按错误码路由；面向模型的 `web_fetch` 工具会在自己的错误包装层内把失败文本呈现给模型。
+失敗會丟擲 `WebError`，其中包含可供程式路由的錯誤碼：`WEB_INVALID_URL`、`WEB_BLOCKED_URL`、`WEB_FETCH_TOO_LARGE`、`WEB_FETCH_TIMEOUT`、`WEB_REDIRECT_BLOCKED`、`WEB_UNSUPPORTED_CONTENT_TYPE`、`WEB_ABORTED` 或 `WEB_PROVIDER_ERROR`。直接呼叫方可以按錯誤碼路由；面向模型的 `web_fetch` 工具會在自己的錯誤包裝層內把失敗文字呈現給模型。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋提供者背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-本包基于一项职责分离和一套分层超时机制：
+本包基於一項職責分離和一套分層超時機制：
 
-- **安全获取与呈现分离。** 本提供方拥有 URL 校验、公开地址强制规则、连接固定、HTTP 传输、重定向策略、上限、charset 解码与二进制拒绝；`dsh-tool-web` 拥有 HTML→markdown 与截断格式化。非 2xx 响应是数据，不是失败。
-- **两层超时。** 提供方的 `timeoutMs` 是直接 `ctx.web.fetch()` 调用方的资源兜底；面向模型的工具调用预算属于 `dsh-tool-call-timeout-policy`，由它触发 `exec.signal`。外层截止期限先到时，提供方报告 `WEB_ABORTED`，策略再以 `TOOL_TIMEOUT` 替换；因此 `WEB_FETCH_TIMEOUT` 标识的是提供方预算耗尽的直接服务调用方。
+- **安全取得與呈現分離。** 本提供者擁有 URL 驗證、公開地址強制規則、連線固定、HTTP 傳輸、重定向策略、上限、charset 解碼與二進位制拒絕；`dsh-tool-web` 擁有 HTML→markdown 與截斷格式化。非 2xx 回應是資料，不是失敗。
+- **兩層超時。** 提供者的 `timeoutMs` 是直接 `ctx.web.fetch()` 呼叫方的資源後備；面向模型的工具呼叫預算屬於 `dsh-tool-call-timeout-policy`，由它觸發 `exec.signal`。外層截止期限先到時，提供者報告 `WEB_ABORTED`，策略再以 `TOOL_TIMEOUT` 替換；因此 `WEB_FETCH_TIMEOUT` 標識的是提供者預算耗盡的直接服務呼叫方。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：配置 schema、上限验证、提供方注册 |
-| [`src/provider.ts`](src/provider.ts) | `HttpFetchProvider`：固定连接、重定向跟随、有界读取、charset 解码 |
-| [`src/network.ts`](src/network.ts) | 公开地址解析、DNS64 发现与连接固定 |
-| [`src/policy.ts`](src/policy.ts) | URL 校验、同源检查、内容类型分类、charset 解析 |
-| — | 不发布运行时不变量配套入口；除所属 seam 强制执行的约定外，本包没有独立的事件序列或可变数据关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：設定 schema、上限驗證、提供者註冊 |
+| [`src/provider.ts`](src/provider.ts) | `HttpFetchProvider`：固定連線、重定向跟隨、有界讀取、charset 解碼 |
+| [`src/network.ts`](src/network.ts) | 公開地址解析、DNS64 發現與連線固定 |
+| [`src/policy.ts`](src/policy.ts) | URL 驗證、同源檢查、內容型別分類、charset 解析 |
+| — | 不釋出執行時不變數配套入口；除所屬 seam 強制執行的約定外，本包沒有獨立的事件序列或可變資料關係。 |
 
-### 读取路径
+### 讀取路徑
 
-抓取先校验 URL，只解析一次主机名，结果中只要有非公开地址就拒绝，并把连接固定到已接受地址。每次同源重定向都重复该检查；跨源重定向或非公开目标在接收响应字节前失败。最终响应按 `Content-Type` 分类、依声明的 charset 解码，并在字节上限内读取；解码后的文本再截断到字符上限。
+抓取先驗證 URL，只解析一次主機名，結果中只要有非公開地址就拒絕，並把連線固定到已接受地址。每次同源重定向都重複該檢查；跨源重定向或非公開目標在接收回應位元組前失敗。最終回應按 `Content-Type` 分類、依宣告的 charset 解碼，並在位元組上限內讀取；解碼後的文字再截斷到字元上限。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享词汇逐步进入服务、面向模型的工具与设计依据。
+當包級約定不夠用時閱讀以下頁面。它們從共享詞彙逐步進入服務、面向模型的工具與設計依據。
 
-- [web 子系统](../../../docs/subsystems/web.zh.md)——穷尽式的抓取请求／结果词汇与错误码。
-- [web 包映射](../README.zh.md)——六包家族与各角色。
-- [dsh-web](../web/README.zh.md)——本提供方注册进入的 web 服务。
-- [dsh-tool-web](../tool-web/README.zh.md)——渲染本提供方正文的面向模型 `web_fetch` 工具。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-fetch-http)——每个受支持配置字段及其源声明。
-- [web 能力 seam 决策](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)——搜索与抓取为何共用一项提供方选择服务。
+- [web 子系統](../../../docs/subsystems/web.zh.md)——窮盡式的抓取請求／結果詞彙與錯誤碼。
+- [web 包對映](../README.zh.md)——六包家族與各角色。
+- [dsh-web](../web/README.zh.md)——本提供者註冊進入的 web 服務。
+- [dsh-tool-web](../tool-web/README.zh.md)——渲染本提供者正文的面向模型 `web_fetch` 工具。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-fetch-http)——每個受支援設定欄位及其源宣告。
+- [web 能力 seam 決策](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)——搜尋與抓取為何共用一項提供者選擇服務。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地，通过 `dsh-tool-web`：该工具把本提供方经 `maxBodyChars` 限制的解码文本或由 HTML 转换得到的 markdown 置于抓取结果包装层内，而重定向、标头与传输上限保持隐藏。
+間接地，透過 `dsh-tool-web`：該工具把本提供者經 `maxBodyChars` 限制的解碼文字或由 HTML 轉換得到的 markdown 置於抓取結果包裝層內，而重定向、標頭與傳輸上限保持隱藏。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接导致 KV Cache 失效；请求前缀变更由上述消费方负责。
+不會直接導致 KV Cache 失效；請求字首變更由上述消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明提供方何时不安全或不合适。它们是当前包约束。
+這些限制說明提供者何時不安全或不合適。它們是目前包約束。
 
-- **只解码文本内容**——包括 html/xhtml 与 `text/*` 加 JSON/XML 家族；缺少 `Content-Type` 或任何二进制类型都会抛出 `WEB_UNSUPPORTED_CONTENT_TYPE`，可提取文本的 PDF 解码属于明确的延期工作。
-- **charset 只来自 `Content-Type` 标头**（默认 UTF-8）——HTML `<meta charset>` 声明会被忽略；声明但无法识别的 charset 标签会抛出异常，而非回退。
+- **只解碼文字內容**——包括 html/xhtml 與 `text/*` 加 JSON/XML 家族；缺少 `Content-Type` 或任何二進位制型別都會丟擲 `WEB_UNSUPPORTED_CONTENT_TYPE`，可提取文字的 PDF 解碼屬於明確的延期工作。
+- **charset 只來自 `Content-Type` 標頭**（預設 UTF-8）——HTML `<meta charset>` 宣告會被忽略；宣告但無法識別的 charset 標籤會丟擲異常，而非退回。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -1,12 +1,12 @@
-# 插件与生命周期
+# 外掛與生命週期
 
 [English](index.md) | 中文
 
-本页介绍 Cordis 插件模型和生命周期状态机。
+本頁介紹 Cordis 外掛模型和生命週期狀態機。
 
-## Fiber 状态机
+## Fiber 狀態機
 
-每个被加载的插件都拥有一个 **Fiber** 作用域，其状态如下：
+每個被載入的外掛都擁有一個 **Fiber** 作用域，其狀態如下：
 
 ```
 PENDING → LOADING → ACTIVE
@@ -14,18 +14,18 @@ PENDING → LOADING → ACTIVE
 ACTIVE → UNLOADING → DISPOSED
 ```
 
-| 状态 | 含义 |
+| 狀態 | 含義 |
 |------|------|
-| PENDING | 已声明，但所需依赖未就绪 |
-| LOADING | 依赖就绪，正在执行 `apply` |
-| ACTIVE | 插件运行中 |
-| FAILED | `apply` 抛出异常 |
-| UNLOADING | 插件正在卸载并释放资源 |
-| DISPOSED | 已完全卸载 |
+| PENDING | 已宣告，但所需依賴未就緒 |
+| LOADING | 依賴就緒，正在執行 `apply` |
+| ACTIVE | 外掛執行中 |
+| FAILED | `apply` 丟擲異常 |
+| UNLOADING | 外掛正在解除安裝並釋放資源 |
+| DISPOSED | 已完全解除安裝 |
 
-## 依赖驱动的加载
+## 依賴驅動的載入
 
-声明了 `inject` 的插件会等待所有必需服务就绪：
+宣告瞭 `inject` 的外掛會等待所有必需服務就緒：
 
 ```ts ignore-check
 export const inject = ['tools', 'llm']
@@ -35,11 +35,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-如果依赖的服务消失（例如提供方被替换时），插件会被自动卸载（ACTIVE → DISPOSED），待服务恢复后重新加载。
+如果依賴的服務消失（例如提供者被替換時），外掛會被自動解除安裝（ACTIVE → DISPOSED），待服務恢復後重新載入。
 
-## 自动清理机制
+## 自動清理機制
 
-通过 `ctx` 做的任何注册，在插件卸载时都会自动撤销：
+透過 `ctx` 做的任何註冊，在外掛解除安裝時都會自動撤銷：
 
 ```ts ignore-check
 export function apply(ctx: Context) {
@@ -54,17 +54,17 @@ export function apply(ctx: Context) {
 }
 ```
 
-以下操作都会被自动追踪和清理：
-- `ctx.on(event, handler)` — 事件监听
-- `ctx.tools.register(tool)` — 工具注册
-- `ctx.llm.registerAdapter(names, adapter)` — LLM（大语言模型）适配器注册
-- `ctx.effect(() => cleanup)` — 自定义资源
+以下操作都會被自動追蹤和清理：
+- `ctx.on(event, handler)` — 事件監聽
+- `ctx.tools.register(tool)` — 工具註冊
+- `ctx.llm.registerAdapter(names, adapter)` — LLM（大語言模型）介面卡註冊
+- `ctx.effect(() => cleanup)` — 自定義資源
 
-插件卸载时，处置器按注册顺序的逆序开始调用，但多个异步处置器会并发执行，不保证逐个完成。存在顺序依赖的清理步骤必须放进同一个 `ctx.effect()` 返回的处置器中，由该处置器负责串行等待。
+外掛解除安裝時，處置器按註冊順序的逆序開始呼叫，但多個非同步處置器會並行執行，不保證逐個完成。存在順序依賴的清理步驟必須放進同一個 `ctx.effect()` 返回的處置器中，由該處置器負責序列等待。
 
-## 嵌套上下文
+## 巢狀上下文
 
-`ctx.plugin()` 创建子 Fiber，它继承父上下文但有独立的生命周期：
+`ctx.plugin()` 建立子 Fiber，它繼承父上下文但有獨立的生命週期：
 
 ```ts ignore-check
 export function apply(ctx: Context) {
@@ -75,9 +75,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-## dispose（资源释放）语义
+## dispose（資源釋放）語義
 
-当你需要提前终止一个插件实例：
+當你需要提前終止一個外掛實例：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -91,22 +91,22 @@ const fiber = ctx.plugin(myPlugin)
 await fiber.dispose()
 ```
 
-`dispose` 保证：
-1. 该插件拥有的所有注册均被移除
-2. 它的子插件也被递归卸载
-3. 返回的 Promise 会在所有异步清理完成后兑现
+`dispose` 保證：
+1. 該外掛擁有的所有註冊均被移除
+2. 它的子外掛也被遞迴解除安裝
+3. 返回的 Promise 會在所有非同步清理完成後兌現
 
-## HMR（热模块替换）
+## HMR（熱模組替換）
 
-通过 `cordis.yml` 加载 `@deepseek-ai/dsh-hmr` 后，修改插件源文件会触发：
+透過 `cordis.yml` 載入 `@deepseek-ai/dsh-hmr` 後，修改外掛原始檔會觸發：
 
-1. 卸载旧插件（清理所有注册）
-2. 重新加载新代码
-3. 执行新的 `apply`
+1. 解除安裝舊外掛（清理所有註冊）
+2. 重新載入新程式碼
+3. 執行新的 `apply`
 
-因为插件注册会被自动清理，所以热替换不会保留旧实例的注册。
+因為外掛註冊會被自動清理，所以熱替換不會保留舊實例的註冊。
 
-## 生命周期示例
+## 生命週期範例
 
 ```ts ignore-check
 export function apply(ctx: Context) {
@@ -119,19 +119,19 @@ export function apply(ctx: Context) {
 }
 ```
 
-加载时输出：
+載入時輸出：
 ```
 plugin loading
 effect registered
 ```
 
-卸载时输出：
+解除安裝時輸出：
 ```
 effect cleaned up
 ```
 
 ## 下一步
 
-- [服务与依赖](./service.zh.md) — 让插件向其他插件提供能力
-- [事件系统](./events.zh.md) — 在插件之间通信
-- [Cordis 框架教程](../../../cordis-tutorial/index.zh.md) — 在 Cordis 运行时上逐步搭出同一套生命周期、服务与事件
+- [服務與依賴](./service.zh.md) — 讓外掛向其他外掛提供能力
+- [事件系統](./events.zh.md) — 在外掛之間通訊
+- [Cordis 框架教學](../../../cordis-tutorial/index.zh.md) — 在 Cordis 執行時上逐步搭出同一套生命週期、服務與事件

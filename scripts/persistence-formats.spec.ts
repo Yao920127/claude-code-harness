@@ -414,7 +414,7 @@ describe('complete persistence format references', () => {
     expect(index).toContain('[Current catalog](../../persistence-catalog.md) | [JSON](../../persistence-schema.json)')
     const translatedIndex = readFileSync(join(root, 'docs/persistence-changes/historical-formats/README.zh.md'), 'utf8')
     expect(translatedIndex).toContain('[V1](v1.zh.md) | [JSON](v1.schema.json)')
-    expect(translatedIndex).toContain('[当前目录](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json)')
+    expect(translatedIndex).toContain('[目前目錄](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json)')
     const english = readFileSync(join(root, 'docs/persistence-changes/historical-formats/v1.md'), 'utf8')
     expect(english).toContain('pullRequest: 3349')
     const [visible, collapsed] = english.split('<details>')

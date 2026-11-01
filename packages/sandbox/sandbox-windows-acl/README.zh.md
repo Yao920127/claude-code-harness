@@ -1,5 +1,5 @@
 ---
-description: "面向 Windows 上选择、配置或排查受限令牌进程隔离的用户与维护者的 Windows 写入限制沙箱后端。"
+description: "面向 Windows 上選擇、設定或排查受限權杖程序隔離的使用者與維護者的 Windows 寫入限制沙箱後端。"
 kind: "package-library"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-library"
 
 ## 概述
 
-在 Windows 上，本包将子进程的写入与删除限制在工作区和私有临时目录内：`workspace-write` 授予这两处，`read-only` 均不授予。挂载 `dsh-sandbox-local` 后，受限的 bash 与 PowerShell 命令即获得此行为；调用方也可以直接使用公开 `AclSandbox` API；任何 Win32 操作失败都会阻止不受限制的 spawn。每次授权同时写入能力 SID 允许 ACE、对父目录删除权限的环境性拒绝，以及被降级令牌必须匹配的 Low 完整性标签，因此一个授权根目录无法触及另一个。该保证仍为部分强制：硬链接是文件对象别名，而被其他 AppContainer 工具 ACL 过的文件不可读。
+在 Windows 上，本包將子程序的寫入與刪除限制在工作區和私有臨時目錄內：`workspace-write` 授予這兩處，`read-only` 均不授予。掛載 `dsh-sandbox-local` 後，受限的 bash 與 PowerShell 命令即獲得此行為；呼叫方也可以直接使用公開 `AclSandbox` API；任何 Win32 操作失敗都會阻止不受限制的 spawn。每次授權同時寫入能力 SID 允許 ACE、對父目錄刪除權限的環境性拒絕，以及被降級權杖必須匹配的 Low 完整性標籤，因此一個授權根目錄無法觸及另一個。該保證仍為部分強制：硬連結是檔案物件別名，而被其他 AppContainer 工具 ACL 過的檔案不可讀。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 Windows 上，挂载本地沙箱提供方后，此后端就是 `ctx.sandbox` 背后的 runner——无需额外配置。要在 harness 之外 spawn 受限子进程时，直接嵌入 `AclSandbox` API。
+在 Windows 上，掛載本地沙箱提供者後，此後端就是 `ctx.sandbox` 背後的 runner——無需額外設定。要在 harness 之外 spawn 受限子程序時，直接嵌入 `AclSandbox` API。
 
-### 何时选择
+### 何時選擇
 
-为在 `read-only` 或 `workspace-write` 下隔离子进程文件操作的 Windows 组合选择它。当子进程还需要读侧隔离或网络限制时请另选机制：`WRITE_RESTRICTED` 只交叉检查写访问，因此请把此后端与读侧策略或 AppContainer 能力令牌配对以获得更强隔离。
+為在 `read-only` 或 `workspace-write` 下隔離子程序檔案操作的 Windows 組合選擇它。當子程序還需要讀側隔離或網路限制時請另選機制：`WRITE_RESTRICTED` 只交叉檢查寫存取，因此請把此後端與讀側策略或 AppContainer 能力權杖配對以獲得更強隔離。
 
 ### 直接 API
 
-`AclSandbox` 以捕获 stdio 的方式 spawn 受限子进程（runner 风格使用可用继承 stdio）。它要求显式提供私有临时目录，或用 `tempDir: null` 禁用临时写入——环境临时根目录绝不会被隐式授权。
+`AclSandbox` 以捕捉 stdio 的方式 spawn 受限子程序（runner 風格使用可用繼承 stdio）。它要求顯式提供私有臨時目錄，或用 `tempDir: null` 停用臨時寫入——環境臨時根目錄絕不會被隱式授權。
 
 ```ts
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -63,135 +63,135 @@ sandbox.dispose() // revokes the revocable (temp) grant and label, keeps the sta
 rmSync(tempDir, { recursive: true, force: true })
 ```
 
-工作区的安全描述符改动以常驻方式授予——`dispose()` 保留它们，因为它们是跨实例的复用缓存——而不同的临时 SID 以可回收方式授予。每次授权就是一次调用，同时携带能力 SID 允许 ACE、环境性删除拒绝与 Low 禁止上调标签。服务端对应实现是 `AclWriteGrant` 类：每个目录一次 `add(path, standing)`，`dispose()` 撤销可回收路径并释放各 SID。
+工作區的安全描述符改動以常駐方式授予——`dispose()` 保留它們，因為它們是跨實例的複用快取——而不同的臨時 SID 以可回收方式授予。每次授權就是一次呼叫，同時攜帶能力 SID 允許 ACE、環境性刪除拒絕與 Low 禁止上調標籤。伺服器端對應實作是 `AclWriteGrant` 類：每個目錄一次 `add(path, standing)`，`dispose()` 撤銷可回收路徑並釋放各 SID。
 
-### 隔离给你带来什么
+### 隔離給你帶來什麼
 
-在 `workspace-write` 下，子进程可以写入工作区及其私有临时目录；受 ACL 管辖的其他写入与删除都会被拒绝，已记录的硬链接与 AppContainer ACL 边界除外。在 `read-only` 下不存在显式写入授权，因此写入与删除都会被拒绝，同样带有已记录的边界。
+在 `workspace-write` 下，子程序可以寫入工作區及其私有臨時目錄；受 ACL 管轄的其他寫入與刪除都會被拒絕，已記錄的硬連結與 AppContainer ACL 邊界除外。在 `read-only` 下不存在顯式寫入授權，因此寫入與刪除都會被拒絕，同樣帶有已記錄的邊界。
 
-临时隔离按每个活跃的会话/工作区对进行：共享工作区的会话共享其写权限，但无法写入彼此的临时目录。新的提供方总会选择新的临时路径和 SID，因此崩溃残留既无法阻止恢复的会话，也无法向其授权。
+臨時隔離按每個活躍的工作階段/工作區對進行：共享工作區的工作階段共享其寫權限，但無法寫入彼此的臨時目錄。新的提供者總會選擇新的臨時路徑和 SID，因此崩潰殘留既無法阻止恢復的工作階段，也無法向其授權。
 
-### 失败与恢复
+### 失敗與恢復
 
-`init()` 在任何 Win32 失败时抛出——子进程绝不会不受限制地 spawn。执行命令前失败的 runner 会向 stderr 打印 `windows-acl-run: <detail>` 并以 127 退出，seam 的 runner 失败规则将其归类为损坏的沙箱，而非拒绝。清理按设计尽力而为：`dispose()` 会尝试全部临时撤销并把失败聚合为 `AggregateError`。
+`init()` 在任何 Win32 失敗時丟擲——子程序絕不會不受限制地 spawn。執行命令前失敗的 runner 會向 stderr 列印 `windows-acl-run: <detail>` 並以 127 退出，seam 的 runner 失敗規則將其歸類為損壞的沙箱，而非拒絕。清理按設計盡力而為：`dispose()` 會嘗試全部臨時撤銷並把失敗聚合為 `AggregateError`。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释受限令牌机制、令牌列表、runner 约定与已验证边界；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋受限權杖機制、權杖列表、runner 約定與已驗證邊界；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 机制
+### 機制
 
-调用者令牌被复制为 `WRITE_RESTRICTED` 受限令牌，其 restricting SIDs 携带彼此独立的工作区与私有临时目录能力，该令牌还会被降级为 Low 完整性。Windows 执行两次访问检查——先对正常 SID，再对 restricting SID——并且只在两次检查都通过时才授予写类访问；与此同时，内核的强制完整性检查会拒绝对任何未标记为 Low 的对象进行写类访问。写 SID 交叉检查只覆盖对象自身的那次访问检查：Windows 也可以依据父目录的 `FILE_DELETE_CHILD` 权限批准写入或删除，而这项权限不需要任何 restricting SID 副署，因此只带交叉检查的令牌不仅能删除其环境用户 SID 所控制的任何文件，还能删除**另一个授权根目录**内的文件——那里的 Low 标签恰好能通过完整性检查。所以每次授权还会向 world SID 拒绝 `FILE_DELETE_CHILD`，使能力 ACE 的 DELETE 位成为授权根目录内唯一的删除授权来源，并在同一次 `SetNamedSecurityInfoW` 调用中把该目录标记为 Low。工作区 SID 由规范工作区路径确定性派生（`workspaceWriteSid`），因此工作区根目录的安全描述符改动每台机器每个工作区只物化一次，之后每次会话、调用或重启都命中精确 ACE／精确拒绝／精确标签跳过。每个活跃的会话/工作区对则获得一个随机私有临时目录，以及一个从该路径派生的 SID（`tempWriteSid`），因此各会话共享预期的工作区权限，却不会继承彼此的临时目录权限。每个策略专用 Win32 调用和 [`dsh-win32-process`](../../subprocess/win32-process/README.zh.md) 提供的进程原语都有检查；失败抛出携带 API 名、精确错误码、系统文本与失败上下文的 `Win32Error`——从构造上 fail-closed。
+呼叫者權杖被複製為 `WRITE_RESTRICTED` 受限權杖，其 restricting SIDs 攜帶彼此獨立的工作區與私有臨時目錄能力，該權杖還會被降級為 Low 完整性。Windows 執行兩次存取檢查——先對正常 SID，再對 restricting SID——並且只在兩次檢查都透過時才授予寫類存取；與此同時，核心的強制完整性檢查會拒絕對任何未標記為 Low 的物件進行寫類存取。寫 SID 交叉檢查只覆蓋物件自身的那次存取檢查：Windows 也可以依據父目錄的 `FILE_DELETE_CHILD` 權限批准寫入或刪除，而這項權限不需要任何 restricting SID 副署，因此只帶交叉檢查的權杖不僅能刪除其環境使用者 SID 所控制的任何檔案，還能刪除**另一個授權根目錄**內的檔案——那裡的 Low 標籤恰好能透過完整性檢查。所以每次授權還會向 world SID 拒絕 `FILE_DELETE_CHILD`，使能力 ACE 的 DELETE 位成為授權根目錄內唯一的刪除授權來源，並在同一次 `SetNamedSecurityInfoW` 呼叫中把該目錄標記為 Low。工作區 SID 由規範工作區路徑確定性派生（`workspaceWriteSid`），因此工作區根目錄的安全描述符改動每臺機器每個工作區只物化一次，之後每次工作階段、呼叫或重新啟動都命中精確 ACE／精確拒絕／精確標籤跳過。每個活躍的工作階段/工作區對則獲得一個隨機私有臨時目錄，以及一個從該路徑派生的 SID（`tempWriteSid`），因此各工作階段共享預期的工作區權限，卻不會繼承彼此的臨時目錄權限。每個策略專用 Win32 呼叫和 [`dsh-win32-process`](../../subprocess/win32-process/README.zh.md) 提供的程序原語都有檢查；失敗丟擲攜帶 API 名、精確錯誤碼、系統文字與失敗上下文的 `Win32Error`——從建構上 fail-closed。
 
-### 模式与令牌列表
+### 模式與權杖列表
 
-`workspace-write`（登录 SID、Everyone、工作区 SID、临时 SID）为工作区与会话的私有临时子目录分别授予 Write；`read-only`（登录 SID、Everyone——不含写入 SID）不授予任何内容。两种模式都 spawn 降级为 Low 完整性的令牌，对它而言只有被标记 Low 的目录保持可写。保活组（登录 SID + Everyone）在两种模式下都存在：没有它，早期 DLL 初始化会以 `0xC0000142` 死亡、CNG 会让 pwsh 以 `0xE0434352` 崩溃。写入 SID 有意留在 read-only 列表之外：先前 workspace-write 时期留下的常驻授权 ACE 仍然失效，因为 write-restricted 的 pass-2 检查只授予 restricting 列表所携带的内容，而常驻安全描述符改动让重新升级免于重新传播。
+`workspace-write`（登入 SID、Everyone、工作區 SID、臨時 SID）為工作區與工作階段的私有臨時子目錄分別授予 Write；`read-only`（登入 SID、Everyone——不含寫入 SID）不授予任何內容。兩種模式都 spawn 降級為 Low 完整性的權杖，對它而言只有被標記 Low 的目錄保持可寫。保活組（登入 SID + Everyone）在兩種模式下都存在：沒有它，早期 DLL 初始化會以 `0xC0000142` 死亡、CNG 會讓 pwsh 以 `0xE0434352` 崩潰。寫入 SID 有意留在 read-only 列表之外：先前 workspace-write 時期留下的常駐授權 ACE 仍然失效，因為 write-restricted 的 pass-2 檢查只授予 restricting 列表所攜帶的內容，而常駐安全描述符改動讓重新升級免於重新傳播。
 
-NUL 写入是环境性的、不是被授权的：设备 DACL 授予 Everyone 读+写+执行（`0x1201BF`），因此访问掩码落在其内的打开者（cmd 的 `> NUL`、node 的 `\\.\NUL`）在两种模式下都能写。`Set-Content NUL` 在两种模式下都失败（PowerShell/.NET 层效应，非设备 DACL 所致），而 PowerShell 的 `> $null` 重定向不受影响。
+NUL 寫入是環境性的、不是被授權的：裝置 DACL 授予 Everyone 讀+寫+執行（`0x1201BF`），因此存取掩碼落在其內的開啟者（cmd 的 `> NUL`、node 的 `\\.\NUL`）在兩種模式下都能寫。`Set-Content NUL` 在兩種模式下都失敗（PowerShell/.NET 層效應，非裝置 DACL 所致），而 PowerShell 的 `> $null` 重定向不受影響。
 
-Authenticated Users 在两种列表中都不存在——WMI 命名空间安全检查失败（`0x80041003`），因此 CIM cmdlet 与 `Get-ComputerInfo` 在所有受限模式下都不可用，且 C:\-root 树创建逃逸被关闭。INTERACTIVE/LOCAL 同样不存在：宿主的 Public 树向 INTERACTIVE 授予写权限，因此 Public 写入被拒绝。
+Authenticated Users 在兩種列表中都不存在——WMI 名稱空間安全檢查失敗（`0x80041003`），因此 CIM cmdlet 與 `Get-ComputerInfo` 在所有受限模式下都不可用，且 C:\-root 樹建立逃逸被關閉。INTERACTIVE/LOCAL 同樣不存在：主機的 Public 樹向 INTERACTIVE 授予寫權限，因此 Public 寫入被拒絕。
 
-### 隔离 runner
+### 隔離 runner
 
-面向 seam 的形态是 runner 入口（`./runner`）：`dsh-sandbox-local` 在调用者命令的位置 spawn 的 argv 前缀包装——与 bwrap/landlock-run/sandbox-exec 同一架构。runner 创建受限令牌，在它之下 spawn 包装后的 argv，调用者的 stdio 直接透传，把子进程包进 `KILL_ON_JOB_CLOSE` job，镜像子进程的退出码，并在退出时撤销其自行管理的临时授权。每个 runner 侧失败都会向 stderr 打印 `windows-acl-run: <detail>` 并以 127 退出——seam 的 runner 失败规则匹配该签名。
+面向 seam 的形態是 runner 入口（`./runner`）：`dsh-sandbox-local` 在呼叫者命令的位置 spawn 的 argv 字首包裝——與 bwrap/landlock-run/sandbox-exec 同一架構。runner 建立受限權杖，在它之下 spawn 包裝後的 argv，呼叫者的 stdio 直接直接傳遞，把子程序包進 `KILL_ON_JOB_CLOSE` job，映像子程序的結束代碼，並在退出時撤銷其自行管理的臨時授權。每個 runner 側失敗都會向 stderr 列印 `windows-acl-run: <detail>` 並以 127 退出——seam 的 runner 失敗規則匹配該簽名。
 
 ```sh
 node runner.js --workspace <dir> --temp <dir> --mode <read-only|workspace-write> [--write-sid <S-1-4-…> --temp-write-sid <S-1-4-…>] -- <argv...>
 ```
 
-seam 先把确定性工作区 SID 的 ACE 常驻物化（每个工作区每服务器生命周期一次——复用缓存），再为每个活跃的会话/工作区对创建随机私有临时目录和不同的可回收 SID，把两种身份作为必须成对出现的 `--write-sid`/`--temp-write-sid` 传入；runner 对照各自所属路径验证二者，既不授权也不撤销（`manageDacls: false`）。fork 获得不同的临时能力；即使恢复的是同一会话，新的提供方也会给出新的路径和 SID，因此崩溃残留只是失效垃圾。如果不带这一对标志，`--temp` 指定的是根目录：无 agent（智能体）/独立的 workspace-write runner 会创建随机私有子目录，自行管理其临时 SID，重写 TMP/TEMP，并在退出时移除该子目录。重启后重新授权常驻工作区 ACE 是幂等的：`grantWrite` 读取当前 DACL，当完全相同的 ACE 已存在时跳过重新传播。工作区若等于或包含临时根目录，会在任何授权前被拒绝。
+seam 先把確定性工作區 SID 的 ACE 常駐物化（每個工作區每伺服器生命週期一次——複用快取），再為每個活躍的工作階段/工作區對建立隨機私有臨時目錄和不同的可回收 SID，把兩種身份作為必須成對出現的 `--write-sid`/`--temp-write-sid` 傳入；runner 對照各自所屬路徑驗證二者，既不授權也不撤銷（`manageDacls: false`）。fork 獲得不同的臨時能力；即使恢復的是同一工作階段，新的提供者也會給出新的路徑和 SID，因此崩潰殘留只是失效垃圾。如果不帶這一對標誌，`--temp` 指定的是根目錄：無 agent（智慧代理）/獨立的 workspace-write runner 會建立隨機私有子目錄，自行管理其臨時 SID，重寫 TMP/TEMP，並在退出時移除該子目錄。重新啟動後重新授權常駐工作區 ACE 是冪等的：`grantWrite` 讀取目前 DACL，當完全相同的 ACE 已存在時跳過重新傳播。工作區若等於或包含臨時根目錄，會在任何授權前被拒絕。
 
-启动时若带有 subprocess 控制标记，runner 会通过受限子进程的 CRT 启动表转发 fd 7，并在 spawn 后立即关闭自身副本。可选的 `controlFileDescriptor: 7` 输入要求 `stdio: 'inherit'`；在管道 stdio 下请求它会在进程创建前失败。
+啟動時若帶有 subprocess 控制標記，runner 會透過受限子程序的 CRT 啟動錶轉發 fd 7，並在 spawn 後立即關閉自身副本。可選的 `controlFileDescriptor: 7` 輸入要求 `stdio: 'inherit'`；在管道 stdio 下請求它會在程序建立前失敗。
 
-### 已验证边界
+### 已驗證邊界
 
-- **Everyone 仍留在两种 restricting 列表中，但不再带来写权限。** 保活组是早期 DLL 初始化与 CNG 所必需的；如今 Low 标签会拒绝对被标记根目录之外、由 Everyone 授权的写入，因此这一旧缺口已关闭。
-- **在授权根目录内，能力 ACE 的 DELETE 位是唯一的删除授权来源。** 授权会向 world SID 拒绝 `FILE_DELETE_CHILD`，这同时移除了环境性默认行为：自身 DACL 未授予 DELETE 的文件不再能凭父目录权限删除——受限子进程与用户自身进程皆然。用户日常删除仍然可用，因为工作区 DACL 直接向其授予 DELETE。
-- **拒绝项只继承到子目录，且子目录的 FullControl 打开会被拒。** `FILE_DELETE_CHILD` 只在目录上被评估，因此该 ACE 带 `CONTAINER_INHERIT_ACE`、绝不落到文件上（它的位 `0x40` 属于 `FILE_ALL_ACCESS`，若落到文件上会让用户、Administrators、SYSTEM 或 DSH host 的每次 `GENERIC_ALL`／`FullControl` 打开都被拒绝）。授权根内的目录保留该拒绝项，因而会拒绝这类打开；基于 `DELETE` 的删除、`MAXIMUM_ALLOWED` 与常规读写打开不受影响——两种结果都已被 runner 套件钉住。
-- **写入与删除受限；读取、网络与进程可见性不受限。** 两层都不交叉检查读取，因此受限子进程可以读取调用者可读的任何文件（包括其他工作区中的文件）并打开套接字；`read-only` 因而需要读侧策略才能表达。
-- **硬链接是文件对象别名，而非路径别名。** 传播到已有硬链接上的可继承工作区授权会标记并授权底层同一文件的安全描述符，因此同一对象也可通过外部别名写入；拒绝工作区中的所有多链接文件不具可行性，因为普通 pnpm 安装会使用硬链接。
-- **控制台隔离不可用。** 以 `CREATE_NO_WINDOW` / `CREATE_NEW_CONSOLE` 创建的子进程在 DLL 初始化期间以 `STATUS_DLL_INIT_FAILED`（`0xC0000142`）死亡；子进程共享宿主控制台，基于管道的 stdio 重定向不受影响。
-- **安全描述符改动是对真实目录的驻留改动。** 工作区 ACE、拒绝项与标签按设计常驻（复用缓存，绝不撤销）；临时改动由 `dispose()` 撤销——但若该目录上仍留有其他能力授权，撤销会保留共享的 Low 标签——撤销后残留的那条拒绝项会随临时目录本身一并消失；手工 `icacls` 清理无法在本平台回收它们（`ERROR_NONE_MAPPED` 1332），请通过本模块回收。
-- **常驻 Low 标签的生命期长于 DSH，并会向其他 Low 完整性的进程放宽该目录树。** 工作区的可继承标签在会话结束后（以及同卷移动后）依然存在，因此任何以同一用户身份运行在 Low 完整性的其他进程——别家产品的 Low-IL 沙箱、受保护模式阅读器——都能写入与删除工作区内的内容，而在 Medium 标签下这会被拒绝。这个标签是写边界的代价：没有它受限子进程根本无法写入，而按会话回收会导致每次供给都要重新传播整棵树。
-- **被授权目录必须由调用者拥有并授予 `WRITE_OWNER`。** 所有者隐式获得的只有 `READ_CONTROL` 与 `WRITE_DAC`；标签位于 SACL，因此合并应用还需要 `WRITE_OWNER`（完全控制目录——即正常工作区情形——本就具备）。DACL 只授予 Modify 的目录现在会大声失败，而不是静默跳过隔离。
-- **环境临时根目录绝不会被隐式授权。** 直接调用方必须提供已存在的私有 `tempDir` 及其不同的 `tempWriteSid`，或用 `tempDir: null` 禁用临时写入；实际临时目录不得与任何可写根目录重叠。
-- **受限子进程的临时能力按每个活跃的会话/工作区对私有。** runner 在 spawn 之前把 TMP/TEMP 改写为该私有目录；共享同一工作区 SID 的两个令牌无法写入彼此的临时目录。
-- **受限令牌下 `whoami` 与令牌检查 cmdlet 可能失败。** 子进程对复制令牌的 `GetTokenInformation` 部分不可用，因此这类报告型 cmdlet 是否可用取决于宿主环境；这是诊断噪音而非运行故障。
+- **Everyone 仍留在兩種 restricting 列表中，但不再帶來寫權限。** 保活組是早期 DLL 初始化與 CNG 所必需的；如今 Low 標籤會拒絕對被標記根目錄之外、由 Everyone 授權的寫入，因此這一舊缺口已關閉。
+- **在授權根目錄內，能力 ACE 的 DELETE 位是唯一的刪除授權來源。** 授權會向 world SID 拒絕 `FILE_DELETE_CHILD`，這同時移除了環境性預設行為：自身 DACL 未授予 DELETE 的檔案不再能憑父目錄權限刪除——受限子程序與使用者自身程序皆然。使用者日常刪除仍然可用，因為工作區 DACL 直接向其授予 DELETE。
+- **拒絕項只繼承到子目錄，且子目錄的 FullControl 開啟會被拒。** `FILE_DELETE_CHILD` 只在目錄上被評估，因此該 ACE 帶 `CONTAINER_INHERIT_ACE`、絕不落到檔案上（它的位 `0x40` 屬於 `FILE_ALL_ACCESS`，若落到檔案上會讓使用者、Administrators、SYSTEM 或 DSH host 的每次 `GENERIC_ALL`／`FullControl` 開啟都被拒絕）。授權根內的目錄保留該拒絕項，因而會拒絕這類開啟；基於 `DELETE` 的刪除、`MAXIMUM_ALLOWED` 與常規讀寫開啟不受影響——兩種結果都已被 runner 套件釘住。
+- **寫入與刪除受限；讀取、網路與程序可見性不受限。** 兩層都不交叉檢查讀取，因此受限子程序可以讀取呼叫者可讀的任何檔案（包括其他工作區中的檔案）並開啟套接字；`read-only` 因而需要讀側策略才能表達。
+- **硬連結是檔案物件別名，而非路徑別名。** 傳播到已有硬連結上的可繼承工作區授權會標記並授權底層同一檔案的安全描述符，因此同一物件也可透過外部別名寫入；拒絕工作區中的所有多連結檔案不具可行性，因為普通 pnpm 安裝會使用硬連結。
+- **控制檯隔離不可用。** 以 `CREATE_NO_WINDOW` / `CREATE_NEW_CONSOLE` 建立的子程序在 DLL 初始化期間以 `STATUS_DLL_INIT_FAILED`（`0xC0000142`）死亡；子程序共享主機控制檯，基於管道的 stdio 重定向不受影響。
+- **安全描述符改動是對真實目錄的駐留改動。** 工作區 ACE、拒絕項與標籤按設計常駐（複用快取，絕不撤銷）；臨時改動由 `dispose()` 撤銷——但若該目錄上仍留有其他能力授權，撤銷會保留共享的 Low 標籤——撤銷後殘留的那條拒絕項會隨臨時目錄本身一併消失；手工 `icacls` 清理無法在本平臺回收它們（`ERROR_NONE_MAPPED` 1332），請透過本模組回收。
+- **常駐 Low 標籤的生命期長於 DSH，並會向其他 Low 完整性的程序放寬該目錄樹。** 工作區的可繼承標籤在工作階段結束後（以及同卷移動後）依然存在，因此任何以同一使用者身份執行在 Low 完整性的其他程序——別家產品的 Low-IL 沙箱、受保護模式閱讀器——都能寫入與刪除工作區內的內容，而在 Medium 標籤下這會被拒絕。這個標籤是寫邊界的代價：沒有它受限子程序根本無法寫入，而按工作階段回收會導致每次供給都要重新傳播整棵樹。
+- **被授權目錄必須由呼叫者擁有並授予 `WRITE_OWNER`。** 所有者隱式獲得的只有 `READ_CONTROL` 與 `WRITE_DAC`；標籤位於 SACL，因此合併應用還需要 `WRITE_OWNER`（完全控制目錄——即正常工作區情形——本就具備）。DACL 只授予 Modify 的目錄現在會大聲失敗，而不是靜默跳過隔離。
+- **環境臨時根目錄絕不會被隱式授權。** 直接呼叫方必須提供已存在的私有 `tempDir` 及其不同的 `tempWriteSid`，或用 `tempDir: null` 停用臨時寫入；實際臨時目錄不得與任何可寫根目錄重疊。
+- **受限子程序的臨時能力按每個活躍的工作階段/工作區對私有。** runner 在 spawn 之前把 TMP/TEMP 改寫為該私有目錄；共享同一工作區 SID 的兩個權杖無法寫入彼此的臨時目錄。
+- **受限權杖下 `whoami` 與權杖檢查 cmdlet 可能失敗。** 子程序對複製權杖的 `GetTokenInformation` 部分不可用，因此這類報告型 cmdlet 是否可用取決於主機環境；這是診斷噪音而非執行故障。
 
-### 头文件验证与源码索引
+### 標頭檔案驗證與原始碼索引
 
-沙箱拥有的 SID、ACL、令牌、文件与锁声明由 [`verify/abi-probe.cpp`](verify/abi-probe.cpp) 对照 Windows 头文件检查。共享进程、stdio 与 Job ABI 由 [`@deepseek-ai/dsh-win32-process`](../../subprocess/win32-process/README.zh.md#header-verification) 归属并验证。
+沙箱擁有的 SID、ACL、權杖、檔案與鎖宣告由 [`verify/abi-probe.cpp`](verify/abi-probe.cpp) 對照 Windows 標頭檔案檢查。共享程序、stdio 與 Job ABI 由 [`@deepseek-ai/dsh-win32-process`](../../subprocess/win32-process/README.zh.md#header-verification) 歸屬並驗證。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `AclSandbox`：受限令牌策略、DACL 授权、fail-closed 的 spawn 与 dispose |
-| [`src/runner.ts`](src/runner.ts) | 基于共享 Win32 进程原语的 runner 入口 |
-| [`src/grant.ts`](src/grant.ts) | `AclWriteGrant`：服务端授权物化与撤销 |
-| [`src/token.ts`](src/token.ts) + [`src/acl.ts`](src/acl.ts) | 沙箱背后的 Win32 令牌与 DACL 原语 |
+| [`src/index.ts`](src/index.ts) | `AclSandbox`：受限權杖策略、DACL 授權、fail-closed 的 spawn 與 dispose |
+| [`src/runner.ts`](src/runner.ts) | 基於共享 Win32 程序原語的 runner 入口 |
+| [`src/grant.ts`](src/grant.ts) | `AclWriteGrant`：伺服器端授權物化與撤銷 |
+| [`src/token.ts`](src/token.ts) + [`src/acl.ts`](src/acl.ts) | 沙箱背後的 Win32 權杖與 DACL 原語 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-先从子系统参考文档了解共享词汇，再看挂载此档的提供方、其消费方与设计决策。
+先從子系統參考文件瞭解共享詞彙，再看掛載此檔的提供者、其消費方與設計決策。
 
-- [进程沙箱子系统](../../../docs/subsystems/sandbox.zh.md)——模式、逐调用策略与强制执行语义。
-- [本地沙箱后端](../sandbox-local/README.zh.md)——把此后端挂载为 win32 档的提供方。
-- [沙箱 seam 包](../sandbox/README.zh.md)——此后端实现的服务约定。
-- [Win32 进程库](../../subprocess/win32-process/README.zh.md)——共享的受限进程、stdio、Job、等待与句柄清理原语。
-- [Bash 沙箱执行器](../../shell/bash-sandbox/README.zh.md)与[pwsh 沙箱执行器](../../shell/pwsh-sandbox/README.zh.md)——消费它的受限执行器。
-- [Windows ACL 受限令牌沙箱决策](../../../.agents/notes/implemented/feature/2026-08-08-windows-acl-restricted-token-sandbox.zh.md)——为何选择原始 ACL 受限令牌而非 mxc 与 AppContainer。
+- [程序沙箱子系統](../../../docs/subsystems/sandbox.zh.md)——模式、逐呼叫策略與強制執行語義。
+- [本地沙箱後端](../sandbox-local/README.zh.md)——把此後端掛載為 win32 檔的提供者。
+- [沙箱 seam 包](../sandbox/README.zh.md)——此後端實作的服務約定。
+- [Win32 程序庫](../../subprocess/win32-process/README.zh.md)——共享的受限程序、stdio、Job、等待與控制代碼清理原語。
+- [Bash 沙箱執行器](../../shell/bash-sandbox/README.zh.md)與[pwsh 沙箱執行器](../../shell/pwsh-sandbox/README.zh.md)——消費它的受限執行器。
+- [Windows ACL 受限權杖沙箱決策](../../../.agents/notes/implemented/feature/2026-08-08-windows-acl-restricted-token-sandbox.zh.md)——為何選擇原始 ACL 受限權杖而非 mxc 與 AppContainer。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地通过 [`dsh-bash-sandbox`](../../shell/bash-sandbox/README.zh.md)、[`dsh-pwsh-sandbox`](../../shell/pwsh-sandbox/README.zh.md) 及其工具呈现；它们渲染此后端的部分强制执行与拒绝事实（工具层通过 `denialSignatures` 分类的受限 stderr），而 [`dsh-sandbox`](../sandbox/README.zh.md) seam 拥有 `SANDBOX_UNAVAILABLE` 文本、`sandbox-local` 拥有 runner 选择。
+間接地透過 [`dsh-bash-sandbox`](../../shell/bash-sandbox/README.zh.md)、[`dsh-pwsh-sandbox`](../../shell/pwsh-sandbox/README.zh.md) 及其工具呈現；它們渲染此後端的部分強制執行與拒絕事實（工具層透過 `denialSignatures` 分類的受限 stderr），而 [`dsh-sandbox`](../sandbox/README.zh.md) seam 擁有 `SANDBOX_UNAVAILABLE` 文字、`sandbox-local` 擁有 runner 選擇。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；拒绝面属于工具层。
+無直接影響；拒絕面屬於工具層。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明后端何时不合适，或何时需要特别运维。它们是当前包约束，不是通用 Windows 对比或任务积压。
+這些限制說明後端何時不合適，或何時需要特別運維。它們是目前包約束，不是通用 Windows 對比或任務積壓。
 
-- **每个工作区一个写入白名单**——写入 SID 是白名单的基本单位，且就是工作区身份；同一沙盒实例跨两个工作区复用时，两个根目录会互相扩大授权面。请按工作区根目录各建一个实例——seam 正是这样做的，以工作区路径为键。
-- **清理按设计尽力而为**——`dispose()` 会尝试全部临时撤销并把失败聚合为 `AggregateError`；清理失败可能留下随机目录及其仅含临时 SID 的 ACE。进程退出后，不会再有令牌携带该 SID，因此残留保持失效，直到 OS 临时目录卫生或手动移除目录将其回收。
-- **常驻工作区 ACE 是不可见残留。** 工作区改名会派生新的 SID；旧路径上的旧 ACE 留在原地（失效、仅含写入 SID），未来的清理命令可以回收它们。
-- **NULL-DACL 目录在 grant+revoke 往返下不保持身份。** 带 NULL DACL 的目录意味着「所有人完全控制」；`grantWrite` 从该 null 构建新 ACL，撤销往返后留下的是 EMPTY（全部拒绝）DACL 而非原始 NULL DACL。真实工作区与临时目录都带真实 DACL，因此这仍是记录在案的边界情形。
-- **受限孙进程的管道 stdio 捕获不可用。** libuv 的管道 stdio 用的是 NAMED pipe，其 client 端打开所请求的写访问没有任何 restricting SID 被授予（是 Win32 层的默认 SD 模板，而非令牌默认 DACL），因此受限进程内 `spawn(..., { stdio: 'pipe' })` 以 EPERM 失败；继承与忽略 stdio 的 spawn 可用，匿名管道（PowerShell 的管道）因受限令牌默认 DACL 携带 restricting SID 全权 ACE 而可用。
-- **授权物化是急切的全树传播。** 在带可继承 ACE 的目录上调用 `SetNamedSecurityInfoW` 会立即遍历每个后代（大型工作区树上以数十秒计）；按工作区身份每台机器每个工作区只付一次，精确 ACE 跳过让后续每次供给都很便宜。
-- **读侧隔离与网络策略不在范围内**——`WRITE_RESTRICTED` 只交叉检查写访问；将此后端与读侧策略配对以获得更强隔离。
-- **读取会被其他基于 AppContainer 的工具以包 SID 授权过的对象挡住。** 在本机上，当文件的 DACL 携带针对包 SID（`S-1-15-2-…`）的 ACE 时，Low 完整性的令牌无法访问它——即使同一份 DACL 同时向用户授予完全控制、向 Everyone 授予读取（已观测：只给新文件加这一条 ACE 即可复现拒绝，补授 Everyone 读取无法解除，而同样内容复制到别处仍可读）。其背后的内核规则尚未确证，也不由本包掌控；以 AppContainer 自我隔离的工具正是会写入这类 ACE，因此被它们标记过的目录树对本后端的子进程将不可读。移除外来 ACE（或重新安装受影响的目录树）即可恢复访问。
-- **宽目录与 FAT 卷警告已推迟；FAT 类残留未经验证。** UI 侧警告尚未实现，FAT 卷作为授权根会大声失败，而授权根之外的 FAT 类目标不存储安全描述符；其有效完整性标签由系统分配而非记录在对象上，因此标签层在该处的行为未经测试。FAT 仍被视为遗留残留。
-- **PowerShell 语言模式因受限模式而异。** 在 `read-only` 下，PowerShell 无法在临时目录中创建 AppLocker 探针文件，因此会保守地以 ConstrainedLanguage 启动（`Add-Type`、非核心 .NET 静态调用、COM 与反射失败）；交付的 `workspace-write` 路径可让探针完成，因此除非主机范围的 WDAC/AppLocker 策略另有规定，否则 pwsh 保持 FullLanguage，而直接使用 `AclSandbox` 并配置 `tempDir: null` 时则没有这一保证。这一区别属于 PowerShell 启动行为，不是 ACL 写入边界的一部分。
+- **每個工作區一個寫入白名單**——寫入 SID 是白名單的基本單位，且就是工作區身份；同一沙盒實例跨兩個工作區複用時，兩個根目錄會互相擴大授權面。請按工作區根目錄各建一個實例——seam 正是這樣做的，以工作區路徑為鍵。
+- **清理按設計盡力而為**——`dispose()` 會嘗試全部臨時撤銷並把失敗聚合為 `AggregateError`；清理失敗可能留下隨機目錄及其僅含臨時 SID 的 ACE。程序退出後，不會再有權杖攜帶該 SID，因此殘留保持失效，直到 OS 臨時目錄衛生或手動移除目錄將其回收。
+- **常駐工作區 ACE 是不可見殘留。** 工作區改名會派生新的 SID；舊路徑上的舊 ACE 留在原地（失效、僅含寫入 SID），未來的清理命令可以回收它們。
+- **NULL-DACL 目錄在 grant+revoke 往返下不保持身份。** 帶 NULL DACL 的目錄意味著「所有人完全控制」；`grantWrite` 從該 null 建置新 ACL，撤銷往返後留下的是 EMPTY（全部拒絕）DACL 而非原始 NULL DACL。真實工作區與臨時目錄都帶真實 DACL，因此這仍是記錄在案的邊界情形。
+- **受限孫程序的管道 stdio 捕捉不可用。** libuv 的管道 stdio 用的是 NAMED pipe，其 client 端開啟所請求的寫存取沒有任何 restricting SID 被授予（是 Win32 層的預設 SD 範本，而非權杖預設 DACL），因此受限程序內 `spawn(..., { stdio: 'pipe' })` 以 EPERM 失敗；繼承與忽略 stdio 的 spawn 可用，匿名管道（PowerShell 的管道）因受限權杖預設 DACL 攜帶 restricting SID 全權 ACE 而可用。
+- **授權物化是急切的全樹傳播。** 在帶可繼承 ACE 的目錄上呼叫 `SetNamedSecurityInfoW` 會立即遍歷每個後代（大型工作區樹上以數十秒計）；按工作區身份每臺機器每個工作區只付一次，精確 ACE 跳過讓後續每次供給都很便宜。
+- **讀側隔離與網路策略不在範圍內**——`WRITE_RESTRICTED` 只交叉檢查寫存取；將此後端與讀側策略配對以獲得更強隔離。
+- **讀取會被其他基於 AppContainer 的工具以包 SID 授權過的物件擋住。** 在本機上，當檔案的 DACL 攜帶針對包 SID（`S-1-15-2-…`）的 ACE 時，Low 完整性的權杖無法存取它——即使同一份 DACL 同時向使用者授予完全控制、向 Everyone 授予讀取（已觀測：只給新檔案加這一條 ACE 即可復現拒絕，補授 Everyone 讀取無法解除，而同樣內容複製到別處仍可讀）。其背後的核心規則尚未確證，也不由本包掌控；以 AppContainer 自我隔離的工具正是會寫入這類 ACE，因此被它們標記過的目錄樹對本後端的子程序將不可讀。移除外來 ACE（或重新安裝受影響的目錄樹）即可恢復存取。
+- **寬目錄與 FAT 卷警告已推遲；FAT 類殘留未經驗證。** UI 側警告尚未實作，FAT 卷作為授權根會大聲失敗，而授權根之外的 FAT 類目標不儲存安全描述符；其有效完整性標籤由系統分配而非記錄在物件上，因此標籤層在該處的行為未經測試。FAT 仍被視為遺留殘留。
+- **PowerShell 語言模式因受限模式而異。** 在 `read-only` 下，PowerShell 無法在臨時目錄中建立 AppLocker 探針檔案，因此會保守地以 ConstrainedLanguage 啟動（`Add-Type`、非核心 .NET 靜態呼叫、COM 與反射失敗）；交付的 `workspace-write` 路徑可讓探針完成，因此除非主機範圍的 WDAC/AppLocker 策略另有規定，否則 pwsh 保持 FullLanguage，而直接使用 `AclSandbox` 並設定 `tempDir: null` 時則沒有這一保證。這一區別屬於 PowerShell 啟動行為，不是 ACL 寫入邊界的一部分。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：未决方向与开放问题。它明确不具权威性——已交付的行为、限制与既定理由以上文、包代码和相关 Agent Note 为准。
+本開發備註是維護者的工作上下文：未決方向與開放問題。它明確不具權威性——已交付的行為、限制與既定理由以上文、包程式碼和相關 Agent Note 為準。
 
-#### 未来：警告与清理表面
+#### 未來：警告與清理表面
 
-对异常宽的目录与 FAT 类卷的仅警告立场已记录在上方限制中但尚未实现，回收改名工作区常驻 ACE 的清理命令也尚未决定。两者都是开放方向，不是已交付行为。
+對異常寬的目錄與 FAT 類卷的僅警告立場已記錄在上方限制中但尚未實作，回收改名工作區常駐 ACE 的清理命令也尚未決定。兩者都是開放方向，不是已交付行為。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包没有独立事件序列或可变数据关系；fail-closed 约定在每个 Win32 调用处强制。
+**執行時不變式：** 不釋出伴生入口。本包沒有獨立事件序列或可變資料關係；fail-closed 約定在每個 Win32 呼叫處強制。

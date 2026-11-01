@@ -1,5 +1,5 @@
 ---
-description: "计算机操作提供方注册：供每次启用一个桌面驱动的部署使用。"
+description: "計算機操作提供者註冊：供每次啟用一個桌面驅動的部署使用。"
 kind: "package-reference"
 ---
 
@@ -9,81 +9,81 @@ kind: "package-reference"
 
 ## 概述
 
-部署每次可启用一个计算机操作提供方。加载另一个提供方时会失败，并报告已注册的提供方名称。各提供方提供自己的工具和桌面操作。本包不添加模型可见工具，也不协调并发 Session。
+部署每次可啟用一個計算機操作提供者。載入另一個提供者時會失敗，並報告已註冊的提供者名稱。各提供者提供自己的工具和桌面操作。本包不新增模型可見工具，也不協調並行 Session。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [延伸阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与后续工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [延伸閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與後續工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 Cordis 组合中，将服务与选定的提供方一起挂载一次：
+在 Cordis 組合中，將服務與選定的提供者一起掛載一次：
 
 ```yaml
 - name: '@deepseek-ai/dsh-computer-use'
 ```
 
-服务没有配置项。提供方插件注入 `computerUse` 并调用 `ctx.computerUse.register(ComputerUseProviderName(name))`；该品牌类型从 `@deepseek-ai/dsh-computer-use/brand` 导出。返回的 effect 清理函数释放此次注册。
+服務沒有設定項。提供者外掛注入 `computerUse` 並呼叫 `ctx.computerUse.register(ComputerUseProviderName(name))`；該品牌型別從 `@deepseek-ai/dsh-computer-use/brand` 匯出。返回的 effect 清理函式釋放此次註冊。
 
-提供方先停止接收工具调用、关闭资源并等待自有工作结束，再释放注册。释放前，`ctx.computerUse.providerName` 始终报告已注册的名称。
+提供者先停止接收工具呼叫、關閉資源並等待自有工作結束，再釋放註冊。釋放前，`ctx.computerUse.providerName` 始終報告已註冊的名稱。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节 — 点击展开</summary>
+<summary>實作細節 — 點選展開</summary>
 
-一个私有名称占用注册位置。Cordis effect 在插件卸载时移除贡献；重复调用清理函数不会移除后续注册。[源码](src/index.ts)不包含驱动对象、操作接口或提供方选择器。
+一個私有名稱佔用註冊位置。Cordis effect 在外掛解除安裝時移除貢獻；重複呼叫清理函式不會移除後續註冊。[原始碼](src/index.ts)不包含驅動物件、操作介面或提供者選擇器。
 
-不发布 `./invariant` 伴随入口：注册表只有一个权威字段，没有可能与之分歧的独立维护观测值。所属测试覆盖重复注册拒绝和插件卸载。
+不釋出 `./invariant` 伴隨入口：註冊表只有一個權威欄位，沒有可能與之分歧的獨立維護觀測值。所屬測試覆蓋重複註冊拒絕和外掛解除安裝。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 延伸阅读
+## 延伸閱讀
 
-- [计算机操作](../../../docs/subsystems/computer-use.zh.md) — 提供方选择和共享桌面限制。
-- [Cua Driver MCP 提供方](../../experimental/computer-use-cua-driver-mcp/README.zh.md) — 使用已安装的驱动。
-- [Cua Driver 原生提供方](../../experimental/computer-use-cua-driver-native/README.zh.md) — 使用 npm 运行时。
+- [計算機操作](../../../docs/subsystems/computer-use.zh.md) — 提供者選擇和共享桌面限制。
+- [Cua Driver MCP 提供者](../../experimental/computer-use-cua-driver-mcp/README.zh.md) — 使用已安裝的驅動。
+- [Cua Driver 原生提供者](../../experimental/computer-use-cua-driver-native/README.zh.md) — 使用 npm 執行時。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为此注册表只记录提供方名称。
+無，因為此註冊表只記錄提供者名稱。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-注册不改变模型请求。提供方拥有的工具和指导文本决定各自对请求前缀的影响。
+註冊不改變模型請求。提供者擁有的工具和指導文字決定各自對請求字首的影響。
 
-## 已知限制与后续工作
+## 已知限制與後續工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-服务在其 Cordis 服务实例内限制注册。
+服務在其 Cordis 服務實例內限制註冊。
 
-- **共享桌面** — 并发 Session 和独立 DSH 进程可以操作同一桌面；调用方协调完整的计算机操作流程。
-- **提供方选择** — 由配置选择提供方；模型不能在运行时切换已注册的驱动。
+- **共享桌面** — 並行 Session 和獨立 DSH 程序可以操作同一桌面；呼叫方協調完整的計算機操作流程。
+- **提供者選擇** — 由設定選擇提供者；模型不能在執行時切換已註冊的驅動。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作背景 — 点击展开</summary>
+<summary>維護者工作背景 — 點選展開</summary>
 
-无。
+無。
 
 </details>

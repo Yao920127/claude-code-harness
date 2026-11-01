@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-06-21-subagent-capability-seam.md
 /agent-note-subagent-capability-seam:
   en: 3c051f92759dd9c4
-  zh: fceee1b8289f2779
+  zh: 8b4680e47d45ef80
 /agent-note-subagent-capability-seam/problem:
   en: 5c81597e6dc16c39
-  zh: c30c6b5dce12bfae
+  zh: 47ed6f66959e1e07
 /agent-note-subagent-capability-seam/alternatives-considered:
   en: 6119e2aff3b6be5a
-  zh: 76136ef5249c23eb
+  zh: 1e7ac42370899b04
 /agent-note-subagent-capability-seam/alternatives-considered/why-not-the-bash-seam-shape:
   en: 3a01c98c45de8585
-  zh: 7f87d8bd6d348dae
+  zh: f269dc1c0b4a6bb8
 /agent-note-subagent-capability-seam/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-subagent-capability-seam/decision/the-three-package-boundary:
   en: c470cd9518cebc8b
-  zh: 228b559f73c58f2b
+  zh: fc8cc4ac7ae19faa
 /agent-note-subagent-capability-seam/decision/the-primitive-async-start-subagentrun:
   en: 08250dc4d5faf918
-  zh: 1b413cb438af6796
+  zh: c507263857e82984
 /agent-note-subagent-capability-seam/decision/two-kinds-of-optional-capability-discovered-two-ways:
   en: d2a27fcacc46ca76
-  zh: 4e8cca931fcaec2c
+  zh: 841d814a46cf2cdc
 /agent-note-subagent-capability-seam/decision/fork-vs-fresh-are-separate-backends-not-a-flag:
   en: a8e071639738ea79
-  zh: 3fd7cc7427843efe
+  zh: 923a39ab013d71d9
 /agent-note-subagent-capability-seam/decision/child-isolation-and-the-parent-log:
   en: e970f97f27d11f4a
-  zh: 34ece0dfe5ec6185
+  zh: 1777c062a5de1a4a
 /agent-note-subagent-capability-seam/decision/synchronous-collect-first-cut:
   en: a14200a7abfa532f
-  zh: ee4f8c08deb0ee99
+  zh: eb2b45625b3d3f01
 /agent-note-subagent-capability-seam/decision/transport-provider-selection-is-config-not-model-facing:
   en: 3dab95ec93f918df
-  zh: 4c3c7d4e8357bf63
+  zh: 823abe912b4bebdb
 /agent-note-subagent-capability-seam/testing:
   en: 324951447c43d01a
-  zh: b04388c4665302d2
+  zh: ded5a3da53973f82
 /agent-note-subagent-capability-seam/consequences:
   en: c60d3fb1012f52b4
-  zh: f46ab4b214941622
+  zh: b1636639233ccfb9

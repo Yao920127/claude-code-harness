@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-awaited-agent-creation.md
 /agent-note-awaited-per-agent-initialization:
   en: 982ac05aa02da2f0
-  zh: 225f89c994efb1c4
+  zh: 20114e47924ebbce
 /agent-note-awaited-per-agent-initialization/problem:
   en: 03e6b75365b29406
-  zh: cc880a33cf2303d0
+  zh: 4345b86c6b4f8bda
 /agent-note-awaited-per-agent-initialization/decision:
   en: f1db71d1fdb4388e
-  zh: 6c5a43a770f4cffd
+  zh: 1735288152c3ca7c
 /agent-note-awaited-per-agent-initialization/alternatives-considered:
   en: 466a9ebbb13f68c6
-  zh: ab88fb34786d2c2b
+  zh: 1fc9ce226c9f3cd5
 /agent-note-awaited-per-agent-initialization/consequences:
   en: d8cfe8d88ccacfc8
-  zh: 8d2aa21408e6e40e
+  zh: 7f9a489beb1daa6b

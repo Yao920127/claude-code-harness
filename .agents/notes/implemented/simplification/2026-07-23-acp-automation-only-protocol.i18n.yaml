@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-07-23-acp-automation-only-protocol.md
 /agent-note-acp-as-an-automation-only-protocol:
   en: e8a5a82b0137b656
-  zh: 8b371b4add7c17b4
+  zh: e22ded2c67f32c44
 /agent-note-acp-as-an-automation-only-protocol/problem:
   en: 5123f99030ae618e
-  zh: fa62dc7b9a4b9fef
+  zh: 8661da1738712e42
 /agent-note-acp-as-an-automation-only-protocol/decision:
   en: d9a2404790fe7cf0
-  zh: 5fbd7f65d5ed1c4f
+  zh: abfb53ade3cf3e6f
 /agent-note-acp-as-an-automation-only-protocol/snapshot-boundary:
   en: 4f015bfadd7027e2
-  zh: 7d68f4c3b9a875d5
+  zh: 5f4b8856b4ab6b18
 /agent-note-acp-as-an-automation-only-protocol/alternatives-considered:
   en: 13192a25709b5d95
-  zh: 6cadde33a58510b5
+  zh: 5f7eb96001a445f7
 /agent-note-acp-as-an-automation-only-protocol/consequences:
   en: bce44fd4a6d9f755
-  zh: 351e80b7c02f6ce7
+  zh: 00a12bbcb2acb0d6

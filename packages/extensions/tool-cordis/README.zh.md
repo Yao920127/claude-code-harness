@@ -1,5 +1,5 @@
 ---
-description: "为开发和配置已安装 Harness 插件的 agent 提供只读运行时 API 查询。"
+description: "為開發和設定已安裝 Harness 外掛的 agent 提供只讀執行時 API 查詢。"
 kind: "package-reference"
 ---
 
@@ -9,69 +9,69 @@ kind: "package-reference"
 
 ## 概述
 
-编写插件代码前查询 Host 和 Client 的运行时 API。创造模式同时提供这些只读工具与 Plugin Manager，后者负责持久化 profile 变更。检查注册表由 Cordis host runner 提供；浏览器查询需要已连接的页面。
+編寫外掛程式碼前查詢 Host 和 Client 的執行時 API。創造模式同時提供這些只讀工具與 Plugin Manager，後者負責持久化 profile 變更。檢查註冊表由 Cordis host runner 提供；瀏覽器查詢需要已連線的頁面。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与待办](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與待辦](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-创造模式包含这组工具。其他组合需要在宿主组合里、提供 `cordisInspect` 的 host runner 旁挂载一次 `@deepseek-ai/dsh-tool-cordis/host`，并在每个要暴露这些工具的 agent preset 里挂载 `@deepseek-ai/dsh-tool-cordis`；仅有 preset 行不会注册任何 Host provider。调用 `cordis_inspect_list` 发现 provider，再用 `cordis_inspect_query` 查询其具体方法和类型。Host 的 `Config` provider 分页列出运行中的 Loader entry（`offset`、最多 100 的 `limit`、可选的精确插件 `name`；`total` 与 `nextOffset` 界定遍历），每个 entry 带 Loader id、patch 所寻址的树内 id 及其 Config 状态（`schema`、`absent`、`unsupported`、group 与 include 载体为 `tree`、禁用、未导入或已销毁的 entry 为 `inactive`），并把单个 entry 的原生 Config 投影为自包含的 JSON Schema 文档，同时在 profile 包查找能解析时给出该 entry 的 `packageDir`，即包 README 与构建产物 `lib/` 所在目录。通过 [Plugin Manager](../../boot/plugin-manager/README.zh.md) 安装包含插件代码或 MCP 配置的组合包。
+創造模式包含這組工具。其他組合需要在主機組合裡、提供 `cordisInspect` 的 host runner 旁掛載一次 `@deepseek-ai/dsh-tool-cordis/host`，並在每個要暴露這些工具的 agent preset 裡掛載 `@deepseek-ai/dsh-tool-cordis`；僅有 preset 行不會註冊任何 Host provider。呼叫 `cordis_inspect_list` 發現 provider，再用 `cordis_inspect_query` 查詢其具體方法和型別。Host 的 `Config` provider 分頁列出執行中的 Loader entry（`offset`、最多 100 的 `limit`、可選的精確外掛 `name`；`total` 與 `nextOffset` 界定遍歷），每個 entry 帶 Loader id、patch 所定址的樹內 id 及其 Config 狀態（`schema`、`absent`、`unsupported`、group 與 include 載體為 `tree`、停用、未匯入或已銷燬的 entry 為 `inactive`），並把單個 entry 的原生 Config 投影為自包含的 JSON Schema 文件，同時在 profile 包查詢能解析時給出該 entry 的 `packageDir`，即包 README 與建置產物 `lib/` 所在目錄。透過 [Plugin Manager](../../boot/plugin-manager/README.zh.md) 安裝檔含外掛程式碼或 MCP 設定的組合包。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节 — 点击展开</summary>
+<summary>實作細節 — 點選展開</summary>
 
-Host provider 结合生成的 Service/Event 目录、经 app-boot Config 投影器投影的运行中 Loader 树，以及请求 agent 的工具注册表。Client provider 通过现有检查注册表同步清单，并从已连接页面回答查询。宿主入口持有 Host provider 的注册，preset 行持有两个工具，都通过 Cordis effect；注册表拒绝重复的 provider id，所以 provider 按进程注册一次而不是按 preset 注册。检查直接读取 provider，不维护独立运行时投影，因此不发布不变式配套插件。
+Host provider 結合生成的 Service/Event 目錄、經 app-boot Config 投影器投影的執行中 Loader 樹，以及請求 agent 的工具註冊表。Client provider 透過現有檢查註冊表同步清單，並從已連線頁面回答查詢。主機入口持有 Host provider 的註冊，preset 行持有兩個工具，都透過 Cordis effect；註冊表拒絕重複的 provider id，所以 provider 按程序註冊一次而不是按 preset 註冊。檢查直接讀取 provider，不維護獨立執行時投影，因此不釋出不變式配套外掛。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [Plugin Manager](../../boot/plugin-manager/README.zh.md) — 持久化组合包安装和启停。
-- [Cordis host runner](../cordis-host-runner/README.zh.md) — 检查注册表和现有运行时消费者。
+- [Plugin Manager](../../boot/plugin-manager/README.zh.md) — 持久化組合包安裝和啟停。
+- [Cordis host runner](../cordis-host-runner/README.zh.md) — 檢查註冊表和現有執行時消費者。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 运行时检查
+### 執行時檢查
 
-#### 模型所见
+#### 模型所見
 
-[工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-cordis) 描述两个只读检查工具。插件不贡献 system prompt 段落：工具描述已说明何时调用每个工具以及查询不会调用业务方法。在 `cordis` preset 中，首轮 skill catalog 携带两个随附技能的描述，把插件、MCP、组合编辑和未指定去向的视觉请求路由到覆盖 Plugin Manager、MCP 设置、Client 打包和 slot 注册的技能。查询结果包含所请求的 API 声明、当前工具 schema、带 Config 状态的运行中 entry 目录，或单个 entry 投影后的 Config JSON Schema。
+[工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-cordis) 描述兩個只讀檢查工具。外掛不貢獻 system prompt 段落：工具描述已說明何時呼叫每個工具以及查詢不會呼叫業務方法。在 `cordis` preset 中，首輪 skill catalog 攜帶兩個隨附技能的描述，把外掛、MCP、組合編輯和未指定去向的視覺請求路由到覆蓋 Plugin Manager、MCP 設定、Client 打包和 slot 註冊的技能。查詢結果包含所請求的 API 宣告、目前工具 schema、帶 Config 狀態的執行中 entry 目錄，或單個 entry 投影后的 Config JSON Schema。
 
-#### Token 影响
+#### Token 影響
 
-插件可见时，只有两个工具 schema 进入模型请求。查询结果追加到转录中；精确查询避免加载无关声明。
+外掛可見時，只有兩個工具 schema 進入模型請求。查詢結果追加到轉錄中；精確查詢避免載入無關宣告。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-未改变的工具 schema 保持前缀稳定。查询结果追加到历史中；启用其他插件可能改变后续工具 schema。
+未改變的工具 schema 保持字首穩定。查詢結果追加到歷史中；啟用其他外掛可能改變後續工具 schema。
 
-## 已知限制与待办
+## 已知限制與待辦
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- Client 查询等待页面响应或取消。检查不能调用服务方法、配置插件或执行生成代码。
-- `Config.listConfigs` 只遍历 profile 的 Loader 树。Agent preset 的 `plugins` 列表挂载在独立的 preset 树中，所以只出现在 preset 声明里的插件不会被列出，除非 profile 树也挂载了它。
+- Client 查詢等待頁面回應或取消。檢查不能呼叫服務方法、設定外掛或執行生成程式碼。
+- `Config.listConfigs` 只遍歷 profile 的 Loader 樹。Agent preset 的 `plugins` 列表掛載在獨立的 preset 樹中，所以只出現在 preset 宣告裡的外掛不會被列出，除非 profile 樹也掛載了它。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-无。
+無。

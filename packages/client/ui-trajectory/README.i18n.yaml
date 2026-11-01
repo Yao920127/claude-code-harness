@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-trajectory/README.md
 /:
   en: 1668657a5b588b51
-  zh: e7b72bc5174b081c
+  zh: b29ac2fa0c8bd8e2
 /deepseek-ai-dsh-client-ui-trajectory:
   en: 60e3cab036a4a8c6
   zh: 2a400cd0efd99284
 /deepseek-ai-dsh-client-ui-trajectory/summary:
   en: 4b95b8c5db370ba0
-  zh: b2c2a58c1155d1a8
+  zh: 999b3d082514cc55
 /deepseek-ai-dsh-client-ui-trajectory/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-trajectory/use-this-package:
   en: 4bd17d05b8385675
-  zh: 5174e27f754f2a03
+  zh: c4a7679833f243be
 /deepseek-ai-dsh-client-ui-trajectory/use-this-package/inspecting-records:
   en: 89758270607a5fd4
-  zh: 0efba26195ef1f80
+  zh: 20403b1deb890e14
 /deepseek-ai-dsh-client-ui-trajectory/use-this-package/the-timing-overview:
   en: ac51bdb4d7fce1f9
-  zh: 7011c1ce2cdf7f3a
+  zh: 8300cecf122cbbf4
 /deepseek-ai-dsh-client-ui-trajectory/use-this-package/the-workflow-chart:
   en: 43f812ac937f5be2
-  zh: f265d740314e7f6d
+  zh: 153858016c6aec08
 /deepseek-ai-dsh-client-ui-trajectory/understand-the-implementation:
   en: 925abc8e4b092cb3
-  zh: ebe85c5acdbea3b1
+  zh: 22a145c7672bca2f
 /deepseek-ai-dsh-client-ui-trajectory/understand-the-implementation/virtual-rows:
   en: c85e342bc7eee4e6
-  zh: 9feab66ef1755b94
+  zh: 9fb41de75c95914e
 /deepseek-ai-dsh-client-ui-trajectory/understand-the-implementation/layout:
   en: 3d69b174b6bb1549
-  zh: 23ccf30ac752eb64
+  zh: 26fd4359d5d9113e
 /deepseek-ai-dsh-client-ui-trajectory/further-exploration:
   en: a324740cfbe62c1e
-  zh: 53077c3ffc69b510
+  zh: 1f8fd93c2162776a
 /deepseek-ai-dsh-client-ui-trajectory/model-experience:
   en: 3120df665299c634
-  zh: 1d9f365d091d0d2a
+  zh: ab6bd618c4ccfa68
 /deepseek-ai-dsh-client-ui-trajectory/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-trajectory/known-limitations-and-deferred-work:
   en: d7da620f56eb3c65
-  zh: fb030b68322b94cd
+  zh: c8bb48c0b543d11e
 /deepseek-ai-dsh-client-ui-trajectory/known-limitations-and-deferred-work/dev-note:
   en: 341678622864730e
-  zh: f2261887ece56b6e
+  zh: 5b33dfbcef7203ef

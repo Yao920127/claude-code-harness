@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 Client 工具展示插件：完整调用树的组合、按工具名称键控的视图 slot，以及内置原子工具卡片。"
+description: "dsh Web 用戶端的 Client 工具展示外掛：完整呼叫樹的組合、按工具名稱鍵控的檢視 slot，以及內建原子工具卡片。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-tool` 是 dsh Web 客户端的 Client 工具展示插件：它渲染对话中的每一次工具调用。`ui-conversation` 通过 `conversation.chat.node` 的匹配 key 分发每个已排序的 `tool-call` Conversation Node；本包渲染其中的 root 及其 PTC dispatch 子调用，并把每个原子调用通过 keyed slot `tool.call.toolview` 分发。没有注册的工具名称使用通用卡片。业务 UI 包只注册 wire 工具名称和原子视图——它们不配对会话事件、不重建 transcript（文本记录），也不拥有 root/subcall 拓扑，因为运行时仍对 call/result 配对、生命周期与递归 `subCalls` 投影拥有最终决定权。
+`dsh-client-ui-tool` 是 dsh Web 用戶端的 Client 工具展示外掛：它渲染對話中的每一次工具呼叫。`ui-conversation` 透過 `conversation.chat.node` 的匹配 key 分發每個已排序的 `tool-call` Conversation Node；本包渲染其中的 root 及其 PTC dispatch 子呼叫，並把每個原子呼叫透過 keyed slot `tool.call.toolview` 分發。沒有註冊的工具名稱使用通用卡片。業務 UI 包只註冊 wire 工具名稱和原子檢視——它們不配對工作階段事件、不重建 transcript（文字記錄），也不擁有 root/subcall 拓撲，因為執行時仍對 call/result 配對、生命週期與遞迴 `subCalls` 投影擁有最終決定權。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-工具调用在对话中显示为卡片：一个根调用树带其嵌套子调用，每个原子调用由所属视图渲染。所有生命周期状态都保留工具的普通业务图标；失败与中断仍通过冻结调用／结果状态、无障碍状态文本和失败摘要明确表达。用户可通过宿主回调打开文件或检查调用。折叠的 `web_fetch` 行把其 http(s) URL 显示为链接，在新浏览器标签页中打开。
+工具呼叫在對話中顯示為卡片：一個根呼叫樹帶其巢狀子呼叫，每個原子呼叫由所屬檢視渲染。所有生命週期狀態都保留工具的普通業務圖示；失敗與中斷仍透過凍結呼叫／結果狀態、無障礙狀態文字和失敗摘要明確表達。使用者可透過主機回呼開啟檔案或檢查呼叫。摺疊的 `web_fetch` 行把其 http(s) URL 顯示為連結，在新瀏覽器標籤頁中開啟。
 
-共享工具行和 Bash 行的失败、停止摘要在悬停时仍保留错误色和警告色；只有不处于这两种状态的摘要会在悬停时加深。
+共享工具行和 Bash 行的失敗、停止摘要在懸停時仍保留錯誤色和警告色；只有不處於這兩種狀態的摘要會在懸停時加深。
 
-派发前，模型已给出名称的调用显示为不可展开的一行，使用工具自己的图标与标题。通用行显示为`工具调用 · <工具名>`。准备阶段不提供完整参数、文件链接、结果或依赖参数的交互。write/edit 的摘要显示「正在准备内容 NKB」；N 为 `Math.ceil(raw.length / 1024)`，是原始参数字符串长度的整数近似值，不是文件字节数。`tool/call` 才启用既有调用展示；参数块结束本身不代表开始执行。
+派發前，模型已給出名稱的呼叫顯示為不可展開的一行，使用工具自己的圖示與標題。通用行顯示為`工具呼叫 · <工具名>`。準備階段不提供完整參數、檔案連結、結果或依賴參數的互動。write/edit 的摘要顯示「正在準備內容 NKB」；N 為 `Math.ceil(raw.length / 1024)`，是原始參數字串長度的整數近似值，不是檔案位元組數。`tool/call` 才啟用既有呼叫展示；參數塊結束本身不代表開始執行。
 
-### 注册业务工具视图
+### 註冊業務工具檢視
 
-拥有该视图的业务包将其 wire 工具名称注册进 `tool.call.toolview`：
+擁有該檢視的業務包將其 wire 工具名稱註冊進 `tool.call.toolview`：
 
 ```text
 ctx.slots.inject('tool.call.toolview', () =>
@@ -43,94 +43,94 @@ ctx.slots.inject('tool.call.toolview', () =>
   }, BusinessToolRow))
 ```
 
-owner 载荷为 `ToolCallOwnerProps`：`callId`、`toolName`、`phase` 判别字段及对应阶段的冻结 `block`、可选 `cwd` 与 `home`、会话授权的 `loadImage` loader（供结果携带持久图像的视图使用），以及普通的 `openFile`/`inspect` 回调。PTC dispatch 块保留事件的 `parentCallId`；根会话调用没有该字段，因此后代调用都走同一条按 key 分发路径：已注册视图的调用（如 `read_image`）也会在嵌套处渲染对应卡片，未注册的后代调用则保持通用压平形式。路径摘要先相对会话 cwd 缩短，再把剩余的 POSIX Host home 写成 `~`；`filePath` 与 Host 打开仍使用作者给出的文件系统路径。注册项会收到常规的会话 slot 运行时共享数据，但不会收到 React 节点或运行时服务。
+owner 載荷為 `ToolCallOwnerProps`：`callId`、`toolName`、`phase` 判別欄位及對應階段的凍結 `block`、可選 `cwd` 與 `home`、工作階段授權的 `loadImage` loader（供結果攜帶持久影象的檢視使用），以及普通的 `openFile`/`inspect` 回呼。PTC dispatch 塊保留事件的 `parentCallId`；根工作階段呼叫沒有該欄位，因此後代呼叫都走同一條按 key 分發路徑：已註冊檢視的呼叫（如 `read_image`）也會在巢狀處渲染對應卡片，未註冊的後代呼叫則保持通用壓平形式。路徑摘要先相對工作階段 cwd 縮短，再把剩餘的 POSIX Host home 寫成 `~`；`filePath` 與 Host 開啟仍使用作者給出的檔案系統路徑。註冊項會收到常規的工作階段 slot 執行時共享資料，但不會收到 React 節點或執行時服務。
 
-### 内置视图
+### 內建檢視
 
-每个注册视图都接收[工具 slot 类型](src/client/contract/slots.ts)声明的显式 `preparing`、`start` 和 `result` props。通用行在三个阶段使用同一个 `ToolRow`。行模型统一选择标题，并组合通用工具名前缀与已有参数摘要，不按生命周期阶段改变前缀；专用标题不附带英文名。准备阶段的共享参数解析入口直接返回无调用，不解析部分 JSON。write/edit 将准备态和派发后阶段拆成两个组件，只有准备态组件调用 `useToolCallArgumentsPartial`，start 与 result 共用派发后组件。Bash、Skill、Cordis 等自定义 renderer 分别处理准备态，其依赖参数的组件接收 `StartedToolCallViewProps`。
+每個註冊檢視都接收[工具 slot 型別](src/client/contract/slots.ts)宣告的顯式 `preparing`、`start` 和 `result` props。通用行在三個階段使用同一個 `ToolRow`。行模型統一選擇標題，並組合通用工具名字首與已有參數摘要，不按生命週期階段改變字首；專用標題不附帶英文名。準備階段的共享參數解析入口直接返回無呼叫，不解析部分 JSON。write/edit 將準備態和派發後階段拆成兩個元件，只有準備態元件呼叫 `useToolCallArgumentsPartial`，start 與 result 共用派發後元件。Bash、Skill、Cordis 等自定義 renderer 分別處理準備態，其依賴參數的元件接收 `StartedToolCallViewProps`。
 
-本包拥有 generic fallback，以及 shell/pwsh、read、read_image、write/edit、运行中的 `str_replace_editor` `create`／`str_replace`、grep/glob、web、todo、question 与 PTC dispatch 的内置展示。结构化卡片直接从第一方原始 event 字段派生；Host `presentCall` 与 `presentResult` 值不会进入 Client。运行中与已完成的前台标准 `bash`/`pwsh` 和 `terminal_send` 调用，无论位于根还是 PTC dispatch 子调用中，都在通过相同的参数、结果和错误检查后使用 terminal 卡片。持久 `bash`/`pwsh` 调用仅在运行中使用 terminal 卡片。以已识别的 spill 策略提示结尾的 shell 输出，在 shell 行中使用可展开的 generic 输出，在 Details 中使用 generic 输出；位置被改变或被省略的退出标记无法证明成功。已完成的持久 shell 结果保持 generic 展示，因为 reset 与部分输出诊断不一定描述单个进程的退出状态；根调用的持久 shell 结果可展开，后台启动回执则保持折叠。带有 `AUTO_REVIEW_DENIED` 的原生或 PTC dispatch 失败会在折叠行显示 Auto review 裁决，展开时显示一行归一化后的“未执行”原因；原因缺失或只有空白时使用本地化 fallback 文案。成功的问题行按稳定 id 配对调用中的问题与结果中的回答，展开后显示可读的问答行。已取消或已中断的问题行显示其裁决与原始问题，不虚构回答。不受支持、格式错误或含糊的输入回退为压平的工具输入／结果文本。`ui-skill` 展示了业务包自行拥有的 `skill` 注册项。
+本包擁有 generic fallback，以及 shell/pwsh、read、read_image、write/edit、執行中的 `str_replace_editor` `create`／`str_replace`、grep/glob、web、todo、question 與 PTC dispatch 的內建展示。結構化卡片直接從第一方原始 event 欄位派生；Host `presentCall` 與 `presentResult` 值不會進入 Client。執行中與已完成的前臺標準 `bash`/`pwsh` 和 `terminal_send` 呼叫，無論位於根還是 PTC dispatch 子呼叫中，都在透過相同的參數、結果和錯誤檢查後使用 terminal 卡片。持久 `bash`/`pwsh` 呼叫僅在執行中使用 terminal 卡片。以已識別的 spill 策略提示結尾的 shell 輸出，在 shell 行中使用可展開的 generic 輸出，在 Details 中使用 generic 輸出；位置被改變或被省略的退出標記無法證明成功。已完成的持久 shell 結果保持 generic 展示，因為 reset 與部分輸出診斷不一定描述單個程序的退出狀態；根呼叫的持久 shell 結果可展開，後臺啟動回執則保持摺疊。帶有 `AUTO_REVIEW_DENIED` 的原生或 PTC dispatch 失敗會在摺疊行顯示 Auto review 裁決，展開時顯示一行歸一化後的“未執行”原因；原因缺失或只有空白時使用在地化 fallback 文案。成功的問題行按穩定 id 配對呼叫中的問題與結果中的回答，展開後顯示可讀的問答行。已取消或已中斷的問題行顯示其裁決與原始問題，不虛構回答。不受支援、格式錯誤或含糊的輸入退回為壓平的工具輸入／結果文字。`ui-skill` 展示了業務包自行擁有的 `skill` 註冊項。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本包实现一条分派规则：原子工具视图按 wire 工具名称键控、由所属业务包注册；本包只渲染树与回退。
+本包實作一條分派規則：原子工具檢視按 wire 工具名稱鍵控、由所屬業務包註冊；本包只渲染樹與退回。
 
-### 渲染约定
+### 渲染約定
 
-`ToolCallTree` 接收一个 Tool 节点、会话 `cwd` 和导航回调。每个分支接收稳定的 block，并缓存显式阶段 props，因此一个子调用变化不会重渲染未变化的兄弟分支。它通过 `tool.call.toolview` 按工具名分发。已派发的根调用保留递归 `subCalls`，准备阶段没有子调用。每个根调用和子调用包装层都保留 `data-chat-anchor-key="call:<id>"` 与 `data-chat-call-id` DOM 约定，供分页和选择使用。Tool 节点在三个阶段保持同一个 callId。
+`ToolCallTree` 接收一個 Tool 節點、工作階段 `cwd` 和導航回呼。每個分支接收穩定的 block，並快取顯式階段 props，因此一個子呼叫變化不會重渲染未變化的兄弟分支。它透過 `tool.call.toolview` 按工具名分發。已派發的根呼叫保留遞迴 `subCalls`，準備階段沒有子呼叫。每個根呼叫和子呼叫包裝層都保留 `data-chat-anchor-key="call:<id>"` 與 `data-chat-call-id` DOM 約定，供分頁和選擇使用。Tool 節點在三個階段保持同一個 callId。
 
-Tool 所有者属性将 Chat 注入的稳定 `useDisclosure` 钩子传给根调用及嵌套调用。工具行在拥有展开正文的位置调用它，中间 renderer 不订阅。每次调用拥有独立展开状态，外层轮次收起时重置该状态，不替换 React 身份；展示模式切换保留该状态。
+Tool 所有者屬性將 Chat 注入的穩定 `useDisclosure` 掛鉤傳給根呼叫及巢狀呼叫。工具行在擁有展開正文的位置呼叫它，中間 renderer 不訂閱。每次呼叫擁有獨立展開狀態，外層輪次收起時重置該狀態，不替換 React 身份；展示模式切換保留該狀態。
 
 
-slot 注入的 `useToolCallArgumentsPartial` 钩子按需订阅所属 Step 的 `assistant-step` 来源，并选取当前 callId 的原始参数前缀。来源或调用不存在时返回空字符串。同一步骤中的其他调用可能触发快照检查，但选中的字符串未变时不会刷新使用方。不调用钩子的工具不新增订阅，已派发的调用不再提供参数前缀来源。
+slot 注入的 `useToolCallArgumentsPartial` 掛鉤按需訂閱所屬 Step 的 `assistant-step` 來源，並選取目前 callId 的原始參數字首。來源或呼叫不存在時返回空字串。同一步驟中的其他呼叫可能觸發快照檢查，但選中的字串未變時不會重新整理使用方。不呼叫掛鉤的工具不新增訂閱，已派發的呼叫不再提供參數字首來源。
 
 ### 卡片
 
 
-每张卡片都直接在调用树中查看；选中调用后不会再显示第二个全高视图。行 renderer 为 terminal、read、diff、search 和 web 卡片各复用同一个纯 card model，image 卡片的图库经由工具自有 `tool.call.images` slot 渲染。这些 model 校验原始调用参数、结果内容、失败状态、持久 metadata、PTC dispatch 的 `parentCallId` 与会话路径信息。不受支持或格式错误的输入使用压平的工具结果文本。文件路径摘要经属主的 `openFile` 打开文件，chat 视图把它路由到右侧 Sidebar 的文本预览；`inspect` 打开轨迹视图；该视图不可用时不提供此回调，卡片随之隐藏 Inspect。terminal、diff、read、search 与 web 卡片的上限与 fallback 规则仍由 [ui-primitives README](../ui-primitives/README.zh.md) 负责；image 卡片的 fallback 规则由本包内的 card model 自行承载。
+每張卡片都直接在呼叫樹中檢視；選中呼叫後不會再顯示第二個全高檢視。行 renderer 為 terminal、read、diff、search 和 web 卡片各複用同一個純 card model，image 卡片的相簿經由工具自有 `tool.call.images` slot 渲染。這些 model 驗證原始呼叫參數、結果內容、失敗狀態、持久 metadata、PTC dispatch 的 `parentCallId` 與工作階段路徑資訊。不受支援或格式錯誤的輸入使用壓平的工具結果文字。檔案路徑摘要經屬主的 `openFile` 開啟檔案，chat 檢視把它路由到右側 Sidebar 的文字預覽；`inspect` 開啟軌跡檢視；該檢視不可用時不提供此回呼，卡片隨之隱藏 Inspect。terminal、diff、read、search 與 web 卡片的上限與 fallback 規則仍由 [ui-primitives README](../ui-primitives/README.zh.md) 負責；image 卡片的 fallback 規則由本包內的 card model 自行承載。
 
-Chat diff 卡片在折叠前保留九行，足以容纳文件标题、一对删除与新增行及两侧各三行上下文。工具行显示原语提供的精确或粗粒度替换统计；展开卡片包含差异正文，不显示底部统计。
+Chat diff 卡片在摺疊前保留九行，足以容納檔案標題、一對刪除與新增行及兩側各三行上下文。工具行顯示原語提供的精確或粗粒度替換統計；展開卡片包含差異正文，不顯示底部統計。
 
-Auto 拒绝优先于按工具名选择的专门视图。其通用行保留调用身份、省略原始参数，并且只在显示时归一化存储的理由：去除首尾空白，把行分隔符折叠为空格，结果为空时使用本地化通用理由。Session 与 SDK 错误详情保留原始理由。
+Auto 拒絕優先於按工具名選擇的專門檢視。其通用行保留呼叫身份、省略原始參數，並且只在顯示時歸一化儲存的理由：去除首尾空白，把行分隔符摺疊為空格，結果為空時使用在地化通用理由。Session 與 SDK 錯誤詳情保留原始理由。
 
-记录结果的工具详情覆盖目标和定时任务工具、Cordis 检查、workflow 与 Ralph 报告、Session 事件／搜索／轨迹查询、Agent 与 teammate 控制、后台作业、持久终端以及 LSP 导航。展开内容读取成功的记录结果，为失败或不支持的数据保留通用输入／输出，并保留 Inspect。日期包含查看者的时区，状态反映调用结果而非当前会话状态。Session 轨迹保留后代的缩进。LSP 结果通过 Host 回调打开文件系统路径，其他 URI 则显示为文本。浏览器适配器消费已记录的 producer 文本与 JSON；Host service 对象和 presenter 回调不会进入 Client。[紧凑工具详情](../../../.agents/notes/implemented/architecture/2026-09-10-compact-tool-details.zh.md)记录了呈现取舍。
+記錄結果的工具詳情覆蓋目標和排程任務工具、Cordis 檢查、workflow 與 Ralph 報告、Session 事件／搜尋／軌跡查詢、Agent 與 teammate 控制、後臺作業、持久終端以及 LSP 導航。展開內容讀取成功的記錄結果，為失敗或不支援的資料保留通用輸入／輸出，並保留 Inspect。日期包含檢視者的時區，狀態反映呼叫結果而非目前工作階段狀態。Session 軌跡保留後代的縮排。LSP 結果透過 Host 回呼開啟檔案系統路徑，其他 URI 則顯示為文字。瀏覽器介面卡消費已記錄的 producer 文字與 JSON；Host service 物件和 presenter 回呼不會進入 Client。[緊湊工具詳情](../../../.agents/notes/implemented/architecture/2026-09-10-compact-tool-details.zh.md)記錄了呈現取捨。
 
-展开后的状态圆点和文字使用静态语义色。操作回执和任务输出的标题保持中性色，展开时省略标题中的状态。中断回执仅确认已发出中断请求。
+展開後的狀態圓點和文字使用靜態語義色。操作回執和任務輸出的標題保持中性色，展開時省略標題中的狀態。中斷回執僅確認已發出中斷請求。
 
-terminal model 使用浏览器安全入口 `@deepseek-ai/dsh-spill-policy/notice` 的 `hasSpillNotice`，而非独立的 UI 匹配规则。[spill-policy README](../../spill/spill-policy/README.zh.md#shared-notice-ownership) 负责提示文本的格式化与识别。该检查保守地选择通用输出；匹配的文本无法证明其来源，回放也不改变已记录的结果字节。
+terminal model 使用瀏覽器安全入口 `@deepseek-ai/dsh-spill-policy/notice` 的 `hasSpillNotice`，而非獨立的 UI 匹配規則。[spill-policy README](../../spill/spill-policy/README.zh.md#shared-notice-ownership) 負責提示文字的格式化與識別。該檢查保守地選擇通用輸出；匹配的文字無法證明其來源，回放也不改變已記錄的結果位元組。
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖对话宿主、视图 slot 与卡片模型。
+以下頁面覆蓋對話主機、檢視 slot 與卡片模型。
 
-- [ui-conversation](../ui-conversation/README.zh.md)——把 `tool-call` 节点分派给本包的聊天界面。
-- [ui-primitives](../ui-primitives/README.zh.md)——内置视图所拼装的输出卡片原子组件。
-- [ui-skill](../ui-skill/README.zh.md)——`skill` 工具的业务自有注册。
-- [Auto review](../../experimental/auto-review/README.zh.md)——结构化拒绝身份与用户可见原因的 owner。
-- [Conversation 子系统](../../../docs/subsystems/conversation.zh.md)——业务自有功能如何注册 Conversation node。
-- [slot 系统标准](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——keyed slot 背后的组合模型。
+- [ui-conversation](../ui-conversation/README.zh.md)——把 `tool-call` 節點分派給本包的聊天介面。
+- [ui-primitives](../ui-primitives/README.zh.md)——內建檢視所拼裝的輸出卡片原子元件。
+- [ui-skill](../ui-skill/README.zh.md)——`skill` 工具的業務自有註冊。
+- [Auto review](../../experimental/auto-review/README.zh.md)——結構化拒絕身份與使用者可見原因的 owner。
+- [Conversation 子系統](../../../docs/subsystems/conversation.zh.md)——業務自有功能如何註冊 Conversation node。
+- [slot 系統標準](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——keyed slot 背後的組合模型。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包渲染流式工具身份与已记录调用，不改变模型上下文。
+無。該包渲染流式工具身份與已記錄呼叫，不改變模型上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义分派深度与视图归属；它们是当前包约束。
+這些限制定義分派深度與檢視歸屬；它們是目前包約束。
 
-- **Host 不把 `run_code` 暴露为 PTC mode 程序 binding**：生产事件只产生一层分发；递归的运行时/UI 约定支持嵌套。
-- **第一方工具视图集中在本包**：它们可以通过 keyed slot 独立迁移到各自所属的业务包。
-- **Web 工具链接总是打开新标签页**：折叠的 `web_fetch` URL 与展开的 web 卡片链接不遵循 `ui-chat` 的链接打开方式设置，因为工具视图没有外部链接回调。
-- **工具文案复用 `ui-conversation` locale namespace**：工具标题、行 chrome 与无 Cordis 的 primitive label 使用该字典；展示转换器模型保留 locale key 或数据，而不是已渲染文案。
+- **Host 不把 `run_code` 暴露為 PTC mode 程式 binding**：生產事件只產生一層分發；遞迴的執行時/UI 約定支援巢狀。
+- **第一方工具檢視集中在本包**：它們可以透過 keyed slot 獨立遷移到各自所屬的業務包。
+- **Web 工具連結總是開啟新標籤頁**：摺疊的 `web_fetch` URL 與展開的 web 卡片連結不遵循 `ui-chat` 的連結開啟方式設定，因為工具檢視沒有外部連結回呼。
+- **工具文案複用 `ui-conversation` locale namespace**：工具標題、行 chrome 與無 Cordis 的 primitive label 使用該字典；展示轉換器模型保留 locale key 或資料，而不是已渲染文案。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。工具组合只存在于浏览器，不贡献事件或跨插件可变状态；slot 所有权由 ui-slots 校验。
+**執行時不變式：** 不釋出伴生入口。工具組合只存在於瀏覽器，不貢獻事件或跨外掛可變狀態；slot 所有權由 ui-slots 驗證。

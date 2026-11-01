@@ -31,7 +31,6 @@
     "@deepseek-ai/dsh-app-boot": "workspace:*",
     "@deepseek-ai/dsh-base": "workspace:*",
     "@deepseek-ai/dsh-cch": "workspace:*",
-    "@deepseek-ai/dsh-client-locale-zh-hant": "workspace:*",
     "@deepseek-ai/dsh-client-ui-brand-claude": "workspace:*",
     "@deepseek-ai/dsh-llm-claude-code": "workspace:*",
     "@deepseek-ai/dsh-client-ui-agent-preset": "workspace:*",

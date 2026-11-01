@@ -1,29 +1,29 @@
-# Agent Note: 锁存取消收敛窗口内到达的唤醒请求
+# Agent Note: 鎖存取消收斂視窗內到達的喚醒請求
 
 Status: implemented
 
 [English](2026-08-07-cancel-convergence-wake-latch.md) | 中文
 
-## 问题
+## 問題
 
-`Agent.cancel(cause, { keepInbox: true })` 在触发 abort 信号后立即返回，但活动 driver 可能尚未收敛到 `idle`：LLM（大语言模型）流拆除、工具取消与 `turn/end` 落盘都会在 `abort()` 返回后异步展开。在该窗口内到达的唤醒 send 被放入 `next-turn`，而 `wakeDriver()` 对仍处于 `running` 的 phase 直接返回，退出的 driver 也从不重放这次唤醒——消息会一直停放到下一条唤醒 send 到达。被中止的 `runMaintenance` 活动周围也存在同样的唤醒丢失窗口。多个测试固化了停放行为（「等待下一次唤醒」）；该缺陷同时破坏了 `session.cancel` 与 `subagent.interrupt` 组合路径（issue #1838）。取消与发送约定由以下既有决策定义：[显式轮次取消](../architecture/2026-07-16-explicit-turn-cancellation.zh.md)与[统一发送](../../archived/architecture/2026-07-22-unified-send-and-coalesced-user-messages.md)；生产环境中的 `keepInbox` 消费方是[Web 停止保留队列](../../archived/bug-fix/2026-07-31-web-stop-preserves-queue.md)。
+`Agent.cancel(cause, { keepInbox: true })` 在觸發 abort 訊號後立即返回，但活動 driver 可能尚未收斂到 `idle`：LLM（大語言模型）流拆除、工具取消與 `turn/end` 寫入磁碟都會在 `abort()` 返回後非同步展開。在該視窗內到達的喚醒 send 被放入 `next-turn`，而 `wakeDriver()` 對仍處於 `running` 的 phase 直接返回，退出的 driver 也從不重放這次喚醒——訊息會一直停放到下一條喚醒 send 到達。被中止的 `runMaintenance` 活動周圍也存在同樣的喚醒丟失視窗。多個測試固化了停放行為（「等待下一次喚醒」）；該缺陷同時破壞了 `session.cancel` 與 `subagent.interrupt` 組合路徑（issue #1838）。取消與傳送約定由以下既有決策定義：[顯式輪次取消](../architecture/2026-07-16-explicit-turn-cancellation.zh.md)與[統一傳送](../../archived/architecture/2026-07-22-unified-send-and-coalesced-user-messages.md)；生產環境中的 `keepInbox` 消費方是[Web 停止保留佇列](../../archived/bug-fix/2026-07-31-web-stop-preserves-queue.md)。
 
-## 决策
+## 決策
 
-`running` phase 携带 `wakeRequested` 锁存，与既有的 `maintenance` phase 字段对称。`wakeDriver()` 在当前活动无法投递唤醒时锁存——maintenance 任务从不读取队列，被中止的活动收敛后不会重启——而存活的 driver 不需要锁存，因为它自己会认领排队的工作。退出中的活动在其自身收敛边界（`kick` 的 `finally` 与 `runMaintenance` 的 `finally`）重放锁存：这一位置保证 `turn/end N` 先于重放 driver 打开 `turn/start N+1` 落盘，并保证 `whenIdle()` 通过其 `activityDone` 循环看到重放 driver。两个重放点仅在 `inbox.hasPending` 时执行，因此收敛前被从 inbox 移除的锁存唤醒不会启动空 driver。而 agent（智能体）已处于 idle 时发送的唤醒，即使消息在 driver 认领前被清除，仍会打开自己的轮次边界——这趟 `idle → running → idle` 转换是可观察约定：目标会话 driver 的 pause/disarm 回退依赖取消预订后的 `idle` 转换触发（把守卫放进 `wakeDriver()` 会抑制该边界）。不带 `keepInbox` 的 `cancel()` 会连同 inbox 一起清除锁存。
+`running` phase 攜帶 `wakeRequested` 鎖存，與既有的 `maintenance` phase 欄位對稱。`wakeDriver()` 在目前活動無法投遞喚醒時鎖存——maintenance 任務從不讀取佇列，被中止的活動收斂後不會重新啟動——而存活的 driver 不需要鎖存，因為它自己會認領排隊的工作。退出中的活動在其自身收斂邊界（`kick` 的 `finally` 與 `runMaintenance` 的 `finally`）重放鎖存：這一位置保證 `turn/end N` 先於重放 driver 開啟 `turn/start N+1` 寫入磁碟，並保證 `whenIdle()` 透過其 `activityDone` 迴圈看到重放 driver。兩個重放點僅在 `inbox.hasPending` 時執行，因此收斂前被從 inbox 移除的鎖存喚醒不會啟動空 driver。而 agent（智慧代理）已處於 idle 時傳送的喚醒，即使訊息在 driver 認領前被清除，仍會開啟自己的輪次邊界——這趟 `idle → running → idle` 轉換是可觀察約定：目標工作階段 driver 的 pause/disarm 退回依賴取消預訂後的 `idle` 轉換觸發（把守衛放進 `wakeDriver()` 會抑制該邊界）。不帶 `keepInbox` 的 `cancel()` 會連同 inbox 一起清除鎖存。
 
-`signal.aborted` 这一判别条件至关重要：它区分「中断前已排队的工作」——`keepInbox` 将其停放以待后续唤醒（`keepInbox` 停放约定）——与「abort 后显式的唤醒」，后者必须在收敛后执行。
+`signal.aborted` 這一判別條件至關重要：它區分「中斷前已排隊的工作」——`keepInbox` 將其停放以待後續喚醒（`keepInbox` 停放約定）——與「abort 後顯式的喚醒」，後者必須在收斂後執行。
 
-## 备选方案
+## 備選方案
 
-**让 `cancel()` 立即把 phase 置为 `idle`。** 不予采用：driver 仍在展开收尾，这会重叠两个 driver。重放逻辑位于旧 driver 的 `finally`，而该 `finally` 此后不再执行——83 个测试中有 14 个失败，多个死锁。修复它需要基于身份的 phase 所有权外加轮次开启时的完全停稳屏障，机制上严格更重，而且整体上只是换了个形态的锁存。
+**讓 `cancel()` 立即把 phase 置為 `idle`。** 不予採用：driver 仍在展開收尾，這會重疊兩個 driver。重放邏輯位於舊 driver 的 `finally`，而該 `finally` 此後不再執行——83 個測試中有 14 個失敗，多個死鎖。修復它需要基於身份的 phase 所有權外加輪次開啟時的完全停穩屏障，機制上嚴格更重，而且整體上只是換了個形態的鎖存。
 
-**对每个非 idle 唤醒无条件锁存。** 不予采用：中断前的唤醒会在 `keepInbox` 取消后自动启动，违反 `keepInbox` 停放约定；「停放排队工作」测试与错误窗口的 steering（中途引导）测试双双失败。
+**對每個非 idle 喚醒無條件鎖存。** 不予採用：中斷前的喚醒會在 `keepInbox` 取消後自動啟動，違反 `keepInbox` 停放約定；「停放排隊工作」測試與錯誤視窗的 steering（中途引導）測試雙雙失敗。
 
-**通过链式 promise（`activityDone.then(...)`）重放。** 不予采用：重放会运行在活动自身结算之外，`whenIdle()` 的循环可能在重放 driver 启动前就 resolve；修复它需要在 send 时同步替换 `activityDone`，并依赖微任务反应顺序——比同步 flag 更脆弱。
+**透過鏈式 promise（`activityDone.then(...)`）重放。** 不予採用：重放會執行在活動自身結算之外，`whenIdle()` 的迴圈可能在重放 driver 啟動前就 resolve；修復它需要在 send 時同步替換 `activityDone`，並依賴微任務反應順序——比同步 flag 更脆弱。
 
-**在 subagent（子智能体）适配器中等待完全停稳。** 因 issue 范围而不予采用：修复由取消/唤醒状态机拥有，而不是消费方。
+**在 subagent（子智慧代理）介面卡中等待完全停穩。** 因 issue 範圍而不予採用：修復由取消/喚醒狀態機擁有，而不是消費方。
 
-## 影响
+## 影響
 
-`running` phase 新增 `wakeRequested` 字段；不带 `keepInbox` 的 `cancel()` 会连同 inbox 一起清除它，且 `disposed` 取消从不锁存——dispose（资源释放）开始后到达的唤醒保持停放，`whenIdle()` 不会在拆除中的会话上等待一个完整模型轮次。落在 driver 最后一次 `hasPending` 检查与退出之间不到一个微任务的间隙的唤醒仍会停放——没有锁存触发，因为 phase 是 `running` 且未 abort；关闭该间隙需要无条件锁存，刻意不纳入范围。在被中止的轮次与重放 driver 之间，状态转换会发出一次瞬态 `idle → running` 对。唤醒 send 的消息在任何 driver 认领前被清除时，仍会打开一个已完成的空轮次，保留可观察的唤醒边界。
+`running` phase 新增 `wakeRequested` 欄位；不帶 `keepInbox` 的 `cancel()` 會連同 inbox 一起清除它，且 `disposed` 取消從不鎖存——dispose（資源釋放）開始後到達的喚醒保持停放，`whenIdle()` 不會在拆除中的工作階段上等待一個完整模型輪次。落在 driver 最後一次 `hasPending` 檢查與退出之間不到一個微任務的間隙的喚醒仍會停放——沒有鎖存觸發，因為 phase 是 `running` 且未 abort；關閉該間隙需要無條件鎖存，刻意不納入範圍。在被中止的輪次與重放 driver 之間，狀態轉換會發出一次瞬態 `idle → running` 對。喚醒 send 的訊息在任何 driver 認領前被清除時，仍會開啟一個已完成的空輪次，保留可觀察的喚醒邊界。

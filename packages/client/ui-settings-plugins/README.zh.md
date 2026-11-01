@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的「内置插件」设置分区：设置导航项与供功能插件注册标签页的标签行。"
+description: "dsh Web 用戶端的「內建外掛」設定分割槽：設定導航項與供功能外掛註冊標籤頁的標籤行。"
 kind: "package-reference"
 ---
 
@@ -9,72 +9,72 @@ kind: "package-reference"
 
 ## 概述
 
-使用**内置插件**设置分区查看本部署随附的插件。该分区只是一个壳：它拥有导航项和标签行，里面的每个标签页都由其他插件注册——只读清单注册了一个。配置内置插件在侧栏的插件页上进行，每个官方插件自己的伴生包把页面注册到那里。
+使用**內建外掛**設定分割槽檢視本部署隨附的外掛。該分割槽只是一個殼：它擁有導航項和標籤行，裡面的每個標籤頁都由其他外掛註冊——只讀清單註冊了一個。設定內建外掛在側欄的外掛頁上進行，每個官方外掛自己的伴生包把頁面註冊到那裡。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在设置里打开**内置插件**。[ui-settings-plugin-inventory](../ui-settings-plugin-inventory/README.zh.md) 把清单作为分区唯一的标签页贡献进来，直接显示为页面本身；注册第二个标签页后这一行就变成标签行。组合里没有任何标签页贡献的部署会显示分区的空提示。
+在設定裡開啟**內建外掛**。[ui-settings-plugin-inventory](../ui-settings-plugin-inventory/README.zh.md) 把清單作為分割槽唯一的標籤頁貢獻進來，直接顯示為頁面本身；註冊第二個標籤頁後這一行就變成標籤行。組合裡沒有任何標籤頁貢獻的部署會顯示分割槽的空提示。
 
-要贡献一个标签页，带 `id`、`order` 和本地化的 `label` 注册进 `settings.plugins.tab`；分区按序渲染条目，标签页在首次被选中时挂载。功能文案留在注册方自己的字典里。
+要貢獻一個標籤頁，帶 `id`、`order` 和在地化的 `label` 註冊進 `settings.plugins.tab`；分割槽按序渲染條目，標籤頁在首次被選中時掛載。功能文案留在註冊方自己的字典裡。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-分区声明 `settings.plugins.tab`，一个根级 list slot，其标签成为有序的标签页；只有一个贡献时直接渲染为页面本身，标签页在首次被选中后保持挂载，搜索词和清单快照因此在切换间不丢失。分区的 `inject` 把 slot 账本投影成按序排列、标签随当前语言的行，在账本版本或语言修订变化前保持缓存。宿主半侧是一个空的 `apply`，只为让本包占一条 Loader 行，客户端模块系统据此送出浏览器半侧。
+分割槽宣告 `settings.plugins.tab`，一個根級 list slot，其標籤成為有序的標籤頁；只有一個貢獻時直接渲染為頁面本身，標籤頁在首次被選中後保持掛載，搜尋詞和清單快照因此在切換間不丟失。分割槽的 `inject` 把 slot 帳本投影成按序排列、標籤隨目前語言的行，在帳本版本或語言修訂變化前保持快取。主機半側是一個空的 `apply`，只為讓本包占一條 Loader 行，用戶端模組系統據此送出瀏覽器半側。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [ui-settings-plugin-inventory](../ui-settings-plugin-inventory/README.zh.md)——只读清单标签页。
-- [ui-settings](../ui-settings/README.zh.md)——声明 `settings.section` 的领域基座。
-- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——配置官方插件的插件页。
-- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——官方配置页，每个一个伴生包。
+- [ui-settings-plugin-inventory](../ui-settings-plugin-inventory/README.zh.md)——只讀清單標籤頁。
+- [ui-settings](../ui-settings/README.zh.md)——宣告 `settings.section` 的領域基座。
+- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——設定官方外掛的外掛頁。
+- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——官方設定頁，每個一個伴生包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，本包是浏览器侧的设置界面，不注册任何模型面。
+無，本包是瀏覽器側的設定介面，不註冊任何模型面。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **分区没有自己的标签页**——在功能插件注册标签页之前它只显示空提示；壳自己填不满分区。
-- **运行时不变量：**不发布伴生。分区除了投影 slot 账本之外不拥有任何关系。
+- **分割槽沒有自己的標籤頁**——在功能外掛註冊標籤頁之前它只顯示空提示；殼自己填不滿分割槽。
+- **執行時不變數：**不釋出伴生。分割槽除了投影 slot 帳本之外不擁有任何關係。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

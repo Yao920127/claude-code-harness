@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/basic/config.md
 /plugin-configuration:
   en: f605e6e8021b82ba
-  zh: 3f33c4b0afb3f249
+  zh: bb5d7e6d9ada667b
 /plugin-configuration/define-the-config-type:
   en: a351a086d890f148
-  zh: 385803dd9d671391
+  zh: 47608293b6333709
 /plugin-configuration/schema-validation:
   en: 6a20f3351a1c3e47
-  zh: b5ae56917fcbca2c
+  zh: 5dcfd04dd2a93a36
 /plugin-configuration/design-principles:
   en: 79717ddc9d714ad9
-  zh: 67240f8382bbe783
+  zh: 590070e4d554881c
 /plugin-configuration/design-principles/do-not-hardcode-tunable-values:
   en: da67063750a52b55
-  zh: bd2c5978e10b6f79
+  zh: 7c6250629d79eac8
 /plugin-configuration/design-principles/fail-loudly-on-invalid-configuration:
   en: 98a4ff7d959783bd
-  zh: cb1410360b03b7a7
+  zh: b0b6652e3fff7549
 /plugin-configuration/work-with-hmr:
   en: 939f750af6fefbd5
-  zh: 94fbb3a0d761f098
+  zh: c85f81d313b8501f
 /plugin-configuration/next-steps:
   en: 1151bb8b59577519
-  zh: 47a95340df47d273
+  zh: 4fe1f8b1420f09f1

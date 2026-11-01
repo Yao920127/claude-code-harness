@@ -19,7 +19,7 @@ describe('web e2e: shortcut reference', () => {
   afterAll(async () => { await browser?.close(); await scaffold?.close() })
 
   it.each([
-    { locale: 'zh-CN', platform: 'MacIntel', title: '快捷键', settings: '设置', view: '编辑快捷键', search: '搜索快捷键', key: 'Meta' },
+    { locale: 'zh-CN', platform: 'MacIntel', title: '快捷鍵', settings: '設定', view: '編輯快捷鍵', search: '搜尋快捷鍵', key: 'Meta' },
     { locale: 'en-US', platform: 'Win32', title: 'Keyboard shortcuts', settings: 'Settings', view: 'Edit shortcuts', search: 'Search shortcuts', key: 'Control' },
   ])('opens, searches, and restores nested focus in $locale', async ({ locale, platform, title, settings, view, search, key }) => {
     const referenceKey = platform === 'Win32' ? 'Control+Slash' : 'Meta+Slash'
@@ -43,12 +43,12 @@ describe('web e2e: shortcut reference', () => {
       const referenceNode = await dialog.elementHandle()
       expect(await page.getByRole('dialog').count()).toBe(2)
       expect(await dialog.locator('footer').count()).toBe(1)
-      const resetAll = dialog.getByRole('button', { name: locale === 'zh-CN' ? '恢复全部默认' : 'Restore all defaults', exact: true })
+      const resetAll = dialog.getByRole('button', { name: locale === 'zh-CN' ? '恢復全部預設' : 'Restore all defaults', exact: true })
       expect(await resetAll.isDisabled()).toBe(true)
       expect(await dialog.boundingBox()).toMatchObject({ width: 480, height: 600 })
       expect(await dialog.getByRole('search').boundingBox()).toMatchObject({ width: 440, height: 36 })
       const rows = dialog.getByRole('listitem')
-      const stopRow = dialog.getByRole('region', { name: locale === 'zh-CN' ? '消息输入' : 'Message input', exact: true })
+      const stopRow = dialog.getByRole('region', { name: locale === 'zh-CN' ? '訊息輸入' : 'Message input', exact: true })
         .getByRole('listitem').last()
       await stopRow.getByText(locale === 'zh-CN' ? '停止生成' : 'Stop generating', { exact: true }).waitFor()
       const stopButtons = stopRow.getByRole('button')
@@ -74,14 +74,14 @@ describe('web e2e: shortcut reference', () => {
       const fixedBackground = await stopRow.evaluate(element => getComputedStyle(element).backgroundColor)
       await stopRow.hover()
       expect(await stopRow.evaluate(element => getComputedStyle(element).backgroundColor)).toBe(fixedBackground)
-      const editLabel = locale === 'zh-CN' ? '修改展开／收起左侧栏快捷键' : 'Edit shortcut for Toggle left sidebar'
+      const editLabel = locale === 'zh-CN' ? '修改展開／收起左側欄快捷鍵' : 'Edit shortcut for Toggle left sidebar'
       const row = dialog.getByRole('listitem').filter({ has: page.getByRole('button', { name: editLabel, exact: true }) })
       const editButton = page.getByRole('button', { name: editLabel, exact: true })
       expect(await row.locator('[class*="rowActions"]').evaluate(element => getComputedStyle(element).opacity)).toBe('0')
       const boundRow = dialog.getByRole('listitem').filter({ has: page.getByText(
-        locale === 'zh-CN' ? '快捷键速查' : 'Open keyboard shortcuts', { exact: true },
+        locale === 'zh-CN' ? '快捷鍵速查' : 'Open keyboard shortcuts', { exact: true },
       ) })
-      const badge = boundRow.getByRole('button', { name: locale === 'zh-CN' ? '修改快捷键速查快捷键' : 'Edit shortcut for Open keyboard shortcuts', exact: true })
+      const badge = boundRow.getByRole('button', { name: locale === 'zh-CN' ? '修改快捷鍵速查快捷鍵' : 'Edit shortcut for Open keyboard shortcuts', exact: true })
       const restingColor = await boundRow.evaluate(element => getComputedStyle(element).backgroundColor)
       await badge.hover({ position: { x: 12, y: 12 } })
       expect(await boundRow.evaluate(element => getComputedStyle(element).backgroundColor)).not.toBe(restingColor)
@@ -105,7 +105,7 @@ describe('web e2e: shortcut reference', () => {
       expect(await dialog.getByRole('button', { disabled: false }).last().evaluate(element => element === document.activeElement)).toBe(true)
       expect(await dialog.getByRole('button', { disabled: false }).last().evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe('none')
       await badge.click()
-      await boundRow.getByRole('button', { name: locale === 'zh-CN' ? '恢复默认' : 'Restore default', exact: true }).click()
+      await boundRow.getByRole('button', { name: locale === 'zh-CN' ? '恢復預設' : 'Restore default', exact: true }).click()
       await boundRow.getByRole('group').waitFor({ state: 'hidden' })
       await dialog.getByRole('heading', { name: title, exact: true }).hover()
       expect(await boundActionsOpacity()).toBe('0')
@@ -113,8 +113,8 @@ describe('web e2e: shortcut reference', () => {
       expect(await row.locator('[class*="rowActions"]').evaluate(element => getComputedStyle(element).opacity)).toBe('1')
       expect(await row.getByRole('button').count()).toBe(1)
       await editButton.click()
-      const inline = dialog.getByRole('group', { name: locale === 'zh-CN' ? '展开／收起左侧栏' : 'Toggle left sidebar', exact: true })
-      const recorder = inline.getByRole('button', { name: locale === 'zh-CN' ? '按下快捷键' : 'Press a shortcut', exact: true })
+      const inline = dialog.getByRole('group', { name: locale === 'zh-CN' ? '展開／收起左側欄' : 'Toggle left sidebar', exact: true })
+      const recorder = inline.getByRole('button', { name: locale === 'zh-CN' ? '按下快捷鍵' : 'Press a shortcut', exact: true })
       expect(await inline.getByRole('button', { name: locale === 'zh-CN' ? '移除' : 'Remove', exact: true }).count()).toBe(1)
       expect(await page.getByRole('dialog').count()).toBe(2)
       expect(await recorder.evaluate(element => ({
@@ -128,7 +128,7 @@ describe('web e2e: shortcut reference', () => {
       await compareOrRefreshGolden(join(expected, `${locale}-inline.expected.md`),
         await captureStableAria(page, '[data-shortcut-modal="shortcut-edit"]', scaffold.workspaceCwd), mode)
       await page.keyboard.press(referenceKey)
-      const errorToast = page.getByRole('alert').filter({ hasText: locale === 'zh-CN' ? '已被「快捷键速查」占用' : 'Already used by “Open keyboard shortcuts”' })
+      const errorToast = page.getByRole('alert').filter({ hasText: locale === 'zh-CN' ? '已被「快捷鍵速查」佔用' : 'Already used by “Open keyboard shortcuts”' })
       await errorToast.waitFor()
       expect(await errorToast.evaluate(element => ({
         background: getComputedStyle(element).backgroundColor, color: getComputedStyle(element).color,
@@ -142,7 +142,7 @@ describe('web e2e: shortcut reference', () => {
       await compareOrRefreshGolden(join(expected, `${locale}-conflict.expected.md`), await errorToast.ariaSnapshot(), mode)
       await page.keyboard.press('i')
       await page.getByRole('alert').filter({ hasText: locale === 'zh-CN'
-        ? '请同时按下 Command、Ctrl 或 Alt 修饰键。' : 'Include Command, Ctrl, or Alt in the combination.' }).waitFor()
+        ? '請同時按下 Command、Ctrl 或 Alt 修飾鍵。' : 'Include Command, Ctrl, or Alt in the combination.' }).waitFor()
       await page.keyboard.press(`${key}+Shift+.`)
       await inline.waitFor({ state: 'hidden' })
       expect(await dialog.evaluate(element => element === document.activeElement)).toBe(true)
@@ -166,7 +166,7 @@ describe('web e2e: shortcut reference', () => {
       await editButton.click()
       await inline.getByRole('button', { name: locale === 'zh-CN' ? '移除' : 'Remove', exact: true }).click()
       await inline.waitFor({ state: 'hidden' })
-      const unbound = row.getByText(locale === 'zh-CN' ? '暂无快捷键' : 'No shortcut', { exact: true })
+      const unbound = row.getByText(locale === 'zh-CN' ? '暫無快捷鍵' : 'No shortcut', { exact: true })
       await unbound.waitFor()
       expect(await unbound.evaluate(element => getComputedStyle(element).color)).toBe('rgb(129, 133, 140)')
       expect(await row.getByRole('button').count()).toBe(1)
@@ -184,14 +184,14 @@ describe('web e2e: shortcut reference', () => {
       for (const query of ['abc', 'sendEnter']) {
         await page.getByRole('searchbox').fill(query)
         expect(await dialog.getByRole('listitem').count()).toBe(0)
-        expect(await dialog.getByRole('status').textContent()).toBe(locale === 'zh-CN' ? '没有匹配的快捷键' : 'No matching shortcuts')
+        expect(await dialog.getByRole('status').textContent()).toBe(locale === 'zh-CN' ? '沒有匹配的快捷鍵' : 'No matching shortcuts')
         if (query === 'abc') await compareOrRefreshGolden(join(expected, `${locale}-empty.expected.md`),
           await captureStableAria(page, '[data-shortcut-modal="shortcuts"]', scaffold.workspaceCwd), mode)
       }
-      for (const query of [locale === 'zh-CN' ? '左侧栏' : 'toggle left', 'tgllft', 'toggle left sidebar']) {
+      for (const query of [locale === 'zh-CN' ? '左側欄' : 'toggle left', 'tgllft', 'toggle left sidebar']) {
         await page.getByRole('searchbox').fill(query)
         expect(await dialog.getByRole('listitem').count()).toBe(1)
-        expect(await dialog.getByRole('listitem').textContent()).toContain(locale === 'zh-CN' ? '展开／收起左侧栏' : 'Toggle left sidebar')
+        expect(await dialog.getByRole('listitem').textContent()).toContain(locale === 'zh-CN' ? '展開／收起左側欄' : 'Toggle left sidebar')
       }
       await page.keyboard.press(`${key}+Comma`)
       expect(await referenceNode!.evaluate(element => element.isConnected)).toBe(true)
@@ -242,14 +242,14 @@ describe('web e2e: shortcut reference', () => {
       await page.setViewportSize({ width: 1440, height: 1000 })
       await openSettings(page, locale === 'zh-CN' ? 'zh' : 'en')
       const viewButton = page.getByRole('button', { name: view, exact: true })
-      const viewHint = `${locale === 'zh-CN' ? '全局唤起查看' : 'Open from anywhere'} ${key === 'Meta' ? '⌘ /' : 'Ctrl + /'}`
+      const viewHint = `${locale === 'zh-CN' ? '全域喚起檢視' : 'Open from anywhere'} ${key === 'Meta' ? '⌘ /' : 'Ctrl + /'}`
       await viewButton.hover()
       expect(await page.getByRole('tooltip').getAttribute('aria-label')).toBe(viewHint)
       await viewButton.click()
       await badge.click()
       await boundRow.getByRole('button', { name: locale === 'zh-CN' ? '移除' : 'Remove', exact: true }).click()
       await boundRow.getByRole('group').waitFor({ state: 'hidden' })
-      await boundRow.getByText(locale === 'zh-CN' ? '暂无快捷键' : 'No shortcut', { exact: true }).waitFor()
+      await boundRow.getByText(locale === 'zh-CN' ? '暫無快捷鍵' : 'No shortcut', { exact: true }).waitFor()
       await page.keyboard.press('Escape')
       await dialog.waitFor({ state: 'hidden' })
       expect(await viewButton.evaluate(element => element === document.activeElement)).toBe(true)
@@ -260,7 +260,7 @@ describe('web e2e: shortcut reference', () => {
       expect(await viewButton.getAttribute('aria-keyshortcuts')).toBeNull()
       await viewButton.click()
       await badge.click()
-      await boundRow.getByRole('button', { name: locale === 'zh-CN' ? '恢复默认' : 'Restore default', exact: true }).click()
+      await boundRow.getByRole('button', { name: locale === 'zh-CN' ? '恢復預設' : 'Restore default', exact: true }).click()
       await boundRow.getByRole('group').waitFor({ state: 'hidden' })
       await page.keyboard.press('Escape')
       await dialog.waitFor({ state: 'hidden' })
@@ -269,9 +269,9 @@ describe('web e2e: shortcut reference', () => {
       await viewButton.click()
       await page.getByRole('searchbox').fill('abc')
       expect(await dialog.getByRole('listitem').count()).toBe(0)
-      expect(await dialog.locator('footer').textContent()).toContain(locale === 'zh-CN' ? '1 项已自定义' : '1 customized')
+      expect(await dialog.locator('footer').textContent()).toContain(locale === 'zh-CN' ? '1 項已自定義' : '1 customized')
       await resetAll.click()
-      const confirm = page.getByRole('dialog', { name: locale === 'zh-CN' ? '恢复全部默认快捷键？' : 'Restore all default shortcuts?', exact: true })
+      const confirm = page.getByRole('dialog', { name: locale === 'zh-CN' ? '恢復全部預設快捷鍵？' : 'Restore all default shortcuts?', exact: true })
       const cancel = confirm.getByRole('button', { name: locale === 'zh-CN' ? '取消' : 'Cancel', exact: true })
       expect(await cancel.evaluate(element => element === document.activeElement)).toBe(true)
       expect(await cancel.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('none')
@@ -280,20 +280,20 @@ describe('web e2e: shortcut reference', () => {
       expect(await resetAll.evaluate(element => element === document.activeElement)).toBe(true)
       expect(await resetAll.getAttribute('data-dsh-automatic-focus')).toBe('')
       expect(await resetAll.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('none')
-      expect(await dialog.locator('footer').textContent()).toContain(locale === 'zh-CN' ? '1 项已自定义' : '1 customized')
+      expect(await dialog.locator('footer').textContent()).toContain(locale === 'zh-CN' ? '1 項已自定義' : '1 customized')
       await resetAll.click()
-      await confirm.getByRole('button', { name: locale === 'zh-CN' ? '恢复默认' : 'Restore default', exact: true }).click()
+      await confirm.getByRole('button', { name: locale === 'zh-CN' ? '恢復預設' : 'Restore default', exact: true }).click()
       await confirm.waitFor({ state: 'hidden' })
       expect(await resetAll.isDisabled()).toBe(true)
-      expect(await dialog.locator('footer').textContent()).toBe(locale === 'zh-CN' ? '恢复全部默认' : 'Restore all defaults')
+      expect(await dialog.locator('footer').textContent()).toBe(locale === 'zh-CN' ? '恢復全部預設' : 'Restore all defaults')
       expect(await page.getByRole('searchbox').evaluate(element => element === document.activeElement)).toBe(true)
       expect(await searchInput.evaluate(element => getComputedStyle(element).outlineStyle)).toBe('none')
       expect(await searchSurfaceStyle()).toEqual(focusedSearchSurface)
       await page.keyboard.press('Escape')
       await page.keyboard.press('Escape')
       await page.keyboard.press(referenceKey)
-      const settingsCommand = locale === 'zh-CN' ? '打开设置' : 'Open settings'
-      await dialog.getByRole('button', { name: locale === 'zh-CN' ? `修改${settingsCommand}快捷键` : `Edit shortcut for ${settingsCommand}`, exact: true }).click()
+      const settingsCommand = locale === 'zh-CN' ? '開啟設定' : 'Open settings'
+      await dialog.getByRole('button', { name: locale === 'zh-CN' ? `修改${settingsCommand}快捷鍵` : `Edit shortcut for ${settingsCommand}`, exact: true }).click()
       await page.keyboard.press(`${key}+Shift+Comma`)
       await dialog.getByRole('group').waitFor({ state: 'hidden' })
       await page.keyboard.press('Escape')
@@ -304,14 +304,14 @@ describe('web e2e: shortcut reference', () => {
       await page.keyboard.press('Escape')
       expect(await trigger.evaluate(element => element === document.activeElement)).toBe(true)
       await page.keyboard.press(referenceKey)
-      await dialog.getByRole('button', { name: locale === 'zh-CN' ? `修改${settingsCommand}快捷键` : `Edit shortcut for ${settingsCommand}`, exact: true }).click()
-      await dialog.getByRole('button', { name: locale === 'zh-CN' ? '恢复默认' : 'Restore default', exact: true }).click()
+      await dialog.getByRole('button', { name: locale === 'zh-CN' ? `修改${settingsCommand}快捷鍵` : `Edit shortcut for ${settingsCommand}`, exact: true }).click()
+      await dialog.getByRole('button', { name: locale === 'zh-CN' ? '恢復預設' : 'Restore default', exact: true }).click()
       await dialog.getByRole('group').waitFor({ state: 'hidden' })
       await page.keyboard.press('Escape')
       expect(await trigger.getAttribute('aria-keyshortcuts')).toBe(`${key}+,`)
       await trigger.hover()
       await page.getByRole('tooltip', { name: settingsHint, exact: true }).waitFor()
-      const sidebar = page.getByRole('button', { name: locale === 'zh-CN' ? '收起侧边栏' : 'Collapse sidebar', exact: true })
+      const sidebar = page.getByRole('button', { name: locale === 'zh-CN' ? '收起側邊欄' : 'Collapse sidebar', exact: true })
       expect(await sidebar.getAttribute('aria-keyshortcuts')).toBe(key === 'Meta' ? 'Alt+Meta+B' : 'Control+Alt+B')
       await page.reload({ waitUntil: 'load' })
       await sidebar.waitFor()

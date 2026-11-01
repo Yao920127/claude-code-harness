@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-21-serial-cross-platform-ci-reference.md
 /agent-note-serial-cross-platform-ci-reference:
   en: 4dd700fefdda5d17
-  zh: 3a6a9bc2a28b3f39
+  zh: b64001eff07c69c2
 /agent-note-serial-cross-platform-ci-reference/problem:
   en: 4fb1c27a631b32d3
-  zh: 9dbe9a4b9aadfca9
+  zh: c798077e7b203ff6
 /agent-note-serial-cross-platform-ci-reference/decision:
   en: f547014d316c1385
-  zh: f13b09a4a778adaa
+  zh: e89410840c77cca4
 /agent-note-serial-cross-platform-ci-reference/alternatives-considered:
   en: bc72a1e194e3b0e2
-  zh: 9a92cbac88adc7a7
+  zh: bddb37246ce1e774
 /agent-note-serial-cross-platform-ci-reference/consequences:
   en: 7042125ce6a209d4
-  zh: ef2be4fa8a4d6320
+  zh: 46dadcd852389814

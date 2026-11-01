@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-14-chat-presentation-defaults.md
 /agent-note-keep-chat-presentation-independent-of-trajectory-inspection:
   en: 72d5bc0911e0bc3f
-  zh: 1fc58f89bdc53b56
+  zh: 82995bae1306c591
 /agent-note-keep-chat-presentation-independent-of-trajectory-inspection/problem:
   en: 2102a58c1baafe54
-  zh: 939872d86e013f94
+  zh: 4caee22267202431
 /agent-note-keep-chat-presentation-independent-of-trajectory-inspection/decision:
   en: f77e394352fe8d8e
-  zh: 7c4c9b066874dc9b
+  zh: c58295e6767115e1
 /agent-note-keep-chat-presentation-independent-of-trajectory-inspection/alternatives-considered:
   en: f4c1b9c9998e3355
-  zh: f684e39ffabce5e6
+  zh: 4dd6096dd099fc3b
 /agent-note-keep-chat-presentation-independent-of-trajectory-inspection/consequences:
   en: bb15d68e46b10b8e
-  zh: 8506ab5775d04fe8
+  zh: 2a021dcaac1fecda

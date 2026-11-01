@@ -1,5 +1,5 @@
 ---
-description: "workspace 组地图：持久工作区实体家族、用户目录的持久记录与经会话头验证的会话归属关系，供浏览本组的用户与维护者阅读。"
+description: "workspace 組地圖：持久工作區實體家族、使用者目錄的持久記錄與經工作階段頭驗證的工作階段歸屬關係，供瀏覽本組的使用者與維護者閱讀。"
 kind: "package-group"
 ---
 
@@ -9,41 +9,41 @@ kind: "package-group"
 
 ## 概述
 
-workspace 家族让宿主产品持久保存命名且有序的项目列表，并按目录归组每个项目的会话。用户可以浏览这些项目与会话、将会话从分组中隐藏而不删除该会话，以及移除项目而不删除其文件夹或会话历史。被隐藏或从项目中移除的会话仍可作为未分组的历史记录使用。需要持久项目界面时选用此家族；它需要会话存储和持久化后端，且不会向模型公开工具、提示词或会话事件。
+workspace 家族讓主機產品持久儲存命名且有序的專案列表，並按目錄歸組每個專案的工作階段。使用者可以瀏覽這些專案與工作階段、將工作階段從分組中隱藏而不刪除該工作階段，以及移除專案而不刪除其資料夾或工作階段歷史。被隱藏或從專案中移除的工作階段仍可作為未分組的歷史記錄使用。需要持久專案介面時選用此家族；它需要工作階段儲存和持久化後端，且不會向模型公開工具、提示詞或工作階段事件。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`workspace`](workspace/README.zh.md) | 提供命名且有序的项目，并按目录归组在其中运行的会话 | `ctx.workspaceRegistry` |
+| [`workspace`](workspace/README.zh.md) | 提供命名且有序的專案，並按目錄歸組在其中執行的工作階段 | `ctx.workspaceRegistry` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [Workspace 子系统](../../docs/subsystems/workspace.zh.md)——项目及其会话的权威功能约定。
-- [领域 KV 存储 Agent Note](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)——项目记录背后的存储设计。
-- [Workspace UI 产品流 Agent Note](../../.agents/notes/archived/feature/2026-07-25-workspace-ui-product-flow.md)——首次启动如何从会话历史构建项目，以及 GUI 如何排序。
-- [删除 Workspace 注册记录决策](../../.agents/notes/implemented/feature/2026-07-27-workspace-registration-deletion.zh.md)——为什么移除项目绝不会删除其文件夹或会话。
+- [Workspace 子系統](../../docs/subsystems/workspace.zh.md)——專案及其工作階段的權威功能約定。
+- [領域 KV 儲存 Agent Note](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)——專案記錄背後的儲存設計。
+- [Workspace UI 產品流 Agent Note](../../.agents/notes/archived/feature/2026-07-25-workspace-ui-product-flow.md)——首次啟動如何從工作階段歷史建置專案，以及 GUI 如何排序。
+- [刪除 Workspace 註冊記錄決策](../../.agents/notes/implemented/feature/2026-07-27-workspace-registration-deletion.zh.md)——為什麼移除專案絕不會刪除其資料夾或工作階段。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

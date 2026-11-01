@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-09-10-session-data-compatibility.md
 /agent-note-session-historical-data-compatibility:
   en: bcc2d17eb800361c
-  zh: 8f74cc9e1c9f3729
+  zh: 72fbd9be7df1e955
 /agent-note-session-historical-data-compatibility/problem:
   en: d125f39227dc17ee
-  zh: ab83089486d70796
+  zh: 99eeb831fac28850
 /agent-note-session-historical-data-compatibility/proposal:
   en: 986dd8097aac4d3d
   zh: 986dd8097aac4d3d
 /agent-note-session-historical-data-compatibility/proposal/start-with-0-1-5-rc-1-v3:
   en: c0f09bb8e2c3aac5
-  zh: 4b7c8d3b1d1a0f76
+  zh: 3421b0b69884546c
 /agent-note-session-historical-data-compatibility/proposal/effect-on-ordinary-users:
   en: 7e8616cc65f825e3
-  zh: db9e5a3e1090985e
+  zh: 5dfa0bb3e80a132a
 /agent-note-session-historical-data-compatibility/proposal/invariants-after-provider-replacement:
   en: c3a8bb8665ca6d95
-  zh: 96a4b52c31fcc19d
+  zh: 307f405a831c79cb
 /agent-note-session-historical-data-compatibility/alternatives-considered:
   en: 8d34713ac1ca54ea
-  zh: 25b01743baa11434
+  zh: 78d6fa5d0bc090e6
 /agent-note-session-historical-data-compatibility/acceptance-criteria:
   en: abd8b41ca33f4398
-  zh: 54865a11723b670f
+  zh: daa4f5c81aaf01df
 /agent-note-session-historical-data-compatibility/risks:
   en: 2cb87e77f846c8fe
-  zh: e4e2f7eae02e0a7e
+  zh: 856b3b5989080d0a

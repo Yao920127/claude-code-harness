@@ -1,18 +1,18 @@
-# LLM（大语言模型）流式输出
+# LLM（大語言模型）流式輸出
 
 [English](llm-streaming.md) | 中文
 
-[`packages/llm`](../../packages/llm/README.zh.md) 提供对话与流式输出类型：持久 `Message` 值、仅供请求使用的 user 输入、共用的 `ContentBlock` 变体、完整组装的模型请求、原始 `StreamChunk` 协议、每个适配器必须实现的适配器约定（adapter contract），以及共享的 assembler。[核心包](core.zh.md)在每个轮次持有并记录这些值；本页声明它们。
+[`packages/llm`](../../packages/llm/README.zh.md) 提供對話與流式輸出型別：持久 `Message` 值、僅供請求使用的 user 輸入、共用的 `ContentBlock` 變體、完整組裝的模型請求、原始 `StreamChunk` 協定、每個介面卡必須實作的介面卡約定（adapter contract），以及共享的 assembler。[核心包](core.zh.md)在每個輪次持有並記錄這些值；本頁宣告它們。
 
-源码：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
+原始碼：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
 <a id="content-blocks-and-messages"></a>
 
-## 内容块与消息
+## 內容塊與訊息
 
-一段对话由 `Message` 组成；一条消息是一个类型化**内容块**的数组。块的联合类型从 `ContentBlockMap` 派生。
+一段對話由 `Message` 組成；一條訊息是一個型別化**內容塊**的陣列。塊的聯合型別從 `ContentBlockMap` 派生。
 
-源码：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
+原始碼：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
 ```ts type-equiv
 /**
@@ -31,11 +31,11 @@ interface ContentBlockMap {
 }
 ```
 
-各块接口（完整字段见源码）：`TextBlock`（`text`）、`ReasoningBlock`（thinking，区别于可见文本）、`ImageBlock`（一个持久的[图片附件](attachment.zh.md)）、`FileBlock`（一个持久的原样[文件附件](attachment.zh.md)，请求组装对每条路由都把它投影为 handle 文本）和 `ToolCallBlock`（`id: ToolCallId`、`name`、原始 JSON `arguments`）。工具结果是一等 `ToolResultMessage`，含有 `toolCallId`、结果 `content` 与可选的 `isError`；它不是内容块。`ContentBlock = ContentBlockMap[ContentBlockType]`。仅当适配器、UI、压缩（compaction）和持久回放路径均支持某种新模态时，才将其纳入可合并扩展的 map。 Developer 工具变更块按已解析路由的能力投影。
+各塊介面（完整欄位見原始碼）：`TextBlock`（`text`）、`ReasoningBlock`（thinking，區別於可見文字）、`ImageBlock`（一個持久的[圖片附件](attachment.zh.md)）、`FileBlock`（一個持久的原樣[檔案附件](attachment.zh.md)，請求組裝對每條路由都把它投影為 handle 文字）和 `ToolCallBlock`（`id: ToolCallId`、`name`、原始 JSON `arguments`）。工具結果是一等 `ToolResultMessage`，含有 `toolCallId`、結果 `content` 與可選的 `isError`；它不是內容塊。`ContentBlock = ContentBlockMap[ContentBlockType]`。僅當介面卡、UI、壓縮（compaction）和持久回放路徑均支援某種新模態時，才將其納入可合併擴充功能的 map。 Developer 工具變更塊按已解析路由的能力投影。
 
-图片访问方式属于请求序列化，不属于持久附件或确定性请求图片版本。`resolveImageAttachmentAccess()` 把附件提供方可选的宿主对象路径，与消费方为当前工具执行文件系统提供的映射组合起来。结果只适用于本次请求，不参与 `variantId`。
+圖片存取方式屬於請求序列化，不屬於持久附件或確定性請求圖片版本。`resolveImageAttachmentAccess()` 把附件提供者可選的主機物件路徑，與消費方為目前工具執行檔案系統提供的對映組合起來。結果只適用於本次請求，不參與 `variantId`。
 
-源码：[`packages/llm/llm/src/content.ts`](../../packages/llm/llm/src/content.ts)
+原始碼：[`packages/llm/llm/src/content.ts`](../../packages/llm/llm/src/content.ts)
 
 ```ts type-equiv
 /** Execution-world path that model tools can use to read one normalized attachment. */
@@ -45,9 +45,9 @@ interface ImageAttachmentAccess {
 }
 ```
 
-源码：[`packages/llm/llm/src/message.ts`](../../packages/llm/llm/src/message.ts)
+原始碼：[`packages/llm/llm/src/message.ts`](../../packages/llm/llm/src/message.ts)
 
-`Message` 是一个带标识且不可变的角色／来源／内容值。模型生成的 assistant 消息会在来源中记录生成它的提供方和模型，以及可选的适配器私有回放数据：
+`Message` 是一個帶標識且不可變的角色／來源／內容值。模型生成的 assistant 訊息會在來源中記錄生成它的提供者和模型，以及可選的介面卡私有回放資料：
 
 ```ts type-equiv
 /** Provider/model identity and adapter-private replay data for an assistant message. */
@@ -70,9 +70,9 @@ interface AssistantProviderMetadata {
 type Message = MessageRoleMap[keyof MessageRoleMap]
 ```
 
-`DeveloperMessage` 以 `developer` 角色按对话顺序记录增量智能体 Session 变更。`ToolAdditionBlock.toolName` 激活由所在 Session 事件的历史请求头引用所选定的定义；`ToolRemovalBlock.toolName` 移除当前生效的定义。其他消息角色拒绝这两种内容块。`deferLoading` 独立控制工具定义的加载请求，不要求存在添加记录。请求头绑定见 [Session](../../packages/core/session/README.zh.md)，提供方支持限制见 [LLM 包](../../packages/llm/llm/README.zh.md#known-limitations-and-deferred-work)。 已解析和已准备模型元数据中的 `ToolUpdate` 为 `in-history` 或 `addition-only`。`GenerateOptions.toolHistory` 携带 `ToolHistory`：初始 `tools` 和有序 `updates`，每项把 developer `messageId` 绑定到已解析历史定义的 `additions`。运行时将此状态投影为提供方声明，不修改已记录请求头中的有效工具列表。
+`DeveloperMessage` 以 `developer` 角色按對話順序記錄增量智慧代理 Session 變更。`ToolAdditionBlock.toolName` 啟用由所在 Session 事件的歷史請求頭引用所選定的定義；`ToolRemovalBlock.toolName` 移除目前生效的定義。其他訊息角色拒絕這兩種內容塊。`deferLoading` 獨立控制工具定義的載入請求，不要求存在新增記錄。請求頭繫結見 [Session](../../packages/core/session/README.zh.md)，提供者支援限制見 [LLM 包](../../packages/llm/llm/README.zh.md#known-limitations-and-deferred-work)。 已解析和已準備模型中繼資料中的 `ToolUpdate` 為 `in-history` 或 `addition-only`。`GenerateOptions.toolHistory` 攜帶 `ToolHistory`：初始 `tools` 和有序 `updates`，每項把 developer `messageId` 繫結到已解析歷史定義的 `additions`。執行時將此狀態投影為提供者宣告，不修改已記錄請求頭中的有效工具列表。
 
-消息来源本身也是一个可合并扩展的和类型：
+訊息來源本身也是一個可合併擴充功能的和型別：
 
 ```ts type-equiv
 /**
@@ -90,7 +90,7 @@ interface MessageSourceMap {
 }
 ```
 
-生产方标识与呈现形式相互独立。`kind` 回答「由谁产生」；可选的 `form` 回答「这是什么类型的信息」，消费方决定如何呈现。多个生产方可以共用一种 `form`，一个生产方在一次会话中也可以发出多种 `form`。这些取值描述语义，并逐个增加；未声明或无法识别的值使用文档规定的默认值，按不透明内容呈现：
+生產方標識與呈現形式相互獨立。`kind` 回答「由誰產生」；可選的 `form` 回答「這是什麼型別的資訊」，消費方決定如何呈現。多個生產方可以共用一種 `form`，一個生產方在一次工作階段中也可以發出多種 `form`。這些取值描述語義，並逐個增加；未宣告或無法識別的值使用文件規定的預設值，按不透明內容呈現：
 
 ```ts type-equiv
 /**
@@ -164,9 +164,9 @@ type ContextFormed =
 
 <a id="streamchunk--the-raw-protocol"></a>
 
-## `StreamChunk`：原始协议
+## `StreamChunk`：原始協定
 
-一个流式响应交错包含多种类型的块（文本、推理（reasoning）、多个工具调用）。`index` 将每个 delta 关联到其所属块；`block-end` 携带完整组装好的 `ContentBlock`，消费方无需自行重新组装 delta。这是一个**封闭的**可辨识联合类型：对 `type` 的 `switch` 以 `assertNever` 结尾，因此新增变体会在每个必须处理它的消费方处触发编译错误。
+一個流式回應交錯包含多種型別的塊（文字、推理（reasoning）、多個工具呼叫）。`index` 將每個 delta 關聯到其所屬塊；`block-end` 攜帶完整組裝好的 `ContentBlock`，消費方無需自行重新組裝 delta。這是一個**封閉的**可辨識聯合型別：對 `type` 的 `switch` 以 `assertNever` 結尾，因此新增變體會在每個必須處理它的消費方處觸發編譯錯誤。
 
 ```ts type-equiv
 /**
@@ -217,19 +217,19 @@ type StreamChunk =
 
 <a id="compact-assistant-streams"></a>
 
-## 紧凑 Assistant stream
+## 緊湊 Assistant stream
 
-`AssistantStreamAccumulator` 把每个 `StreamChunk` 与其原始安全整数时间戳配对，并生成 `AssistantStreamRecord[]`。同一 block 的连续 text、reasoning 或 tool argument delta 会变成一个 record，使用 `time0`、精确时间戳间隔和每个原始 delta 对应的一个数组成员；其他 chunk 保留为带时间戳的 raw record。该表示会移除重复 event envelope，但不会合并 token 边界，也不会丢弃 terminal、usage、block、failure 或 replay 事实。
+`AssistantStreamAccumulator` 把每個 `StreamChunk` 與其原始安全整數時間戳配對，並生成 `AssistantStreamRecord[]`。同一 block 的連續 text、reasoning 或 tool argument delta 會變成一個 record，使用 `time0`、精確時間戳間隔和每個原始 delta 對應的一個陣列成員；其他 chunk 保留為帶時間戳的 raw record。該表示會移除重複 event envelope，但不會合並 token 邊界，也不會丟棄 terminal、usage、block、failure 或 replay 事實。
 
-`snapshot()` 返回分离且不可变的 stream。`expandAssistantStream()` 会严格检查 record key、成员数、index、时间戳、tool-call identity 与无损 JSON，再重建精确的带时间 chunk 序列。Session 日志会把该 stream 嵌入作为 surface result 的 `assistant/message`，或嵌入没有 surface message 的 `assistant/attempt`。
+`snapshot()` 返回分離且不可變的 stream。`expandAssistantStream()` 會嚴格檢查 record key、成員數、index、時間戳、tool-call identity 與無損 JSON，再重建精確的帶時間 chunk 序列。Session 日誌會把該 stream 嵌入作為 surface result 的 `assistant/message`，或嵌入沒有 surface message 的 `assistant/attempt`。
 
-进程本地 `agent/assistant-stream` frame 承载实时呈现。持久回放与恢复校验仍会展开内嵌 settlement；遥测、token 记账与 Host 折叠直接读取紧凑记录。记录级读取器（`assistantStreamFirstTokenTime`、`assistantStreamHasVisibleContent`、`assistantStreamHasVisibleText`、`lastAssistantStreamChunk`、`assistantStreamChunks`、`joinAssistantStreamText`、`assembleAssistantStream` 以及按 run 的 `runFirstTokenTime` 与 `runFirstVisibleTime`）以提前退出在一次扫描内回答消费方问题，因此大历史每次结算的代价为 O(records) 而非 O(members) 展开（[折叠决策](../../.agents/notes/implemented/architecture/2026-09-06-embedded-stream-record-readers.zh.md)）。`expandAssistantStream()` 仍是持久边界读取记录与需要每个成员的消费方的校验路径。
+程序本地 `agent/assistant-stream` frame 承載即時呈現。持久回放與恢復驗證仍會展開內嵌 settlement；遙測、token 記帳與 Host 摺疊直接讀取緊湊記錄。記錄級讀取器（`assistantStreamFirstTokenTime`、`assistantStreamHasVisibleContent`、`assistantStreamHasVisibleText`、`lastAssistantStreamChunk`、`assistantStreamChunks`、`joinAssistantStreamText`、`assembleAssistantStream` 以及按 run 的 `runFirstTokenTime` 與 `runFirstVisibleTime`）以提前退出在一次掃描內回答消費方問題，因此大歷史每次結算的代價為 O(records) 而非 O(members) 展開（[摺疊決策](../../.agents/notes/implemented/architecture/2026-09-06-embedded-stream-record-readers.zh.md)）。`expandAssistantStream()` 仍是持久邊界讀取記錄與需要每個成員的消費方的驗證路徑。
 
 <a id="llmfailure"></a>
 
 ## `LlmFailure`
 
-每个抛出的失败或最终适配器的带内失败都会规范化为一种可序列化、提供方无关的 payload。`providerRetryAfterMs` 是经校验、由提供方请求的正数延迟，而不是重试决策；`ProviderRequestId` 是用于诊断的不透明品牌字符串。
+每個丟擲的失敗或最終介面卡的帶內失敗都會規範化為一種可序列化、提供者無關的 payload。`providerRetryAfterMs` 是經驗證、由提供者請求的正數延遲，而不是重試決策；`ProviderRequestId` 是用於診斷的不透明品牌字串。
 
 ```ts type-equiv
 /** Serializable provider or transport failure facts; policy decides whether they are retryable. */
@@ -254,9 +254,9 @@ interface LlmFailure {
 }
 ```
 
-## 请求图片定价
+## 請求圖片定價
 
-提供方对请求图片收取视觉 token 的适配器通过覆写 `LlmAdapter.imageRequestPricing` 声明按路由的定价，消费方经 `ctx.llm.imageRequestPricing(provider, model)` 同步解析。token 计量服务在每次计量时解析路由模型的定价，使 compaction 的压力、保留与选段都按路由请求实际发送的形式为图片历史计价；DeepSeek 适配器按模型的请求目标用官方公布的视觉计量为每个保留的出现位置定价，并把日志中的图片省略决策选中的出现位置按其占位文本定价，已完成请求仍以 provider usage 为权威锚点。
+提供者對請求圖片收取視覺 token 的介面卡透過覆寫 `LlmAdapter.imageRequestPricing` 宣告按路由的定價，消費方經 `ctx.llm.imageRequestPricing(provider, model)` 同步解析。token 計量服務在每次計量時解析路由模型的定價，使 compaction 的壓力、保留與選段都按路由請求實際傳送的形式為圖片歷史計價；DeepSeek 介面卡按模型的請求目標用官方公佈的視覺計量為每個保留的出現位置定價，並把日誌中的圖片省略決策選中的出現位置按其佔位文字定價，已完成請求仍以 provider usage 為權威錨點。
 
 ```ts type-equiv
 /**
@@ -293,27 +293,27 @@ interface LlmImageRequestPricing {
 }
 ```
 
-## 适配器约定
+## 介面卡約定
 
-每个适配器必须遵守以下规则，每个消费方可以依赖它们：
+每個介面卡必須遵守以下規則，每個消費方可以依賴它們：
 
-- **`usage` 在 `finish` 之前，`finish` 之后不再有任何分片。** 将两者都推迟到提供方的流结束标记，这样尾部的 usage-only 分片就不会违反顺序。
-- **工具调用的 `arguments` 全程保持原始 JSON 字符串。** 部分片段通过 `argumentsDelta` 流式传输；如果提供方返回的是已解析的对象，适配器在 `block-end` 时重新序列化为字符串。
-- **两条受支持的错误路径，共用一个 `LlmFailure` 类型。** 失败可以从 `stream()` 抛出（传输／协议错误），**或者**以 `finish {kind:'error'|'aborted', failure}` 结束流（无法在流中途抛异常的适配器用它表示提供方带内错误）。`LlmError.failure` 携带同一个 `LlmFailure`。调用选定适配器后，流会保留被抛出的确切 `Error` 对象，并将不可变事实以及实际服务注册所对应的不可变重试策略关联到该调用；agent loop（智能体循环）先把 attempt stream 提交为 `assistant/attempt`，再关闭失败步骤，并把错误、事实、不可变的先前已重试失败事实、实际服务策略和轮次信号提供给 `agent/request-error`。处理该错误的 listener 在其 await 的修复完成后返回 `{ kind: 'retry' }`；若未恢复，结构化失败会成为轮次错误，并且该次 attempt 不会提交 surface Assistant message 或工具副作用。
-- **一次适配器调用就是一次提供方尝试。** 适配器禁用库重试。agent 层恢复会打开另一个持久、带编号的轮次；直接调用 `ctx.llm.stream()` 的调用方仍然只尝试一次。
-- **提供方停顿在传输层受到时限约束。** 两个已交付的远程适配器都暴露正数且有限的 `streamIdleTimeoutMs`，默认五分钟。watchdog 只在 iterator `next()` 尚未完成时启动，整个请求使用同一个稳定 signal，把自身到期映射为 `TIMEOUT`，并把更早发生的调用方中止保留为 `ABORTED`。
-- **上下文溢出只有一个规范 code。** 两个 DeepSeek 适配器都通过 `isContextWindowExceededError()` 对提供方的显式细节分类并暴露 `CONTEXT_WINDOW_EXCEEDED`，无论失败以抛出的 HTTP `LlmError` 还是带内 finish error 到达。消费方按 code 路由，绝不依赖提供方文本。
-- **空 completion 是可重试错误，而不是静默的成功结果。** 两个适配器都把没有携带任何内容块的终止性 `stop` 结束映射为携带规范 `EMPTY_RESPONSE` code 的 `finish {kind:'error'}`，`dsh-llm-retry` 默认会重试它。
-- **每个提供方 HTTP 请求都携带应用归属头。** 适配器发送 `attributionHeaders()`（见下文）作为 `User-Agent` 基线，并通过协议级测试加以证明。
-- **回放状态归适配器所有；其切分是共享词汇。** 成功的 `finish` 可以携带一个 `ReplayEnvelope`：不透明的响应级元数据，加上与发射块序列对齐的可选逐块条目。对齐关系是 harness 的词汇——组装丢弃某个块时，同一位置的条目一并丢弃，因此存储的元数据始终描述存储的内容。循环把裁剪后的数据与组装后的 assistant 消息一起存储。后续请求中，仅当历史提供方与目标提供方当前注册到完全相同的适配器实例时，`LlmRuntime` 才会传递该状态。该适配器负责校验状态并拥有所有跨模型或跨提供方转换；其他适配器只会收到提供方无关的内容以及提供方／模型字段，不会收到私有状态。持久化内容保持权威：读取适配器无法使用的已存状态只会把这一条消息降级为提供方无关转换并带出诊断，而不是让请求失败。
+- **`usage` 在 `finish` 之前，`finish` 之後不再有任何分片。** 將兩者都推遲到提供者的流結束標記，這樣尾部的 usage-only 分片就不會違反順序。
+- **工具呼叫的 `arguments` 全程保持原始 JSON 字串。** 部分片段透過 `argumentsDelta` 流式傳輸；如果提供者返回的是已解析的物件，介面卡在 `block-end` 時重新序列化為字串。
+- **兩條受支援的錯誤路徑，共用一個 `LlmFailure` 型別。** 失敗可以從 `stream()` 丟擲（傳輸／協定錯誤），**或者**以 `finish {kind:'error'|'aborted', failure}` 結束流（無法在流中途拋異常的介面卡用它表示提供者帶內錯誤）。`LlmError.failure` 攜帶同一個 `LlmFailure`。呼叫選定介面卡後，流會保留被丟擲的確切 `Error` 物件，並將不可變事實以及實際服務註冊所對應的不可變重試策略關聯到該呼叫；agent loop（智慧代理迴圈）先把 attempt stream 提交為 `assistant/attempt`，再關閉失敗步驟，並把錯誤、事實、不可變的先前已重試失敗事實、實際服務策略和輪次訊號提供給 `agent/request-error`。處理該錯誤的 listener 在其 await 的修復完成後返回 `{ kind: 'retry' }`；若未恢復，結構化失敗會成為輪次錯誤，並且該次 attempt 不會提交 surface Assistant message 或工具副作用。
+- **一次介面卡呼叫就是一次提供者嘗試。** 介面卡停用庫重試。agent 層恢復會開啟另一個持久、帶編號的輪次；直接呼叫 `ctx.llm.stream()` 的呼叫方仍然只嘗試一次。
+- **提供者停頓在傳輸層受到時限約束。** 兩個已交付的遠端介面卡都暴露正數且有限的 `streamIdleTimeoutMs`，預設五分鐘。watchdog 只在 iterator `next()` 尚未完成時啟動，整個請求使用同一個穩定 signal，把自身到期對映為 `TIMEOUT`，並把更早發生的呼叫方中止保留為 `ABORTED`。
+- **上下文溢位只有一個規範 code。** 兩個 DeepSeek 介面卡都透過 `isContextWindowExceededError()` 對提供者的顯式細節分類並暴露 `CONTEXT_WINDOW_EXCEEDED`，無論失敗以丟擲的 HTTP `LlmError` 還是帶內 finish error 到達。消費方按 code 路由，絕不依賴提供者文字。
+- **空 completion 是可重試錯誤，而不是靜默的成功結果。** 兩個介面卡都把沒有攜帶任何內容塊的終止性 `stop` 結束對映為攜帶規範 `EMPTY_RESPONSE` code 的 `finish {kind:'error'}`，`dsh-llm-retry` 預設會重試它。
+- **每個提供者 HTTP 請求都攜帶應用歸屬頭。** 介面卡傳送 `attributionHeaders()`（見下文）作為 `User-Agent` 基線，並透過協定級測試加以證明。
+- **回放狀態歸介面卡所有；其切分是共享詞彙。** 成功的 `finish` 可以攜帶一個 `ReplayEnvelope`：不透明的回應級中繼資料，加上與發射塊序列對齊的可選逐塊條目。對齊關係是 harness 的詞彙——組裝丟棄某個塊時，同一位置的條目一併丟棄，因此儲存的中繼資料始終描述儲存的內容。迴圈把裁剪後的資料與組裝後的 assistant 訊息一起儲存。後續請求中，僅當歷史提供者與目標提供者目前註冊到完全相同的介面卡實例時，`LlmRuntime` 才會傳遞該狀態。該介面卡負責驗證狀態並擁有所有跨模型或跨提供者轉換；其他介面卡只會收到提供者無關的內容以及提供者／模型欄位，不會收到私有狀態。持久化內容保持權威：讀取介面卡無法使用的已存狀態只會把這一條訊息降級為提供者無關轉換並帶出診斷，而不是讓請求失敗。
 
 ## `ResolvedRetryPolicy`
 
-重试配置会在路由注册前解析为不可变的可辨识联合。normal mode 携带 `mode: 'normal'`、有限的 `maxRetries`、`retryableCodes`，以及必填的 `initialDelayMs`、`maxDelayMs` 与 `jitterRatio`；always mode 携带 `mode: 'always'` 和相同的必填退避字段，但没有有限上限。省略提供方策略时使用重试五次的 normal 默认值。分层 settings 在切换到 always 模式后可能保留仅属于 normal 的 `maxRetries` 或 `retryableCodes`；解析器会忽略这些未启用字段，并捕获纯 always 策略。`LlmRuntime.providerRetryPolicy(provider)` 返回注册值；调用选定实际提供服务的注册后，`llmRetryPolicyOf(stream)` 返回从中捕获的值，因此之后释放或替换路由都无法改变进行中失败的恢复策略。可选配置输入字段由[生成的配置目录](../config-catalog.zh.md)列出。
+重試設定會在路由註冊前解析為不可變的可辨識聯合。normal mode 攜帶 `mode: 'normal'`、有限的 `maxRetries`、`retryableCodes`，以及必填的 `initialDelayMs`、`maxDelayMs` 與 `jitterRatio`；always mode 攜帶 `mode: 'always'` 和相同的必填退避欄位，但沒有有限上限。省略提供者策略時使用重試五次的 normal 預設值。分層 settings 在切換到 always 模式後可能保留僅屬於 normal 的 `maxRetries` 或 `retryableCodes`；解析器會忽略這些未啟用欄位，並捕捉純 always 策略。`LlmRuntime.providerRetryPolicy(provider)` 返回註冊值；呼叫選定實際提供服務的註冊後，`llmRetryPolicyOf(stream)` 返回從中捕捉的值，因此之後釋放或替換路由都無法改變進行中失敗的恢復策略。可選設定輸入欄位由[生成的設定目錄](../config-catalog.zh.md)列出。
 
-## `AppIdentity`：应用归属
+## `AppIdentity`：應用歸屬
 
-每个适配器都会向提供方发送的静态公开应用标识（[`packages/llm/llm/src/attribution.ts`](../../packages/llm/llm/src/attribution.ts)）。`attributionHeaders(identity?)` 只把它映射到标准 `User-Agent` header；该约定有意不支持 OpenRouter 特有的应用归属 header。默认 `APP_IDENTITY` 从包 manifest（元数据清单）获取版本；每个字段都是公开产品事实——不含 secret、路径、会话 id 或逐用户标识，且任何逐请求信息都不得影响这些值。设计理由见[强制 `User-Agent` 归属](../../.agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.zh.md)。
+每個介面卡都會向提供者傳送的靜態公開應用標識（[`packages/llm/llm/src/attribution.ts`](../../packages/llm/llm/src/attribution.ts)）。`attributionHeaders(identity?)` 只把它對映到標準 `User-Agent` header；該約定有意不支援 OpenRouter 特有的應用歸屬 header。預設 `APP_IDENTITY` 從包 manifest（中繼資料清單）取得版本；每個欄位都是公開產品事實——不含 secret、路徑、工作階段 id 或逐使用者標識，且任何逐請求資訊都不得影響這些值。設計理由見[強制 `User-Agent` 歸屬](../../.agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.zh.md)。
 
 ```ts type-equiv
 /**
@@ -337,7 +337,7 @@ interface AppIdentity {
 
 ## `TokenUsage`
 
-逐调用 token 记账。各计数**互不重叠**：`inputTokens` 只包含未缓存输入；缓存输入单独报告，计费输入是三者之和。若提供方把缓存命中折入单一提示词总数（如 DeepSeek 的 `prompt_tokens`），适配器会再将其扣除。可选的 `totalTokens` 是精确的提示词与输出聚合计数，由适配器保留提供方原值或从权威聚合计数重建；不可用或不一致时省略。`reasoningTokens` 存在时只是信息性细节，已经包含在 `outputTokens` 中；汇总时不得重复相加。
+逐呼叫 token 記帳。各計數**互不重疊**：`inputTokens` 只包含未快取輸入；快取輸入單獨報告，計費輸入是三者之和。若提供者把快取命中折入單一提示詞總數（如 DeepSeek 的 `prompt_tokens`），介面卡會再將其扣除。可選的 `totalTokens` 是精確的提示詞與輸出聚合計數，由介面卡保留提供者原值或從權威聚合計數重建；不可用或不一致時省略。`reasoningTokens` 存在時只是資訊性細節，已經包含在 `outputTokens` 中；彙總時不得重複相加。
 
 ```ts type-equiv
 /**
@@ -369,9 +369,9 @@ interface TokenUsage {
 
 ## `BlockAssembler`
 
-`BlockAssembler`（[`packages/llm/llm/src/assembler.ts`](../../packages/llm/llm/src/assembler.ts)）是唯一的共享实现，负责把 `StreamChunk` 流折叠回 `ContentBlock`、usage、结束原因与回放状态。循环在记录原始分片的同时，把同一批分片送入 assembler，再将组装后的 assistant 内容连同生成它的提供方和模型一起存储。需要组装结果、又不想重新实现 fold 的消费方使用它。
+`BlockAssembler`（[`packages/llm/llm/src/assembler.ts`](../../packages/llm/llm/src/assembler.ts)）是唯一的共享實作，負責把 `StreamChunk` 流摺疊回 `ContentBlock`、usage、結束原因與回放狀態。迴圈在記錄原始分片的同時，把同一批分片送入 assembler，再將組裝後的 assistant 內容連同生成它的提供者和模型一起儲存。需要組裝結果、又不想重新實作 fold 的消費方使用它。
 
-内容与元数据共用同一次保留/丢弃决定：`max-tokens` 结束会丢弃每个工具调用，因为被截断的调用不能安全执行，而同一决定会在每个被丢弃的位置裁剪回放数据的逐块条目。无论组装移除什么，`blocks()` 与 `replayState` 都不可能不一致。
+內容與中繼資料共用同一次保留/丟棄決定：`max-tokens` 結束會丟棄每個工具呼叫，因為被截斷的呼叫不能安全執行，而同一決定會在每個被丟棄的位置裁剪回放資料的逐塊條目。無論組裝移除什麼，`blocks()` 與 `replayState` 都不可能不一致。
 
 ```ts public-api
 /**
@@ -428,15 +428,15 @@ declare class BlockAssembler {
 
 <a id="the-model-request-and-result"></a>
 
-## 模型请求
+## 模型請求
 
-一次模型调用是一个完全组装好的 `GenerateOptions`。适配器以原始 [`StreamChunk`](#streamchunk--the-raw-protocol) 流作答；消费方用 [`BlockAssembler`](#blockassembler) 组装它。
+一次模型呼叫是一個完全組裝好的 `GenerateOptions`。介面卡以原始 [`StreamChunk`](#streamchunk--the-raw-protocol) 流作答；消費方用 [`BlockAssembler`](#blockassembler) 組裝它。
 
-源码：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
+原始碼：[`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
-提供方与模型发现使用小型、提供方无关的描述符。模型目录仅供参考：路由仍以已注册提供方为键。
+提供者與模型發現使用小型、提供者無關的描述符。模型目錄僅供參考：路由仍以已註冊提供者為鍵。
 
-注册适配器会返回一个句柄：既是释放器，也带有原子的路由替换——路由集合由用户配置决定的插件正需要它。
+註冊介面卡會返回一個控制代碼：既是釋放器，也帶有原子的路由替換——路由集合由使用者設定決定的外掛正需要它。
 
 ```ts type-equiv
 /**
@@ -474,7 +474,7 @@ interface LlmProviderInfo {
 }
 ```
 
-适配器插件还会通过 `registerConfigurableProviders()` 声明哪些路由*可以*运行，并指明每条路由的用户设置分节，使配置界面能在任何路由注册之前就呈现休眠的提供方。
+介面卡外掛還會透過 `registerConfigurableProviders()` 宣告哪些路由*可以*執行，並指明每條路由的使用者設定分節，使設定介面能在任何路由註冊之前就呈現休眠的提供者。
 
 ```ts type-equiv
 /**
@@ -525,7 +525,7 @@ interface LlmModelInfo {
 }
 ```
 
-对正确性敏感的元数据与参考目录分开解析，并归服务该确切路由的适配器所有。上下文容量、适配器调用默认值、推理选项和系统提示词更新模式共用同一个确切模型结果，消费方因而无需重复执行权威模型解析。`SystemPromptUpdate` 只有一个值 `'in-history'`：模型把 `messages` 中任意位置最新的 `system` 消息读作完整的有效系统提示词，因此 agent loop 可以把变化后的提示词追加到已缓存历史之后，而不是改写第 0 条消息（[决策规则](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）；模式缺失表示只读取开头的 system 消息，`normalizeModelInfo` 以 `INVALID_MODEL_INFO` 拒绝任何其他值。
+對正確性敏感的中繼資料與參考目錄分開解析，並歸服務該確切路由的介面卡所有。上下文容量、介面卡呼叫預設值、推理選項和系統提示詞更新模式共用同一個確切模型結果，消費方因而無需重複執行權威模型解析。`SystemPromptUpdate` 只有一個值 `'in-history'`：模型把 `messages` 中任意位置最新的 `system` 訊息讀作完整的有效系統提示詞，因此 agent loop 可以把變化後的提示詞追加到已快取歷史之後，而不是改寫第 0 條訊息（[決策規則](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）；模式缺失表示只讀取開頭的 system 訊息，`normalizeModelInfo` 以 `INVALID_MODEL_INFO` 拒絕任何其他值。
 
 ```ts type-equiv
 /** Provider-owned context capacity for one exact provider/model route. */
@@ -535,7 +535,7 @@ interface LlmModelContext {
 }
 ```
 
-推理强度是另一项针对确切路由的能力。核心为标识符添加品牌类型，但不枚举其值；有序集合、展示名称和可选的部署默认值均由各适配器持有。
+推理強度是另一項針對確切路由的能力。核心為識別符號新增品牌型別，但不列舉其值；有序集合、展示名稱和可選的部署預設值均由各介面卡持有。
 
 ```ts type-equiv
 /** Adapter-owned identifier for one model's selectable reasoning effort. */
@@ -583,7 +583,7 @@ interface LlmResolvedModelInfo extends LlmModelInfo {
 }
 ```
 
-辅助调用方可以提供不含持久身份或来源的 user 内容。既有 `Message[]` 历史仍然是有效的请求输入。Session 写入、Agent 投递和已记录的标题请求仍然要求持久消息。
+輔助呼叫方可以提供不含持久身份或來源的 user 內容。既有 `Message[]` 歷史仍然是有效的請求輸入。Session 寫入、Agent 投遞和已記錄的標題請求仍然要求持久訊息。
 
 ```ts type-equiv
 /** User input for one LLM request; it has no durable Session identity or source. */
@@ -647,7 +647,7 @@ interface GenerateOptions {
 }
 ```
 
-模型响应为何停止由可合并扩展的原因表示。提供方终态失败携带流式约定的 [`LlmFailure`](#llmfailure)：
+模型回應為何停止由可合併擴充功能的原因表示。提供者終態失敗攜帶流式約定的 [`LlmFailure`](#llmfailure)：
 
 ```ts type-equiv
 /**
@@ -663,9 +663,9 @@ interface FinishReasonMap {
 }
 ```
 
-`FinishReason = FinishReasonMap[keyof FinishReasonMap]`。`TokenUsage`（逐调用计量，含不相交的缓存字段）详见[下文](#tokenusage)。
+`FinishReason = FinishReasonMap[keyof FinishReasonMap]`。`TokenUsage`（逐呼叫計量，含不相交的快取欄位）詳見[下文](#tokenusage)。
 
-`GenerateOptions.tools` 携带 `ToolSchema`——工具的 JSON Schema 描述，发送给模型。它声明在 dsh-llm（而非 dsh-tools）中，正是因为它是循环每一步组装请求的一部分：
+`GenerateOptions.tools` 攜帶 `ToolSchema`——工具的 JSON Schema 描述，傳送給模型。它宣告在 dsh-llm（而非 dsh-tools）中，正是因為它是迴圈每一步組裝請求的一部分：
 
 ```ts type-equiv
 /**
@@ -689,9 +689,9 @@ interface ToolSchema {
 }
 ```
 
-面向模型的 `ToolSchema` 是协议类型；产出它的已注册 `ToolDefinition`（schema + `execute`）在 [tools.md](tools.zh.md) 中。
+面向模型的 `ToolSchema` 是協定型別；產出它的已註冊 `ToolDefinition`（schema + `execute`）在 [tools.md](tools.zh.md) 中。
 
-界面正在起草的提供方既没有路由也没有 catalog，因此询问被单独描述：请求携带用户正在编辑的草稿，回复是界面可以采纳的候选，而不是它必须服务的 catalog。
+介面正在起草的提供者既沒有路由也沒有 catalog，因此詢問被單獨描述：請求攜帶使用者正在編輯的草稿，回覆是介面可以採納的候選，而不是它必須服務的 catalog。
 
 ```ts type-equiv
 /**
@@ -740,15 +740,15 @@ interface LlmDiscoveredModel {
 }
 ```
 
-### 请求信封：`LlmCallConfig` 与记录的 header
+### 請求信封：`LlmCallConfig` 與記錄的 header
 
-循环从已记录状态构建每个请求。`EpochHeader` 记录调用配置，标记由适配器默认值提供的字段，并通过完整的 `request/header` 快照记录权威返回工具顺序（由 `toolOrder` 配置；未配置时按字典序）。渲染后的提示词是派生历史——surface 第 0 号节点上的 `system/message`，加上 `in-history` 路由追加的任何后续系统节点——因此请求头与派生历史共同使请求可由会话日志重建。见 [session.md](session.zh.md#the-request-header-event-requestheader) 与[可重建性 Agent Note](../../.agents/notes/implemented/architecture/2026-07-05-reconstructable-requests.zh.md)。
+迴圈從已記錄狀態建置每個請求。`EpochHeader` 記錄呼叫設定，標記由介面卡預設值提供的欄位，並透過完整的 `request/header` 快照記錄權威返回工具順序（由 `toolOrder` 設定；未設定時按字典序）。渲染後的提示詞是派生歷史——surface 第 0 號節點上的 `system/message`，加上 `in-history` 路由追加的任何後續系統節點——因此請求頭與派生歷史共同使請求可由工作階段日誌重建。見 [session.md](session.zh.md#the-request-header-event-requestheader) 與[可重建性 Agent Note](../../.agents/notes/implemented/architecture/2026-07-05-reconstructable-requests.zh.md)。
 
-`agent/request` 接收冻结的调用配置种子，并可返回替代值以切换提供方、模型、推理强度或采样参数。waterfall（瀑布式事件）开始前，循环会移除标记为适配器默认值的值，使确切模型准备过程填入所选路由的当前值；未带标记的显式设置仍保留在提议中。waterfall 结束后，准备过程会在轮次信号控制下拒绝显式指定但不受支持的推理强度 ID（不自动调整），并记录生效配置以及由适配器默认值提供的字段。步骤准入时，该 waterfall 与准备过程在组装和 `step/start` 之后、系统提示词与已接纳用户批次提交之前运行；在任一阶段取消都不会提交这两者。已准备调用的能力决定提示词协调，调用直至分派完成始终持有同一项适配器注册。到达 `llm/stream` 的请求会被深度冻结，因此变更会抛异常；请求还携带进程本地循环标识，使观察者不会把单独记录的冻结辅助调用误认成对话请求。
+`agent/request` 接收凍結的呼叫設定種子，並可返回替代值以切換提供者、模型、推理強度或取樣參數。waterfall（瀑布式事件）開始前，迴圈會移除標記為介面卡預設值的值，使確切模型準備過程填入所選路由的目前值；未帶標記的顯式設定仍保留在提議中。waterfall 結束後，準備過程會在輪次訊號控制下拒絕顯式指定但不受支援的推理強度 ID（不自動調整），並記錄生效設定以及由介面卡預設值提供的欄位。步驟准入時，該 waterfall 與準備過程在組裝和 `step/start` 之後、系統提示詞與已接納使用者批次提交之前執行；在任一階段取消都不會提交這兩者。已準備呼叫的能力決定提示詞協調，呼叫直至分派完成始終持有同一項介面卡註冊。到達 `llm/stream` 的請求會被深度凍結，因此變更會拋異常；請求還攜帶程序本地迴圈標識，使觀察者不會把單獨記錄的凍結輔助呼叫誤認成對話請求。
 
-在协议中，循环构建的请求只有派生历史：渲染后的提示词作为开头的 `system` 角色消息（surface 第 0 号节点，即一个 `system/message` 事件）传输，并且当已准备调用声明 `systemPromptUpdate: 'in-history'` 时，变化后的非空提示词可以作为后续的 `system` 角色消息跟在已缓存历史之后，由模型读作有效提示词；请求的 `system` 字段不设置——`GenerateOptions.system` 服务于标题提供方等直接单次调用方。空渲染文本使派生历史不包含任何系统消息，即使先前请求保留了多个提示词版本。已记录的请求会以最新的 `user/message`（轮次首步）或上一步的工具结果（后续步骤）结尾。开发不变式针对每个循环构建的请求精确重算此等式，并拒绝携带 `system` 字段的循环请求。
+在協定中，迴圈建置的請求只有派生歷史：渲染後的提示詞作為開頭的 `system` 角色訊息（surface 第 0 號節點，即一個 `system/message` 事件）傳輸，並且當已準備呼叫宣告 `systemPromptUpdate: 'in-history'` 時，變化後的非空提示詞可以作為後續的 `system` 角色訊息跟在已快取歷史之後，由模型讀作有效提示詞；請求的 `system` 欄位不設定——`GenerateOptions.system` 服務於標題提供者等直接單次呼叫方。空渲染文字使派生歷史不包含任何系統訊息，即使先前請求保留了多個提示詞版本。已記錄的請求會以最新的 `user/message`（輪次首步）或上一步的工具結果（後續步驟）結尾。開發不變式針對每個迴圈建置的請求精確重算此等式，並拒絕攜帶 `system` 欄位的迴圈請求。
 
-FIXME(call-config-shape)：重新审视其余哪些字段出于缓存目的确实属于 epoch 层级（`model` 和模型持有的推理强度已明确属于；采样标量目前出于谨慎保留在此）。
+FIXME(call-config-shape)：重新審視其餘哪些欄位出於快取目的確實屬於 epoch 層級（`model` 和模型持有的推理強度已明確屬於；取樣標量目前出於謹慎保留在此）。
 
 ```ts type-equiv
 /**
@@ -778,15 +778,15 @@ interface LlmCallConfigAdapterDefaults {
 }
 ```
 
-## DeepSeek 官方请求扩展
+## DeepSeek 官方請求擴充功能
 
-`ctx.deepseekLlmApiExtensions` 是用于向 `deepseek-official` 请求添加顶层字段的提供方特定注册表。贡献插件通过 `register(field, provider)` 认领一个字段；适配器在序列化基础正文后调用 `prepare(request)`，并在 HTTP 前合并返回字段。已准备的 `accept()` 事务会在 2xx 后运行，因此贡献方可以提交交付状态，而不会把传输失败或提供方拒绝当作接受。准备、冲突与接受失败会使用 `REQUEST_EXTENSION`，并使模型请求失败。合并后的正文无法序列化时，请求不带扩展字段发出，跳过接受，并由提供方插件记录被省略的字段名。
+`ctx.deepseekLlmApiExtensions` 是用於向 `deepseek-official` 請求新增頂層欄位的提供者特定註冊表。貢獻外掛透過 `register(field, provider)` 認領一個欄位；介面卡在序列化基礎正文後呼叫 `prepare(request)`，並在 HTTP 前合併返回欄位。已準備的 `accept()` 事務會在 2xx 後執行，因此貢獻方可以提交交付狀態，而不會把傳輸失敗或提供者拒絕當作接受。準備、衝突與接受失敗會使用 `REQUEST_EXTENSION`，並使模型請求失敗。合併後的正文無法序列化時，請求不帶擴充功能欄位發出，跳過接受，並由提供者外掛記錄被省略的欄位名。
 
-[协议参考](../deepseek-llm-api-wire-extensions.zh.md)定义确切的请求标头、扩展事务、字段版本和接收方义务。随附组合会将 [`dsh_session_log`](../../packages/session/session-log-deepseek/README.zh.md) 注册为无损增量权威日志后缀，并将 [`dsh_plugin_packages`](../../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 注册为完整存活 Loader 包集合。这些字段仍位于模型消息之外，也不会进入 pi-ai 适配器路径。
+[協定參考](../deepseek-llm-api-wire-extensions.zh.md)定義確切的請求標頭、擴充功能事務、欄位版本和接收方義務。隨附組合會將 [`dsh_session_log`](../../packages/session/session-log-deepseek/README.zh.md) 註冊為無損增量權威日誌字尾，並將 [`dsh_plugin_packages`](../../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 註冊為完整存活 Loader 包集合。這些欄位仍位於模型訊息之外，也不會進入 pi-ai 介面卡路徑。
 
-## 服务与提供方约定
+## 服務與提供者約定
 
-`LlmAdapter` 是提供方约定：创建子类、实现 `stream()`，再用 `ctx.llm.registerAdapter(providers, adapter)` 注册一个适配器实例。`GenerateOptions.provider` 选择已注册适配器；`GenerateOptions.model` 会传给该适配器，无需在生命周期启动时注册。重复提供方路由会原子失败。可选的 `providerRetryPolicy()` 会按路由捕获并填入 normal 默认值，`providerInfo()` 与异步 `listModels()` 方法则为 `LlmRuntime.listProviders()` / `listModels()` 提供分离的 selector 元数据。该目录仅供参考，不是请求白名单：适配器仍是权威，并可接受未列出的模型 id。单次异步 `resolveModel()` 查询返回确切模型身份，以及可选的对正确性敏感的上下文容量、适配器配置的 `defaultMaxTokens`、由模型持有的有序推理强度 ID 和可选的部署默认值；字段缺失表示元数据不可用或保留提供方持有的行为，而不表示目录成员关系无效。解析器会接收可选的取消信号，并且必须在信号中止后迅速完成结算。`LlmRuntime.resolveModelInfo()` 会校验聚合结果并返回分离值。在最终适配器边界，`resolveCallConfig()` 仅在 `maxTokens` 缺失时填入输出默认值，并校验和填入推理强度，因此直接调用也无法绕过任何一项已配置行为；直接分派会在等待解析前捕获一项适配器注册。agent loop 则使用 `prepareCall()`，使模型解析、请求头持久记录和分派全程使用同一项注册，保留来自同一次查询的分离上下文元数据，并报告适配器填入的配置字段。适配器查找发生在 `llm/stream` waterfall 的终端 continuation，因此 listener 可以在查找前短路调用，或路由一个可变的一次性请求。AgentLoop 在外层 waterfall 返回流句柄时观察到一次请求尝试；这个有限边界不能证明惰性终端适配器已构造完成或开始提供方 I/O。`block-start` / `block-end` 的 `index` 关联与 assembler 共同意味着适配器只需 emit 格式正确的分片——块重组不是每个适配器各自的问题。`ctx.llm.stream()` 与 `llm/stream` waterfall 在一个轮次中的位置见 [architecture.md](../architecture.zh.md#turn-flow)。
+`LlmAdapter` 是提供者約定：建立子類、實作 `stream()`，再用 `ctx.llm.registerAdapter(providers, adapter)` 註冊一個介面卡實例。`GenerateOptions.provider` 選擇已註冊介面卡；`GenerateOptions.model` 會傳給該介面卡，無需在生命週期啟動時註冊。重複提供者路由會原子失敗。可選的 `providerRetryPolicy()` 會按路由捕捉並填入 normal 預設值，`providerInfo()` 與非同步 `listModels()` 方法則為 `LlmRuntime.listProviders()` / `listModels()` 提供分離的 selector 中繼資料。該目錄僅供參考，不是請求白名單：介面卡仍是權威，並可接受未列出的模型 id。單次非同步 `resolveModel()` 查詢返回確切模型身份，以及可選的對正確性敏感的上下文容量、介面卡設定的 `defaultMaxTokens`、由模型持有的有序推理強度 ID 和可選的部署預設值；欄位缺失表示中繼資料不可用或保留提供者持有的行為，而不表示目錄成員關係無效。解析器會接收可選的取消訊號，並且必須在訊號中止後迅速完成結算。`LlmRuntime.resolveModelInfo()` 會驗證聚合結果並返回分離值。在最終介面卡邊界，`resolveCallConfig()` 僅在 `maxTokens` 缺失時填入輸出預設值，並總和檢查碼填入推理強度，因此直接呼叫也無法繞過任何一項已設定行為；直接分派會在等待解析前捕捉一項介面卡註冊。agent loop 則使用 `prepareCall()`，使模型解析、請求頭持久記錄和分派全程使用同一項註冊，保留來自同一次查詢的分離上下文中繼資料，並報告介面卡填入的設定欄位。介面卡查詢發生在 `llm/stream` waterfall 的終端 continuation，因此 listener 可以在查詢前短路呼叫，或路由一個可變的一次性請求。AgentLoop 在外層 waterfall 返回流控制代碼時觀察到一次請求嘗試；這個有限邊界不能證明惰性終端介面卡已建構完成或開始提供者 I/O。`block-start` / `block-end` 的 `index` 關聯與 assembler 共同意味著介面卡只需 emit 格式正確的分片——塊重組不是每個介面卡各自的問題。`ctx.llm.stream()` 與 `llm/stream` waterfall 在一個輪次中的位置見 [architecture.md](../architecture.zh.md#turn-flow)。
 
 ```ts type-equiv
 /** One model call whose config and adapter registration were resolved together. */
@@ -888,7 +888,7 @@ declare abstract class LlmAdapter {
 }
 ```
 
-`ContentBlockType`（带 `index` 关联的块所携带的键集合）从上文的 [`ContentBlockMap`](#content-blocks-and-messages) 派生。
+`ContentBlockType`（帶 `index` 關聯的塊所攜帶的鍵集合）從上文的 [`ContentBlockMap`](#content-blocks-and-messages) 派生。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

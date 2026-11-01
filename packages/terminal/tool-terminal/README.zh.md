@@ -1,5 +1,5 @@
 ---
-description: "面向需要跨调用终端状态的 agent（智能体）的 6 个持久终端工具，带所有者隔离、有界结果与可选后台发送。"
+description: "面向需要跨呼叫終端狀態的 agent（智慧代理）的 6 個持久終端工具，帶所有者隔離、有界結果與可選後臺傳送。"
 kind: "package-reference"
 ---
 
@@ -9,36 +9,36 @@ kind: "package-reference"
 
 ## 概述
 
-当 agent 需要跨调用保留终端状态或提供交互式输入时，使用 `dsh-tool-terminal`。它可以打开、发送、读取、传递信号、关闭和列出终端会话，同时防止一个 agent 操作其他 agent 的会话。发送可以等待有界的前台输出，也可以返回供后续收集或中断的后台任务 job id。`maxResultBytes` 限制每个结果的大小，而结果会保留在会话历史中直到压缩（compaction）。指引会让模型对有界工作优先使用单次工具。
+當 agent 需要跨呼叫保留終端狀態或提供互動式輸入時，使用 `dsh-tool-terminal`。它可以開啟、傳送、讀取、傳遞訊號、關閉和列出終端工作階段，同時防止一個 agent 操作其他 agent 的工作階段。傳送可以等待有界的前臺輸出，也可以返回供後續收集或中斷的後臺任務 job id。`maxResultBytes` 限制每個結果的大小，而結果會保留在工作階段歷史中直到壓縮（compaction）。指引會讓模型對有界工作優先使用單次工具。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合挂载了终端后端、且模型应当能跨调用使用终端状态时启用这些工具——使用调试器单步调试、在 REPL 中探索，或中断前台命令后回到 shell。指引章节会引导模型对有界操作使用单次 bash、read、write 与 edit 工具。
+當組合掛載了終端後端、且模型應當能跨呼叫使用終端狀態時啟用這些工具——使用偵錯程式單步除錯、在 REPL 中探索，或中斷前臺命令後回到 shell。指引章節會引導模型對有界操作使用單次 bash、read、write 與 edit 工具。
 
-### 六个工具
+### 六個工具
 
-| 工具 | 作用 | 结果 |
+| 工具 | 作用 | 結果 |
 |---|---|---|
-| `terminal_open` | 按后端类型创建限定所有者范围的会话 | 会话 id、名称、类型、pid、状态与有界启动输出 |
-| `terminal_send` | 写入文本，可选地提交 Enter，并等待就绪——或启动后台任务 | 有界输出加等待与会话状态，或一个 job id |
-| `terminal_read` | 不发送输入，读取一页有界保留输出 | 带行分页元数据的文本 |
-| `terminal_signal` | 向前台进程组投递一个允许的信号 | `delivered` 加目标进程组 id |
-| `terminal_close` | 关闭会话并等待其进程树结束 | 已关闭或正在关闭的结果 |
-| `terminal_list` | 列出调用方的活跃会话 | 限定所有者范围的会话摘要 |
+| `terminal_open` | 按後端型別建立限定所有者範圍的工作階段 | 工作階段 id、名稱、型別、pid、狀態與有界啟動輸出 |
+| `terminal_send` | 寫入文字，可選地提交 Enter，並等待就緒——或啟動後臺任務 | 有界輸出加等待與工作階段狀態，或一個 job id |
+| `terminal_read` | 不傳送輸入，讀取一頁有界保留輸出 | 帶行分頁中繼資料的文字 |
+| `terminal_signal` | 向前臺程序組投遞一個允許的訊號 | `delivered` 加目標程序組 id |
+| `terminal_close` | 關閉工作階段並等待其程序樹結束 | 已關閉或正在關閉的結果 |
+| `terminal_list` | 列出呼叫方的活躍工作階段 | 限定所有者範圍的工作階段摘要 |
 
-### 组合方式
+### 組合方式
 
 ```yaml
 - name: '@deepseek-ai/dsh-terminal'
@@ -46,141 +46,141 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-tool-terminal'
 ```
 
-工具需要 `ctx.terminals`——必须挂载一个后端——以及用于指引章节的系统提示词服务。后台发送还额外要求任务服务及其面向模型的控制器（`@deepseek-ai/dsh-tool-jobs`）。
+工具需要 `ctx.terminals`——必須掛載一個後端——以及用於指引章節的系統提示詞服務。後臺傳送還額外要求任務服務及其面向模型的控制器（`@deepseek-ai/dsh-tool-jobs`）。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `enableRunInBackground` | `true` | 公开并接受 `run_in_background`；设为 `false` 时移除 schema 字段并拒绝该参数 |
-| `maxResultBytes` | `262144` | 每个完整终端结果的 UTF-8 上限（最小值 `64`）；在等待、会话、分页、截断与任务状态元数据全部加入后计算 |
+| `enableRunInBackground` | `true` | 公開並接受 `run_in_background`；設為 `false` 時移除 schema 欄位並拒絕該參數 |
+| `maxResultBytes` | `262144` | 每個完整終端結果的 UTF-8 上限（最小值 `64`）；在等待、工作階段、分頁、截斷與任務狀態中繼資料全部加入後計算 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-terminal)与[工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)是配置字段与 schema 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-terminal)與[工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)是設定欄位與 schema 的窮盡式真源。
 
-### 后台发送
+### 後臺傳送
 
-`terminal_send(run_in_background: true)` 立即返回 job id，而不是等待。任务用 `job_output` 收集——它会等待并读取增量输出——用 `job_kill` 停止，后者向前台进程组投递真正的 `SIGINT`。缺少任务接口面时，后台模式会在写入输入之前失败。
+`terminal_send(run_in_background: true)` 立即返回 job id，而不是等待。任務用 `job_output` 收集——它會等待並讀取增量輸出——用 `job_kill` 停止，後者向前臺程序組投遞真正的 `SIGINT`。缺少任務介面面時，後臺模式會在寫入輸入之前失敗。
 
-### 可观察结果与失败
+### 可觀察結果與失敗
 
-前台发送返回终端的新输出以及 `wait: <原因>` 与会话状态；`session_exit` 表示顶层 shell 已退出，而 `inferred_idle` 或 `timeout` 绝不证明前台命令已退出。用未注册的后端类型打开会话会失败。大于 `maxResultBytes` 的结果会在 UTF-8 边界处截断并附标记。
+前臺傳送返回終端的新輸出以及 `wait: <原因>` 與工作階段狀態；`session_exit` 表示頂層 shell 已退出，而 `inferred_idle` 或 `timeout` 絕不證明前臺命令已退出。用未註冊的後端型別開啟工作階段會失敗。大於 `maxResultBytes` 的結果會在 UTF-8 邊界處截斷並附標記。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释工具背后的设计并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋工具背後的設計並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-本包是薄适配器：6 个工具以执行 agent 作为所有者转发到 `ctx.terminals`，呈现层渲染有界结果。后台发送把在途操作注册到 `ctx.jobs`，由通用任务接口面负责等待、增量读取与 `SIGINT` 投递。
+本包是薄介面卡：6 個工具以執行 agent 作為所有者轉發到 `ctx.terminals`，呈現層渲染有界結果。後臺傳送把在途操作註冊到 `ctx.jobs`，由通用任務介面面負責等待、增量讀取與 `SIGINT` 投遞。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 6 个工具定义、schema、指引章节、后台任务集成 |
-| [`src/render.ts`](src/render.ts) | 结果渲染与完整结果的 UTF-8 上限 |
+| [`src/index.ts`](src/index.ts) | 6 個工具定義、schema、指引章節、後臺任務整合 |
+| [`src/render.ts`](src/render.ts) | 結果渲染與完整結果的 UTF-8 上限 |
 
-### 结果上限
+### 結果上限
 
-每个终端自身的单文本结果都会在规范化后的工具或流水线错误、策略拒绝与短路、替换与阻止、以及通用任务状态文本之后，受 `maxResultBytes` 限制；截断保留 UTF-8 边界并为截断标记预留空间。结构化的多块策略结果保留其结构。64 字节的最小上限保证注册表签发的每个会话或 job id 都出现在创建确认中。
+每個終端自身的單文字結果都會在規範化後的工具或流水線錯誤、策略拒絕與短路、替換與阻止、以及通用任務狀態文字之後，受 `maxResultBytes` 限制；截斷保留 UTF-8 邊界併為截斷標記預留空間。結構化的多塊策略結果保留其結構。64 位元組的最小上限保證註冊表簽發的每個工作階段或 job id 都出現在建立確認中。
 
-### UI 呈现意图
+### UI 呈現意圖
 
-前台发送使用终端调用与结果卡片；后台发送与其他 5 个工具使用通用 `execute`、`read` 或 `delete` 卡片。所有工具都不输出源位置。
+前臺傳送使用終端呼叫與結果卡片；後臺傳送與其他 5 個工具使用通用 `execute`、`read` 或 `delete` 卡片。所有工具都不輸出源位置。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从生成的 schema 进入服务约定、后端与后台任务接口面。
+當包級約定不夠用時閱讀以下頁面。它們從生成的 schema 進入服務約定、後端與後臺任務介面面。
 
-- [工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)——6 个生成的 schema 与结果形态。
-- [终端子系统参考](../../../docs/subsystems/terminal.zh.md)——工具背后的服务约定与共享类型。
-- [terminal 服务](../terminal/README.zh.md)——会话操作、所有者限制与清理语义。
-- [terminal-bash 后端](../terminal-bash/README.zh.md)——提供会话的随附 shell 后端。
-- [jobs 包映射](../../jobs/README.zh.md)——收集与停止后台发送的后台任务接口面。
-- [持久 PTY Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——能力设计与暂缓边界。
+- [工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)——6 個生成的 schema 與結果形態。
+- [終端子系統參考](../../../docs/subsystems/terminal.zh.md)——工具背後的服務約定與共享型別。
+- [terminal 服務](../terminal/README.zh.md)——工作階段操作、所有者限制與清理語義。
+- [terminal-bash 後端](../terminal-bash/README.zh.md)——提供工作階段的隨附 shell 後端。
+- [jobs 包對映](../../jobs/README.zh.md)——收集與停止後臺傳送的後臺任務介面面。
+- [持久 PTY Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——能力設計與暫緩邊界。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 系统提示词
+### 系統提示詞
 
-#### 模型看到什么
+#### 模型看到什麼
 
-该插件贡献以下固定指引章节：
+該外掛貢獻以下固定指引章節：
 
-##### 终端指引
+##### 終端指引
 
 ```markdown
 Use a terminal session only when work needs persistent terminal state or interactive stdin; prefer shell/read/write/edit for bounded one-shot operations. Track every terminal session id and close sessions that no longer matter. An inferred_idle or timeout result does not prove the foreground command exited.
 ```
 
-#### Token 影响
+#### Token 影響
 
-插件活跃期间，每次请求都会产生少量固定输入成本。
+外掛活躍期間，每次請求都會產生少量固定輸入成本。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-注册范围与指引文本不变时，前缀保持稳定。
+註冊範圍與指引文字不變時，字首保持穩定。
 
 ### 工具 schema
 
-#### 模型看到什么
+#### 模型看到什麼
 
-6 个生成的 schema 列在 [`dsh-tool-terminal` 目录章节](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)中。此插件活跃时，请求中会包含它们的固定 schema token；按 agent 范围过滤工具时可能隐藏这些 schema。
+6 個生成的 schema 列在 [`dsh-tool-terminal` 目錄章節](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-terminal)中。此外掛活躍時，請求中會包含它們的固定 schema token；按 agent 範圍過濾工具時可能隱藏這些 schema。
 
-#### Token 影响
+#### Token 影響
 
-工具可见的请求会产生固定的 schema 成本。
+工具可見的請求會產生固定的 schema 成本。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-工具可见性与定义不变时，前缀保持稳定。
+工具可見性與定義不變時，字首保持穩定。
 
-### 工具结果与任务上下文
+### 工具結果與任務上下文
 
-#### 模型看到什么
+#### 模型看到什麼
 
-spawn 返回 id 与有界启动输出。发送与读取返回有界终端文本以及就绪与历史标记。后台模式返回通用 job id。每个终端自身的单文本结果都受 `maxResultBytes` 限制；结果保留在会话历史中直到压缩，增量任务读取不会重复已经消费的输出。
+spawn 返回 id 與有界啟動輸出。傳送與讀取返回有界終端文字以及就緒與歷史標記。後臺模式返回通用 job id。每個終端自身的單文字結果都受 `maxResultBytes` 限制；結果保留在工作階段歷史中直到壓縮，增量任務讀取不會重複已經消費的輸出。
 
-#### Token 影响
+#### Token 影響
 
-终端自身的结果随数据变化，并受 `maxResultBytes` 限制；每个返回结果都保留在历史中直到压缩。
+終端自身的結果隨資料變化，並受 `maxResultBytes` 限制；每個返回結果都保留在歷史中直到壓縮。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新结果位于可复用请求前缀之后。
+僅追加；新結果位於可複用請求字首之後。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明缺失的面向模型接口面。它们是当前包约束，不是任务积压。
+這些限制說明缺失的面向模型介面面。它們是目前包約束，不是任務積壓。
 
-- **没有 TUI 或按键序列接口面**——具名按键序列、全屏 TUI 交互、BEL、调整大小与自动启动均未出现在任何 schema 中。
-- **后台模式要求任务接口面**——`run_in_background` 同时需要 `@deepseek-ai/dsh-jobs` 及其面向模型的控制器（`@deepseek-ai/dsh-tool-jobs`）；缺少时会拒绝该参数。
+- **沒有 TUI 或按鍵序列介面面**——具名按鍵序列、全螢幕 TUI 互動、BEL、調整大小與自動啟動均未出現在任何 schema 中。
+- **後臺模式要求任務介面面**——`run_in_background` 同時需要 `@deepseek-ai/dsh-jobs` 及其面向模型的控制器（`@deepseek-ai/dsh-tool-jobs`）；缺少時會拒絕該參數。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。这个无状态适配器只贡献工具与提示词指引；PTY 生命周期与后台任务关系仍由其组合的服务持有。
+**執行時不變式：** 不釋出伴生入口。這個無狀態介面卡只貢獻工具與提示詞指引；PTY 生命週期與後臺任務關係仍由其組合的服務持有。

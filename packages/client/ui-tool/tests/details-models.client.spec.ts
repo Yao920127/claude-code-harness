@@ -53,12 +53,12 @@ describe('shared detail values', () => {
 
 describe('control detail adapters', () => {
   it.each([
-    [{ timedOut: false }, '子智能体状态 · 检测到变化'],
-    [{ timedOut: true }, '子智能体状态 · 等待超时'],
-    [{ timedOut: false, noProgress: { message: 'No pending work' } }, '没有正在运行的子智能体'],
+    [{ timedOut: false }, '子智慧代理狀態 · 檢測到變化'],
+    [{ timedOut: true }, '子智慧代理狀態 · 等待超時'],
+    [{ timedOut: false, noProgress: { message: 'No pending work' } }, '沒有正在執行的子智慧代理'],
   ] as const)('names subagents in Chinese wait results (%j)', (value, summary) => {
     const translate = makeTranslate(zh, commonZh)
-    expect(translate('tool.title.waitAgent')).toBe('等待子智能体')
+    expect(translate('tool.title.waitAgent')).toBe('等待子智慧代理')
     expect(detailsCardModel(output('wait_agent', JSON.stringify(value)), translate, 'zh-CN')?.summary).toBe(summary)
   })
 

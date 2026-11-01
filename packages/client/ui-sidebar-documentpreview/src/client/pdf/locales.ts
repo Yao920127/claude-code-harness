@@ -4,14 +4,14 @@ import { zoomEn, zoomZh } from '../zoom/locales.ts'
 export const zh = {
   ...zoomZh,
   title: 'PDF',
-  pageImage: 'PDF 第 {page} 页',
-  loading: '文档渲染中...',
-  rendering: '正在绘制页面…',
-  failed: '无法显示 PDF：{message}',
-  password: '此 PDF 需要密码，暂不支持预览',
-  workerFailed: 'PDF 渲染进程无法继续，请重试',
-  unsupported: 'PDF 预览需要完整文件内容',
-  retry: '重试',
+  pageImage: 'PDF 第 {page} 頁',
+  loading: '文件渲染中...',
+  rendering: '正在繪製頁面…',
+  failed: '無法顯示 PDF：{message}',
+  password: '此 PDF 需要密碼，暫不支援預覽',
+  workerFailed: 'PDF 渲染程序無法繼續，請重試',
+  unsupported: 'PDF 預覽需要完整檔案內容',
+  retry: '重試',
 } satisfies Record<string, string>
 
 /** PDF translation keys shared by both dictionaries. */

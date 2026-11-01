@@ -1,44 +1,44 @@
-# Agent Note: Child Agent 消息先于其结算通知
+# Agent Note: Child Agent 訊息先於其結算通知
 
 Status: implemented
 
 [English](2026-08-17-subagent-message-settlement-ordering.md) | 中文
 
-## 问题
+## 問題
 
-可继续 child 可以发送选中内容，之后还会产生一条由管理器编写且无条件投递的结算通知。如果这两条消息进入领取优先级不同的队列，较晚的结算通知可能先于较早的 child 消息到达 parent 模型。一个轮次的第一个 step 会先领取完整 `next-step` 批次，再领取一条 `next-turn` 消息，因此混用 FIFO 后续轮次发送与 next-step 结算会颠倒因果顺序。Issue #2600记录了该缺陷。
+可繼續 child 可以傳送選中內容，之後還會產生一條由管理器編寫且無條件投遞的結算通知。如果這兩條訊息進入領取優先順序不同的佇列，較晚的結算通知可能先於較早的 child 訊息到達 parent 模型。一個輪次的第一個 step 會先領取完整 `next-step` 批次，再領取一條 `next-turn` 訊息，因此混用 FIFO 後續輪次傳送與 next-step 結算會顛倒因果順序。Issue #2600記錄了該缺陷。
 
-child 指令要求在发现会改变 parent 下一步动作时发送该发现。把这条消息推迟到后续轮次既违背其调度含义，也会把具有因果顺序的消息拆到领取优先级不同的队列。
+child 指令要求在發現會改變 parent 下一步動作時傳送該發現。把這條訊息推遲到後續輪次既違背其排程含義，也會把具有因果順序的訊息拆到領取優先順序不同的佇列。
 
-## 决策
+## 決策
 
-每条模型编写的相邻 Agent 消息都通过 `SubagentRuntime.sendMessage()` 使用固定 Steer 投递。运行中的 parent 在最近安全 step 边界读取 child 消息，空闲 parent 则启动一个轮次。模型没有静默或 next-turn 投递选项。
+每條模型編寫的相鄰 Agent 訊息都透過 `SubagentRuntime.sendMessage()` 使用固定 Steer 投遞。執行中的 parent 在最近安全 step 邊界讀取 child 訊息，空閒 parent 則啟動一個輪次。模型沒有靜默或 next-turn 投遞選項。
 
-继续执行管理器会在投递到驻留可继续 parent 的消息周围保留 `sendWaking()`，并通过 parent 的私有 `SubagentInbox` 执行同步发送。包装层会在安装 closing promise 前接受发送，并在安装后拒绝发送；被接受的尝试会在返回前更新 Activation 的 wake generation。因此，接收方 Activation 不会越过一条已接受的唤醒发送完成结算。
+繼續執行管理器會在投遞到駐留可繼續 parent 的訊息周圍保留 `sendWaking()`，並透過 parent 的私有 `SubagentInbox` 執行同步傳送。包裝層會在安裝 closing promise 前接受傳送，並在安裝後拒絕傳送；被接受的嘗試會在返回前更新 Activation 的 wake generation。因此，接收方 Activation 不會越過一條已接受的喚醒傳送完成結算。
 
-### 不同 parent 状态下的顺序
+### 不同 parent 狀態下的順序
 
-运行中的 parent 在同一条 `next-step` FIFO 中接收已接受的 child 消息与该 child 随后的结算通知。如果 parent 在结算到达前变为空闲，它已经领取 child 消息；结算随后可以开启后续轮次，而不会颠倒观察顺序。
+執行中的 parent 在同一條 `next-step` FIFO 中接收已接受的 child 訊息與該 child 隨後的結算通知。如果 parent 在結算到達前變為空閒，它已經領取 child 訊息；結算隨後可以開啟後續輪次，而不會顛倒觀察順序。
 
-parent 处于 maintenance 时，child 消息占用 `next-step` 并锁存一次唤醒，而结算可能因 maintenance 报告空闲状态而占用 `next-turn`。初始领取仍会先取 next-step 输入，再取排队轮次。取消后提交的唤醒输入遵循核心 Agent 的取消收敛，而不会绕过它。
+parent 處於 maintenance 時，child 訊息佔用 `next-step` 並鎖存一次喚醒，而結算可能因 maintenance 報告空閒狀態而佔用 `next-turn`。初始領取仍會先取 next-step 輸入，再取排隊輪次。取消後提交的喚醒輸入遵循核心 Agent 的取消收斂，而不會繞過它。
 
-### 验证
+### 驗證
 
-控制工具测试套件让 parent 保持在活跃模型请求中，提交 child 消息、结算 child，并验证 sender 身份、Steer 准入、FIFO 批处理与结算后保留。继续执行覆盖固定驻留可继续 parent 的唤醒准入记账，并让 runtime 所有的结算来源与 `agent-message` 保持不同。
+控制工具測試套件讓 parent 保持在活躍模型請求中，提交 child 訊息、結算 child，並驗證 sender 身份、Steer 准入、FIFO 批處理與結算後保留。繼續執行覆蓋固定駐留可繼續 parent 的喚醒准入記帳，並讓 runtime 所有的結算來源與 `agent-message` 保持不同。
 
-无密钥可继续 subagent 快照使用随附的固定投递。其 child 可见工具 schema 与 parent 相同，且已接受的 child 消息先于之后的结算通知，无需调度 overlay。
+無金鑰可繼續 subagent 快照使用隨附的固定投遞。其 child 可見工具 schema 與 parent 相同，且已接受的 child 訊息先於之後的結算通知，無需排程 overlay。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**提供静默投递。** 空闲 parent 停驻后可能永远不读取静默消息。它还会让等价的模型编写消息具有不同存活语义，并重新引入依赖部署的顺序。
+**提供靜默投遞。** 空閒 parent 停駐後可能永遠不讀取靜默訊息。它還會讓等價的模型編寫訊息具有不同存活語義，並重新引入依賴部署的順序。
 
-**提供 next-turn 投递。** 较晚的 next-step 结算通知仍可能越过它。保持消息先于结算需要跨队列顺序屏障，而当前没有模型操作对后续轮次隔离的需求强到足以承担该机制。
+**提供 next-turn 投遞。** 較晚的 next-step 結算通知仍可能越過它。保持訊息先於結算需要跨佇列順序屏障，而目前沒有模型操作對後續輪次隔離的需求強到足以承擔該機制。
 
-**把结算通知移到 `next-turn`。** 结算批处理使用 next-step 队列，使多个 child 同时结束只消耗 parent 的一个 step，而不是每个 child 一个轮次。移动结算会为了保留不必要的消息调度模式而增加延迟与模型工作。
+**把結算通知移到 `next-turn`。** 結算批處理使用 next-step 佇列，使多個 child 同時結束只消耗 parent 的一個 step，而不是每個 child 一個輪次。移動結算會為了保留不必要的訊息排程模式而增加延遲與模型工作。
 
-## 后果
+## 後果
 
-- child 消息可以延长开放的 parent 轮次。它绝不会中断活跃模型请求或工具执行；agent loop 只在 step 边界接纳它。
-- 一起被接受的消息共享一个 next-step 批次，保持 FIFO 顺序并限制轮次放大。
-- 模型调用方不能选择投递模式，因此顺序与唤醒行为不会随部署或调用而变化。
-- child 到 parent 的发送仍要求直接 parent 保持在线；服务不提供持久 parent mailbox。
+- child 訊息可以延長開放的 parent 輪次。它絕不會中斷活躍模型請求或工具執行；agent loop 只在 step 邊界接納它。
+- 一起被接受的訊息共享一個 next-step 批次，保持 FIFO 順序並限制輪次放大。
+- 模型呼叫方不能選擇投遞模式，因此順序與喚醒行為不會隨部署或呼叫而變化。
+- child 到 parent 的傳送仍要求直接 parent 保持線上；服務不提供持久 parent mailbox。

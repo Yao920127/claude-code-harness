@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端设置中按作用域分组的只读插件清单标签页：Agent 预设组合在前，全局平面收在折叠分组里，搜索跨两组。"
+description: "dsh Web 用戶端設定中按作用域分組的只讀外掛清單標籤頁：Agent 預設組合在前，全域平面收在摺疊分組裡，搜尋跨兩組。"
 kind: "package-reference"
 ---
 
@@ -9,103 +9,103 @@ kind: "package-reference"
 
 ## 概述
 
-**插件列表**标签页让 Web 用户查看插件，而不改变其配置。它先列 agent（智能体）预设分组，再列全局清单；两个分组默认都收起，按需展开，搜索期间保持展开。卡片显示可用的本地化标题与描述，以稳定的条目 id 标识实例，并展示启停状态、出处、运行状态、禁用条件与发现失败；由预设提供的全局条目会列出对应预设。搜索覆盖两个分组，并指出其他预设中的匹配。标签页处理加载、空结果、无匹配、失败与重试状态，且不暴露传输细节；没有预设 roster 时仍会展示全局清单。
+**外掛列表**標籤頁讓 Web 使用者檢視外掛，而不改變其設定。它先列 agent（智慧代理）預設分組，再列全域清單；兩個分組預設都收起，按需展開，搜尋期間保持展開。卡片顯示可用的在地化標題與描述，以穩定的條目 id 標識實例，並展示啟停狀態、出處、執行狀態、停用條件與發現失敗；由預設提供的全域條目會列出對應預設。搜尋覆蓋兩個分組，並指出其他預設中的匹配。標籤頁處理載入、空結果、無匹配、失敗與重試狀態，且不暴露傳輸細節；沒有預設 roster 時仍會展示全域清單。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-打开设置中的「插件」分区并选择**插件列表**标签页，即可查看宿主的插件清单。插件激活期间不会读取 Remote——首次选择该标签页时才挂载组件，并通过 `api-remotes` 懒调用 `ctx.remote.pluginInventory.list()`。
+開啟設定中的「外掛」分割槽並選擇**外掛列表**標籤頁，即可檢視主機的外掛清單。外掛啟用期間不會讀取 Remote——首次選擇該標籤頁時才掛載元件，並透過 `api-remotes` 懶呼叫 `ctx.remote.pluginInventory.list()`。
 
-安装失败且存在待审批的 pnpm 构建权限时，页面提供“允许这些脚本并重试”。该操作展示准确包名和持久授权范围，再使用原来的包规格及启用选项重试。一次点击批准整个列表，其中可能包括此前安装留下的待审批包。关闭页面不会授予权限。
+安裝失敗且存在待審批的 pnpm 建置權限時，頁面提供“允許這些腳本並重試”。該操作展示準確包名和持久授權範圍，再使用原來的包規格及啟用選項重試。一次點選批准整個列表，其中可能包括此前安裝留下的待審批包。關閉頁面不會授予權限。
 
-### 阅读卡片
+### 閱讀卡片
 
-每张收起的卡片使用插件可用的本地化标题与描述。设置页会缩短字面的包名或模块名回退值，移除 npm scope 以及 `cordis:`、`cordis-plugin-` 或 `dsh-`/`dsh-host-`/`dsh-client-` 前缀；locale 标题保持原样。Host 在 `meta` 中提供 locale 与包字段的回退结果，Client 选择当前语言。详情与搜索仍保留完整模块标识。缺失的描述不显示，元信息诊断随卡片展示。这种短名显示仅用于设置页，不影响侧栏的插件页。
+每張收起的卡片使用外掛可用的在地化標題與描述。設定頁會縮短字面的包名或模組名退回值，移除 npm scope 以及 `cordis:`、`cordis-plugin-` 或 `dsh-`/`dsh-host-`/`dsh-client-` 字首；locale 標題保持原樣。Host 在 `meta` 中提供 locale 與包欄位的退回結果，Client 選擇目前語言。詳情與搜尋仍保留完整模組標識。缺失的描述不顯示，元資訊診斷隨卡片展示。這種短名顯示僅用於設定頁，不影響側欄的外掛頁。
 
-稳定的条目 id 显示在标题下方，卡片带有表示启停状态的小标签；彩色根 fiber 状态圆点只标记标签无法表达的阶段：`pending` 映射为 idle，`loading` 与 `unloading` 映射为 ongoing。`active` 或 `failed` fiber 只显示标签，不显示圆点。组合生成的次标题省略开头的 `include:` 标记；悬停、搜索、无障碍名称与展开详情仍保留完整 id。长条目 id 会在行内截断，悬停时仍可查看完整值。展开卡片后会显示声明的条目 id、完整模块标识与状态事实：预设行说明它来自哪个预设、组合存活时的运行状态，以及它携带的禁用条件；被预设提供的全局行说明它由 Agent 预设按会话提供、列出启用它的预设，并提供跳转到预设组的入口。预设名经共享的 `presetDisplayText` 纯函数（`dsh-agent-preset-registry/display`）叠在 [`ui-agent-preset`](../ui-agent-preset/README.zh.md) 的字典上解析：内置预设走当前语言，用户自建预设保留自己的元数据，因此英文界面不会回显预设声明里的中文名。搜索按本地化标题与描述、模块名称及条目 id 过滤两组。
+穩定的條目 id 顯示在標題下方，卡片帶有表示啟停狀態的小標籤；彩色根 fiber 狀態圓點只標記標籤無法表達的階段：`pending` 對映為 idle，`loading` 與 `unloading` 對映為 ongoing。`active` 或 `failed` fiber 只顯示標籤，不顯示圓點。組合生成的次標題省略開頭的 `include:` 標記；懸停、搜尋、無障礙名稱與展開詳情仍保留完整 id。長條目 id 會在行內截斷，懸停時仍可檢視完整值。展開卡片後會顯示宣告的條目 id、完整模組標識與狀態事實：預設行說明它來自哪個預設、組合存活時的執行狀態，以及它攜帶的停用條件；被預設提供的全域行說明它由 Agent 預設按工作階段提供、列出啟用它的預設，並提供跳轉到預設組的入口。預設名經共享的 `presetDisplayText` 純函式（`dsh-agent-preset-registry/display`）疊在 [`ui-agent-preset`](../ui-agent-preset/README.zh.md) 的字典上解析：內建預設走目前語言，使用者自建預設保留自己的中繼資料，因此英文介面不會回顯預設宣告裡的中文名。搜尋按在地化標題與描述、模組名稱及條目 id 過濾兩組。
 
-### 预设切换器
+### 預設切換器
 
-切换器与通用设置各行使用同一种「选择胶囊 + 菜单」控件。它列出 roster 的每个预设——默认项带后缀、坏预设带标记——并且只改变列表显示什么：它不写任何设置，选中坏预设时在行的位置展示 discovery 报告的原因。选择默认预设或会话预设的入口仍在原处：Agent 预设分区与新会话页。
+切換器與通用設定各行使用同一種「選擇膠囊 + 選單」控制元件。它列出 roster 的每個預設——預設項帶字尾、壞預設帶標記——並且只改變列表顯示什麼：它不寫任何設定，選中壞預設時在行的位置展示 discovery 報告的原因。選擇預設預設或工作階段預設的入口仍在原處：Agent 預設分割槽與新工作階段頁。
 
-### 重试失败的读取
+### 重試失敗的讀取
 
-读取失败会在标签页内渲染共享 error 标记；加载与当前页面同步使用共享 ongoing loading。重试会重新执行懒 `list()` 调用，且不会暴露传输细节。
+讀取失敗會在標籤頁內渲染共享 error 標記；載入與目前頁面同步使用共享 ongoing loading。重試會重新執行懶 `list()` 呼叫，且不會暴露傳輸細節。
 
-插件列表还显示当前页面的同步失败。重试会重新应用最新客户端图，不改变 Host 启用状态，也不刷新页面。
+外掛列表還顯示目前頁面的同步失敗。重試會重新應用最新用戶端圖，不改變 Host 啟用狀態，也不重新整理頁面。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-该标签页是宿主拥有快照的只读投影；插件激活期间不执行任何 Remote 读取，首次选择时才取快照。
+該標籤頁是主機擁有快照的只讀投影；外掛啟用期間不執行任何 Remote 讀取，首次選擇時才取快照。
 
-### 注册
+### 註冊
 
-浏览器插件注册一个 id 为 `all` 的本地化 `settings.plugins.tab` 贡献；「插件」分区拥有导航入口与标签栏。注册使用 `ctx.slots.inject()`，因此能跟随标签 slot 的延迟声明、重新声明、本地化变化与 teardown，而无需 import 分区拥有方。
+瀏覽器外掛註冊一個 id 為 `all` 的在地化 `settings.plugins.tab` 貢獻；「外掛」分割槽擁有導航入口與標籤欄。註冊使用 `ctx.slots.inject()`，因此能跟隨標籤 slot 的延遲宣告、重新宣告、在地化變化與 teardown，而無需 import 分割槽擁有方。
 
 ### 渲染
 
-行 key 按作用域限定（`global:`、`preset:<id>:<index>`），因此同一模块出现在两个作用域时保持各自的展开状态；声明的条目 id 出现在展开详情中，并在去掉开头的组合 `include:` 标记后作为收起次标题，没有 id 的行不显示次级标签。预设提供标记在客户端推导：一个全局条目在全局被停用、且至少一个预设行对同一模块标识实际启用时才携带它，因此被所有预设关掉（或仅条件声明）的模块保持单纯的已停用，而不是夸大提供关系。
+行 key 按作用域限定（`global:`、`preset:<id>:<index>`），因此同一模組出現在兩個作用域時保持各自的展開狀態；宣告的條目 id 出現在展開詳情中，並在去掉開頭的組合 `include:` 標記後作為收起次標題，沒有 id 的行不顯示次級標籤。預設提供標記在用戶端推導：一個全域條目在全域被停用、且至少一個預設行對同一模組標識實際啟用時才攜帶它，因此被所有預設關掉（或僅條件宣告）的模組保持單純的已停用，而不是誇大提供關係。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖设置分区、Remote 调用与宿主侧投影。
+以下頁面覆蓋設定分割槽、Remote 呼叫與主機側投影。
 
-- [ui-settings-plugins](../ui-settings-plugins/README.zh.md)——本标签页注册进的「插件」分区。
-- [ui-settings](../ui-settings/README.zh.md)——声明 `settings.plugins.tab` 的领域底座。
-- [api-remotes](../../api/remotes/README.zh.md)——`pluginInventory.list()` 背后的 Remote BFF 表面。
-- [plugin-inventory](../../host/plugin-inventory/README.zh.md)——本标签页所渲染的宿主侧只读 Loader 投影。
+- [ui-settings-plugins](../ui-settings-plugins/README.zh.md)——本標籤頁註冊進的「外掛」分割槽。
+- [ui-settings](../ui-settings/README.zh.md)——宣告 `settings.plugins.tab` 的領域底座。
+- [api-remotes](../../api/remotes/README.zh.md)——`pluginInventory.list()` 背後的 Remote BFF 表面。
+- [plugin-inventory](../../host/plugin-inventory/README.zh.md)——本標籤頁所渲染的主機側只讀 Loader 投影。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端清单投影，不注册任何面向模型的内容。
+無。該包是瀏覽器端清單投影，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义清单视图的新鲜度与触达范围；它们是当前包约束。
+這些限制定義清單檢視的新鮮度與觸達範圍；它們是目前包約束。
 
-- **每次 Settings 挂载或重试只读取一份快照**：标签页不订阅 Loader 变化，也不会在重连后自动重新读取；切换标签页会保留当前快照，重新打开 Settings 则会取得新快照。
-- **两个平面都只读**：标签页展示全局与预设的启停状态但都不修改；写回自定义预设组合文件的启停控件是刻意留作后续的工作。
+- **每次 Settings 掛載或重試只讀取一份快照**：標籤頁不訂閱 Loader 變化，也不會在重連後自動重新讀取；切換標籤頁會保留目前快照，重新開啟 Settings 則會取得新快照。
+- **兩個平面都只讀**：標籤頁展示全域與預設的啟停狀態但都不修改；寫回自定義預設組合檔案的啟停控制元件是刻意留作後續的工作。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包只持有一个只读 Settings contribution。
+**執行時不變式：** 不釋出伴生入口。本包只持有一個只讀 Settings contribution。

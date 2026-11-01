@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/approval.md
 /user-approval:
   en: 490b0cce7f1ceed5
-  zh: 1126f2d7261b490a
+  zh: da931a8ef49669ff
 /user-approval/identity-and-outcome:
   en: 3dd2094e3bd0f10f
-  zh: 0a56f3add2e1fc57
+  zh: b943eea9f0113dfd
 /user-approval/per-session-policy:
   en: 5e51c6e37c5e30c3
-  zh: 84bad36357332539
+  zh: 38131be26988a136
 /user-approval/approval-request:
   en: 044ddfc382eb745c
-  zh: c0010b23c94ab3af
+  zh: bcfd0e32cbdc9f86
 /user-approval/dispatch-and-audit:
   en: bd2c2cc1eaaaf2d6
-  zh: 67bfbed1b7499ffb
+  zh: b284982559a72f57

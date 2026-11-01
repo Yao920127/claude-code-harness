@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-20-ptc-typed-tool-returns.md
 /agent-note-typed-tool-returns-in-ptc-mode:
   en: 4b7c45b382db3a40
-  zh: 96e9210446ec35ed
+  zh: 466f0934c6377d35
 /agent-note-typed-tool-returns-in-ptc-mode/problem:
   en: cf7610bb16ff04af
-  zh: 73b00b539dbaecd9
+  zh: cfa03f2f76f9ce38
 /agent-note-typed-tool-returns-in-ptc-mode/decision:
   en: 55bb889404c89f4a
-  zh: f9a9091569fbf7b4
+  zh: df801994744a2584
 /agent-note-typed-tool-returns-in-ptc-mode/decision/generated-sdk:
   en: 30583e9ac6715952
-  zh: 3a85c9482abf574c
+  zh: 819e3f2e012e0a04
 /agent-note-typed-tool-returns-in-ptc-mode/decision/binding-values-and-failures:
   en: ecb95cafa2dc1297
-  zh: ccdf300ca936ca12
+  zh: f40006fb6c6d40da
 /agent-note-typed-tool-returns-in-ptc-mode/decision/outer-result-and-output-ledger:
   en: d907d0a8205157e1
-  zh: 1ed99168266a7ca4
+  zh: 9ec6259a267e2d1f
 /agent-note-typed-tool-returns-in-ptc-mode/decision/typed-handles-and-lifetime:
   en: c5d9997ae7c7362d
-  zh: 1da8883d17d2748e
+  zh: e7f6e61e3d61ee6b
 /agent-note-typed-tool-returns-in-ptc-mode/decision/persistence-metadata-and-spill:
   en: 4d1e5f83f15f99cc
-  zh: b7f41a084cb23745
+  zh: 309b9e9f1af3475e
 /agent-note-typed-tool-returns-in-ptc-mode/testing:
   en: 728513c779f031f8
-  zh: f6d869f18add7242
+  zh: f73925f187ddae23
 /agent-note-typed-tool-returns-in-ptc-mode/alternatives-considered:
   en: dedd87b9b35d8fab
-  zh: 78db4c7e8c4e5f61
+  zh: 47bad11e07e738de
 /agent-note-typed-tool-returns-in-ptc-mode/consequences:
   en: 7c2ee65532ab76f8
-  zh: 3fb074c69909d390
+  zh: 00f5856d47cdfe5f
 /agent-note-typed-tool-returns-in-ptc-mode/known-limitations-and-deferred-work:
   en: a42af629ad6872cc
-  zh: 41e5c0bb3de0ae4d
+  zh: 2cd4532ad09481d2

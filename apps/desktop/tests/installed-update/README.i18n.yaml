@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write apps/desktop/tests/installed-update/README.md
 /:
   en: e509b9908db08b9b
-  zh: d01d0d95db36098c
+  zh: bdf34673b160421f
 /windows-installed-update-walkthrough:
   en: c6901185a4200bc7
-  zh: 202158cb8abc9d94
+  zh: 717d805f20ed76d9
 /windows-installed-update-walkthrough/summary:
   en: a462606fa87984c1
-  zh: c40305ba98d9cd6a
+  zh: f884bd6cc4f709dc
 /windows-installed-update-walkthrough/table-of-contents:
   en: bd61ff806d57cbb1
-  zh: 8b09719bc3b247c8
+  zh: 0f425be4d07dd888
 /windows-installed-update-walkthrough/prepare-materials:
   en: 1f7d9426be57a23a
-  zh: 9f2be099d3d1a026
+  zh: 505a267f84551a77
 /windows-installed-update-walkthrough/operator-sequence:
   en: 8a7f275812dbe11f
-  zh: 24dbf32328f9c0dd
+  zh: 2dc77c272cd97fe1
 /windows-installed-update-walkthrough/evidence-and-recovery:
   en: 97da316608766d0e
-  zh: 22a32a16b4677477
+  zh: 807afc2b0e332872
 /windows-installed-update-walkthrough/dev-note:
   en: 550335915d9ca83b
-  zh: f6fa7989e835b029
+  zh: ad1e359fdd91067d

@@ -1,11 +1,11 @@
-<!-- 由 scripts/gen-module-graph.ts 生成——请勿手工编辑。
-     运行 `pnpm run gen-module-graph` 重新生成。 -->
+<!-- 由 scripts/gen-module-graph.ts 生成——請勿手工編輯。
+     執行 `pnpm run gen-module-graph` 重新生成。 -->
 
-# 共享实例依赖关系图
+# 共享實例依賴關係圖
 
 [English](module-graph.md) | 中文
 
-`@deepseek-ai/dsh-*` harness 包之间的 peer 依赖关系。peer 表示消费端需要提供共享实例，不包括普通运行时 dependency 或仅开发期关系。该图按 `packages/<group>/<pkg>` 层级分组；边 `a --> b` 表示包 `a` peer 依赖包 `b`。名称中的 `@deepseek-ai/dsh-` 前缀已移除。
+`@deepseek-ai/dsh-*` harness 包之間的 peer 依賴關係。peer 表示消費端需要提供共享實例，不包括普通執行時 dependency 或僅開發期關係。該圖按 `packages/<group>/<pkg>` 層級分組；邊 `a --> b` 表示包 `a` peer 依賴包 `b`。名稱中的 `@deepseek-ai/dsh-` 字首已移除。
 
 ```mermaid
 flowchart TD
@@ -159,7 +159,6 @@ flowchart TD
     pkg_client_file_upload["client-file-upload"]
     pkg_client_hmr["client-hmr"]
     pkg_client_locale["client-locale"]
-    pkg_client_locale_zh_hant["client-locale-zh-hant"]
     pkg_client_modules["client-modules"]
     pkg_client_resources["client-resources"]
     pkg_client_shortcuts["client-shortcuts"]
@@ -1422,7 +1421,6 @@ flowchart TD
 | [`sdk-minimal`](../packages/bundle/sdk-minimal) | `bundle` | — |
 | [`client-hmr`](../packages/client/hmr) | `client` | — |
 | [`client-locale`](../packages/client/locale) | `client` | — |
-| [`client-locale-zh-hant`](../packages/client/locale-zh-hant) | `client` | — |
 | [`client-modules`](../packages/client/modules) | `client` | — |
 | [`client-resources`](../packages/client/resources) | `client` | — |
 | [`client-shortcuts`](../packages/client/shortcuts) | `client` | — |

@@ -1,4 +1,4 @@
-# Agent Note: 共享开发者工具设置
+# Agent Note: 共享開發者工具設定
 
 Status: implemented
 
@@ -6,24 +6,24 @@ Status: implemented
 
 ## Problem
 
-诊断视图、预设选择和改动文件摘要增加了日常任务的复杂度。支持脚本的 HTML 还授予了基础文档预览不需要的能力。桌面端和 Web 共享这些渲染器，分别设置开关会让同一设置在不同客户端产生不同结果。
+診斷檢視、預設選擇和改動檔案摘要增加了日常任務的複雜度。支援腳本的 HTML 還授予了基礎文件預覽不需要的能力。桌面端和 Web 共享這些渲染器，分別設定開關會讓同一設定在不同用戶端產生不同結果。
 
 ## Decision
 
-设置域内的 `ctx.configForms.developerTools` 偏好对象使用共享条目表单，提供一个已接受的 `ui-settings.enabled` 偏好。最初默认关闭的选择用于降低日常任务的复杂度；[偏好解析后默认开启开发者工具](2026-09-20-developer-tools-default-on.zh.md)取代该默认值并负责启动时的启用策略。Web 和桌面端的通用设置提供同一个开关。现有设置传输负责验证、有序写入、持久化和恢复；回环 Web 和桌面端跟随 Host 接受的状态。远程 Web 持有一个所有消费者共享的浏览器本地可观察值，刷新后重置，不发送 Host 写入。
+設定域內的 `ctx.configForms.developerTools` 偏好物件使用共享條目表單，提供一個已接受的 `ui-settings.enabled` 偏好。最初預設關閉的選擇用於降低日常任務的複雜度；[偏好解析後預設開啟開發者工具](2026-09-20-developer-tools-default-on.zh.md)取代該預設值並負責啟動時的啟用策略。Web 和桌面端的通用設定提供同一個開關。現有設定傳輸負責驗證、有序寫入、持久化和恢復；迴環 Web 和桌面端跟隨 Host 接受的狀態。遠端 Web 持有一個所有消費者共享的瀏覽器本地可觀察值，重新整理後重置，不傳送 Host 寫入。
 
-关闭时隐藏 Trajectory View，在没有可见 View 声明工具调用检查能力时隐藏 Inspect 操作，可见 View 少于两个时隐藏会话 View 标签栏，隐藏新会话预设入口并拒绝 Agent 预设卡片的选择操作，并省略改动文件卡片及其摘要读取。其他插件注册的 View 保持可用。在 Trajectory 中关闭开关会激活 Chat。预设组合、保存的默认值、Session 事件和显式交付卡片保持不变。此偏好是展示策略，不是 Host 授权。
+關閉時隱藏 Trajectory View，在沒有可見 View 宣告工具呼叫檢查能力時隱藏 Inspect 操作，可見 View 少於兩個時隱藏工作階段 View 標籤欄，隱藏新工作階段預設入口並拒絕 Agent 預設卡片的選擇操作，並省略改動檔案卡片及其摘要讀取。其他外掛註冊的 View 保持可用。在 Trajectory 中關閉開關會啟用 Chat。預設組合、儲存的預設值、Session 事件和顯式交付卡片保持不變。此偏好是展示策略，不是 Host 授權。
 
-插件组装层将共享偏好转换为组件自身的能力（`showCodeDiff`、Agent 预设各界面读取的 `developerTools`，以及 `interactivePreview`）。Conversation 根据可见目标的 `toolCallFocus` 提供检查回调；Chat 不再指定目标名称。内置 HTML 渲染器使用 DOMPurify 清理完整文档并防护解析变异。关闭时保留根节点样式，移除主动文档、资源提示、SVG 动画及所有 `href` 属性，再放入不授予沙箱权限的 iframe，并通过 CSP 禁止脚本和外部资源。不读取关联文件。开启时保留不透明源的脚本 Blob 渲染器及其有界关联文件读取。切换模式会替换浏览上下文并清理待处理读取。[文档预览决策](../architecture/2026-09-08-document-preview-operations.zh.md)和[文件系统读取权限](../architecture/2026-09-09-workspace-file-read-authority.zh.md)继续定义高级渲染与 Host 读取访问。
+外掛組裝層將共享偏好轉換為元件自身的能力（`showCodeDiff`、Agent 預設各介面讀取的 `developerTools`，以及 `interactivePreview`）。Conversation 根據可見目標的 `toolCallFocus` 提供檢查回呼；Chat 不再指定目標名稱。內建 HTML 渲染器使用 DOMPurify 清理完整文件並防護解析變異。關閉時保留根節點樣式，移除主動文件、資源提示、SVG 動畫及所有 `href` 屬性，再放入不授予沙箱權限的 iframe，並透過 CSP 禁止腳本和外部資源。不讀取關聯檔案。開啟時保留不透明源的腳本 Blob 渲染器及其有界關聯檔案讀取。切換模式會替換瀏覽上下文並清理待處理讀取。[文件預覽決策](../architecture/2026-09-08-document-preview-operations.zh.md)和[檔案系統讀取權限](../architecture/2026-09-09-workspace-file-read-authority.zh.md)繼續定義高階渲染與 Host 讀取存取。
 
 ## Alternatives considered
 
-**仅在桌面端提供开关。** 所选需求没有仅限桌面的约束，相关 UI 也是共享的。桌面端条件判断会让 Web 渲染器的展示和预览行为不一致。
+**僅在桌面端提供開關。** 所選需求沒有僅限桌面的約束，相關 UI 也是共享的。桌面端條件判斷會讓 Web 渲染器的展示和預覽行為不一致。
 
-**隐藏控件但不改变激活的 View 或 iframe。** 之前选择的诊断内容和已经运行的脚本会在切换后继续存在。过滤可用 View 并重新挂载 HTML 上下文，可以立即执行所选展示策略。
+**隱藏控制元件但不改變啟用的 View 或 iframe。** 之前選擇的診斷內容和已經執行的腳本會在切換後繼續存在。過濾可用 View 並重新掛載 HTML 上下文，可以立即執行所選展示策略。
 
 ## Consequences
 
-基础 HTML 放弃 JavaScript、外部与关联资源和链接导航；行内样式与 data 图片仍可用。高级模式保留正常浏览器网络能力，不增加父源、弹窗、表单或顶层导航权限。此设置不约束第三方预览实现，也不撤销 Host 文件系统读取权限。
+基礎 HTML 放棄 JavaScript、外部與關聯資源和連結導航；行內樣式與 data 圖片仍可用。高階模式保留正常瀏覽器網路能力，不增加父源、彈出視窗、表單或頂層導航權限。此設定不約束第三方預覽實作，也不撤銷 Host 檔案系統讀取權限。
 
-组件和设置测试覆盖默认值、schema 拒绝、已接受状态更新、入口折叠、改动文件展示和 iframe 清理。基于已记录 Session 的[文档预览](../../../../apps/web/tests/document-preview.e2e.ts)与[改动文件](../../../../apps/web/tests/changed-files-turn.e2e.ts)场景验证真实设置控件及共用渲染器。浏览器脚手架使用产品默认值，除非场景指定偏好。设置外壳、文档预览和改动文件场景显式关闭开发者工具；这些场景共同覆盖诊断控件隐藏、静态预览和切回 Chat。Host 拒绝写入后会恢复已接受状态，并显示本地化重试提示。原生 Electron 执行尚未验证。
+元件和設定測試覆蓋預設值、schema 拒絕、已接受狀態更新、入口摺疊、改動檔案展示和 iframe 清理。基於已記錄 Session 的[文件預覽](../../../../apps/web/tests/document-preview.e2e.ts)與[改動檔案](../../../../apps/web/tests/changed-files-turn.e2e.ts)情境驗證真實設定控制元件及共用渲染器。瀏覽器腳手架使用產品預設值，除非情境指定偏好。設定外殼、文件預覽和改動檔案情境顯式關閉開發者工具；這些情境共同覆蓋診斷控制元件隱藏、靜態預覽和切回 Chat。Host 拒絕寫入後會恢復已接受狀態，並顯示在地化重試提示。原生 Electron 執行尚未驗證。

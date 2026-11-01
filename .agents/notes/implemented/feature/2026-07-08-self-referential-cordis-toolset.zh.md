@@ -1,4 +1,4 @@
-# Agent Note：Cordis 运行时检查与 runner 隔离
+# Agent Note：Cordis 執行時檢查與 runner 隔離
 
 Status: implemented
 
@@ -6,24 +6,24 @@ Status: implemented
 
 ## Problem
 
-运行时 API 发现必须描述插件实际能调用的 API。进程内生成定义还需要注册校验和完整的 effect 释放；仅隔离 JavaScript 全局变量并不能限制注入服务的权限。
+執行時 API 發現必須描述外掛實際能呼叫的 API。程序內生成定義還需要註冊總和檢查碼完整的 effect 釋放；僅隔離 JavaScript 全域變數並不能限制注入服務的權限。
 
 ## Decision
 
-`cordis_inspect_list` 和 `cordis_inspect_query` 提供只读运行时发现。生成目录保留源码中的声明和 JSDoc，并按存活 provider 筛选。目录生成器拒绝过期产物；精确查询避免每次请求都承担完整 API 声明的 token 成本。
+`cordis_inspect_list` 和 `cordis_inspect_query` 提供只讀執行時發現。生成目錄保留原始碼中的宣告和 JSDoc，並按存活 provider 篩選。目錄生成器拒絕過期產物；精確查詢避免每次請求都承擔完整 API 宣告的 token 成本。
 
-Host 和 Client runner 保留程序侧生命周期和浏览器消费者。Host 定义在新的 vm realm 中求值，并接收 context façade：服务访问需要声明注入，框架内部结构不可见，注册归定义的 fiber 所有。工具输出先回到 Host realm 进行归一化，再接受校验。释放会等待 fiber 所有的 effect。vm 防止意外污染全局变量；注入的文件系统、shell 和网络服务仍有真实权限，因此它不是安全边界。
+Host 和 Client runner 保留程式側生命週期和瀏覽器消費者。Host 定義在新的 vm realm 中求值，並接收 context façade：服務存取需要宣告注入，框架內部結構不可見，註冊歸定義的 fiber 所有。工具輸出先回到 Host realm 進行歸一化，再接受驗證。釋放會等待 fiber 所有的 effect。vm 防止意外汙染全域變數；注入的檔案系統、shell 和網路服務仍有真實權限，因此它不是安全邊界。
 
-定义仅存在于进程中。重启和会话恢复不会从历史调用重建它们。[Creator 持久化插件决策](../architecture/2026-09-16-creator-persistent-plugin-management.zh.md)负责 agent 安装、审批和 profile 持久化。内置模型工具不创建或修改 runner 定义。
+定義僅存在於程序中。重新啟動和工作階段恢復不會從歷史呼叫重建它們。[Creator 持久化外掛決策](../architecture/2026-09-16-creator-persistent-plugin-management.zh.md)負責 agent 安裝、審批和 profile 持久化。內建模型工具不建立或修改 runner 定義。
 
 ## Alternatives considered
 
-**手写 API 表。** 拒绝，因为它会独立于服务声明漂移；生成目录与新鲜度检查共享同一源码。
+**手寫 API 表。** 拒絕，因為它會獨立於服務宣告漂移；生成目錄與新鮮度檢查共享同一原始碼。
 
-**将 vm 视为安全沙箱。** 拒绝，因为 façade 暴露的服务可以访问 Host 的真实资源。受限全局变量改善生命周期正确性，不执行权限控制。
+**將 vm 視為安全沙箱。** 拒絕，因為 façade 暴露的服務可以存取 Host 的真實資源。受限全域變數改善生命週期正確性，不執行權限控制。
 
-**从会话日志重建定义。** 拒绝，因为重放源码会执行历史副作用。历史卡片展示持久化源码和结果，不恢复运行中的定义。
+**從工作階段日誌重建定義。** 拒絕，因為重放原始碼會執行歷史副作用。歷史卡片展示持久化原始碼和結果，不恢復執行中的定義。
 
 ## Consequences
 
-检查能力不依赖 Creator 或 Plugin Manager。Runner 生命周期测试覆盖受保护注册、启动失败清理和等待释放。现有浏览器消费者保留生命周期 API；移除其写入注册表与激活机制，需要协调替换这些消费者，不能删除历史渲染或假定会话数据会重建运行状态。
+檢查能力不依賴 Creator 或 Plugin Manager。Runner 生命週期測試覆蓋受保護註冊、啟動失敗清理和等待釋放。現有瀏覽器消費者保留生命週期 API；移除其寫入註冊表與啟用機制，需要協調替換這些消費者，不能刪除歷史渲染或假定工作階段資料會重建執行狀態。

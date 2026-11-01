@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-07-pi-ai-settings-catalog-recovery.md
 /agent-note-repairable-pi-ai-settings-after-catalog-changes:
   en: 69bf6edd0515636c
-  zh: cb5039a98dc8b736
+  zh: 8839785e2a397fbe
 /agent-note-repairable-pi-ai-settings-after-catalog-changes/problem:
   en: acc6a5afd829fde0
-  zh: a2173b59b670efe2
+  zh: 749ef1ec68e0fe24
 /agent-note-repairable-pi-ai-settings-after-catalog-changes/decision:
   en: 37034d76d7542f46
-  zh: a6423ba488fe272c
+  zh: 34a56086cf73b7c0
 /agent-note-repairable-pi-ai-settings-after-catalog-changes/alternatives-considered:
   en: 1dcabe193953fa1b
-  zh: 02263349cdbdc843
+  zh: 05bc6af97c44a65a
 /agent-note-repairable-pi-ai-settings-after-catalog-changes/consequences:
   en: d2f89ce8cec55c6e
-  zh: 20fab7854366ae05
+  zh: e93b52e483053df2
 /agent-note-repairable-pi-ai-settings-after-catalog-changes/testing:
   en: 30c8172b88231251
-  zh: 54aee9d1dffa8566
+  zh: 55a793eb15f80e4f

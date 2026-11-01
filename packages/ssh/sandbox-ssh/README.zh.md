@@ -1,5 +1,5 @@
 ---
-description: "面向使用 SSH 文件系统和子进程提供方的组合，说明远端文件效果限制。"
+description: "面向使用 SSH 檔案系統和子程序提供者的組合，說明遠端檔案效果限制。"
 kind: "package-reference"
 ---
 
@@ -9,70 +9,70 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-sandbox-ssh` 为 SSH 子进程提供方启动的进程提供 `ctx.sandbox`。远端主机选择其已安装的本地沙箱后端，并在远端执行每次调用的策略。Bash 与 Node 获得同一后端的执行完整性等级、拒绝特征及运行器失败分类。
+`dsh-sandbox-ssh` 為 SSH 子程序提供者啟動的程序提供 `ctx.sandbox`。遠端主機選擇其已安裝的本地沙箱後端，並在遠端執行每次呼叫的策略。Bash 與 Node 獲得同一後端的執行完整性等級、拒絕特徵及執行器失敗分類。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延后工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延後工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-将本提供方与共享 [SSH 连接](../ssh/README.zh.md)、SSH 文件系统及 SSH 子进程提供方一同挂载。本包没有专用配置。等待 `confine(argv, policy, signal)`，由正在运行的远端辅助程序解析每次调用的策略与命令。
+將本提供者與共享 [SSH 連線](../ssh/README.zh.md)、SSH 檔案系統及 SSH 子程序提供者一同掛載。本包沒有專用設定。等待 `confine(argv, policy, signal)`，由正在執行的遠端輔助程式解析每次呼叫的策略與命令。
 
-传入完整的 `read-only` 或 `workspace-write` 策略。工作区路径在远端主机解释并规范化。消费方在 `danger-full-access` 模式下绕过 `confine()`；连接不额外引入本地／远端策略标记。
+傳入完整的 `read-only` 或 `workspace-write` 策略。工作區路徑在遠端主機解釋並規範化。消費方在 `danger-full-access` 模式下繞過 `confine()`；連線不額外引入本地／遠端策略標記。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节 — 点击展开</summary>
+<summary>實作細節 — 點選展開</summary>
 
-正在运行的辅助程序规范化策略根路径，再向已加载的沙箱提供方获取强制执行限制的 argv、执行完整性等级与运行器失败证据。SSH 子进程提供方直接执行返回的 argv，并负责 fd 7 传输及托管进程生命周期。取消请求或后端不可用时，会在调用方取得可启动命令之前拒绝请求。
+正在執行的輔助程式規範化策略根路徑，再向已載入的沙箱提供者取得強制執行限制的 argv、執行完整性等級與執行器失敗證據。SSH 子程序提供者直接執行返回的 argv，並負責 fd 7 傳輸及託管程序生命週期。取消請求或後端不可用時，會在呼叫方取得可啟動命令之前拒絕請求。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [进程沙箱子系统](../../../docs/subsystems/sandbox.zh.md) — 策略含义及执行完整性披露。
-- [本地沙箱提供方](../../sandbox/sandbox-local/README.zh.md) — 远端主机继承的后端及平台限制。
+- [程序沙箱子系統](../../../docs/subsystems/sandbox.zh.md) — 策略含義及執行完整性披露。
+- [本地沙箱提供者](../../sandbox/sandbox-local/README.zh.md) — 遠端主機繼承的後端及平臺限制。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接通过现有沙箱消费方产生影响，由它们报告模式、拒绝及执行完整性，并负责审批展示及模型参数。
+間接透過現有沙箱消費方產生影響，由它們報告模式、拒絕及執行完整性，並負責審批展示及模型參數。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-本提供方不贡献请求前缀内容。面向模型的工具与结果由消费方负责。
+本提供者不貢獻請求字首內容。面向模型的工具與結果由消費方負責。
 
-## 已知限制与延后工作
+## 已知限制與延後工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 文件效果模式不限制网络访问或进程可见性。远端 `partial` 后端仍属于部分执行。
-- SSH 主机与已安装辅助程序属于可信基础设施。摘要检查与文件效果限制不构成对抗恶意主机的安全边界。
+- 檔案效果模式不限制網路存取或程序可見性。遠端 `partial` 後端仍屬於部分執行。
+- SSH 主機與已安裝輔助程式屬於可信基礎設施。摘要檢查與檔案效果限制不構成對抗惡意主機的安全邊界。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文 — 点击展开</summary>
+<summary>維護者工作上下文 — 點選展開</summary>
 
-本包不发布不变式伴随入口。消息校验及所属文件系统、子进程和沙箱提供方执行可观察的约束；此适配器没有增加可独立观察的状态关系。
+本包不釋出不變式伴隨入口。訊息驗證及所屬檔案系統、子程序和沙箱提供者執行可觀察的約束；此介面卡沒有增加可獨立觀察的狀態關係。
 
 </details>

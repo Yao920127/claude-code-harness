@@ -1,5 +1,5 @@
 ---
-description: "通过作用域交互路径响应 Host 权限请求的浏览器批准界面。"
+description: "透過作用域互動路徑回應 Host 權限請求的瀏覽器批准介面。"
 kind: "package-reference"
 ---
 # @deepseek-ai/dsh-client-ui-approval
@@ -8,42 +8,42 @@ kind: "package-reference"
 
 ## 概述
 
-基于 Agent-scoped Remote Event waterfall 的浏览器审批界面。插件通过 `ctx.uiSession` 发布每个待处理请求、接管 Conversation composer、按需渲染关联的 Tool 详情，并将用户决定返回给等待中的 Host 请求。当浏览器必须为等待中的 Host 操作收集批准时，请使用它。
+基於 Agent-scoped Remote Event waterfall 的瀏覽器審批介面。外掛透過 `ctx.uiSession` 釋出每個待處理請求、接管 Conversation composer、按需渲染關聯的 Tool 詳情，並將使用者決定返回給等待中的 Host 請求。當瀏覽器必須為等待中的 Host 操作收集批准時，請使用它。
 
-## 目录
+## 目錄
 
-- [模型体验](#model-experience)
-- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [模型體驗](#model-experience)
+- [已知限制與暫緩事項](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
-聚焦审批详情区域后，Enter 批准，Esc 拒绝。插件挂载期间，这两个按键不能分配给可编辑快捷键。聚焦“拒绝”按钮后，Enter 保留按钮原生拒绝操作。输入控件与输入法候选保留各自的按键。键盘和指针操作共用同一待处理请求锁；已撤销或替换的请求不能再次作答，较早请求的失败也不会解锁替代请求。
+聚焦審批詳情區域後，Enter 批准，Esc 拒絕。外掛掛載期間，這兩個按鍵不能分配給可編輯快捷鍵。聚焦“拒絕”按鈕後，Enter 保留按鈕原生拒絕操作。輸入控制元件與輸入法候選保留各自的按鍵。鍵盤和指標操作共用同一待處理請求鎖；已撤銷或替換的請求不能再次作答，較早請求的失敗也不會解鎖替代請求。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为本包只在浏览器中呈现审批请求，不注册任何面向模型的内容。
+無，因為本包只在瀏覽器中呈現審批請求，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；审批请求和响应的呈现不会改变模型请求。
+無；審批請求和回應的呈現不會改變模型請求。
 
-## 已知限制与暂缓事项
+## 已知限制與暫緩事項
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **面板只提供临时决定**——它支持仅本次允许和拒绝；持久权限策略仍由 Host 侧审批包拥有。请求方提供的本地化展示文案跟随界面语言，不改写审计原因，也不翻译模型生成的文本。
+- **面板只提供臨時決定**——它支援僅本次允許和拒絕；持久權限策略仍由 Host 側審批包擁有。請求方提供的在地化展示文案跟隨介面語言，不改寫審計原因，也不翻譯模型生成的文字。
 
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。Remote listener 与临时 Slot entry 由各自注册表持有并观察。
+**執行時不變式：** 不釋出伴生入口。Remote listener 與臨時 Slot entry 由各自註冊表持有並觀察。

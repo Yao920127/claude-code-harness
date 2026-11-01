@@ -39,22 +39,22 @@ const PRODUCT_NAMES = {
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'open.title': '用 {app} 打开',
-  'path.appDefault': '{app}（默认）',
-  'path.appsError': '无法获取应用列表',
-  'shortcut.busy': '正在打开工作区',
-  'shortcut.unavailable': '当前工作区或本地应用不可用',
-  'open.tooltip': '在本地打开',
-  'path.open': '打开',
-  'path.more': '更多打开方式',
-  'path.reveal': '显示文件位置',
-  'path.openError': '打开失败，请重试',
-  'path.revealError': '无法显示文件位置，请重试',
+  'open.title': '用 {app} 開啟',
+  'path.appDefault': '{app}（預設）',
+  'path.appsError': '無法取得應用列表',
+  'shortcut.busy': '正在開啟工作區',
+  'shortcut.unavailable': '目前工作區或本地應用不可用',
+  'open.tooltip': '在本地開啟',
+  'path.open': '開啟',
+  'path.more': '更多開啟方式',
+  'path.reveal': '顯示檔案位置',
+  'path.openError': '開啟失敗，請重試',
+  'path.revealError': '無法顯示檔案位置，請重試',
   ...PRODUCT_NAMES,
-  'app.finder': '访达',
-  'app.explorer': '文件资源管理器',
-  'app.filemanager': '文件管理器',
-  'app.terminal': '终端',
+  'app.finder': '訪達',
+  'app.explorer': '檔案資源管理器',
+  'app.filemanager': '檔案管理器',
+  'app.terminal': '終端',
 } as const
 
 /** English dictionary, key-identical to the Chinese source of truth. */

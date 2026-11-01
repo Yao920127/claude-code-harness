@@ -1,12 +1,12 @@
-# 服务与依赖
+# 服務與依賴
 
 [English](service.md) | 中文
 
-服务是一个插件向其他插件公开的能力。inject 声明插件需要哪些服务。
+服務是一個外掛向其他外掛公開的能力。inject 宣告外掛需要哪些服務。
 
-## 什么是服务
+## 什麼是服務
 
-在 Harness 中，`tools`、`llm`、`agents` 都是服务。服务是挂载在 `ctx` 上的命名能力：
+在 Harness 中，`tools`、`llm`、`agents` 都是服務。服務是掛載在 `ctx` 上的命名能力：
 
 ```ts ignore-check
 ctx.tools    // ToolRuntime service
@@ -14,11 +14,11 @@ ctx.llm      // LLM service
 ctx.agents   // Agent service
 ```
 
-任何插件都可以提供服务，供其他插件使用。
+任何外掛都可以提供服務，供其他外掛使用。
 
-## 使用服务
+## 使用服務
 
-声明 `inject` 来使用已有服务：
+宣告 `inject` 來使用已有服務：
 
 ```ts ignore-check
 export const inject = ['tools']
@@ -29,11 +29,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-框架保证：在 `apply` 执行时，`inject` 声明的服务已经全部就绪。如果服务还没准备好，你的插件会等着，不会执行。
+框架保證：在 `apply` 執行時，`inject` 宣告的服務已經全部就緒。如果服務還沒準備好，你的外掛會等著，不會執行。
 
-## 提供服务
+## 提供服務
 
-### 使用 Service 基类
+### 使用 Service 基類
 
 ```ts
 import { Service, type Context } from '@deepseek-ai/cordis'
@@ -52,7 +52,7 @@ export default class MetricsService extends Service {
 }
 ```
 
-加载这个插件后，消费方就可以通过 `ctx.metrics` 访问它：
+載入這個外掛後，消費方就可以透過 `ctx.metrics` 存取它：
 
 ```ts ignore-check
 export const inject = ['metrics']
@@ -62,9 +62,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-### 类型声明
+### 型別宣告
 
-使用 TypeScript 声明合并让 `ctx.metrics` 有正确类型：
+使用 TypeScript 宣告合併讓 `ctx.metrics` 有正確型別：
 
 ```ts
 import { Service, type Context } from '@deepseek-ai/cordis'
@@ -84,9 +84,9 @@ export default class MetricsService extends Service {
 }
 ```
 
-## 依赖的行为
+## 依賴的行為
 
-### 必需依赖与可选依赖
+### 必需依賴與可選依賴
 
 ```ts ignore-check
 // Required: the plugin does not load while the service is absent.
@@ -99,20 +99,20 @@ export function apply(ctx: Context) {
 }
 ```
 
-### 服务消失时的行为
+### 服務消失時的行為
 
-如果应用运行期间某项必需服务消失（例如其提供方卸载）：
+如果應用執行期間某項必需服務消失（例如其提供者解除安裝）：
 
-1. 依赖它的插件会自动 dispose（资源释放）
-2. 当服务重新出现时，插件自动重新加载
+1. 依賴它的外掛會自動 dispose（資源釋放）
+2. 當服務重新出現時，外掛自動重新載入
 
-这可以防止插件调用已不存在的服务。
+這可以防止外掛呼叫已不存在的服務。
 
 <a id="service-isolation"></a>
 
-## 服务隔离
+## 服務隔離
 
-`cordis.yml` 支持服务隔离——同一个服务可以有多个实例，不同插件组看到不同实例：
+`cordis.yml` 支援服務隔離——同一個服務可以有多個實例，不同外掛組看到不同實例：
 
 ```yaml
 - id: group-a
@@ -138,13 +138,13 @@ export function apply(ctx: Context) {
     - name: './src/plugin-b.ts'
 ```
 
-`plugin-a` 和 `plugin-b` 各自看到自己组内的 Bash 实例，互不影响。
+`plugin-a` 和 `plugin-b` 各自看到自己組內的 Bash 實例，互不影響。
 
-## Harness 内置服务
+## Harness 內建服務
 
-服务名、公开方法和源码位置由仓库自动生成到各服务的[子系统页面](../../../subsystems/core.zh.md)。开发插件时应以这些生成区块和服务的 TypeScript 接口为准，不要维护另一份静态清单。
+服務名、公開方法和原始碼位置由儲存庫自動生成到各服務的[子系統頁面](../../../subsystems/core.zh.md)。開發外掛時應以這些生成區塊和服務的 TypeScript 介面為準，不要維護另一份靜態清單。
 
 ## 下一步
 
-- [事件系统](./events.zh.md) — 插件间松耦合通信
-- [能力分层](../practice/index.zh.md) — 将服务用作能力接口
+- [事件系統](./events.zh.md) — 外掛間松耦合通訊
+- [能力分層](../practice/index.zh.md) — 將服務用作能力介面

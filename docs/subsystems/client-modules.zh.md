@@ -1,14 +1,14 @@
-# Client 模块
+# Client 模組
 
 [English](client-modules.md) | 中文
 
-Web 插件表：[dsh-client-modules](../../packages/client/modules) 中 client 模块系统的 Node 半，以 `ctx.clientModules`（`ClientModuleRegistry`）形式提供。它扫描宿主 Loader 的 entry，找出声明了 `dsh.client` 的包，组合出 `window.__DSH_BOOT__` entry 图，在 `/plugins` 下提供带版本的单资源或多资源 combo 脚本，并以启动协议行回应每次 index 注入收集——这是同一个服务的四个面。它是 Web GUI 栈的一项可选能力，不属于 agent loop（智能体循环）主干，并且是 [dsh-host-webserver](../../packages/host/webserver) 的消费方：[web-server.md](web-server.zh.md) 所述的载体提供本服务注册的前缀路由与其回应的 `webserver/index-inject` 事件。同一个包的浏览器半（`ctx.modules`，即拉取并物化这些 bundle 的 lazy CJS 模块表）属于内核机件，记录在[包 README](../../packages/client/modules/README.zh.md)中，不在本页。
+Web 外掛表：[dsh-client-modules](../../packages/client/modules) 中 client 模組系統的 Node 半，以 `ctx.clientModules`（`ClientModuleRegistry`）形式提供。它掃描主機 Loader 的 entry，找出宣告瞭 `dsh.client` 的包，組合出 `window.__DSH_BOOT__` entry 圖，在 `/plugins` 下提供帶版本的單資源或多資源 combo 腳本，並以啟動協定行回應每次 index 注入收集——這是同一個服務的四個面。它是 Web GUI 棧的一項可選能力，不屬於 agent loop（智慧代理迴圈）主幹，並且是 [dsh-host-webserver](../../packages/host/webserver) 的消費方：[web-server.md](web-server.zh.md) 所述的載體提供本服務註冊的字首路由與其回應的 `webserver/index-inject` 事件。同一個包的瀏覽器半（`ctx.modules`，即拉取並物化這些 bundle 的 lazy CJS 模組表）屬於核心機件，記錄在[包 README](../../packages/client/modules/README.zh.md)中，不在本頁。
 
-源码：[`packages/client/modules/src/client/manifest.ts`](../../packages/client/modules/src/client/manifest.ts)
+原始碼：[`packages/client/modules/src/client/manifest.ts`](../../packages/client/modules/src/client/manifest.ts)
 
 ## wire
 
-图是 Node 半与浏览器半之间协议层的唯一真源。宿主从扫描到的包组合出 `WebBootEntry` 行与 `WebBootBatch` 描述，随后在 Vite entry 之前向结构化 index 注入表贡献 registration facade、application preload、bootstrap 脚本与图全局量。`global` 行渲染为 `globalThis["__DSH_BOOT__"]`，其中 `<` 已转义，插件可控的字符串因此无法逃出 script 元素。没有有效 manifest 的页面无法启动：浏览器解析器会拒绝畸形 row 或批次、未知成员，以及未恰好归属一个初始 combo 描述的 entry。
+圖是 Node 半與瀏覽器半之間協定層的唯一真源。主機從掃描到的包組合出 `WebBootEntry` 行與 `WebBootBatch` 描述，隨後在 Vite entry 之前向結構化 index 注入表貢獻 registration facade、application preload、bootstrap 腳本與圖全域量。`global` 行渲染為 `globalThis["__DSH_BOOT__"]`，其中 `<` 已轉義，外掛可控的字串因此無法逃出 script 元素。沒有有效 manifest 的頁面無法啟動：瀏覽器解析器會拒絕畸形 row 或批次、未知成員，以及未恰好歸屬一個初始 combo 描述的 entry。
 
 ```ts type-equiv
 /**
@@ -73,21 +73,21 @@ interface WebBootGraph {
 }
 ```
 
-首次发布与 HMR 都从入口的 mtime、ctime 和大小派生每个 row 的 `rev`，不对可执行字节求哈希。相同产物会跨 Host 重启保持 revision。初始 descriptor 把 row 划入 bootstrap 与 application 两个调度阶段，每个阶段都可以包含多条 descriptor。URL 只含有序 package 资源列表和从这些 row revision 派生的 revision，阶段名不会进入路由。图组合保持 row 顺序，并在 map 形式 URL 超过 3 KiB 前贪心切分，不拼接脚本，也不读取 map。图 revision 对 entry 与 batch descriptor 求哈希。`immediately` 标记第一阶段的 registration barrier；同一 combo 中的 row 共享脚本传输，不同 combo 则独立加载。
+首次釋出與 HMR 都從入口的 mtime、ctime 和大小派生每個 row 的 `rev`，不對可執行位元組求雜湊。相同產物會跨 Host 重新啟動保持 revision。初始 descriptor 把 row 劃入 bootstrap 與 application 兩個排程階段，每個階段都可以包含多條 descriptor。URL 只含有序 package 資源列表和從這些 row revision 派生的 revision，階段名不會進入路由。圖組合保持 row 順序，並在 map 形式 URL 超過 3 KiB 前貪心切分，不拼接腳本，也不讀取 map。圖 revision 對 entry 與 batch descriptor 求雜湊。`immediately` 標記第一階段的 registration barrier；同一 combo 中的 row 共享腳本傳輸，不同 combo 則獨立載入。
 
-## 扫描
+## 掃描
 
-包加入这张表的方式，是在自己的 package.json 中声明 `dsh.client`（`platform: 'web'`、可选的 `inject` 边、可选的 `immediately`），并在 `exports["./client"]` 导出构建好的 bundle。每个 live row 都从自己的 Loader specifier 与所属 tree `baseUrl` 解析；若 `loader.internal.resolveSync` 可用，则使用 Host face import 所用的同一个实现。最近归属的 package manifest 提供浏览器模块 id，因此相对 source 与 built overlay 仍保留包身份。若不同的 active Loader source 解析到同一包名，组合会失败；一个来源卸载后，仍存活的来源无需重启 fiber 即可提供该 row。
+包加入這張表的方式，是在自己的 package.json 中宣告 `dsh.client`（`platform: 'web'`、可選的 `inject` 邊、可選的 `immediately`），並在 `exports["./client"]` 匯出建置好的 bundle。每個 live row 都從自己的 Loader specifier 與所屬 tree `baseUrl` 解析；若 `loader.internal.resolveSync` 可用，則使用 Host face import 所用的同一個實作。最近歸屬的 package manifest 提供瀏覽器模組 id，因此相對 source 與 built overlay 仍保留包身份。若不同的 active Loader source 解析到同一包名，組合會失敗；一個來源解除安裝後，仍存活的來源無需重新啟動 fiber 即可提供該 row。
 
-扫描是单包增量的；不存在全量重扫代码路径。fiber 构造或 dispose（资源释放）时的每次 cordis `internal/plugin` 发射都把该 fiber 的 entry 名标脏，一次微任务 flush 把每个脏名与实时 loader entry 对账。激活趟以全部当前 entry 灌入同一个脏集合并同步 flush，因此初扫与稳态共享一条实现——但失败姿态相反。激活时，已加载 entry 中的畸形声明或缺失 bundle 会聚合为一个大声的 `AggregateError`，列出每个损坏的包：该 fiber 进入 FAILED，由启动的大声失败 sweep 上报。稳态下，损坏的包只记录一条警告，且不得殃及其他包。
+掃描是單包增量的；不存在全量重掃程式碼路徑。fiber 建構或 dispose（資源釋放）時的每次 cordis `internal/plugin` 發射都把該 fiber 的 entry 名標髒，一次微任務 flush 把每個髒名與即時 loader entry 對帳。啟用趟以全部目前 entry 灌入同一個髒集合並同步 flush，因此初掃與穩態共享一條實作——但失敗姿態相反。啟用時，已載入 entry 中的畸形宣告或缺失 bundle 會聚合為一個大聲的 `AggregateError`，列出每個損壞的包：該 fiber 進入 FAILED，由啟動的大聲失敗 sweep 上報。穩態下，損壞的包只記錄一條警告，且不得殃及其他包。
 
-包元数据——包括「非 client 包」这一否定结论——按 Loader specifier 与所属 tree base URL 缓存至重启。同一来源的 fiber 重启会原样复用其 row 与 rev；bundle 内容变更只经 `rebuilt()` 到达图。
+包中繼資料——包括「非 client 包」這一否定結論——按 Loader specifier 與所屬 tree base URL 快取至重新啟動。同一來源的 fiber 重新啟動會原樣複用其 row 與 rev；bundle 內容變更只經 `rebuilt()` 到達圖。
 
-## bundle 路由与 index 注入
+## bundle 路由與 index 注入
 
-`GET`／`HEAD /plugins/??<package-a>/client.js,<package-b>/client.js&rev=<rev>` 寻址一份生成的 combo 脚本；单资源请求采用同一形式，也是 HMR 路径。脚本在首次 `GET` 时只拼接一次，并以 `sourceMappingURL` 结尾，该引用只携带 combo 查询串——`??<package-a>/client.js.map,<package-b>/client.js.map&rev=<rev>`，按脚本自身目录而非文档解析。启动、index 渲染、脚本 `GET` 和 `HEAD` 都不会读取 map 文件；首次 map `GET` 才会读取并校验这些文件、组合一份 Indexed Source Map v3，并缓存该 body。组件有自带 map 时直接用于对应 section；没有时则获得 identity section，其 `sourcesContent` 是捕获的 bundle，source 名取打包后的 `sourceURL` 或插件路由。每条启动请求 URL 按 UTF-8 字节计算都不超过 3 KiB；切分按更长的 map 形式计算。所有 application URL 都会预加载，所有 bootstrap URL 都会在图全局量与 Vite entry 之前执行。已物化响应使用长期 immutable 缓存。未知或被修改的资源列表、缺少 revision 及陈旧 revision 都返回 404，绝不提供其他字节，也不会让 SPA fallback 把 HTML 当作 JavaScript 返回；其他方法返回 405。注入行在每次 index 渲染时携带当前图，因此重新加载总是基于实时组合启动。
+`GET`／`HEAD /plugins/??<package-a>/client.js,<package-b>/client.js&rev=<rev>` 定址一份生成的 combo 腳本；單資源請求採用同一形式，也是 HMR 路徑。腳本在首次 `GET` 時只拼接一次，並以 `sourceMappingURL` 結尾，該引用只攜帶 combo 查詢串——`??<package-a>/client.js.map,<package-b>/client.js.map&rev=<rev>`，按腳本自身目錄而非文件解析。啟動、index 渲染、腳本 `GET` 和 `HEAD` 都不會讀取 map 檔案；首次 map `GET` 才會讀取並驗證這些檔案、組合一份 Indexed Source Map v3，並快取該 body。元件有自帶 map 時直接用於對應 section；沒有時則獲得 identity section，其 `sourcesContent` 是捕捉的 bundle，source 名取打包後的 `sourceURL` 或外掛路由。每條啟動請求 URL 按 UTF-8 位元組計算都不超過 3 KiB；切分按更長的 map 形式計算。所有 application URL 都會預載入，所有 bootstrap URL 都會在圖全域量與 Vite entry 之前執行。已物化回應使用長期 immutable 快取。未知或被修改的資源列表、缺少 revision 及陳舊 revision 都返回 404，絕不提供其他位元組，也不會讓 SPA fallback 把 HTML 當作 JavaScript 返回；其他方法返回 405。注入行在每次 index 渲染時攜帶目前圖，因此重新載入總是基於即時組合啟動。
 
-## 服务
+## 服務
 
 ```ts type-equiv
 /** Filesystem baseline captured before a client artifact snapshot is read. */
@@ -103,9 +103,9 @@ interface ClientArtifactBaseline {
 }
 ```
 
-`ClientModuleRegistry`（`ctx.clientModules`，定义于 [`packages/client/modules/src/index.ts`](../../packages/client/modules/src/index.ts)）暴露读取面与重建面；签名见生成的[服务目录](#ctxclientmodules--clientmoduleregistry)。`graph()` 返回当前组合出的图（两次变更之间是同一个稳定对象），`clientPath(id)` 返回 bundle 的绝对路径，`artifactBaseline(id)` 返回读取当前快照前捕获的 bundle stat 值。`fetchBundle()` 解析 HTTP 路由所使用的同一份惰性响应。`rebuilt(id)` 是变化后的 bundle 内容到达图的唯一入口：它从文件系统元数据派生 revision，只有 revision 变化才会读取新字节、重新组合图并发出通知。`onRebuilt` 按发生变化的 bundle 逐个触发并携带新 revision；`onGraphChanged` 在任何一次重新组合了图的 flush 之后触发（行的增删，或 rebuilt 带来的 revision 变化），并采用拉取模型——监听器自行重读 `graph()`。两条通知路径都会兜住监听器异常，因此一个抛错的订阅者既不能让后续订阅者被跳过，也不能杀死触发这次 flush 的一方。
+`ClientModuleRegistry`（`ctx.clientModules`，定義於 [`packages/client/modules/src/index.ts`](../../packages/client/modules/src/index.ts)）暴露讀取面與重建面；簽名見生成的[服務目錄](#ctxclientmodules--clientmoduleregistry)。`graph()` 返回目前組合出的圖（兩次變更之間是同一個穩定物件），`clientPath(id)` 返回 bundle 的絕對路徑，`artifactBaseline(id)` 返回讀取目前快照前捕捉的 bundle stat 值。`fetchBundle()` 解析 HTTP 路由所使用的同一份惰性回應。`rebuilt(id)` 是變化後的 bundle 內容到達圖的唯一入口：它從檔案系統中繼資料派生 revision，只有 revision 變化才會讀取新位元組、重新組合圖並行出通知。`onRebuilt` 按發生變化的 bundle 逐個觸發並攜帶新 revision；`onGraphChanged` 在任何一次重新組合了圖的 flush 之後觸發（行的增刪，或 rebuilt 帶來的 revision 變化），並採用拉取模型——監聽器自行重讀 `graph()`。兩條通知路徑都會兜住監聽器異常，因此一個拋錯的訂閱者既不能讓後續訂閱者被跳過，也不能殺死觸發這次 flush 的一方。
 
-随包提供的 Web 组合通过 [`dsh-client-hmr`](../../packages/client/hmr/README.zh.md) 交付动态图快照。Host 立即转发现有图变化通知，重连会发送当前完整图。图描述浏览器的目标条目，不声明 Host 清理已经完成。产物轮询另外报告重建 revision。仅 source map 变化不会触发重载；新 combo-map URL 只会在 bundle revision 变化后出现，每份 map body 由其首次 `GET` 固定。Client Modules 校验快照，并将对账与重建串行协调；它持有启动创建的条目映射，负责单资源到达、异步移除、未使用模块与样式清理，以及页面本地重试状态。静态平台模块与 bootstrap 保持页面生命周期；Electron 安装属于独立流程。
+隨包提供的 Web 組合透過 [`dsh-client-hmr`](../../packages/client/hmr/README.zh.md) 交付動態圖快照。Host 立即轉發現有圖變化通知，重連會傳送目前完整圖。圖描述瀏覽器的目標條目，不宣告 Host 清理已經完成。產物輪詢另外報告重建 revision。僅 source map 變化不會觸發過載；新 combo-map URL 只會在 bundle revision 變化後出現，每份 map body 由其首次 `GET` 固定。Client Modules 驗證快照，並將對帳與重建序列協調；它持有啟動建立的條目對映，負責單資源到達、非同步移除、未使用模組與樣式清理，以及頁面本地重試狀態。靜態平臺模組與 bootstrap 保持頁面生命週期；Electron 安裝屬於獨立流程。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

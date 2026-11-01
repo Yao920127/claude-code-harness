@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/shell/pwsh-local/README.md
 /:
   en: 07482fe1f03de5e9
-  zh: 8ec16b9f9ac73b38
+  zh: 355d0e33a3e5e5fe
 /deepseek-ai-dsh-pwsh-local:
   en: 15364cd289d23957
   zh: d3e82667e954c58d
 /deepseek-ai-dsh-pwsh-local/summary:
   en: b3d58f4bee09b7ed
-  zh: 31f5ef9ba27a4df0
+  zh: b078aba887f502b2
 /deepseek-ai-dsh-pwsh-local/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-pwsh-local/use-this-package:
   en: f53013bc78e9367f
-  zh: cc15b499f6a95080
+  zh: d58cfae45a8a1534
 /deepseek-ai-dsh-pwsh-local/use-this-package/when-to-choose-it:
   en: 84f220a1eec48f24
-  zh: 72cf0681212efe82
+  zh: ebb76c1a5d92b2f3
 /deepseek-ai-dsh-pwsh-local/use-this-package/minimal-configuration:
   en: 47119e8b4e884a5d
-  zh: f9dfb155f06c4b73
+  zh: 10bccde001108ec3
 /deepseek-ai-dsh-pwsh-local/use-this-package/running-commands:
   en: d0efd217ca8ce07d
-  zh: 76eda93aa7300f87
+  zh: d284a59e04ad56cb
 /deepseek-ai-dsh-pwsh-local/use-this-package/background-processes:
   en: 3c580842cc8452af
-  zh: 5a156670a7cacc2a
+  zh: e7c0443ad53585b7
 /deepseek-ai-dsh-pwsh-local/use-this-package/adjusting-budgets-at-runtime:
   en: 1098db4c932a48f8
-  zh: 33f78ab65dbfeb1d
+  zh: fed927f9d3be89b7
 /deepseek-ai-dsh-pwsh-local/understand-the-implementation:
   en: 05e2abe4a25886fd
-  zh: 3f7f1326dc3c1d3f
+  zh: b054bda04723ca23
 /deepseek-ai-dsh-pwsh-local/understand-the-implementation/design-concept:
   en: d065be99a0cea908
-  zh: 50eee843e3b6860c
+  zh: 4f0ed0e3a8f38449
 /deepseek-ai-dsh-pwsh-local/understand-the-implementation/source-map:
   en: 299f4ffe25b4806d
-  zh: d0aced83a1950a91
+  zh: 28892e0de8122384
 /deepseek-ai-dsh-pwsh-local/understand-the-implementation/main-flow:
   en: 1cb78cfddb484576
-  zh: 94e16b60c9cd458b
+  zh: 56f215a3245f8e04
 /deepseek-ai-dsh-pwsh-local/understand-the-implementation/invariants-and-ownership:
   en: db6d1d14205d38ed
-  zh: 148b3764daee54e8
+  zh: ddb577d3d6f3a98b
 /deepseek-ai-dsh-pwsh-local/further-exploration:
   en: f88bd1a14fe62416
-  zh: a7c4a8c9ce49d374
+  zh: 4dff7acd9fd8cf76
 /deepseek-ai-dsh-pwsh-local/model-experience:
   en: cb8a0d1c1929e4ea
-  zh: 6b1d5aa2d10c0a01
+  zh: 60012e3ec484995c
 /deepseek-ai-dsh-pwsh-local/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: 788a4799b1d65a8b
+  zh: 1b43847b5264dd6b
 /deepseek-ai-dsh-pwsh-local/known-limitations-and-deferred-work:
   en: dbe004f26cb332f2
-  zh: 83dc82454ee6a92d
+  zh: e604542559b08f43
 /deepseek-ai-dsh-pwsh-local/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

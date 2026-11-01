@@ -1,65 +1,65 @@
-# Agent Note: 基于 AsyncLocalStorage 的发起 Agent 作用域
+# Agent Note: 基於 AsyncLocalStorage 的發起 Agent 作用域
 
 Status: implemented
 
 [English](2026-07-15-agent-initiator-scope.md) | 中文
 
-## 问题
+## 問題
 
-harness 中存在两种有用但不同的上下文概念。Cordis `Context` 负责选择服务、注册归属和生命周期；`agent.ctx` 是一个存活 Agent 所拥有的扁平注册作用域。Agent 与会话身份描述的则是异步操作主体。若提供表示「当前正在运行的 Agent」的动态 `ctx.agent`，就会混淆这两种含义，并在单进程并发驱动多个 Agent 时失效。
+harness 中存在兩種有用但不同的上下文概念。Cordis `Context` 負責選擇服務、註冊歸屬和生命週期；`agent.ctx` 是一個存活 Agent 所擁有的扁平註冊作用域。Agent 與工作階段身份描述的則是非同步操作主體。若提供表示「目前正在執行的 Agent」的動態 `ctx.agent`，就會混淆這兩種含義，並在單程序並行驅動多個 Agent 時失效。
 
-进程内深层基础设施有时需要在显式传递的循环、工具及请求参数之下获取可信的发起 Agent，例如宿主感知传输层、追踪辅助函数、日志器或网关客户端。要求每个私有辅助函数都转发 `agent` 会造成重复，而进程级可变槽会在跨 `await` 时发生并发错误。模型可见参数也不适用，因为模型不得选择可信的会话或路由请求头。该载体归 Agent 服务所有，而非模型可见的可选上下文。
+程序內深層基礎設施有時需要在顯式傳遞的迴圈、工具及請求參數之下取得可信的發起 Agent，例如主機感知傳輸層、追蹤輔助函式、日誌器或閘道用戶端。要求每個私有輔助函式都轉發 `agent` 會造成重複，而程序級可變槽會在跨 `await` 時發生並行錯誤。模型可見參數也不適用，因為模型不得選擇可信的工作階段或路由請求頭。該載體歸 Agent 服務所有，而非模型可見的可選上下文。
 
-## 决策
+## 決策
 
-必需的 `ctx.agents` 服务使用 Node `AsyncLocalStorage` 携带发起 Agent。它直接存储同一个 `Agent`，不引入只有一个字段的帧；另一个私有运行标记只记录嵌套边界的谱系，供 teardown 记账使用，不携带身份。[核心数据目录](../../../../docs/subsystems/core.zh.md#initiating-agent)标明了所携带的类型。
+必需的 `ctx.agents` 服務使用 Node `AsyncLocalStorage` 攜帶發起 Agent。它直接儲存同一個 `Agent`，不引入只有一個欄位的幀；另一個私有執行標記只記錄巢狀邊界的譜系，供 teardown 記帳使用，不攜帶身份。[核心資料目錄](../../../../docs/subsystems/core.zh.md#initiating-agent)標明瞭所攜帶的型別。
 
-`currentInitiator()` 用于可选读取，`requireInitiator()` 抛出 `no initiating agent is active`，`withInitiator(agent, operation)` 保留操作返回的同步值或 Promise 本身。`withoutInitiator(operation)` 会建立清空边界，供不得继承 Agent 的工作使用。会话仍通过 `agent.session` 推导；轮次、步骤、工具调用、`signal`、模型、`cwd`、沙箱和授权继续由现有归属方管理。
+`currentInitiator()` 用於可選讀取，`requireInitiator()` 丟擲 `no initiating agent is active`，`withInitiator(agent, operation)` 保留操作返回的同步值或 Promise 本身。`withoutInitiator(operation)` 會建立清空邊界，供不得繼承 Agent 的工作使用。工作階段仍透過 `agent.session` 推導；輪次、步驟、工具呼叫、`signal`、模型、`cwd`、沙箱和授權繼續由現有歸屬方管理。
 
-`AgentLoop` 已经注入 `ctx.agents`，并用 `agents.withInitiator(agent, ...)` 包裹每个具体驱动的完整 `runLoop` 生命周期。循环、轮次、步骤和工具调用的包内私有入口从 `ctx.agents` 恢复同一个 Agent，一次推导 `agent.session`，再由操作内辅助函数捕获该值，避免在浅层接口中转发具体驱动或 `Session`。若 `Session` 本身就是底层辅助函数的实际接口，该函数会保留狭窄的 `Session` 参数，而不会只为隐式查找而接收更宽泛的 `Context`。
+`AgentLoop` 已經注入 `ctx.agents`，並用 `agents.withInitiator(agent, ...)` 包裹每個具體驅動的完整 `runLoop` 生命週期。迴圈、輪次、步驟和工具呼叫的包內私有入口從 `ctx.agents` 恢復同一個 Agent，一次推導 `agent.session`，再由操作內輔助函式捕捉該值，避免在淺層介面中轉發具體驅動或 `Session`。若 `Session` 本身就是底層輔助函式的實際介面，該函式會保留狹窄的 `Session` 參數，而不會只為隱式查詢而接收更寬泛的 `Context`。
 
-因此，并发驱动使用彼此独立的存储。子驱动的异步延续携带子 Agent；`withInitiator()` 返回后，调用方立即恢复之前的存储，而活动运行计数仍持续跟踪返回的 Promise，直到其结束。创建、持久化加载和尚未发布的 `setup(agentCtx, childAgent)` 位于子驱动边界之外：由父 Agent 发起的创建使用父身份，而显式的 `childAgent` 参数标识子 Agent。
+因此，並行驅動使用彼此獨立的儲存。子驅動的非同步延續攜帶子 Agent；`withInitiator()` 返回後，呼叫方立即恢復之前的儲存，而活動執行計數仍持續跟蹤返回的 Promise，直到其結束。建立、持久化載入和尚未釋出的 `setup(agentCtx, childAgent)` 位於子驅動邊界之外：由父 Agent 發起的建立使用父身份，而顯式的 `childAgent` 參數標識子 Agent。
 
-隐式身份不会取代显式约定。`ToolExecution.agent`、`AssembleContext.agent`、`AgentSetup` 的 Agent 参数、`GenerateOptions.sessionId`、任务归属、父子请求、审批与 hook 主体、`cwd` 选择、取消、worker 和进程消息、持久化记录及协议身份都保持显式传递。远程边界会把所需身份写入类型化请求，因为 ALS 只在进程内有效。
+隱式身份不會取代顯式約定。`ToolExecution.agent`、`AssembleContext.agent`、`AgentSetup` 的 Agent 參數、`GenerateOptions.sessionId`、任務歸屬、父子請求、審批與 hook 主體、`cwd` 選擇、取消、worker 和程序訊息、持久化記錄及協定身份都保持顯式傳遞。遠端邊界會把所需身份寫入型別化請求，因為 ALS 只在程序內有效。
 
-`AgentRegistry` 管理一个有序的发起方生命周期。teardown 会先拒绝新边界；移除 `ctx.agents` 后，AgentLoop 等注入方开始排空，注册表随后等待活动的返回 Promise 边界，最后调用 `AsyncLocalStorage.disable()`。如果某个边界继承的异步调用链启动所属 Cordis fiber 的卸载，私有运行标记谱系会从排空范围中释放该嵌套边界链，从而避免 teardown 等待自身完成，同时继续排空无关边界。在普通排空期间，进行中代码可通过保留的服务引用继续调用 `currentInitiator()` 和 `requireInitiator()`；dispose（资源释放）后，发起方方法会抛出 `agent initiator scope is disposed`。根 Context dispose 可能并发启动同级 fiber 的 teardown，因此除 Cordis 依赖顺序外仍必须统计活动边界。
+`AgentRegistry` 管理一個有序的發起方生命週期。teardown 會先拒絕新邊界；移除 `ctx.agents` 後，AgentLoop 等注入方開始排空，註冊表隨後等待活動的返回 Promise 邊界，最後呼叫 `AsyncLocalStorage.disable()`。如果某個邊界繼承的非同步呼叫鏈啟動所屬 Cordis fiber 的解除安裝，私有執行標記譜系會從排空範圍中釋放該巢狀邊界鏈，從而避免 teardown 等待自身完成，同時繼續排空無關邊界。在普通排空期間，進行中程式碼可透過保留的服務引用繼續呼叫 `currentInitiator()` 和 `requireInitiator()`；dispose（資源釋放）後，發起方方法會丟擲 `agent initiator scope is disposed`。根 Context dispose 可能並行啟動同級 fiber 的 teardown，因此除 Cordis 依賴順序外仍必須統計活動邊界。
 
-发起方作用域不负责管理脱离返回链的工作：注册表排空只跟踪 `withInitiator()` 或 `withoutInitiator()` 返回的 Promise。边界内创建的异步资源会继承其存储，直到自身结束或 ALS 被禁用；所属 seam 必须显式停止未纳入返回 Promise 的工作。Agent 所属的前台工作会把完整生命周期纳入返回值，并保留显式取消约定。无关的定时器、队列和部署基础设施在 `withoutInitiator(operation)` 下启动；队列、worker、进程和协议边界必须序列化身份，不能期待 ALS 传播。
+發起方作用域不負責管理脫離返回鏈的工作：註冊表排空只跟蹤 `withInitiator()` 或 `withoutInitiator()` 返回的 Promise。邊界內建立的非同步資源會繼承其儲存，直到自身結束或 ALS 被停用；所屬 seam 必須顯式停止未納入返回 Promise 的工作。Agent 所屬的前臺工作會把完整生命週期納入回傳值，並保留顯式取消約定。無關的定時器、佇列和部署基礎設施在 `withoutInitiator(operation)` 下啟動；佇列、worker、程序和協定邊界必須序列化身份，不能期待 ALS 傳播。
 
-宿主感知的传输层可以从 `ctx.agents.requireInitiator().session.id` 推导由部署方拥有的 `X-Harness-Session-Id` 等请求头；模型可见 schema 和参数中不包含该请求头。本决策不让现有生产 MCP 或 Web 传输层采用此请求头。测试替身传输层用于证明可信边界，而不会把宿主路由策略分配给现有的提供方无关 seam。
+主機感知的傳輸層可以從 `ctx.agents.requireInitiator().session.id` 推導由部署方擁有的 `X-Harness-Session-Id` 等請求頭；模型可見 schema 和參數中不包含該請求頭。本決策不讓現有生產 MCP 或 Web 傳輸層採用此請求頭。測試替身傳輸層用於證明可信邊界，而不會把主機路由策略分配給現有的提供者無關 seam。
 
-本决策扩展 [Agent 注册作用域约定](2026-07-08-agent-scope-contexts.zh.md)及其[运行时设计](2026-07-12-agent-scope-runtime-design.zh.md)，不会改变其中 `agent.ctx` 的静态含义。[显式运行时身份决策](2026-08-31-explicit-agent-runtime-identity.zh.md)把发起方作用域限制在私有异步调用链内，同时让生命周期、归属、事件和协议接口直接携带各自的主体。
+本決策擴充功能 [Agent 註冊作用域約定](2026-07-08-agent-scope-contexts.zh.md)及其[執行時設計](2026-07-12-agent-scope-runtime-design.zh.md)，不會改變其中 `agent.ctx` 的靜態含義。[顯式執行時身份決策](2026-08-31-explicit-agent-runtime-identity.zh.md)把發起方作用域限制在私有非同步呼叫鏈內，同時讓生命週期、歸屬、事件和協定介面直接攜帶各自的主體。
 
-## 验证
+## 驗證
 
-Agent 服务测试锁定可选与必需读取、同步值及跨 realm Promise 的精确身份、内建 Promise 结束状态观察、并发、嵌套及清空边界、同步抛错或 Promise 拒绝后的恢复、普通与重入排空顺序及保留引用的错误。AgentLoop 集成测试锁定并发与嵌套驱动、无 Agent 调用、AgentRegistry 重启、根 Context 销毁，以及包内私有的循环和工具调度通过隐式查找完成。组合、模块图、构建及运行时闭包检查确保默认组合包、SDK 主干、Python 运行时闭包及直接 AgentLoop harness 通过 `ctx.agents` 完成接线，无需其他提供方。
+Agent 服務測試鎖定可選與必需讀取、同步值及跨 realm Promise 的精確身份、內建 Promise 結束狀態觀察、並行、巢狀及清空邊界、同步拋錯或 Promise 拒絕後的恢復、普通與重入排空順序及保留引用的錯誤。AgentLoop 整合測試鎖定並行與巢狀驅動、無 Agent 呼叫、AgentRegistry 重新啟動、根 Context 銷燬，以及包內私有的迴圈和工具排程透過隱式查詢完成。組合、模組圖、建置及執行時閉包檢查確保預設組合包、SDK 主幹、Python 執行時閉包及直接 AgentLoop harness 透過 `ctx.agents` 完成接線，無需其他提供者。
 
-测试替身形式的宿主感知传输层在内部推导 `X-Harness-Session-Id`，并验证工具 schema 与日志中记录的参数都不包含身份字段。服务有意不排空边界操作所返回 Promise 之外的异步工作；这类工作仍由所属方的显式停止约定管理。
+測試替身形式的主機感知傳輸層在內部推導 `X-Harness-Session-Id`，並驗證工具 schema 與日誌中記錄的參數都不包含身份欄位。服務有意不排空邊界操作所返回 Promise 之外的非同步工作；這類工作仍由所屬方的顯式停止約定管理。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**在每个函数中传递 Agent。** 公开、worker、进程、持久化和协议边界继续显式传递，但要求每个进程内私有辅助函数都携带 Agent 只会造成重复转发，不会提高可信度。ALS 仅限于这些显式边界内部的异步调用链。
+**在每個函式中傳遞 Agent。** 公開、worker、程序、持久化和協定邊界繼續顯式傳遞，但要求每個程序內私有輔助函式都攜帶 Agent 只會造成重複轉發，不會提高可信度。ALS 僅限於這些顯式邊界內部的非同步呼叫鏈。
 
-**暴露动态的 `ctx.agent`。** Context 携带注册所有权，而非领域主体。为正在执行的 Agent 新增 accessor 会混合注册作用域与执行作用域，并让并发行为变得意外。
+**暴露動態的 `ctx.agent`。** Context 攜帶註冊所有權，而非領域主體。為正在執行的 Agent 新增 accessor 會混合註冊作用域與執行作用域，並讓並行行為變得意外。
 
-**新增独立的 `ctx.agentExecution` 服务。** 该载体没有独立后端、配置或身份类型：它存储的是 `ctx.agents` 已经管理的同一个 `Agent`，而 AgentLoop 本就依赖该服务。第二个必需提供方会增加包、组合、生命周期、生成目录及测试 harness 接线，却没有拆出真实能力。
+**新增獨立的 `ctx.agentExecution` 服務。** 該載體沒有獨立後端、設定或身份型別：它儲存的是 `ctx.agents` 已經管理的同一個 `Agent`，而 AgentLoop 本就依賴該服務。第二個必需提供者會增加包、組合、生命週期、生成目錄及測試 harness 接線，卻沒有拆出真實能力。
 
-**保存命名帧或完整运行时帧。** 只有一个字段的 `{ agent }` 帧只是包装该值，而 Agent、会话、inbox、取消、轮次、步骤、工具执行和持久化已经有各自的真源。增加更多字段会产生陈旧快照和另一套生命周期；直接携带 `Agent`，由方法名标识边界，无需重复保存状态。
+**儲存命名幀或完整執行時幀。** 只有一個欄位的 `{ agent }` 幀只是包裝該值，而 Agent、工作階段、inbox、取消、輪次、步驟、工具執行和持久化已經有各自的真源。增加更多欄位會產生陳舊快照和另一套生命週期；直接攜帶 `Agent`，由方法名標識邊界，無需重複儲存狀態。
 
-**包含步骤级 `AbortSignal`、`cwd`、沙箱或授权。** 它们的生命周期及权限范围与驱动边界不一致，而且现有 seam 已经显式传递这些值。新增控制能力需要独立决策和嵌套生命周期约定。
+**包含步驟級 `AbortSignal`、`cwd`、沙箱或授權。** 它們的生命週期及權限範圍與驅動邊界不一致，而且現有 seam 已經顯式傳遞這些值。新增控制能力需要獨立決策和巢狀生命週期約定。
 
-**使用进程级 `currentAgent`。** 并发 Agent 和 subagent 会在异步延续执行之间相互覆盖，因此可变全局值只在 harness 不具备的串行保证下才正确。
+**使用程序級 `currentAgent`。** 並行 Agent 和 subagent 會在非同步延續執行之間相互覆蓋，因此可變全域值只在 harness 不具備的序列保證下才正確。
 
-**从模型可见参数推导身份。** 不能信任模型或用户输入来选择会话、租户或沙箱路由。
+**從模型可見參數推導身份。** 不能信任模型或使用者輸入來選擇工作階段、租戶或沙箱路由。
 
-**给每个能力 seam 增加路由身份。** 这会把宿主关注点扩散到提供方无关 API。宿主感知实现拥有其传输请求头，而公开边界继续显式传递身份。
+**給每個能力 seam 增加路由身份。** 這會把主機關注點擴散到提供者無關 API。主機感知實作擁有其傳輸請求頭，而公開邊界繼續顯式傳遞身份。
 
-## 后果
+## 後果
 
-深层基础设施可以获得一个可信的进程内发起 Agent，而无需加宽现有工具和能力请求。并发及嵌套驱动会自动隔离，AgentLoop 不增加新的必需服务，HMR（热模块替换）或根 Context dispose 会在禁用 ALS 前达到完全停稳。
+深層基礎設施可以獲得一個可信的程序內發起 Agent，而無需加寬現有工具和能力請求。並行及巢狀驅動會自動隔離，AgentLoop 不增加新的必需服務，HMR（熱模組替換）或根 Context dispose 會在停用 ALS 前達到完全停穩。
 
-该依赖不会出现在函数签名中，并且携带一个具有控制能力的 Agent 对象。消费方必须将其限制在横切基础设施中，把隐式存在视为既不证明存活、也不授予权限，并保留显式取消和归属检查。ALS 还有常驻传播成本，也无法跨越 worker、进程、HTTP 或持久化队列边界。
+該依賴不會出現在函式簽名中，並且攜帶一個具有控制能力的 Agent 物件。消費方必須將其限制在橫切基礎設施中，把隱式存在視為既不證明存活、也不授予權限，並保留顯式取消和歸屬檢查。ALS 還有常駐傳播成本，也無法跨越 worker、程序、HTTP 或持久化佇列邊界。
 
-该销毁设计有意依赖 Node 的 [Stability 1（实验性）](https://nodejs.org/api/async_context.html#asynclocalstoragedisable) API `AsyncLocalStorage.disable()`。Node 要求在 ALS 实例可被垃圾回收前调用 `disable()`，这对 HMR 替换 AgentRegistry 所拥有的实例尤为重要；服务状态守卫会阻止 dispose 后通过后续边界重新进入该实例。
+該銷燬設計有意依賴 Node 的 [Stability 1（實驗性）](https://nodejs.org/api/async_context.html#asynclocalstoragedisable) API `AsyncLocalStorage.disable()`。Node 要求在 ALS 實例可被垃圾回收前呼叫 `disable()`，這對 HMR 替換 AgentRegistry 所擁有的實例尤為重要；服務狀態守衛會阻止 dispose 後透過後續邊界重新進入該實例。
 
-该作用域有意只携带 Agent，省略轮次、步骤、`signal`、`cwd`、沙箱和授权。若真实消费方无法使用现有显式字段，必须另行论证扩展；陈旧字段最多只能误标遥测数据，绝不能授予控制权。
+該作用域有意只攜帶 Agent，省略輪次、步驟、`signal`、`cwd`、沙箱和授權。若真實消費方無法使用現有顯式欄位，必須另行論證擴充功能；陳舊欄位最多隻能誤標遙測資料，絕不能授予控制權。

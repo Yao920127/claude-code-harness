@@ -31,7 +31,7 @@ it.skipIf(!gioAvailable)('queries and launches an installed Linux desktop entry 
   await mkdir(join(data, 'applications'), { recursive: true })
   await mkdir(config)
   await mkdir(empty)
-  const path = join(root, "测试 ' file.txt")
+  const path = join(root, "測試 ' file.txt")
   const script = join(root, 'handler.cjs')
   const marker = join(root, 'opened.json')
   await writeFile(path, 'plain text')

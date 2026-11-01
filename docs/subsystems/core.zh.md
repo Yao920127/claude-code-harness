@@ -2,30 +2,30 @@
 
 [English](core.md) | 中文
 
-**核心**子系统即 [`packages/core`](../../packages/core/README.zh.md)，包含每个组合都会启动的包：事件溯源的会话日志、系统提示词组装、工具注册表、agent（智能体）类型，以及驱动它们的具体循环。本页说明 `agent`/`agent-loop` 这对包所声明的内容：agent 如何被创建与拥有，以及 `Agent` 句柄的投递、取消与拦截约定；本页还说明每个子系统都遵循的两个类型模式。该组的专属页面与目录其余部分见[子系统 README](README.zh.md)。
+**核心**子系統即 [`packages/core`](../../packages/core/README.zh.md)，包含每個組合都會啟動的包：事件溯源的工作階段日誌、系統提示片語裝、工具註冊表、agent（智慧代理）型別，以及驅動它們的具體迴圈。本頁說明 `agent`/`agent-loop` 這對包所宣告的內容：agent 如何被建立與擁有，以及 `Agent` 控制代碼的投遞、取消與攔截約定；本頁還說明每個子系統都遵循的兩個型別模式。該組的專屬頁面與目錄其餘部分見[子系統 README](README.zh.md)。
 
-## 主干逐包速览
+## 主幹逐包速覽
 
-一个轮次按同一条循环流经六个包：[`agent-loop`](../../packages/core/agent-loop) 中的 driver 认领一条排队的提示词，在[会话日志](session.zh.md)（`ctx.sessions`）上开启轮次，通过 [system-prompt](system-prompt.zh.md)（`ctx.systemPrompt`）组装请求前缀并从日志派生历史，经 [LLM（大语言模型） seam](llm-streaming.zh.md) 流式获取模型响应，经[工具注册表](tools.zh.md)（`ctx.tools`）分发工具调用，并把每个模型可见的事实追加回日志，供下一步派生。循环搬运的对话词汇——`Message`、`ContentBlock`、`StreamChunk`、模型请求——由 [`packages/llm`](../../packages/llm/README.zh.md) 声明，记录在 [llm-streaming.md](llm-streaming.zh.md)。
+一個輪次按同一條迴圈流經六個包：[`agent-loop`](../../packages/core/agent-loop) 中的 driver 認領一條排隊的提示詞，在[工作階段日誌](session.zh.md)（`ctx.sessions`）上開啟輪次，透過 [system-prompt](system-prompt.zh.md)（`ctx.systemPrompt`）組裝請求字首並從日誌派生歷史，經 [LLM（大語言模型） seam](llm-streaming.zh.md) 流式取得模型回應，經[工具註冊表](tools.zh.md)（`ctx.tools`）分發工具呼叫，並把每個模型可見的事實追加回日誌，供下一步派生。迴圈搬運的對話詞彙——`Message`、`ContentBlock`、`StreamChunk`、模型請求——由 [`packages/llm`](../../packages/llm/README.zh.md) 宣告，記錄在 [llm-streaming.md](llm-streaming.zh.md)。
 
-| 包 | 负责内容 | 页面 |
+| 包 | 負責內容 | 頁面 |
 |---|---|---|
-| `session/` | 仅追加的 `SessionEvent` 日志与内存 store——唯一真源（`ctx.sessions`） | [session.md](session.zh.md) |
-| `system-prompt/` | 提示词段落与工具 schema 组装（`ctx.systemPrompt`） | [system-prompt.md](system-prompt.zh.md) |
-| `tools/` | 带作用域的工具注册表与受保护的执行流水线（`ctx.tools`） | [tools.md](tools.zh.md) |
-| `agent/` | `Agent` 接口、实时注册表、发起者作用域与 `agent/*` 事件词汇（`ctx.agents`） | 本页 |
-| `agent-loop/` | 实现公开 `Agent` 约定的具体 driver（`ctx.agentLoop`） | 本页 |
-| `scope/` | 注册表与循环用于构建按 agent 作用域的注册原语 | [scope.md](scope.zh.md) |
+| `session/` | 僅追加的 `SessionEvent` 日誌與記憶體 store——唯一真源（`ctx.sessions`） | [session.md](session.zh.md) |
+| `system-prompt/` | 提示詞段落與工具 schema 組裝（`ctx.systemPrompt`） | [system-prompt.md](system-prompt.zh.md) |
+| `tools/` | 帶作用域的工具註冊表與受保護的執行流水線（`ctx.tools`） | [tools.md](tools.zh.md) |
+| `agent/` | `Agent` 介面、即時註冊表、發起者作用域與 `agent/*` 事件詞彙（`ctx.agents`） | 本頁 |
+| `agent-loop/` | 實作公開 `Agent` 約定的具體 driver（`ctx.agentLoop`） | 本頁 |
+| `scope/` | 註冊表與迴圈用於建置按 agent 作用域的註冊原語 | [scope.md](scope.zh.md) |
 
-`scope/` 是这里唯一的非服务包：一个零依赖库（`createScope`/`scopeOf`/`scopeTarget`），在模块图中位于 `session/` 与 `system-prompt/` 之下，正是为了让它们消费它而不形成环。`agent-loop` 是公开 `Agent` 约定的唯一具体实现，放在这里因为它是 harness 的默认产品循环；它在 `ctx.agents.withInitiator()` 内运行每个 driver。扩展插件依赖 `agent`——包括需要发起 Agent 时——而绝不直接依赖 `agent-loop`，因此循环保持可替换。[`dsh-base`](../../packages/bundle/base/README.zh.md) 是默认产品组合，[`dsh-sdk-minimal`](../../packages/bundle/sdk-minimal/README.zh.md) 则声明一棵更小的独立配置树。
+`scope/` 是這裡唯一的非服務包：一個零依賴庫（`createScope`/`scopeOf`/`scopeTarget`），在模組圖中位於 `session/` 與 `system-prompt/` 之下，正是為了讓它們消費它而不形成環。`agent-loop` 是公開 `Agent` 約定的唯一具體實作，放在這裡因為它是 harness 的預設產品迴圈；它在 `ctx.agents.withInitiator()` 內執行每個 driver。擴充功能外掛依賴 `agent`——包括需要發起 Agent 時——而絕不直接依賴 `agent-loop`，因此迴圈保持可替換。[`dsh-base`](../../packages/bundle/base/README.zh.md) 是預設產品組合，[`dsh-sdk-minimal`](../../packages/bundle/sdk-minimal/README.zh.md) 則宣告一棵更小的獨立設定樹。
 
 <a id="creation-and-ownership"></a>
 
-## 创建与所有权
+## 建立與所有權
 
-消费方通过 `ctx.agents` 创建 agent——`create()` 在一个调用方提供的 `SessionId` 下构建全新会话与 agent，`resume()` 先加载持久会话——或者通过循环的声明式配置条目创建。编程式创建返回归属所有者的句柄：
+消費方透過 `ctx.agents` 建立 agent——`create()` 在一個呼叫方提供的 `SessionId` 下建置全新工作階段與 agent，`resume()` 先載入持久工作階段——或者透過迴圈的宣告式設定條目建立。程式設計式建立返回歸屬所有者的控制代碼：
 
-源码：[`packages/core/agent/src/index.ts`](../../packages/core/agent/src/index.ts)
+原始碼：[`packages/core/agent/src/index.ts`](../../packages/core/agent/src/index.ts)
 
 ```ts type-equiv
 /**
@@ -48,17 +48,17 @@ interface AgentHandle {
 }
 ```
 
-`CreateAgentOptions` 携带共享标识以及新 agent 发布前所需的一切：可选的存活 `parentAgent`、会话元数据（`meta`——已校验的 `cwd`、fork 谱系、`isSeeded` 标记、来源分类、委派深度与 `agentPreset`）、同级字段 `inheritedEventCount` 所表示的精确 fork cut、可选的 `seed` 回放前缀、按 agent 的 `AgentOptions`、仅创建期有效的取消 `signal`，以及 `setup`。`ResumeAgentOptions` 是持久标识的对应项：`resumeSessionId`、`parentAgent`、`agentOptions`、`signal` 与 `setup`。`setup` 回调（`AgentSetup`）在两个 id 均未发布时接收 `(agentCtx, agent)`：上下文拥有作用域注册，显式 Agent 提供确切的子 Session，Context 无需反向属性。凡经 `agentCtx` 注册的内容都先于 `agent/created` 与第一次提示词组装存在。Setup 可以返回在发布前一刻调用的同步 commit；setup 拒绝、commit 抛出或所有者 dispose（资源释放）都会回滚事务，两个 id 均不发布。
+`CreateAgentOptions` 攜帶共享標識以及新 agent 釋出前所需的一切：可選的存活 `parentAgent`、工作階段中繼資料（`meta`——已驗證的 `cwd`、fork 譜系、`isSeeded` 標記、來源分類、委派深度與 `agentPreset`）、同級欄位 `inheritedEventCount` 所表示的精確 fork cut、可選的 `seed` 回放字首、按 agent 的 `AgentOptions`、僅建立期有效的取消 `signal`，以及 `setup`。`ResumeAgentOptions` 是持久標識的對應項：`resumeSessionId`、`parentAgent`、`agentOptions`、`signal` 與 `setup`。`setup` 回呼（`AgentSetup`）在兩個 id 均未釋出時接收 `(agentCtx, agent)`：上下文擁有作用域註冊，顯式 Agent 提供確切的子 Session，Context 無需反向屬性。凡經 `agentCtx` 註冊的內容都先於 `agent/created` 與第一次提示片語裝存在。Setup 可以返回在釋出前一刻呼叫的同步 commit；setup 拒絕、commit 丟擲或所有者 dispose（資源釋放）都會復原事務，兩個 id 均不釋出。
 
-`AgentFactory` 是注册表背后的创建接口：循环经 `ctx.agents.setFactory()` 注册其工厂，因此消费方使用 `ctx.agents` 时无需依赖具体循环包。运行时子 Agent 的创建方设置 `options.parentAgent`；注册表把 options 与调用方 Context 传给工厂，不从其中一项推导另一项。确切的 `create`/`resume` 签名及回滚约定见下方[生成区块](#ctxagents--agentregistry)。
+`AgentFactory` 是註冊表背後的建立介面：迴圈經 `ctx.agents.setFactory()` 註冊其工廠，因此消費方使用 `ctx.agents` 時無需依賴具體迴圈包。執行時子 Agent 的建立方設定 `options.parentAgent`；註冊表把 options 與呼叫方 Context 傳給工廠，不從其中一項推導另一項。確切的 `create`/`resume` 簽名及復原約定見下方[生成區塊](#ctxagents--agentregistry)。
 
 <a id="the-agent-handle"></a>
 
-## Agent 句柄
+## Agent 控制代碼
 
-`Agent` 是每个插件（UI、钩子、orchestrator）面向编程的 surface；`ctx.agents.get(id)` 返回它，[发起者作用域](#initiating-agent)携带它。具体实现为 dsh-agent-loop 包内部细节；循环外没有任何组件依赖它。统一的 `send` 方法直接暴露 target 与 wakeup 路由；`followup`、`steer` 与 `inject` 是固定预设的别名方法。
+`Agent` 是每個外掛（UI、掛鉤、orchestrator）面向程式設計的 surface；`ctx.agents.get(id)` 返回它，[發起者作用域](#initiating-agent)攜帶它。具體實作為 dsh-agent-loop 包內部細節；迴圈外沒有任何元件依賴它。統一的 `send` 方法直接暴露 target 與 wakeup 路由；`followup`、`steer` 與 `inject` 是固定預設的別名方法。
 
-源码：[`packages/core/agent/src/types.ts`](../../packages/core/agent/src/types.ts)
+原始碼：[`packages/core/agent/src/types.ts`](../../packages/core/agent/src/types.ts)
 
 ```ts type-equiv
 /** Public live-agent handle; the runtime face augments its live capabilities. */
@@ -194,7 +194,7 @@ type AssistantStreamFrame =
   }
 ```
 
-`running` 描述整个驱动器的排空区间，可能跨越连续的排队轮次；它不能证明某个轮次仍然打开。dispose 会把 agent 从注册表移除并发出 `agent/disposed`；它不是一个终态 status 值。`followup()` 不返回句柄：其 `MessageId` 标识的是持久的 inbox 插入、认领与丢弃事实，而非之后的助手输出或轮次结束。`whenIdle()` 观察的是整个 agent，因此只有当调用方明确拥有从回执到空闲的这段区间时，才能把它称为一次 run（[决策](../../.agents/notes/implemented/architecture/2026-07-30-followup-enqueue-and-owned-runs.zh.md)）。
+`running` 描述整個驅動器的排空區間，可能跨越連續的排隊輪次；它不能證明某個輪次仍然開啟。dispose 會把 agent 從註冊表移除並行出 `agent/disposed`；它不是一個終態 status 值。`followup()` 不返回控制代碼：其 `MessageId` 標識的是持久的 inbox 插入、認領與丟棄事實，而非之後的助手輸出或輪次結束。`whenIdle()` 觀察的是整個 agent，因此只有當呼叫方明確擁有從回執到空閒的這段區間時，才能把它稱為一次 run（[決策](../../.agents/notes/implemented/architecture/2026-07-30-followup-enqueue-and-owned-runs.zh.md)）。
 
 ```ts type-equiv
 /** Merge-extensible agent creation options. Persona belongs to system-prompt sections. */
@@ -210,9 +210,9 @@ interface AgentOptions {
 }
 ```
 
-在 `agent/request` 之后，分发要求 `provider` 与 `model` 都存在。显式 `reasoningEffort` 会为该路由的首次请求提供初始值；确切模型解析会校验该值，省略时则允许填入适配器默认值。提供 `maxTokens` 时，它必须是正安全整数，并限制每次对话模型请求的输出；省略时，系统会在写入请求 header 前填入确切模型的适配器默认值，否则提供方行为保持不变。agent 作用域的 `deployment:persona-prefix` 提示词段落可以遮蔽全局默认 persona。
+在 `agent/request` 之後，分發要求 `provider` 與 `model` 都存在。顯式 `reasoningEffort` 會為該路由的首次請求提供初始值；確切模型解析會驗證該值，省略時則允許填入介面卡預設值。提供 `maxTokens` 時，它必須是正安全整數，並限制每次對話模型請求的輸出；省略時，系統會在寫入請求 header 前填入確切模型的介面卡預設值，否則提供者行為保持不變。agent 作用域的 `deployment:persona-prefix` 提示詞段落可以遮蔽全域預設 persona。
 
-inbox 即投递词汇——agent 以持久投影形式拥有的两条有序待处理消息列表：
+inbox 即投遞詞彙——agent 以持久投影形式擁有的兩條有序待處理訊息列表：
 
 ```ts type-equiv
 /** Agent-owned access to pending work; concrete storage belongs to the driver. */
@@ -276,7 +276,7 @@ interface Inbox {
 type InboxTarget = 'next-turn' | 'next-step'
 ```
 
-每个待处理入队项就是其 `UserMessage`；`MessageId` 是唯一标识。结构化 `Inbox` 方法会记录规范化的持久 `agent/inbox/spliced` 变更，并拒绝重复的待处理 id。`replace(messageId, newMessage)` 与 `remove(messageId)` 通过 `MessageId` 跨两份列表定位待处理消息；替换可以改变标识，并先将旧消息作为 discarded 发布，再将新消息作为 inserted 发布。普通删除和 `clear()` 都表示取消。在步骤边界，dsh-agent-loop 包内部的 `ReactLoopInbox` 会通过纯删除 splice 移除拟进入步骤的批次——全部 `next-step` 输入，外加轮次边界上的一条 `next-turn` 消息——且不发出 discarded 通知，随后逐条发出 claimed 通知。仅供循环使用的待处理检测与领取操作不属于 `Agent.inbox`。`AgentLoop` 服务在发布工厂之前注册标准 `inbox` 投影；其 cell 是唯一 live 状态，同一份折叠在没有 Agent 时也服务于冷消费方。该 fold 会拒绝不安全或越界的 splice 坐标，以及跨两份列表重复的标识，并通过事件 seq 指出格式错误的持久历史。跟踪单条消息的消费方使用精确的 `agent/inbox/inserted`、`claimed` 与 `discarded` 通知。
+每個待處理入隊項就是其 `UserMessage`；`MessageId` 是唯一標識。結構化 `Inbox` 方法會記錄規範化的持久 `agent/inbox/spliced` 變更，並拒絕重複的待處理 id。`replace(messageId, newMessage)` 與 `remove(messageId)` 透過 `MessageId` 跨兩份列表定位待處理訊息；替換可以改變標識，並先將舊訊息作為 discarded 釋出，再將新訊息作為 inserted 釋出。普通刪除和 `clear()` 都表示取消。在步驟邊界，dsh-agent-loop 包內部的 `ReactLoopInbox` 會透過純刪除 splice 移除擬進入步驟的批次——全部 `next-step` 輸入，外加輪次邊界上的一條 `next-turn` 訊息——且不發出 discarded 通知，隨後逐條發出 claimed 通知。僅供迴圈使用的待處理檢測與領取操作不屬於 `Agent.inbox`。`AgentLoop` 服務在釋出工廠之前註冊標準 `inbox` 投影；其 cell 是唯一 live 狀態，同一份摺疊在沒有 Agent 時也服務於冷消費方。該 fold 會拒絕不安全或越界的 splice 座標，以及跨兩份列表重複的標識，並透過事件 seq 指出格式錯誤的持久歷史。跟蹤單條訊息的消費方使用精確的 `agent/inbox/inserted`、`claimed` 與 `discarded` 通知。
 
 取消：
 
@@ -301,27 +301,27 @@ type AgentCancelCause =
   | { readonly kind: 'disposed' }
 ```
 
-cause 是由 TypeScript 强制约束的同进程输入。活跃的取消持有者把同一个对象暴露为仅运行时的 `AbortSignal.reason`；signal 不授予协作监听器任何分类权限。持久 `turn/end` 以 `{ kind: 'aborted', reason: TurnEndCancelCause }` 记录结果，取消原因随终态结果一起持久化。
+cause 是由 TypeScript 強制約束的同程序輸入。活躍的取消持有者把同一個物件暴露為僅執行時的 `AbortSignal.reason`；signal 不授予協作監聽器任何分類權限。持久 `turn/end` 以 `{ kind: 'aborted', reason: TurnEndCancelCause }` 記錄結果，取消原因隨終態結果一起持久化。
 
-[事件分类](../architecture.zh.md#events)负责 `agent/*` 生命周期、检查点与 waterfall（瀑布式事件）约定。轮次和步骤边界是持久会话事件，而不是 agent emit。
+[事件分類](../architecture.zh.md#events)負責 `agent/*` 生命週期、檢查點與 waterfall（瀑布式事件）約定。輪次和步驟邊界是持久工作階段事件，而不是 agent emit。
 
 <a id="initiating-agent"></a>
 
-## 发起 Agent
+## 發起 Agent
 
-`ctx.agents` 携带的进程本地 initiator 就是上面的确切 `Agent`，不是单独的 frame 或复制的标识。环境中存在该值既不能证明存活，也不代表授权；[initiator 作用域决策](../../.agents/notes/implemented/architecture/2026-07-15-agent-initiator-scope.zh.md)定义其生命周期和作用域规则。
+`ctx.agents` 攜帶的程序本地 initiator 就是上面的確切 `Agent`，不是單獨的 frame 或複製的標識。環境中存在該值既不能證明存活，也不代表授權；[initiator 作用域決策](../../.agents/notes/implemented/architecture/2026-07-15-agent-initiator-scope.zh.md)定義其生命週期和作用域規則。
 
 <a id="interception-decisions"></a>
 
-## 拦截决策
+## 攔截決策
 
-pre-step 决策使用与持久 user-role 输入相同、带标识的 `UserMessage` 类型。进入步骤的批次具有权威性，并保留每条消息的 `id` 和 `source`。钩子桥接层把其原生决策字段映射到这一类型化结果上。
+pre-step 決策使用與持久 user-role 輸入相同、帶標識的 `UserMessage` 型別。進入步驟的批次具有權威性，並保留每條訊息的 `id` 和 `source`。掛鉤橋接層把其原生決策欄位對映到這一型別化結果上。
 
-源码：[`packages/core/agent/src/types.ts`](../../packages/core/agent/src/types.ts)
+原始碼：[`packages/core/agent/src/types.ts`](../../packages/core/agent/src/types.ts)
 
-`agent/pre-step` 接收一个 payload，携带独占的已领取批次（`messages`）、拟进入步骤的坐标（`turn`、`step`）与当前轮次的取消 `signal`。首次提案在已打开的轮次内、任何步骤开始前运行；工具 continuation 可以在步骤之间提交空的已领取批次：
+`agent/pre-step` 接收一個 payload，攜帶獨佔的已領取批次（`messages`）、擬進入步驟的座標（`turn`、`step`）與目前輪次的取消 `signal`。首次提案在已開啟的輪次內、任何步驟開始前執行；工具 continuation 可以在步驟之間提交空的已領取批次：
 
-它返回 `PreStepDecision`。reject 不会打开步骤。enter 提供在 `step/start` 后追加的完整消息批次；最终决策省略的已领取消息保持已删除，而领取后插入的输入仍留待后续处理：
+它返回 `PreStepDecision`。reject 不會開啟步驟。enter 提供在 `step/start` 後追加的完整訊息批次；最終決策省略的已領取訊息保持已刪除，而領取後插入的輸入仍留待後續處理：
 
 ```ts type-equiv
 /** Whether and with which messages the loop enters a proposed step. */
@@ -335,43 +335,43 @@ type PreStepDecision =
   }
 ```
 
-`agent/request-error` 在失败的模型步骤关闭之后、其轮次关闭之前运行。listener 可以在失败轮次的 signal 仍然存活时修复持久状态或 await 策略工作。处理该错误的 listener 返回 `{ kind: 'retry' }` 且不调用 `next()`；默认的 `undefined` 会让失败保持终态。
+`agent/request-error` 在失敗的模型步驟關閉之後、其輪次關閉之前執行。listener 可以在失敗輪次的 signal 仍然存活時修復持久狀態或 await 策略工作。處理該錯誤的 listener 返回 `{ kind: 'retry' }` 且不呼叫 `next()`；預設的 `undefined` 會讓失敗保持終態。
 
 ```ts type-equiv
 /** Action returned by a listener that owns model-request recovery. */
 type RequestErrorAction = { kind: 'retry' } | undefined
 ```
 
-`agent/pre-step` 是请求推导前唯一的 waterfall（瀑布式）监听器链。`agent/turn-stopping` 在轮次没有工具或 steering（中途引导）后续时运行，先于最后一次 steering 排空。
+`agent/pre-step` 是請求推導前唯一的 waterfall（瀑布式）監聽器鏈。`agent/turn-stopping` 在輪次沒有工具或 steering（中途引導）後續時執行，先於最後一次 steering 排空。
 
-`agent/created` 携带 `SessionStartSource`（会话生命周期为何开始；桥接层据此匹配其 SessionStart）：
+`agent/created` 攜帶 `SessionStartSource`（工作階段生命週期為何開始；橋接層據此匹配其 SessionStart）：
 
 ```ts type-equiv
 /** Why a session lifecycle began; seeded creates are `startup`, while persisted loads are `resume`. */
 type SessionStartSource = 'startup' | 'resume' | 'clear' | 'compact'
 ```
 
-## 会话
+## 工作階段
 
-`Session` 是一份类型化 `SessionEvent` 的**仅追加日志**——唯一的真源。LLM 消息历史从日志*派生*（`deriveMessages()`），而非单独存储。每个条目携带单调的 `seq`、`time` 与按 `type` 判别的 `data` payload；surface 变体还可以在 `sourceEventSeqs` 中列出被引用的较早事件，并携带 `surfaceOp`。
+`Session` 是一份型別化 `SessionEvent` 的**僅追加日誌**——唯一的真源。LLM 訊息歷史從日誌*派生*（`deriveMessages()`），而非單獨儲存。每個條目攜帶單調的 `seq`、`time` 與按 `type` 判別的 `data` payload；surface 變體還可以在 `sourceEventSeqs` 中列出被引用的較早事件，並攜帶 `surfaceOp`。
 
-`SessionEvent` 信封的确切条件字段、十三种核心事件变体（`turn/start`、`turn/end`、`step/start`、`step/end`、`user/message`、`system/message`、`assistant/message`、`assistant/attempt`、`tool/call`、`tool/result`、`request/header`、`request/context`、`session/end-seed`）、`deriveMessages()` 投影规则、`TurnEndReason` 原因以及执行封闭和独立事件规则都在 **[session.md](session.zh.md)** 中。日志如何持久化——`SessionPersistence` 接口、JSONL provider、`session/flush` 检查点、崩溃恢复与 `SessionHeader`——则在 **[persistence.md](persistence.zh.md)** 中。
+`SessionEvent` 信封的確切條件欄位、十三種核心事件變體（`turn/start`、`turn/end`、`step/start`、`step/end`、`user/message`、`system/message`、`assistant/message`、`assistant/attempt`、`tool/call`、`tool/result`、`request/header`、`request/context`、`session/end-seed`）、`deriveMessages()` 投影規則、`TurnEndReason` 原因以及執行封閉和獨立事件規則都在 **[session.md](session.zh.md)** 中。日誌如何持久化——`SessionPersistence` 介面、JSONL provider、`session/flush` 檢查點、崩潰恢復與 `SessionHeader`——則在 **[persistence.md](persistence.zh.md)** 中。
 
 ## `ToolDefinition`
 
-唯一属于核心的流水线编写类型：每个已注册工具*是什么*——一个面向模型的 `ToolSchema` 加上一个 `execute` 函数，以及可选的最终内容回调与 UI 回调。工具作者很少手动构造它（`defineTool` DSL 会使用类型化参数构建），但它是注册表存储并由循环用于分发的约定。
+唯一屬於核心的流水線編寫型別：每個已註冊工具*是什麼*——一個面向模型的 `ToolSchema` 加上一個 `execute` 函式，以及可選的最終內容回呼與 UI 回呼。工具作者很少手動建構它（`defineTool` DSL 會使用型別化參數建置），但它是註冊表儲存並由迴圈用於分發的約定。
 
-其完整字段、`defineTool`/`ValueSchemaSpec`/`ParameterSchemaSpec` 类型化 schema DSL、`ToolExecution`/`ToolExecutionResult` waterfall 类型，以及工具展示 UI 类型都在 **[tools.md](tools.zh.md)** 中。
+其完整欄位、`defineTool`/`ValueSchemaSpec`/`ParameterSchemaSpec` 型別化 schema DSL、`ToolExecution`/`ToolExecutionResult` waterfall 型別，以及工具展示 UI 型別都在 **[tools.md](tools.zh.md)** 中。
 
-## 全仓通用类型模式
+## 全倉通用型別模式
 
-两个模式在每个子系统中反复出现，只在此处记录一次。
+兩個模式在每個子系統中反覆出現，只在此處記錄一次。
 
 <a id="the-map--derived-union-pattern"></a>
 
 ### `…Map → derived-union` 模式
 
-harness 中几乎所有可扩展的和类型都遵循同一模式：一个以判别标签为键的接口（`…Map`），联合类型由 `keyof` 派生。插件通过**声明合并**添加变体——无需修改拥有该类型的包。
+harness 中幾乎所有可擴充功能的和型別都遵循同一模式：一個以判別標籤為鍵的介面（`…Map`），聯合型別由 `keyof` 派生。外掛透過**宣告合併**新增變體——無需修改擁有該型別的包。
 
 ```ts ignore-check
 // The pattern, schematically:
@@ -390,9 +390,9 @@ declare module '@deepseek-ai/dsh-llm' {
 }
 ```
 
-五个规范 map 使用此模式；插件作者扩展它们：
+五個規範 map 使用此模式；外掛作者擴充功能它們：
 
-| Map | 包 | 派生 | 目录 |
+| Map | 包 | 派生 | 目錄 |
 |---|---|---|---|
 | `ContentBlockMap` | dsh-llm | `ContentBlock` | [llm-streaming.md](llm-streaming.zh.md#content-blocks-and-messages) |
 | `MessageSourceMap` | dsh-llm | `MessageSource` | [llm-streaming.md](llm-streaming.zh.md#content-blocks-and-messages) |
@@ -400,24 +400,24 @@ declare module '@deepseek-ai/dsh-llm' {
 | `TurnEndReasonMap` | dsh-session | `TurnEndReason` | [session.md](session.zh.md) |
 | `SessionEventMap` | dsh-session | `SessionEvent` | [session.md](session.zh.md) |
 
-消费方最常 `switch` 的两个大型判别联合类型是：**`StreamChunk`**（流式协议）和 **`SessionEvent`**（日志条目）。按仓库约定，对标签做 `switch`——不要链式 `if`——这样每个分支都能窄化类型，拼错的标签会编译失败。
+消費方最常 `switch` 的兩個大型判別聯合型別是：**`StreamChunk`**（流式協定）和 **`SessionEvent`**（日誌條目）。按儲存庫約定，對標籤做 `switch`——不要鏈式 `if`——這樣每個分支都能窄化型別，拼錯的標籤會編譯失敗。
 
 <a id="branded-ids"></a>
 
 ### 品牌化 ID
 
-在包之间传递的 ID 都经过**品牌化**——结构上是字符串，但在类型层面不可互换（不能把 `SessionId` 传给需要 `ToolCallId` 的位置）。构造使用共享 `brandString<T>()` helper 或所属方自定义的校验工厂；比较、日志记录和 JSON 行为与普通字符串相同。
+在包之間傳遞的 ID 都經過**品牌化**——結構上是字串，但在型別層面不可互換（不能把 `SessionId` 傳給需要 `ToolCallId` 的位置）。建構使用共享 `brandString<T>()` helper 或所屬方自定義的驗證工廠；比較、日誌記錄和 JSON 行為與普通字串相同。
 
-`Branded<B>` 原语与无状态构造函数位于 [dsh-brand](../../packages/util/brand)，该包不依赖 harness 能力。`brandString<T>()` 应用仅编译期存在的字符串品牌。
+`Branded<B>` 原語與無狀態建構函式位於 [dsh-brand](../../packages/util/brand)，該包不依賴 harness 能力。`brandString<T>()` 應用僅編譯期存在的字串品牌。
 
-源码：[`packages/util/brand/src/index.ts`](../../packages/util/brand/src/index.ts)
+原始碼：[`packages/util/brand/src/index.ts`](../../packages/util/brand/src/index.ts)
 
 ```ts type-equiv
 /** A string carrying a compile-time-only brand `B`. */
 type Branded<B extends string> = string & { readonly [BRAND]: B }
 ```
 
-两个核心 ID 是 `ToolCallId`（关联工具调用及其结果；dsh-llm）和 `SessionId`（活跃 agent 与持久会话共享的标识；dsh-session）。能力包也会品牌化各自的 id，例如 [jobs.md](jobs.zh.md) 中的 `JobId`。
+兩個核心 ID 是 `ToolCallId`（關聯工具呼叫及其結果；dsh-llm）和 `SessionId`（活躍 agent 與持久工作階段共享的標識；dsh-session）。能力包也會品牌化各自的 id，例如 [jobs.md](jobs.zh.md) 中的 `JobId`。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

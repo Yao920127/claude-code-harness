@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-29-dsh-source-launch-tsx-esm.md
 /agent-note-dsh-source-launch-through-the-tsx-esm-hook:
   en: 55846ac57e07eeda
-  zh: 3de03730d4b28863
+  zh: d0458ce3d9a3b010
 /agent-note-dsh-source-launch-through-the-tsx-esm-hook/problem:
   en: 68385f7e47d3ac1f
-  zh: 285ca290832e2939
+  zh: f199d7e81437ed79
 /agent-note-dsh-source-launch-through-the-tsx-esm-hook/decision:
   en: 12adf8ed56b4d5c3
-  zh: fbbb9add935730c0
+  zh: 93366eda21ee5825
 /agent-note-dsh-source-launch-through-the-tsx-esm-hook/alternatives-considered:
   en: c6eec3d899a61df1
-  zh: 128edd753d49c0da
+  zh: 0fbd00d38046ee22
 /agent-note-dsh-source-launch-through-the-tsx-esm-hook/consequences:
   en: 7c8eb105520ccae3
-  zh: 9dc85ecda408de5a
+  zh: a5e052f946c0c446

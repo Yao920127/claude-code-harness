@@ -708,12 +708,12 @@
 }
 
 /* The mock puts the border on the rows group, not on the card that carries the
-   `运行时间` heading. */
+   `執行時間` heading. */
 .ruleCard {
   margin-top: 28px;
 }
 
-/* The mock's `.automation-detail .form-section h3`: the `运行时间` heading is
+/* The mock's `.automation-detail .form-section h3`: the `執行時間` heading is
    13px tertiary ink, regular weight, and the mock's 20px leading. The 6px
    lead-in nudges it off the card's rounded edge, as the hint below. */
 .ruleCard h3 {

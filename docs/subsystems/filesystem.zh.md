@@ -1,18 +1,18 @@
-# 文件系统
+# 檔案系統
 
 [English](filesystem.md) | 中文
 
-可选的文件系统能力由四个部分组成：[dsh-fs](../../packages/fs/fs) 拥有 `ctx.fs` 以及带可选守卫的原子文本操作；[dsh-fs-local](../../packages/fs/fs-local) 实现本地磁盘后端；[dsh-fs-observation-policy](../../packages/fs/fs-observation-policy) 记录观测到的存在或缺失状态，并通过事件（而非服务）添加新鲜度规则；[dsh-tool-fs](../../packages/fs/tool-fs) 直接执行面向模型的 read/write/edit 调用并渲染窗口。它位于 agent loop（智能体循环）主干之外；替换后端不会改变策略或工具 schema。
+可選的檔案系統能力由四個部分組成：[dsh-fs](../../packages/fs/fs) 擁有 `ctx.fs` 以及帶可選守衛的原子文字操作；[dsh-fs-local](../../packages/fs/fs-local) 實作本地磁碟後端；[dsh-fs-observation-policy](../../packages/fs/fs-observation-policy) 記錄觀測到的存在或缺失狀態，並透過事件（而非服務）新增新鮮度規則；[dsh-tool-fs](../../packages/fs/tool-fs) 直接執行面向模型的 read/write/edit 呼叫並渲染視窗。它位於 agent loop（智慧代理迴圈）主幹之外；替換後端不會改變策略或工具 schema。
 
-`dsh-fs-observation-policy` 是可选插件。没有该插件时，`FileSystem` 服务定义、一个提供方和 `dsh-tool-fs` 消费方组成完整且不受约束的文件系统 seam：`write` 无条件创建或覆盖，`edit` 无条件替换字面文本。策略插件通过裁决 `fs/*` waterfall（瀑布式事件）来改变这些操作。移除该插件不会破坏工具，因为工具调用 `ctx.fs` 并分发事件，而不调用策略方法。加载了 `dsh-tool-fs` 的部署也应加载 `dsh-fs-observation-policy`，使默认行为为「先读后写/编辑」。
+`dsh-fs-observation-policy` 是可選外掛。沒有該外掛時，`FileSystem` 服務定義、一個提供者和 `dsh-tool-fs` 消費方組成完整且不受約束的檔案系統 seam：`write` 無條件建立或覆蓋，`edit` 無條件替換字面文字。策略外掛透過裁決 `fs/*` waterfall（瀑布式事件）來改變這些操作。移除該外掛不會破壞工具，因為工具呼叫 `ctx.fs` 並分發事件，而不呼叫策略方法。載入了 `dsh-tool-fs` 的部署也應載入 `dsh-fs-observation-policy`，使預設行為為「先讀後寫/編輯」。
 
-提供方源码：[`packages/fs/fs/src/types.ts`](../../packages/fs/fs/src/types.ts) 与 [`packages/fs/fs/src/index.ts`](../../packages/fs/fs/src/index.ts)。策略源码：[`packages/fs/fs-observation-policy/src/types.ts`](../../packages/fs/fs-observation-policy/src/types.ts)。读取渲染源码：[`packages/fs/tool-fs/src/read-render.ts`](../../packages/fs/tool-fs/src/read-render.ts)。
+提供者原始碼：[`packages/fs/fs/src/types.ts`](../../packages/fs/fs/src/types.ts) 與 [`packages/fs/fs/src/index.ts`](../../packages/fs/fs/src/index.ts)。策略原始碼：[`packages/fs/fs-observation-policy/src/types.ts`](../../packages/fs/fs-observation-policy/src/types.ts)。讀取渲染原始碼：[`packages/fs/tool-fs/src/read-render.ts`](../../packages/fs/tool-fs/src/read-render.ts)。
 
-## 目标标识与元数据（提供方约定）
+## 目標標識與中繼資料（提供者約定）
 
-每个操作首先将用户提供的路径解析为不透明的后端目标。消费方可以显示 `displayPath`，但禁止解析 `targetKey`（一个品牌化的不透明 id），也不得假设它是本地绝对路径。
+每個操作首先將使用者提供的路徑解析為不透明的後端目標。消費方可以顯示 `displayPath`，但禁止解析 `targetKey`（一個品牌化的不透明 id），也不得假設它是本地絕對路徑。
 
-与文件系统共享执行世界的消费方通过提供方获取跨能力坐标，而不是解释该身份：`processPath(target)` 返回子进程可以打开的规范化绝对路径；`processPathFromHostPath(hostPath)` 只在该执行世界共享相应宿主文件时映射其绝对路径；`fileUrl(target)` 返回采用提供方平台语法的 `file:` URI；`contains(parent, child)` 检查规范化身份相等或后代包含关系。
+與檔案系統共享執行世界的消費方透過提供者取得跨能力座標，而不是解釋該身份：`processPath(target)` 返回子程序可以開啟的規範化絕對路徑；`processPathFromHostPath(hostPath)` 只在該執行世界共享相應主機檔案時對映其絕對路徑；`fileUrl(target)` 返回採用提供者平臺語法的 `file:` URI；`contains(parent, child)` 檢查規範化身份相等或後代包含關係。
 
 ```ts type-equiv
 /**
@@ -30,7 +30,7 @@ interface FsTarget {
 }
 ```
 
-后端拥有文件版本 token，即 write/edit 所守卫的新鲜度 token。策略插件存储它们以进行陈旧检查；消费方不解释其内容。两个 id 都是品牌化的不透明字符串。
+後端擁有檔案版本 token，即 write/edit 所守衛的新鮮度 token。策略外掛儲存它們以進行陳舊檢查；消費方不解釋其內容。兩個 id 都是品牌化的不透明字串。
 
 ```ts type-equiv
 /**
@@ -52,7 +52,7 @@ type FsTargetKey = Branded<'FsTargetKey'>
 type FsVersion = Branded<'FsVersion'>
 ```
 
-`stat` 返回元数据（从不返回内容），目标不存在时返回 `undefined`。`type` 让消费方在读取前拒绝目录和特殊文件；`size` 让文本消费方无需通过失败探测即可选择 `readText` 还是 `streamText`。文本消费方在消费 `streamText` 时执行自己的保留量上限。原始字节消费方调用 `readBytes(target, signal, maxBytes)`；其必填的完整内容上限会使已知或读取中发现的超限以 `FS_TOO_LARGE` 失败，不会截断结果或无界缓冲。
+`stat` 返回中繼資料（從不返回內容），目標不存在時返回 `undefined`。`type` 讓消費方在讀取前拒絕目錄和特殊檔案；`size` 讓文字消費方無需透過失敗探測即可選擇 `readText` 還是 `streamText`。文字消費方在消費 `streamText` 時執行自己的保留量上限。原始位元組消費方呼叫 `readBytes(target, signal, maxBytes)`；其必填的完整內容上限會使已知或讀取中發現的超限以 `FS_TOO_LARGE` 失敗，不會截斷結果或無界緩衝。
 
 ```ts type-equiv
 /**
@@ -71,7 +71,7 @@ interface FsInfo {
 }
 ```
 
-`lstat` 是路径级、不跟随链接的元数据原语。它接收路径而不是 `FsTarget`，因为 `resolve` 会有意跟随 symlink 以产生稳定标识；需要检查信任边界的消费方可以先调用 `lstat`，在解析前拒绝 `symlink`。
+`lstat` 是路徑級、不跟隨連結的中繼資料原語。它接收路徑而不是 `FsTarget`，因為 `resolve` 會有意跟隨 symlink 以產生穩定標識；需要檢查信任邊界的消費方可以先呼叫 `lstat`，在解析前拒絕 `symlink`。
 
 ```ts type-equiv
 /**
@@ -90,7 +90,7 @@ interface FsPathInfo {
 }
 ```
 
-`listDir` 按稳定的名称顺序返回直接子条目。每个条目携带子项的 basename、类型、已解析目标，以及后端能报告时的廉价元数据。它禁止读取文件内容，因此 `size` 仅用于普通文件，`version` 来自元数据。已损坏或已消失的子项可以作为 `other` 返回且不带元数据；列出或解析子项元数据时的权限或后端 I/O 失败会以 `FS_PERMISSION_DENIED` 或 `FS_IO_ERROR` 使整个列表操作失败。
+`listDir` 按穩定的名稱順序返回直接子條目。每個條目攜帶子項的 basename、型別、已解析目標，以及後端能報告時的廉價中繼資料。它禁止讀取檔案內容，因此 `size` 僅用於普通檔案，`version` 來自中繼資料。已損壞或已消失的子項可以作為 `other` 返回且不帶中繼資料；列出或解析子項中繼資料時的權限或後端 I/O 失敗會以 `FS_PERMISSION_DENIED` 或 `FS_IO_ERROR` 使整個列表操作失敗。
 
 ```ts type-equiv
 /**
@@ -111,9 +111,9 @@ interface FsDirEntry {
 }
 ```
 
-## 写入与编辑守卫（提供方约定）
+## 寫入與編輯守衛（提供者約定）
 
-`writeText` 和 `editText` 的版本守卫都是可选的：省略守卫时执行无条件的裸提供方变更，提供守卫时则执行相应的条件检查。`writeText` 的守卫是 `FsWriteIntent`：`createIfAbsent` 在目标缺失时创建，目标已存在时以 `FS_NOT_OBSERVED` 拒绝；即使目标在提供方初始探测后才出现，也必须拒绝，因为发布操作本身不得替换。`replaceIfVersion` 仅在目标存在且版本匹配时替换，否则报 `FS_STALE_VERSION`。省略 `expected` 则无条件创建或覆盖。联合类型本身只包含两种有守卫的意图；「无守卫」通过省略表达，因此 write 和 edit 都使用同一个可选的 `expected` 字段。
+`writeText` 和 `editText` 的版本守衛都是可選的：省略守衛時執行無條件的裸提供者變更，提供守衛時則執行相應的條件檢查。`writeText` 的守衛是 `FsWriteIntent`：`createIfAbsent` 在目標缺失時建立，目標已存在時以 `FS_NOT_OBSERVED` 拒絕；即使目標在提供者初始探測後才出現，也必須拒絕，因為釋出操作本身不得替換。`replaceIfVersion` 僅在目標存在且版本匹配時替換，否則報 `FS_STALE_VERSION`。省略 `expected` 則無條件建立或覆蓋。聯合型別本身只包含兩種有守衛的意圖；「無守衛」透過省略表達，因此 write 和 edit 都使用同一個可選的 `expected` 欄位。
 
 ```ts type-equiv
 /**
@@ -148,7 +148,7 @@ interface FsWriteOutcome {
 }
 ```
 
-`editText` 是提供方级别的变更操作，而非在别处组合的 `read` 加 `write`。带守卫时，它在字面匹配之前先验证预期版本（因此对陈旧内容的编辑报 `FS_STALE_VERSION`，而非对更新内容的匹配失败）；不带守卫时，它编辑当前内容。无论哪种路径，它都应用替换并原子写入——将匹配、行尾处理、陈旧检查和原子替换保持在一个变更临界区内——目标缺失时两条路径都报 `FS_STALE_VERSION`。
+`editText` 是提供者級別的變更操作，而非在別處組合的 `read` 加 `write`。帶守衛時，它在字面匹配之前先驗證預期版本（因此對陳舊內容的編輯報 `FS_STALE_VERSION`，而非對更新內容的匹配失敗）；不帶守衛時，它編輯目前內容。無論哪種路徑，它都應用替換並原子寫入——將匹配、行尾處理、陳舊檢查和原子替換保持在一個變更臨界區內——目標缺失時兩條路徑都報 `FS_STALE_VERSION`。
 
 ```ts type-equiv
 /** A literal-replacement edit request. */
@@ -178,11 +178,11 @@ interface FsEditOutcome {
 }
 ```
 
-## fs 策略事件（提供方约定词汇）
+## fs 策略事件（提供者約定詞彙）
 
-`dsh-fs` 拥有三个事件，由工具分发、策略插件监听，使事件发出方（`dsh-tool-fs`）与监听方（`dsh-fs-observation-policy`）共享词汇，而事件发出方无需依赖策略插件。它们只携带 `dsh-fs` 词汇加一个不透明的 `object` actor，不含面向模型的概念，也不含 agent/会话所有者结构。
+`dsh-fs` 擁有三個事件，由工具分發、策略外掛監聽，使事件發出方（`dsh-tool-fs`）與監聽方（`dsh-fs-observation-policy`）共享詞彙，而事件發出方無需依賴策略外掛。它們只攜帶 `dsh-fs` 詞彙加一個不透明的 `object` actor，不含面向模型的概念，也不含 agent/工作階段所有者結構。
 
-`fs/write-intent` 与 `fs/edit-intent` 是**单槽决策 waterfall**：工具分发时附带一个默认 thunk（返回 `undefined`，即裸提供方），监听方完全决策而不调用 `next()`。该 slot 按注册顺序先到先得——由策略插件占据是部署约定，而非强制不变式。`fs/observed` 是一个即发即弃的记录事件，携带 `FsObservation`：存在于某个版本，或确认缺失。该事件通过普通 `ctx.emit` 分发；其监听方必须是同步的、仅产生副作用，因为工具不会捕获该 emit 抛出的异常——抛出异常的监听方可能取代读取操作原本待返回的错误，或使工具在变更已经成功后返回 `isError` 结果。下方生成的 [cordis surface](#cordis-surface) 展示确切签名。
+`fs/write-intent` 與 `fs/edit-intent` 是**單槽決策 waterfall**：工具分發時附帶一個預設 thunk（返回 `undefined`，即裸提供者），監聽方完全決策而不呼叫 `next()`。該 slot 按註冊順序先到先得——由策略外掛佔據是部署約定，而非強制不變式。`fs/observed` 是一個即發即棄的記錄事件，攜帶 `FsObservation`：存在於某個版本，或確認缺失。該事件透過普通 `ctx.emit` 分發；其監聽方必須是同步的、僅產生副作用，因為工具不會捕捉該 emit 丟擲的異常——丟擲異常的監聽方可能取代讀取操作原本待返回的錯誤，或使工具在變更已經成功後返回 `isError` 結果。下方生成的 [cordis surface](#cordis-surface) 展示確切簽名。
 
 ```ts type-equiv
 /**
@@ -195,9 +195,9 @@ type FsObservation =
   | { readonly kind: 'absent' }
 ```
 
-## 执行上下文（策略插件）
+## 執行上下文（策略外掛）
 
-策略插件只需要足够的执行上下文，通过收窄 `fs/*` 事件携带的不透明 `object` actor 来推导观测状态的所有者。`ToolExecution` 包含必需的字段，因此 `dsh-tool-fs` 将其执行对象作为 actor 直接传递，而无需让 `dsh-fs-observation-policy` 导入工具、agent 或会话包。
+策略外掛只需要足夠的執行上下文，透過收窄 `fs/*` 事件攜帶的不透明 `object` actor 來推導觀測狀態的所有者。`ToolExecution` 包含必需的欄位，因此 `dsh-tool-fs` 將其執行物件作為 actor 直接傳遞，而無需讓 `dsh-fs-observation-policy` 匯入工具、agent 或工作階段包。
 
 ```ts type-equiv
 /**
@@ -219,9 +219,9 @@ interface FsObservationActor {
 }
 ```
 
-## 读取结果（消费方 / 读取渲染）
+## 讀取結果（消費方 / 讀取渲染）
 
-文本读取受行窗口、字节上限和后端限制约束。达到字节上限后，扫描仍会继续，但不再保留更多行，因此 `totalLines` 仍为精确值。面向模型的 `read` 工具渲染的结果纯粹是展示性的；不存在 `full`/`partial` 视图区分——授权基于新鲜度（工具发出表示目标存在的 `fs/observed` 事件，并直接携带 stat 的版本），因此任何窗口化读取在文件未变时都能授权后续的 write/edit。元数据未命中时，工具会在返回 `FS_NOT_FOUND` 前 emit 缺失观测，使后续带守卫的写入可以重新创建外部删除的目标，但不会授权 edit。拥有读取操作的执行器 `dsh-tool-fs` 实现读取窗口化并构造该结果；策略插件不执行这些操作。
+文字讀取受行視窗、位元組上限和後端限制約束。達到位元組上限後，掃描仍會繼續，但不再保留更多行，因此 `totalLines` 仍為精確值。面向模型的 `read` 工具渲染的結果純粹是展示性的；不存在 `full`/`partial` 檢視區分——授權基於新鮮度（工具發出表示目標存在的 `fs/observed` 事件，並直接攜帶 stat 的版本），因此任何視窗化讀取在檔案未變時都能授權後續的 write/edit。中繼資料未命中時，工具會在返回 `FS_NOT_FOUND` 前 emit 缺失觀測，使後續帶守衛的寫入可以重新建立外部刪除的目標，但不會授權 edit。擁有讀取操作的執行器 `dsh-tool-fs` 實作讀取視窗化並建構該結果；策略外掛不執行這些操作。
 
 ```ts type-equiv
 /** Outcome of a bounded text read — what {@link formatReadOutput} renders. */
@@ -237,13 +237,13 @@ interface FileReadOutcome {
 }
 ```
 
-## 已观测文件状态（策略插件）
+## 已觀測檔案狀態（策略外掛）
 
-已观测状态是 `dsh-fs-observation-policy` 插件内部持有的 `WeakMap<owner, Map<targetKey, FsObservation>>`。映射中没有条目表示未见；`{ kind: 'absent' }` 表示 `read` 的元数据未命中，或 `str_replace_editor` 的 `view`、`str_replace`、`insert` 命令发生元数据未命中，从而确认缺失；`{ kind: 'present', version }` 表示 read、write 或 edit 观测到该版本。写入决策把未见和缺失映射到 `createIfAbsent`，把存在映射到 `replaceIfVersion`；编辑决策把未见映射到 `FS_NOT_OBSERVED`，把缺失映射到 `FS_NOT_FOUND`，把存在映射到其版本守卫。所有者从事件 actor 推导（通常是 `exec.agent.session`），被视为不透明且从不读取。dispose（资源释放）时丢弃全部数据（HMR（热模块替换）安全），策略不执行任何文件系统 I/O。
+已觀測狀態是 `dsh-fs-observation-policy` 外掛內部持有的 `WeakMap<owner, Map<targetKey, FsObservation>>`。對映中沒有條目表示未見；`{ kind: 'absent' }` 表示 `read` 的中繼資料未命中，或 `str_replace_editor` 的 `view`、`str_replace`、`insert` 命令發生中繼資料未命中，從而確認缺失；`{ kind: 'present', version }` 表示 read、write 或 edit 觀測到該版本。寫入決策把未見和缺失對映到 `createIfAbsent`，把存在對映到 `replaceIfVersion`；編輯決策把未見對映到 `FS_NOT_OBSERVED`，把缺失對映到 `FS_NOT_FOUND`，把存在對映到其版本守衛。所有者從事件 actor 推導（通常是 `exec.agent.session`），被視為不透明且從不讀取。dispose（資源釋放）時丟棄全部資料（HMR（熱模組替換）安全），策略不執行任何檔案系統 I/O。
 
-## 错误分类体系（提供方约定）
+## 錯誤分類體系（提供者約定）
 
-文件系统故障使用稳定的 `FsErrorCode` 字符串，由 `FsError`（`HarnessError`）携带。工具注册表在错误结果上保留 `{ name, code }`，使重试、权限和 UI 层可以按 code 分支而无需解析文本。
+檔案系統故障使用穩定的 `FsErrorCode` 字串，由 `FsError`（`HarnessError`）攜帶。工具註冊表在錯誤結果上保留 `{ name, code }`，使重試、權限和 UI 層可以按 code 分支而無需解析文字。
 
 ```ts type-equiv
 /**
@@ -267,15 +267,15 @@ type FsErrorCode =
   | 'FS_ABORTED'
 ```
 
-目录列表使用 `FS_NOT_DIRECTORY`、`FS_PERMISSION_DENIED` 与 `FS_IO_ERROR` 区分已存在但并非目录的目标、被拒绝的列表操作和意外的后端 I/O 失败。`FS_SANDBOX_DENIED` 是强制执行沙箱的后端（`dsh-fs-sandbox`）所作的策略拒绝——模式边界拒绝了写入/编辑——与 `FS_PERMISSION_DENIED`（宿主内核拒绝）不同。`FS_NOT_OBSERVED` 表示策略插件没有此所有者的先前观测记录（或 `createIfAbsent` 遇到了现有文件）。`FS_NOT_FOUND` 也表示策略因确认缺失而拒绝 edit。`FS_STALE_VERSION` 表示后端版本不再与观测到的版本匹配（或提供方本身收到针对缺失目标的 edit）。新鲜度授权没有部分/完整之分，因此不存在 `FS_PARTIAL_OBSERVATION`。
+目錄列表使用 `FS_NOT_DIRECTORY`、`FS_PERMISSION_DENIED` 與 `FS_IO_ERROR` 區分已存在但並非目錄的目標、被拒絕的列表操作和意外的後端 I/O 失敗。`FS_SANDBOX_DENIED` 是強制執行沙箱的後端（`dsh-fs-sandbox`）所作的策略拒絕——模式邊界拒絕了寫入/編輯——與 `FS_PERMISSION_DENIED`（主機核心拒絕）不同。`FS_NOT_OBSERVED` 表示策略外掛沒有此所有者的先前觀測記錄（或 `createIfAbsent` 遇到了現有檔案）。`FS_NOT_FOUND` 也表示策略因確認缺失而拒絕 edit。`FS_STALE_VERSION` 表示後端版本不再與觀測到的版本匹配（或提供者本身收到針對缺失目標的 edit）。新鮮度授權沒有部分/完整之分，因此不存在 `FS_PARTIAL_OBSERVATION`。
 
-## 文件 IO 不设超时
+## 檔案 IO 不設超時
 
-`read`/`write`/`edit` **不**接受 `timeoutMs`，提供方约定也不设置截止时间——不同于 bash 与 web（它们消费 [`@deepseek-ai/dsh-timeout`](../../packages/util/timeout/README.zh.md)）以及 subprocess 支撑的 `glob`/`grep`（其声明的 `timeoutMs` 由 `@deepseek-ai/dsh-tool-call-timeout-policy` 强制执行）：那些是进程支撑的，截止时间可以真正终止工作。本地系统调用至多是尽力中止——超时无法迫使进行中的 `fsync`/`rename` 停下，因此这里的 `timeoutMs` 会成为 seam 无法强制执行的截止时间，而且恰好落在「显式优于隐式」禁止隐式默认值的位置。取消仍通过工具执行 signal 传播，在系统调用边界尽力中止。
+`read`/`write`/`edit` **不**接受 `timeoutMs`，提供者約定也不設定截止時間——不同於 bash 與 web（它們消費 [`@deepseek-ai/dsh-timeout`](../../packages/util/timeout/README.zh.md)）以及 subprocess 支撐的 `glob`/`grep`（其宣告的 `timeoutMs` 由 `@deepseek-ai/dsh-tool-call-timeout-policy` 強制執行）：那些是程序支撐的，截止時間可以真正終止工作。本地系統呼叫至多是盡力中止——超時無法迫使進行中的 `fsync`/`rename` 停下，因此這裡的 `timeoutMs` 會成為 seam 無法強制執行的截止時間，而且恰好落在「顯式優於隱式」禁止隱式預設值的位置。取消仍透過工具執行 signal 傳播，在系統呼叫邊界盡力中止。
 
-## 服务与插件
+## 服務與外掛
 
-`FileSystem`（`ctx.fs`，abstract）拥有提供方原语：`resolve`、`processPath`、`processPathFromHostPath`、`fileUrl`、`contains`、`stat`、`lstat`、`readText`、`streamText`、`readBytes`、`listDir`、`writeText` 与 `editText`。`dsh-fs-observation-policy` **不注册服务**。它通过 `fs/*` 事件门禁添加策略，根据未见、缺失或存在状态对写入与编辑意图 waterfall 作出决策，并记录 `FsObservation` 值。执行器是 `dsh-tool-fs`：它通过 `ctx.fs` 读取、写入或编辑，分发 waterfall，并 emit 记录事件。下方生成的 [`ctx.fs` 小节](#ctxfs--filesystem-abstract-seam) 展示确切的 `ctx.fs` 签名。
+`FileSystem`（`ctx.fs`，abstract）擁有提供者原語：`resolve`、`processPath`、`processPathFromHostPath`、`fileUrl`、`contains`、`stat`、`lstat`、`readText`、`streamText`、`readBytes`、`listDir`、`writeText` 與 `editText`。`dsh-fs-observation-policy` **不註冊服務**。它透過 `fs/*` 事件門禁新增策略，根據未見、缺失或存在狀態對寫入與編輯意圖 waterfall 作出決策，並記錄 `FsObservation` 值。執行器是 `dsh-tool-fs`：它透過 `ctx.fs` 讀取、寫入或編輯，分發 waterfall，並 emit 記錄事件。下方生成的 [`ctx.fs` 小節](#ctxfs--filesystem-abstract-seam) 展示確切的 `ctx.fs` 簽名。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

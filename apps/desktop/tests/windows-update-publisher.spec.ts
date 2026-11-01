@@ -58,7 +58,7 @@ describe('Windows update publisher', () => {
   afterAll(() => vi.unstubAllEnvs())
 
   it('preserves organization identity and escapes DN delimiters using the updater parser', async () => {
-    const subject = { CN: '测试 "Publisher", Inc;+\\', O: ' Leading=org ', C: 'CN', ST: 'State' }
+    const subject = { CN: '測試 "Publisher", Inc;+\\', O: ' Leading=org ', C: 'CN', ST: 'State' }
     await withCertificate(subject, async (file) => {
       expect(Object.fromEntries(parseDn(resolveWindowsUpdatePublisher(file))))
         .toEqual({ CN: subject.CN, O: subject.O, C: subject.C })

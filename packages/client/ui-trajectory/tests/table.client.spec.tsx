@@ -175,7 +175,7 @@ describe('TrajectoryTable', () => {
       />,
     )
 
-    expect(screen.getByText('2 个工具调用 · bash')).toBeTruthy()
+    expect(screen.getByText('2 個工具呼叫 · bash')).toBeTruthy()
   })
 
   it('shows assistant timing facts after keyboard selection', () => {
@@ -490,7 +490,7 @@ describe('TrajectoryTable', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Request #1' }))
 
     view.rerender(
-      <TrajectoryTable turns={[turn('步骤 1')]} requestNumbers={request('步骤 1')} {...FOLD_PROPS} />,
+      <TrajectoryTable turns={[turn('步驟 1')]} requestNumbers={request('步驟 1')} {...FOLD_PROPS} />,
     )
 
     expect(screen.getByRole('button', { name: 'Request #1' })
@@ -1042,7 +1042,7 @@ describe('TrajectoryTable', () => {
   })
 
   it.each([['English', t, 'Attachments', 'Image 1', 'Summary', 'Preview', 'Raw'],
-    ['Chinese', tZh, '附件', '图片 1', '概述', '预览', '原始内容']] as const)(
+    ['Chinese', tZh, '附件', '圖片 1', '概述', '預覽', '原始內容']] as const)(
     'keeps mixed attachments ordered and raw fields complete in %s',
     (_locale, translate, listLabel, imageLabel, summaryTab, previewTab, rawTab) => {
       const attachment = {

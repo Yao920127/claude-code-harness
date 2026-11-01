@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/framework/service.md
 /services-and-dependencies:
   en: 03fe9a674163a484
-  zh: 45374665fa3bb8e3
+  zh: cc527f22d0340a32
 /services-and-dependencies/what-is-a-service:
   en: fb06be7799d75fc0
-  zh: a59fdde61e557b24
+  zh: 2b71463d1716baed
 /services-and-dependencies/consume-a-service:
   en: 6655ebf5abce2a59
-  zh: 0c91cac86768d63e
+  zh: 1fddd47e70a461a6
 /services-and-dependencies/provide-a-service:
   en: ed1d04f41f64b6ce
-  zh: e0ddcb48bf3207c1
+  zh: 8fb449ceea40af7f
 /services-and-dependencies/provide-a-service/extend-service:
   en: 3de1c24498e2c62f
-  zh: 57836dc4fa8d5c9a
+  zh: f882549d3160da1e
 /services-and-dependencies/provide-a-service/declare-its-type:
   en: fc1a29f46715ade5
-  zh: b1edb281077df180
+  zh: 3bfed8943c404732
 /services-and-dependencies/dependency-behavior:
   en: 6678917fe40eea55
-  zh: 6227580b94a50855
+  zh: b07b6d4a7c97f6ff
 /services-and-dependencies/dependency-behavior/required-and-optional-dependencies:
   en: 8a98845896146946
-  zh: 2383ad4ba5d2943d
+  zh: a08fcf37c06c3515
 /services-and-dependencies/dependency-behavior/when-a-service-disappears:
   en: 689e4b95dd320122
-  zh: 674ffba2733ec745
+  zh: 73ceb17bb50c9a24
 /services-and-dependencies/service-isolation:
   en: cc4be89f19cb7615
-  zh: e00e86a615f59003
+  zh: ada15d21f991f5f2
 /services-and-dependencies/built-in-harness-services:
   en: 07eb5bcc03955284
-  zh: 5eec0f3c6e01c0f9
+  zh: 981b7a570078767a
 /services-and-dependencies/next-steps:
   en: 1537e6955eb02c62
-  zh: 6430f34e63cfa533
+  zh: f62b27da3d03f15d

@@ -2,15 +2,15 @@
 
 [English](attachment.md) | 中文
 
-附件 seam 将二进制图片和通用文件的所有权与会话日志分离。生产方把字节交给 [`ctx.attachments`](#ctxattachments--attachmentstore-abstract-seam)；只有对象完成持久化后，该服务才会发布不可变的内容寻址引用。会话事件和模型可见的附件块包含该引用及其元数据，绝不包含浏览器对象 URL、宿主临时路径、提供方 URL 或 base64 数据。独立的 [`ctx.fileUploads`](#ctxfileuploads--fileuploads) 服务把浏览器文件传输与暂存凭证绑定到接收方 Agent。
+附件 seam 將二進位制圖片和通用檔案的所有權與工作階段日誌分離。生產方把位元組交給 [`ctx.attachments`](#ctxattachments--attachmentstore-abstract-seam)；只有物件完成持久化後，該服務才會釋出不可變的內容定址引用。工作階段事件和模型可見的附件塊包含該引用及其中繼資料，絕不包含瀏覽器物件 URL、主機臨時路徑、提供者 URL 或 base64 資料。獨立的 [`ctx.fileUploads`](#ctxfileuploads--fileuploads) 服務把瀏覽器檔案傳輸與暫存憑證繫結到接收方 Agent。
 
-未发送的浏览器草稿可以保留在内存中，原生客户端也可以将其暂存于操作系统临时存储。浏览器通用文件取得暂存 prompt 凭证前会完成持久化。宿主接受用户消息后，会先把消息中的图片移到 `<DSH_HOME>/attachments/v1` 下，再追加用户事件。结构化模型图片输出遵循同样的先持久化、后追加事件规则。
+未傳送的瀏覽器草稿可以保留在記憶體中，原生用戶端也可以將其暫存於作業系統臨時儲存。瀏覽器通用檔案取得暫存 prompt 憑證前會完成持久化。主機接受使用者訊息後，會先把訊息中的圖片移到 `<DSH_HOME>/attachments/v1` 下，再追加使用者事件。結構化模型圖片輸出遵循同樣的先持久化、後追加事件規則。
 
-来源：[`packages/attachment/attachment/src/types.ts`](../../packages/attachment/attachment/src/types.ts)
+來源：[`packages/attachment/attachment/src/types.ts`](../../packages/attachment/attachment/src/types.ts)
 
-## 标识与经过校验的元数据
+## 標識與經過驗證的中繼資料
 
-`AttachmentId` 是带类型标记的不透明字符串。本地后端目前生成 `sha256:<digest>`，但消费方既不能解析这种表示，也不能据此派生文件系统路径。消费方可以通过 `imageHostPath()` 询问附件提供方所持对象的位置，然后必须由当前执行文件系统判断模型工具能否读取该宿主路径。
+`AttachmentId` 是帶型別標記的不透明字串。本地後端目前生成 `sha256:<digest>`，但消費方既不能解析這種表示，也不能據此派生檔案系統路徑。消費方可以透過 `imageHostPath()` 詢問附件提供者所持物件的位置，然後必須由目前執行檔案系統判斷模型工具能否讀取該主機路徑。
 
 ```ts type-equiv
 /** Raster image formats accepted by the version-one attachment path. */
@@ -56,11 +56,11 @@ interface ImageAttachmentLimits {
 }
 ```
 
-本地后端每条消息最多准入 20 张图片，源图编码数据总量不超过 200 MiB。单张源图不得超过 20 MiB、64,000,000 像素和单边 8192 像素。这些源文件限制先于独立的规范化阶段执行；该阶段默认把长边限制为 2048 像素，把编码数据限制为 4 MiB。
+本地後端每條訊息最多准入 20 張圖片，源圖編碼資料總量不超過 200 MiB。單張源圖不得超過 20 MiB、64,000,000 畫素和單邊 8192 畫素。這些原始檔限制先於獨立的規範化階段執行；該階段預設把長邊限制為 2048 畫素，把編碼資料限制為 4 MiB。
 
-引用记录固有尺寸和编码长度，使客户端无需先解码即可排布历史记录；每次权威读取仍会根据对象重新校验摘要、媒体签名、尺寸和元数据。
+引用記錄固有尺寸和編碼長度，使用戶端無需先解碼即可排布歷史記錄；每次權威讀取仍會根據物件重新驗證摘要、媒體簽名、尺寸和中繼資料。
 
-## 提交与经校验读取的数据
+## 提交與經驗證讀取的資料
 
 ```ts type-equiv
 /**
@@ -167,7 +167,7 @@ interface RequestImageAttachment {
 }
 ```
 
-`saveImage()` 准备并原子提交提供方无关的规范化附件，然后直接返回 `ImageAttachmentRef`。`saveImages()` 在发布批次前为每个成员各准备一次经过验证的附件，因此校验拒绝不会留下部分对象，发布也不会重复解码或选择质量。`admitPromptContent()` 在文件凭证解析后接收完整且有序的 Host prompt，把 base64 图片上传替换为持久引用，并让持久文件引用原样通过。`admitEncodedImages()` 支持其他 wire 入口，把张数、聚合字节和有序批量准入交给 `saveImages()`。`admitEncodedFile()` 让编码协议适配器使用服务拥有的规范 base64 准入，`isAttachmentError()` 让这些适配器无需导入实现辅助函数即可识别稳定的附件错误。`readImage()` 校验来自已授权会话路径的规范化附件。`imageHostPath()` 只公开提供方所持对象的宿主位置，不判断当前工具执行环境能否读取它。`readImageRequest()` 按确切的路由目标尺寸和编码字节目标派生并缓存确定性请求版本。该版本包含编码字节和元数据，不包含执行环境路径。新条目在发布前完整解码，缓存命中只做有界元数据探测。调用方需要有序批次时，对单数方法使用 `Promise.all`。本地实现按需编码首选候选、合并相同请求身份的并发任务、允许每个等待方单独取消、没有等待方时停止共享任务，并通过实例级限流器限制全部变换，默认同时执行两项。该服务不规定保留策略：恢复和 fork 后的会话可能共享对象，因此基于引用的垃圾回收会延期实现，不与单个会话的删除绑定。
+`saveImage()` 準備並原子提交提供者無關的規範化附件，然後直接返回 `ImageAttachmentRef`。`saveImages()` 在釋出批次前為每個成員各準備一次經過驗證的附件，因此驗證拒絕不會留下部分物件，釋出也不會重複解碼或選擇品質。`admitPromptContent()` 在檔案憑證解析後接收完整且有序的 Host prompt，把 base64 圖片上傳替換為持久引用，並讓持久檔案引用原樣透過。`admitEncodedImages()` 支援其他 wire 入口，把張數、聚合位元組和有序批次准入交給 `saveImages()`。`admitEncodedFile()` 讓編碼協定介面卡使用服務擁有的規範 base64 准入，`isAttachmentError()` 讓這些介面卡無需匯入實作輔助函式即可識別穩定的附件錯誤。`readImage()` 驗證來自已授權工作階段路徑的規範化附件。`imageHostPath()` 只公開提供者所持物件的主機位置，不判斷目前工具執行環境能否讀取它。`readImageRequest()` 按確切的路由目標尺寸和編碼位元組目標派生並快取確定性請求版本。該版本包含編碼位元組和中繼資料，不包含執行環境路徑。新條目在釋出前完整解碼，快取命中只做有界中繼資料探測。呼叫方需要有序批次時，對單數方法使用 `Promise.all`。本地實作按需編碼首選候選、合併相同請求身份的並行任務、允許每個等待方單獨取消、沒有等待方時停止共享任務，並透過實例級速率限制器限制全部變換，預設同時執行兩項。該服務不規定保留策略：恢復和 fork 後的工作階段可能共享物件，因此基於引用的垃圾回收會延期實作，不與單個工作階段的刪除繫結。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

@@ -2,18 +2,18 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'phase.active': '进行中的目标',
-  'phase.active.disarmed': '未运行的目标',
-  'phase.paused': '已暂停的目标',
-  'phase.blocked': '受阻的目标',
-  'objective.aria': '目标内容',
-  'commandInput.aria': '指令输入',
-  'action.save': '保存目标',
-  'action.cancel': '取消编辑',
-  'action.pause': '暂停目标',
-  'action.resume': '恢复目标',
-  'action.edit': '编辑目标',
-  'action.clear': '清除目标',
+  'phase.active': '進行中的目標',
+  'phase.active.disarmed': '未執行的目標',
+  'phase.paused': '已暫停的目標',
+  'phase.blocked': '受阻的目標',
+  'objective.aria': '目標內容',
+  'commandInput.aria': '指令輸入',
+  'action.save': '儲存目標',
+  'action.cancel': '取消編輯',
+  'action.pause': '暫停目標',
+  'action.resume': '恢復目標',
+  'action.edit': '編輯目標',
+  'action.clear': '清除目標',
 } satisfies Record<string, string>
 
 /** The goal namespace key union. */

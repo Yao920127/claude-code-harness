@@ -1,141 +1,141 @@
-# Agent Note: Web client Agent-scope 对等模型与供数通道（agents/scope / blank 复用 / provide）
+# Agent Note: Web client Agent-scope 對等模型與供數通道（agents/scope / blank 複用 / provide）
 
 Status: implemented
 
 [English](2026-07-25-web-client-session-scope-and-provide-channel.md) | 中文
 
-> 范围：client Agent scope（actx）与定向事件、client/host 实体化对等模型、空会话 blank 位与复用（`connectWorkspace`）、逐会话供数通道（`sessions.provide`），以及承载这些能力的 host wire 小件（summary `blank` 列、`host/session-added` 帧字段、`host/commands-changed` 帧）。输入状态机与 slash 管线见[输入状态机 note](../../archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)；命令业务面见[命令业务面 note](../../archived/architecture/2026-07-25-web-command-surfaces-and-assembly.md)。
+> 範圍：client Agent scope（actx）與定向事件、client/host 實體化對等模型、空工作階段 blank 位與複用（`connectWorkspace`）、逐工作階段供數通道（`sessions.provide`），以及承載這些能力的 host wire 小件（summary `blank` 列、`host/session-added` 幀欄位、`host/commands-changed` 幀）。輸入狀態機與 slash 管線見[輸入狀態機 note](../../archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)；命令業務面見[命令業務面 note](../../archived/architecture/2026-07-25-web-command-surfaces-and-assembly.md)。
 
-## 问题
+## 問題
 
-web client 只有一张全局会话面：slot 全部从根上下文渲染，插件拿不到「当前是哪个 agent/会话」的语境；draft 的权威副本埋在 Session 对象里，任何要参与输入的插件都无处下手。要支撑命令/输入体系，平台层必须先回答：
+web client 只有一張全域工作階段面：slot 全部從根上下文渲染，外掛拿不到「目前是哪個 agent/工作階段」的語境；draft 的權威副本埋在 Session 物件裡，任何要參與輸入的外掛都無處下手。要支撐命令/輸入體系，平臺層必須先回答：
 
-- 会话交互态（菜单、popup、草稿、在途请求）归谁持有，双会话如何结构性隔离；
-- 「新会话」在 host 实体存在之前是什么——client 是否必须为它凭空创建独立生命周期；
-- 会话 scope 组件如何「自己拿会话数据」，而不是层层下传 props；
-- 用户放弃的新会话在 host 侧留下什么，由谁回收。
+- 工作階段互動態（選單、popup、草稿、在途請求）歸誰持有，雙工作階段如何結構性隔離；
+- 「新工作階段」在 host 實體存在之前是什麼——client 是否必須為它憑空建立獨立生命週期；
+- 工作階段 scope 元件如何「自己拿工作階段資料」，而不是層層下傳 props；
+- 使用者放棄的新工作階段在 host 側留下什麼，由誰回收。
 
-硬约束：host 是唯一真源；一切注册走 `ctx.effect` disposer；scope 机制与 host 的 Agent scope 架构一致；模型可见 ⟺ 已入会话日志。
+硬約束：host 是唯一真源；一切註冊走 `ctx.effect` disposer；scope 機制與 host 的 Agent scope 架構一致；模型可見 ⟺ 已入工作階段日誌。
 
-## 决策
+## 決策
 
-[Client Session 引用](2026-09-15-client-session-references.zh.md)现已定义引用所有的生命周期与 Provider 定位。本 Note 保留 blank Session 与收养语义的理由，并描述它们的当前实现。
+[Client Session 引用](2026-09-15-client-session-references.zh.md)現已定義引用所有的生命週期與 Provider 定位。本 Note 保留 blank Session 與收養語義的理由，並描述它們的目前實作。
 
-### 对等模型：client 与 host 同一根状态轴
+### 對等模型：client 與 host 同一根狀態軸
 
-host 侧 `session.create(workspaceId)` 一体产出 Session + Agent + cwd（作为不可拆分的原子整体）；client 侧就是这次出生的镜像——会话行进入 list mirror 的瞬间，client 为它铸 Agent scope（actx + provide + 输入面全套挂上）：
+host 側 `session.create(workspaceId)` 一體產出 Session + Agent + cwd（作為不可拆分的原子整體）；client 側就是這次出生的映像——工作階段行進入 list mirror 的瞬間，client 為它鑄 Agent scope（actx + provide + 輸入面全套掛上）：
 
-- 会话身份自出生即为 host 真身：sessionId 由 `session.create` 响应 / `host/session-added` 帧带来，client 侧一切寻址（scope tag、slot store 键、RPC 地址）用的都是同一个 id。
-- 手动选定 Workspace 或完成[首次使用的启动初始化](../feature/2026-09-20-default-workspace.zh.md) 后，cwd 已确定，client 再调 `session.create({workspaceId})`，拿到完整实体。
-- 「New Session 且未选 workspace」是**纯视图态**（一个导航位置），不对应任何会话/scope 实体；选定之前 composer 整体锁死（无 slash、无纯文本）。
-- 「空会话」是尚无轮次的普通实体化会话；对 host 上的 Agent-scope 插件（goal/plan/skill（技能）/…）而言，它仍是普通 Session，因此 slash/plan 自然可用。
+- 工作階段身份自出生即為 host 真身：sessionId 由 `session.create` 回應 / `host/session-added` 幀帶來，client 側一切定址（scope tag、slot store 鍵、RPC 地址）用的都是同一個 id。
+- 手動選定 Workspace 或完成[首次使用的啟動初始化](../feature/2026-09-20-default-workspace.zh.md) 後，cwd 已確定，client 再調 `session.create({workspaceId})`，拿到完整實體。
+- 「New Session 且未選 workspace」是**純檢視態**（一個導航位置），不對應任何工作階段/scope 實體；選定之前 composer 整體鎖死（無 slash、無純文字）。
+- 「空工作階段」是尚無輪次的普通實體化工作階段；對 host 上的 Agent-scope 外掛（goal/plan/skill（技能）/…）而言，它仍是普通 Session，因此 slash/plan 自然可用。
 
-### Agent scope：actx 是 client 侧 cordis 世界的唯一会话载体
+### Agent scope：actx 是 client 側 cordis 世界的唯一工作階段載體
 
-运行时 `agents/scope.ts` 与 host `dsh-scope` 机制层一致（fiber + tag + filter 过滤；不 value-import：host 包携带 scoped-events 的 `Events` merge，进 client program 撞 Context merge）：
+執行時 `agents/scope.ts` 與 host `dsh-scope` 機制層一致（fiber + tag + filter 過濾；不 value-import：host 包攜帶 scoped-events 的 `Events` merge，進 client program 撞 Context merge）：
 
-- `createScope(ctx, key)`：no-op 插件 fiber + `extend({[kScope]: key, [Context.filter]: …})`——filter 直接住 actx：untagged listener 全局可收，tagged 只收本 scope。
-- 派发就是 cordis 原语，thisArg = actx 本身：`actx.bail(actx, event, req)` / `actx.emit(actx, event, payload)`。
-- `Session.bindScope(actx)`：resolve 铸 scope 时单次配对（重复绑 throw；dropScope unbind），镜像 host `Agent.loopCtx`——Session 用它自行派发 scoped 事件。actx→Session 反向走 `sessions.sessionOf(actx)` 一跳（镜像 host 插件 `agent.session` 用法）。
+- `createScope(ctx, key)`：no-op 外掛 fiber + `extend({[kScope]: key, [Context.filter]: …})`——filter 直接住 actx：untagged listener 全局可收，tagged 只收本 scope。
+- 派發就是 cordis 原語，thisArg = actx 本身：`actx.bail(actx, event, req)` / `actx.emit(actx, event, payload)`。
+- `Session.bindScope(actx)`：resolve 鑄 scope 時單次配對（重複綁 throw；dropScope unbind），映像 host `Agent.loopCtx`——Session 用它自行派發 scoped 事件。actx→Session 反向走 `sessions.sessionOf(actx)` 一跳（映像 host 外掛 `agent.session` 用法）。
 
-与 host dsh-scope 的有意分歧三条：
+與 host dsh-scope 的有意分歧三條：
 
-- filter 住 actx 自身而非独立 carrier：host 包装层护的是「业务 Agent subject 与 scope key 不漂移」（host 事件首参注入 Agent 本体），client 事件 payload 只带 id、无 subject 可护。
-- key 用品牌 `SessionId` 值比较而非对象身份：host 里 agent.id === 会话 id（1:1 同轴），agent 身份直接复用 `SessionId` 品牌，client scope 的身份即 wire id。
-- client 是 **Agent 身份** scope 而非活对象 scope：cold 会话期 host Agent 对象已 dispose（资源释放）而 client actx 存活（视野内）——身份轴严格对等、对象冷热有意不同步。
+- filter 住 actx 自身而非獨立 carrier：host 包裝層護的是「業務 Agent subject 與 scope key 不漂移」（host 事件首參注入 Agent 本體），client 事件 payload 只帶 id、無 subject 可護。
+- key 用品牌 `SessionId` 值比較而非物件身份：host 裡 agent.id === 工作階段 id（1:1 同軸），agent 身份直接複用 `SessionId` 品牌，client scope 的身份即 wire id。
+- client 是 **Agent 身份** scope 而非活物件 scope：cold 工作階段期 host Agent 物件已 dispose（資源釋放）而 client actx 存活（視野內）——身份軸嚴格對等、物件冷熱有意不同步。
 
-id→ctx 换乘只许三类位置（业务提供方永不换乘）：
+id→ctx 換乘只許三類位置（業務提供者永不換乘）：
 
-- slot inject 工厂：ctx 不进渲染层，slot 框架交给组件的身份就是 sessionId，经服务 map 换回对象/controller。
-- root 协调服务自寻址：从投影的 sessionId 经 `sessions.scope(id)` 找回 actx。
+- slot inject 工廠：ctx 不進渲染層，slot 框架交給元件的身份就是 sessionId，經服務 map 換回物件/controller。
+- root 協調服務自定址：從投影的 sessionId 經 `sessions.scope(id)` 找回 actx。
 - root untagged listener：按 payload 的 sessionId 查自有 store。
 
-### scope 生命周期：挂靠显式引用
+### scope 生命週期：掛靠顯式引用
 
-Session 实例与 scope 同生命周期；catalog 只报告可发现性，不持有 generation：
+Session 實例與 scope 同生命週期；catalog 只報告可發現性，不持有 generation：
 
-- 出生 = 第一次显式调用 `sessions.retain(target, options)`；它同步返回 reference，并在历史就绪前铸造 Session binding 与 scope。
-- 最后一份 reference 释放时，Controller 先撤下确切 generation，再拆除其 Session 实例、scope fiber（级联挂在 actx 上的一切消费方）与会话键控 slot store。仍有 reference 时，catalog 移除不会结束 generation。
-- 重开 = 后续 retain 惰性重建 generation，并通过 `reference.ready` 暴露历史就绪结果（Host Session 日志是持久真相）。
-- 遗留 TODO：approval/question 帧不进 history，跨 prune 不可恢复（manager 级 pendingBuffers 只覆盖「从未实例化」窗口）。
+- 出生 = 第一次顯式呼叫 `sessions.retain(target, options)`；它同步返回 reference，並在歷史就緒前鑄造 Session binding 與 scope。
+- 最後一份 reference 釋放時，Controller 先撤下確切 generation，再拆除其 Session 實例、scope fiber（級聯掛在 actx 上的一切消費方）與工作階段鍵控 slot store。仍有 reference 時，catalog 移除不會結束 generation。
+- 重開 = 後續 retain 惰性重建 generation，並透過 `reference.ready` 暴露歷史就緒結果（Host Session 日誌是持久真相）。
+- 遺留 TODO：approval/question 幀不進 history，跨 prune 不可恢復（manager 級 pendingBuffers 只覆蓋「從未實例化」視窗）。
 
-### blank 位：空会话的可见投影、转正与复用
+### blank 位：空工作階段的可見投影、轉正與複用
 
-「实体化但无首条提示词」的会话经 summary 派生位 `blank` 治理（派生列而非 header 字段，SessionHeader 保持不可变）：
+「實體化但無首條提示詞」的工作階段經 summary 派生位 `blank` 治理（派生列而非 header 欄位，SessionHeader 保持不可變）：
 
-- Host 判据是没有 `turn/start`：`sessionListMetadata.blank` 投影初始为 true，且只有该事件会清除它，因此 slash 命令、配置事件与创建检查点即使已落盘也不会清除——blank 不代表未持久化。metadata 缺失时，live Session 回退到 `session.seq === 0`，cold Session 回退到 false；cold summary 其余情况读缓存元数据，缓存缺失时以未知状态保留在列表中。复用按[空白 Session 获取](2026-09-17-process-local-blank-sessions.zh.md)规则取得写锁。
-- wire 承载两处：`SessionSummary.blank` 必填列；`host/session-added` 帧必填 `blank` 字段（创建时恒 true，供别的 tab 按同一空会话状态入镜像）。
-- 客户端展示还受已观察到的受理/运行影响，其保留期限由 [blank 回退修复决策](../bug-fix/2026-09-15-client-session-blank-reconciliation.zh.md) 拥有：
-  - 发送方本地：首次 `prompt()` 的**成功响应**把当前 `New Session` 行原地转正，不新增列表行——受理是展示记忆，不证明轮次或用户消息已写入持久历史。首条提示词被拒则会话保持 blank：与 host 权威对齐、继续显示为 `New Session`、在仍为该工作区成员时保持 connectWorkspace 复用资格。
-  - 其他端：`host/session-status (running:true)` 帧转正——blank 会话从不 running，首次 running 必然已非 blank；
-  - 重连对齐：列表拉取更新 Host 摘要，Manager 则保留这些观察；在此基础上，`sessionListMetadata` 提示已有历史也会阻止回退 blank，因此空历史响应不能把已转正的会话标回 blank。
-- 列表纪律：store 保留全部行；Workspace browser 的分组、平铺、搜索和计数共用同一可见投影——所有非 blank 会话都显示，blank 会话只显示由 `mainView` 来源持有的一行，并强制标题为 `New Session`。切换 Workspace 后，旧 blank 实体仍在镜像中但从列表隐藏，目标 Workspace 的主 blank 显示；因此用户可见面全局至多一条 blank 行。
-- blank Session 可以通过创建检查点与命令事件持久化，且没有自动垃圾回收：浏览器刷新、Host 重启与工作区连接会在取得写锁后复用符合条件的空白会话并跳过被占用的候选；但列表加载与多 tab 竞态仍可能创建额外的 blank Session，其旧日志保留在磁盘上。
+- Host 判據是沒有 `turn/start`：`sessionListMetadata.blank` 投影初始為 true，且只有該事件會清除它，因此 slash 命令、設定事件與建立檢查點即使已寫入磁碟也不會清除——blank 不代表未持久化。metadata 缺失時，live Session 退回到 `session.seq === 0`，cold Session 退回到 false；cold summary 其餘情況讀快取中繼資料，快取缺失時以未知狀態保留在列表中。複用按[空白 Session 取得](2026-09-17-process-local-blank-sessions.zh.md)規則取得寫鎖。
+- wire 承載兩處：`SessionSummary.blank` 必填列；`host/session-added` 幀必填 `blank` 欄位（建立時恆 true，供別的 tab 按同一空工作階段狀態入映像）。
+- 用戶端展示還受已觀察到的受理/執行影響，其保留期限由 [blank 退回修復決策](../bug-fix/2026-09-15-client-session-blank-reconciliation.zh.md) 擁有：
+  - 傳送方本地：首次 `prompt()` 的**成功回應**把目前 `New Session` 行原地轉正，不新增列表行——受理是展示記憶，不證明輪次或使用者訊息已寫入持久歷史。首條提示詞被拒則工作階段保持 blank：與 host 權威對齊、繼續顯示為 `New Session`、在仍為該工作區成員時保持 connectWorkspace 複用資格。
+  - 其他端：`host/session-status (running:true)` 幀轉正——blank 工作階段從不 running，首次 running 必然已非 blank；
+  - 重連對齊：列表拉取更新 Host 摘要，Manager 則保留這些觀察；在此基礎上，`sessionListMetadata` 提示已有歷史也會阻止退回 blank，因此空歷史回應不能把已轉正的工作階段標回 blank。
+- 列表紀律：store 保留全部行；Workspace browser 的分組、平鋪、搜尋和計數共用同一可見投影——所有非 blank 工作階段都顯示，blank 工作階段只顯示由 `mainView` 來源持有的一行，並強制標題為 `New Session`。切換 Workspace 後，舊 blank 實體仍在映像中但從列表隱藏，目標 Workspace 的主 blank 顯示；因此使用者可見面全域至多一條 blank 行。
+- blank Session 可以透過建立檢查點與命令事件持久化，且沒有自動垃圾回收：瀏覽器重新整理、Host 重新啟動與工作區連線會在取得寫鎖後複用符合條件的空白工作階段並跳過被佔用的候選；但列表載入與多 tab 競態仍可能建立額外的 blank Session，其舊日誌保留在磁碟上。
 
 ### connectWorkspace：New Session 的唯一入口
 
-`workspaces.connectWorkspace(workspaceId): Promise<SessionId>`（归属 WorkspaceRuntime——它同时持有 workspace 规范 path 与 sessions 引用）：
+`workspaces.connectWorkspace(workspaceId): Promise<SessionId>`（歸屬 WorkspaceRuntime——它同時持有 workspace 規範 path 與 sessions 引用）：
 
-- 复用臂：list mirror 中找 `blank && cwd == workspace.path && sessionIds.includes(id)`——host 自己的成员规则，绝不只按 cwd。没有账户槽位的 cwd 匹配（CLI（命令行界面）/TUI 在 host cwd 创建的会话，或已删除/重建的注册）会打开一个任何分组表面都无法显示在该工作区下的会话，因此落到新建臂（见[成员复用修复](../../archived/bug-fix/2026-08-05-workspace-blank-session-reuse-membership.md)）；命中后通过显式 ID 的 `session.create` 收养，在返回前取得并持续持有写锁。仅写锁争用会跳过候选。
-- 新建臂：没有可获取的候选时，`session.create({workspaceId})`，返回新 id。
-- 未知 workspaceId fail loud（不静默创建到别处）。
-- 解析保证（两臂同约定）：promise resolve 时返回的 id 已在 list store。视图 owner 随后同步 retain，因此 draft 搬运方可以在历史就绪前通过该 binding 写入文本，无需等待 notifier flush。
-- 调用方拿 id 安装一份 `mainView` reference；首条提示词发送就是普通 `session.prompt`——Session 本来就在，失败即普通提示词失败，draft 文本还在 machine 里，重试即再次发送。
-- 全局 New Session 按钮默认取 `recentWorkspaceId`：先比较各 Workspace 内 Session 的最新 `updatedAt`，无 Session 时回退 Workspace `createdAt`，同值保持 Host 顺序；只有完全没有 Workspace 时才释放主视图 reference，进入无 Session 视图。Workspace 分组内的创建动作仍显式命中该 Workspace。
-- 运行时启动时订阅首次完整基线：若已有恢复成功的 current 会话则保持不动，否则自动 `connectWorkspace(recentWorkspaceId)` 并 open 返回的 blank 会话。该策略只结算一次；之后用户主动 clear 不会再次被自动选择覆盖，连接失败则等下一次基线投影重试。
-- blank Hero 中改选 Workspace 也走 `connectWorkspace`；若目标 id 与主视图 id 不同，`ui-workspace` 先 retain 目标，通过 preparation callback 搬运当前 input machine 的非空 draft，再发布新的主 reference。旧 blank 实体不删除，只因其 `mainView` reference 被释放而从列表隐藏。
+- 複用臂：list mirror 中找 `blank && cwd == workspace.path && sessionIds.includes(id)`——host 自己的成員規則，絕不只按 cwd。沒有帳戶槽位的 cwd 匹配（CLI（命令列介面）/TUI 在 host cwd 建立的工作階段，或已刪除/重建的註冊）會開啟一個任何分組表面都無法顯示在該工作區下的工作階段，因此落到新建臂（見[成員複用修復](../../archived/bug-fix/2026-08-05-workspace-blank-session-reuse-membership.md)）；命中後透過顯式 ID 的 `session.create` 收養，在返回前取得並持續持有寫鎖。僅寫鎖爭用會跳過候選。
+- 新建臂：沒有可取得的候選時，`session.create({workspaceId})`，返回新 id。
+- 未知 workspaceId fail loud（不靜默建立到別處）。
+- 解析保證（兩臂同約定）：promise resolve 時返回的 id 已在 list store。檢視 owner 隨後同步 retain，因此 draft 搬運方可以在歷史就緒前透過該 binding 寫入文字，無需等待 notifier flush。
+- 呼叫方拿 id 安裝一份 `mainView` reference；首條提示詞傳送就是普通 `session.prompt`——Session 本來就在，失敗即普通提示詞失敗，draft 文字還在 machine 裡，重試即再次傳送。
+- 全域 New Session 按鈕預設取 `recentWorkspaceId`：先比較各 Workspace 內 Session 的最新 `updatedAt`，無 Session 時退回 Workspace `createdAt`，同值保持 Host 順序；只有完全沒有 Workspace 時才釋放主檢視 reference，進入無 Session 檢視。Workspace 分組內的建立動作仍顯式命中該 Workspace。
+- 執行時啟動時訂閱首次完整基線：若已有恢復成功的 current 工作階段則保持不動，否則自動 `connectWorkspace(recentWorkspaceId)` 並 open 返回的 blank 工作階段。該策略只結算一次；之後使用者主動 clear 不會再次被自動選擇覆蓋，連線失敗則等下一次基線投影重試。
+- blank Hero 中改選 Workspace 也走 `connectWorkspace`；若目標 id 與主檢視 id 不同，`ui-workspace` 先 retain 目標，透過 preparation callback 搬運目前 input machine 的非空 draft，再發布新的主 reference。舊 blank 實體不刪除，只因其 `mainView` reference 被釋放而從列表隱藏。
 
-### 逐会话供数：`uiSession.provide` 标准件通道
+### 逐工作階段供數：`uiSession.provide` 標準件通道
 
-Session slot 组件「自己拿 Session 数据」的唯一供数路径。插件以静态描述符 `uiSession.provide({hooks, props, resolve})` 声明固定键表（重名 key 注册时 throw），`resolve(binding)` 在确定 binding 下物化值并随其 scope 拆；ui-renderer `standardKit` 统一循环把 hooks 格绑成 `use<Name>` 选择器钩子（`observableHook`→uSES，防 tearing）、props 格原样透传。
+Session slot 元件「自己拿 Session 資料」的唯一供數路徑。外掛以靜態描述符 `uiSession.provide({hooks, props, resolve})` 宣告固定鍵表（重名 key 註冊時 throw），`resolve(binding)` 在確定 binding 下物化值並隨其 scope 拆；ui-renderer `standardKit` 統一迴圈把 hooks 格綁成 `use<Name>` 選擇器掛鉤（`observableHook`→uSES，防 tearing）、props 格原樣直接傳遞。
 
-slot scope 是闭集 `root | session-maybe | session`：
+slot scope 是閉集 `root | session-maybe | session`：
 
-- `root` 只拿全局标准件，不接收会话身份或供数。
-- `session-maybe` 以**收养（adoption）身份语义**继承最近 `SessionProvider` 的 binding：空态出生的化身在该 Provider 第一次收到 binding 时保持 React 实例，此后 Provider 切换 generation 或回到空态时重挂。Provider 切换 generation 时，组件本地的逐 Session 状态会清零。切换过程中，只有持久化 Store 值能活过 generation 退休；只有另一份 reference 保活该 generation 时，binding 自有 source 才能保留。无 binding 时，`sessionId`、`useSession`/`useInput` 的结果与 `inputActions` 均可缺省。Provider roster 变化会重新物化已挂载 binding，但不改变其 identity；逐 entry 的收养记账住在 renderer 的 `SessionMaybeEntry`。
-- `session` 保证 `sessionId`、所有钩子 source 与 props 均存在；每个严格 entry 的错误边界以 `sessionId` 为 key，切换会话会重建该 entry 及其会话 store。
+- `root` 只拿全域標準件，不接收工作階段身份或供數。
+- `session-maybe` 以**收養（adoption）身份語義**繼承最近 `SessionProvider` 的 binding：空態出生的化身在該 Provider 第一次收到 binding 時保持 React 實例，此後 Provider 切換 generation 或回到空態時重掛。Provider 切換 generation 時，元件本地的逐 Session 狀態會清零。切換過程中，只有持久化 Store 值能活過 generation 退休；只有另一份 reference 保活該 generation 時，binding 自有 source 才能保留。無 binding 時，`sessionId`、`useSession`/`useInput` 的結果與 `inputActions` 均可預設。Provider roster 變化會重新物化已掛載 binding，但不改變其 identity；逐 entry 的收養記帳住在 renderer 的 `SessionMaybeEntry`。
+- `session` 保證 `sessionId`、所有掛鉤 source 與 props 均存在；每個嚴格 entry 的錯誤邊界以 `sessionId` 為 key，切換工作階段會重建該 entry 及其工作階段 store。
 
-`conversation` 是其 owner `SessionProvider` 下的 `session-maybe` 常驻外壳：`ConversationRoot`、HeroShell、Workspace picker、scrollport 与 composer stack，以及 overlay chain 的 fallback 外框，在无 Session → blank Session 的切换中保持 React 实例。两个严格 session entry 只填入固定区域，不改变该树的父级：`conversation.session.header` 在 scrollport 上方承载 breadcrumb／tab／action，`conversation.session` 在其内部承载 view ring 与 draft mirror；二者共享同一个 Session scope chat store。composer bar（`conversation.composer.bar`）本身即为 `session-maybe`：无 Session 时，其 machine faces 和消息动作保持惰性，整张虚线卡片可经指针打开现有 Workspace picker，只读 textarea 也可通过 Enter 或 Space 打开。binding 出现后同一实例（含 textarea）转为 live；其余输入 slot 保持严格 `session`，在此之前不派发任何内容。blank → engaging/active 的 InputBar 不因 phase 翻转而重建。
+`conversation` 是其 owner `SessionProvider` 下的 `session-maybe` 常駐外殼：`ConversationRoot`、HeroShell、Workspace picker、scrollport 與 composer stack，以及 overlay chain 的 fallback 外框，在無 Session → blank Session 的切換中保持 React 實例。兩個嚴格 session entry 只填入固定區域，不改變該樹的父級：`conversation.session.header` 在 scrollport 上方承載 breadcrumb／tab／action，`conversation.session` 在其內部承載 view ring 與 draft mirror；二者共享同一個 Session scope chat store。composer bar（`conversation.composer.bar`）本身即為 `session-maybe`：無 Session 時，其 machine faces 和訊息動作保持惰性，整張虛線卡片可經指標開啟現有 Workspace picker，只讀 textarea 也可透過 Enter 或 Space 開啟。binding 出現後同一實例（含 textarea）轉為 live；其餘輸入 slot 保持嚴格 `session`，在此之前不派發任何內容。blank → engaging/active 的 InputBar 不因 phase 翻轉而重建。
 
-blank Session 保留 header 的 leading 与 corner slot，让右侧栏展开入口等导航控件在首条消息之前即可使用。标题、actions、utilities 和 View tabs 在 blank phase 中继续隐藏。header 仍要求已选中的 Session；Files 与 Terminal 入口使用该 Session 的工作区和执行服务，无需已有 Turn 记录。
+blank Session 保留 header 的 leading 與 corner slot，讓右側欄展開入口等導航控制元件在首條訊息之前即可使用。標題、actions、utilities 和 View tabs 在 blank phase 中繼續隱藏。header 仍要求已選中的 Session；Files 與 Terminal 入口使用該 Session 的工作區和執行服務，無需已有 Turn 記錄。
 
-- 运行时内建第一条：`'session'` 钩子——`useSession` 本身走同一机制，无特判。
-- Concurrent 纪律：渲染平面只从 hooks 格读（uSES 一致性保证）；props 格回调只在事件 handler 空间用；描述符解析 render-safe（幂等缓存、废弃渲染残留由 prune 收尸）。
-- 第三方组件值零依赖，类型一行 type-only import（declaration merging 进 `SessionStandardProps` / `SessionMaybeStandardProps`）。
+- 執行時內建第一條：`'session'` 掛鉤——`useSession` 本身走同一機制，無特判。
+- Concurrent 紀律：渲染平面只從 hooks 格讀（uSES 一致性保證）；props 格回呼只在事件 handler 空間用；描述符解析 render-safe（冪等快取、廢棄渲染殘留由 prune 收屍）。
+- 第三方元件值零依賴，型別一行 type-only import（declaration merging 進 `SessionStandardProps` / `SessionMaybeStandardProps`）。
 
-### 输入投递
+### 輸入投遞
 
-- 队列语义：running 不锁输入；普通消息经 `session.prompt {mode:'queue'}` 排队，命令永不排队。
+- 佇列語義：running 不鎖輸入；普通訊息經 `session.prompt {mode:'queue'}` 排隊，命令永不排隊。
 
 ### host wire 小件
 
-- summary `blank` 列与 `host/session-added` 帧 `blank` 字段（见上文 blank 位）。
-- SSE（Server-Sent Events）帧 `host/commands-changed`（纯失效信号）；client 路由为类型事件 `commands/changed` 与 `connection/reset`（连接代建立后广播，wire 派生缓存一律视旧态为陈旧）。 该 commands 帧及其类型化 client 事件后来被「`commands/change` 经 `ctx.remote.$on` 原样转发」取代（[转发的 Remote 事件](2026-08-10-remote-event-delivery.zh.md)）；`connection/reset` 不变；本条陈述的「失效而非差分」契约依然成立。
-- `command.list/execute`、`skills/list` 一律 `sessionId` 单址（会话恒有 Agent，`agentFor` 的恢复语义现成）；命令面叙述见[命令业务面 note](../../archived/architecture/2026-07-25-web-command-surfaces-and-assembly.md)。
-- `session.create` 请求形状：workspaceId/cwd 二选一 + 可选调用方预分配 sessionId（同 id 同 cwd 重试幂等，异 cwd 报 `session-conflict`）。
+- summary `blank` 列與 `host/session-added` 幀 `blank` 欄位（見上文 blank 位）。
+- SSE（Server-Sent Events）幀 `host/commands-changed`（純失效訊號）；client 路由為型別事件 `commands/changed` 與 `connection/reset`（連線代建立後廣播，wire 派生快取一律視舊態為陳舊）。 該 commands 幀及其型別化 client 事件後來被「`commands/change` 經 `ctx.remote.$on` 原樣轉發」取代（[轉發的 Remote 事件](2026-08-10-remote-event-delivery.zh.md)）；`connection/reset` 不變；本條陳述的「失效而非差分」契約依然成立。
+- `command.list/execute`、`skills/list` 一律 `sessionId` 單址（工作階段恆有 Agent，`agentFor` 的恢復語義現成）；命令面敘述見[命令業務面 note](../../archived/architecture/2026-07-25-web-command-surfaces-and-assembly.md)。
+- `session.create` 請求形狀：workspaceId/cwd 二選一 + 可選呼叫方預分配 sessionId（同 id 同 cwd 重試冪等，異 cwd 報 `session-conflict`）。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-| 弃案 | 一行理由 |
+| 棄案 | 一行理由 |
 |---|---|
-| client-local Intent + materialize（published CAS / pendingPrompt attach 事务 / before-create 链） | client 被迫模拟 host 缺失的前半段生命，养出 published CAS、attach 事务、部分发布一坨状态机 |
-| host 预留 ID（draft Map） | host 只认了个号，状态机原封留在 client |
-| host draft Session（有 Session 无 Agent） | 每个查 Agent 的 host 面都要为 draft 分叉；core 要新增 `attachAgent` API + header cwd 后写 |
-| 无 cwd 先绑 Agent（ungrouped） | header.cwd readonly「created in」不变性被推翻 + launch-dir 副作用产品坑 |
-| React Context 层层传会话语境 | 插件在 host/client 两侧应是一个心智模型；scope 机制与 host dsh-scope 同构 |
-| `scopeTarget` carrier + 融合派发器（镜像 host `agentEvents`） | host 包装层护的是「业务 Agent subject 与 scope key 不漂移」，client 事件无 subject 可护；filter 住 actx + cordis 原语覆盖全部需求 |
-| Session 不持 ctx（对象层 cordis-free） | 只为筛选单测不引 cordis 而生的红线，代价是 contribute 两跳回调 + 可变公有字段；host Agent 本就持 loopCtx |
-| Session 实例常驻（resident-instance） | host 会话日志即持久真相；常驻仅为身份便利，与 scope 生命周期错位是复杂度之源 |
-| 组件收 wiring 回调包（inject→props 两层下传） | 标准件通道让组件自取；公共 API 收敛为 hooks + 稳定 props |
-| Hero 无会话视图与会话 Conversation 整支互换 | 即使外层 layout 不变，Hero、picker 与 composer 子树仍会一起重建，界面产生整块抖动 |
-| 让 InputBar 自身变成 `session-maybe` | 输入状态机、键盘命令面与动作都被迫接受缺省值；只替换 disabled 输入体能把可选性留在外壳边界 |
-| 专用「转正」帧 | 既有受理和运行信号已经提供展示规则所需的观察；该规则不需要新增帧 |
+| client-local Intent + materialize（published CAS / pendingPrompt attach 事務 / before-create 鏈） | client 被迫模擬 host 缺失的前半段生命，養出 published CAS、attach 事務、部分發布一坨狀態機 |
+| host 預留 ID（draft Map） | host 只認了個號，狀態機原封留在 client |
+| host draft Session（有 Session 無 Agent） | 每個查 Agent 的 host 面都要為 draft 分叉；core 要新增 `attachAgent` API + header cwd 後寫 |
+| 無 cwd 先綁 Agent（ungrouped） | header.cwd readonly「created in」不變性被推翻 + launch-dir 副作用產品坑 |
+| React Context 層層傳工作階段語境 | 外掛在 host/client 兩側應是一個心智模型；scope 機制與 host dsh-scope 同構 |
+| `scopeTarget` carrier + 融合派發器（映像 host `agentEvents`） | host 包裝層護的是「業務 Agent subject 與 scope key 不漂移」，client 事件無 subject 可護；filter 住 actx + cordis 原語覆蓋全部需求 |
+| Session 不持 ctx（物件層 cordis-free） | 只為篩選單測不引 cordis 而生的紅線，代價是 contribute 兩跳回呼 + 可變公有欄位；host Agent 本就持 loopCtx |
+| Session 實例常駐（resident-instance） | host 工作階段日誌即持久真相；常駐僅為身份便利，與 scope 生命週期錯位是複雜度之源 |
+| 元件收 wiring 回呼包（inject→props 兩層下傳） | 標準件通道讓元件自取；公共 API 收斂為 hooks + 穩定 props |
+| Hero 無工作階段檢視與工作階段 Conversation 整支互換 | 即使外層 layout 不變，Hero、picker 與 composer 子樹仍會一起重建，介面產生整塊抖動 |
+| 讓 InputBar 自身變成 `session-maybe` | 輸入狀態機、鍵盤命令面與動作都被迫接受預設值；只替換 disabled 輸入體能把可選性留在外殼邊界 |
+| 專用「轉正」幀 | 既有受理和執行訊號已經提供展示規則所需的觀察；該規則不需要新增幀 |
 
-## 后果
+## 後果
 
-- 插件获得与 host 同构的会话上下文：逐会话状态挂 actx、随 scope fiber 一次拆装，泄漏结构性不可能；双会话隔离由 scope filter 结构性保证。
-- client 对象层收敛为 wire 镜像：会话身份、生命周期、能力判别全部以 host 实体为准——输入体系（下一层）面对的永远是「有真 Agent 的会话」，slash/skill 等提供方一律以 sessionId 直接寻址。
-- 空会话治理零专用机制：状态靠一个派生位，可见性靠统一列表投影（仅 current blank 以 `New Session` 展示），复用时获取持久化写锁，常规上限靠同 Workspace 复用。转正所依赖的受理/运行展示记忆仅保留在客户端。
+- 外掛獲得與 host 同構的工作階段上下文：逐工作階段狀態掛 actx、隨 scope fiber 一次拆裝，洩漏結構性不可能；雙工作階段隔離由 scope filter 結構性保證。
+- client 物件層收斂為 wire 映像：工作階段身份、生命週期、能力判別全部以 host 實體為準——輸入體系（下一層）面對的永遠是「有真 Agent 的工作階段」，slash/skill 等提供者一律以 sessionId 直接定址。
+- 空工作階段治理零專用機制：狀態靠一個派生位，可見性靠統一列表投影（僅 current blank 以 `New Session` 展示），複用時取得持久化寫鎖，常規上限靠同 Workspace 複用。轉正所依賴的受理/執行展示記憶僅保留在用戶端。
 
-- 代价：id→ctx 换乘纪律、provide 的 Concurrent 纪律都是约定而非类型强制，靠 review 与测试钉住。单一状态轴仍会在 Session 存在前隐藏 machine face；这段时间内，[常驻会话壳](../../../../packages/client/ui-conversation/README.zh.md)会把激活操作转到 Workspace picker。
-- 已知欠账：approval/question 跨 prune 恢复（TODO）；模型选择以 live-mutation 形状回归（host `selectModel` 三件套现成，其 client 消费方尚未构建）。
+- 代價：id→ctx 換乘紀律、provide 的 Concurrent 紀律都是約定而非型別強制，靠 review 與測試釘住。單一狀態軸仍會在 Session 存在前隱藏 machine face；這段時間內，[常駐工作階段殼](../../../../packages/client/ui-conversation/README.zh.md)會把啟用操作轉到 Workspace picker。
+- 已知欠帳：approval/question 跨 prune 恢復（TODO）；模型選擇以 live-mutation 形狀迴歸（host `selectModel` 三件套現成，其 client 消費方尚未建置）。

@@ -1,16 +1,16 @@
-# 存储
+# 儲存
 
 [English](storage.md) | 中文
 
-存储子系统持久保存一切不属于会话事件日志的数据（会话日志有自己的 seam——见 [persistence.md](persistence.zh.md)）。它是一项可选能力，不属于 agent loop（智能体循环）主干，并按[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md) 拆分：枢纽（hub）与 Service Definition（[dsh-storage](../../packages/storage/storage)，`ctx.storage`）、Service Provider（注册为 `json` 的 [dsh-storage-json](../../packages/storage/storage-json) 与注册为 `sqlite` 的 [dsh-storage-sqlite](../../packages/storage/storage-sqlite)），以及 Consumer 数据形式（[dsh-storage-domain](../../packages/storage/storage-domain)，`ctx.storageDomain`，也可经 `ctx.storage.domain` 访问）——它是后端约定的唯一 Consumer，也是其他一切所使用的类型化 API。枢纽自身不做任何 IO：后端拥有介质，数据形式拥有语义，产品包绝不直接触碰后端。设计记录：[领域 KV 存储 Agent Note](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)。
+儲存子系統持久儲存一切不屬於工作階段事件日誌的資料（工作階段日誌有自己的 seam——見 [persistence.md](persistence.zh.md)）。它是一項可選能力，不屬於 agent loop（智慧代理迴圈）主幹，並按[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md) 拆分：樞紐（hub）與 Service Definition（[dsh-storage](../../packages/storage/storage)，`ctx.storage`）、Service Provider（註冊為 `json` 的 [dsh-storage-json](../../packages/storage/storage-json) 與註冊為 `sqlite` 的 [dsh-storage-sqlite](../../packages/storage/storage-sqlite)），以及 Consumer 資料形式（[dsh-storage-domain](../../packages/storage/storage-domain)，`ctx.storageDomain`，也可經 `ctx.storage.domain` 存取）——它是後端約定的唯一 Consumer，也是其他一切所使用的型別化 API。樞紐自身不做任何 IO：後端擁有介質，資料形式擁有語義，產品包絕不直接觸碰後端。設計記錄：[領域 KV 儲存 Agent Note](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)。
 
-源码：[`packages/storage/storage/src/backend.ts`](../../packages/storage/storage/src/backend.ts) · [`packages/storage/storage-domain/src/spec.ts`](../../packages/storage/storage-domain/src/spec.ts) · [`packages/storage/storage-domain/src/events.ts`](../../packages/storage/storage-domain/src/events.ts)
+原始碼：[`packages/storage/storage/src/backend.ts`](../../packages/storage/storage/src/backend.ts) · [`packages/storage/storage-domain/src/spec.ts`](../../packages/storage/storage-domain/src/spec.ts) · [`packages/storage/storage-domain/src/events.ts`](../../packages/storage/storage-domain/src/events.ts)
 
-## 枢纽：`ctx.storage`
+## 樞紐：`ctx.storage`
 
-`Storage`（[签名](#ctxstorage--storage)）是汇合点，不是存储本体。`ctx.storage.backend` 是一张名称 → 后端的表：多个后端并排保持挂载，哪个后端服务哪个消费方由该消费方自己的配置决定（即领域层的路由表），绝不是枢纽全局的选择。`register(name, backend)` 返回 disposer；重复名称与查找未知名称都抛出 `StorageError`。dispose（资源释放）只注销名称——由拥有它的插件在注销之后自行关闭后端。每个后端插件还会发布一个仅用于生命周期的服务键（`storageBackendServiceKey(name)`），数据形式提供方注入它，使自身激活不会与后端注册发生竞态。
+`Storage`（[簽名](#ctxstorage--storage)）是匯合點，不是儲存本體。`ctx.storage.backend` 是一張名稱 → 後端的表：多個後端並排保持掛載，哪個後端服務哪個消費方由該消費方自己的設定決定（即領域層的路由表），絕不是樞紐全域的選擇。`register(name, backend)` 返回 disposer；重複名稱與查詢未知名稱都丟擲 `StorageError`。dispose（資源釋放）只登出名稱——由擁有它的外掛在登出之後自行關閉後端。每個後端外掛還會釋出一個僅用於生命週期的服務鍵（`storageBackendServiceKey(name)`），資料形式提供者注入它，使自身啟用不會與後端註冊發生競態。
 
-数据形式以一张可合并扩展的键 map 挂载到枢纽上：
+資料形式以一張可合併擴充功能的鍵 map 掛載到樞紐上：
 
 ```ts type-equiv
 /**
@@ -21,9 +21,9 @@
 interface StorageForms {}
 ```
 
-`mount(form, facility)` 是一个 effect，其 disposer 负责卸载；对同一键的第二次挂载抛出 `duplicate-mount`。`form(form)` 解析已挂载的 facility，在拥有插件加载之前抛出 `form-not-mounted`——组合方应据此安排插件顺序，而不是静默推迟。领域层合并 `domain: DomainFacility`，因此 `ctx.storage.domain` 与 `ctx.storageDomain` 是同一个对象。
+`mount(form, facility)` 是一個 effect，其 disposer 負責解除安裝；對同一鍵的第二次掛載丟擲 `duplicate-mount`。`form(form)` 解析已掛載的 facility，在擁有外掛載入之前丟擲 `form-not-mounted`——組合方應據此安排外掛順序，而不是靜默推遲。領域層合併 `domain: DomainFacility`，因此 `ctx.storage.domain` 與 `ctx.storageDomain` 是同一個物件。
 
-## 后端约定
+## 後端約定
 
 ```ts type-equiv
 /**
@@ -44,11 +44,11 @@ interface StorageBackend {
 }
 ```
 
-一个后端拥有一个介质（一棵文件树的根目录、一个数据库文件），并提供可选的操作组；`kv` 是唯一已交付的操作组。`KvFacet.open(descriptor)` 打开一个具名 unit——`KvUnitDescriptor` 携带名称、当前格式版本、可选的兼容记录版本、表名清单，以及是否存在全局单例 slot——并返回提供 `loadAll`、`putRecord`、`deleteRecord`、`setGlobal` 和 `close` 的 `KvUnit`。unit 名与表名必须匹配 `UNIT_NAME_RE`（既可安全用作文件名，也可安全用作 SQL 标识符片段）；记录键是任意字符串，绝不进入文件路径。unit 不对并发写入做串行化——顺序由调用方负责——但每次单独调用在介质上都是原子的，且 resolve 后即已持久。`single` 介质上记录的版本不同时拒绝 `version-mismatch`；`per-record` 文档的版本在接受集合之外时读作不存在。无法按该 unit 解析的介质拒绝 `malformed-medium`。[`backend.ts`](../../packages/storage/storage/src/backend.ts) 是逐条款的规范性约定，[`tests/contract.ts`](../../packages/storage/storage/tests/contract.ts) 中的共享一致性套件会针对每个后端检查每项条款。[json 后端](../../packages/storage/storage-json/README.zh.md)以原子方式为每个 unit 整文件重新发布一份人类可读文件；[sqlite 后端](../../packages/storage/storage-sqlite/README.zh.md)在单个数据库中每行存储一份文档，用于频繁更新的数据。
+一個後端擁有一個介質（一棵檔案樹的根目錄、一個資料庫檔案），並提供可選的操作組；`kv` 是唯一已交付的操作組。`KvFacet.open(descriptor)` 開啟一個具名 unit——`KvUnitDescriptor` 攜帶名稱、目前格式版本、可選的相容記錄版本、表名清單，以及是否存在全域單例 slot——並返回提供 `loadAll`、`putRecord`、`deleteRecord`、`setGlobal` 和 `close` 的 `KvUnit`。unit 名與表名必須匹配 `UNIT_NAME_RE`（既可安全用作檔名，也可安全用作 SQL 識別符號片段）；記錄鍵是任意字串，絕不進入檔案路徑。unit 不對並行寫入做序列化——順序由呼叫方負責——但每次單獨呼叫在介質上都是原子的，且 resolve 後即已持久。`single` 介質上記錄的版本不同時拒絕 `version-mismatch`；`per-record` 文件的版本在接受集合之外時讀作不存在。無法按該 unit 解析的介質拒絕 `malformed-medium`。[`backend.ts`](../../packages/storage/storage/src/backend.ts) 是逐條款的規範性約定，[`tests/contract.ts`](../../packages/storage/storage/tests/contract.ts) 中的共享一致性套件會針對每個後端檢查每項條款。[json 後端](../../packages/storage/storage-json/README.zh.md)以原子方式為每個 unit 整檔案重新發布一份人類可讀檔案；[sqlite 後端](../../packages/storage/storage-sqlite/README.zh.md)在單個資料庫中每行儲存一份文件，用於頻繁更新的資料。
 
-## 声明领域
+## 宣告領域
 
-领域由其拥有包声明一次，形式是一个 spec 对象——它是该领域的身份、布局和记录 schema 的单一来源（schema 用 zod 编写，因此 `z.infer` 让消费方类型无需重复声明）：
+領域由其擁有包宣告一次，形式是一個 spec 物件——它是該領域的身份、佈局和記錄 schema 的單一來源（schema 用 zod 編寫，因此 `z.infer` 讓消費方型別無需重複宣告）：
 
 ```ts type-equiv
 /** Static declaration of one domain: identity, version, and record layout. */
@@ -92,9 +92,9 @@ interface DomainSpec {
 }
 ```
 
-`defineDomain(spec)` 固定 spec 的字面量类型，并在拥有方的模块加载时、任何介质被触碰之前就明确报错：领域名或表名不匹配 `UNIT_NAME_RE`、版本不是非负整数、global schema 接受 `null`，这些都会抛出（`null` 是介质的「从未写入」哨兵值，可空的 global 一旦存储就无法往返还原）。`domainTable<K, V>(schema)` 声明一张表，其键类型是仅存在于编译期的 phantom 类型（通常是[品牌化 id](core.zh.md#branded-ids)）；`descriptorOf(spec)` 投影出面向后端的 unit 描述符。
+`defineDomain(spec)` 固定 spec 的字面量型別，並在擁有方的模組載入時、任何介質被觸碰之前就明確報錯：領域名或表名不匹配 `UNIT_NAME_RE`、版本不是非負整數、global schema 接受 `null`，這些都會丟擲（`null` 是介質的「從未寫入」哨兵值，可空的 global 一旦儲存就無法往返還原）。`domainTable<K, V>(schema)` 宣告一張表，其鍵型別是僅存在於編譯期的 phantom 型別（通常是[品牌化 id](core.zh.md#branded-ids)）；`descriptorOf(spec)` 投影出面向後端的 unit 描述符。
 
-## 打开的领域
+## 開啟的領域
 
 ```ts type-equiv
 /** One open domain, typed by its spec. */
@@ -123,15 +123,15 @@ interface Domain<S extends DomainSpec> {
 }
 ```
 
-读取是同步的，来自权威的内存态：`KvTable` 暴露 `get`/`entries`/`keys`/`size`（快照迭代器，在排队写入落地期间保持稳定），global 句柄的 `get()` 在第一次 `set` 将 slot 物化到介质之前一直返回 spec 的 `initial`。每次写入——`put`、`delete`、`update`、`global.set`——都在同一条逐领域写链上排队，先在后端完成持久化，再更新内存，最后发出 `domain/changed`；后端写入被拒时内存原样不动，因此读取绝不会偏离介质。`update(key, fn)` 在其写链 slot 上是一次原子的读-改-写（键缺失时拒绝 `missing-key`）；`delete` 一个不存在的键 resolve 为 `false`，不产生写入也不产生事件。返回的记录就是存储的对象本身，不是副本——请经 `put`/`update` 整体替换，绝不要就地修改。
+讀取是同步的，來自權威的記憶體態：`KvTable` 暴露 `get`/`entries`/`keys`/`size`（快照迭代器，在排隊寫入落實期間保持穩定），global 控制代碼的 `get()` 在第一次 `set` 將 slot 物化到介質之前一直返回 spec 的 `initial`。每次寫入——`put`、`delete`、`update`、`global.set`——都在同一條逐領域寫鏈上排隊，先在後端完成持久化，再更新記憶體，最後發出 `domain/changed`；後端寫入被拒時記憶體原樣不動，因此讀取絕不會偏離介質。`update(key, fn)` 在其寫鏈 slot 上是一次原子的讀-改-寫（鍵缺失時拒絕 `missing-key`）；`delete` 一個不存在的鍵 resolve 為 `false`，不產生寫入也不產生事件。返回的記錄就是儲存的物件本身，不是副本——請經 `put`/`update` 整體替換，絕不要就地修改。
 
-## 领域 facility：`ctx.storageDomain`
+## 領域 facility：`ctx.storageDomain`
 
-`DomainFacility`（[签名](#ctxstoragedomain--domainfacility)）在经过路由的后端之上打开已声明的领域。路由是领域插件的配置，绝不属于枢纽：`backend` 指定必填的默认路由，`routes` 按领域名逐个覆盖。`open(spec)` 按严格顺序执行，每一步失败都使整个调用失败：拒绝已打开或仍在关闭中的名称（`already-open`），解析路由（`backend-not-found`），要求后端具备 `kv` facet（`facet-unsupported`），打开 unit（后端的 `version-mismatch`/`malformed-medium` 原样透传），并按 spec 的 zod schema 校验每条已存储记录和 global（`invalid-record`，附带出错的表与键）。调用方拥有返回的句柄，并用 `Domain.close()` 释放它；插件卸载时仍处于打开状态的领域由 facility 负责关闭，已关闭领域的名称只有在拆除完全结束后才释放出来供重新打开。`get(name)` 是无类型的诊断查找，命中的是每个类型化句柄背后包内私有的 `DomainImpl` 运行时；`closeAll()` 是卸载路径。
+`DomainFacility`（[簽名](#ctxstoragedomain--domainfacility)）在經過路由的後端之上開啟已宣告的領域。路由是領域外掛的設定，絕不屬於樞紐：`backend` 指定必填的預設路由，`routes` 按領域名逐個覆蓋。`open(spec)` 按嚴格順序執行，每一步失敗都使整個呼叫失敗：拒絕已開啟或仍在關閉中的名稱（`already-open`），解析路由（`backend-not-found`），要求後端具備 `kv` facet（`facet-unsupported`），開啟 unit（後端的 `version-mismatch`/`malformed-medium` 原樣直接傳遞），並按 spec 的 zod schema 驗證每條已儲存記錄和 global（`invalid-record`，附帶出錯的表與鍵）。呼叫方擁有返回的控制代碼，並用 `Domain.close()` 釋放它；外掛解除安裝時仍處於開啟狀態的領域由 facility 負責關閉，已關閉領域的名稱只有在拆除完全結束後才釋放出來供重新開啟。`get(name)` 是無型別的診斷查詢，命中的是每個型別化控制代碼背後包內私有的 `DomainImpl` 執行時；`closeAll()` 是解除安裝路徑。
 
-## 变更事件：`domain/changed`
+## 變更事件：`domain/changed`
 
-每次持久写入都发出一个事件，严格发生在后端确认持久性之后，顺序遵循该领域的写链（[事件条目](#domainchanged--emit)）：
+每次持久寫入都發出一個事件，嚴格發生在後端確認永續性之後，順序遵循該領域的寫鏈（[事件條目](#domainchanged--emit)）：
 
 ```ts type-equiv
 /** Shared location fields of one durable domain change. */
@@ -150,7 +150,7 @@ interface DomainChangedBase {
 type DomainChanged = DomainChangedPut | DomainChangedDeleted
 ```
 
-`put`（插入、覆写和 global 写入）在 `value` 中携带新快照——绝不携带旧值；需要做差异比较的消费方自行保留上一份快照。`deleted` 是不携带值的墓碑。该事件是通知，不是事务参与者：发出时提交点已经过去，因此同步抛出的监听器会被兜住并记录一条警告，而不会让已经持久的写入被拒绝；发出的值等于发出时刻的内存态。该事件仅限进程内；跨进程的变更推送是一项已记录的限制（[包 README](../../packages/storage/storage-domain/README.zh.md)）。
+`put`（插入、覆寫和 global 寫入）在 `value` 中攜帶新快照——絕不攜帶舊值；需要做差異比較的消費方自行保留上一份快照。`deleted` 是不攜帶值的墓碑。該事件是通知，不是事務參與者：發出時提交點已經過去，因此同步丟擲的監聽器會被兜住並記錄一條警告，而不會讓已經持久的寫入被拒絕；發出的值等於發出時刻的記憶體態。該事件僅限程序內；跨程序的變更推送是一項已記錄的限制（[包 README](../../packages/storage/storage-domain/README.zh.md)）。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

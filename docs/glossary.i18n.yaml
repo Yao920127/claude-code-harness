@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write docs/glossary.md
 /glossary:
   en: 9b364904616b2266
-  zh: 934b9d189a4f34a2
+  zh: 747357e48d5338a1
 /glossary/capability-seam:
   en: 18eea8301b73be7e
-  zh: 50f1adf512543a7e
+  zh: 89795926abd8b42b
 /glossary/agent-scope:
   en: 893655aaaa6a9db4
-  zh: 48b699fd15fa7ba6
+  zh: 6c8ad9ad48d72806
 /glossary/goal:
   en: c64d9e91d54c6315
-  zh: a2918c9d276af8a1
+  zh: 38588c4f3220777c
 /glossary/human-command:
   en: 38a55fc61b359ace
-  zh: 567cae201b3a1bdf
+  zh: ed66338d53bdb1f7
 /glossary/loop-hierarchy:
   en: 343a7cb31b8191c2
-  zh: 6831415a7fe1726a
+  zh: 59f2807a5ec27248
 /glossary/ralph:
   en: 5059f8a377980b9d
-  zh: 39bf11c10e5c0a84
+  zh: 49bf8cad075910d8

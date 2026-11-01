@@ -14,7 +14,7 @@
   },
   "darwin:zh-CN": {
     "menu": [
-      { "label": "关于 Claude Code Harness", "role": "about" },
+      { "label": "關於 Claude Code Harness", "role": "about" },
       { "type": "separator" }
     ],
     "options": {
@@ -27,7 +27,7 @@
   },
   "win32:zh-CN": {
     "menu": [
-      { "label": "关于 Claude Code Harness" },
+      { "label": "關於 Claude Code Harness" },
       { "type": "separator" }
     ],
     "options": {

@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write docs/user/develop/framework/index.md
 /plugins-and-lifecycle:
   en: bc1c66795191727b
-  zh: e0666a674ca9921c
+  zh: f42a950c69b665df
 /plugins-and-lifecycle/fiber-state-machine:
   en: 66b51bb63094de1a
-  zh: 1d9f70611c9930ea
+  zh: 4e9b32ced9f790c2
 /plugins-and-lifecycle/dependency-driven-loading:
   en: 726a61e5c20db20f
-  zh: bd935ca733c30a15
+  zh: 5a6a482dba2cb0d2
 /plugins-and-lifecycle/automatic-cleanup:
   en: e9bcc83f7a752d13
-  zh: c8df4bd5c23c8875
+  zh: 3eb32ba2f9c1c542
 /plugins-and-lifecycle/nested-contexts:
   en: 2862ee99034d4423
-  zh: 7180298e3eff6524
+  zh: 6bca9c7a093cc048
 /plugins-and-lifecycle/dispose-semantics:
   en: 1d23337dbcc4ae61
-  zh: ad003f8b5e325801
+  zh: dd7ac2a3de308680
 /plugins-and-lifecycle/hot-replacement-hmr:
   en: ca8495ec7369856c
-  zh: 54db7540aceb4b09
+  zh: 7ce0bc6a9d4f0c58
 /plugins-and-lifecycle/example-lifecycle:
   en: e17160970571b690
-  zh: e49149cd82e77801
+  zh: 8dc5da706e4d46ee
 /plugins-and-lifecycle/next-steps:
   en: c245d538e75eef67
-  zh: 2e0ad34a2022aee3
+  zh: 2e440753d7600fc8

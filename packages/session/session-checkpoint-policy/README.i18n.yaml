@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/session/session-checkpoint-policy/README.md
 /:
   en: c1a916a186cc8718
-  zh: df5c4fd5aa22f005
+  zh: 2af1258ddd305042
 /deepseek-ai-dsh-session-checkpoint-policy:
   en: a81e37f590635a9f
   zh: ad2699e68c7998c0
 /deepseek-ai-dsh-session-checkpoint-policy/summary:
   en: 4c422b2080e00d23
-  zh: a3a19de29dee904f
+  zh: d704d4bd8eee6927
 /deepseek-ai-dsh-session-checkpoint-policy/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-session-checkpoint-policy/use-this-package:
   en: 623577d7e2cb1b9f
-  zh: 16a95159209f76de
+  zh: 967270aaafe9d67c
 /deepseek-ai-dsh-session-checkpoint-policy/use-this-package/when-to-choose-it:
   en: 228690f1706b19c6
-  zh: 9a96ab84fe16d507
+  zh: 64f72fbdfdddb69e
 /deepseek-ai-dsh-session-checkpoint-policy/use-this-package/minimal-configuration:
   en: 876985641b6fe16c
-  zh: fe4f99cbe91a7445
+  zh: c544aafcddbac388
 /deepseek-ai-dsh-session-checkpoint-policy/use-this-package/what-becomes-durable:
   en: fce6fd58119eefdd
-  zh: 835a96d079993e01
+  zh: 45396f6368dc55d4
 /deepseek-ai-dsh-session-checkpoint-policy/use-this-package/observable-behavior-and-failures:
   en: b30a5a36f9a7960c
-  zh: 283e2a5579ae280b
+  zh: 565e983503ed166f
 /deepseek-ai-dsh-session-checkpoint-policy/understand-the-implementation:
   en: 460ae50c9878a197
-  zh: 526a8a465de55fcd
+  zh: 08bbad12ec8c1cd3
 /deepseek-ai-dsh-session-checkpoint-policy/understand-the-implementation/design-concept:
   en: cd40c7a1f0db9efb
-  zh: 17115c9612497465
+  zh: e67d94f342390e53
 /deepseek-ai-dsh-session-checkpoint-policy/understand-the-implementation/source-map:
   en: f9d06ce5e6ca68c1
-  zh: 08c4c7a170f33737
+  zh: 4663d0fcda636f26
 /deepseek-ai-dsh-session-checkpoint-policy/further-exploration:
   en: d9b34c4e3ef78f1d
-  zh: 73e98eecc32ee654
+  zh: 0a344a292dbaae11
 /deepseek-ai-dsh-session-checkpoint-policy/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-session-checkpoint-policy/model-experience/interrupted-calls:
   en: 5cb4bf82d559c081
-  zh: 649c4c50efbd84c7
+  zh: 5702dea670d054a1
 /deepseek-ai-dsh-session-checkpoint-policy/model-experience/interrupted-calls/what-the-model-sees:
   en: 11ab6b8e058fd0f5
-  zh: 962d12789d6ee01a
+  zh: bfb9d08c74162641
 /deepseek-ai-dsh-session-checkpoint-policy/model-experience/interrupted-calls/token-effect:
   en: f40f910529dce107
-  zh: 39564b13a8263e9b
+  zh: 7326428d500fef33
 /deepseek-ai-dsh-session-checkpoint-policy/model-experience/interrupted-calls/kv-cache-effect:
   en: b99544650c31f190
-  zh: a08afbc2b5d5241c
+  zh: 7292fefdea83d14c
 /deepseek-ai-dsh-session-checkpoint-policy/known-limitations-and-deferred-work:
   en: 5e4efe1b7d8a40e7
-  zh: e593b2cd8810c9a7
+  zh: f69f4ab4940c8608
 /deepseek-ai-dsh-session-checkpoint-policy/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

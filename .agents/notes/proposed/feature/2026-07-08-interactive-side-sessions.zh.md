@@ -1,41 +1,41 @@
-# Agent Note: 交互式侧会话与合并回写
+# Agent Note: 互動式側工作階段與合併回寫
 
 Status: proposed
 
 [English](2026-07-08-interactive-side-sessions.md) | 中文
 
-## 问题
+## 問題
 
-用户可能希望在不改变当前会话主上下文的前提下，探索一个来自活跃会话的问题。现有原语无法提供这种产品形态：[会话存储 fork](../../archived/feature/2026-06-30-session-store-fork-api.md) 创建的是一个未绑定的会话，而 [fork subagent](../../implemented/feature/2026-06-21-subagent-capability-seam.zh.md) 是模型驱动的任务，其 transcript（文本记录）会折叠为一条工具结果。两者都不能给用户一个独立的对话，也都不能在父会话中同时记录结论和产生该结论的侧会话。
+使用者可能希望在不改變目前工作階段主上下文的前提下，探索一個來自活躍工作階段的問題。現有原語無法提供這種產品形態：[工作階段儲存 fork](../../archived/feature/2026-06-30-session-store-fork-api.md) 建立的是一個未繫結的工作階段，而 [fork subagent](../../implemented/feature/2026-06-21-subagent-capability-seam.zh.md) 是模型驅動的任務，其 transcript（文字記錄）會摺疊為一條工具結果。兩者都不能給使用者一個獨立的對話，也都不能在父工作階段中同時記錄結論和產生該結論的側工作階段。
 
 ## 提案
 
-**侧会话（side session）**是一个普通的活跃会话，从源会话的最后一个已完成轮次 fork 而来，绑定到自己的 agent（智能体），定位为只读顾问，并能**合并回写**一条精简笔记。
+**側工作階段（side session）**是一個普通的活躍工作階段，從源工作階段的最後一個已完成輪次 fork 而來，繫結到自己的 agent（智慧代理），定位為只讀顧問，並能**合併回寫**一條精簡筆記。
 
-- **Fork 并绑定：**用 parent 的平衡 completed-turn prefix、`parentSession`、`meta.isSeeded: true` 与精确 sibling `inheritedEventCount` 创建 child。这组合 `ctx.agents.create({ seed, inheritedEventCount, meta })`；不新增 core service 或 Session-store method。
-- **顾问定位：**创建后注入一条插件来源的 `context/message`，告知子会话只做解释，不执行变更或继续任务。保持系统提示词逐字节一致，可在继承的历史上保留提供方的前缀缓存。
-- **合并回写：**向子会话请求一条有长度上限的 handback，然后向父会话注入一条插件来源的 `context/message`。父会话的下一次请求在日志所记录的位置看到该消息，保持回放与[请求可重建性](../../implemented/architecture/2026-07-05-reconstructable-requests.zh.md)，无需新增会话事件。
-- **呈现：**调用方式、会话切换与 handback 渲染属于首个客户端拥有的界面。本 Agent Note 仅规定与界面无关的机制。
+- **Fork 並繫結：**用 parent 的平衡 completed-turn prefix、`parentSession`、`meta.isSeeded: true` 與精確 sibling `inheritedEventCount` 建立 child。這組合 `ctx.agents.create({ seed, inheritedEventCount, meta })`；不新增 core service 或 Session-store method。
+- **顧問定位：**建立後注入一條外掛來源的 `context/message`，告知子工作階段只做解釋，不執行變更或繼續任務。保持系統提示詞逐位元組一致，可在繼承的歷史上保留提供者的字首快取。
+- **合併回寫：**向子工作階段請求一條有長度上限的 handback，然後向父工作階段注入一條外掛來源的 `context/message`。父工作階段的下一次請求在日誌所記錄的位置看到該訊息，保持回放與[請求可重建性](../../implemented/architecture/2026-07-05-reconstructable-requests.zh.md)，無需新增工作階段事件。
+- **呈現：**呼叫方式、工作階段切換與 handback 渲染屬於首個用戶端擁有的介面。本 Agent Note 僅規定與介面無關的機制。
 
-回退产品化、会话树视图、面向模型的侧会话工具，以及 `forkName`/`mergedInto` 元数据均不在本 Agent Note 范围内。一次真实适配器 spike 已验证了源日志隔离、继承上下文、多轮子会话交互，以及合并回写在父会话下一轮次中的可见性。
+退回產品化、工作階段樹檢視、面向模型的側工作階段工具，以及 `forkName`/`mergedInto` 中繼資料均不在本 Agent Note 範圍內。一次真實介面卡 spike 已驗證了源日誌隔離、繼承上下文、多輪子工作階段互動，以及合併回寫在父工作階段下一輪次中的可見性。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **使用 subagent seam：**否决。侧会话是用户驱动的、客户端可见的，且可能存活超过父会话的一个轮次；subagent 是模型驱动的运行，返回一条工具结果。
-- **修改子会话的系统提示词：**默认否决，因为任何字节变化都会从第零个 token 起使前缀缓存失效。部署方仍可选择这种更强的隔离方式。
-- **新增 `sidechat/*` 事件：**延后。已标注来源的 `context/message` 已经持久记录内容、生产方和回放输入；只有当某个界面需要差异化渲染时，专用事件才有正当理由。
-- **现在就绑定一个协议接口：**否决。当前 UI 由客户端拥有。实时呈现最终必须从持久消息派生，以使回放渲染出相同的记录。
+- **使用 subagent seam：**否決。側工作階段是使用者驅動的、用戶端可見的，且可能存活超過父工作階段的一個輪次；subagent 是模型驅動的執行，返回一條工具結果。
+- **修改子工作階段的系統提示詞：**預設否決，因為任何位元組變化都會從第零個 token 起使字首快取失效。部署方仍可選擇這種更強的隔離方式。
+- **新增 `sidechat/*` 事件：**延後。已標註來源的 `context/message` 已經持久記錄內容、生產方和回放輸入；只有當某個介面需要差異化渲染時，專用事件才有正當理由。
+- **現在就繫結一個協定介面：**否決。目前 UI 由用戶端擁有。即時呈現最終必須從持久訊息派生，以使回放渲染出相同的記錄。
 
-## 验收标准
+## 驗收標準
 
-- Fork 不改变 source Session，创建的 child 带有平衡 completed-turn prefix、`parentSession`、`isSeeded: true`、精确 `inheritedEventCount` 与逐字节相同 system prompt。
-- 顾问定位在子会话追加历史的头部恰好添加一条插件来源的 `context/message`，而非修改其系统提示词。
-- 合并回写恰好添加一条有长度上限的 `context/message`，来源为 `plugin: sidechat`；父会话的下一次请求与回放在相同位置看到它。
-- 父会话与子会话并发运行，日志和流之间无串扰。
-- 单元测试覆盖 fork/attach 与合并回写；快照覆盖随首个绑定界面一起落地。
+- Fork 不改變 source Session，建立的 child 帶有平衡 completed-turn prefix、`parentSession`、`isSeeded: true`、精確 `inheritedEventCount` 與逐位元組相同 system prompt。
+- 顧問定位在子工作階段追加歷史的頭部恰好新增一條外掛來源的 `context/message`，而非修改其系統提示詞。
+- 合併回寫恰好新增一條有長度上限的 `context/message`，來源為 `plugin: sidechat`；父工作階段的下一次請求與回放在相同位置看到它。
+- 父工作階段與子工作階段並行執行，日誌和流之間無串擾。
+- 單元測試覆蓋 fork/attach 與合併回寫；快照覆蓋隨首個繫結介面一起落實。
 
-## 风险
+## 風險
 
-- 只读行为在 `tools/pre-execute` 拒绝门禁强制执行之前仅为建议性质；[拦截点](../../implemented/feature/2026-06-30-interception-extension-points.zh.md)可在不改变本机制的前提下添加该门禁。
-- 经过压缩（compaction）的源会话 fork 出的是其压缩视图，因此绑定的界面应当告知用户子会话继承的是摘要而非被替换的轮次。
-- 反复的 handback 会消耗父会话上下文。每次合并的长度上限约束了单条笔记的大小；后续的合并整理属于上下文压缩的职责。
+- 只讀行為在 `tools/pre-execute` 拒絕門禁強制執行之前僅為建議性質；[攔截點](../../implemented/feature/2026-06-30-interception-extension-points.zh.md)可在不改變本機制的前提下新增該門禁。
+- 經過壓縮（compaction）的源工作階段 fork 出的是其壓縮檢視，因此繫結的介面應當告知使用者子工作階段繼承的是摘要而非被替換的輪次。
+- 反覆的 handback 會消耗父工作階段上下文。每次合併的長度上限約束了單條筆記的大小；後續的合併整理屬於上下文壓縮的職責。

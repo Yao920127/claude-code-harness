@@ -1,43 +1,43 @@
-# Agent Note: Windows 打开经 explorer.exe 完成
+# Agent Note: Windows 開啟經 explorer.exe 完成
 
 Status: implemented
 
 [English](2026-09-22-windows-open-through-shell-resolution.md) | 中文
 
-## 问题
+## 問題
 
-Windows 桌面客户端设置页的「打开配置文件」会准备当前 profile 的 `cordis.patch.yml`，并把该路径交给原生文本编辑器打开器（issue #4428）。在报告者机器上，这个动作既没有打开窗口，也没有任何提示。打开器执行的是 `powershell.exe -NoProfile -Command "Invoke-Item -LiteralPath '<path>'"`，因此由宿主进程内的关联解析决定结果，而 `Invoke-Item` 在解析不到应用时同样以退出码 0 结束。
+Windows 桌面用戶端設定頁的「開啟設定檔」會準備目前 profile 的 `cordis.patch.yml`，並把該路徑交給原生文字編輯器開啟器（issue #4428）。在報告者機器上，這個動作既沒有開啟視窗，也沒有任何提示。開啟器執行的是 `powershell.exe -NoProfile -Command "Invoke-Item -LiteralPath '<path>'"`，因此由主機程序內的關聯解析決定結果，而 `Invoke-Item` 在解析不到應用時同樣以結束代碼 0 結束。
 
-该机器的 `.yml` 默认值只记录在 `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.yml\UserChoiceLatest`（progid 为 `VSCode.yml`），既没有 `UserChoice` 记录，也没有 `HKCU\Software\Classes\.yml` 默认值。对同一个文件双击，资源管理器会打开 VS Code。而在宿主进程中执行时，`Invoke-Item`、`cmd /c start`、`Shell.Application` 的默认动词和 `AssocQueryString` 都报告该扩展名没有应用，`cmd /c start` 则弹出 shell 自己的应用选择框而不是打开某个应用。`Invoke-Item` 仍然返回 0，于是 `SettingsController.openSettingsDocument` 回答 `{ opened: true }`，设置页不渲染任何错误。
+該機器的 `.yml` 預設值只記錄在 `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.yml\UserChoiceLatest`（progid 為 `VSCode.yml`），既沒有 `UserChoice` 記錄，也沒有 `HKCU\Software\Classes\.yml` 預設值。對同一個檔案雙擊，資源管理器會開啟 VS Code。而在主機程序中執行時，`Invoke-Item`、`cmd /c start`、`Shell.Application` 的預設動詞和 `AssocQueryString` 都報告該副檔名沒有應用，`cmd /c start` 則彈出 shell 自己的應用選擇框而不是開啟某個應用。`Invoke-Item` 仍然返回 0，於是 `SettingsController.openSettingsDocument` 回答 `{ opened: true }`，設定頁不渲染任何錯誤。
 
-## 决策
+## 決策
 
-`openWindowsPath` 将路径作为**一个** argv 元素交给 `explorer.exe`，`revealNativePath` 经共享的 `runExplorer` 帮助函数走到同一个 shell。两者都把目标编码成文件 URI 并对**逗号与等号**做百分号编码，因为资源管理器自己解析命令行并以这两个字符分段——含其中任一字符的原始路径都会打开另一个目标且不作任何提示。其余字符不做转义：资源管理器会拒绝 file URI 里百分号编码的非 ASCII 并回落到「文档」，因此这些字符以字面形式交给它。资源管理器执行的是双击所执行的默认应用解析，因此由 shell 的答案选择应用——包括只记录在较新的按用户记录里的默认值；而完全没有处理程序的机器会得到资源管理器自己的「你要如何打开这个文件?」选择框，而不是毫无反应。
+`openWindowsPath` 將路徑作為**一個** argv 元素交給 `explorer.exe`，`revealNativePath` 經共享的 `runExplorer` 幫助函式走到同一個 shell。兩者都把目標編碼成檔案 URI 並對**逗號與等號**做百分號編碼，因為資源管理器自己解析命令列並以這兩個字元分段——含其中任一字元的原始路徑都會開啟另一個目標且不作任何提示。其餘字元不做轉義：資源管理器會拒絕 file URI 裡百分號編碼的非 ASCII 並回落到「文件」，因此這些字元以字面形式交給它。資源管理器執行的是雙擊所執行的預設應用解析，因此由 shell 的答案選擇應用——包括只記錄在較新的按使用者記錄裡的預設值；而完全沒有處理程式的機器會得到資源管理器自己的「你要如何開啟這個檔案?」選擇框，而不是毫無反應。
 
-`runExplorer` 为两种操作持有唯一一条 Explorer 调用规则：退出码 1 是 Explorer 把请求转交给已在运行的桌面进程后返回的交接码，它照常兑现调用方的 Promise；其余失败和取消仍然报错。该帮助函数取代了 PowerShell 命令字符串，同时删掉了 `powershellLiteral` 及其单引号翻倍逻辑：路径以 argv 元素跨进程边界，去掉的是 shell 层转义，而不是资源管理器自身解析所需的编码；该编码由 `explorerTarget` 为两种意图统一持有。
+`runExplorer` 為兩種操作持有唯一一條 Explorer 呼叫規則：結束代碼 1 是 Explorer 把請求轉交給已在執行的桌面程序後返回的交接碼，它照常兌現呼叫方的 Promise；其餘失敗和取消仍然報錯。該幫助函式取代了 PowerShell 命令字串，同時刪掉了 `powershellLiteral` 及其單引號翻倍邏輯：路徑以 argv 元素跨程序邊界，去掉的是 shell 層轉義，而不是資源管理器自身解析所需的編碼；該編碼由 `explorerTarget` 為兩種意圖統一持有。
 
-Windows 对 HTML 与 SVG 仍然无法命名浏览器，因此 `openInBrowser` 继续拒绝该平台，默认意图、关联意图与文本编辑器意图都走同一个 Explorer 交接。
+Windows 對 HTML 與 SVG 仍然無法命名瀏覽器，因此 `openInBrowser` 繼續拒絕該平臺，預設意圖、關聯意圖與文字編輯器意圖都走同一個 Explorer 交接。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**继续使用 `Invoke-Item`。** 已否决。它询问的解析器与 shell 不同，因此即使某个用户的默认值能被资源管理器识别，仍会得到静默的无效操作；而且它的零退出码正好抹掉了设置页本应渲染的错误。
+**繼續使用 `Invoke-Item`。** 已否決。它詢問的解析器與 shell 不同，因此即使某個使用者的預設值能被資源管理器識別，仍會得到靜默的無效操作；而且它的零結束代碼正好抹掉了設定頁本應渲染的錯誤。
 
-**在宿主进程内自行解析默认值。** 已否决。依次读取 `UserChoiceLatest`、`UserChoice` 和 classes 默认值，再启动胜出 progid 的 `shell\open\command`，等于重新实现一套 Windows 自己拥有的顺序，其中还包括 Windows 会校验的 `UserChoice` 哈希；而双击所用应用的定义就是 shell 自己的答案。
+**在主機程序內自行解析預設值。** 已否決。依次讀取 `UserChoiceLatest`、`UserChoice` 和 classes 預設值，再啟動勝出 progid 的 `shell\open\command`，等於重新實作一套 Windows 自己擁有的順序，其中還包括 Windows 會驗證的 `UserChoice` 雜湊；而雙擊所用應用的定義就是 shell 自己的答案。
 
-**使用 `cmd /c start <path>`。** 已否决。它为资源管理器本已执行的同一套解析引入一个命令 shell，并且在复现该缺陷的机器上同样报告没有应用。
+**使用 `cmd /c start <path>`。** 已否決。它為資源管理器本已執行的同一套解析引入一個命令 shell，並且在復現該缺陷的機器上同樣報告沒有應用。
 
-**解析不到应用时回退到固定编辑器。** 已否决。Windows 安装总是带有可用的编辑器，但在打开器里选择它等于覆盖用户的关联，并把「缺少关联」变成「静默地打开错误应用」。
+**解析不到應用時退回到固定編輯器。** 已否決。Windows 安裝總是帶有可用的編輯器，但在開啟器裡選擇它等於覆蓋使用者的關聯，並把「缺少關聯」變成「靜默地開啟錯誤應用」。
 
-## 后果
+## 後果
 
-设置页的打开动作与产物、工作区的打开动作共享同一个 Windows 行为：双击会启动的那个应用。对于「资源管理器认、`AssocQueryString` 不认」这一被报告的状态，现在会打开已配置的编辑器。
+設定頁的開啟動作與產物、工作區的開啟動作共享同一個 Windows 行為：雙擊會啟動的那個應用。對於「資源管理器認、`AssocQueryString` 不認」這一被報告的狀態，現在會開啟已設定的編輯器。
 
-打开器再也无法区分「shell 打开了」与「shell 拒绝了」：两种情况 Explorer 都返回 0 或 1，因此 Remote 依旧回答 `{ opened: true }`，完全没有处理程序的机器只能看到 shell 的选择框。此处不校验窗口是否真的出现。
+開啟器再也無法區分「shell 開啟了」與「shell 拒絕了」：兩種情況 Explorer 都返回 0 或 1，因此 Remote 依舊回答 `{ opened: true }`，完全沒有處理程式的機器只能看到 shell 的選擇框。此處不驗證視窗是否真的出現。
 
-交互桌面会话现在是前提。在非交互 Windows 会话（服务，或没有交互登录的计划任务）中，`explorer.exe` 不调用任何关联，且同样以退出码 1 返回，因此该退出码无法与「已委派」区分：Windows 11 ARM64 build 26200 的 SSH session 0 实测约 1 秒后返回退出码 1，而同一会话里 `Invoke-Item` 命令能在进程内解析关联。这样启动的 Host 会失去能力且要付出等待，只有调用方的 abort 信号能给这段等待封顶。该会话下的兜底尚未实现。
+互動桌面工作階段現在是前提。在非互動 Windows 工作階段（服務，或沒有互動登入的計劃任務）中，`explorer.exe` 不呼叫任何關聯，且同樣以結束代碼 1 返回，因此該結束代碼無法與「已委派」區分：Windows 11 ARM64 build 26200 的 SSH session 0 實測約 1 秒後返退回出碼 1，而同一工作階段裡 `Invoke-Item` 命令能在程序內解析關聯。這樣啟動的 Host 會失去能力且要付出等待，只有呼叫方的 abort 訊號能給這段等待封頂。該工作階段下的後備尚未實作。
 
-目录走同一条路径。[open-in-app 记录](../feature/2026-08-25-promote-open-anywhere-plugin.zh.md)中被否决的方案是 detached 且经过凭据清洗的 `explorer.exe <dir>` 派生进程，那不是本交接的做法：`explorer.exe` 子进程继承宿主环境，也不创建 detached 进程；而它转交给桌面会话启动的应用或文件夹窗口，继承的是桌面会话环境而不是宿主进程环境。
+目錄走同一條路徑。[open-in-app 記錄](../feature/2026-08-25-promote-open-anywhere-plugin.zh.md)中被否決的方案是 detached 且經過憑證清洗的 `explorer.exe <dir>` 派生程序，那不是本交接的做法：`explorer.exe` 子程序繼承主機環境，也不建立 detached 程序；而它轉交給桌面工作階段啟動的應用或資料夾視窗，繼承的是桌面工作階段環境而不是主機程序環境。
 
-## 验证
+## 驗證
 
-`path-opener.spec.ts` 固定两种意图交给 Explorer 的编码文件 URI、打开与选中都可接受的交接退出码 1，以及仍然报错的普通失败与取消。`resolver.spec.ts` 固定 open-in-app 路由在 Windows 上的命令。按该包测试策略，原生桌面验证留在 Windows。在 Windows 11 ARM64 build 26200 上，一次独立验证用 sha256 与源码一致的副本直接驱动模块自身的 `openNativeAssociatedPath`、`openNativePath`、`openNativeTextFile`，旁边挂一个记录 shell 实收参数的探针关联：每个含逗号的目标都以 `%2C` 完整到达、普通文件正常打开、名为 `dir,comma` 的目录打开为根目录正确的窗口。反证——同一个文件以逗号未编码的 file URI 交给 `explorer.exe`——没有触发任何关联、打开了用户的「文档」，而且**同样返回退出码 1**。因此退出码 1 记录的是委派而非结果，接受它不会把错误目标变成成功；真正保住路径完整的是那段编码。此处不观测窗口是否出现。同一 build 的后续一轮改为直接读取 shell 自己的窗口与选中状态：编码后的 `/select,` 目标选中了目标文件；未编码的 `=` 会打开「文档」而不是文件；非 ASCII 字符保持百分号编码时同样打开「文档」，改为字面字符则正常打开。
+`path-opener.spec.ts` 固定兩種意圖交給 Explorer 的編碼檔案 URI、開啟與選中都可接受的交接結束代碼 1，以及仍然報錯的普通失敗與取消。`resolver.spec.ts` 固定 open-in-app 路由在 Windows 上的命令。按該包測試策略，原生桌面驗證留在 Windows。在 Windows 11 ARM64 build 26200 上，一次獨立驗證用 sha256 與原始碼一致的副本直接驅動模組自身的 `openNativeAssociatedPath`、`openNativePath`、`openNativeTextFile`，旁邊掛一個記錄 shell 實收參數的探針關聯：每個含逗號的目標都以 `%2C` 完整到達、普通檔案正常開啟、名為 `dir,comma` 的目錄開啟為根目錄正確的視窗。反證——同一個檔案以逗號未編碼的 file URI 交給 `explorer.exe`——沒有觸發任何關聯、開啟了使用者的「文件」，而且**同樣返退回出碼 1**。因此結束代碼 1 記錄的是委派而非結果，接受它不會把錯誤目標變成成功；真正保住路徑完整的是那段編碼。此處不觀測視窗是否出現。同一 build 的後續一輪改為直接讀取 shell 自己的視窗與選中狀態：編碼後的 `/select,` 目標選中了目標檔案；未編碼的 `=` 會開啟「文件」而不是檔案；非 ASCII 字元保持百分號編碼時同樣開啟「文件」，改為字面字元則正常開啟。

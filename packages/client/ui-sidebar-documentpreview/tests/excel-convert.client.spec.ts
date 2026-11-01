@@ -13,10 +13,10 @@ describe('Excel conversion', () => {
     const input = await excelFixture()
     const { sheets, missingResults } = await convertExcel(input, 'xlsx', limits)
     expect(input.byteLength).toBeGreaterThan(0)
-    expect(sheets.map(sheet => sheet.name)).toEqual(['季度预算', '公式与格式', '隐藏页'])
+    expect(sheets.map(sheet => sheet.name)).toEqual(['季度預算', '公式與格式', '隱藏頁'])
     const first = sheets[0]!
     const cell = (r: number, c: number) => first.celldata!.find(value => value.r === r && value.c === c)!.v
-    expect(cell(0, 0)).toMatchObject({ v: 'DeepSeek · 项目预算', bl: 1, fs: 18, fc: '#FFFFFF', bg: '#3B5CCC', ht: 0, vt: 0, mc: { r: 0, c: 0, rs: 1, cs: 4 } })
+    expect(cell(0, 0)).toMatchObject({ v: 'DeepSeek · 專案預算', bl: 1, fs: 18, fc: '#FFFFFF', bg: '#3B5CCC', ht: 0, vt: 0, mc: { r: 0, c: 0, rs: 1, cs: 4 } })
     expect(cell(0, 1)).toMatchObject({ mc: { r: 0, c: 0 } })
     expect(cell(0, 1)).not.toHaveProperty('v')
     expect(cell(2, 3)).toMatchObject({ f: '=C3/B3', v: 0.8, m: '80.0%', ct: { fa: '0.0%', t: 'n' } })
@@ -31,7 +31,7 @@ describe('Excel conversion', () => {
     expect(secondCell(0, 0)).toMatchObject({ f: '=_xlfn.XLOOKUP(1,{1},{42})', v: 42, m: '42' })
     expect(secondCell(1, 0)).toMatchObject({ f: '=SUM(1,2)', m: '' })
     expect(secondCell(0, 1)).toMatchObject({ m: '2026-09-16' })
-    expect(secondCell(0, 2)).toMatchObject({ v: '富文本 示例', ct: { t: 'inlineStr' } })
+    expect(secondCell(0, 2)).toMatchObject({ v: '富文本 範例', ct: { t: 'inlineStr' } })
     expect(secondCell(0, 2).ct?.s).toBeInstanceOf(Array)
     expect(secondCell(0, 3)).toMatchObject({ v: 'Link text' })
     expect(secondCell(1, 3)).toMatchObject({ v: 'Rich link', ct: { t: 'inlineStr' } })
@@ -47,10 +47,10 @@ describe('Excel conversion', () => {
 
   it('opens workbooks with missing results and Chinese worksheet references', async () => {
     const { sheets, missingResults } = await convertExcel(await meetingMinutesFixture(), 'xlsx', limits)
-    expect(sheets.map(sheet => sheet.name)).toEqual(['会议信息', '会议议程', '决议事项', '行动计划', '待确认问题', '风险与依赖', '统计看板', '填写说明'])
+    expect(sheets.map(sheet => sheet.name)).toEqual(['會議資訊', '會議議程', '決議事項', '行動計劃', '待確認問題', '風險與依賴', '統計看板', '填寫說明'])
     const dashboard = sheets[6]!
     const cell = (r: number, c: number) => dashboard.celldata!.find(value => value.r === r && value.c === c)!.v
-    expect(cell(4, 1)).toMatchObject({ f: '=COUNTIF(行动计划!$G$4:$G$23,$A5)', m: '' })
+    expect(cell(4, 1)).toMatchObject({ f: '=COUNTIF(行動計劃!$G$4:$G$23,$A5)', m: '' })
     expect(cell(4, 2)).toMatchObject({ f: '=IF($B5=0,"",REPT("█",MAX(1,ROUND($B5/MAX(1,$B$5)*16,0))))', m: '' })
     expect(cell(4, 3)).toMatchObject({ f: '=IFERROR($B5/$B$10,0)', m: '' })
     expect(missingResults).toBe(27)

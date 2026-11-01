@@ -1,5 +1,5 @@
 ---
-description: "右侧 Sidebar 的文档预览：共享文件加载与控件，可选 Markdown、代码、图片、PDF、Office 和 HTML 渲染器，并以纯文本兜底。"
+description: "右側 Sidebar 的文件預覽：共享檔案載入與控制元件，可選 Markdown、程式碼、圖片、PDF、Office 和 HTML 渲染器，並以純文字後備。"
 kind: "package-reference"
 ---
 
@@ -9,155 +9,155 @@ kind: "package-reference"
 
 ## 概述
 
-在右侧 Sidebar 预览文件，并切换已注册的渲染器。Markdown 和代码支持分页文本；PDF、HTML、常见图片和表格接收完整字节；未知扩展名使用纯文本。Word 与 PowerPoint 文档在本地转换为 PDF；表格在浏览器内打开。tab 提供文件状态、渲染器选择、换行以及自动或手动重新载入。插件可在头部和不支持预览的空态中添加本地打开控件。
+在右側 Sidebar 預覽檔案，並切換已註冊的渲染器。Markdown 和程式碼支援分頁文字；PDF、HTML、常見圖片和表格接收完整位元組；未知副檔名使用純文字。Word 與 PowerPoint 文件在本地轉換為 PDF；表格在瀏覽器內開啟。tab 提供檔案狀態、渲染器選擇、換行以及自動或手動重新載入。外掛可在頭部和不支援預覽的空態中新增本地開啟控制元件。
 
-## 目录
+## 目錄
 
-- [注册了什么](#what-it-registers)
+- [註冊了什麼](#what-it-registers)
 - [地址](#addresses)
-- [怎么读](#how-it-reads)
-- [Excel 预览](#excel-preview)
-- [文本编辑](#text-editing)
-- [Office 预览](#office-preview)
-- [导航](#navigation)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [怎麼讀](#how-it-reads)
+- [Excel 預覽](#excel-preview)
+- [文字編輯](#text-editing)
+- [Office 預覽](#office-preview)
+- [導航](#navigation)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="what-it-registers"></a>
-## 注册了什么
+## 註冊了什麼
 
-- **类型** —— `ctx.sidebarRightTabs.register(...)`，id 为 `@deepseek-ai/dsh-client-ui-sidebar-documentpreview`（这个实现在 tab 系统中的身份，也是其正文注册所用的键），kind `text`，pattern `dsh-resource://file/**`，档位 `fallback`。`canOpen` 只接受 Session 地址，其中路径可为相对或绝对路径；不认领裸 `absolute` 地址。在 `extension` 或 `builtin` 档以更窄 pattern（比如 `*.png`）注册的类型接走那些地址；其他受支持文件落到这里。整个地址就是内容身份，所以不同目录下同名的两个文件、或同一路径在两个会话之下，是两个 tab；解码后的 basename 是 tab 标题，keyed slot `sidebar.right.pane.tab.title` 会在标题前放置按扩展名选择的 `FileTypeIcon`。
-- **正文** —— keyed slot `sidebar.right.pane.tab`，键为类型的 id。固定头部在可用时显示 Host 的绝对路径，否则显示请求路径；共享的 [`PathLabel`](../ui-primitives/README.zh.md#component-catalog) 弱化目录颜色，以左侧渐隐保留被裁剪路径的尾部字符，并在悬停时展示完整值。有多个受支持的渲染器时才显示下拉菜单。仅文本兼容的源文件提供纯文本选项；只有一个渲染器时不显示查看器控件。已知的二进制容器后缀没有注册渲染器时，在路径头部下方显示文件类型图标和不支持预览的说明，并且不会发起读取。两个 Session 作用域的 list 子 slot 在文件元数据报出 Host 路径后把当前文件交给其他插件，owner prop 为 `absolutePath`：`sidebar.right.tab.document.actions` 在每个显示头部的状态里渲染在头部自有控件之后；`sidebar.right.tab.document.unpreviewable` 渲染在不支持预览的空态里，以及可读但本预览无法渲染的文件（`not-text`、`too-large`）的空态里，占据原本放重试的位置；载体或未分类的读取失败仍保留重试，不存在或非普通文件的路径只给说明。两者已发布的占位者都是 [`ui-open-in-app`](../ui-open-in-app/README.zh.md)。仅当所选渲染器声明 `wrap: true` 时显示换行开关；图标表示点击后切换到的模式，该偏好按 tab 保存，初始开启。重新载入仍在此头部，不放入 Sidebar 的 tab 条。自动刷新默认开启；独立开关暂时隐藏，状态、文案、样式与切换逻辑保留。正文贴合格的每条边，各渲染器自行提供内容留白，并可拥有内部滚动区。这与 Files tab 右侧预留 2px 滚动条间距的布局有意不同：Preview 使用格的完整宽度，使贴边 HTML 与代码滚动区终止于格的边缘。
-- **共享加载与视图状态**，会话作用域、按 tab id 分桶。store 持有累计页或完整字节、读取与观察版本、待处理 Resource 变化、自动刷新状态、加载/失败状态、渲染器选择、滚动位置、换行和已响应的导航 revision。普通 inject face 调用 Remote 读取，并经声明的 store action 写入。重新载入和加载模式变化会淘汰旧请求；tab 的中止信号清理其状态。
+- **型別** —— `ctx.sidebarRightTabs.register(...)`，id 為 `@deepseek-ai/dsh-client-ui-sidebar-documentpreview`（這個實作在 tab 系統中的身份，也是其正文註冊所用的鍵），kind `text`，pattern `dsh-resource://file/**`，檔位 `fallback`。`canOpen` 只接受 Session 地址，其中路徑可為相對或絕對路徑；不認領裸 `absolute` 地址。在 `extension` 或 `builtin` 檔以更窄 pattern（比如 `*.png`）註冊的型別接走那些地址；其他受支援檔案落到這裡。整個地址就是內容身份，所以不同目錄下同名的兩個檔案、或同一路徑在兩個工作階段之下，是兩個 tab；解碼後的 basename 是 tab 標題，keyed slot `sidebar.right.pane.tab.title` 會在標題前放置按副檔名選擇的 `FileTypeIcon`。
+- **正文** —— keyed slot `sidebar.right.pane.tab`，鍵為型別的 id。固定頭部在可用時顯示 Host 的絕對路徑，否則顯示請求路徑；共享的 [`PathLabel`](../ui-primitives/README.zh.md#component-catalog) 弱化目錄顏色，以左側漸隱保留被裁剪路徑的尾部字元，並在懸停時展示完整值。有多個受支援的渲染器時才顯示下拉選單。僅文字相容的原始檔提供純文字選項；只有一個渲染器時不顯示檢視器控制元件。已知的二進位制容器字尾沒有註冊渲染器時，在路徑頭部下方顯示檔案型別圖示和不支援預覽的說明，並且不會發起讀取。兩個 Session 作用域的 list 子 slot 在檔案中繼資料報出 Host 路徑後把目前檔案交給其他外掛，owner prop 為 `absolutePath`：`sidebar.right.tab.document.actions` 在每個顯示頭部的狀態裡渲染在頭部自有控制元件之後；`sidebar.right.tab.document.unpreviewable` 渲染在不支援預覽的空態裡，以及可讀但本預覽無法渲染的檔案（`not-text`、`too-large`）的空態裡，佔據原本放重試的位置；載體或未分類的讀取失敗仍保留重試，不存在或非普通檔案的路徑只給說明。兩者已釋出的佔位者都是 [`ui-open-in-app`](../ui-open-in-app/README.zh.md)。僅當所選渲染器宣告 `wrap: true` 時顯示換行開關；圖示表示點選後切換到的模式，該偏好按 tab 儲存，初始開啟。重新載入仍在此頭部，不放入 Sidebar 的 tab 條。自動重新整理預設開啟；獨立開關暫時隱藏，狀態、文案、樣式與切換邏輯保留。正文貼合格的每條邊，各渲染器自行提供內容留白，並可擁有內部滾動區。這與 Files tab 右側預留 2px 捲軸間距的佈局有意不同：Preview 使用格的完整寬度，使貼邊 HTML 與程式碼滾動區終止於格的邊緣。
+- **共享載入與檢視狀態**，工作階段作用域、按 tab id 分桶。store 持有累計頁或完整位元組、讀取與觀察版本、待處理 Resource 變化、自動重新整理狀態、載入/失敗狀態、渲染器選擇、滾動位置、換行和已回應的導航 revision。普通 inject face 呼叫 Remote 讀取，並經宣告的 store action 寫入。重新載入和載入模式變化會淘汰舊請求；tab 的中止訊號清理其狀態。
 
-文档实现在 `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` 注册元数据，并以相同 `id` 向 keyed、Session 作用域的子 slot `sidebar.right.tab.document` 注册正文。`binaryExtensions` 列出 `extensions` 中不可按文本阅读的后缀，这些后缀不提供纯文本选项。两处注册都由 effect 持有，通过 `ctx.slots.inject` 等待子 slot。正文接收 `resourceAddress`、`content`、`wrap`、`scrollportRef`、`addResource`、`setResources` 和标准 `useTabInfo`/`useResource` 钩子。依赖成员由 tab 持有的 `ResourceGroup` 管理；替换依赖始终保留根 Resource。内部滚动元素挂载 `scrollportRef`；卸载时恢复共享正文的滚动职责。注册表保留所有匹配备选：`extension`（默认）优先于 `builtin`，随后按更长的后缀、再按注册顺序排列。所选实现仍可用时，下拉选择保持不变。HTML、SVG 和未匹配的扩展名保留纯文本回退，与加载方式无关。
+文件實作在 `ctx.documentPreviews.register({ id, extensions, binaryExtensions?, priority, title, loading, wrap? })` 註冊中繼資料，並以相同 `id` 向 keyed、Session 作用域的子 slot `sidebar.right.tab.document` 註冊正文。`binaryExtensions` 列出 `extensions` 中不可按文字閱讀的字尾，這些字尾不提供純文字選項。兩處註冊都由 effect 持有，透過 `ctx.slots.inject` 等待子 slot。正文接收 `resourceAddress`、`content`、`wrap`、`scrollportRef`、`addResource`、`setResources` 和標準 `useTabInfo`/`useResource` 掛鉤。依賴成員由 tab 持有的 `ResourceGroup` 管理；替換依賴始終保留根 Resource。內部滾動元素掛載 `scrollportRef`；解除安裝時恢復共享正文的滾動職責。註冊表保留所有匹配備選：`extension`（預設）優先於 `builtin`，隨後按更長的字尾、再按註冊順序排列。所選實作仍可用時，下拉選擇保持不變。HTML、SVG 和未匹配的副檔名保留純文字退回，與載入方式無關。
 
-`loading: 'text-pages'` 和 `'bytes-complete'` 使用共享文件读取器。选择 `'renderer'` 时，所选正文在读取任何字节前挂载，并接收 `content: { kind: 'renderer', revision, loaded, failed, reload }`。其注入 face 负责内容加载、错误、store 更新和取消。`loaded(version)` 记录已展示的源版本并结束加载。`failed()` 结束加载但不记录成功版本，使后续文件变化可以重试；已被替换的 revision 所发出的报告会被忽略。`reload()` 增加 revision，正文据此取消并替换当前请求。正文也在卸载和 tab 关闭时取消请求，将已完成内容保留在自己声明的 tab store 中，并在 tab 结束时释放。[Office 预览](#office-preview) 使用此模式，转换后的字节和字体元数据不会进入共享文件 store。
+`loading: 'text-pages'` 和 `'bytes-complete'` 使用共享檔案讀取器。選擇 `'renderer'` 時，所選正文在讀取任何位元組前掛載，並接收 `content: { kind: 'renderer', revision, loaded, failed, reload }`。其注入 face 負責內容載入、錯誤、store 更新和取消。`loaded(version)` 記錄已展示的源版本並結束載入。`failed()` 結束載入但不記錄成功版本，使後續檔案變化可以重試；已被替換的 revision 所發出的報告會被忽略。`reload()` 增加 revision，正文據此取消並替換目前請求。正文也在解除安裝和 tab 關閉時取消請求，將已完成內容保留在自己宣告的 tab store 中，並在 tab 結束時釋放。[Office 預覽](#office-preview) 使用此模式，轉換後的位元組和字型中繼資料不會進入共享檔案 store。
 
 <a id="addresses"></a>
 ## 地址
 
-tab 使用 `fileAddressFor` 构造的 Session 地址，携带相对或绝对路径。`hostFileOf(address)` 仅从地址取得 Session，不接收外部 Session 参数，也不借用当前或 Tab Session。Host 通过 Session 文件系统解析文件及关联路径，由该后端控制读取权限。任何 UI（包括 Global 组件）都共享同一完整地址的元数据。[Workspace Files README](../../api/workspace-files/README.zh.md) 定义这些规则；渲染器选择不改变导航地址。
+tab 使用 `fileAddressFor` 建構的 Session 地址，攜帶相對或絕對路徑。`hostFileOf(address)` 僅從地址取得 Session，不接收外部 Session 參數，也不借用目前或 Tab Session。Host 透過 Session 檔案系統解析檔案及關聯路徑，由該後端控制讀取權限。任何 UI（包括 Global 元件）都共享同一完整地址的中繼資料。[Workspace Files README](../../api/workspace-files/README.zh.md) 定義這些規則；渲染器選擇不改變導航地址。
 
-全部文本分页加载完成后，Markdown 图片通过已鉴权的 `/api/file` 路由读取绝对文件路径，以及相对于源文档所在目录的路径。相对图片等待 Host 返回文档绝对路径。URL 转义只解码一次；查询参数与片段后缀不计入文件名。HTTP(S) 图片保留原始 URL，加载失败的图片显示 alt 文本。本地图片要求应用基址为 HTTP(S) URL；图片文件不加入自动刷新依赖。
+全部文字分頁載入完成後，Markdown 圖片透過已授權驗證的 `/api/file` 路由讀取絕對檔案路徑，以及相對於源文件所在目錄的路徑。相對圖片等待 Host 返回文件絕對路徑。URL 轉義只解碼一次；查詢參數與片段字尾不計入檔名。HTTP(S) 圖片保留原始 URL，載入失敗的圖片顯示 alt 文字。本地圖片要求應用基址為 HTTP(S) URL；圖片檔案不加入自動重新整理依賴。
 
 <a id="how-it-reads"></a>
-## 怎么读
+## 怎麼讀
 
-Web 和桌面端均通过代码工作工具选择 HTML 预览策略。渲染器从插件组装层接收 `interactivePreview`。关闭时，将经 DOMPurify 清理的完整静态文档放入不授予沙箱权限的 iframe：CSP 禁止脚本、外部资源、连接、表单和嵌套框架；所有 `href` 和 `xlink:href` 属性、刷新指令及声明式 Shadow DOM 均在重新解析前被移除。行内样式和 data 图片仍可显示，不读取关联文件。开启时使用下述支持脚本的 Blob 预览。切换模式会卸载之前的框架并中止其待处理关联文件读取。静态预览释放 CSS/JS 的 Resource 订阅，根文件继续监听。其他文档格式保持各自策略。
+Web 和桌面端均透過程式碼工作工具選擇 HTML 預覽策略。渲染器從外掛組裝層接收 `interactivePreview`。關閉時，將經 DOMPurify 清理的完整靜態文件放入不授予沙箱權限的 iframe：CSP 禁止腳本、外部資源、連線、表單和巢狀框架；所有 `href` 和 `xlink:href` 屬性、重新整理指令及宣告式 Shadow DOM 均在重新解析前被移除。行內樣式和 data 圖片仍可顯示，不讀取關聯檔案。開啟時使用下述支援腳本的 Blob 預覽。切換模式會解除安裝之前的框架並中止其待處理關聯檔案讀取。靜態預覽釋放 CSS/JS 的 Resource 訂閱，根檔案繼續監聽。其他文件格式保持各自策略。
 
-两种 HTML 模式均将 iframe 初始名称设为 `dsh-sidebar-html-<tab-id>`，供 Desktop 快捷键路由关联目标。这种关联不授予预览访问父文档的权限。
+兩種 HTML 模式均將 iframe 初始名稱設為 `dsh-sidebar-html-<tab-id>`，供 Desktop 快捷鍵路由關聯目標。這種關聯不授予預覽存取父文件的權限。
 
-正文通过 `useTabInfo().tab` 读取记录、导航和生命周期。`useResource<'file'>(tab.contentId)` 提供元数据，普通 inject 回调提供内容读取：
+正文透過 `useTabInfo().tab` 讀取記錄、導航和生命週期。`useResource<'file'>(tab.contentId)` 提供中繼資料，普通 inject 回呼提供內容讀取：
 
-- 资源快照仅包含 `status`、`value` 和 `failure`；`value` 是 `WorkspaceFileStat` 元数据。提供方可用后，内容读取无需等待首个元数据帧。观察失败优先于 Preview 的变更提示显示；元数据不可用时保留已加载内容。
-- **文本页** —— 纯文本、Markdown 和代码通过 inject 回调调用 `remote.workspaceFiles.read(sessionId, path, { offset }, signal)`。首次挂载读取第一页；滚动到正文末尾或点击 **加载更多** 会读取下一页，直到 `eof`。owner 以 `{ kind: 'text', text, pages, eof }` 提供累计前缀，包含源码偏移和行数。Markdown 和代码增量渲染此前缀，不把每页当成独立文档。第一页之后到达的更新版本页会使读取从头开始，避免混合版本。尚无内容时，失败会以文件类型图标、说明和该失败对应的出路（重试、unpreviewable 子 slot，或什么都不给）填满正文；较晚的失败保留已有内容并在其下提供重试。
-- **完整字节** —— PDF、HTML、常见图片和表格调用 `remote.workspaceFiles.readBytes(sessionId, path, {}, signal)`。二进制 Remote 直接返回 `data: Uint8Array<ArrayBuffer>`，供 `{ kind: 'bytes', data }` 使用。Host 的 `maxFileBytes` 上限拒绝超大文件，不截断。PDF 和表格渲染器在传给 Worker 前复制保留的字节，使 Preview 缓冲区仍可使用。字节仅保存在临时视图状态中，绝不进入持久布局或 Session JSONL。加载模式变化会淘汰先前结果。
-- **重新载入** —— 手动重新载入仅让当前 Preview tab 通过自己的 Remote 回调重读，保留滚动偏好并淘汰旧请求。`ResourceGroup` 成员变化后，自动刷新使用相同回调。各成员首次元数据仅建立基线，不触发重新载入或首读版本对账；后续在读取期间收到的变化仍会留待下一次刷新。读取既不刷新共享元数据，也不清除其它 tab 的提示。
+- 資源快照僅包含 `status`、`value` 和 `failure`；`value` 是 `WorkspaceFileStat` 中繼資料。提供者可用後，內容讀取無需等待首個中繼資料幀。觀察失敗優先於 Preview 的變更提示顯示；中繼資料不可用時保留已載入內容。
+- **文字頁** —— 純文字、Markdown 和程式碼透過 inject 回呼呼叫 `remote.workspaceFiles.read(sessionId, path, { offset }, signal)`。首次掛載讀取第一頁；滾動到正文末尾或點選 **載入更多** 會讀取下一頁，直到 `eof`。owner 以 `{ kind: 'text', text, pages, eof }` 提供累計字首，包含原始碼偏移和行數。Markdown 和程式碼增量渲染此字首，不把每頁當成獨立文件。第一頁之後到達的更新版本頁會使讀取從頭開始，避免混合版本。尚無內容時，失敗會以檔案型別圖示、說明和該失敗對應的出路（重試、unpreviewable 子 slot，或什麼都不給）填滿正文；較晚的失敗保留已有內容並在其下提供重試。
+- **完整位元組** —— PDF、HTML、常見圖片和表格呼叫 `remote.workspaceFiles.readBytes(sessionId, path, {}, signal)`。二進位制 Remote 直接返回 `data: Uint8Array<ArrayBuffer>`，供 `{ kind: 'bytes', data }` 使用。Host 的 `maxFileBytes` 上限拒絕超大檔案，不截斷。PDF 和表格渲染器在傳給 Worker 前複製保留的位元組，使 Preview 緩衝區仍可使用。位元組僅儲存在臨時檢視狀態中，絕不進入持久佈局或 Session JSONL。載入模式變化會淘汰先前結果。
+- **重新載入** —— 手動重新載入僅讓目前 Preview tab 透過自己的 Remote 回呼重讀，保留滾動偏好並淘汰舊請求。`ResourceGroup` 成員變化後，自動重新整理使用相同回呼。各成員首次中繼資料僅建立基線，不觸發重新載入或首讀版本對帳；後續在讀取期間收到的變化仍會留待下一次重新整理。讀取既不重新整理共享中繼資料，也不清除其它 tab 的提示。
 
-开启代码工作工具时，HTML 以贴合正文四边的 Blob iframe 运行，沙箱属性严格为 `sandbox="allow-scripts"`，不含 `allow-same-origin`；脚本无法访问父应用的源或文件读取接口。渲染器通过注入的 Remote 回调，加载直接声明的相对 `.js` 经典脚本和 `.css` 样式表；固定安全上限为单个资源 4 MiB、总计 32 MiB、64 个不同资源。Host 代码解析关联路径，带 `baseFile` 的 `readBytes` 返回原生字节。依赖 Resource 在读取返回后加入，使用返回的 `absolutePath`，失败时则使用字符串类型的 `error.details.path`；没有 Host 路径时，Client 不自行猜测。在渲染器内部，base64 仅用于把 iframe 引导载荷嵌入脚本文本。`<base href>` 将依赖解析交给浏览器，HTTPS 资源也由浏览器处理。本地模块 import、CSS `url()`/`@import` 和动态 `fetch` 不使用 Host 文件访问。读取失败、无效 UTF-8 或超出上限都使预览失败，不发布部分资源包。替换或卸载文档会释放其 Blob URL。
+開啟程式碼工作工具時，HTML 以貼合正文四邊的 Blob iframe 執行，沙箱屬性嚴格為 `sandbox="allow-scripts"`，不含 `allow-same-origin`；腳本無法存取父應用的源或檔案讀取介面。渲染器透過注入的 Remote 回呼，載入直接宣告的相對 `.js` 經典腳本和 `.css` 樣式表；固定安全上限為單個資源 4 MiB、總計 32 MiB、64 個不同資源。Host 程式碼解析關聯路徑，帶 `baseFile` 的 `readBytes` 返回原生位元組。依賴 Resource 在讀取返回後加入，使用返回的 `absolutePath`，失敗時則使用字串型別的 `error.details.path`；沒有 Host 路徑時，Client 不自行猜測。在渲染器內部，base64 僅用於把 iframe 引導載荷嵌入腳本文字。`<base href>` 將依賴解析交給瀏覽器，HTTPS 資源也由瀏覽器處理。本地模組 import、CSS `url()`/`@import` 和動態 `fetch` 不使用 Host 檔案存取。讀取失敗、無效 UTF-8 或超出上限都使預覽失敗，不釋出部分資源包。替換或解除安裝文件會釋放其 Blob URL。
 
-PNG、JPEG、GIF、WebP、BMP、ICO 和 SVG 通过 Blob URL 在 `<img>` 静态图片上下文中渲染，带 12px 内边距和圆角。图片默认适应宽度，但不会放大小于面板的内容；100% 使用图片的固有 CSS 像素宽度。共享缩放控件可产生横向和纵向滚动，但不提供拖拽平移。缩放不会替换 `<img>` 或 Blob URL，因此动画图片会继续播放。位图超过固有尺寸后可能变虚，SVG 则继续使用浏览器的矢量渲染路径。SVG 标记绝不进入应用 DOM 或 iframe，因此其中的脚本无法执行，也无法访问父页面。替换或卸载图片会撤销其 Blob URL。
+PNG、JPEG、GIF、WebP、BMP、ICO 和 SVG 透過 Blob URL 在 `<img>` 靜態圖片上下文中渲染，帶 12px 內邊距和圓角。圖片預設適應寬度，但不會放大小於面板的內容；100% 使用圖片的固有 CSS 畫素寬度。共享縮放控制元件可產生橫向和縱向滾動，但不提供拖拽平移。縮放不會替換 `<img>` 或 Blob URL，因此動畫圖片會繼續播放。點陣圖超過固有尺寸後可能變虛，SVG 則繼續使用瀏覽器的向量渲染路徑。SVG 標記絕不進入應用 DOM 或 iframe，因此其中的腳本無法執行，也無法存取父頁面。替換或解除安裝圖片會撤銷其 Blob URL。
 
-共享文案来自 `sidebarDocumentPreview`；各内置渲染器拥有自己的本地化标签。PDF 与转换后的 Office 预览在浅色模式下使用冷调浅灰底色，在深色模式下使用哑黑底色，页面带有轻微阴影并保留文档原色。PDF 与图片预览共用浮动控件，提供**适应宽度**、25%、50%、100%、150% 和 200% 选项，并在 25%–400% 固定范围内按 25% 逐级缩放。适应宽度是默认模式并跟随面板尺寸；100% 表示 PDF 的 96 DPI 页面尺寸或图片的固有 CSS 像素尺寸。在精细指针设备上，控件初始隐藏；指针进入底部 72 个 CSS 像素时向上滑入，离开 420 ms 后向下退出；控件悬停、键盘焦点、菜单展开和手势进行期间保持显示，无 hover 的设备则始终显示。Chromium 将 macOS 触控板捏合映射到与 Ctrl+滚轮相同的实时指针锚定路径；控件同步显示手势比例，静止后的值在正文重新挂载后继续保留，直至 tab 关闭。HTML 预览不显示缩放控件。缩放稳定或适应宽度发生变化后，视口附近的 PDF 页面按最终缩放比例乘以设备像素比重绘。新位图完成前保留原有画面和可选文字层；屏幕外的页面在接近视口时更新。
+共享文案來自 `sidebarDocumentPreview`；各內建渲染器擁有自己的在地化標籤。PDF 與轉換後的 Office 預覽在淺色模式下使用冷調淺灰底色，在深色模式下使用啞黑底色，頁面帶有輕微陰影並保留文件原色。PDF 與圖片預覽共用浮動控制元件，提供**適應寬度**、25%、50%、100%、150% 和 200% 選項，並在 25%–400% 固定範圍內按 25% 逐級縮放。適應寬度是預設模式並跟隨面板尺寸；100% 表示 PDF 的 96 DPI 頁面尺寸或圖片的固有 CSS 畫素尺寸。在精細指標裝置上，控制元件初始隱藏；指標進入底部 72 個 CSS 畫素時向上滑入，離開 420 ms 後向下退出；控制元件懸停、鍵盤焦點、選單展開和手勢進行期間保持顯示，無 hover 的裝置則始終顯示。Chromium 將 macOS 觸控板捏合對映到與 Ctrl+滾輪相同的即時指標錨定路徑；控制元件同步顯示手勢比例，靜止後的值在正文重新掛載後繼續保留，直至 tab 關閉。HTML 預覽不顯示縮放控制元件。縮放穩定或適應寬度發生變化後，視口附近的 PDF 頁面按最終縮放比例乘以裝置畫素比重繪。新點陣圖完成前保留原有畫面和可選文字層；螢幕外的頁面在接近視口時更新。
 
-首次读取及渲染器准备（包括 Office 转换）共用居中的 28px ongoing `StateDot`，下方显示本地化状态文字“文档渲染中...”。状态向辅助技术提供相同的名称，并遵循减少动态效果偏好。追加文本页时使用紧凑的行内转圈，同时保留已显示的内容。PDF 正文仅在 PDF 预览挂载时加载包内 `client.pdf.js` chunk；PDF.js、Worker 源码和内嵌支持数据不会进入启动 `client.js`。PDF 与转换后的 Word/PowerPoint 页面组成纵向序列，页间距与四周留白均为 12px，露出当前主题的文档背景色；适应宽度会预留此留白，页面在接近视口时惰性渲染；未渲染的页以安静的 3:4 占位块保持位置。PDF.js 官方 TextLayerBuilder 在与画面重合的文字层上管理选区边界和复制文本规范化。配套样式不高亮空白换行；对齐同时考虑 PDF 页面单位、页面旋转与视口宽度变化，页面释放时取消两层渲染。纯图片 PDF 不包含可选取的文字。代码预览使用 tertiary 色的语言名称和带提示的复制图标；换行仍由文档工具栏控制。默认显示源码行号，但复制文本不包含行号；纯文本与代码使用相同字号和行高。代码直接坐在分栏自身的背景上，而不是会话卡片的填充色；复制条与占满剩余高度的内部滚动区相邻，因此横纵滚动条都从复制控件下方开始。
+首次讀取及渲染器準備（包括 Office 轉換）共用居中的 28px ongoing `StateDot`，下方顯示在地化狀態文字“文件渲染中...”。狀態向輔助技術提供相同的名稱，並遵循減少動態效果偏好。追加文字頁時使用緊湊的行內轉圈，同時保留已顯示的內容。PDF 正文僅在 PDF 預覽掛載時載入包內 `client.pdf.js` chunk；PDF.js、Worker 原始碼和內嵌支援資料不會進入啟動 `client.js`。PDF 與轉換後的 Word/PowerPoint 頁面組成縱向序列，頁間距與四周留白均為 12px，露出目前主題的文件背景色；適應寬度會預留此留白，頁面在接近視口時惰性渲染；未渲染的頁以安靜的 3:4 佔位塊保持位置。PDF.js 官方 TextLayerBuilder 在與畫面重合的文字層上管理選區邊界和複製文字規範化。配套樣式不高亮空白換行；對齊同時考慮 PDF 頁面單位、頁面旋轉與視口寬度變化，頁面釋放時取消兩層渲染。純圖片 PDF 不包含可選取的文字。程式碼預覽使用 tertiary 色的語言名稱和帶提示的複製圖示；換行仍由文件工具欄控制。預設顯示原始碼行號，但複製文字不包含行號；純文字與程式碼使用相同字號和行高。程式碼直接坐在分欄自身的背景上，而不是工作階段卡片的填充色；複製條與佔滿剩餘高度的內部滾動區相鄰，因此橫縱捲軸都從複製控制元件下方開始。
 
 <a id="excel-preview"></a>
-## Excel 预览
+## Excel 預覽
 
-直接在浏览器中打开 `.xlsx`、`.xls`、`.csv` 和 `.tsv`，支持工作表标签、单元格选择、复制和只读公式栏。XLSX 保留字体、纯色填充、边框、数字格式、富文本、合并单元格、行列尺寸、隐藏行列及工作表，以及冻结标题。XLS 保留已保存的值、公式、数字格式、合并及可用的行列元数据；不支持字体、边框和冻结窗格。工作簿显示已保存的公式结果而不重新计算；缺少的结果保持为空，公式栏旁的紧凑提示会标记显示结果可能不完整或不准确的工作簿。工作簿视图填满预览面板，并随面板尺寸变化自动调整，无需重新加载工作表或选择状态。工作表标签从左侧边缘开始排列；标签溢出时可用触控板横向手势或左右按钮滚动，缩放控件独立占位。表格控件在应用的明暗两种主题下均保持浅色背景和深色文字。触控板的像素位移可同时平移表格的横纵两个方向，包括斜向平移，移动距离跟随手势；冻结标题保持固定。到达工作表边缘后反向移动，仍会保留下一次手势的位移。隐藏选区统计栏及无效的工作表菜单箭头。冻结标题在滚动时保持固定，不显示冻结分隔线和拖拽条。表格预览不调用 Office 转换服务。
+直接在瀏覽器中開啟 `.xlsx`、`.xls`、`.csv` 和 `.tsv`，支援工作表標籤、單元格選擇、複製和只讀公式欄。XLSX 保留字型、純色填充、邊框、數字格式、富文字、合併單元格、行列尺寸、隱藏行列及工作表，以及凍結標題。XLS 保留已儲存的值、公式、數字格式、合併及可用的行列中繼資料；不支援字型、邊框和凍結窗格。工作簿顯示已儲存的公式結果而不重新計算；缺少的結果保持為空，公式欄旁的緊湊提示會標記顯示結果可能不完整或不準確的工作簿。工作簿檢視填滿預覽面板，並隨面板尺寸變化自動調整，無需重新載入工作表或選擇狀態。工作表標籤從左側邊緣開始排列；標籤溢位時可用觸控板橫向手勢或左右按鈕滾動，縮放控制元件獨立佔位。表格控制元件在應用的明暗兩種主題下均保持淺色背景和深色文字。觸控板的畫素位移可同時平移表格的橫縱兩個方向，包括斜向平移，移動距離跟隨手勢；凍結標題保持固定。到達工作表邊緣後反向移動，仍會保留下一次手勢的位移。隱藏選區統計欄及無效的工作表選單箭頭。凍結標題在滾動時保持固定，不顯示凍結分隔線和拖拽條。表格預覽不呼叫 Office 轉換服務。
 
-XLSX 预览在解析前从内存副本中移除 DrawingML 部件，并忽略工作表的绘图引用。原文件和工作表 XML 保持不变。表格上方的提示列出实际检测到但未展示的图表、图片、形状和条件格式，并建议使用系统应用打开工作簿。未检测到这些内容的文件不显示此提示；公式提示保持独立。
+XLSX 預覽在解析前從記憶體副本中移除 DrawingML 部件，並忽略工作表的繪圖引用。原檔案和工作表 XML 保持不變。表格上方的提示列出實際檢測到但未展示的圖表、圖片、形狀和條件格式，並建議使用系統應用開啟工作簿。未檢測到這些內容的檔案不顯示此提示；公式提示保持獨立。
 
-CSV 和 TSV 默认使用表格查看器，也可选择纯文本；CSV 还提供带语法高亮的 Code 预览。两者分别以逗号和制表符分隔字段，支持引号内分隔符、转义引号、多行字段、空字段和不等长行。首行仍作为数据。值保持为字面字符串，包括前导零、日期、布尔值和类似公式的文本。文本文件支持 UTF-8 或带 BOM 的 UTF-16；无效编码会显示转换提示。引号字段格式错误会使表格预览失败，不会静默丢弃数据。
+CSV 和 TSV 預設使用表格檢視器，也可選擇純文字；CSV 還提供帶語法高亮的 Code 預覽。兩者分別以逗號和製表符分隔欄位，支援引號內分隔符、轉義引號、多行欄位、空欄位和不等長行。首行仍作為資料。值保持為字面字串，包括前導零、日期、布林值和類似公式的文字。文字檔案支援 UTF-8 或帶 BOM 的 UTF-16；無效編碼會顯示轉換提示。引號欄位格式錯誤會使表格預覽失敗，不會靜默丟棄資料。
 
-在同一个 `ui-sidebar-documentpreview` 条目上配置 `excel`。这些限制补充 Host 的完整文件读取限制，但不限制浏览器进程内存或解压分配量。
+在同一個 `ui-sidebar-documentpreview` 條目上設定 `excel`。這些限制補充 Host 的完整檔案讀取限制，但不限制瀏覽器程序記憶體或解壓分配量。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `excel.maxBytes` | `16777216`（16 MiB） | 最大源文件字节数 |
-| `excel.maxCells` | `250000` | 所有工作表矩形区域的最大合计单元格数，包含空单元格 |
-| `excel.timeoutMs` | `15000` | 解析 Worker 的最长存活时间，单位毫秒 |
+| `excel.maxBytes` | `16777216`（16 MiB） | 最大原始檔位元組數 |
+| `excel.maxCells` | `250000` | 所有工作表矩形區域的最大合計單元格數，包含空單元格 |
+| `excel.timeoutMs` | `15000` | 解析 Worker 的最長存活時間，單位毫秒 |
 
-惰性 Excel chunk 打包 FortuneSheet、用于 XLSX 的 ExcelJS、用于 XLS 的 SheetJS CE，以及用于 CSV/TSV 的 PapaParse。包内独立于 React 的适配层将解析结果直接映射为 FortuneSheet 单元格，并复用单元格格式化和初始选区。第三方许可证文本保留在发布的 chunk 中；SheetJS CE 保留其 Apache-2.0 条款。每次解析拥有一个独立可释放的 Worker，并传输所保留文件字节的副本；内容替换、卸载、失败或超时都会终止该 Worker。样式表仅作用于 Excel 预览区域。暂不支持图表、绘图/图片、数据透视表、条件格式、编辑、重新计算和导出；字体可用性、Excel 列宽近似和主题色明暗近似会影响保真度。超链接显示为文本，不加载目标地址。ExcelJS 会再次解码 XLSX 字符串公式缓存结果中的实体写法；保存的字面文本 `&lt;` 会显示为 `<`。
+惰性 Excel chunk 打包 FortuneSheet、用於 XLSX 的 ExcelJS、用於 XLS 的 SheetJS CE，以及用於 CSV/TSV 的 PapaParse。包內獨立於 React 的適應層將解析結果直接對映為 FortuneSheet 單元格，並複用單元格格式化和初始選區。第三方許可證文字保留在釋出的 chunk 中；SheetJS CE 保留其 Apache-2.0 條款。每次解析擁有一個獨立可釋放的 Worker，並傳輸所保留檔案位元組的副本；內容替換、解除安裝、失敗或超時都會終止該 Worker。樣式表僅作用於 Excel 預覽區域。暫不支援圖表、繪圖/圖片、資料透視表、條件格式、編輯、重新計算和匯出；字型可用性、Excel 列寬近似和主題色明暗近似會影響保真度。超連結顯示為文字，不載入目標地址。ExcelJS 會再次解碼 XLSX 字串公式快取結果中的實體寫法；儲存的字面文字 `&lt;` 會顯示為 `<`。
 
-只读公式栏以单行按字面显示公式和单元格文本，长内容可横向滚动。复制时保留 HTML 表格，并转义单元格内容，包括已保存的公式结果。[FortuneSheet 补丁决策](../../../.agents/notes/implemented/feature/2026-09-16-browser-excel-preview.zh.md)说明升级依赖时保留这些行为与工作表选区的要求。
+只讀公式欄以單行按字面顯示公式和單元格文字，長內容可橫向滾動。複製時保留 HTML 表格，並轉義單元格內容，包括已儲存的公式結果。[FortuneSheet 補丁決策](../../../.agents/notes/implemented/feature/2026-09-16-browser-excel-preview.zh.md)說明升級依賴時保留這些行為與工作表選區的要求。
 
-固定版本的 [ExcelJS 补丁](../../../patches/exceljs@4.4.0.patch)通过包内关系解析工作簿、样式、共享字符串、工作表、批注、Table 和 VML，支持绝对及相对目标，以及 ASCII 大小写等价的部件名，并按命名空间 URI 识别 SpreadsheetML 和 VML 名称。Strict OOXML 的 SpreadsheetML 和关系 URI 映射到相同的已支持预览功能；这不代表完整支持 Strict 标准。XML 部件支持 UTF-8 及两种字节序的 UTF-16；CDATA 按字面文本读取。绘图和条件格式提示按关系查找内容，不依赖部件目录。未被引用的 `xl/drawings/*.xml` 部件及其关系文件也会被移除，但不会产生提示；批注 VML 保持不变。缺失引用部件或存在大小写等价的歧义 ZIP 条目会使预览失败。解析保留批注和 Table 元数据，但预览器没有专门展示它们的控件。补丁同时覆盖 Node 源码和 `dist/exceljs.js`，浏览器入口选择已修补的 bundle。升级依赖时必须保留两个入口的行为，并通过[独立写入器回归测试和 fuzz 诊断](tests/fuzz/README.zh.md)。
+固定版本的 [ExcelJS 補丁](../../../patches/exceljs@4.4.0.patch)透過包內關係解析工作簿、樣式、共享字串、工作表、批註、Table 和 VML，支援絕對及相對目標，以及 ASCII 大小寫等價的部件名，並按名稱空間 URI 識別 SpreadsheetML 和 VML 名稱。Strict OOXML 的 SpreadsheetML 和關係 URI 對映到相同的已支援預覽功能；這不代表完整支援 Strict 標準。XML 部件支援 UTF-8 及兩種位元組序的 UTF-16；CDATA 按字面文字讀取。繪圖和條件格式提示按關係查詢內容，不依賴部件目錄。未被引用的 `xl/drawings/*.xml` 部件及其關係檔案也會被移除，但不會產生提示；批註 VML 保持不變。缺失引用部件或存在大小寫等價的歧義 ZIP 條目會使預覽失敗。解析保留批註和 Table 中繼資料，但預覽器沒有專門展示它們的控制元件。補丁同時覆蓋 Node 原始碼和 `dist/exceljs.js`，瀏覽器入口選擇已修補的 bundle。升級依賴時必須保留兩個入口的行為，並透過[獨立寫入器迴歸測試和 fuzz 診斷](tests/fuzz/README.zh.md)。
 
 <a id="text-editing"></a>
-## 文本编辑
+## 文字編輯
 
-纯文本查看器能显示的每个文件，都会在查看器菜单中提供**编辑**，并在标头提供铅笔切换按钮；该选项从不自动选中，因此文件总是先以预览打开。再次点按已按下的切换按钮会回到自动选择的查看器。编辑器是 CodeMirror，在某个 tab 第一次选择它时加载，并按文件名为常见语言提供语法高亮。它通过 `workspaceFiles.readBytes` 加载完整文件，在 tab 保持打开期间保留其未保存文本，并通过**保存**或 Mod-S 调用 `workspaceFiles.write` 保存，同时传入加载文本时的版本。文件在加载后被修改时，保存会被拒绝，提示提供**重新加载文件**或**仍然保存**；编辑器持有未保存文本时磁盘上的变更会显示相同的选项，文本已保存时的变更则直接重新加载。标记为 `textAlternative` 的注册会在提供纯文本的地方加入查看器菜单，排在所有其他选项之后。
+純文字檢視器能顯示的每個檔案，都會在檢視器選單中提供**編輯**，並在標頭提供鉛筆切換按鈕；該選項從不自動選中，因此檔案總是先以預覽開啟。再次點按已按下的切換按鈕會回到自動選擇的檢視器。編輯器是 CodeMirror，在某個 tab 第一次選擇它時載入，並按檔名為常見語言提供語法高亮。它透過 `workspaceFiles.readBytes` 載入完整檔案，在 tab 保持開啟期間保留其未儲存文字，並透過**儲存**或 Mod-S 呼叫 `workspaceFiles.write` 儲存，同時傳入載入文字時的版本。檔案在載入後被修改時，儲存會被拒絕，提示提供**重新載入檔案**或**仍然儲存**；編輯器持有未儲存文字時磁碟上的變更會顯示相同的選項，文字已儲存時的變更則直接重新載入。標記為 `textAlternative` 的註冊會在提供純文字的地方加入檢視器選單，排在所有其他選項之後。
 
 <a id="office-preview"></a>
-## Office 预览
+## Office 預覽
 
-将 `.doc`、`.docx`、`.ppt` 和 `.pptx` 打开为 PDF 预览，使用与 PDF 文件相同的加载状态、缩放控件、取消和文本选择能力。[Host 提供方](../../document/office-to-pdf/README.zh.md)负责本地转换，并为其他消费者保留电子表格转换 API。受支持的无效文件、转换失败和超时会显示本地化消息。缺少 Host 服务时显示配置引导。
+將 `.doc`、`.docx`、`.ppt` 和 `.pptx` 開啟為 PDF 預覽，使用與 PDF 檔案相同的載入狀態、縮放控制元件、取消和文字選擇能力。[Host 提供者](../../document/office-to-pdf/README.zh.md)負責本地轉換，併為其他消費者保留電子表格轉換 API。受支援的無效檔案、轉換失敗和超時會顯示在地化訊息。缺少 Host 服務時顯示設定引導。
 
-[Web bundle](../../bundle/web-app/README.zh.md) 以 `ui-sidebar-documentpreview` 挂载本包。通过该条目的 `office` 设置配置临时 Office 缓存；[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-ui-sidebar-documentpreview)定义可接受的值。设置注入到每个页面；修改 YAML 后重新加载浏览器页面。
+[Web bundle](../../bundle/web-app/README.zh.md) 以 `ui-sidebar-documentpreview` 掛載本包。透過該條目的 `office` 設定設定臨時 Office 快取；[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-ui-sidebar-documentpreview)定義可接受的值。設定注入到每個頁面；修改 YAML 後重新載入瀏覽器頁面。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `office.maxCachedEntries` | `8` | 最多保留的已完成 PDF 数量 |
-| `office.maxCachedBytes` | `67108864`（64 MiB） | 最多保留的二进制 PDF 字节数，按缓冲区 `byteLength` 计算 |
-| `office.maxPending` / `office.maxReaders` | `8` / `32` | 未完成转换 RPC 数量 / 含元数据查询的读取方数量 |
+| `office.maxCachedEntries` | `8` | 最多保留的已完成 PDF 數量 |
+| `office.maxCachedBytes` | `67108864`（64 MiB） | 最多保留的二進位制 PDF 位元組數，按緩衝區 `byteLength` 計算 |
+| `office.maxPending` / `office.maxReaders` | `8` / `32` | 未完成轉換 RPC 數量 / 含中繼資料查詢的讀取方數量 |
 
-打开 Office 文件时按需请求转换。每次读取都先检查渲染 generation 和已授权的源文件元数据，再共享进行中的转换或复用成功的 PDF。缓存以渲染 generation、Session、源文件绝对路径和源版本作为身份；通过淘汰最久未使用的 PDF，使保留量符合两项限制。失败和超过字节限制的 PDF 不会被保留。转换后 PDF 的返回渲染 generation 与缓存身份一致时，才会保留该 PDF。取消一个读取方后，共享转换会继续运行，直到最后一个读取方离开。连接重置会清空缓存字节并取消待完成读取；插件卸载还会等待未结束的请求完成。PDF 从不持久化；传输字符串、解码存储和 PDF.js 渲染内存不计入缓存限制。
+開啟 Office 檔案時按需請求轉換。每次讀取都先檢查渲染 generation 和已授權的原始檔中繼資料，再共享進行中的轉換或複用成功的 PDF。快取以渲染 generation、Session、原始檔絕對路徑和源版本作為身份；透過淘汰最久未使用的 PDF，使保留量符合兩項限制。失敗和超過位元組限制的 PDF 不會被保留。轉換後 PDF 的返回渲染 generation 與快取身份一致時，才會保留該 PDF。取消一個讀取方後，共享轉換會繼續執行，直到最後一個讀取方離開。連線重置會清空快取位元組並取消待完成讀取；外掛解除安裝還會等待未結束的請求完成。PDF 從不持久化；傳輸字串、解碼儲存和 PDF.js 渲染記憶體不計入快取限制。
 
-后台请求为前台工作保留最后一个在途请求槽和读者槽；将任一限额设为一会拒绝后台读取。渲染器替换后会重新执行一次代次查询与授权检查。重试期间再次替换会显示本地化的繁忙提示。
+後臺請求為前臺工作保留最後一個在途請求槽和讀者槽；將任一限額設為一會拒絕後臺讀取。渲染器替換後會重新執行一次代次查詢與授權檢查。重試期間再次替換會顯示在地化的繁忙提示。
 
-当前 Office 预览缺失字体时，文档工具栏的刷新按钮前显示黄色圆角三角形警告。悬停或键盘聚焦时显示缺失字体数量；点击后打开锚定字体列表。按 Escape、点击关闭或点击外部会关闭列表，警告图标和文档位置保持不变。重新加载会关闭旧详情；没有缺失字体的预览不显示警告。不保留已读或关闭提示的状态。
+目前 Office 預覽缺失字型時，文件工具欄的重新整理按鈕前顯示黃色圓角三角形警告。懸停或鍵盤聚焦時顯示缺失字型數量；點選後開啟錨定字型列表。按 Escape、點選關閉或點選外部會關閉列表，警告圖示和文件位置保持不變。重新載入會關閉舊詳情；沒有缺失字型的預覽不顯示警告。不保留已讀或關閉提示的狀態。
 
 <details>
-<summary>Office 实现——点击展开</summary>
+<summary>Office 實作——點選展開</summary>
 
-Office 注册、加载、缓存和字体提示位于 `src/client/office/`。注入的 Office face 通过已声明的 store action 写入转换后的 PDF 字节、字体元数据和失败。Office 正文触发加载，将取消绑定到自身生命周期，并声明嵌套 PDF slot，复用惰性 PDF 正文及其 tab 阅读状态。keyed slot `sidebar.right.tab.document.action` 将渲染器操作放在刷新按钮前。Office 操作与正文共享 store，仅读取当前 revision 的字体元数据。Host 渲染器缺失时，注册仍然可用；可选的 `remote.officeToPdf` 和 `remote.workspaceFiles` 注入提供转换与版本检查回调，移除后恢复不可用提示。注册和 tab 状态保留都遵循 effect 生命周期。[转换服务](../../document/office-to-pdf/README.zh.md)拥有 Host Remote 方法，由 `api/remotes` 挂载。
+Office 註冊、載入、快取和字型提示位於 `src/client/office/`。注入的 Office face 透過已宣告的 store action 寫入轉換後的 PDF 位元組、字型中繼資料和失敗。Office 正文觸發載入，將取消繫結到自身生命週期，並宣告巢狀 PDF slot，複用惰性 PDF 正文及其 tab 閱讀狀態。keyed slot `sidebar.right.tab.document.action` 將渲染器操作放在重新整理按鈕前。Office 操作與正文共享 store，僅讀取目前 revision 的字型中繼資料。Host 渲染器缺失時，註冊仍然可用；可選的 `remote.officeToPdf` 和 `remote.workspaceFiles` 注入提供轉換與版本檢查回呼，移除後恢復不可用提示。註冊和 tab 狀態保留都遵循 effect 生命週期。[轉換服務](../../document/office-to-pdf/README.zh.md)擁有 Host Remote 方法，由 `api/remotes` 掛載。
 
-Office Remote 通过 Connection 的 multipart 二进制传输返回原生 `Uint8Array` PDF。渲染器以只读方式借用保留的字节，并在传给 Worker 前复制。
+Office Remote 透過 Connection 的 multipart 二進位制傳輸返回原生 `Uint8Array` PDF。渲染器以只讀方式借用保留的位元組，並在傳給 Worker 前複製。
 
-页面刷新快捷键复用所选预览的重载操作，包括旧请求失效与滚动位置保留。头部重载 Tooltip 和 ARIA 组合随有效快捷键绑定更新。
+頁面重新整理快捷鍵複用所選預覽的過載操作，包括舊請求失效與滾動位置保留。頭部過載 Tooltip 和 ARIA 組合隨有效快捷鍵繫結更新。
 
 </details>
 
 <a id="navigation"></a>
-## 导航
+## 導航
 
-`ctx.sidebarRight.openResource(address, { params: { line } })` 通过 `file` 参数携带 1 起算的源码行号。在 `text-pages` 模式下，owner 顺序加载到该行或 EOF。纯文本与代码渲染器提供源码行锚点；Markdown 不提供。所选渲染器没有锚点时，导航保持待处理；用户切换到纯文本或代码后执行。代码导航直接滚动内部源码视口。字节模式渲染器不消费源码行导航。每个完成的导航 revision 只响应一次。不带 `revealIfOpened: false` 打开同一文件时聚焦已有 tab，并送达新 revision。
+`ctx.sidebarRight.openResource(address, { params: { line } })` 透過 `file` 參數攜帶 1 起算的原始碼行號。在 `text-pages` 模式下，owner 順序載入到該行或 EOF。純文字與程式碼渲染器提供原始碼行錨點；Markdown 不提供。所選渲染器沒有錨點時，導航保持待處理；使用者切換到純文字或程式碼後執行。程式碼導航直接滾動內部原始碼視口。位元組模式渲染器不消費原始碼行導航。每個完成的導航 revision 只回應一次。不帶 `revealIfOpened: false` 開啟同一檔案時聚焦已有 tab，並送達新 revision。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为预览是纯浏览器侧的查看器，不注册工具、提示词段或会话事件。
+無，因為預覽是純瀏覽器側的檢視器，不註冊工具、提示詞段或工作階段事件。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；用户在这里读到的东西永不进入模型请求。
+無直接影響；使用者在這裡讀到的東西永不進入模型請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
-- **只能编辑纯文本。** **编辑**选项通过 `workspaceFiles.write` 保存工作区内的 UTF-8 文本文件；Office、PDF、表格和图片文件仍只能预览，查看器不共享搜索接口，目录地址以 `not-regular-file` 失败。未知扩展名使用纯文本读取，仍受其 UTF-8/NUL 检查限制。关闭带有未保存修改的 tab 会直接丢弃这些修改，不会询问。
-- **Office 转换限制。** 预览不启动原生 Office 编辑器，也不下载引擎。二进制 `.doc` 和 `.ppt` 文件不返回缺失字体诊断。转换保真度与资源限制由 [LibreOffice 提供方](../../document/office-to-pdf/README.zh.md)负责。
-- **文本顺序分页，完整文件受限。** 定位到较深处的源码行需要先加载此前各页；PDF、HTML 和图片必须取得 Host `maxFileBytes` 上限内的完整结果。
-- **PDF 栅格分配有上限。** 每页位图最多为 16,777,216 像素；超大页面或高像素密度屏幕上的高比例缩放仍可能低于设备分辨率。
-- **字节视图不恢复滚动位置。** PDF、HTML 与图片的渲染器重新挂载或重新载入时可能回到顶部；固定 PDF 与图片缩放可产生横向滚动，HTML iframe 的滚动属于其不透明浏览上下文。
-- **本地 HTML 依赖集合有限。** 只打包直接引用的经典 `.js` 脚本和 `.css` 样式表。浏览器解析的资源仍受浏览器源与网络规则限制；iframe 不获得运行时文件读取桥接。
-- **滚动写入未节流。** 每次滚动事件都把偏移记进 store；行块已 memo 化，于是由此引发的重渲染交还给 React 的是同一批元素。
-- **PDF chunk 加载失败后需要刷新页面。** React 会在页面生命周期内缓存被拒绝的 lazy import；已加载正文中的普通 PDF 打开或渲染失败仍可重试。
+- **只能編輯純文字。** **編輯**選項透過 `workspaceFiles.write` 儲存工作區內的 UTF-8 文字檔案；Office、PDF、表格和圖片檔案仍只能預覽，檢視器不共享搜尋介面，目錄地址以 `not-regular-file` 失敗。未知副檔名使用純文字讀取，仍受其 UTF-8/NUL 檢查限制。關閉帶有未儲存修改的 tab 會直接丟棄這些修改，不會詢問。
+- **Office 轉換限制。** 預覽不啟動原生 Office 編輯器，也不下載引擎。二進位制 `.doc` 和 `.ppt` 檔案不返回缺失字型診斷。轉換保真度與資源限制由 [LibreOffice 提供者](../../document/office-to-pdf/README.zh.md)負責。
+- **文字順序分頁，完整檔案受限。** 定位到較深處的原始碼行需要先載入此前各頁；PDF、HTML 和圖片必須取得 Host `maxFileBytes` 上限內的完整結果。
+- **PDF 柵格分配有上限。** 每頁點陣圖最多為 16,777,216 畫素；超大頁面或高畫素密度螢幕上的高比例縮放仍可能低於裝置解析度。
+- **位元組檢視不恢復滾動位置。** PDF、HTML 與圖片的渲染器重新掛載或重新載入時可能回到頂部；固定 PDF 與圖片縮放可產生橫向滾動，HTML iframe 的滾動屬於其不透明瀏覽上下文。
+- **本地 HTML 依賴集合有限。** 只打包直接引用的經典 `.js` 腳本和 `.css` 樣式表。瀏覽器解析的資源仍受瀏覽器源與網路規則限制；iframe 不獲得執行時檔案讀取橋接。
+- **滾動寫入未節流。** 每次滾動事件都把偏移記進 store；行塊已 memo 化，於是由此引發的重渲染交還給 React 的是同一批元素。
+- **PDF chunk 載入失敗後需要重新整理頁面。** React 會在頁面生命週期內快取被拒絕的 lazy import；已載入正文中的普通 PDF 開啟或渲染失敗仍可重試。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。渲染器元数据、文档加载和视图状态归本地注册表与声明的 Slot store 所有，没有可比对的独立运行时来源；注册释放和 tab 生命周期由行为测试覆盖。
+**執行時不變式：** 不釋出伴生入口。渲染器中繼資料、文件載入和檢視狀態歸本地註冊表與宣告的 Slot store 所有，沒有可比對的獨立執行時來源；註冊釋放和 tab 生命週期由行為測試覆蓋。

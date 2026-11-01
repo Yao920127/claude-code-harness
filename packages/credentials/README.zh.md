@@ -1,52 +1,52 @@
 ---
-description: "凭据能力族的包映射：凭据引用 seam、环境与文件提供方、授权 flow 注册表，以及引用如何让机密值留在配置之外。"
+description: "憑證能力族的包對映：憑證引用 seam、環境與檔案提供者、授權 flow 註冊表，以及引用如何讓機密值留在設定之外。"
 kind: "package-group"
 ---
 
-# credentials/：凭据与授权
+# credentials/：憑證與授權
 
 [English](README.md) | 中文
 
 ## 概述
 
-`credentials/` 组让配置引用机密的名字，而不嵌入机密值。使用 `credentials/` 存储、查询和移除凭据；使用 `credentials-local/` 将凭据私密地存储在本机，并支持按次运行的环境覆盖；当需要向人询问以获取凭据时，使用 `authorization/`。轮换后的存储值会作用于下一次模型请求，而 `DEEPSEEK_API_KEY=… dsh` 在该次运行中优先。配置文件只包含凭据名称；本地机密值只有同一 OS 用户可读。
+`credentials/` 組讓設定引用機密的名字，而不嵌入機密值。使用 `credentials/` 儲存、查詢和移除憑證；使用 `credentials-local/` 將憑證私密地儲存在本機，並支援按次執行的環境覆蓋；當需要向人詢問以取得憑證時，使用 `authorization/`。輪換後的儲存值會作用於下一次模型請求，而 `DEEPSEEK_API_KEY=… dsh` 在該次執行中優先。設定檔只包含憑證名稱；本地機密值只有同一 OS 使用者可讀。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-三个包共同提供凭据功能：一个在运行时存储、查询与移除机密，而配置只写名字；第二个是默认的本机存储；第三个让插件获取必须向人请求的凭据。它们的 README 覆盖日常使用；全部约定以子系统参考为准。
+三個包共同提供憑證功能：一個在執行時儲存、查詢與移除機密，而設定只寫名字；第二個是預設的本機儲存；第三個讓外掛取得必須向人請求的憑證。它們的 README 覆蓋日常使用；全部約定以子系統參考為準。
 
-| 包 | 角色 | ctx 键 |
+| 包 | 角色 | ctx 鍵 |
 |---|---|---|
-| [`credentials/`](credentials/README.zh.md) | 在运行时存储、查询与移除机密，而配置只写名字 | `ctx.credentials` |
-| [`credentials-local/`](credentials-local/README.zh.md) | 默认本机存储：一个私有 YAML 文件，环境覆盖优先 | 注册 `ctx.credentials` |
-| [`authorization/`](authorization/README.zh.md) | 由插件拥有、通过询问人来取得凭据的 flow | `ctx.authorization` |
+| [`credentials/`](credentials/README.zh.md) | 在執行時儲存、查詢與移除機密，而設定只寫名字 | `ctx.credentials` |
+| [`credentials-local/`](credentials-local/README.zh.md) | 預設本機儲存：一個私有 YAML 檔案，環境覆蓋優先 | 註冊 `ctx.credentials` |
+| [`authorization/`](authorization/README.zh.md) | 由外掛擁有、透過詢問人來取得憑證的 flow | `ctx.authorization` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解共享词汇，再看能力 seam 表与本地存储的配置面。
+先從子系統參考瞭解共享詞彙，再看能力 seam 表與本地儲存的設定面。
 
-- [凭据子系统参考](../../docs/subsystems/credentials.zh.md)——`CredentialRef` 与 `CredentialKey`、按操作解析、可安全用于 UI 的 `CredentialInfo`、授权 flow 与生成的 Cordis 接口面。
+- [憑證子系統參考](../../docs/subsystems/credentials.zh.md)——`CredentialRef` 與 `CredentialKey`、按操作解析、可安全用於 UI 的 `CredentialInfo`、授權 flow 與生成的 Cordis 介面面。
 - [能力 seam](../../docs/capability-seams.zh.md)——本家族遵循的 Service Definition / Service Provider / Consumer 拆分。
-- [生成配置目录](../../docs/config-catalog.zh.md#deepseek-aidsh-credentials-local)——本地存储的每个受支持字段。
+- [生成設定目錄](../../docs/config-catalog.zh.md#deepseek-aidsh-credentials-local)——本地儲存的每個受支援欄位。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

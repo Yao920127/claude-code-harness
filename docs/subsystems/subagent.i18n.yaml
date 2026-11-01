@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/subagent.md
 /subagent:
   en: 7ef8cafc02c317b5
-  zh: 1ccf8273c706b436
+  zh: 0a018a966b162632
 /subagent/two-kinds-of-capability-discovered-two-ways:
   en: 7be7cbc224948ed1
-  zh: 6da4f61394ed900e
+  zh: d683ddb069128b43
 /subagent/the-one-shot-start-request:
   en: 37b7876d6f186642
-  zh: 196a9df4fca5a4fd
+  zh: 730d47a9eafc75c0
 /subagent/continuable-children-and-activations:
   en: 6cc3f373d6ad49b2
-  zh: dd2cf41fbbc5fbe9
+  zh: e9ed8481589c030e
 /subagent/durable-enumeration-listchildren-listdescendants-and-their-entries:
   en: 5ff018408210d739
-  zh: 909d4a1788d65629
+  zh: 64050fe8b562c727
 /subagent/the-terminal-result-subagentresult:
   en: 6070effb5f84f701
-  zh: 2b8a6980ceb0b7b2
+  zh: 38262a0ab8a01b64
 /subagent/a-one-shot-run-subagentrun:
   en: 39df94dd1343ffde
-  zh: 047605d7f5ba91ae
+  zh: 9ac5244c5748c5fa
 /subagent/the-provider-contract-subagentprovider:
   en: cb05cffdb837b7bc
-  zh: a53133845d673f0a
+  zh: 065074dec5974bc1
 /subagent/in-process-backends-permission-depth-and-seed:
   en: 3290c070c97c284d
-  zh: ebced35b081ea1c2
+  zh: f56f9e55805c0af8

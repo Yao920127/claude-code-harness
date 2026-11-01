@@ -1,10 +1,10 @@
-Claude Code Harness 无法使用
-应用无法启动或已意外停止。
+Claude Code Harness 無法使用
+應用無法啟動或已意外停止。
 Desktop Host failed
 Plugin initialization failed
-诊断报告：C:\Users\someone\AppData\Roaming\DeepSeek Harness\logs\crash-2026-09-22T10-30-00-000Z-host.log
+診斷報告：C:\Users\someone\AppData\Roaming\DeepSeek Harness\logs\crash-2026-09-22T10-30-00-000Z-host.log
 
-如果应用文件缺失或损坏，请关闭应用并重新安装。任务数据存储在独立位置。
-退出
-重启
-禁用第三方插件、备份 profile patch 并重启
+如果應用檔案缺失或損壞，請關閉應用並重新安裝。任務資料儲存在獨立位置。
+結束
+重新啟動
+停用第三方外掛、備份 profile patch 並重新啟動

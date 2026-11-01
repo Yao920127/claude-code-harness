@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-14-desktop-installed-update-journal.md
 /agent-note-preserve-installed-desktop-update-evidence-across-restarts:
   en: 813f856f3457732c
-  zh: 4f88103f6402d309
+  zh: 7b5019e8f4caa6d9
 /agent-note-preserve-installed-desktop-update-evidence-across-restarts/problem:
   en: 5401829797ce63d2
-  zh: 8a05a7d216aba56d
+  zh: e2fa4eb734f236bd
 /agent-note-preserve-installed-desktop-update-evidence-across-restarts/decision:
   en: 07386e0ad4b17ea2
-  zh: 8424f276161376e4
+  zh: 238c84c464f81771
 /agent-note-preserve-installed-desktop-update-evidence-across-restarts/alternatives-considered:
   en: bd3c8ebb1d8e2360
-  zh: db38b0725b7eae9c
+  zh: 6ab289f4be3d1921
 /agent-note-preserve-installed-desktop-update-evidence-across-restarts/consequences:
   en: 08918c2d6d6ec745
-  zh: 239edd387dba4a58
+  zh: f18f8877feef9813

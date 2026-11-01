@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/plan.md
 /plan-mode:
   en: d011d9b7480aa201
-  zh: 7cb7854e45d486fa
+  zh: 210fa24e9801a617
 /plan-mode/logged-state-and-recovery:
   en: dd1e8ba31e6fd535
-  zh: a22dbccc60c73bc9
+  zh: 654e07559d80bf27
 /plan-mode/pending-selections-and-the-pre-step-append:
   en: 8d7e5b7824921ed5
-  zh: 910fad43593f29f4
+  zh: 467f4a19ea3417a6
 /plan-mode/configuration:
   en: ee04468005fae8e1
-  zh: 1347d554102951f2
+  zh: 5f352de179f96717
 /plan-mode/the-exit-tool-and-the-plan-command:
   en: ecf7fe520658b10f
-  zh: 9d6d2c4729e9a47e
+  zh: 7e33efcaa585140c
 /plan-mode/the-service:
   en: 07c3eec12e0dc75c
-  zh: 183d73f6672e2c5a
+  zh: c7aecaac2eb8b512

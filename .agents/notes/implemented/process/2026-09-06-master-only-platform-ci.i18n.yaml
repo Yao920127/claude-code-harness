@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-06-master-only-platform-ci.md
 /agent-note-master-only-platform-ci:
   en: fed101c5775cbbcd
-  zh: b407efdb4c46cfe2
+  zh: 16b63d81b8adbe70
 /agent-note-master-only-platform-ci/problem:
   en: 85cf39297a859208
-  zh: c959bf7f94ebc50b
+  zh: 09e3a80e0cefe136
 /agent-note-master-only-platform-ci/decision:
   en: 98b8ecd3b4cfe5e5
-  zh: 2c622950ea7afd42
+  zh: 3b0c0c1d72931bf9
 /agent-note-master-only-platform-ci/alternatives-considered:
   en: 71ce7f8bb8a31323
-  zh: 45f97b72eb9c6971
+  zh: 6eb959235dab380f
 /agent-note-master-only-platform-ci/consequences:
   en: 523bbd6a59c120bf
-  zh: a9d834b5c32a911f
+  zh: 61f9502837524984

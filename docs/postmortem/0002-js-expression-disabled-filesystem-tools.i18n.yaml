@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/postmortem/0002-js-expression-disabled-filesystem-tools.md
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled:
   en: 02d6d2adb8360fc7
-  zh: ec94ad79d29fb636
+  zh: cb740229165669ad
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/executive-summary:
   en: 65cd31a6519707a8
-  zh: 6bbe0d8f25c52ab7
+  zh: 12e23c142d5a4c04
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/summary:
   en: 5d5d691d5aeb19a0
-  zh: 95103a9c44256c0d
+  zh: 2e985c958353c6e1
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/impact:
   en: 94b56ca57f1f5df8
-  zh: 301a312868bb7845
+  zh: 7c6b8de57c0eec6a
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/timeline:
   en: 87721ebe7ffd51b1
-  zh: c0a1116cccf96b2e
+  zh: 601f787ddd0b1645
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/root-cause:
   en: 6bc8392c0b578c99
-  zh: 96cba7b750571fd1
+  zh: d0f6be893153df18
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/guardrails-added:
   en: dfe6ddbe59258210
-  zh: 20c1652004ad258a
+  zh: 24467fb54bbe9a89
 /post-mortem-0002-filesystem-snapshot-tools-were-permanently-disabled/lessons:
   en: 375a29a336c99be9
-  zh: ee64c6abe3f923ff
+  zh: fe24f59adb5b7bb5

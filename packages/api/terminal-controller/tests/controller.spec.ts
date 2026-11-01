@@ -252,9 +252,9 @@ describe('TerminalController', () => {
     const stream = controller.follow(agent, id, attachmentId, signal())[Symbol.asyncIterator]()
     await stream.next()
     try {
-      await controller.write(agent, id, attachmentId, '终端')
-      expect(handle.write).toHaveBeenCalledWith('终端')
-      await expect(controller.write(agent, id, attachmentId, '终端!')).rejects.toThrow('input exceeds')
+      await controller.write(agent, id, attachmentId, '終端')
+      expect(handle.write).toHaveBeenCalledWith('終端')
+      await expect(controller.write(agent, id, attachmentId, '終端!')).rejects.toThrow('input exceeds')
       await controller.resize(agent, id, attachmentId, 200, 100)
       expect(handle.resize).toHaveBeenCalledWith(200, 100)
       controller.rename(agent, id, '  server logs  ')

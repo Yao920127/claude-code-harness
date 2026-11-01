@@ -120,7 +120,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 const en: LocaleDictOf<typeof NS> = { export: 'Export {title}' }
-const zh: LocaleDictOf<typeof NS> = { export: '导出 {title}' }
+const zh: LocaleDictOf<typeof NS> = { export: '匯出 {title}' }
 
 interface ExportRowInjected {
   exportSession: (sessionId: SessionId) => void

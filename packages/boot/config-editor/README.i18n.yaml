@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/boot/config-editor/README.md
 /:
   en: 68783acbf26e5790
-  zh: 8e04cbad03340c77
+  zh: 9f9b9e85f5484bca
 /deepseek-ai-dsh-config-editor:
   en: 8ea66af3a8192149
   zh: 3581118c2b5cb4ab
 /deepseek-ai-dsh-config-editor/summary:
   en: f8831f5fad9041d8
-  zh: 9744b776ffae1e7a
+  zh: 0a673260fb145f47
 /deepseek-ai-dsh-config-editor/table-of-contents:
   en: 23386452a66b2fbd
-  zh: 70bba862b949b652
+  zh: 8e3c2295dc3d7193
 /deepseek-ai-dsh-config-editor/use-this-package:
   en: 1eedaa5d72b48177
-  zh: 39abc1d927a692d2
+  zh: 5071f34b36a46d44
 /deepseek-ai-dsh-config-editor/understand-the-implementation:
   en: 972ac006df48ad85
-  zh: df8adddc40817877
+  zh: 4603cdc8a30aa954
 /deepseek-ai-dsh-config-editor/further-exploration:
   en: 0c9e1d1401a865cc
-  zh: 6130d52636e84676
+  zh: 9011afb4b8eac7da
 /deepseek-ai-dsh-config-editor/model-experience:
   en: 358d1a5b1d9f2fde
-  zh: a40c6e95f39032e8
+  zh: 4be07af69f9c23e4
 /deepseek-ai-dsh-config-editor/model-experience/kv-cache-effect:
   en: f49cb624cd503dd1
-  zh: 9944f21ab3458e4b
+  zh: c615d6e891776830
 /deepseek-ai-dsh-config-editor/known-limitations-and-deferred-work:
   en: 8314910af268bda0
-  zh: 2c7f0c16ee09b0f7
+  zh: 649c3485bd766953
 /deepseek-ai-dsh-config-editor/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: e88aeb617ffb74ea
+  zh: bb8387ee0e2ab0bd

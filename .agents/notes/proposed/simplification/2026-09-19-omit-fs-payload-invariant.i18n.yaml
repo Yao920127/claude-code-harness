@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-omit-fs-payload-invariant.md
 /agent-note-omit-the-filesystem-payload-only-invariant-companion:
   en: 6385aa079529c4f4
-  zh: 602b99cea351125c
+  zh: 02d3ce307d345f94
 /agent-note-omit-the-filesystem-payload-only-invariant-companion/problem:
   en: 4568d53b3ef69254
-  zh: 66c9aea2ae3645e7
+  zh: 18ece801ac0e2a3f
 /agent-note-omit-the-filesystem-payload-only-invariant-companion/proposal:
   en: 2bfceaa480b6645d
-  zh: 3ad1060bf91ded74
+  zh: 3d4623e093283b0b
 /agent-note-omit-the-filesystem-payload-only-invariant-companion/alternatives-considered:
   en: d12fd1577a308af3
-  zh: 56271794646f5a87
+  zh: a443b68b4e575357
 /agent-note-omit-the-filesystem-payload-only-invariant-companion/acceptance-criteria:
   en: 253009b93ce34c5b
-  zh: 2268e0303bd025d6
+  zh: bea204c6f7c194bb
 /agent-note-omit-the-filesystem-payload-only-invariant-companion/risks:
   en: 70c52f193d72d02d
-  zh: f30844e865ac4c27
+  zh: 3048d94f27ceb959

@@ -54,7 +54,7 @@ describe.skipIf(MODE === 'record')('web e2e: native and Client locale preference
     onTestFailed(() => saveFailureShot(page, 'web-e2e-desktop-locale'))
     await page.goto(scaffold.authenticatedUrl, { waitUntil: 'load' })
     await openSettings(page, 'zh')
-    const zhDialog = page.getByRole('dialog', { name: '设置', exact: true })
+    const zhDialog = page.getByRole('dialog', { name: '設定', exact: true })
     await zhDialog.getByRole('button', { name: '中文', exact: true }).waitFor()
     await expect.poll(() => reported).toEqual(['zh'])
     expect(scaffold.ctx.settings.describe().find(row => row.ns === 'locale')!.value).toEqual({})

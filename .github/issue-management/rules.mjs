@@ -39,16 +39,16 @@ for (const status of ['In progress', 'In review']) {
   if (!ACTIVE_STATUS_ORDER.includes(status)) throw new Error(`config.statuses 缺少 ${status}`)
 }
 if (typeof config.lifecycleActor !== 'string' || !config.lifecycleActor) {
-  throw new Error('config.lifecycleActor 未设置')
+  throw new Error('config.lifecycleActor 未設定')
 }
 if (typeof config.priorityField !== 'string' || !config.priorityField) {
-  throw new Error('config.priorityField 未设置')
+  throw new Error('config.priorityField 未設定')
 }
 if (typeof config.startDateField !== 'string' || !config.startDateField) {
-  throw new Error('config.startDateField 未设置')
+  throw new Error('config.startDateField 未設定')
 }
 if (typeof config.projectTimeZone !== 'string' || !config.projectTimeZone) {
-  throw new Error('config.projectTimeZone 未设置')
+  throw new Error('config.projectTimeZone 未設定')
 }
 Intl.DateTimeFormat('en-US', { timeZone: config.projectTimeZone })
 
@@ -122,7 +122,7 @@ export function nextResolvingIssueStatus(currentStatus, command, currentStatusAc
  */
 export function projectDate(timestamp, timeZone = config.projectTimeZone) {
   const instant = new Date(timestamp)
-  if (Number.isNaN(instant.getTime())) throw new Error(`无效的 PR 创建时间：${timestamp}`)
+  if (Number.isNaN(instant.getTime())) throw new Error(`無效的 PR 建立時間：${timestamp}`)
   const parts = Object.fromEntries(
     new Intl.DateTimeFormat('en-US', {
       timeZone,
@@ -213,24 +213,24 @@ export function validateIssue(issue) {
   const invalidLabels = issue.labels.filter(isInvalidIssueLabel)
 
   if (invalidLabels.length > 0) {
-    errors.push(`Issue 不得使用 PR kind 或旧版标签：${invalidLabels.join(', ')}`)
+    errors.push(`Issue 不得使用 PR kind 或舊版標籤：${invalidLabels.join(', ')}`)
   }
-  if (!TYPES.has(issue.type ?? '')) errors.push('Type 必须是五种原生英文 Type 之一')
-  if (!status || !config.statuses.includes(status)) errors.push('Issue 必须在 Project 中且具有合法 Status')
+  if (!TYPES.has(issue.type ?? '')) errors.push('Type 必須是五種原生英文 Type 之一')
+  if (!status || !config.statuses.includes(status)) errors.push('Issue 必須在 Project 中且具有合法 Status')
   if (issue.priority !== null && !PRIORITIES.includes(issue.priority.toLowerCase())) {
-    errors.push('Priority 必须为空或为 P0–P3')
+    errors.push('Priority 必須為空或為 P0–P3')
   }
   if (status === 'Done' && (issue.state !== 'closed' || issue.stateReason !== 'completed')) {
-    errors.push('Done 必须对应 Completed 关闭原因')
+    errors.push('Done 必須對應 Completed 關閉原因')
   }
   if (
     status === 'No action' &&
     (issue.state !== 'closed' || issue.stateReason !== 'not_planned')
   ) {
-    errors.push('No action 必须对应 Not planned 关闭原因')
+    errors.push('No action 必須對應 Not planned 關閉原因')
   }
   if (!['Done', 'No action'].includes(status ?? '') && issue.state !== 'open') {
-    errors.push(`${status} 必须对应开放 Issue`)
+    errors.push(`${status} 必須對應開放 Issue`)
   }
   return errors
 }
@@ -262,20 +262,20 @@ export function validatePullRequest(input) {
   const areas = input.labels.filter((label) => label.startsWith('area/'))
 
   if (input.references.all.length === 0) {
-    errors.push('PR 正文必须引用至少一个同仓库 Issue；PR 编号（包括堆叠依赖 PR）不算 Issue 引用')
+    errors.push('PR 正文必須引用至少一個同儲存庫 Issue；PR 編號（包括堆疊依賴 PR）不算 Issue 引用')
   }
   if (kinds.length !== 1) {
-    errors.push(`PR 必须恰好有一个允许的 kind/*，当前为 ${kinds.length}`)
+    errors.push(`PR 必須恰好有一個允許的 kind/*，目前為 ${kinds.length}`)
   }
   if (unknownKinds.length > 0) {
-    errors.push(`PR 含不支持的 kind/*：${unknownKinds.join(', ')}`)
+    errors.push(`PR 含不支援的 kind/*：${unknownKinds.join(', ')}`)
   }
-  if (legacyLabels.length > 0) errors.push(`PR 含旧版标签：${legacyLabels.join(', ')}`)
-  if (sourceLabels.length > 0) errors.push(`source/* 仅用于 Issue：${sourceLabels.join(', ')}`)
-  if (priorities.length > 1) errors.push(`PR 最多有一个 p0–p3，当前为 ${priorities.length}`)
-  if (areas.length === 0) errors.push('PR 必须至少有一个 area/*')
+  if (legacyLabels.length > 0) errors.push(`PR 含舊版標籤：${legacyLabels.join(', ')}`)
+  if (sourceLabels.length > 0) errors.push(`source/* 僅用於 Issue：${sourceLabels.join(', ')}`)
+  if (priorities.length > 1) errors.push(`PR 最多有一個 p0–p3，目前為 ${priorities.length}`)
+  if (areas.length === 0) errors.push('PR 必須至少有一個 area/*')
   for (const number of input.references.all) {
-    if (!input.issues.has(number)) errors.push(`#${number} 不是同仓库 Issue`)
+    if (!input.issues.has(number)) errors.push(`#${number} 不是同儲存庫 Issue`)
   }
 
   const resolving = input.references.resolving
@@ -290,14 +290,14 @@ export function validatePullRequest(input) {
     const highest = issuePriorities.sort(
       (left, right) => PRIORITIES.indexOf(left) - PRIORITIES.indexOf(right),
     )[0]
-    errors.push(`PR Priority 应为 ${highest}`)
+    errors.push(`PR Priority 應為 ${highest}`)
   } else if (priorities.length === 1 && issuePriorities.length !== resolving.length) {
-    errors.push('有 Priority 的解决型 PR 要求每个被解决 Issue 都设置 Priority')
+    errors.push('有 Priority 的解決型 PR 要求每個被解決 Issue 都設定 Priority')
   } else if (priorities.length === 1) {
     const highest = issuePriorities.sort(
       (left, right) => PRIORITIES.indexOf(left) - PRIORITIES.indexOf(right),
     )[0]
-    if (priorities[0] !== highest) errors.push(`PR Priority 应为 ${highest}`)
+    if (priorities[0] !== highest) errors.push(`PR Priority 應為 ${highest}`)
   }
   return errors
 }

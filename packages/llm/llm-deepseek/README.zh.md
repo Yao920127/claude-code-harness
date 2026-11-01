@@ -1,5 +1,5 @@
 ---
-description: "配置 DeepSeek Messages、推理与图片输入。"
+description: "設定 DeepSeek Messages、推理與圖片輸入。"
 kind: "package-reference"
 ---
 
@@ -9,33 +9,33 @@ kind: "package-reference"
 
 ## 概述
 
-提供共享的 DeepSeek Messages 传输、请求配置和模型能力。组合 [API key](../llm-deepseek-api-key/README.zh.md) 或[账号](../llm-deepseek-account/README.zh.md)插件以提供鉴权、模型发现与 provider 注册。有效的设置更改在后续请求生效，进行中的请求保留原配置。本包可与 [pi-ai 适配器](../llm-pi-ai/README.zh.md)并用。
+提供共享的 DeepSeek Messages 傳輸、請求設定和模型能力。組合 [API key](../llm-deepseek-api-key/README.zh.md) 或[帳號](../llm-deepseek-account/README.zh.md)外掛以提供授權驗證、模型發現與 provider 註冊。有效的設定更改在後續請求生效，進行中的請求保留原設定。本包可與 [pi-ai 介面卡](../llm-pi-ai/README.zh.md)並用。
 
-`resolveAuth(connection)` 返回提供方持有的鉴权请求头，以及绑定本次请求凭据的可选失败回调。Messages 和 Files 直接使用这些请求头，不判断凭据类型。上传复用按端点和鉴权请求头的哈希隔离，不持久化原始凭据。
+`resolveAuth(connection)` 返回提供者持有的授權驗證請求頭，以及繫結本次請求憑證的可選失敗回呼。Messages 和 Files 直接使用這些請求頭，不判斷憑證型別。上傳複用按端點和授權驗證請求頭的雜湊隔離，不持久化原始憑證。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-本包导出传输库；provider 插件向 harness LLM 服务注册路由。它在每次操作开始时从 Config 引用捕获连接选项。
+本包匯出傳輸庫；provider 外掛向 harness LLM 服務註冊路由。它在每次操作開始時從 Config 引用捕捉連線選項。
 
-适配器接受 LLM 服务的[仅供请求使用的 user 输入](../llm/README.zh.md#use-this-package)，并可将其与持久历史混用；省略请求输入的身份与来源不会改变提供方内容。
+介面卡接受 LLM 服務的[僅供請求使用的 user 輸入](../llm/README.zh.md#use-this-package)，並可將其與持久歷史混用；省略請求輸入的身份與來源不會改變提供者內容。
 
-### 何时选择
+### 何時選擇
 
-面向 DeepSeek 官方 API，或通过 `baseURL` 连接兼容 Messages 的网关时，选择本适配器。当同一组合还要通过 pi-ai 目录路由其他提供方或手工声明的网关时，选择 `dsh-llm-pi-ai`；两个适配器可以同时挂载，因为它们的路由名不冲突。为 `deepseek-official` 注册任何其他适配器会以 `DUPLICATE_ADAPTER` 失败。
+面向 DeepSeek 官方 API，或透過 `baseURL` 連線相容 Messages 的閘道時，選擇本介面卡。當同一組合還要透過 pi-ai 目錄路由其他提供者或手工宣告的閘道時，選擇 `dsh-llm-pi-ai`；兩個介面卡可以同時掛載，因為它們的路由名不衝突。為 `deepseek-official` 註冊任何其他介面卡會以 `DUPLICATE_ADAPTER` 失敗。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-llm-deepseek-api-key'
@@ -49,171 +49,171 @@ kind: "package-reference"
     filesApiTimeoutMs: 60000
 ```
 
-请求用 `provider: deepseek-official` 选择路由；模型 id 原样传到协议，因此新增 DeepSeek 模型无需重新注册。省略 `models` 时公布支持文本和图像的 `deepseek-flash`，以及仅支持文本的 `deepseek-v4-pro`，各自的上下文窗口均为 1,000,000 token。显式列表会替换这些默认值，核心调用中未列出的模型 id 仍作为纯文本路由原样通过。GUI 选择要求模型具有目录条目；条目消失后，已保存的选择仍可提交请求。包括模型发现工具在内的客户端可通过 `ctx.llm.listModels('deepseek-official')` 读取这些建议性条目。支持图片的条目可把 `imagePixelBudget` 设置为正整数或 `low`，也可以设置 `imageMaxBytes`。当端点把 `messages` 中任意位置最新的 `system` 消息读作完整的有效系统提示词时，条目可以声明 `systemPromptUpdate: in-history`；适配器会在已解析模型与已准备调用上报告该模式，agent loop（智能体循环）随后把变化后的提示词追加到已缓存历史之后，而不是改写开头的 system 消息（[决策规则](../../core/agent-loop/README.zh.md#understand-the-implementation)）。默认的 `deepseek-flash` 条目声明该模式；其他模型需通过 `models` 显式声明，`in-history` 以外的任何值都会在加载时以 `llm-deepseek: catalog model "<id>" systemPromptUpdate must be "in-history" when present` 失败。
+請求用 `provider: deepseek-official` 選擇路由；模型 id 原樣傳到協定，因此新增 DeepSeek 模型無需重新註冊。省略 `models` 時公佈支援文字和影象的 `deepseek-flash`，以及僅支援文字的 `deepseek-v4-pro`，各自的上下文視窗均為 1,000,000 token。顯式列表會替換這些預設值，核心呼叫中未列出的模型 id 仍作為純文字路由原樣透過。GUI 選擇要求模型具有目錄條目；條目消失後，已儲存的選擇仍可提交請求。包括模型發現工具在內的用戶端可透過 `ctx.llm.listModels('deepseek-official')` 讀取這些建議性條目。支援圖片的條目可把 `imagePixelBudget` 設定為正整數或 `low`，也可以設定 `imageMaxBytes`。當端點把 `messages` 中任意位置最新的 `system` 訊息讀作完整的有效系統提示詞時，條目可以宣告 `systemPromptUpdate: in-history`；介面卡會在已解析模型與已準備呼叫上報告該模式，agent loop（智慧代理迴圈）隨後把變化後的提示詞追加到已快取歷史之後，而不是改寫開頭的 system 訊息（[決策規則](../../core/agent-loop/README.zh.md#understand-the-implementation)）。預設的 `deepseek-flash` 條目宣告該模式；其他模型需透過 `models` 顯式宣告，`in-history` 以外的任何值都會在載入時以 `llm-deepseek: catalog model "<id>" systemPromptUpdate must be "in-history" when present` 失敗。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `baseURL` | `https://api.deepseek.com/anthropic` | 显式值优先，其次为 `$DEEPSEEK_BASE_URL`，最后为官方根地址 |
-| `thinking` | `enabled` | 部署策略；`disabled` 把所有请求锁定为 `off` |
-| `reasoningEffort` | `high` | 默认强度：`off`、`low`、`high` 或 `max` |
-| `maxTokens` | `256,000` | 单次请求输出上限；模型自身上限与显式请求值优先 |
-| `defaultContextWindow` | `1,000,000` | 无精确值模型的容量回退 |
-| `models` | V41 Flash + V4 Pro | 供发现消费方查看的建议性目录 |
-| `streamIdleTimeoutMs` | `300,000` | 单次流读取未完成的最大提供方空闲时间 |
-| `maxRequestFilesBytes` | `128 MiB` | file 模式请求图片字节预算，保留图片超过时请求以 `IMAGE_OFFLOAD_REQUIRED` 失败 |
-| `maxInlineRequestImageBytes` | `20 MiB` | 独立的 base64 回退高水位 |
-| `maxImagesPerRequest` | `600` | 保留请求图片数量的高水位 |
-| `imageOffloadByteQuantum` | `64 MiB` | Files 模式最旧前缀移除量子 |
-| `inlineImageOffloadByteQuantum` | `10 MiB` | 内联模式最旧前缀移除量子 |
-| `imageOffloadCountQuantum` | `20` | 数量超限移除量子 |
-| `filesApiTimeoutMs` | `60,000` | 每张图片 Files 解析截止时间 |
-| `fileExpiresAfterSeconds` | `604,800` | 请求的上传图片生存期与本地复用期限 |
-| `fileRefreshMarginSeconds` | `3,600` | 低于此剩余复用期时替换 id |
-| `fileQuotaCleanupBatch` | `100` | 配额重试前删除的、归 harness 所有的最旧文件数 |
-| `retryPolicy` | normal，5 次重试 | 由 `dsh-llm-retry` 执行的提供方自有重试策略 |
+| `baseURL` | `https://api.deepseek.com/anthropic` | 顯式值優先，其次為 `$DEEPSEEK_BASE_URL`，最後為官方根地址 |
+| `thinking` | `enabled` | 部署策略；`disabled` 把所有請求鎖定為 `off` |
+| `reasoningEffort` | `high` | 預設強度：`off`、`low`、`high` 或 `max` |
+| `maxTokens` | `256,000` | 單次請求輸出上限；模型自身上限與顯式請求值優先 |
+| `defaultContextWindow` | `1,000,000` | 無精確值模型的容量退回 |
+| `models` | V41 Flash + V4 Pro | 供發現消費方檢視的建議性目錄 |
+| `streamIdleTimeoutMs` | `300,000` | 單次流讀取未完成的最大提供者空閒時間 |
+| `maxRequestFilesBytes` | `128 MiB` | file 模式請求圖片位元組預算，保留圖片超過時請求以 `IMAGE_OFFLOAD_REQUIRED` 失敗 |
+| `maxInlineRequestImageBytes` | `20 MiB` | 獨立的 base64 退回高水位 |
+| `maxImagesPerRequest` | `600` | 保留請求圖片數量的高水位 |
+| `imageOffloadByteQuantum` | `64 MiB` | Files 模式最舊字首移除量子 |
+| `inlineImageOffloadByteQuantum` | `10 MiB` | 內聯模式最舊字首移除量子 |
+| `imageOffloadCountQuantum` | `20` | 數量超限移除量子 |
+| `filesApiTimeoutMs` | `60,000` | 每張圖片 Files 解析截止時間 |
+| `fileExpiresAfterSeconds` | `604,800` | 請求的上傳圖片生存期與本地複用期限 |
+| `fileRefreshMarginSeconds` | `3,600` | 低於此剩餘複用期時替換 id |
+| `fileQuotaCleanupBatch` | `100` | 配額重試前刪除的、歸 harness 所有的最舊檔案數 |
+| `retryPolicy` | normal，5 次重試 | 由 `dsh-llm-retry` 執行的提供者自有重試策略 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-deepseek-api-key)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-deepseek-api-key)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-启用[主动压缩](../../compaction/compaction-basic/README.zh.md#use-this-package)时，`models[].contextWindow`（未声明时使用 `defaultContextWindow`）必须大于生效请求的 `maxTokens` 与压缩策略 `headroomTokens` 之和。请求未覆盖输出上限时，使用模型的 `maxTokens` 或适配器默认值。小窗口部署应在容量范围内配置余量；降低 `thresholdRatio` 可以提早压缩。
+啟用[主動壓縮](../../compaction/compaction-basic/README.zh.md#use-this-package)時，`models[].contextWindow`（未宣告時使用 `defaultContextWindow`）必須大於生效請求的 `maxTokens` 與壓縮策略 `headroomTokens` 之和。請求未覆蓋輸出上限時，使用模型的 `maxTokens` 或介面卡預設值。小視窗部署應在容量範圍內設定餘量；降低 `thresholdRatio` 可以提早壓縮。
 
 <a id="endpoint-and-wire-format"></a>
-### 端点与协议格式
+### 端點與協定格式
 
-官方根地址为 `https://api.deepseek.com/anthropic`。显式 `baseURL` 或 `$DEEPSEEK_BASE_URL` 提供兼容 Messages 的根地址。模型与 Files 请求分别追加 `/v1/messages` 和 `/v1/files`，但末尾严格匹配的 `/v1` 路径段会直接复用。末尾斜线不改变这些结果。基址必须使用 HTTP(S)，且不含凭据、查询或片段。
+官方根地址為 `https://api.deepseek.com/anthropic`。顯式 `baseURL` 或 `$DEEPSEEK_BASE_URL` 提供相容 Messages 的根地址。模型與 Files 請求分別追加 `/v1/messages` 和 `/v1/files`，但末尾嚴格匹配的 `/v1` 路徑段會直接複用。末尾斜線不改變這些結果。基址必須使用 HTTP(S)，且不含憑證、查詢或片段。
 
-Messages 以内容块发送文本、思考、工具调用和工具结果，以 `output_config.effort` 发送推理强度，并以 Files 引用或内联 base64 发送图片。声明 `systemPromptUpdate: in-history` 的模型保留初始顶层 system，在对应 user/tool-result 轮次之后发送新的 system 快照；未声明能力时，使用最新快照作为顶层 system。回放元数据保留模型与思考签名。无效的回放元数据产生警告并省略签名，不丢弃文本或工具历史。 模型条目可声明 `toolUpdate: addition-only` 或 `in-history`；默认 `deepseek-flash` 条目声明 `addition-only`。投影后的 developer 工具更新转换为 system 角色的 `tool_addition` 和 `tool_removal` 块，引用已声明名称，延迟声明携带 `defer_loading`。包含这些块的请求发送 `mid-conversation-tool-changes-2026-07-01` beta 请求头。
+Messages 以內容塊傳送文字、思考、工具呼叫和工具結果，以 `output_config.effort` 傳送推理強度，並以 Files 引用或內聯 base64 傳送圖片。宣告 `systemPromptUpdate: in-history` 的模型保留初始頂層 system，在對應 user/tool-result 輪次之後傳送新的 system 快照；未宣告能力時，使用最新快照作為頂層 system。回放中繼資料保留模型與思考簽名。無效的回放中繼資料產生警告並省略簽名，不丟棄文字或工具歷史。 模型條目可宣告 `toolUpdate: addition-only` 或 `in-history`；預設 `deepseek-flash` 條目宣告 `addition-only`。投影后的 developer 工具更新轉換為 system 角色的 `tool_addition` 和 `tool_removal` 塊，引用已宣告名稱，延遲宣告攜帶 `defer_loading`。包含這些塊的請求傳送 `mid-conversation-tool-changes-2026-07-01` beta 請求頭。
 
-### 账号凭据
+### 帳號憑證
 
-`deepseek-official` 仅解析配置的 API Key 引用。`deepseek-account` 仅解析[账号提供者](../../credentials/deepseek-account-platform/README.zh.md)保存的授权，其允许的 `inferenceOrigin` 默认为 `https://api.deepseek.com`。两条路由均不回退到另一凭证。退出登录删除账号授权，保留 API Key。
+`deepseek-official` 僅解析設定的 API Key 引用。`deepseek-account` 僅解析[帳號提供者](../../credentials/deepseek-account-platform/README.zh.md)儲存的授權，其允許的 `inferenceOrigin` 預設為 `https://api.deepseek.com`。兩條路由均不退回到另一憑證。退出登入刪除帳號授權，保留 API Key。
 
-Messages 和 Files 请求通过 `x-dsh-auth-token` 发送账号 token，不加 Bearer 前缀；API Key 使用 `x-api-key`。两种凭据模式均拒绝重定向。账号 provider 负责 HTTP 401 分类和凭据失效处理；传输层将错误交给其回调。
+Messages 和 Files 請求透過 `x-dsh-auth-token` 傳送帳號 token，不加 Bearer 字首；API Key 使用 `x-api-key`。兩種憑證模式均拒絕重定向。帳號 provider 負責 HTTP 401 分類和憑證失效處理；傳輸層將錯誤交給其回呼。
 
-### 带 thinking 与图片的流式调用
+### 帶 thinking 與圖片的流式呼叫
 
-支持图片的路由为每个持久引用选定请求目标，再把它解析为确定性请求版本。省略 `imagePixelBudget` 时按官方公布的视觉 token 网格定目标，即 14 px patch、3:1 降采样、单图最多 1024 token，因此正方形图片最多保留 1302×1302 像素，16:9 图片以 1708×961 发送、对应提供方 1708×966 的网格；正整数会用总像素预算取代网格，`low` 使用总计 512×512 像素。每张请求图片单边最多 4096 像素，这是提供方对包含 15 张及以上图片的请求的限制；`imageMaxBytes` 默认为 2 MiB。带 alpha 的图片使用 effort 0 的 WebP，不透明图片使用 JPEG，并采用 85/75/60 质量阶梯；全部候选都超过目标时保留最小输出。每张保留图片前都有文本，注明完整附件 id 与实际请求尺寸。当前文件系统可以映射附件提供方的宿主对象时，该文本还携带只读执行世界路径与可写副本使用的扩展名。纯文本与未列出路由接收稳定附件占位符，而持久历史继续保留图片引用。
+支援圖片的路由為每個持久引用選定請求目標，再把它解析為確定性請求版本。省略 `imagePixelBudget` 時按官方公佈的視覺 token 網格定目標，即 14 px patch、3:1 降取樣、單圖最多 1024 token，因此正方形圖片最多保留 1302×1302 畫素，16:9 圖片以 1708×961 傳送、對應提供者 1708×966 的網格；正整數會用總畫素預算取代網格，`low` 使用總計 512×512 畫素。每張請求圖片單邊最多 4096 畫素，這是提供者對包含 15 張及以上圖片的請求的限制；`imageMaxBytes` 預設為 2 MiB。帶 alpha 的圖片使用 effort 0 的 WebP，不透明圖片使用 JPEG，並採用 85/75/60 品質階梯；全部候選都超過目標時保留最小輸出。每張保留圖片前都有文字，註明完整附件 id 與實際請求尺寸。目前檔案系統可以對映附件提供者的主機物件時，該文字還攜帶只讀執行世界路徑與可寫副本使用的副檔名。純文字與未列出路由接收穩定附件預留位置，而持久歷史繼續保留圖片引用。
 
-适配器通常通过 `/v1/files` 上传这些确切请求字节，并发送 file-id 引用。Files 请求与包含 file id 的模型请求均携带 `anthropic-beta: files-api-2025-04-14`。全部请求拒绝重定向，确保凭据仅发送到配置的源。文件解析失败或超时会按内联预算，用内联 base64 重建整份模型请求；一次请求绝不混用 file id 与内联图片。调用方取消会停止请求。
+介面卡通常透過 `/v1/files` 上傳這些確切請求位元組，併傳送 file-id 引用。Files 請求與包含 file id 的模型請求均攜帶 `anthropic-beta: files-api-2025-04-14`。全部請求拒絕重定向，確保憑證僅傳送到設定的源。檔案解析失敗或超時會按內聯預算，用內聯 base64 重建整份模型請求；一次請求絕不混用 file id 與內聯圖片。呼叫方取消會停止請求。
 
-缓存 id 按端点与凭据限定作用域，在到期前刷新，根据提供方的陈旧文件错误失效，并通过带等待方局部取消的 singleflight 解析。上传通过 `expires_after[anchor]=created_at` 与 `expires_after[seconds]` 请求过期。Messages 文件元数据不含远端过期时间，因此本地复用期限使用原始上传时间加 `fileExpiresAfterSeconds`；这不保证远端文件删除。配额失败会先删除一批配置数量的最旧 harness 文件，再重试一次上传。
+快取 id 按端點與憑證限定作用域，在到期前重新整理，根據提供者的陳舊檔案錯誤失效，並透過帶等待方區域性取消的 singleflight 解析。上傳透過 `expires_after[anchor]=created_at` 與 `expires_after[seconds]` 請求過期。Messages 檔案中繼資料不含遠端過期時間，因此本地複用期限使用原始上傳時間加 `fileExpiresAfterSeconds`；這不保證遠端檔案刪除。配額失敗會先刪除一批設定數量的最舊 harness 檔案，再重試一次上傳。
 
-Files 模式通过 `maxRequestFilesBytes` 与 `maxImagesPerRequest` 限制保留请求版本；内联回退有独立 base64 预算。两种模式都按配置的字节或数量量子移除最旧前缀。每张省略图片都有自己的模型可见占位符，包含显示名或附件 id，以及可用时的规范化尺寸、媒体类型与当前只读路径。分阶高水位策略避免每新增一张图片都改写旧请求前缀。
+Files 模式透過 `maxRequestFilesBytes` 與 `maxImagesPerRequest` 限制保留請求版本；內聯退回有獨立 base64 預算。兩種模式都按設定的位元組或數量量子移除最舊字首。每張省略圖片都有自己的模型可見預留位置，包含顯示名或附件 id，以及可用時的規範化尺寸、媒體型別與目前只讀路徑。分階高水位策略避免每新增一張圖片都改寫舊請求字首。
 
-`reasoningEffort` 选择公布的默认值。当部署策略允许 thinking 时，确切模型元数据会按顺序公开 `off`、`low`、`high` 与 `max` 强度及选择指引。`low`、`high` 与 `max` 启用 thinking，并以 `output_config.effort` 序列化，适配器自有的 `off` 则发送 `thinking.type: disabled`。不支持的取值会在网络 I/O 前以 `UNSUPPORTED_REASONING_EFFORT` 失败；`thinking: disabled` 会在插件加载时拒绝任何非 `off` 强度。`purpose: 'session-title'` 的请求会强制关闭 thinking，把有界输出留给可见标题文本。适配器转发显式 `temperature`；DeepSeek 在启用 thinking 时接受该参数，但忽略其值。
+`reasoningEffort` 選擇公佈的預設值。當部署策略允許 thinking 時，確切模型中繼資料會按順序公開 `off`、`low`、`high` 與 `max` 強度及選擇指引。`low`、`high` 與 `max` 啟用 thinking，並以 `output_config.effort` 序列化，介面卡自有的 `off` 則傳送 `thinking.type: disabled`。不支援的取值會在網路 I/O 前以 `UNSUPPORTED_REASONING_EFFORT` 失敗；`thinking: disabled` 會在外掛載入時拒絕任何非 `off` 強度。`purpose: 'session-title'` 的請求會強制關閉 thinking，把有界輸出留給可見標題文字。介面卡轉發顯式 `temperature`；DeepSeek 在啟用 thinking 時接受該參數，但忽略其值。
 
-### 动态配置
+### 動態設定
 
-连接选项在每次操作开始时从 volatile Config 引用捕获。Config 验证在表单持久化前拒绝无效候选值。凭据使用与端点、图像及 Files 策略、空闲预算相同的快照解析。附件服务在请求时解析。
+連線選項在每次操作開始時從 volatile Config 引用捕捉。Config 驗證在表單持久化前拒絕無效候選值。憑證使用與端點、影象及 Files 策略、空閒預算相同的快照解析。附件服務在請求時解析。
 
-### 提供方专用请求字段
+### 提供者專用請求欄位
 
-存在 `ctx.deepseekLlmApiExtensions` 时，适配器会在 `fetch` 前根据确切序列化基础请求准备已注册顶层字段。准备或字段冲突在 HTTP 前失败；2xx 响应后，适配器会在消费 SSE（Server-Sent Events）前接受每项已捕获贡献。传输与非 2xx 失败不会接受它们。基础请求连同扩展字段无法序列化时，适配器只发送基础请求并跳过接受，让贡献方在之后的请求中重发自身状态，同时记录一条列出被省略字段的告警。随产品交付的组合用它提供默认启用的增量 `dsh_session_log` 字段和默认启用的活跃 `dsh_plugin_packages` 清单；两者都留在模型输入之外。
+存在 `ctx.deepseekLlmApiExtensions` 時，介面卡會在 `fetch` 前根據確切序列化基礎請求準備已註冊頂層欄位。準備或欄位衝突在 HTTP 前失敗；2xx 回應後，介面卡會在消費 SSE（Server-Sent Events）前接受每項已捕捉貢獻。傳輸與非 2xx 失敗不會接受它們。基礎請求連同擴充功能欄位無法序列化時，介面卡只傳送基礎請求並跳過接受，讓貢獻方在之後的請求中重發自身狀態，同時記錄一條列出被省略欄位的告警。隨產品交付的組合用它提供預設啟用的增量 `dsh_session_log` 欄位和預設啟用的活躍 `dsh_plugin_packages` 清單；兩者都留在模型輸入之外。
 
-### 失败与恢复
+### 失敗與恢復
 
-配置仅接受 Messages，不提供 `protocol` 字段。若解析报告 `protocol is not configurable`，请从 `$DSH_HOME/profiles/<profile>/cordis.patch.yml` 中 `llm-deepseek` 条目的 `config` 以及覆盖它的 home patch 或命令行 overlay 中删除 `protocol`，保留需要的 `baseURL`、`apiKeyEnv` 和 `models` 字段。已存储的配置若被适配器校验拒绝，后续请求会持续失败，直到配置修正；在模型设置卡中保存其他字段不会移除未知属性。请编辑配置文件，等待 profile 通过 HMR（热模块替换）重新加载；若未启用 HMR，则重启 profile。
+設定僅接受 Messages，不提供 `protocol` 欄位。若解析報告 `protocol is not configurable`，請從 `$DSH_HOME/profiles/<profile>/cordis.patch.yml` 中 `llm-deepseek` 條目的 `config` 以及覆蓋它的 home patch 或命令列 overlay 中刪除 `protocol`，保留需要的 `baseURL`、`apiKeyEnv` 和 `models` 欄位。已儲存的設定若被介面卡驗證拒絕，後續請求會持續失敗，直到設定修正；在模型設定卡中儲存其他欄位不會移除未知屬性。請編輯設定檔，等待 profile 透過 HMR（熱模組替換）重新載入；若未啟用 HMR，則重新啟動 profile。
 
-成功的 Files 响应必须包含有效 JSON。上传、列举、获取和删除操作的 JSON 解码失败抛出 `INVALID_RESPONSE`，消息包含操作名称与 HTTP 状态，`LlmError.failure` 保留该状态，`cause` 保留原始解析错误。读取响应体时的传输和取消错误保留其原有身份。
+成功的 Files 回應必須包含有效 JSON。上傳、列舉、取得和刪除操作的 JSON 解碼失敗丟擲 `INVALID_RESPONSE`，訊息包含操作名稱與 HTTP 狀態，`LlmError.failure` 保留該狀態，`cause` 保留原始解析錯誤。讀取回應體時的傳輸和取消錯誤保留其原有身份。
 
-非 2xx 响应以稳定 code 失败：`AUTH`（401/403）、`QUOTA`、`RATE_LIMIT`、`CONTEXT_WINDOW_EXCEEDED`、`INVALID_REQUEST`、`SERVER` 以及其他情况的 `HTTP_<status>`；响应前传输失败抛出 `TRANSPORT`，调用方中止抛出 `ABORTED`，流空闲超时抛出 `TIMEOUT`。请求扩展准备、字段冲突或 2xx 后接受失败使用 `REQUEST_EXTENSION`。当提供方未指出 file id 时，规范化图片拒绝会列出所有可能附件及其持久位置。陈旧文件拒绝会使点名映射（或该次尝试使用的全部映射）失效，并允许一次替换模型请求。协议违规抛出 `STREAM_CLOSED` 或 `MALFORMED_RESPONSE`；不带内容块的终止 `stop` 变成 `EMPTY_RESPONSE`，默认重试策略会重试它。官方路由缺少 API Key 的请求以 `MISSING_CREDENTIAL` 失败；格式错误的凭据以 `INVALID_CREDENTIAL` 失败，并点名需要修复的引用——绝不包含密钥的任何部分。
+非 2xx 回應以穩定 code 失敗：`AUTH`（401/403）、`QUOTA`、`RATE_LIMIT`、`CONTEXT_WINDOW_EXCEEDED`、`INVALID_REQUEST`、`SERVER` 以及其他情況的 `HTTP_<status>`；回應前傳輸失敗丟擲 `TRANSPORT`，呼叫方中止丟擲 `ABORTED`，流空閒超時丟擲 `TIMEOUT`。請求擴充功能準備、欄位衝突或 2xx 後接受失敗使用 `REQUEST_EXTENSION`。當提供者未指出 file id 時，規範化圖片拒絕會列出所有可能附件及其持久位置。陳舊檔案拒絕會使點名對映（或該次嘗試使用的全部對映）失效，並允許一次替換模型請求。協定違規丟擲 `STREAM_CLOSED` 或 `MALFORMED_RESPONSE`；不帶內容塊的終止 `stop` 變成 `EMPTY_RESPONSE`，預設重試策略會重試它。官方路由缺少 API Key 的請求以 `MISSING_CREDENTIAL` 失敗；格式錯誤的憑證以 `INVALID_CREDENTIAL` 失敗，並點名需要修復的引用——絕不包含金鑰的任何部分。
 
-提供方插件负责目录可用性；仅账号路由要求存有凭据才能发现模型。两者的目录独立配置；传输层提供共享的默认模型元数据和能力解析。
+提供者外掛負責目錄可用性；僅帳號路由要求存有憑證才能發現模型。兩者的目錄獨立設定；傳輸層提供共享的預設模型中繼資料和能力解析。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释适配器背后的设计；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋介面卡背後的設計；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-插件建立在一个显式解析步骤与一条注册事实之上。`resolveAdapterOptions()` 是从原始配置到已校验连接事实的唯一路径，适配器通过 thunk 每次操作重新读取这些事实——基址、目录、请求默认值、图片与 Files 策略及空闲预算都会作用于下一个请求，而进行中的流保持其启动时的事实。注册时捕获的唯一事实是重试策略：解析值变化时，插件会在一个同步区段内原位重新注册路由，因此任何请求都观察不到空档。
+外掛建立在一個顯式解析步驟與一條註冊事實之上。`resolveAdapterOptions()` 是從原始設定到已驗證連線事實的唯一路徑，介面卡透過 thunk 每次操作重新讀取這些事實——基址、目錄、請求預設值、圖片與 Files 策略及空閒預算都會作用於下一個請求，而進行中的流保持其啟動時的事實。註冊時捕捉的唯一事實是重試策略：解析值變化時，外掛會在一個同步區段內原位重新註冊路由，因此任何請求都觀察不到空檔。
 
-### 源码导航
+### 原始碼導航
 
-[`src/index.ts`](src/index.ts) 导出协议库；[`src/host.ts`](src/host.ts) 为 provider 插件绑定共享 Host 服务。[`src/adapter.ts`](src/adapter.ts) 管理请求生命周期；[`src/serialize.ts`](src/serialize.ts) 和 [`src/translate.ts`](src/translate.ts) 映射模型输入与流式输出。[`src/file-store.ts`](src/file-store.ts) 通过 [`src/files-api.ts`](src/files-api.ts) 管理上传复用与恢复。
+[`src/index.ts`](src/index.ts) 匯出協定庫；[`src/host.ts`](src/host.ts) 為 provider 外掛繫結共享 Host 服務。[`src/adapter.ts`](src/adapter.ts) 管理請求生命週期；[`src/serialize.ts`](src/serialize.ts) 和 [`src/translate.ts`](src/translate.ts) 對映模型輸入與流式輸出。[`src/file-store.ts`](src/file-store.ts) 透過 [`src/files-api.ts`](src/files-api.ts) 管理上傳複用與恢復。
 
-### 协议流程
+### 協定流程
 
-一次 `stream()` 调用通常发一条模型请求：解析确定性请求图片、优先使用 Files id、准备所有已注册顶层请求扩展、向解析后的 `baseURL` 发起 fetch、在 HTTP 2xx 后接受扩展事务，并把 SSE 流翻译为 harness 协议。文件解析失败会让首条请求使用内联模式；提供方的陈旧文件响应允许一次替换尝试，且替换解析失败时也使用内联模式。每条模型与 Files 调用都携带共享归因。模型请求还在模型输入之外携带稳定匿名用户 id，并在存在 session id 时携带该值。推理历史会按需序列化回请求，缓存计量则把 DeepSeek 的缓存命中指标映射进 harness 用量桶。
+一次 `stream()` 呼叫通常發一條模型請求：解析確定性請求圖片、優先使用 Files id、準備所有已註冊頂層請求擴充功能、向解析後的 `baseURL` 發起 fetch、在 HTTP 2xx 後接受擴充功能事務，並把 SSE 流翻譯為 harness 協定。檔案解析失敗會讓首條請求使用內聯模式；提供者的陳舊檔案回應允許一次替換嘗試，且替換解析失敗時也使用內聯模式。每條模型與 Files 呼叫都攜帶共享歸因。模型請求還在模型輸入之外攜帶穩定匿名使用者 id，並在存在 session id 時攜帶該值。推理歷史會按需序列化回請求，快取計量則把 DeepSeek 的快取命中指標對映進 harness 用量桶。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从服务约定逐步进入孪生适配器、重试执行器与共享类型。
+當包級約定不夠用時閱讀以下頁面。它們從服務約定逐步進入孿生介面卡、重試執行器與共享型別。
 
-- [dsh-llm 服务](../llm/README.zh.md)——本适配器注册其上的提供方无关服务。
-- [llm-pi-ai 适配器](../llm-pi-ai/README.zh.md)——服务其他提供方与网关的库实现孪生。
-- [LLM 流式子系统](../../../docs/subsystems/llm-streaming.zh.md)——`StreamChunk` 协议与适配器约定。
-- [llm-retry](../llm-retry/README.zh.md)——应用本适配器 `retryPolicy` 的重试执行器。
-- [DeepSeek 请求扩展](../deepseek-llm-api-extensions/README.zh.md)——提供方专用顶层字段的生命周期与接受语义。
-- [会话日志上传](../../session/session-log-deepseek/README.zh.md)——默认启用的增量 `dsh_session_log` 贡献。
-- [插件包清单](../plugin-package-inventory-deepseek/README.zh.md)——默认启用的 `dsh_plugin_packages` 贡献。
-- [孪生 LLM 适配器](../../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——为什么 DeepSeek 交付两个结构不同的适配器。
-- [强制应用归因标头](../../../.agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.zh.md)——每个提供方请求携带的身份。
+- [dsh-llm 服務](../llm/README.zh.md)——本介面卡註冊其上的提供者無關服務。
+- [llm-pi-ai 介面卡](../llm-pi-ai/README.zh.md)——服務其他提供者與閘道的庫實作孿生。
+- [LLM 流式子系統](../../../docs/subsystems/llm-streaming.zh.md)——`StreamChunk` 協定與介面卡約定。
+- [llm-retry](../llm-retry/README.zh.md)——應用本介面卡 `retryPolicy` 的重試執行器。
+- [DeepSeek 請求擴充功能](../deepseek-llm-api-extensions/README.zh.md)——提供者專用頂層欄位的生命週期與接受語義。
+- [工作階段日誌上傳](../../session/session-log-deepseek/README.zh.md)——預設啟用的增量 `dsh_session_log` 貢獻。
+- [外掛包清單](../plugin-package-inventory-deepseek/README.zh.md)——預設啟用的 `dsh_plugin_packages` 貢獻。
+- [孿生 LLM 介面卡](../../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——為什麼 DeepSeek 交付兩個結構不同的介面卡。
+- [強制應用歸因標頭](../../../.agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.zh.md)——每個提供者請求攜帶的身份。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### DeepSeek 请求
+### DeepSeek 請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-所选 DeepSeek 模型会收到 harness 系统提示词、消息历史、工具 schema、停止序列与调用配置（`maxTokens`、`reasoningEffort`、`temperature`），不包含适配器撰写的提示词散文。提供方专用请求扩展字段留在模型输入之外。视觉模型通常接收 Files API 引用形式的用户与工具结果图片，其旁带附件句柄和请求预览尺寸。当前执行文件系统可以映射附件提供方的宿主对象时，它还会收到规范化对象路径；描述符会把该副本标记为只读，并警告规范化可能缩放或重新编码上传内容。Files 解析失败时，全部保留图片改用内联 base64；超出预算的较旧图片则在占位文本中保留当前请求已解析的访问方式。此前 assistant 轮次的推理内容会原样传回，无论该轮次是否调用了工具。 对于非法 JSON 或非对象的历史工具参数，Messages 发送 `{}`。此参数兜底保留调用 ID、工具名和工具结果；原始参数仍保留在 Session 日志中。新生成的 Messages 工具参数仍须是有效 JSON 对象。 Messages 会省略用户消息和工具结果中的 `reasoning` 与 `tool-call` 块。这也允许回放包含助手输出的已保存子 Agent 通知；原始 Session 内容保持完整。转换后的空用户消息会被跳过，空工具结果则保留调用 id 和错误标记。其他不支持的输入块仍会以 `UNSUPPORTED_CONTENT` 失败。
+所選 DeepSeek 模型會收到 harness 系統提示詞、訊息歷史、工具 schema、停止序列與呼叫設定（`maxTokens`、`reasoningEffort`、`temperature`），不包含介面卡撰寫的提示詞散文。提供者專用請求擴充功能欄位留在模型輸入之外。視覺模型通常接收 Files API 引用形式的使用者與工具結果圖片，其旁帶附件控制代碼和請求預覽尺寸。目前執行檔案系統可以對映附件提供者的主機物件時，它還會收到規範化物件路徑；描述符會把該副本標記為只讀，並警告規範化可能縮放或重新編碼上傳內容。Files 解析失敗時，全部保留圖片改用內聯 base64；超出預算的較舊圖片則在佔位文字中保留目前請求已解析的存取方式。此前 assistant 輪次的推理內容會原樣傳回，無論該輪次是否呼叫了工具。 對於非法 JSON 或非物件的歷史工具參數，Messages 傳送 `{}`。此參數後備保留呼叫 ID、工具名和工具結果；原始參數仍保留在 Session 日誌中。新生成的 Messages 工具參數仍須是有效 JSON 物件。 Messages 會省略使用者訊息和工具結果中的 `reasoning` 與 `tool-call` 塊。這也允許回放包含助手輸出的已儲存子 Agent 通知；原始 Session 內容保持完整。轉換後的空使用者訊息會被跳過，空工具結果則保留呼叫 id 和錯誤標記。其他不支援的輸入塊仍會以 `UNSUPPORTED_CONTENT` 失敗。
 
-#### Token 影响
+#### Token 影響
 
-提供方分词决定精确的文本与图片 token 输入。适配器声明按路由的 `imageRequestPricing`：把日志中的图片省略决策选中的每个出现位置按其占位文本计价，并按投影后的尺寸使用公开的视觉计量规则（14 px patch 网格、3:1 降采样、544×544 放大下限、单图 1024 token 上限）为每张保留图片计价。这使 token 计量服务可以在请求发出前为图片压力定价；上报的 usage 仍是权威值。推理回传会把每个推理轮次的思维链带进后续请求，而已省略的图片不再消耗视觉 token。保留的出现位置按精确请求版本字节超过 file 模式或内联回退预算（`maxRequestFilesBytes`、`maxImagesPerRequest` 与两个量子）的请求，以 `IMAGE_OFFLOAD_REQUIRED` 失败并说明还需省略多少最老的出现位置，由 `dsh-compaction-image-offload` 用 `image/offload` 事件记录所选位置并重试。可用时报告缓存读取用量。Messages 的 token 总数包含未缓存输入、输出、缓存读取与缓存写入 token。
+提供者分詞決定精確的文字與圖片 token 輸入。介面卡宣告按路由的 `imageRequestPricing`：把日誌中的圖片省略決策選中的每個出現位置按其佔位文字計價，並按投影后的尺寸使用公開的視覺計量規則（14 px patch 網格、3:1 降取樣、544×544 放大下限、單圖 1024 token 上限）為每張保留圖片計價。這使 token 計量服務可以在請求發出前為圖片壓力定價；上報的 usage 仍是權威值。推理回傳會把每個推理輪次的思維鏈帶進後續請求，而已省略的圖片不再消耗視覺 token。保留的出現位置按精確請求版本位元組超過 file 模式或內聯退回預算（`maxRequestFilesBytes`、`maxImagesPerRequest` 與兩個量子）的請求，以 `IMAGE_OFFLOAD_REQUIRED` 失敗並說明還需省略多少最老的出現位置，由 `dsh-compaction-image-offload` 用 `image/offload` 事件記錄所選位置並重試。可用時報告快取讀取用量。Messages 的 token 總數包含未快取輸入、輸出、快取讀取與快取寫入 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-未改变的已组装前缀有资格获得 DeepSeek 缓存复用，本适配器会在用量中报告。确定性的请求图片字节并不意味着完整前缀固定不变：执行世界路径变化会改写历史描述符文本，刷新上传会替换 `file_id`，Files 到 base64 的回退也会改变图片表示。这些变化以及模型路由、提示词、schema、历史或图片预算变化，都可能从首个受影响 token 起阻止复用；推理回传在每个推理轮次上追加内容。在声明了 `systemPromptUpdate: in-history` 的目录条目上，同一请求序列延续期间的系统提示词变化会追加到已缓存历史之后，因此直到该历史末尾的前缀仍可复用；工具 schema 变化仍会从第一个改变的 token 起阻止复用。
+未改變的已組裝字首有資格獲得 DeepSeek 快取複用，本介面卡會在用量中報告。確定性的請求圖片位元組並不意味著完整字首固定不變：執行世界路徑變化會改寫歷史描述符文字，重新整理上傳會替換 `file_id`，Files 到 base64 的退回也會改變圖片表示。這些變化以及模型路由、提示詞、schema、歷史或圖片預算變化，都可能從首個受影響 token 起阻止複用；推理回傳在每個推理輪次上追加內容。在宣告瞭 `systemPromptUpdate: in-history` 的目錄條目上，同一請求序列延續期間的系統提示詞變化會追加到已快取歷史之後，因此直到該歷史末尾的字首仍可複用；工具 schema 變化仍會從第一個改變的 token 起阻止複用。
 
-### DeepSeek 响应
+### DeepSeek 回應
 
-#### 模型看到什么
+#### 模型看到什麼
 
-推理、文本与原始字符串工具参数会被翻译为 harness 分片，供 loop 记录并组装。
+推理、文字與原始字串工具參數會被翻譯為 harness 分片，供 loop 記錄並組裝。
 
-#### Token 影响
+#### Token 影響
 
-生成的 token 遵循请求中记录的推理强度与 `maxTokens`；只有 loop 保留的块会影响后续输入。
+生成的 token 遵循請求中記錄的推理強度與 `maxTokens`；只有 loop 保留的塊會影響後續輸入。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-loop 保留的响应块会追加到下一个请求，并保留其更早的可复用前缀；被丢弃的块不再有后续缓存影响。更换提供方或模型会选中不同的缓存域。
+loop 保留的回應塊會追加到下一個請求，並保留其更早的可複用字首；被丟棄的塊不再有後續快取影響。更換提供者或模型會選中不同的快取域。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明适配器在哪里停止、由未来工作接续。它们是当前包约束，不是通用 DeepSeek 对比或任务积压。
+這些限制說明介面卡在哪裡停止、由未來工作接續。它們是目前包約束，不是通用 DeepSeek 對比或任務積壓。
 
-- **替换 `models` 会替换完整目录列表**——修改单个模型条目时使用路径编辑。
-- **不映射 `tool_choice`**——不属于核心词汇（与 pi-ai 孪生共享）。
-- **请求使用原始 `fetch`，而非 `@cordisjs/plugin-http`**——没有共享代理或拦截配置。
-- **Messages 历史内 system 更新需要保留用户或工具结果轮次**——若更新后的全部用户输入都被省略，且前一个协议轮次是 assistant，序列化会在下一个 assistant 之前或请求结束处以 `UNSUPPORTED_CONTENT` 失败。文本或空工具结果可以保留该轮次。不支持将更新移到更早的轮次；[输入历史决策](../../../.agents/notes/implemented/bug-fix/2026-09-18-messages-input-history-compatibility.zh.md)记录了排序约束。
-- **图片是仅用于输入的持久附件**——不支持直接外部 URL 与 assistant 图片输出；DeepSeek 输入通常使用 Files API，仅在单次请求恢复时使用内联 base64。
-- 默认目录公布 `deepseek-flash` 及其文本、图片和历史内更新能力，不探测网关可用性。网关开放该 ID 前，请求可能以 `INVALID_REQUEST` 失败。
-- [adapter.e2e.ts](tests/adapter.e2e.ts) 与 [runtime.e2e.ts](tests/runtime.e2e.ts) 中的真实 API 检查需要 `DEEPSEEK_API_KEY`。将 `DEEPSEEK_IN_HISTORY_MODEL` 设为受支持的非空模型 ID 可运行 system 更新检查：适配器套件使用 `high` 思考强度，运行时套件则在关闭思考时比较缓存复用，可能受到指令遵循不稳定的影响。运行时图片用例还需要 `DEEPSEEK_FLASH_E2E=1` 或 `DEEPSEEK_VISION_E2E=1`。
+- **替換 `models` 會替換完整目錄列表**——修改單個模型條目時使用路徑編輯。
+- **不對映 `tool_choice`**——不屬於核心詞彙（與 pi-ai 孿生共享）。
+- **請求使用原始 `fetch`，而非 `@cordisjs/plugin-http`**——沒有共享代理或攔截設定。
+- **Messages 歷史內 system 更新需要保留使用者或工具結果輪次**——若更新後的全部使用者輸入都被省略，且前一個協定輪次是 assistant，序列化會在下一個 assistant 之前或請求結束處以 `UNSUPPORTED_CONTENT` 失敗。文字或空工具結果可以保留該輪次。不支援將更新移到更早的輪次；[輸入歷史決策](../../../.agents/notes/implemented/bug-fix/2026-09-18-messages-input-history-compatibility.zh.md)記錄了排序約束。
+- **圖片是僅用於輸入的持久附件**——不支援直接外部 URL 與 assistant 圖片輸出；DeepSeek 輸入通常使用 Files API，僅在單次請求恢復時使用內聯 base64。
+- 預設目錄公佈 `deepseek-flash` 及其文字、圖片和歷史內更新能力，不探測閘道可用性。閘道開放該 ID 前，請求可能以 `INVALID_REQUEST` 失敗。
+- [adapter.e2e.ts](tests/adapter.e2e.ts) 與 [runtime.e2e.ts](tests/runtime.e2e.ts) 中的真實 API 檢查需要 `DEEPSEEK_API_KEY`。將 `DEEPSEEK_IN_HISTORY_MODEL` 設為受支援的非空模型 ID 可執行 system 更新檢查：介面卡套件使用 `high` 思考強度，執行時套件則在關閉思考時比較快取複用，可能受到指令遵循不穩定的影響。執行時圖片案例還需要 `DEEPSEEK_FLASH_E2E=1` 或 `DEEPSEEK_VISION_E2E=1`。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-无。
+無。
 
-**运行时不变式：** 不发布伴生入口。本包没有独立事件序列或可变数据关系，相关约定在所属 seam 强制执行。
+**執行時不變式：** 不釋出伴生入口。本包沒有獨立事件序列或可變資料關係，相關約定在所屬 seam 強制執行。
 
-`deepseek-official` 仅使用配置的 API Key 引用；`deepseek-account` 仅在账号提供方允许的推理来源使用已保存的 DSH 授权。两条路由共享 Messages 传输，模型与文件设置独立配置。账号凭证缺失或不适用于目标时拒绝请求并提示登录；两条路由均不回退到另一凭证。Chat 和 Files 请求拒绝重定向。账号提供方根据运行中 Agent 已记录的请求上下文负责退登取消，包括工具执行阶段；传输层接收现有请求的中止信号。
+`deepseek-official` 僅使用設定的 API Key 引用；`deepseek-account` 僅在帳號提供者允許的推理來源使用已儲存的 DSH 授權。兩條路由共享 Messages 傳輸，模型與檔案設定獨立設定。帳號憑證缺失或不適用於目標時拒絕請求並提示登入；兩條路由均不退回到另一憑證。Chat 和 Files 請求拒絕重定向。帳號提供者根據執行中 Agent 已記錄的請求上下文負責退登取消，包括工具執行階段；傳輸層接收現有請求的中止訊號。

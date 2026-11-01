@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { fileMediaUrl } from '../src/index.ts'
 
 describe('fileMediaUrl', () => {
-  it.each(['/work/测试 文件#100%.png', 'C:\\work\\测试 文件.png'])(
+  it.each(['/work/測試 檔案#100%.png', 'C:\\work\\測試 檔案.png'])(
     'preserves the decoded native path %s under a mounted application', (path) => {
       const url = new URL(fileMediaUrl('https://host/tools/dsh/', path)!)
       expect(url.pathname).toBe('/tools/dsh/api/file')
@@ -16,7 +16,7 @@ describe('fileMediaUrl', () => {
   )
   it.each(['dsh-app://app/', 'dsh-app://app/index.html'])(
     'serves decoded native paths through the Desktop application %s', (base) => {
-      for (const path of ['/work/测试 文件#100%.png', 'C:\\work\\测试 文件.png']) {
+      for (const path of ['/work/測試 檔案#100%.png', 'C:\\work\\測試 檔案.png']) {
         const url = new URL(fileMediaUrl(base, path)!)
         expect(url.href.split('?')[0]).toBe('dsh-app://app/api/file')
         expect(url.searchParams.get('path')).toBe(path)

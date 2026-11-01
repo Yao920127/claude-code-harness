@@ -1,12 +1,12 @@
-# 同会话目标
+# 同工作階段目標
 
 [English](goal.md) | 中文
 
-事件溯源目标服务及其策略消费方共享的类型。[目标领域 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.zh.md) 负责记录持久化与激活决策；本页记录 [`packages/goal/goal/src/types.ts`](../../packages/goal/goal/src/types.ts) 中的确切字段和变体。
+事件溯源目標服務及其策略消費方共享的型別。[目標領域 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.zh.md) 負責記錄持久化與啟用決策；本頁記錄 [`packages/goal/goal/src/types.ts`](../../packages/goal/goal/src/types.ts) 中的確切欄位和變體。
 
-## 标识与生命周期
+## 標識與生命週期
 
-`GoalId` 是[品牌化 id](core.zh.md#branded-ids)。调用方通过 `GoalRef` 修改一个确切修订版本；每次获准的持久变更都会递增修订号。
+`GoalId` 是[品牌化 id](core.zh.md#branded-ids)。呼叫方透過 `GoalRef` 修改一個確切修訂版本；每次獲准的持久變更都會遞增修訂號。
 
 ```ts type-equiv
 /** Compare-and-set identity for one exact goal revision. */
@@ -18,7 +18,7 @@ interface GoalRef {
 }
 ```
 
-持久阶段回答目标发生了什么。进程本地激活状态则另行回答续跑消费方能否开始另一个 Round。
+持久階段回答目標發生了什麼。程序本地啟用狀態則另行回答續跑消費方能否開始另一個 Round。
 
 ```ts type-equiv
 /** Durable continuation phase. Activation is process-local and separate. */
@@ -29,7 +29,7 @@ type GoalPhase =
   | 'complete'
 ```
 
-阻塞是唯一表示「因问题而停止」的持久状态。由策略负责的阻塞原因会携带一个用于路由、稳定且采用 lower-kebab-case 的代码，以及一段供人和模型阅读的自由文本说明。
+阻塞是唯一表示「因問題而停止」的持久狀態。由策略負責的阻塞原因會攜帶一個用於路由、穩定且採用 lower-kebab-case 的程式碼，以及一段供人和模型閱讀的自由文字說明。
 
 ```ts type-equiv
 /** Machine-routable and human-readable explanation for a blocked goal. */
@@ -69,7 +69,7 @@ interface GoalView extends GoalSnapshot {
 }
 ```
 
-服务还会在不改变持久状态的情况下发布进程本地 activation 边沿；客户端消费该事件获得实时状态。
+服務還會在不改變持久狀態的情況下發布程序本地 activation 邊沿；用戶端消費該事件獲得即時狀態。
 
 ```ts type-equiv
 /** Live process-local activation update forwarded to UI clients. */
@@ -88,9 +88,9 @@ interface GoalActivationChanged {
 }
 ```
 
-## 持久变更
+## 持久變更
 
-每次变更都是持久的 `goal/change` 会话事件，其载荷要么是变更后的完整快照，要么是清除墓碑。严格折叠与持久投影只从这些事件派生生命周期状态；inbox 变更不会影响 goal 状态。
+每次變更都是持久的 `goal/change` 工作階段事件，其載荷要麼是變更後的完整快照，要麼是清除墓碑。嚴格摺疊與持久投影只從這些事件派生生命週期狀態；inbox 變更不會影響 goal 狀態。
 
 ```ts type-equiv
 /** Full-snapshot goal mutation committed by a durable `goal/change` event. */
@@ -116,7 +116,7 @@ interface GoalClearChangeMeta {
 }
 ```
 
-续跑消费方会为每个获准的用户消息轮次标注正数且连续的 Round 编号和当前修订号；只有这些获准的 `user/message` 事件会推进 `roundsStarted`。回放会拒绝非正数 Round、编号缺口、陈旧修订号、已停止阶段和超出上限。
+續跑消費方會為每個獲准的使用者訊息輪次標註正數且連續的 Round 編號和目前修訂號；只有這些獲准的 `user/message` 事件會推進 `roundsStarted`。回放會拒絕非正數 Round、編號缺口、陳舊修訂號、已停止階段和超出上限。
 
 ```ts type-equiv
 /** Message attribution for admitted continuation rounds. */
@@ -129,9 +129,9 @@ interface GoalMessageSource {
 }
 ```
 
-## 请求与通知
+## 請求與通知
 
-创建操作会区分调用方省略字段与采用部署配置值这两种情况，`create()` 会在内部解析后者。编辑是局部替换，其运行时校验器要求至少提供一个字段。每条变更通知都会携带获准的操作和确切修订号；清除操作不带 `goal`。
+建立操作會區分呼叫方省略欄位與採用部署設定值這兩種情況，`create()` 會在內部解析後者。編輯是區域性替換，其執行時驗證器要求至少提供一個欄位。每條變更通知都會攜帶獲准的操作和確切修訂號；清除操作不帶 `goal`。
 
 ```ts type-equiv
 /** Input whose omitted round cap is resolved by the service configuration. */
@@ -159,9 +159,9 @@ interface GoalChanged {
 }
 ```
 
-## 服务行为
+## 服務行為
 
-[`GoalService`](../../packages/goal/goal/src/index.ts) 解析创建默认值、从可选注册的 `goal` 投影读取严格回放结果、校验传入的 agent（智能体）是注册表中的确切活跃实例、以比较并设置方式执行变更，并发出 `goal/changed` 通知；监听器故障会被隔离。注册表或 key 缺失时，第一次依赖它们的访问会失败。包 [README](../../packages/goal/goal/README.zh.md) 定义可调用 API 和面向模型的约定。
+[`GoalService`](../../packages/goal/goal/src/index.ts) 解析建立預設值、從可選註冊的 `goal` 投影讀取嚴格回放結果、驗證傳入的 agent（智慧代理）是註冊表中的確切活躍實例、以比較並設定方式執行變更，並行出 `goal/changed` 通知；監聽器故障會被隔離。註冊表或 key 缺失時，第一次依賴它們的存取會失敗。包 [README](../../packages/goal/goal/README.zh.md) 定義可呼叫 API 和麵向模型的約定。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

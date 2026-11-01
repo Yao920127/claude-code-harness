@@ -1,5 +1,5 @@
 ---
-description: "从 Web 侧栏管理 profile 的插件组合包、它们的行，以及插件的配置。"
+description: "從 Web 側欄管理 profile 的外掛組合包、它們的行，以及外掛的設定。"
 kind: "package-reference"
 ---
 
@@ -9,49 +9,49 @@ kind: "package-reference"
 
 ## 概述
 
-使用 Web 侧栏的**插件**入口管理 profile 已安装的组合包，以及安装随附、默认关闭的官方组合包。可以启停组合包及其行、在 Host 读出 spec 指向什么之后安装组合包、查看 pnpm 输出、停止一次运行，并启用它新增的包。卸载会要求确认。注册了配置页的插件在这里、在它自己的页面上编辑；设置里只保留只读的插件列表。
+使用 Web 側欄的**外掛**入口管理 profile 已安裝的組合包，以及安裝隨附、預設關閉的官方組合包。可以啟停組合包及其行、在 Host 讀出 spec 指向什麼之後安裝組合包、檢視 pnpm 輸出、停止一次執行，並啟用它新增的包。解除安裝會要求確認。註冊了設定頁的外掛在這裡、在它自己的頁面上編輯；設定裡只保留只讀的外掛列表。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在侧栏选择**插件**。页面首次打开时通过 `api-remotes` 读取清单与组合包；没有受管 profile 的 Host 上页面显示为不可用。**官方**排在前面，列出安装随附、供开启的组合包——开启前保持关闭、没有卸载、属于实验性功能的带**实验性**标签——其后是注册了配置页的官方插件；**已安装**列出 profile 持有的组合包。卡片按名称排序，启停组合包不会挪动它的卡片。没有组合包 patch 的依赖不是插件，除非 profile 选中了它才会带异常标签列出。全局配置仍在设置的**插件**分区中编辑。
+在側欄選擇**外掛**。頁面首次開啟時透過 `api-remotes` 讀取清單與組合包；沒有受管 profile 的 Host 上頁面顯示為不可用。**官方**排在前面，列出安裝隨附、供開啟的組合包——開啟前保持關閉、沒有解除安裝、屬於實驗性功能的帶**實驗性**標籤——其後是註冊了設定頁的官方外掛；**已安裝**列出 profile 持有的組合包。卡片按名稱排序，啟停組合包不會挪動它的卡片。沒有組合包 patch 的依賴不是外掛，除非 profile 選中了它才會帶異常標籤列出。全域設定仍在設定的**外掛**分割槽中編輯。
 
-已安装的组合包及其插件行在卡片和详情页中，按当前界面语言显示各自的标题与描述。每个字段先读取导出的 locale `meta`，缺失时回退到该插件地址下可访问的 `package.json`；标题最终使用完整包名或模块名，两处都没有描述时不提供包描述。作者格式见[插件展示元信息](../../../docs/cookbook/adding-a-package.zh.md#plugin-display-metadata)。组合包卡片、详情和组件行显示各自 `package.json.icon` 声明的图片；未声明或无法解码时保留默认插画。安装预览仍使用注册表或 manifest 信息。
+已安裝的組合包及其外掛行在卡片和詳情頁中，按目前介面語言顯示各自的標題與描述。每個欄位先讀取匯出的 locale `meta`，缺失時退回到該外掛地址下可存取的 `package.json`；標題最終使用完整包名或模組名，兩處都沒有描述時不提供包描述。作者格式見[外掛展示元資訊](../../../docs/cookbook/adding-a-package.zh.md#plugin-display-metadata)。組合包卡片、詳情和元件行顯示各自 `package.json.icon` 宣告的圖片；未宣告或無法解碼時保留預設插畫。安裝預覽仍使用註冊表或 manifest 資訊。
 
-### 安装一个组合包
+### 安裝一個組合包
 
-首次使用时，如果未显式配置安装源、pnpm 使用官方 npm 源，且列表提供 npmmirror，Host 会并发探测这两个源，选择最先成功响应 HTTPS ping 的源。已记住的选择、用户手选、管理器显式配置，以及自定义或未知的 pnpm 源均保留。在初次探测期间点击安装会等待这次有时限的操作；迟到结果不会覆盖手选或重新打开已关闭的对话框。
+首次使用時，如果未顯式設定安裝源、pnpm 使用官方 npm 源，且列表提供 npmmirror，Host 會並行探測這兩個源，選擇最先成功回應 HTTPS ping 的源。已記住的選擇、使用者手選、管理器顯式設定，以及自定義或未知的 pnpm 源均保留。在初次探測期間點選安裝會等待這次有時限的操作；遲到結果不會覆蓋手選或重新開啟已關閉的對話方塊。
 
-Host 通过普通 fetch 代理向 `https://registry.npmjs.org/-/ping` 和 `https://registry.npmmirror.com/-/ping` 发送 GET 请求，以最先返回 2xx 的源为结果；重定向和失败不参与选择。随后取消另一条请求、丢弃两个响应体，并在清理完成后返回。默认时限为 1500 毫秒，包括不可用结果在内的探测结果均缓存五分钟。在 `ui-plugin-manager` 上配置 `registryProbeTimeoutMs` 和 `registryProbeCacheTtlMs`；`registryProbeEnabled: false` 关闭探测。两条请求都失败或超时时保留现有默认源。不使用 IP 地区服务，也不发送 Session 内容。
+Host 透過普通 fetch 代理向 `https://registry.npmjs.org/-/ping` 和 `https://registry.npmmirror.com/-/ping` 傳送 GET 請求，以最先返回 2xx 的源為結果；重定向和失敗不參與選擇。隨後取消另一條請求、丟棄兩個回應體，並在清理完成後返回。預設時限為 1500 毫秒，包括不可用結果在內的探測結果均快取五分鐘。在 `ui-plugin-manager` 上設定 `registryProbeTimeoutMs` 和 `registryProbeCacheTtlMs`；`registryProbeEnabled: false` 關閉探測。兩條請求都失敗或超時時保留現有預設源。不使用 IP 地區服務，也不傳送 Session 內容。
 
-**添加插件**接受包名（可带版本）、Git 地址、压缩包或本地绝对路径；对话框说明包名就是 README 里 `dsh plugin add` 后面的那一段。输入框下方的**插件安装引导和示例**展开一段引导，给出三种常见形式各一个示例；**填入示例**把示例填进输入框。旁边的**安装源**写着安装首先询问的注册表，展开后可选：pnpm 自身的注册表，按它实际指向的源命名——npm 官方源、中国大陆镜像源，其余以主机名显示——Host 读不到时保留中性的默认名称，只列一次，选项标题带上主机名（主机名即名称时不重复显示）；Host 配置的每个镜像（`pluginManager.registries`），npmmirror 显示为中国大陆镜像源；以及手动输入的 http(s) 地址。选项从控件上浮在对话框之上，展开不会拉长卡片；引导使卡片高过视口时，卡片内容可以滚动。初始选择遵循上文的响应比较规则；之后选择记在本浏览器（`localStorage`）里，下次打开对话框从它开始，Host 不再提供的已记住地址保留为手动输入的地址；在安装源列表返回前开始安装，也仍请求该地址。**安装**先让 Host 在所选注册表读出 spec 指向什么（`pluginManager.inspect`）：列表中已有的名字、所有注册表都没有的名字、没有包的路径、没有组合包 patch 的包，或 pnpm 会拒绝的 spec，都以一句话回到输入框下方，spec 保留可继续编辑；所有注册表都连不上时，这句话列出问过的每一个。随后安装从作答的那个注册表开始。通过检查的 spec 打开安装中界面，展示 Host 读到的包名、一句话简介和版本，pnpm 的命令与输出折叠在**查看安装详情**之后。安装完成后提供**立即启用**：启用新组合包、关闭对话框并把列表滚动到它；直接关闭则让它保持已安装但关闭。Host 改问另一个注册表时，安装中界面会说明哪个源没能提供这个包、现在改问哪个，详情里每次 pnpm 运行都带一个写明所用源的标记。安装失败时按 Host 的归因用一行话说明原因——所有安装源都连不上，并列出问过的每一个；GitHub 地址或压缩包链接自身的主机连不上，换源无济于事；包不存在、磁盘已满、profile 不可写、pnpm 拦下了构建脚本——pnpm 输出在详情里，**重试**就在手边，Host 把失败归于所问注册表时还在旁边提供**更换安装源**，回到 spec 输入界面并展开安装源选项；Host 已经把 profile 文件放回原样。pnpm 拦下依赖的安装脚本时，失败界面列出等待允许的包，并以**允许这些脚本并重试**取代**重试**；Host 把授权写进 profile 的 `pnpm-workspace.yaml`（失败的运行保留 pnpm 写入的这个文件）再运行 pnpm，安装完成界面会说明允许了哪些脚本。安装成功不代表模块一定能够激活。
+**新增外掛**接受包名（可帶版本）、Git 地址、壓縮包或本地絕對路徑；對話方塊說明包名就是 README 裡 `dsh plugin add` 後面的那一段。輸入框下方的**外掛安裝引導和範例**展開一段引導，給出三種常見形式各一個範例；**填入範例**把範例填進輸入框。旁邊的**安裝源**寫著安裝首先詢問的註冊表，展開後可選：pnpm 自身的註冊表，按它實際指向的源命名——npm 官方源、中國大陸映像源，其餘以主機名顯示——Host 讀不到時保留中性的預設名稱，只列一次，選項標題帶上主機名（主機名即名稱時不重複顯示）；Host 設定的每個映像（`pluginManager.registries`），npmmirror 顯示為中國大陸映像源；以及手動輸入的 http(s) 地址。選項從控制元件上浮在對話方塊之上，展開不會拉長卡片；引導使卡片高過視口時，卡片內容可以滾動。初始選擇遵循上文的回應比較規則；之後選擇記在本瀏覽器（`localStorage`）裡，下次開啟對話方塊從它開始，Host 不再提供的已記住地址保留為手動輸入的地址；在安裝源列表返回前開始安裝，也仍請求該地址。**安裝**先讓 Host 在所選註冊表讀出 spec 指向什麼（`pluginManager.inspect`）：列表中已有的名字、所有註冊表都沒有的名字、沒有包的路徑、沒有組合包 patch 的包，或 pnpm 會拒絕的 spec，都以一句話回到輸入框下方，spec 保留可繼續編輯；所有註冊表都連不上時，這句話列出問過的每一個。隨後安裝從作答的那個註冊表開始。透過檢查的 spec 開啟安裝中介面，展示 Host 讀到的包名、一句話簡介和版本，pnpm 的命令與輸出摺疊在**檢視安裝詳情**之後。安裝完成後提供**立即啟用**：啟用新組合包、關閉對話方塊並把列表滾動到它；直接關閉則讓它保持已安裝但關閉。Host 改問另一個註冊表時，安裝中介面會說明哪個源沒能提供這個包、現在改問哪個，詳情裡每次 pnpm 執行都帶一個寫明所用源的標記。安裝失敗時按 Host 的歸因用一行話說明原因——所有安裝源都連不上，並列出問過的每一個；GitHub 地址或壓縮包連結自身的主機連不上，換源無濟於事；包不存在、磁碟已滿、profile 不可寫、pnpm 攔下了建置腳本——pnpm 輸出在詳情裡，**重試**就在手邊，Host 把失敗歸於所問註冊表時還在旁邊提供**更換安裝源**，回到 spec 輸入介面並展開安裝源選項；Host 已經把 profile 檔案放回原樣。pnpm 攔下依賴的安裝腳本時，失敗介面列出等待允許的包，並以**允許這些腳本並重試**取代**重試**；Host 把授權寫進 profile 的 `pnpm-workspace.yaml`（失敗的執行保留 pnpm 寫入的這個檔案）再執行 pnpm，安裝完成介面會說明允許了哪些腳本。安裝成功不代表模組一定能夠啟用。
 
-准备和下载期间，**取消安装**会请求 Host 停止运行并等待确认。加载组合包的阶段不可取消。点击 ×、按 Escape 或点击遮罩会立即隐藏对话框，并在可以取消时请求取消。**查看安装任务**会重新打开同一任务并保留输出；结果待定或尚未确认时不能发起另一项安装。确认取消后回到 spec 输入界面并显示 toast；manifest 与 lockfile 已恢复，已下载文件可能保留。安装响应丢失后会请求恢复结果；**核对安装状态**和重连会重试该请求。Host 已无活动请求时，**未能获取安装结果**允许检查插件列表后返回编辑。早于接收确认的取消请求会等待并自动重试；取消失败可手动重试。隐藏的任务通过 toast 通知结果，不会重新弹出对话框。
+準備和下載期間，**取消安裝**會請求 Host 停止執行並等待確認。載入組合包的階段不可取消。點選 ×、按 Escape 或點選遮罩會立即隱藏對話方塊，並在可以取消時請求取消。**檢視安裝任務**會重新開啟同一任務並保留輸出；結果待定或尚未確認時不能發起另一項安裝。確認取消後回到 spec 輸入介面並顯示 toast；manifest 與 lockfile 已恢復，已下載檔案可能保留。安裝回應丟失後會請求恢復結果；**核對安裝狀態**和重連會重試該請求。Host 已無活動請求時，**未能取得安裝結果**允許檢查外掛列表後返回編輯。早於接收確認的取消請求會等待並自動重試；取消失敗可手動重試。隱藏的任務透過 toast 通知結果，不會重新彈出對話方塊。
 
-Host 将网络失败或超时归因于 GitHub 地址，且提供 npmmirror 时，对话框显示**无法访问 GitHub**，超时时显示**连接 GitHub 超时**，提供**改用国内镜像**和**取消**。选择镜像后回到空的包名输入框，记住所选安装源，不自动开始下一次安装。安装已在使用 npmmirror 时（无论是选中、手动输入，还是 pnpm 自身配置指向它），按钮改为**试试其他方式**，同样回到空的包名输入框并展开**插件安装引导和示例**，安装源保持不变。其他失败保留原有诊断和操作。镜像提供注册表中的包及依赖，不代替 GitHub 仓库下载。
+Host 將網路失敗或超時歸因於 GitHub 地址，且提供 npmmirror 時，對話方塊顯示**無法存取 GitHub**，超時時顯示**連線 GitHub 超時**，提供**改用國內映像**和**取消**。選擇映像後回到空的包名輸入框，記住所選安裝源，不自動開始下一次安裝。安裝已在使用 npmmirror 時（無論是選中、手動輸入，還是 pnpm 自身設定指向它），按鈕改為**試試其他方式**，同樣回到空的包名輸入框並展開**外掛安裝引導和範例**，安裝源保持不變。其他失敗保留原有診斷和操作。映像提供註冊表中的包及依賴，不代替 GitHub 儲存庫下載。
 
-### 切换一个组合包
+### 切換一個組合包
 
-组合包页面在标题下方显示完整包名，也就是在别处安装它所需的 spec。组合包开关改变其层选择。启用了 HMR 的 profile 在操作完成前重组；没有 HMR 的 profile，以及被更高层覆盖的组合包，会以 toast 说明。Host 读不了的组合包带异常标签，其页面给出原因，且不能打开；提供管理组件的组合包保持锁定。Host 以错误码作答，由页面字典措辞；pnpm 与 Loader 自己的诊断原样显示。页面从卡片与数量中排除内置 profile 组合包，即使 profile 将它们列为依赖或 Host 报告了异常。Host 清单仍保留完整数据；设置中「插件」分区的「插件列表」标签页负责查看它们的插件。
+組合包頁面在標題下方顯示完整包名，也就是在別處安裝它所需的 spec。組合包開關改變其層選擇。啟用了 HMR 的 profile 在操作完成前重組；沒有 HMR 的 profile，以及被更高層覆蓋的組合包，會以 toast 說明。Host 讀不了的組合包帶異常標籤，其頁面給出原因，且不能開啟；提供管理元件的組合包保持鎖定。Host 以錯誤碼作答，由頁面字典措辭；pnpm 與 Loader 自己的診斷原樣顯示。頁面從卡片與數量中排除內建 profile 組合包，即使 profile 將它們列為依賴或 Host 報告了異常。Host 清單仍保留完整資料；設定中「外掛」分割槽的「外掛列表」標籤頁負責檢視它們的外掛。
 
-### 切换组合包里的一行
+### 切換組合包裡的一行
 
-组合包页面上行的开关调用 `pluginManager.setPluginEnabled`，往 profile 的 `cordis.patch.yml` 写入该行的 `disabled` 覆盖。启用了 HMR 的 profile 的树随即重组，该行的宿主半区卸下或挂上，组合包其余部分照常运行，页面无需重载即跟随客户端模块图。行使用共享状态标记表示 Host fiber 阶段：pending 与 disabled 为 idle，loading 与 unloading 为 ongoing，active 为 done，failed 为 error。开关只出现在已打开的组合包上；没有存活条目的行，以及 Host 不通过 profile patch 寻址的行，带着 Host 的原因锁定。超过十行的列表带一个按本地化标题、描述、行 id 和模块名筛选的输入框。
+組合包頁面上行的開關呼叫 `pluginManager.setPluginEnabled`，往 profile 的 `cordis.patch.yml` 寫入該行的 `disabled` 覆蓋。啟用了 HMR 的 profile 的樹隨即重組，該行的主機半區卸下或掛上，組合包其餘部分照常執行，頁面無需過載即跟隨用戶端模組圖。行使用共享狀態標記表示 Host fiber 階段：pending 與 disabled 為 idle，loading 與 unloading 為 ongoing，active 為 done，failed 為 error。開關只出現在已開啟的組合包上；沒有存活條目的行，以及 Host 不透過 profile patch 定址的行，帶著 Host 的原因鎖定。超過十行的列表帶一個按在地化標題、描述、行 id 和模組名篩選的輸入框。
 
-### 配置页
+### 設定頁
 
-自带配置的插件把配置渲染在本页而不是设置里，通过本页声明的三个 slot：`plugins.item`（list）用于官方插件，按其 `label` 列在官方分组里；`plugins.bundle.config`（以组合包的包名为键）用于组合包自己的配置，显示在组合包页面的描述与行之间；`plugins.row.config`（以 `<包名>#<行 id>` 为键）用于某一行的配置，这一行由此多出一个**配置**控件，打开该行自己的页面。页面用 `view: 'page'` 渲染带自己保存控件的表单。官方插件卡片还在标题下渲染 `view: 'summary'`；行详情页只在缺少包描述时使用该视图。只有保存才写入：页面负责画标题、图标与面包屑，条目的表单在离开页面时丢弃暂存的修改。安装随附的四个宿主平面配置页——shell 执行器、agent loop、子智能体、搜索来源——各来自一个伴生包：[ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md) 与 [ui-settings-web-search](../ui-settings-web-search/README.zh.md)，在 Host 服务其命名空间期间注册。组合包的浏览器半侧用同样的方式注册：
+自帶設定的外掛把設定渲染在本頁而不是設定裡，透過本頁宣告的三個 slot：`plugins.item`（list）用於官方外掛，按其 `label` 列在官方分組裡；`plugins.bundle.config`（以組合包的包名為鍵）用於組合包自己的設定，顯示在組合包頁面的描述與行之間；`plugins.row.config`（以 `<包名>#<行 id>` 為鍵）用於某一行的設定，這一行由此多出一個**設定**控制元件，開啟該行自己的頁面。頁面用 `view: 'page'` 渲染帶自己儲存控制元件的表單。官方外掛卡片還在標題下渲染 `view: 'summary'`；行詳情頁只在缺少包描述時使用該檢視。只有儲存才寫入：頁面負責畫標題、圖示與麵包屑，條目的表單在離開頁面時丟棄暫存的修改。安裝隨附的四個主機平面設定頁——shell 執行器、agent loop、子智慧代理、搜尋來源——各來自一個伴生包：[ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md) 與 [ui-settings-web-search](../ui-settings-web-search/README.zh.md)，在 Host 服務其名稱空間期間註冊。組合包的瀏覽器半側用同樣的方式註冊：
 
 ```tsx ignore-check
 ctx.slots.inject('plugins.row.config', () => ctx.slots.register({
@@ -61,11 +61,11 @@ ctx.slots.inject('plugins.row.config', () => ctx.slots.register({
 }, ({ t, view }) => view === 'summary' ? t('summary') : <SidebarForm t={t} />))
 ```
 
-组合包的 patch 必须以该 id 声明这一行；注册只在组合包开启期间存在，因此关闭的组合包不显示配置控件。
+組合包的 patch 必須以該 id 宣告這一行；註冊只在組合包開啟期間存在，因此關閉的組合包不顯示設定控制元件。
 
-### 详情页扩展点
+### 詳情頁擴充功能點
 
-对某个不属于自己的组合包、行或官方插件有话要说的插件，通过本页声明的三个 list slot 向该对象的页面贡献内容：`plugins.detail.actions` 在页头放一个控件，位于页面自己的开关和卸载之前；`plugins.detail.badge` 在标题旁放一个标签，位于版本、实验性和异常标签之后；`plugins.detail.section` 在页面自身内容之下放一个区块——组合包页在组件列表之后，行页和官方插件页在配置之后。每个条目都以页面的 `subject` 渲染：`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`，其中 `pkg` 与 `row` 携带包名、版本、是否已安装、是否启用以及行列表这些供贡献者判断的事实。条目对无话可说的 subject 返回 null，自绘区块外观；页面按 `order` 排列条目。
+對某個不屬於自己的組合包、行或官方外掛有話要說的外掛，透過本頁宣告的三個 list slot 向該物件的頁面貢獻內容：`plugins.detail.actions` 在頁頭放一個控制元件，位於頁面自己的開關和解除安裝之前；`plugins.detail.badge` 在標題旁放一個標籤，位於版本、實驗性和異常標籤之後；`plugins.detail.section` 在頁面自身內容之下放一個區塊——組合包頁在元件列表之後，行頁和官方外掛頁在設定之後。每個條目都以頁面的 `subject` 渲染：`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`，其中 `pkg` 與 `row` 攜帶包名、版本、是否已安裝、是否啟用以及行列表這些供貢獻者判斷的事實。條目對無話可說的 subject 返回 null，自繪區塊外觀；頁面按 `order` 排列條目。
 
 ```tsx ignore-check
 ctx.slots.inject('plugins.detail.section', () => ctx.slots.register({
@@ -75,86 +75,86 @@ ctx.slots.inject('plugins.detail.section', () => ctx.slots.register({
 }, ({ t, subject }) => subject.kind === 'bundle' ? <HealthSection pkg={subject.pkg} t={t} /> : null))
 ```
 
-行页只在某个 `plugins.row.config` 条目点名这一行时存在，因此给行的贡献渲染在该配置打开的页面上。
+行頁只在某個 `plugins.row.config` 條目點名這一行時存在，因此給行的貢獻渲染在該設定開啟的頁面上。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-插件管理依据 profile 的依赖记录：已安装组合包可启停、可移除，随安装提供的组合包保持锁定。这一区分不决定启动失败策略。
+外掛管理依據 profile 的依賴記錄：已安裝組合包可啟停、可移除，隨安裝提供的組合包保持鎖定。這一區分不決定啟動失敗策略。
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 注册
+### 註冊
 
-Host 入口通过生成的 Remote 接口暴露 `pluginRegistryProbe.fastest()`，共享进行中的比较、让缓存按时过期，并在卸载时中止和等待未完成探测。卸载后调用会返回拒绝的 Promise。
+Host 入口透過生成的 Remote 介面暴露 `pluginRegistryProbe.fastest()`，共享進行中的比較、讓快取按時過期，並在解除安裝時中止和等待未完成探測。解除安裝後呼叫會返回拒絕的 Promise。
 
-浏览器插件通过 `ctx.slots.inject()` 注册 `plugins` 侧栏入口与它的 `main` 面板，使两者跟随 slot 延迟声明、本地化变化与销毁。页面为全局页面，不属于任何 Session。显示文本来自包元信息与页面字典。
+瀏覽器外掛透過 `ctx.slots.inject()` 註冊 `plugins` 側欄入口與它的 `main` 面板，使兩者跟隨 slot 延遲宣告、在地化變化與銷燬。頁面為全域頁面，不屬於任何 Session。顯示文字來自包元資訊與頁面字典。
 
 ### store
 
-`PluginManagerController` 拥有组合包视图、忙碌键、提示、安装进度和卸载确认。每次读取先问清单 Host 是否管理着 profile，再把 `listBundles` 与 `listPlugins` 合成每个组合包一份视图，其行携带存活条目的启停状态与 fiber 阶段。它合并重叠读取，在操作后、收到 `plugin-manager/changed` 时以及重连后刷新，并在销毁后忽略晚到结果。安装输出按 job id 分组。安装对话框沿 `idle → checking → starting → running → done | failed` 推进，`cancelling` 与 `applying` 按 Host 的报告呈现，安装或取消响应丢失时进入 `unconfirmed`；已确认的 `applying` 阶段不会倒退。通过 `waitForInstall` 恢复结果，无活动请求时结束为 `unknown`；checking 与所有活动阶段使用 ongoing，最终页面使用 done 或 error。检查在一个 `AbortController` 下运行，返回编辑或关闭会中止它并丢弃其结果；运行只能通过 `pluginManager.cancelInstall` 停止。关闭会隐藏任务而保留其状态。如果取消请求先于安装到达，在进度或输出确认该请求后会再次请求取消。Host 无法应用的变更、要等重启的变更、被更高层覆盖的变更，都是会自行消失的 toast。
+`PluginManagerController` 擁有組合包檢視、忙碌鍵、提示、安裝進度和解除安裝確認。每次讀取先問清單 Host 是否管理著 profile，再把 `listBundles` 與 `listPlugins` 合成每個組合包一份檢視，其行攜帶存活條目的啟停狀態與 fiber 階段。它合併重疊讀取，在操作後、收到 `plugin-manager/changed` 時以及重連後重新整理，並在銷燬後忽略晚到結果。安裝輸出按 job id 分組。安裝對話方塊沿 `idle → checking → starting → running → done | failed` 推進，`cancelling` 與 `applying` 按 Host 的報告呈現，安裝或取消回應丟失時進入 `unconfirmed`；已確認的 `applying` 階段不會倒退。透過 `waitForInstall` 恢復結果，無活動請求時結束為 `unknown`；checking 與所有活動階段使用 ongoing，最終頁面使用 done 或 error。檢查在一個 `AbortController` 下執行，返回編輯或關閉會中止它並丟棄其結果；執行只能透過 `pluginManager.cancelInstall` 停止。關閉會隱藏任務而保留其狀態。如果取消請求先於安裝到達，在進度或輸出確認該請求後會再次請求取消。Host 無法應用的變更、要等重新啟動的變更、被更高層覆蓋的變更，都是會自行消失的 toast。
 
-### 配置 slot
+### 設定 slot
 
-自定义条目页以 Host 条目 id 作为注册 id；行页面使用 bundle 包名和行 id。当条目提供可编辑 Config 字段时，页面宿主传入 `form.state` 和 `form.mutate(operations, expectedRevision)`。自定义页面负责草稿和校验提示，并可复用 ui-primitives 的 `ConfigField`。整个 bundle 的页面可以包含多个条目，因此没有单一表单。
+自定義條目頁以 Host 條目 id 作為註冊 id；行頁面使用 bundle 包名和行 id。當條目提供可編輯 Config 欄位時，頁面主機傳入 `form.state` 和 `form.mutate(operations, expectedRevision)`。自定義頁面負責草稿和驗證提示，並可複用 ui-primitives 的 `ConfigField`。整個 bundle 的頁面可以包含多個條目，因此沒有單一表單。
 
-页面的 `main` 注册把 `plugins.item`、`plugins.bundle.config` 与 `plugins.row.config` 声明为子 slot，因此它们与页面同生，注册方的 `ctx.slots.inject` 会等到它们出现。`configLedgerSource` 把三份账本投影成一个可观察对象——按账本顺序排列、标签按当前语言解析的官方条目，以及组合包与行的键——在账本或语言变化前保持缓存；页面把它作为 `useConfigLedger` 绑在 store 旁边，自身从不点名任何可配置插件。注册拥有的导航 store 选择卡片、某个组合包、某个官方插件或组合包的某一行；切换离开插件面板时重置为列表，React 重新挂载则保留所选目标。其他 Client 插件注入 `pluginNavigation`，调用 `ctx.pluginNavigation.openBundle(packageName)` 即可打开组合包详情，不改变当前 Session。首次读取清单期间保留导航目标；组合包不存在时显示列表。注册与做出它的浏览器半侧同生共死。`dsh-client-modules` 只把一个包的浏览器半侧挂在说明符恰为包名的那一行 Loader 行上，所以组合包为自己或任一行注册的页面，都会在那一行被关闭时一起消失；需要在其他行关闭时仍保留页面的子插件，应作为独立的包发布。 名称以 `@deepseek-ai/dsh-experimental-` 开头的官方包显示实验性标记。
+頁面的 `main` 註冊把 `plugins.item`、`plugins.bundle.config` 與 `plugins.row.config` 宣告為子 slot，因此它們與頁面同生，註冊方的 `ctx.slots.inject` 會等到它們出現。`configLedgerSource` 把三份帳本投影成一個可觀察物件——按帳本順序排列、標籤按目前語言解析的官方條目，以及組合包與行的鍵——在帳本或語言變化前保持快取；頁面把它作為 `useConfigLedger` 綁在 store 旁邊，自身從不點名任何可設定外掛。註冊擁有的導航 store 選擇卡片、某個組合包、某個官方外掛或組合包的某一行；切換離開外掛面板時重置為列表，React 重新掛載則保留所選目標。其他 Client 外掛注入 `pluginNavigation`，呼叫 `ctx.pluginNavigation.openBundle(packageName)` 即可開啟組合包詳情，不改變目前 Session。首次讀取清單期間保留導航目標；組合包不存在時顯示列表。註冊與做出它的瀏覽器半側同生共死。`dsh-client-modules` 只把一個包的瀏覽器半側掛在說明符恰為包名的那一行 Loader 行上，所以組合包為自己或任一行註冊的頁面，都會在那一行被關閉時一起消失；需要在其他行關閉時仍保留頁面的子外掛，應作為獨立的包釋出。 名稱以 `@deepseek-ai/dsh-experimental-` 開頭的官方包顯示實驗性標記。
 
-`plugins.bundle.config` 以 npm 包名为 key，提供 Bundle 详情配置。`plugins.bundle.activation` 在用户从列表显式启用后提供 Bundle 自有引导，并传入关闭引导和打开详情的回调。仅列出已启用的 Bundle 不会触发引导。
+`plugins.bundle.config` 以 npm 包名為 key，提供 Bundle 詳情設定。`plugins.bundle.activation` 在使用者從列表顯式啟用後提供 Bundle 自有引導，並傳入關閉引導和開啟詳情的回呼。僅列出已啟用的 Bundle 不會觸發引導。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-这些页面覆盖侧栏、Remote 调用与 Host 侧管理器。
+這些頁面覆蓋側欄、Remote 呼叫與 Host 側管理器。
 
-- [ui-sidebar](../ui-sidebar/README.zh.md)——插件入口注册进的面板列表；[ui-layout](../ui-layout/README.zh.md)——页面占用的主 slot。
-- [api-remotes](../../api/remotes/README.zh.md)——`pluginManager.*` 与 `pluginInventory.*` 背后的 Remote BFF 面。
-- [plugin-manager](../../boot/plugin-manager/README.zh.md)——本页驱动的 Host 侧管理器。
-- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——注册进本页 `plugins.item` slot 的官方配置页。
+- [ui-sidebar](../ui-sidebar/README.zh.md)——外掛入口註冊進的面板列表；[ui-layout](../ui-layout/README.zh.md)——頁面佔用的主 slot。
+- [api-remotes](../../api/remotes/README.zh.md)——`pluginManager.*` 與 `pluginInventory.*` 背後的 Remote BFF 面。
+- [plugin-manager](../../boot/plugin-manager/README.zh.md)——本頁驅動的 Host 側管理器。
+- [ui-settings-shell](../ui-settings-shell/README.zh.md)、[ui-settings-agent-loop](../ui-settings-agent-loop/README.zh.md)、[ui-settings-subagent](../ui-settings-subagent/README.zh.md)、[ui-settings-web-search](../ui-settings-web-search/README.zh.md)——註冊進本頁 `plugins.item` slot 的官方設定頁。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，本包是浏览器侧的管理界面，不注册任何面向模型的内容。
+無，本包是瀏覽器側的管理介面，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；本包既不组装也不发送 provider 请求。
+無；本包既不組裝也不傳送 provider 請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
-- Ping 响应时间不代表包下载吞吐量。探测使用 Host fetch 的网络路径，pnpm 专用代理设置可能使用不同路径；用户始终可以手动选择安装源，安装仍遵循现有回退规则。
+- Ping 回應時間不代表包下載吞吐量。探測使用 Host fetch 的網路路徑，pnpm 專用代理設定可能使用不同路徑；使用者始終可以手動選擇安裝源，安裝仍遵循現有退回規則。
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制界定了管理视图的范围；它们是当前包的约束。
+這些限制界定了管理檢視的範圍；它們是目前包的約束。
 
-- **页面生命周期**——刷新浏览器会丢失跟踪的请求与输出。同一页面内重连可以恢复活动请求；Host 不保留已完成的结果。profile 文件锁串行化安装写入。
-- **只管理组合包**——没有组合包 patch 的依赖在安装前就被拒绝；profile 里已有的这类依赖不上页面，除非 profile 选中了它；加载普通插件模块仍是文件操作。
-- **行只显示阶段，不显示原因**——失败的行只显示为失败，没有 Host 的错误文本；Host 日志里有。
-- **一次只能安装一个**——对话框一次运行一个 pnpm 命令；第二个 spec 要等前一个完成。
-- **没有版本选择器**——spec 按 pnpm 接受的写法输入；页面不列出注册表版本，也不提供升级。
-- **安装源选择只属于本浏览器**——它存在 `localStorage` 里，所以另一个浏览器会独立计算初始推荐；`dsh plugin` 命令和 agent 工具使用 Host 配置的注册表。
-- **每次读注册表都要运行 pnpm**——打开对话框、检查、安装各问一次 pnpm 自身配置指向哪里；没有 pnpm 的机器读作未知，不提供备选。
+- **頁面生命週期**——重新整理瀏覽器會丟失跟蹤的請求與輸出。同一頁面內重連可以恢復活動請求；Host 不保留已完成的結果。profile 檔案鎖序列化安裝寫入。
+- **只管理組合包**——沒有組合包 patch 的依賴在安裝前就被拒絕；profile 裡已有的這類依賴不上頁面，除非 profile 選中了它；載入普通外掛模組仍是檔案操作。
+- **行只顯示階段，不顯示原因**——失敗的行只顯示為失敗，沒有 Host 的錯誤文字；Host 日誌裡有。
+- **一次只能安裝一個**——對話方塊一次執行一個 pnpm 命令；第二個 spec 要等前一個完成。
+- **沒有版本選擇器**——spec 按 pnpm 接受的寫法輸入；頁面不列出註冊表版本，也不提供升級。
+- **安裝源選擇只屬於本瀏覽器**——它存在 `localStorage` 裡，所以另一個瀏覽器會獨立計算初始推薦；`dsh plugin` 命令和 agent 工具使用 Host 設定的註冊表。
+- **每次讀註冊表都要執行 pnpm**——開啟對話方塊、檢查、安裝各問一次 pnpm 自身設定指向哪裡；沒有 pnpm 的機器讀作未知，不提供備選。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生检查。面板读取 Host 事实，安装源探测缓存只保存一次比较结果，没有独立维护的投影。
+**執行時不變式：** 不釋出伴生檢查。面板讀取 Host 事實，安裝源探測快取只儲存一次比較結果，沒有獨立維護的投影。

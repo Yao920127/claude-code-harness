@@ -1,5 +1,5 @@
 ---
-description: "Web @file 与 @session 引用 source：候选项、排序，以及原子行内引用（统一的文件/会话选取）。"
+description: "Web @file 與 @session 引用 source：候選項、排序，以及原子行內引用（統一的檔案/工作階段選取）。"
 kind: "package-reference"
 ---
 
@@ -9,100 +9,100 @@ kind: "package-reference"
 
 ## 概述
 
-Web 用户需要从同一个 `@` 补全菜单提及文件、文件夹或会话时，可以使用 `dsh-client-ui-reference`。菜单先列出文件，再列出会话；其中一组无法加载时，另一组仍然可用。选择文件、文件夹或会话会插入带稳定剪贴板形式的原子引用；文件夹行还允许用户在不关闭补全的情况下继续下钻。文件行省略多余的根目录位置，会话行仅在工作区与当前工作区不同时显示该工作区。会话 mention 会在捕获模型上下文前接受校验，而浏览候选项不会影响模型。
+Web 使用者需要從同一個 `@` 補全選單提及檔案、資料夾或工作階段時，可以使用 `dsh-client-ui-reference`。選單先列出檔案，再列出工作階段；其中一組無法載入時，另一組仍然可用。選擇檔案、資料夾或工作階段會插入帶穩定剪貼簿形式的原子引用；資料夾行還允許使用者在不關閉補全的情況下繼續下鑽。檔案行省略多餘的根目錄位置，工作階段行僅在工作區與目前工作區不同時顯示該工作區。工作階段 mention 會在捕捉模型上下文前接受驗證，而瀏覽候選項不會影響模型。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-只要组合挂载了本包且存在宿主 `ctx.fileReferences` 提供方，该 source 即处于活动状态。输入 `@` 后跟一个未加引号的 token，会先看到文件、再看到会话；打开 `@"…` 则只搜索文件。候选列表是补全菜单，不是搜索结果页：选一次、继续输入即可。
+只要組合掛載了本包且存在主機 `ctx.fileReferences` 提供者，該 source 即處於活動狀態。輸入 `@` 後跟一個未加引號的 token，會先看到檔案、再看到工作階段；開啟 `@"…` 則只搜尋檔案。候選列表是補全選單，不是搜尋結果頁：選一次、繼續輸入即可。
 
-### 选择后会插入什么
+### 選擇後會插入什麼
 
-选择文件会关闭补全，并显示为带文件图标与业务色文件名的原子行内引用。目录行携带两个动词：选定 pick（点击行主体或 Enter）把文件夹本身解析为同类原子引用——文件夹图标、带尾斜杠的标签、以规范 `@dir/` mention 为序列化形式；钻取动作（Tab 或行尾 chevron）则保持带文件夹图标的可编辑路径纯文本，并让菜单在尾部斜杠处保持活跃，用户可以继续进入下一层。包含空白的路径使用 `@"path with spaces"`，用户显式打开的引号会继续保留。
+選擇檔案會關閉補全，並顯示為帶檔案圖示與業務色檔名的原子行內引用。目錄行攜帶兩個動詞：選定 pick（點選行主體或 Enter）把資料夾本身解析為同類原子引用——資料夾圖示、帶尾斜槓的標籤、以規範 `@dir/` mention 為序列化形式；鑽取動作（Tab 或行尾 chevron）則保持帶資料夾圖示的可編輯路徑純文字，並讓選單在尾部斜槓處保持活躍，使用者可以繼續進入下一層。包含空白的路徑使用 `@"path with spaces"`，使用者顯式開啟的引號會繼續保留。
 
-选择会话会插入一个原子的行内引用，其隐藏 `ref` 与剪贴板表示均为宿主返回的规范 `@[label](dsh-session:…)` mention；可见形式为聊天气泡图标加会话标题。发送会经 `session.prompt` 携带该 mention，session-reference 服务会在 `agent/pre-step` 校验它并捕获模型上下文。
+選擇工作階段會插入一個原子的行內引用，其隱藏 `ref` 與剪貼簿表示均為主機返回的規範 `@[label](dsh-session:…)` mention；可見形式為聊天氣泡圖示加工作階段標題。傳送會經 `session.prompt` 攜帶該 mention，session-reference 服務會在 `agent/pre-step` 驗證它並捕捉模型上下文。
 
-### 失败行为
+### 失敗行為
 
-某个候选领域不可用或失败时，该领域不产生任何行，另一领域仍正常列出。会话引用准备失败发生在提示词接受后，并会终止该 agent 轮次。
+某個候選領域不可用或失敗時，該領域不產生任何行，另一領域仍正常列出。工作階段引用準備失敗發生在提示詞接受後，並會終止該 agent 輪次。
 
-点击输入框中的文件引用，可在右侧栏预览文件当前的内容。带引号路径中的空格会保留，路径按输入框所属 Session 解析。文件夹和 Session 引用保留原有的编辑行为。
+點選輸入框中的檔案引用，可在右側欄預覽檔案目前的內容。帶引號路徑中的空格會保留，路徑按輸入框所屬 Session 解析。資料夾和 Session 引用保留原有的編輯行為。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-该 source 把候选编码保留在注册 effect 内部：`/client` 导出接口只包含插件主体（`apply`/`inject`）。
+該 source 把候選編碼保留在註冊 effect 內部：`/client` 匯出介面只包含外掛主體（`apply`/`inject`）。
 
-### 候选流程
+### 候選流程
 
-对于未加引号的 token，浏览器会同时启动 `fileReferences/list` 与 `sessionReferenceResolver/candidates` Remote 调用，再按文件、当前 Session 的直接 subagent、其他 Session 的确定性顺序排列。各行使用 resolver 的显示标题；subagent 优先使用创建标签，普通 Session 保持投影标题，并渲染在 locale 管理的分组标题下，不显示重复的原始 `reference` source 标题。会话行用宿主会话列表的 `updatedAt` 经该列表相同的相对时间分档标注时间，因此同一个会话在两处读到的时长一致；列表中没有的会话回落到候选自带的创建时间。下钻后的查询会发布一条从工作区根目录到当前目录的面包屑；每一节携带的下钻载荷与文件夹行相同，因此「回到某一步」与「进入某一层」是同一个结果。
+對於未加引號的 token，瀏覽器會同時啟動 `fileReferences/list` 與 `sessionReferenceResolver/candidates` Remote 呼叫，再按檔案、目前 Session 的直接 subagent、其他 Session 的確定性順序排列。各行使用 resolver 的顯示標題；subagent 優先使用建立標籤，普通 Session 保持投影標題，並渲染在 locale 管理的分組標題下，不顯示重複的原始 `reference` source 標題。工作階段行用主機工作階段列表的 `updatedAt` 經該列表相同的相對時間分檔標註時間，因此同一個工作階段在兩處讀到的時長一致；列表中沒有的工作階段回落到候選自帶的建立時間。下鑽後的查詢會發布一條從工作區根目錄到目前目錄的麵包屑；每一節攜帶的下鑽載荷與資料夾行相同，因此「回到某一步」與「進入某一層」是同一個結果。
 
-候选请求要求客户端已持有该会话，并共用一个临时的 `referenceCandidates` 引用。两个发现调用都等待该会话首次历史打开成功；未持有会话或打开失败时，均不发送 RPC。候选请求的取消信号同时覆盖历史等待和两个调用，查询结束时释放临时引用。
+候選請求要求用戶端已持有該工作階段，並共用一個臨時的 `referenceCandidates` 引用。兩個發現呼叫都等待該工作階段首次歷史開啟成功；未持有工作階段或開啟失敗時，均不傳送 RPC。候選請求的取消訊號同時覆蓋歷史等待和兩個呼叫，查詢結束時釋放臨時引用。
 
 ### 序列化
 
-文件选择把共享 `@path` 语法所定义的自然文本保留为隐藏的序列化与剪贴板形式。会话选择使用规范的 `@[label](dsh-session:…)` mention；序列化永远不会根据可见标题重建身份。
+檔案選擇把共享 `@path` 語法所定義的自然文字保留為隱藏的序列化與剪貼簿形式。工作階段選擇使用規範的 `@[label](dsh-session:…)` mention；序列化永遠不會根據可見標題重建身份。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖建议机制、引用 seam 与输入流水线。
+以下頁面覆蓋建議機制、引用 seam 與輸入流水線。
 
-- [ui-input-trigger](../ui-input-trigger/README.zh.md)——该 source 注册进的行内建议机制。
-- [file-reference](../../context/file-reference/README.zh.md)——`@file` seam 及其提供方约定。
-- [session-reference](../../context/session-reference/README.zh.md)——`@session` seam 与准备后快照的语义。
-- [Web 输入机器与 slash 流水线](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)——引用与命令如何共享输入机器。
+- [ui-input-trigger](../ui-input-trigger/README.zh.md)——該 source 註冊進的行內建議機制。
+- [file-reference](../../context/file-reference/README.zh.md)——`@file` seam 及其提供者約定。
+- [session-reference](../../context/session-reference/README.zh.md)——`@session` seam 與準備後快照的語義。
+- [Web 輸入機器與 slash 流水線](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)——引用與命令如何共享輸入機器。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接影响模型体验：通过宿主拥有的提供方实现，本包的引用选择把文件指引与会话快照准备委托给它们。
+間接影響模型體驗：透過主機擁有的提供者實作，本包的引用選擇把檔案指引與工作階段快照準備委託給它們。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-浏览候选项不会影响模型。选择文件或会话只会改变新用户消息的后缀，以及紧随该消息、由宿主准备的会话引用上下文；目标会话更早的历史保持不变。
+瀏覽候選項不會影響模型。選擇檔案或工作階段只會改變新使用者訊息的字尾，以及緊隨該訊息、由主機準備的工作階段引用上下文；目標工作階段更早的歷史保持不變。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明引用 source 何时帮不上忙；它们是当前包约束。
+這些限制說明引用 source 何時幫不上忙；它們是目前包約束。
 
-- **候选失败有意保持静默**：Remote 发现调用不可用或失败时，该领域不产生候选行。会话引用准备失败发生在提示词接受后，并会终止该 agent 轮次。
-- **浏览器侧不扫描文件**：Web 补全需要挂载宿主 `ctx.fileReferences` 提供方；浏览器无法回退到自身文件系统。
-- **会话搜索仍仅使用元数据**：发现流程通过 `ctx.sessionReferenceResolver` 筛选 session id、cwd 与以日志为依据的最新标题；不搜索消息主体或完整 transcript。
+- **候選失敗有意保持靜默**：Remote 發現呼叫不可用或失敗時，該領域不產生候選行。工作階段引用準備失敗發生在提示詞接受後，並會終止該 agent 輪次。
+- **瀏覽器側不掃描檔案**：Web 補全需要掛載主機 `ctx.fileReferences` 提供者；瀏覽器無法退回到自身檔案系統。
+- **工作階段搜尋仍僅使用中繼資料**：發現流程透過 `ctx.sessionReferenceResolver` 篩選 session id、cwd 與以日誌為依據的最新標題；不搜尋訊息主體或完整 transcript。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。插件只注册一个 slash source，HMR 测试覆盖释放；它不发出 Cordis 事件，也不持有跨插件可变状态。
+**執行時不變式：** 不釋出伴生入口。外掛只註冊一個 slash source，HMR 測試覆蓋釋放；它不發出 Cordis 事件，也不持有跨外掛可變狀態。

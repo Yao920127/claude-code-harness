@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-web-search/README.md
 /:
   en: 0934215d2b59ea48
-  zh: 1bc2030e3a2b2915
+  zh: 741fba2bf0ebe627
 /deepseek-ai-dsh-client-ui-settings-web-search:
   en: 968c0f6ba2415331
   zh: aaf9e2aa22eafc98
 /deepseek-ai-dsh-client-ui-settings-web-search/summary:
   en: 6cf0c45f95b3dd45
-  zh: 1660751b3c23a4e1
+  zh: 47182ca4351e98eb
 /deepseek-ai-dsh-client-ui-settings-web-search/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-settings-web-search/use-this-package:
   en: e8aa09d2e6a3ed29
-  zh: dc3afaae211f3309
+  zh: 938166522794c9e6
 /deepseek-ai-dsh-client-ui-settings-web-search/understand-the-implementation:
   en: 2935745b1cc2c62c
-  zh: 116812fe88aa006a
+  zh: 2e27bff754f20da5
 /deepseek-ai-dsh-client-ui-settings-web-search/further-exploration:
   en: 863d009871574e71
-  zh: 8fc156f636509881
+  zh: ab51bb964be6dcc5
 /deepseek-ai-dsh-client-ui-settings-web-search/model-experience:
   en: 6b7c6f82ab6c8435
-  zh: 4517689c899abcbe
+  zh: 02b2b5f9a8964c34
 /deepseek-ai-dsh-client-ui-settings-web-search/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: 6e1c9a8fdde89577
+  zh: bed48d27e12306af
 /deepseek-ai-dsh-client-ui-settings-web-search/known-limitations-and-deferred-work:
   en: e7c0908bda825739
-  zh: 11f2128f6f192b34
+  zh: 6d3ecff5e0a9589a
 /deepseek-ai-dsh-client-ui-settings-web-search/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: e88aeb617ffb74ea
+  zh: bb8387ee0e2ab0bd

@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write docs/ui-radius.md
 /dsh-unified-corner-radius-standard:
   en: e29e91bf80386fff
-  zh: 0bfca32865bcdfff
+  zh: 2e9ab9e6606d961b
 /dsh-unified-corner-radius-standard/summary:
   en: 9f7d83fc6c1e56ff
-  zh: 1bfd616392982482
+  zh: 355eac05a5f902d9
 /dsh-unified-corner-radius-standard/table-of-contents:
   en: aad65e4a8399adbb
-  zh: e76b80d421b17992
+  zh: 6074492a8b07364b
 /dsh-unified-corner-radius-standard/scope-and-authority:
   en: cd8120cba5566e19
-  zh: 65359436088c8bc5
+  zh: 0c9d4bcfbd441c3a
 /dsh-unified-corner-radius-standard/select-the-radius:
   en: 51cd57ec0fe8bb03
-  zh: 53784eee8aa8be6e
+  zh: bbe6f7082c7bc5e6
 /dsh-unified-corner-radius-standard/reuse-tokens-and-preserve-deliberate-shapes:
   en: fb6d50f3139ad186
-  zh: 668cb0c02bd22167
+  zh: e93bcaa7ee859ddb
 /dsh-unified-corner-radius-standard/nested-geometry-and-hover:
   en: 3920921700d8ad1c
-  zh: fc99da8a5e905a27
+  zh: 15382236dca4e874
 /dsh-unified-corner-radius-standard/settings-card-materials:
   en: 85e7e63183df06d1
-  zh: 1da2b44083d7ebe2
+  zh: 082df26503e76fec
 /dsh-unified-corner-radius-standard/apply-and-verify:
   en: 2f6f10e45b27c19b
-  zh: 9eb5fd964c643be6
+  zh: adae35074865ce99

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-06-16-pnpm-over-yarn.md
 /agent-note-pnpm-as-the-package-manager-instead-of-yarn-4:
   en: 2c8be5b7d3dae8c7
-  zh: e6d4d5dc41455f52
+  zh: e79a91d74b2072ac
 /agent-note-pnpm-as-the-package-manager-instead-of-yarn-4/problem:
   en: a397e5f0a83c3306
-  zh: 5ced99f94dae9e30
+  zh: 22be9fded40404a7
 /agent-note-pnpm-as-the-package-manager-instead-of-yarn-4/decision:
   en: cadbbd8b1bab85ef
-  zh: 31fcb11ddbcb79c3
+  zh: 8c9eb69ea09d544e
 /agent-note-pnpm-as-the-package-manager-instead-of-yarn-4/alternatives-considered:
   en: 20e2ebed65f92625
-  zh: f1717d69d271fb43
+  zh: b1bf77fe19dee1a2
 /agent-note-pnpm-as-the-package-manager-instead-of-yarn-4/consequences:
   en: 024fefe88e8bbc95
-  zh: 018dc287c07d6483
+  zh: d8f0a56ae4d37f0b

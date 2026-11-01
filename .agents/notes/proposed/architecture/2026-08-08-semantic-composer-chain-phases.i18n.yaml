@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-08-08-semantic-composer-chain-phases.md
 /agent-note-semantic-phases-for-composer-chain-election:
   en: b083187ad8ead004
-  zh: b22a0dd83c37c557
+  zh: 32ee6ac7fc5b1436
 /agent-note-semantic-phases-for-composer-chain-election/problem:
   en: 45193c3a6f3d29bf
-  zh: 7f508649dbe65db5
+  zh: cbd11a2b40719509
 /agent-note-semantic-phases-for-composer-chain-election/proposal:
   en: 9dc3866376b4590b
-  zh: 93c2208fe9a43d91
+  zh: 14eb8d78ca34ad37
 /agent-note-semantic-phases-for-composer-chain-election/alternatives-considered:
   en: 966a5082d8c2fe35
-  zh: 6a384edcdec8495e
+  zh: 19430794217d77e3
 /agent-note-semantic-phases-for-composer-chain-election/acceptance-criteria:
   en: 7ecfc42bcf0be41a
-  zh: 4efae40db6e6768b
+  zh: 4d3bae3990d5e41f
 /agent-note-semantic-phases-for-composer-chain-election/risks:
   en: 06969296bb3bd8d6
-  zh: f90e5cc35d52c53a
+  zh: 10a28b81bba14c63

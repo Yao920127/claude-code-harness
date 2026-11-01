@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-10-image-offload-events.md
 /agent-note-durable-image-offload-events:
   en: 13b817438040d321
-  zh: 490038f3c93551c7
+  zh: b2d3222b3e384eb3
 /agent-note-durable-image-offload-events/problem:
   en: 93c2241e0f40fca1
-  zh: fe3528cff00e07b3
+  zh: 0c9788869cf3ea60
 /agent-note-durable-image-offload-events/decision:
   en: e1cbaf46e6a6a7be
-  zh: c3640a44c9be69af
+  zh: 97e6752e140f64c7
 /agent-note-durable-image-offload-events/alternatives-considered:
   en: f1ab95c3bf1a17f8
-  zh: 2708521190143182
+  zh: efc598d50ed247ca
 /agent-note-durable-image-offload-events/consequences:
   en: 3a9b13af9673349b
-  zh: 7da10694e24edadc
+  zh: f9e958a0a40e1fe4
 /agent-note-durable-image-offload-events/testing:
   en: 6fa4e40e7666aa68
-  zh: e31ffd143463ca15
+  zh: 3e9906ecaf301b4f

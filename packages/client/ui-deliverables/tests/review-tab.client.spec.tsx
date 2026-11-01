@@ -69,7 +69,7 @@ describe('review addresses', () => {
     const definition = changesReviewDefinition(makeTranslate(zh))
     expect(definition).toMatchObject({ kind: 'changes-review', priority: 'builtin', patterns: ['dsh-resource://changes-review/**'] })
     expect(definition.canOpen?.(ADDRESS)).toBe(true)
-    expect(definition.title(ADDRESS)).toBe('第 2 轮改动')
+    expect(definition.title(ADDRESS)).toBe('第 2 輪改動')
     for (const bad of [
       'dsh-resource://file/session/viewed/a.ts', 'dsh-resource://changes-review/session/viewed/5',
       'dsh-resource://changes-review/session//5/2', 'dsh-resource://changes-review/session/viewed/x/2',
@@ -360,7 +360,7 @@ describe('ReviewTab', () => {
     summaries.state.set({ [SUMMARY_URL]: 'missing' })
     const missing = mount({ summaries, locale: zh })
     expect(missing.view.getByText(zh['diff.missing'])).toBeTruthy()
-    expect(missing.view.getByText('第 2 轮改动')).toBeTruthy()
+    expect(missing.view.getByText('第 2 輪改動')).toBeTruthy()
     missing.view.unmount()
     summaries.state.set({ [SUMMARY_URL]: summary })
     const diffs = new ChangesDiffStore()
@@ -389,7 +389,7 @@ describe('ReviewTab', () => {
     })
     expect(view.container.querySelector('[data-review-view]')?.getAttribute('data-review-view')).toBe('unified')
     expect(view.container.querySelectorAll('[data-diff-line]')).toHaveLength(MAX_RENDERED_LINES)
-    expect(view.container.querySelector('[data-diff-truncated]')?.textContent).toBe(`只显示前 ${MAX_RENDERED_LINES} 行`)
+    expect(view.container.querySelector('[data-diff-truncated]')?.textContent).toBe(`只顯示前 ${MAX_RENDERED_LINES} 行`)
   })
 
   it('falls back to the first file for an index the summary does not list, and forgets its state with the tab', () => {

@@ -1,4 +1,4 @@
-# Agent Note: Session 历史数据兼容
+# Agent Note: Session 歷史資料相容
 
 Status: proposed
 
@@ -6,38 +6,38 @@ Status: proposed
 
 ## Problem
 
-用户关心升级后旧对话是否仍能打开，而不是内部类名。抽象重构不能顺带改变磁盘字节或要求手工搬移会话。当前 `0.1.5-rc.1` checkout 写入 Session format V3，并已包含贯穿 V3 的 released-format migration chain。
+使用者關心升級後舊對話是否仍能開啟，而不是內部類名。抽象重構不能順帶改變磁碟位元組或要求手工搬移工作階段。目前 `0.1.5-rc.1` checkout 寫入 Session format V3，並已包含貫穿 V3 的 released-format migration chain。
 
 ## Proposal
 
-### 从 0.1.5-rc.1 / V3 开始
+### 從 0.1.5-rc.1 / V3 開始
 
-V3 是当前 durable Session format，不是 projection-cache version。`SESSION_FORMAT_VERSION` 是 writer authority；format catalog 拥有 released v0→v1→v2→v3 路径，其中包括独立 V2-to-V3 stage 及其 delivery guards。原生 V3 校验与历史格式进入迁移是两项独立责任。
+V3 是目前 durable Session format，不是 projection-cache version。`SESSION_FORMAT_VERSION` 是 writer authority；format catalog 擁有 released v0→v1→v2→v3 路徑，其中包括獨立 V2-to-V3 stage 及其 delivery guards。原生 V3 驗證與歷史格式進入遷移是兩項獨立責任。
 
-不得覆盖旧 generation 或自动降级。迁移写入新的 current generation，旧 committed generation 留给检查与恢复；当前 runtime 可通过 catalog 打开已发布旧格式，但不承诺旧 runtime 能读取 V3。
+不得覆蓋舊 generation 或自動降級。遷移寫入新的 current generation，舊 committed generation 留給檢查與恢復；目前 runtime 可透過 catalog 開啟已釋出舊格式，但不承諾舊 runtime 能讀取 V3。
 
-### 对普通用户的影响
+### 對普通使用者的影響
 
-阶段 1–3 只重排代码所有权，不改变 V3 Session JSONL bytes、`SESSION_FORMAT_VERSION` 或用户启动方式。普通用户无需因本次 refactor 额外手工迁移或更改配置。首次打开受支持的旧格式时，现有 migration pipeline 会准备并发布 current V3 generation；大日志使用流式 stage，避免 whole-artifact 内存峰值。
+階段 1–3 只重排程式碼所有權，不改變 V3 Session JSONL bytes、`SESSION_FORMAT_VERSION` 或使用者啟動方式。普通使用者無需因本次 refactor 額外手工遷移或更改設定。首次開啟受支援的舊格式時，現有 migration pipeline 會準備並行布 current V3 generation；大日誌使用流式 stage，避免 whole-artifact 記憶體峰值。
 
-升级前仍应保留 `DSH_HOME` 的常规备份。若打开失败，应保留完整 session generation 与错误信息，不要删除旧文件；未来 provider 也必须把 unsupported future version、corruption、ownership conflict 和 migration failure 区分报告。查询索引与其他派生数据由系统重建，用户不需要手工迁移。
+升級前仍應保留 `DSH_HOME` 的常規備份。若開啟失敗，應保留完整 session generation 與錯誤資訊，不要刪除舊檔案；未來 provider 也必須把 unsupported future version、corruption、ownership conflict 和 migration failure 區分報告。查詢索引與其他派生資料由系統重建，使用者不需要手工遷移。
 
-### Provider 替换后的不变量
+### Provider 替換後的不變數
 
-更换内存实现、JSONL provider 或搜索索引不改变逻辑 SessionId、header、事件顺序、fork lineage 和 surface。Storage provider 负责已发布格式读取；search/statistics cache 是派生数据，可从规范 Session 内容重建，不能反向成为恢复权威。
+更換記憶體實作、JSONL provider 或搜尋索引不改變邏輯 SessionId、header、事件順序、fork lineage 和 surface。Storage provider 負責已釋出格式讀取；search/statistics cache 是派生資料，可從規範 Session 內容重建，不能反向成為恢復權威。
 
 ## Alternatives considered
 
-**在 refactor 内重新定义 V3。** 拒绝；已发布数据兼容独立于抽象 stack。本工作必须保留既有 format authority 与 migration evidence，而不是另建平行定义。
+**在 refactor 內重新定義 V3。** 拒絕；已釋出資料相容獨立於抽象 stack。本工作必須保留既有 format authority 與 migration evidence，而不是另建平行定義。
 
-**把每个名为 V3 的组件版本都当作 Session V3。** 拒绝；Session log 与 projection-cache 等派生格式有不同 durability 和恢复规则。
+**把每個名為 V3 的元件版本都當作 Session V3。** 拒絕；Session log 與 projection-cache 等派生格式有不同 durability 和恢復規則。
 
 ## Acceptance criteria
 
-- 既有 V3 catalog、V2-to-V3 stage、native validation 与 released-format fixtures 保持通过。
-- 阶段 1–5 与 provider 抽取不改变 V3 磁盘格式；未来格式变化另有版本、迁移、重启和回滚证据。
-- 用户不需手工编辑日志；错误保留可恢复数据并给出明确类别。
+- 既有 V3 catalog、V2-to-V3 stage、native validation 與 released-format fixtures 保持透過。
+- 階段 1–5 與 provider 抽取不改變 V3 磁碟格式；未來格式變化另有版本、遷移、重新啟動和復原證據。
+- 使用者不需手工編輯日誌；錯誤保留可恢復資料並給出明確類別。
 
 ## Risks
 
-主要风险是把新抽象耦合到 V3 当前 JSONL provider，或把可重建 projection cache 当作规范 Session 数据。替换 provider 必须保持 released-format contract，同时让普通功能代码看不到物理布局。
+主要風險是把新抽象耦合到 V3 目前 JSONL provider，或把可重建 projection cache 當作規範 Session 資料。替換 provider 必須保持 released-format contract，同時讓普通功能程式碼看不到物理佈局。

@@ -1,33 +1,33 @@
 ---
-description: "浏览全部已捕获 DSH alpha/RC tag 之间的 Session 持久化类型变化，并离线校验历史快照。"
+description: "瀏覽全部已捕捉 DSH alpha/RC tag 之間的 Session 持久化型別變化，並離線驗證歷史快照。"
 ---
 
-# DSH 预发行版本的持久化变化
+# DSH 預發行版本的持久化變化
 
 [English](README.md) | 中文
 
 ## 概述
 
-本归档提供 26 个 DSH alpha/RC tag 及其 25 次相邻转换的近似历史视图。每个版本包含简要说明、源码 tag、before/after 摘要以及变化类型的完整快照，供阅读和格式校验使用。它不确认历史运行时兼容性，也不替代[当前源码的确认记录](../README.zh.md)。
+本歸檔提供 26 個 DSH alpha/RC tag 及其 25 次相鄰轉換的近似歷史檢視。每個版本包含簡要說明、原始碼 tag、before/after 摘要以及變化型別的完整快照，供閱讀和格式驗證使用。它不確認歷史執行時相容性，也不替代[目前原始碼的確認記錄](../README.zh.md)。
 
-## 目录
+## 目錄
 
-- [已归档版本](#releases)
-- [文件与范围](#files)
-- [提取与限制](#extraction)
-- [校验](#verification)
-- [开发备注](#dev-note)
+- [已歸檔版本](#releases)
+- [檔案與範圍](#files)
+- [提取與限制](#extraction)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="releases"></a>
-## 已归档版本
+## 已歸檔版本
 
-[清单](manifest.json)记录了 2026-09-12 捕获的全部 DSH alpha/RC tag：16 个有发行记录，最早的 10 个只有 tag。版本按语义版本顺序排列；不存在的 tag 不补造。首条记录是历史起点，变化数包含其所有根。
+[清單](manifest.json)記錄了 2026-09-12 捕捉的全部 DSH alpha/RC tag：16 個有發行記錄，最早的 10 個只有 tag。版本按語義版本順序排列；不存在的 tag 不補造。首條記錄是歷史起點，變化數包含其所有根。
 
 <!-- persistence-release-index:start -->
 
-| Tag | 源码日期（UTC） | Session 版本 | 根 / 类型 | 变化根 |
+| Tag | 原始碼日期（UTC） | Session 版本 | 根 / 型別 | 變化根 |
 |---|---|---|---|---|
 | [dsh-v0.0.1-rc.1](dsh-v0.0.1-rc.1.zh.md) | 2026-08-10 | 0 | 42 / 341 | 42 |
 | [dsh-v0.0.1-rc.2](dsh-v0.0.1-rc.2.zh.md) | 2026-08-11 | 0 | 47 / 374 | 45 |
@@ -59,45 +59,45 @@ description: "浏览全部已捕获 DSH alpha/RC tag 之间的 Session 持久化
 <!-- persistence-release-index:end -->
 
 <a id="files"></a>
-## 文件与范围
+## 檔案與範圍
 
-每个 tag 对应 `kind: persistence-release` 的中英记录、配对 sidecar 和 `.schema.json`。机器声明包含 tag、直接前驱、实际写入版本以及每个变化根的 before/after 摘要。首条快照包含全部根；后续快照只保存仍然存在的变化根及其所有可达类型。删除使用空 after，未变的版本保留空变化和空快照。
+每個 tag 對應 `kind: persistence-release` 的中英記錄、配對 sidecar 和 `.schema.json`。機器宣告包含 tag、直接前驅、實際寫入版本以及每個變化根的 before/after 摘要。首條快照包含全部根；後續快照只儲存仍然存在的變化根及其所有可達型別。刪除使用空 after，未變的版本保留空變化和空快照。
 
-快照覆盖逻辑 Session header、物理 JSONL header、事件信封以及该 tag 的所有第一方事件及传递引用。类型数仅统计规范化后仍可达的定义。历史源码引用仅保留文件路径，不包含行号。
+快照覆蓋邏輯 Session header、物理 JSONL header、事件信封以及該 tag 的所有第一方事件及傳遞引用。型別數僅統計規範化後仍可達的定義。歷史原始碼引用僅保留檔案路徑，不包含行號。
 
-这些回溯记录与上层目录的当前确认链分开校验。当前规则对旧变化的分类只是阅读提示：历史上的 version 0 确实出现过不升版本的结构变化。不得把回填记录作为当前 PR 省略确认或版本提升的依据。
+這些回溯記錄與上層目錄的目前確認鏈分開驗證。目前規則對舊變化的分類只是閱讀提示：歷史上的 version 0 確實出現過不升版本的結構變化。不得把回填記錄作為目前 PR 省略確認或版本提升的依據。
 
 <a id="extraction"></a>
-## 提取与限制
+## 提取與限制
 
-重建使用各 tag 中的源码、TypeScript 6.0.3 和已合入的 [schema 提取器](../../../scripts/persistence-schema.ts)。唯一提取适配是省略早期具体事件记录交叉类型中冗余的 `object` 成员。原有 `any` / `unknown` 保持不透明；没有为缺失引用额外替换不透明类型。发行快照 JSON 保留历史标识符；术语检查仍适用于人工记录和当前 schema。
+重建使用各 tag 中的原始碼、TypeScript 6.0.3 和已合入的 [schema 提取器](../../../scripts/persistence-schema.ts)。唯一提取適應是省略早期具體事件記錄交叉型別中冗餘的 `object` 成員。原有 `any` / `unknown` 保持不透明；沒有為缺失引用額外替換不透明型別。發行快照 JSON 保留歷史識別符號；術語檢查仍適用於人工記錄和目前 schema。
 
-前 22 个 tag 的 surface 事件合法地带有可选 `surfaceOp`。历史解析保留此可选性；当前源码解析仍要求该字段必需。旧版 `SessionHeader.version: number` 也按原声明保留，实际写入版本常量另行记录。不能从宽泛的 `number` 声明推导它。
+前 22 個 tag 的 surface 事件合法地帶有可選 `surfaceOp`。歷史解析保留此可選性；目前原始碼解析仍要求該欄位必需。舊版 `SessionHeader.version: number` 也按原宣告保留，實際寫入版本常數另行記錄。不能從寬泛的 `number` 宣告推導它。
 
-本批 tag 的写入版本为 0、2 和 3，没有写入版本 1 的 tag。
+本批 tag 的寫入版本為 0、2 和 3，沒有寫入版本 1 的 tag。
 
-摘要对应规范化后的重建类型，不是原始源码文本或当时工具链的逐字重现。说明仅提供结构变化的粗略理解；未重放旧应用、验证完整编解码行为或证明迁移安全。摘要未变也不能证明行为未变。
+摘要對應規範化後的重建型別，不是原始原始碼文字或當時工具鏈的逐字重現。說明僅提供結構變化的粗略理解；未重放舊應用、驗證完整編解碼行為或證明遷移安全。摘要未變也不能證明行為未變。
 
 <a id="verification"></a>
-## 校验
+## 驗證
 
-全部 26 个快照已通过规范图、根摘要和可达类型摘要校验。发行归档检查只读取本树中的清单、记录和快照，不访问 Git、网络或旧版本 checkout；它校验清单覆盖、前驱、before/after、快照类型完整性和双语机器声明。
+全部 26 個快照已透過規範圖、根摘要和可達型別摘要驗證。發行歸檔檢查只讀取本樹中的清單、記錄和快照，不存取 Git、網路或舊版本 checkout；它驗證清單覆蓋、前驅、before/after、快照型別完整性和雙語機器宣告。
 
 ```sh
 pnpm run verify-persistence-releases
 pnpm run doc-sync
 ```
 
-标记区间内的索引、清单单元格和结构变化事实由快照生成。默认校验会拒绝陈旧事实。运行 `pnpm run verify-persistence-releases --write` 可在全部机器数据校验通过后刷新这些区间和配对记录；人工概述、源码证据、机器声明和 schema 文件保持不变。
+標記區間內的索引、清單單元格和結構變化事實由快照生成。預設驗證會拒絕陳舊事實。執行 `pnpm run verify-persistence-releases --write` 可在全部機器資料驗證透過後重新整理這些區間和配對記錄；人工概述、原始碼證據、機器宣告和 schema 檔案保持不變。
 
-tag 的完整性以清单的捕获范围为准；离线检查不会自动发现后续新 tag。配对记录及 Markdown 链接由常规文档检查校验。[格式模板](../../../.agents/skills/dsh-doc/templates/persistence-release.md)规定单条记录的字段。
+tag 的完整性以清單的捕捉範圍為準；離線檢查不會自動發現後續新 tag。配對記錄及 Markdown 連結由常規文件檢查驗證。[格式範本](../../../.agents/skills/dsh-doc/templates/persistence-release.md)規定單條記錄的欄位。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者工作上下文 — 点击展开</summary>
+<summary>維護者工作上下文 — 點選展開</summary>
 
-无。
+無。
 
 </details>

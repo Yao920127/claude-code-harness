@@ -1,10 +1,10 @@
-- group "从哪个 npm 源下载插件":
+- group "從哪個 npm 源下載外掛":
   - radio "npm 官方源（registry.npmjs.org）" [checked]
   - text: npm 官方源（registry.npmjs.org）
-  - radio "中国大陆镜像源（registry.npmmirror.com）"
-  - text: 中国大陆镜像源（registry.npmmirror.com）
-  - radio "自定义地址"
-  - text: 自定义地址
-  - textbox "自定义地址" [disabled]:
+  - radio "中國大陸映像源（registry.npmmirror.com）"
+  - text: 中國大陸映像源（registry.npmmirror.com）
+  - radio "自定義地址"
+  - text: 自定義地址
+  - textbox "自定義地址" [disabled]:
     - /placeholder: https://npm.example.com/
-  - text: 公司内网或私有 npm 源；需要登录的源，把凭据放在本机的 ~/.npmrc 里
+  - text: 公司內網或私有 npm 源；需要登入的源，把憑證放在本機的 ~/.npmrc 裡

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/commands.md
 /human-commands:
   en: e3bfa72a37c4afcd
-  zh: 887432898b31115d
+  zh: 8f2937ee6503f192
 /human-commands/input-metadata:
   en: 9c7fd38926610b58
-  zh: 40f1b2fd9b18ed52
+  zh: 4996c7c07c73c469
 /human-commands/definition:
   en: 8d1944548766d286
-  zh: b804059b5875984f
+  zh: e6a1f7c92518b62c
 /human-commands/invocation-and-result:
   en: c60c29cb7135ac76
-  zh: c2c2a79d4d73959e
+  zh: a9027ccd8a00de54
 /human-commands/discovery-and-parsing-views:
   en: a3bcb9354133cf68
-  zh: 4699cb44ca9662e3
+  zh: 1394f1688f63d11d

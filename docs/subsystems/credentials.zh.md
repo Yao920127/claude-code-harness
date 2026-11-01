@@ -1,14 +1,14 @@
-# 用户凭据
+# 使用者憑證
 
 [English](credentials.md) | 中文
 
-[dsh-credentials](../../packages/credentials/credentials) 的凭据 seam 把机密挡在配置之外：settings 分节与 `cordis.yml` 条目携带的是*引用*（环境变量名），值归 [dsh-credentials-local](../../packages/credentials/credentials-local) 这类提供方所有，消费方每个操作解析一次引用——LLM（大语言模型）适配器每次模型请求解析一次，因此轮换后的凭据无需任何重启即可作用于紧随其后的下一次请求。一条 seam 级规则约束每个提供方：空的存储值在任何地方都视为不存在。
+[dsh-credentials](../../packages/credentials/credentials) 的憑證 seam 把機密擋在設定之外：settings 分節與 `cordis.yml` 條目攜帶的是*引用*（環境變數名），值歸 [dsh-credentials-local](../../packages/credentials/credentials-local) 這類提供者所有，消費方每個操作解析一次引用——LLM（大語言模型）介面卡每次模型請求解析一次，因此輪換後的憑證無需任何重新啟動即可作用於緊隨其後的下一次請求。一條 seam 級規則約束每個提供者：空的儲存值在任何地方都視為不存在。
 
-来源：[`packages/credentials/credentials/src/index.ts`](../../packages/credentials/credentials/src/index.ts)
+來源：[`packages/credentials/credentials/src/index.ts`](../../packages/credentials/credentials/src/index.ts)
 
-## 标识
+## 標識
 
-引用以 POSIX 风格环境变量名命名一条凭据。brand 防止调用方将凭据引用与在包或进程之间传递的其他字符串混用；构造时校验 shell 标识符语法。
+引用以 POSIX 風格環境變數名命名一條憑證。brand 防止呼叫方將憑證引用與在包或程序之間傳遞的其他字串混用；建構時驗證 shell 識別符號語法。
 
 ```ts type-equiv
 /** Nominal reference to one credential: a POSIX-style environment-variable name. */
@@ -17,7 +17,7 @@ type CredentialRef = Branded<'CredentialRef'>
 
 ## 解析
 
-`resolve(ref)` 返回值及提供该值的来源层（由提供方定义）；未配置期间返回 `undefined`。消费方在每个操作中重新解析，绝不跨操作缓存——这种按操作进行的读取正是热更新机制。
+`resolve(ref)` 回傳值及提供該值的來源層（由提供者定義）；未設定期間返回 `undefined`。消費方在每個操作中重新解析，絕不跨操作快取——這種按操作進行的讀取正是熱更新機制。
 
 ```ts type-equiv
 /** One resolved credential value and the source layer that supplied it. */
@@ -31,7 +31,7 @@ interface ResolvedCredential {
 
 ## 描述
 
-`describe(ref)` 在绝不暴露值的前提下回应配置界面：引用当前是否可解析、来自哪一层、`set` 当前能否成功。本地提供方把由当前进程环境供值的引用报告为 `writable: false`——那样的写入会表面成功而解析持续返回遮蔽值，因此 seam 直接拒绝，界面也得以提前把该引用渲染为只读。
+`describe(ref)` 在絕不暴露值的前提下回應設定介面：引用目前是否可解析、來自哪一層、`set` 目前能否成功。本地提供者把由目前程序環境供值的引用報告為 `writable: false`——那樣的寫入會表面成功而解析持續返回遮蔽值，因此 seam 直接拒絕，介面也得以提前把該引用渲染為只讀。
 
 ```ts type-equiv
 /**
@@ -49,17 +49,17 @@ interface CredentialInfo {
 }
 ```
 
-## 已提交的变更
+## 已提交的變更
 
-`credentials/reference-updated (ref)` 在提供方管理的来源发生已提交变更后发出——`set`、`unset` 或在存储中观察到的外部编辑。进程环境自身的变化不可观测，永不发出事件。消费方不需要该事件（它们按操作重新解析）；它服务于配置界面刷新「已配置」徽标。
+`credentials/reference-updated (ref)` 在提供者管理的來源發生已提交變更後發出——`set`、`unset` 或在儲存中觀察到的外部編輯。程序環境自身的變化不可觀測，永不發出事件。消費方不需要該事件（它們按操作重新解析）；它服務於設定介面重新整理「已設定」徽標。
 
-## 内嵌 Platform 凭证
+## 內嵌 Platform 憑證
 
-PlatformSession 是 getPlatformSession 返回的仅限 Host 快照：origin 指定所配置的 Platform 签发来源，token 包含其已存账号凭证。userId 复制最近一次成功 getProfile 得到的稳定账号 ID；尚无一次成功读取或资料不含 ID 时为 null。快照复用该 ID，不自行发起资料请求，因此 ID 未知时只会让 userId 为 null，而不会延迟调用方；资料读取首次取得稳定 ID 或该 ID 变化时会通知 watch 订阅者，供标识使用方重新读取快照。使用方以 origin 和 userId 作为持久化浏览器存储的键，为 null 时退回临时存储。账号已退登或读取凭证期间凭证变化时不返回快照；签发来源不匹配时失败。原生使用方负责在凭证变化时使文档失效。账号控制器 RPC、AccountView 和 AccountDetails 均不包含此快照。
+PlatformSession 是 getPlatformSession 返回的僅限 Host 快照：origin 指定所設定的 Platform 簽發來源，token 包含其已存帳號憑證。userId 複製最近一次成功 getProfile 得到的穩定帳號 ID；尚無一次成功讀取或資料不含 ID 時為 null。快照複用該 ID，不自行發起資料請求，因此 ID 未知時只會讓 userId 為 null，而不會延遲呼叫方；資料讀取首次取得穩定 ID 或該 ID 變化時會通知 watch 訂閱者，供標識使用方重新讀取快照。使用方以 origin 和 userId 作為持久化瀏覽器儲存的鍵，為 null 時退回臨時儲存。帳號已退登或讀取憑證期間憑證變化時不返回快照；簽發來源不匹配時失敗。原生使用方負責在憑證變化時使文件失效。帳號控制器 RPC、AccountView 和 AccountDetails 均不包含此快照。
 
-AccountDetails.balance 将充值钱包投影为 value、赠送钱包投影为 bonusWallets，分别保留币种和十进制余额字符串。查询失败不包含钱包数组。
+AccountDetails.balance 將充值錢包投影為 value、贈送錢包投影為 bonusWallets，分別保留幣種和十進位制餘額字串。查詢失敗不包含錢包陣列。
 
-赠金通知查询返回 AccountBonusBatch，包含当前 Platform 账号 id 和按服务端顺序排列的可通知订单。AccountBonusNotification 保留服务端消息与到期时间，不投影凭证。确认请求携带预期账号 id 和订单 id；账号变化后 Host 拒绝该请求。两项通知操作都通过 x-client-locale 传递发起界面的语言，不使用语言查询参数。
+贈金通知查詢返回 AccountBonusBatch，包含目前 Platform 帳號 id 和按伺服器端順序排列的可通知訂單。AccountBonusNotification 保留伺服器端訊息與到期時間，不投影憑證。確認請求攜帶預期帳號 id 和訂單 id；帳號變化後 Host 拒絕該請求。兩項通知操作都透過 x-client-locale 傳遞發起介面的語言，不使用語言查詢參數。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 
@@ -484,6 +484,6 @@ Local grant removal has completed.
 Source: [`packages/credentials/deepseek-account/src/index.ts`](../../packages/credentials/deepseek-account/src/index.ts)
 <!-- END GENERATED cordis-surface -->
 
-账号服务定义提供 getState、getProfile、getBalance、getUnnotifiedBonuses、ackBonusNotified、startSignIn、cancelSignIn、signOut、watch 及仅限 Host 的 resolveToken 和 getPlatformSession。平台提供者使用 AuthorizationFlow 和私有 GrantRecord 实现这些操作。AccountView 区分本地存在与服务器验证；尝试 ID 将取消绑定到单次本地流程。参见[账号包](../../packages/credentials/deepseek-account/README.zh.md)。
+帳號服務定義提供 getState、getProfile、getBalance、getUnnotifiedBonuses、ackBonusNotified、startSignIn、cancelSignIn、signOut、watch 及僅限 Host 的 resolveToken 和 getPlatformSession。平臺提供者使用 AuthorizationFlow 和私有 GrantRecord 實作這些操作。AccountView 區分本地存在與伺服器驗證；嘗試 ID 將取消繫結到單次本地流程。參見[帳號包](../../packages/credentials/deepseek-account/README.zh.md)。
 
-`AccountClientMetadata` 携带调用方 `DSH_CLIENT_VERSION` 提供的 `version`、当前界面 `locale`，以及操作发起时采样的 `timezoneOffsetSeconds`。偏移为本地时间减 UTC 的秒数：UTC+8 对应 `28800`。其中不含凭证。登录申请在兑换及取消期间保留发起时的元数据；退出操作为撤销重试保留其元数据。
+`AccountClientMetadata` 攜帶呼叫方 `DSH_CLIENT_VERSION` 提供的 `version`、目前介面 `locale`，以及操作發起時取樣的 `timezoneOffsetSeconds`。偏移為本地時間減 UTC 的秒數：UTC+8 對應 `28800`。其中不含憑證。登入申請在兌換及取消期間保留髮起時的中繼資料；退出操作為撤銷重試保留其中繼資料。

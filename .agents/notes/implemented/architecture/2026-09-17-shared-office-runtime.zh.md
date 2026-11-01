@@ -1,37 +1,37 @@
-# Agent Note: Desktop 与 SDK 共享 Office 运行时
+# Agent Note: Desktop 與 SDK 共享 Office 執行時
 
 Status: implemented
 
 [English](2026-09-17-shared-office-runtime.md) | 中文
 
-## 问题
+## 問題
 
-SDK 部署需要与 Desktop 相同的 Office 创作库，同时将解释器 payload 保存在只读容器镜像层中。由 Desktop 持有查询工具和构建器，会要求下游载体重复维护依赖锁与路径约定。
+SDK 部署需要與 Desktop 相同的 Office 創作庫，同時將直譯器 payload 儲存在只讀容器映像層中。由 Desktop 持有查詢工具和建置器，會要求下游載體重複維護依賴鎖與路徑約定。
 
-## 决策
+## 決策
 
-[`tool-workspace-dependencies`](../../../../packages/skill/tool-workspace-dependencies/README.zh.md) 持有清单校验、解释器路径、安装逻辑和模型查询。它保留在 skill 组中，与 Office 工作流消费者相邻：payload 服务于这些工作流，本包不提供 workspace 实体服务。Desktop 引用本包并保留首次使用时复制安装。打包的 SDK profile 通过载体默认路径启用查询和 Office skills；`DSH_PRIMARY_RUNTIME` 覆盖该路径，空字符串表示禁用。它原位读取 payload。公共 base 与 `sdk-minimal` 不会隐式启用 Office。
+[`tool-workspace-dependencies`](../../../../packages/skill/tool-workspace-dependencies/README.zh.md) 持有清單驗證、直譯器路徑、安裝邏輯和模型查詢。它保留在 skill 組中，與 Office 工作流消費者相鄰：payload 服務於這些工作流，本包不提供 workspace 實體服務。Desktop 引用本包並保留首次使用時複製安裝。打包的 SDK profile 透過載體預設路徑啟用查詢和 Office skills；`DSH_PRIMARY_RUNTIME` 覆蓋該路徑，空字串表示停用。它原位讀取 payload。公共 base 與 `sdk-minimal` 不會隱式啟用 Office。
 
-[共享构建入口](../../../../scripts/primary-runtime/prepare.ts) 持有 Desktop 目标与 GNU/Linux x64/ARM64 的下载锁、解压和本机冒烟检查。Desktop 提供输出路径和发布版本，要求包含 Node.js 与 pnpm，并应用签名专用子进程环境。其他载体选择自己的输出目录，也可构建 Python-only payload。现有 `desktopVersion` 清单字段保留名字并记录载体发布版本；`payloadDigest` 区分锁定输入与组件选择。
+[共享建置入口](../../../../scripts/primary-runtime/prepare.ts) 持有 Desktop 目標與 GNU/Linux x64/ARM64 的下載鎖、解壓和本機冒煙檢查。Desktop 提供輸出路徑和釋出版本，要求包含 Node.js 與 pnpm，並應用簽名專用子程序環境。其他載體選擇自己的輸出目錄，也可建置 Python-only payload。現有 `desktopVersion` 清單欄位保留名字並記錄載體釋出版本；`payloadDigest` 區分鎖定輸入與元件選擇。
 
-[Desktop 第一方运行时决策](../feature/2026-09-14-desktop-primary-runtime.zh.md)继续持有 Desktop 安装与平台签名规则。本决策仅替代其中由 Desktop 独占构建器和查询实现的部分；两份记录均保持有效。
+[Desktop 第一方執行時決策](../feature/2026-09-14-desktop-primary-runtime.zh.md)繼續持有 Desktop 安裝與平臺簽名規則。本決策僅替代其中由 Desktop 獨佔建置器和查詢實作的部分；兩份記錄均保持有效。
 
-`runtime.json` 在顶层保存 Python、Node.js 和 pnpm 版本，并在 `pythonPackages` 中保存全部 Python 分发包版本。构建元数据不单独列出 numpy 或 pandas。共享解析器接受旧 `components` 文件而不改写它们，保留旧格式的一致性校验，并仅返回统一的扁平字段。混合格式会被拒绝。构建摘要包含组装格式，因此清单字节变化会使旧产物身份失效。
+`runtime.json` 在頂層儲存 Python、Node.js 和 pnpm 版本，並在 `pythonPackages` 中儲存全部 Python 分發包版本。建置中繼資料不單獨列出 numpy 或 pandas。共享解析器接受舊 `components` 檔案而不改寫它們，保留舊格式的一致性驗證，並僅返回統一的扁平欄位。混合格式會被拒絕。建置摘要包含組裝格式，因此清單位元組變化會使舊產物身份失效。
 
-Python runtime wheel 将目标平台的 CPython、Office 库和外部 skills 放在可执行文件同级的 `<platform>-<arch>/` 资源目录中。较短的平台目录名为 Windows 安装后的 Python 扩展与依赖 DLL 路径保留长度空间。打包提供默认资源；skill 注册表仍允许项目、自定义目录和用户 skills 覆盖同名随包条目，profile patch 可在保留 Python 的同时禁用或替换 Office skills。这样既保留工作流配置能力，又省去单独安装环境的步骤。真实文件系统资源允许 Python 加载原生扩展，并让 skills 调用共用检查脚本，无需启动时解包。wheel 体积增加一个压缩 payload；发布流程仍执行公开索引的大小限制检查。
+Python runtime wheel 將目標平臺的 CPython、Office 庫和外部 skills 放在可執行檔案同級的 `<platform>-<arch>/` 資源目錄中。較短的平臺目錄名為 Windows 安裝後的 Python 擴充功能與依賴 DLL 路徑保留長度空間。打包提供預設資源；skill 註冊表仍允許專案、自定義目錄和使用者 skills 覆蓋同名隨包條目，profile patch 可在保留 Python 的同時停用或替換 Office skills。這樣既保留工作流設定能力，又省去單獨安裝環境的步驟。真實檔案系統資源允許 Python 載入原生擴充功能，並讓 skills 呼叫共用檢查腳本，無需啟動時解包。wheel 體積增加一個壓縮 payload；釋出流程仍執行公開索引的大小限制檢查。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**将实现保留在 Desktop。** SDK 和容器构建器只需要解释器、Office 资源和查询，却仍会依赖应用打包及签名代码。
+**將實作保留在 Desktop。** SDK 和容器建置器只需要直譯器、Office 資源和查詢，卻仍會依賴應用打包及簽名程式碼。
 
-**在公共 base 中启用 Office。** base 部署不保证提供内置解释器或资源。显式 SDK 载体配置可以让该要求可见，并保持其他 profile 的行为。
+**在公共 base 中啟用 Office。** base 部署不保證提供內建直譯器或資源。顯式 SDK 載體設定可以讓該要求可見，並保持其他 profile 的行為。
 
-**总是复制到 Harness home。** 复制会重复镜像层内容、要求目标可写，也无法满足预期的不可变载体部署。
+**總是複製到 Harness home。** 複製會重複映像層內容、要求目標可寫，也無法滿足預期的不可變載體部署。
 
-**为每个 Python 库增加组件字段。** 这会重复分发包版本表，并使新增库要求修改 schema。完整版本表将锁定包集合与解释器、包管理器字段分开记录。
+**為每個 Python 庫增加元件欄位。** 這會重複分發包版本表，並使新增庫要求修改 schema。完整版本表將鎖定包集合與直譯器、包管理器欄位分開記錄。
 
-## 影响
+## 影響
 
-同一插件生命周期内的并发调用共享成功的工具准备结果。准备失败后可重试；卸载移除工具注册并等待未完成的文件系统工作。复制模式验证暂存替换内容，并在发布失败后恢复原安装。原位模式不写入 payload。路径为绝对路径，返回结果前会检查运行时元数据和所声明的条目。
+同一外掛生命週期內的並行呼叫共享成功的工具準備結果。準備失敗後可重試；解除安裝移除工具註冊並等待未完成的檔案系統工作。複製模式驗證暫存替換內容，並在釋出失敗後恢復原安裝。原位模式不寫入 payload。路徑為絕對路徑，返回結果前會檢查執行時中繼資料和所宣告的條目。
 
-SDK 配置变更需要重启。缺少 Office 资源会产生启动警告，并使可选的 skill 提供方保持未激活；运行时元数据和解释器是否存在在首次工具调用时校验。musl 构建仍不在锁文件范围内。跨目标组装校验归档哈希，但需要在目标主机执行；Linux 产物 CI 负责本机 Linux 检查。单元覆盖固定清单、安装与生命周期行为；SDK profile 测试观察可选工具、skill 发现与结果，workspace-dependencies 录制场景固定模型可见的校验错误。
+SDK 設定變更需要重新啟動。缺少 Office 資源會產生啟動警告，並使可選的 skill 提供者保持未啟用；執行時中繼資料和直譯器是否存在在首次工具呼叫時驗證。musl 建置仍不在鎖檔案範圍內。跨目標組裝驗證歸檔雜湊，但需要在目標主機執行；Linux 產物 CI 負責本機 Linux 檢查。單元覆蓋固定清單、安裝與生命週期行為；SDK profile 測試觀察可選工具、skill 發現與結果，workspace-dependencies 錄製情境固定模型可見的驗證錯誤。

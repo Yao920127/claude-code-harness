@@ -1,27 +1,27 @@
-# Agent Note: Blacksmith 作为 CI 池的故障切换支路
+# Agent Note: Blacksmith 作為 CI 池的故障切換支路
 
 Status: implemented
 
 [English](2026-09-09-blacksmith-failover-leg.md) | 中文
 
-## 问题
+## 問題
 
-[故障切换手册](2026-07-26-ci-failover-runbook.zh.md)把降级的企业池流量路由到自有的 `vm-backup` 与 `dsh-win-ci` 池——它们是经过验证但容量有界的备用池。Blacksmith 按需出售类似 GitHub 托管的运行器，其迁移向导提议整体替换仓库的 `runs-on` 标签，这会把持有凭据、基准与 spec 钉死的作业默认放到第三方基础设施上。整体替换不适合作为默认：它会打破 workflow 契约 spec、扭曲基准与性能预算测量，并在没有决策记录的情况下搬动信任边界作业。
+[故障切換手冊](2026-07-26-ci-failover-runbook.zh.md)把降級的企業池流量路由到自有的 `vm-backup` 與 `dsh-win-ci` 池——它們是經過驗證但容量有界的備用池。Blacksmith 按需出售類似 GitHub 託管的執行器，其遷移向導提議整體替換儲存庫的 `runs-on` 標籤，這會把持有憑證、基準與 spec 釘死的作業預設放到第三方基礎設施上。整體替換不適合作為預設：它會打破 workflow 契約 spec、扭曲基準與效能預算測量，並在沒有決策記錄的情況下搬動信任邊界作業。
 
-## 决策
+## 決策
 
-`DSH_CI_FAILOVER_LINUX` 与 `DSH_CI_FAILOVER_WINDOWS` 额外接受值 `blacksmith`。任何仓库写者设置它时，该平台参与切换的作业按各作业配置的 vCPU 档位重定向到 Blacksmith 托管运行器；任何其它值（或未设置）保持今天的运行器，`selfhosted` 继续路由到自有池。与既有取值一样，这是写者可管理的仓库状态——无需合并，重跑受影响的作业即可——并且只在设置期间产生费用，这正是它作为明确的故障或实验选择、而非默认的原因。
+`DSH_CI_FAILOVER_LINUX` 與 `DSH_CI_FAILOVER_WINDOWS` 額外接受值 `blacksmith`。任何儲存庫寫者設定它時，該平臺參與切換的作業按各作業設定的 vCPU 檔位重定向到 Blacksmith 託管執行器；任何其它值（或未設定）保持今天的執行器，`selfhosted` 繼續路由到自有池。與既有取值一樣，這是寫者可管理的儲存庫狀態——無需合併，重跑受影響的作業即可——並且只在設定期間產生費用，這正是它作為明確的故障或實驗選擇、而非預設的原因。
 
-`blacksmith` 下参与切换的作业：[ci.yml](../../../../.github/workflows/ci.yml) 中三个企业级 Linux 工作作业、`node-compat` 各腿、`all-checks-passed` 判定作业与三个 Windows 作业，使用该工作流为各作业声明的运行器规格；`expected-filenames`；sandbox 的 bwrap 腿；以及两个手动基准矩阵——其 4-32 vCPU 档位映射到 Blacksmith 等价档，64/96 核行保留自有池标签，因为 Blacksmith 没有对应档位。blacksmith 分支不带 Dependabot 排除：Blacksmith 运行器是临时的，因此把 Dependabot 留在托管池的持久虚拟机理由不适用。python-runtime 构建器整体保持托管：其 PR 与 master 调用方（`ci.yml` 与 `ci-master.yml` 的 `python-runtime` 作业）会把真实 API 凭据（`DEEPSEEK_API_KEY_EXTERNAL`）传入该可复用工作流，其 macOS 与 arm64 单文件分支需要 GitHub 镜像，且其 wheel 产物供给 PyPI 发布链。docs-pages 工作流是 tag 派发的发布，因此同样保持托管。
+`blacksmith` 下參與切換的作業：[ci.yml](../../../../.github/workflows/ci.yml) 中三個企業級 Linux 工作作業、`node-compat` 各腿、`all-checks-passed` 判定作業與三個 Windows 作業，使用該工作流為各作業宣告的執行器規格；`expected-filenames`；sandbox 的 bwrap 腿；以及兩個手動基準矩陣——其 4-32 vCPU 檔位對映到 Blacksmith 等價檔，64/96 核行保留自有池標籤，因為 Blacksmith 沒有對應檔位。blacksmith 分支不帶 Dependabot 排除：Blacksmith 執行器是臨時的，因此把 Dependabot 留在託管池的持久虛擬機器理由不適用。python-runtime 建置器整體保持託管：其 PR 與 master 呼叫方（`ci.yml` 與 `ci-master.yml` 的 `python-runtime` 作業）會把真實 API 憑證（`DEEPSEEK_API_KEY_EXTERNAL`）傳入該可複用工作流，其 macOS 與 arm64 單檔案分支需要 GitHub 映像，且其 wheel 產物供給 PyPI 釋出鏈。docs-pages 工作流是 tag 派發的釋出，因此同樣保持託管。
 
-其余作业在任何取值下都保留自己的运行器：被 workflow spec 钉死在标准托管运行器上的作业（`node-24-bench`、`python-sdk`、master 的 Wine 门禁、`release-publish` 与 `release-vendor-publish`、Cloudflare preview、weighted-approval 一对）；持有凭据的作业（真实 API 的 e2e 通道、issue App token 作业、npm 与 PyPI 发布作业）；需要 Blacksmith 缺失的宿主能力的作业（Landlock 各腿及其打包校验、Seatbelt 腿、linux-arm64 单文件分支）；以及发布形态的链——npm 发布、PyPI 发布、node-addon-system 发布链与 Pages 部署工作流——它们整体保持托管，因为其产物供给已发布的 registry 输出。`release.yml` 与 `release-vendor.yml` 中的发布演练作业（`dependencies`、`pack`）保持改动前既有的路由不变：它们只带既有的 `selfhosted` 分支，因此在 `blacksmith` 取值下与变量未设置时一样回落到托管的 `ubuntu-24.04` 默认，并不新增 `blacksmith` 分支。
+其餘作業在任何取值下都保留自己的執行器：被 workflow spec 釘死在標準託管執行器上的作業（`node-24-bench`、`python-sdk`、master 的 Wine 門禁、`release-publish` 與 `release-vendor-publish`、Cloudflare preview、weighted-approval 一對）；持有憑證的作業（真實 API 的 e2e 通道、issue App token 作業、npm 與 PyPI 釋出作業）；需要 Blacksmith 缺失的主機能力的作業（Landlock 各腿及其打包驗證、Seatbelt 腿、linux-arm64 單檔案分支）；以及釋出形態的鏈——npm 釋出、PyPI 釋出、node-addon-system 釋出鏈與 Pages 部署工作流——它們整體保持託管，因為其產物供給已釋出的 registry 輸出。`release.yml` 與 `release-vendor.yml` 中的釋出演練作業（`dependencies`、`pack`）保持改動前既有的路由不變：它們只帶既有的 `selfhosted` 分支，因此在 `blacksmith` 取值下與變數未設定時一樣回落到託管的 `ubuntu-24.04` 預設，並不新增 `blacksmith` 分支。
 
-## 备选方案
+## 備選方案
 
-整体采纳迁移向导。否决，因为它打破 workflow 契约 spec、改变基准语义与性能预算校准，并默认把持有凭据与信任边界的作业搬到第三方基础设施；更早的向导迁移（已关闭的 PR #3053）因成本与同样的 review 结论被否决。
+整體採納遷移向導。否決，因為它打破 workflow 契約 spec、改變基準語義與效能預算校準，並預設把持有憑證與信任邊界的作業搬到第三方基礎設施；更早的嚮導遷移（已關閉的 PR #3053）因成本與同樣的 review 結論被否決。
 
-只把自有池作为唯一故障切换目标。作为唯一选项被否决，因为它是容量有界的备用；Blacksmith 为「故障对象正是自有池本身」的故障与实验场景提供弹性容量。
+只把自有池作為唯一故障切換目標。作為唯一選項被否決，因為它是容量有界的備用；Blacksmith 為「故障物件正是自有池本身」的故障與實驗情境提供彈性容量。
 
-## 后果
+## 後果
 
-blacksmith 各腿在有人设置该值前保持休眠，因此只在真实故障切换或明确实验期间被使用。镜像试运行（PR #3841，已关闭）把参与集硬编码到 Blacksmith 标签上跑过，确认 `blacksmith-4vcpu-ubuntu-2404`、`blacksmith-16vcpu-ubuntu-2404` 与 `blacksmith-16vcpu-windows-2025` 可调度可执行。Blacksmith 将其运行器注册为 self-hosted，因此在 `blacksmith` 取值下 `node-compat` 各腿会真实执行 toolcache 隔离与隔离安装校验步骤（以 `runner.environment == 'self-hosted'` 为条件），而非全部跳过；三条腿都在试运行镜像上通过（run 34322356689）。同一试运行还暴露了一个由本改动修复的环境发现：在 `**` 展开中遇到 symlink 文件时，node 24.13 的内部 `fs.glob` 会 lstat-probe `<matched>/<下一段>` 并抛 ENOTDIR 而非跳过（run 34319926270），使 `check:ci:static` 内的 `verify-md-wrap` 在 Blacksmith 上失败，直到 [repo-files.ts](../../../../scripts/repo-files.ts) 用 dirent walker 替换 `globSync`；修复后的 static 通道在同一镜像上转绿。触发条件是 probe 已匹配 symlink 之下的路径，而非笼统的「`**` 扫过含 symlink 的树」：同一 run 中其它扫描含 symlink 树的 `globSync` `**` 调用点保持绿色，无需改动。两个基准矩阵的 8 与 32 vCPU 标签（ubuntu-2404 与 windows-2025）不在试运行范围内，是按已实测的 4/16 vCPU 标签命名对称推定的；首次使用前请用一次手动 dispatch 确认。Landlock、Seatbelt 与 linux-arm64 的排除仍基于更早迁移尝试（已关闭的 PR #3053）的散文式 dispatch 实测，此处记录为已知缺口；试运行按设计无法触发这几条腿。workflow spec 钉住了新分支——`ci-workflow.spec.ts` 断言扩展后的 selector 中出现 Blacksmith 标签，`ci-compatible-selfhosted.spec.ts` 求值 `blacksmith` 路由模式——因此未来重写 selector 会使单元门禁变红。默认成本姿态不变：除非变量指明，否则没有任何东西跑在 Blacksmith 上。
+blacksmith 各腿在有人設定該值前保持休眠，因此只在真實故障切換或明確實驗期間被使用。映像試執行（PR #3841，已關閉）把參與集硬編碼到 Blacksmith 標籤上跑過，確認 `blacksmith-4vcpu-ubuntu-2404`、`blacksmith-16vcpu-ubuntu-2404` 與 `blacksmith-16vcpu-windows-2025` 可排程可執行。Blacksmith 將其執行器註冊為 self-hosted，因此在 `blacksmith` 取值下 `node-compat` 各腿會真實執行 toolcache 隔離與隔離安裝驗證步驟（以 `runner.environment == 'self-hosted'` 為條件），而非全部跳過；三條腿都在試執行映像上透過（run 34322356689）。同一試執行還暴露了一個由本改動修復的環境發現：在 `**` 展開中遇到 symlink 檔案時，node 24.13 的內部 `fs.glob` 會 lstat-probe `<matched>/<下一段>` 並拋 ENOTDIR 而非跳過（run 34319926270），使 `check:ci:static` 內的 `verify-md-wrap` 在 Blacksmith 上失敗，直到 [repo-files.ts](../../../../scripts/repo-files.ts) 用 dirent walker 替換 `globSync`；修復後的 static 通道在同一映像上轉綠。觸發條件是 probe 已匹配 symlink 之下的路徑，而非籠統的「`**` 掃過含 symlink 的樹」：同一 run 中其它掃描含 symlink 樹的 `globSync` `**` 呼叫點保持綠色，無需改動。兩個基準矩陣的 8 與 32 vCPU 標籤（ubuntu-2404 與 windows-2025）不在試執行範圍內，是按已實測的 4/16 vCPU 標籤命名對稱推定的；首次使用前請用一次手動 dispatch 確認。Landlock、Seatbelt 與 linux-arm64 的排除仍基於更早遷移嘗試（已關閉的 PR #3053）的散文式 dispatch 實測，此處記錄為已知缺口；試執行按設計無法觸發這幾條腿。workflow spec 釘住了新分支——`ci-workflow.spec.ts` 斷言擴充功能後的 selector 中出現 Blacksmith 標籤，`ci-compatible-selfhosted.spec.ts` 求值 `blacksmith` 路由模式——因此未來重寫 selector 會使單元門禁變紅。預設成本姿態不變：除非變數指明，否則沒有任何東西跑在 Blacksmith 上。

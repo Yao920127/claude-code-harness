@@ -4,97 +4,97 @@
 #   pnpm run verify-translation-pairing --write packages/context/agent-instructions/README.md
 /:
   en: 3e005f834284c249
-  zh: d51d06d0ea2c30ca
+  zh: a393a953b1234b1b
 /deepseek-ai-dsh-agent-instructions:
   en: e88163f21938a7e6
   zh: 17acc4af39bd7df0
 /deepseek-ai-dsh-agent-instructions/summary:
   en: 9d849b3c7bc5e3b7
-  zh: aee26ccc12e73fe3
+  zh: caf33e99e8230434
 /deepseek-ai-dsh-agent-instructions/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-agent-instructions/use-this-package:
   en: d8c9258bcc5c9b32
-  zh: 1bbeb9c58828d83c
+  zh: f117e97ebb54c3d0
 /deepseek-ai-dsh-agent-instructions/use-this-package/what-the-agent-gets:
   en: 68f776f145a0dec4
-  zh: e63e9140aa305936
+  zh: 03235bae069a7225
 /deepseek-ai-dsh-agent-instructions/use-this-package/configuration:
   en: 14b4bcce25065881
-  zh: 8cd77151b711808b
+  zh: c382b84e60b02bd3
 /deepseek-ai-dsh-agent-instructions/use-this-package/observing-the-budget:
   en: 9797082b1e69b72c
-  zh: d26c00b1b90fe4ea
+  zh: efe31e6f157d4d5f
 /deepseek-ai-dsh-agent-instructions/understand-the-implementation:
   en: 724df7ff6d1d9fea
-  zh: 91fb1013eb9178ec
+  zh: a16562fe13d49609
 /deepseek-ai-dsh-agent-instructions/understand-the-implementation/design-concept:
   en: 4708b51bf8fe86f7
-  zh: 869fc4b1f78383ee
+  zh: e8e1cc999d8d3f58
 /deepseek-ai-dsh-agent-instructions/understand-the-implementation/source-map:
   en: 737fdf08415bc08d
-  zh: 625d53b1418ab6bb
+  zh: e34faf07e8722b1e
 /deepseek-ai-dsh-agent-instructions/understand-the-implementation/main-flow:
   en: d881b9055f823929
-  zh: 87b25f0bf8e204e9
+  zh: 51f896e670285fa6
 /deepseek-ai-dsh-agent-instructions/understand-the-implementation/invariants:
   en: 7f6e9b5356da91fd
-  zh: 7b99f255d23d982e
+  zh: 39864601a91a3eb7
 /deepseek-ai-dsh-agent-instructions/further-exploration:
   en: b3e57c263575fa5f
-  zh: b67efbda908ac82c
+  zh: 141435e030b32b5e
 /deepseek-ai-dsh-agent-instructions/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-agent-instructions/model-experience/baseline-context:
   en: 41690f63ce8a7e6a
-  zh: 6cff922d5afef38f
+  zh: 5c59ef9c50f5c473
 /deepseek-ai-dsh-agent-instructions/model-experience/baseline-context/what-the-model-sees:
   en: 41ad1efcf640edf2
-  zh: 3d06e265788fc2b7
+  zh: 7fba1cb9db3e62df
 /deepseek-ai-dsh-agent-instructions/model-experience/baseline-context/what-the-model-sees/baseline-instruction-template:
   en: 0ced1c177da6d120
-  zh: 6c61efb987e227fe
+  zh: 9092a1e0211ae5be
 /deepseek-ai-dsh-agent-instructions/model-experience/baseline-context/token-effect:
   en: e7c0cc34065a1113
-  zh: a973ba9fac7a918d
+  zh: 4d11bee37e8e2930
 /deepseek-ai-dsh-agent-instructions/model-experience/baseline-context/kv-cache-effect:
   en: c611902b9f369d86
-  zh: d7da1dbe6c1ac7f1
+  zh: 0da9e7f9f5dc1d26
 /deepseek-ai-dsh-agent-instructions/model-experience/newly-discovered-scope-context:
   en: bbf8f11dbb279b78
-  zh: eb537ade3fa1e573
+  zh: 1cf6ec674f9d1789
 /deepseek-ai-dsh-agent-instructions/model-experience/newly-discovered-scope-context/what-the-model-sees:
   en: 99226255009f8432
-  zh: 3b1661ca1a98ae4a
+  zh: 6bafee6abd538dbf
 /deepseek-ai-dsh-agent-instructions/model-experience/newly-discovered-scope-context/what-the-model-sees/additional-instruction-template:
   en: 50655306b787c8c6
-  zh: bcdc631a35f9de91
+  zh: bf9f82b2447007b7
 /deepseek-ai-dsh-agent-instructions/model-experience/newly-discovered-scope-context/token-effect:
   en: 793319101bb39edf
-  zh: f05af12ab9574a4d
+  zh: 06f6150dcae78612
 /deepseek-ai-dsh-agent-instructions/model-experience/newly-discovered-scope-context/kv-cache-effect:
   en: 2fbf2175168e8244
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-agent-instructions/model-experience/changed-or-removed-instruction-context:
   en: b668990682ea0069
-  zh: 6468918ca6b31a45
+  zh: 1c1353c9e3ccc977
 /deepseek-ai-dsh-agent-instructions/model-experience/changed-or-removed-instruction-context/what-the-model-sees:
   en: 16afe8870b4de832
-  zh: f0cdf8ea51ec148a
+  zh: e50195845fed85cc
 /deepseek-ai-dsh-agent-instructions/model-experience/changed-or-removed-instruction-context/what-the-model-sees/removal-notice:
   en: c78113708e7d7665
   zh: b10dcce1569febae
 /deepseek-ai-dsh-agent-instructions/model-experience/changed-or-removed-instruction-context/token-effect:
   en: 436f2fb373e7822d
-  zh: 0a3173b4398530bd
+  zh: 2c1a1257c4f8a275
 /deepseek-ai-dsh-agent-instructions/model-experience/changed-or-removed-instruction-context/kv-cache-effect:
   en: 2fbf2175168e8244
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-agent-instructions/known-limitations-and-deferred-work:
   en: 28dd93fabf4afae6
-  zh: 63380bbc1e085aa2
+  zh: 9a1e89a5feb60639
 /deepseek-ai-dsh-agent-instructions/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

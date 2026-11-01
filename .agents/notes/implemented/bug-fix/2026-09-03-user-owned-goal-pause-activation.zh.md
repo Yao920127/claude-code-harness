@@ -1,35 +1,35 @@
-# Agent Note: 用户独占的 goal 暂停并暴露实时激活态
+# Agent Note: 使用者獨佔的 goal 暫停並暴露即時啟用態
 
 Status: implemented
 
 [English](2026-09-03-user-owned-goal-pause-activation.md) | 中文
 
-## 问题
+## 問題
 
-[宿主发起的 goal 暂停中止当前轮次](../../archived/bug-fix/2026-09-01-host-goal-pause-aborts-turn.md) 修复了当前模型轮次不停止的问题，但之后的人类轮次仍可通过 `update_goal resume` 解除持久的 `paused` goal。Web 条带也只读取持久的 `goal` 投影，因此 active-but-disarmed 的 goal 与 armed 的 goal 渲染相同，并提供相同的暂停动作。
+[主機發起的 goal 暫停中止目前輪次](../../archived/bug-fix/2026-09-01-host-goal-pause-aborts-turn.md) 修復了目前模型輪次不停止的問題，但之後的人類輪次仍可透過 `update_goal resume` 解除持久的 `paused` goal。Web 條帶也只讀取持久的 `goal` 投影，因此 active-but-disarmed 的 goal 與 armed 的 goal 渲染相同，並提供相同的暫停動作。
 
-## 决策
+## 決策
 
-`ctx.goals.get` 现在是一个只读 Remote 方法。`GoalService` 在进程本地 activation 变化时发出 `goal/activation-changed`，载荷为 `{ sessionId, goal: { id, revision, activation } }`，clear 后则不携带 goal。API Remote 允许列表把这份 JSON 载荷转发给 Web 客户端。
+`ctx.goals.get` 現在是一個只讀 Remote 方法。`GoalService` 在程序本地 activation 變化時發出 `goal/activation-changed`，載荷為 `{ sessionId, goal: { id, revision, activation } }`，clear 後則不攜帶 goal。API Remote 允許列表把這份 JSON 載荷轉發給 Web 用戶端。
 
-GoalBar 消费由 slot inject 创建的 registrant-private activation hook source。该 source 仅在框架 hook 观察期间启动，读取 `ctx.remote.goals.get`、订阅 `goal/activation-changed`，并在 running 状态或连接 reset 时刷新。activation 边界推进 epoch，使在途读取失效，因此较旧的 HTTP 响应不能覆盖更新的边界；running 刷新会保留最后一次 activation，直到读取完成。Active goal 仅在 armed 时渲染 `Ongoing Goal`；active-but-disarmed goal 渲染 `Inactive Goal`，暴露 resume 而不是 pause；持久 paused goal 继续暴露 resume。暂停权威仍属于 goal 领域和人类 `/goal resume` 命令，它们仍可恢复每个可恢复 phase。
+GoalBar 消費由 slot inject 建立的 registrant-private activation hook source。該 source 僅在框架 hook 觀察期間啟動，讀取 `ctx.remote.goals.get`、訂閱 `goal/activation-changed`，並在 running 狀態或連線 reset 時重新整理。activation 邊界推進 epoch，使在途讀取失效，因此較舊的 HTTP 回應不能覆蓋更新的邊界；running 重新整理會保留最後一次 activation，直到讀取完成。Active goal 僅在 armed 時渲染 `Ongoing Goal`；active-but-disarmed goal 渲染 `Inactive Goal`，暴露 resume 而不是 pause；持久 paused goal 繼續暴露 resume。暫停權威仍屬於 goal 領域和人類 `/goal resume` 命令，它們仍可恢復每個可恢復 phase。
 
-`update_goal resume` 会在调用 goal 服务前用 `GOAL_TOOL_RESUME_PAUSED` 拒绝持久 paused goal。它仍会在会话恢复或 fork 后恢复 active-but-disarmed goal，并在人类要求继续时恢复 blocked goal。模型提示词和工具描述说明持久 paused 的恢复由用户独占。
+`update_goal resume` 會在呼叫 goal 服務前用 `GOAL_TOOL_RESUME_PAUSED` 拒絕持久 paused goal。它仍會在工作階段恢復或 fork 後恢復 active-but-disarmed goal，並在人類要求繼續時恢復 blocked goal。模型提示詞和工具描述說明持久 paused 的恢復由使用者獨佔。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**把 activation 存入持久 `GoalSnapshot`。** 否决：按 goal 领域约定，activation 是进程本地的，绝不能跨恢复或 fork 存活。
+**把 activation 存入持久 `GoalSnapshot`。** 否決：按 goal 領域約定，activation 是程序本地的，絕不能跨恢復或 fork 存活。
 
-**把 activation 加入持久 session projection。** 否决：投影状态会写入检查点；缓存的 `armed` 会在武装它的进程消失后继续错误存在。
+**把 activation 加入持久 session projection。** 否決：投影狀態會寫入檢查點；快取的 `armed` 會在武裝它的程序消失後繼續錯誤存在。
 
-**把完整的 scoped `goal/changed` 事件转发给客户端。** 否决：其 `Agent` 载荷不是 JSON wire 数据。专用 activation 事件只携带客户端需要的 session id、goal ref 与 activation。
+**把完整的 scoped `goal/changed` 事件轉發給用戶端。** 否決：其 `Agent` 載荷不是 JSON wire 資料。專用 activation 事件只攜帶用戶端需要的 session id、goal ref 與 activation。
 
-**允许模型从自然语言轮次恢复持久 paused goal。** 否决：人工暂停是用户控制，仅靠提示词约束仍会把同轮撤销能力留给模型。
+**允許模型從自然語言輪次恢復持久 paused goal。** 否決：人工暫停是使用者控制，僅靠提示詞約束仍會把同輪撤銷能力留給模型。
 
-## 后果
+## 後果
 
-Web 无需持久化 activation 就能区分运行中、disarmed 与 paused goal。持久 paused goal 只能通过 Web 控件、`/goal resume` 或其他直接调用 goal 服务的调用方恢复；模型 `update_goal resume` 仅限 disarmed-active 与 blocked goal。API 表面新增一个读取和一个转发 live 事件；持久 goal change 载荷与投影 stateVersion 不变。组件不持有 Remote 订阅；activation source 遵循既有的 inject-hooks live-data 通道。
+Web 無需持久化 activation 就能區分執行中、disarmed 與 paused goal。持久 paused goal 只能透過 Web 控制元件、`/goal resume` 或其他直接呼叫 goal 服務的呼叫方恢復；模型 `update_goal resume` 僅限 disarmed-active 與 blocked goal。API 表面新增一個讀取和一個轉發 live 事件；持久 goal change 載荷與投影 stateVersion 不變。元件不持有 Remote 訂閱；activation source 遵循既有的 inject-hooks live-data 通道。
 
-## 测试
+## 測試
 
-Goal 单元测试固定 create、session start 与 resume 过程中 activation 事件的 id 与 revision。工具测试固定后续人类轮次中持久 paused goal 的拒绝，同时保留已恢复 disarmed-active goal 的恢复。API Remote 测试固定 JSON 转发。Activation-source 测试固定 stale read 拒绝与 running 刷新保留旧值。Web 单元测试固定 armed 显示 pause、disarmed 显示 resume；组装的 goal-bar 浏览器场景通过 fixture timing hook 同时固定 armed 与 active-disarmed golden。
+Goal 單元測試固定 create、session start 與 resume 過程中 activation 事件的 id 與 revision。工具測試固定後續人類輪次中持久 paused goal 的拒絕，同時保留已恢復 disarmed-active goal 的恢復。API Remote 測試固定 JSON 轉發。Activation-source 測試固定 stale read 拒絕與 running 重新整理保留舊值。Web 單元測試固定 armed 顯示 pause、disarmed 顯示 resume；組裝的 goal-bar 瀏覽器情境透過 fixture timing hook 同時固定 armed 與 active-disarmed golden。

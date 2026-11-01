@@ -23,12 +23,12 @@ async function main(): Promise<void> {
   let confirmed = false
   try {
     console.log(action === 'upload-binaries'
-      ? '仅授权此批次 test 二进制上传。确认没有其他发布者；会完整回读安装包，可能产生较大下载流量。'
-      : '仅授权此批次 test 清单发布。确认没有其他发布者；复用成功上传回执，仅回读清单，不重复下载安装包。')
+      ? '僅授權此批次 test 二進位制上傳。確認沒有其他釋出者；會完整回讀安裝檔，可能產生較大下載流量。'
+      : '僅授權此批次 test 清單釋出。確認沒有其他釋出者；複用成功上傳回執，僅回讀清單，不重複下載安裝檔。')
     if (action === 'publish-feed' && version === prepared.run.versions[1]) {
-      console.log('确认版本 1 已通过安装后的入口启动并仍在运行；必须提供该批次 journals 目录。')
+      console.log('確認版本 1 已透過安裝後的入口啟動並仍在執行；必須提供該批次 journals 目錄。')
     }
-    confirmed = (await terminal.question(`请输入 ${expected}：`)) === expected
+    confirmed = (await terminal.question(`請輸入 ${expected}：`)) === expected
   } finally { terminal.close() }
   if (!confirmed) throw new Error('operator declined')
   console.log(await executeInstalledUpdatePublication(manifest, version, receipt, action, createInstalledUpdateCos(), values.journals))

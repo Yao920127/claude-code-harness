@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-08-native-windows-pull-request-ci.md
 /agent-note-wine-and-native-windows-ci:
   en: 9c96424c10b83c6b
-  zh: b2adf0c650fbf529
+  zh: 6057e3a29f0a1651
 /agent-note-wine-and-native-windows-ci/problem:
   en: 3e229ecf646af866
-  zh: d358507b1e1d381f
+  zh: 1fca89aea24a332a
 /agent-note-wine-and-native-windows-ci/decision:
   en: f557cb00e1b457c1
-  zh: eeaec8412ddb315a
+  zh: 5e26f29a308a0d66
 /agent-note-wine-and-native-windows-ci/alternatives-considered:
   en: f6c5e77fe3f05739
-  zh: 8de640d12d3a38c4
+  zh: 67fa4e5196ece62e
 /agent-note-wine-and-native-windows-ci/consequences:
   en: 58069228d4e904c6
-  zh: 2601a48b82400903
+  zh: 78a804e9fc160ac6

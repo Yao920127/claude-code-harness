@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/process/2026-06-11-supply-chain-and-vendor-drift.md
 /agent-note-supply-chain-checks-and-vendor-drift-verification:
   en: 14763706c0292472
-  zh: bc846b9df1cd559c
+  zh: 8cdd25fa179b7694
 /agent-note-supply-chain-checks-and-vendor-drift-verification/problem:
   en: 2668c33c520ba25e
-  zh: 5dbb2e8a25cc50cd
+  zh: 49ed2f131b3c3ea2
 /agent-note-supply-chain-checks-and-vendor-drift-verification/proposal:
   en: c9f9e2ebf0e66922
-  zh: 2c1ed4bc35bc2d90
+  zh: ae445e712b0b0e5e
 /agent-note-supply-chain-checks-and-vendor-drift-verification/plan:
   en: c52921928996b2f0
-  zh: 6c0ae36667b1bf44
+  zh: 4a9ab221cfe5b949
 /agent-note-supply-chain-checks-and-vendor-drift-verification/alternatives-considered:
   en: 39f18421ca3a9c3d
-  zh: 5923ddb6c420e56f
+  zh: 1fe003f4c6cf8d15
 /agent-note-supply-chain-checks-and-vendor-drift-verification/acceptance-criteria:
   en: e770eb9ebced47d1
-  zh: df915bb02264be7a
+  zh: 9e2c56df6884efe7
 /agent-note-supply-chain-checks-and-vendor-drift-verification/risks:
   en: 515f9c9dd5ef7c20
-  zh: a8358875334b2c64
+  zh: 08e9dd35c2091faf

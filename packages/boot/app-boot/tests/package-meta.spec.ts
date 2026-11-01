@@ -80,11 +80,11 @@ describe('plugin locale display metadata', () => {
 
   it('reads direct fields, retains per-field translations, and ignores other locale content', () => {
     dictionary('en', { meta: { title: 'Team', description: 'Work together', ignored: false }, other: { nested: [1] } })
-    dictionary('zh', { meta: { title: '团队' } })
+    dictionary('zh', { meta: { title: '團隊' } })
     dictionary('pt-BR', { meta: { description: 'Trabalhar juntos' } })
     file(join(dir, 'locale', 'ignored.txt'), 'not JSON')
     expect(readPluginMeta('localized', parentURL)).toEqual({
-      title: { en: 'Team', zh: '团队' },
+      title: { en: 'Team', zh: '團隊' },
       description: { en: 'Work together', 'pt-br': 'Trabalhar juntos' },
     })
   })
@@ -99,9 +99,9 @@ describe('plugin locale display metadata', () => {
   it('accepts description-only metadata and supplies the module name when a translated title has no English value', () => {
     dictionary('en', { meta: { description: 'About it' } })
     expect(readPluginMeta('localized', parentURL)).toEqual({ description: { en: 'About it' } })
-    dictionary('zh', { meta: { title: '标题' } })
+    dictionary('zh', { meta: { title: '標題' } })
     expect(readPluginMeta('localized', parentURL)).toEqual({
-      title: { en: 'localized', zh: '标题' }, description: { en: 'About it' },
+      title: { en: 'localized', zh: '標題' }, description: { en: 'About it' },
     })
   })
 
@@ -113,14 +113,14 @@ describe('plugin locale display metadata', () => {
   it('falls back per field without replacing available locale translations', () => {
     manifest({ './locale/*.json': './locale/*.json', './package.json': './package.json' }, { description: 'Package introduction' })
     dictionary('en', { meta: { title: 'English title' } })
-    dictionary('zh', { meta: { description: '中文介绍' } })
+    dictionary('zh', { meta: { description: '中文介紹' } })
     expect(readPluginMeta('localized', parentURL)).toEqual({
-      title: { en: 'English title' }, description: { en: 'Package introduction', zh: '中文介绍' },
+      title: { en: 'English title' }, description: { en: 'Package introduction', zh: '中文介紹' },
     })
     dictionary('en', { meta: { description: 'English introduction' } })
-    dictionary('zh', { meta: { title: '中文标题' } })
+    dictionary('zh', { meta: { title: '中文標題' } })
     expect(readPluginMeta('localized', parentURL)).toEqual({
-      title: { en: 'localized', zh: '中文标题' }, description: { en: 'English introduction' },
+      title: { en: 'localized', zh: '中文標題' }, description: { en: 'English introduction' },
     })
     dictionary('en', {})
     dictionary('zh', {})
@@ -129,9 +129,9 @@ describe('plugin locale display metadata', () => {
 
   it('retains non-English descriptions with an empty final English fallback', () => {
     dictionary('en', { meta: { title: 'Plugin' } })
-    dictionary('zh', { meta: { description: '中文介绍' } })
+    dictionary('zh', { meta: { description: '中文介紹' } })
     expect(readPluginMeta('localized', parentURL)).toEqual({
-      title: { en: 'Plugin' }, description: { en: '', zh: '中文介绍' },
+      title: { en: 'Plugin' }, description: { en: '', zh: '中文介紹' },
     })
   })
 
@@ -199,9 +199,9 @@ describe('plugin locale display metadata', () => {
   it.each([null, false, 1, {}, [], '', '  '])('retains localized text while rejecting malformed icon %j', (icon) => {
     manifest({ './locale/*.json': './locale/*.json', './package.json': './package.json' }, { icon })
     dictionary('en', { meta: { title: 'Plugin', description: 'Introduction' } })
-    dictionary('zh', { meta: { title: '插件' } })
+    dictionary('zh', { meta: { title: '外掛' } })
     const { error, ...meta } = readPluginMeta('localized', parentURL)!
-    expect(meta).toEqual({ title: { en: 'Plugin', zh: '插件' }, description: { en: 'Introduction' } })
+    expect(meta).toEqual({ title: { en: 'Plugin', zh: '外掛' }, description: { en: 'Introduction' } })
     expect(error).toContain('icon must be a non-empty string')
   })
 
@@ -290,9 +290,9 @@ describe('plugin locale display metadata', () => {
     file(join(dir, 'lib', 'review.js'), 'throw new Error("must not execute review")\n')
     dictionary('en', { meta: { title: 'Whole package' } })
     dictionary('en', { meta: { title: 'Search' } }, join(dir, 'resources', 'search'))
-    dictionary('zh', { meta: { title: '搜索' } }, join(dir, 'resources', 'search'))
+    dictionary('zh', { meta: { title: '搜尋' } }, join(dir, 'resources', 'search'))
     dictionary('en', { meta: { title: 'Review' } }, join(dir, 'resources', 'review'))
-    expect(readPluginMeta('localized/search', parentURL)).toEqual({ title: { en: 'Search', zh: '搜索' } })
+    expect(readPluginMeta('localized/search', parentURL)).toEqual({ title: { en: 'Search', zh: '搜尋' } })
     expect(readPluginMeta('localized/review', parentURL)).toEqual({ title: { en: 'Review' } })
     expect(readPluginMeta('localized/private', parentURL)).toBeUndefined()
   })

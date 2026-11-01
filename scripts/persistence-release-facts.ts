@@ -27,17 +27,17 @@ function structuralChanges(entry: PersistenceReleaseEntry, language: Language): 
   if (entry.record.previous === null) {
     return language === 'en'
       ? 'This entry establishes the historical comparison starting point. Its declaration lists every extracted root; it makes no compatibility judgment about earlier versions.'
-      : '本条记录建立历史比较起点。机器声明列出所有提取的根类型，不对更早版本作兼容性判断。'
+      : '本條記錄建立歷史比較起點。機器宣告列出所有提取的根型別，不對更早版本作相容性判斷。'
   }
   if (entry.differences.length === 0) {
     return language === 'en'
       ? 'Normalized root types and their transitive digests are unchanged from the preceding tag.'
-      : '规范化后的根类型及其传递引用摘要与前一 tag 相同。'
+      : '規範化後的根型別及其傳遞引用摘要與前一 tag 相同。'
   }
   const summary = language === 'en'
     ? `Detected ${count(entry.record.changes.length, 'changed root')} and ${count(entry.differences.length, 'structural difference')}. The minimum below is calculated using current rules for comparison only; it does not assert historical compliance, migration correctness, or runtime compatibility.`
-    : `检测到 ${entry.record.changes.length} 个根类型变化、${entry.differences.length} 项结构差异。下表的最低要求按当前规则计算，只用于比较；不表示旧版本曾遵守这些规则，也不证明迁移或运行时兼容性。`
-  const heading = language === 'en' ? '| Path | Change | Current minimum |' : '| 路径 | 变化 | 当前最低要求 |'
+    : `檢測到 ${entry.record.changes.length} 個根型別變化、${entry.differences.length} 項結構差異。下表的最低要求按目前規則計算，只用於比較；不表示舊版本曾遵守這些規則，也不證明遷移或執行時相容性。`
+  const heading = language === 'en' ? '| Path | Change | Current minimum |' : '| 路徑 | 變化 | 目前最低要求 |'
   const rows = entry.differences.map((change) => {
     const path = change.path.replaceAll('`', '\\`').replaceAll('|', '\\|')
     return `| \`${path}\` | \`${change.kind}\` | \`${change.requiresVersionBump ? 'version-bump' : 'same-version'}\` |`
@@ -69,7 +69,7 @@ export function persistenceReleaseFactArtifacts(root: string, archive: Persisten
   const index = (language: Language): string => {
     const heading = language === 'en'
       ? '| Tag | Source date (UTC) | Session version | Roots / types | Changed roots |'
-      : '| Tag | 源码日期（UTC） | Session 版本 | 根 / 类型 | 变化根 |'
+      : '| Tag | 原始碼日期（UTC） | Session 版本 | 根 / 型別 | 變化根 |'
     const rows = archive.entries.map((entry, index) => {
       const tag = entry.release.tag
       const date = new Date(entry.release.sourceDate).toISOString().slice(0, 10)
@@ -85,7 +85,7 @@ export function persistenceReleaseFactArtifacts(root: string, archive: Persisten
       const path = `${entry.release.tag}${language === 'zh' ? '.zh' : ''}.md`
       const inventory = language === 'en'
         ? `${count(entry.roots.size, 'root')} / ${count(typeCounts[index] as number, 'type')}`
-        : `${entry.roots.size} 个根类型 / ${typeCounts[index]} 种类型`
+        : `${entry.roots.size} 個根型別 / ${typeCounts[index]} 種型別`
       return replaceFacts(replaceFacts(read(path), 'inventory', inventory, path),
         'changes', '\n\n' + structuralChanges(entry, language) + '\n\n', path)
     }

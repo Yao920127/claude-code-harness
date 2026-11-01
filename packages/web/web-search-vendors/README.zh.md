@@ -1,5 +1,5 @@
 ---
-description: "ctx.web 的模型厂商原生网页搜索提供方：部署如何选择 Claude API、OpenAI、xAI、Gemini、OpenRouter、Mistral 或 Z.AI 回答网页搜索。"
+description: "ctx.web 的模型廠商原生網頁搜尋提供者：部署如何選擇 Claude API、OpenAI、xAI、Gemini、OpenRouter、Mistral 或 Z.AI 回答網頁搜尋。"
 kind: "package-reference"
 ---
 
@@ -9,29 +9,29 @@ kind: "package-reference"
 
 ## 概述
 
-借助 `dsh-web-search-vendors`，harness 可以通过七家模型厂商的原生搜索回答网页搜索：Claude API 的 `web_search` 服务端工具、OpenAI 与 xAI Responses API 的 `web_search` 工具、Gemini 的 Google 搜索落地（grounding）、OpenRouter 的 `web` 插件、Mistral Conversations API 的 `web_search` 工具，以及 Z.AI 的网页搜索 API。部署想用自己的密钥在这些厂商之间选择时挂载它。每个提供方在每次搜索时解析自己的密钥，因此未配置的厂商只在被选中时失败。面向模型的 `web_search` 工具位于 `dsh-tool-web`。
+藉助 `dsh-web-search-vendors`，harness 可以透過七家模型廠商的原生搜尋回答網頁搜尋：Claude API 的 `web_search` 伺服器端工具、OpenAI 與 xAI Responses API 的 `web_search` 工具、Gemini 的 Google 搜尋落實（grounding）、OpenRouter 的 `web` 外掛、Mistral Conversations API 的 `web_search` 工具，以及 Z.AI 的網頁搜尋 API。部署想用自己的金鑰在這些廠商之間選擇時掛載它。每個提供者在每次搜尋時解析自己的金鑰，因此未設定的廠商只在被選中時失敗。面向模型的 `web_search` 工具位於 `dsh-tool-web`。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在已加载 web 服务的组合中挂载本插件，再用 web 服务的 `searchProvider` 选择其中一个提供方。出厂的 base bundle 已挂载它；插件页的**搜索来源**页面可以更改选择并保存所选厂商的密钥。
+在已載入 web 服務的組合中掛載本外掛，再用 web 服務的 `searchProvider` 選擇其中一個提供者。出廠的 base bundle 已掛載它；外掛頁的**搜尋來源**頁面可以更改選擇並儲存所選廠商的金鑰。
 
-### 何时选择
+### 何時選擇
 
-部署已持有某家厂商的密钥，并偏好其搜索索引、引用方式或价格时，选用本包中的对应提供方。若 Host 已登录 Claude Code 而没有 Anthropic API 密钥，改用 [`dsh-web-search-claude-code`](../web-search-claude-code/README.zh.md)。
+部署已持有某家廠商的金鑰，並偏好其搜尋索引、引用方式或價格時，選用本包中的對應提供者。若 Host 已登入 Claude Code 而沒有 Anthropic API 金鑰，改用 [`dsh-web-search-claude-code`](../web-search-claude-code/README.zh.md)。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-web'
@@ -40,93 +40,93 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-web-search-vendors'
 ```
 
-| 提供方 id | 配置分区 | 默认密钥引用 | 默认模型或引擎 | 厂商搜索 |
+| 提供者 id | 設定分割槽 | 預設金鑰引用 | 預設模型或引擎 | 廠商搜尋 |
 |---|---|---|---|---|
-| `claude-api` | `claude` | `ANTHROPIC_API_KEY` | `claude-opus-5` | Messages API `web_search_20260209` 服务端工具 |
+| `claude-api` | `claude` | `ANTHROPIC_API_KEY` | `claude-opus-5` | Messages API `web_search_20260209` 伺服器端工具 |
 | `openai` | `openai` | `OPENAI_API_KEY` | `gpt-6-astra` | Responses API `web_search` 工具 |
 | `xai` | `xai` | `XAI_API_KEY` | `grok-4.7` | Responses API `web_search` 工具 |
-| `gemini` | `gemini` | `GEMINI_API_KEY` | `gemini-3.8-flash` | 带 `google_search` 的 `generateContent` |
-| `openrouter` | `openrouter` | `OPENROUTER_API_KEY` | `openrouter/auto` | 带 `web` 插件的 chat completions |
+| `gemini` | `gemini` | `GEMINI_API_KEY` | `gemini-3.8-flash` | 帶 `google_search` 的 `generateContent` |
+| `openrouter` | `openrouter` | `OPENROUTER_API_KEY` | `openrouter/auto` | 帶 `web` 外掛的 chat completions |
 | `mistral` | `mistral` | `MISTRAL_API_KEY` | `mistral-medium-latest` | Conversations API `web_search` 工具 |
-| `zai` | `zai` | `ZAI_API_KEY` | `search-prime` | 独立的网页搜索 API |
+| `zai` | `zai` | `ZAI_API_KEY` | `search-prime` | 獨立的網頁搜尋 API |
 
-每个分区都接受 `apiKeyEnv`、`baseURL` 与 `model`；对 `zai` 而言，`model` 指定搜索引擎。`claude` 分区另外接受 `toolType`（`web_search_20260209`，或供早于 Claude Opus 4.6 与 Sonnet 4.6 的模型使用的 `web_search_20250305`）、`maxUses` 与 `maxTokens`。组合了凭据服务时密钥引用经由它解析，否则从启动环境读取。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-vendors)是所有字段的完整来源。
+每個分割槽都接受 `apiKeyEnv`、`baseURL` 與 `model`；對 `zai` 而言，`model` 指定搜尋引擎。`claude` 分割槽另外接受 `toolType`（`web_search_20260209`，或供早於 Claude Opus 4.6 與 Sonnet 4.6 的模型使用的 `web_search_20250305`）、`maxUses` 與 `maxTokens`。組合了憑證服務時金鑰引用經由它解析，否則從啟動環境讀取。生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-vendors)是所有欄位的完整來源。
 
-### 搜索返回什么
+### 搜尋返回什麼
 
-模型厂商以 `content` 返回生成的回答，以 `sources` 返回其使用的页面。来源保留厂商提供的标题；厂商把回答片段关联到页面时，该片段作为 `snippet`；Claude API 会把每条结果与其引用所摘录的文字对应起来。Z.AI 只返回搜索结果，不返回回答。来源按 URL 去重，web 服务再施加请求的 `maxResults`。
+模型廠商以 `content` 返回生成的回答，以 `sources` 返回其使用的頁面。來源保留廠商提供的標題；廠商把回答片段關聯到頁面時，該片段作為 `snippet`；Claude API 會把每條結果與其引用所摘錄的文字對應起來。Z.AI 只返回搜尋結果，不返回回答。來源按 URL 去重，web 服務再施加請求的 `maxResults`。
 
-### 失败与恢复
+### 失敗與恢復
 
-缺少密钥时在发出任何请求前以 `WEB_PROVIDER_CREDENTIAL_MISSING` 失败。HTTP 错误、拒答、无法解析的响应体以及不含任何来源的回复都以写明厂商的 `WEB_PROVIDER_ERROR` 失败；取消以 `WEB_ABORTED` 失败。重定向不会联系目标就直接失败。
+缺少金鑰時在發出任何請求前以 `WEB_PROVIDER_CREDENTIAL_MISSING` 失敗。HTTP 錯誤、拒答、無法解析的回應體以及不含任何來源的回覆都以寫明廠商的 `WEB_PROVIDER_ERROR` 失敗；取消以 `WEB_ABORTED` 失敗。重定向不會聯絡目標就直接失敗。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节说明提供方背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節說明提供者背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **一个厂商请求，一种映射。** 每个提供方只发送一个厂商请求，并只映射该厂商文档说明的字段；共享的凭据、取消与错误处理位于同一个基类。
-- **不虚构来源。** 回复不含任何可引用页面时直接失败，而不是只返回回答文字，因为工具承诺返回来源。
-- **经由 SDK 调用 Claude API。** Claude API 提供方使用官方 Anthropic SDK；服务端工具轮次暂停时最多续跑三次，再映射已收到的内容块。
+- **一個廠商請求，一種對映。** 每個提供者只傳送一個廠商請求，並只對映該廠商文件說明的欄位；共享的憑證、取消與錯誤處理位於同一個基類。
+- **不虛構來源。** 回覆不含任何可引用頁面時直接失敗，而不是隻返回回答文字，因為工具承諾返回來源。
+- **經由 SDK 呼叫 Claude API。** Claude API 提供者使用官方 Anthropic SDK；伺服器端工具輪次暫停時最多續跑三次，再對映已收到的內容塊。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：各厂商配置分区、凭据解析、注册提供方 |
-| [`src/common.ts`](src/common.ts) | 提供方基类：密钥解析、JSON 请求、取消与错误词汇、来源辅助函数 |
-| [`src/anthropic.ts`](src/anthropic.ts) | 基于 Anthropic SDK 的 Claude API 提供方 |
-| [`src/vendors.ts`](src/vendors.ts) | OpenAI、xAI、Gemini、OpenRouter、Mistral 与 Z.AI 提供方 |
-| — | 不发布运行时不变量伴随包；每个提供方在两次搜索之间不保存状态，因此不存在可能分歧的独立观察。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：各廠商設定分割槽、憑證解析、註冊提供者 |
+| [`src/common.ts`](src/common.ts) | 提供者基類：金鑰解析、JSON 請求、取消與錯誤詞彙、來源輔助函式 |
+| [`src/anthropic.ts`](src/anthropic.ts) | 基於 Anthropic SDK 的 Claude API 提供者 |
+| [`src/vendors.ts`](src/vendors.ts) | OpenAI、xAI、Gemini、OpenRouter、Mistral 與 Z.AI 提供者 |
+| — | 不釋出執行時不變數伴隨包；每個提供者在兩次搜尋之間不儲存狀態，因此不存在可能分歧的獨立觀察。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [Web 包地图](../README.zh.md)——每个搜索与抓取提供方及其职责。
-- [dsh-web](../web/README.zh.md)——提供方选择与实时生效的 `searchProvider` 设置。
-- [dsh-tool-web](../tool-web/README.zh.md)——渲染这些来源的面向模型的 `web_search` 工具。
-- [多厂商搜索决策](../../../.agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.zh.md)——为什么是这些厂商，以及为什么不单独记录搜索请求。
+- [Web 包地圖](../README.zh.md)——每個搜尋與抓取提供者及其職責。
+- [dsh-web](../web/README.zh.md)——提供者選擇與即時生效的 `searchProvider` 設定。
+- [dsh-tool-web](../tool-web/README.zh.md)——渲染這些來源的面向模型的 `web_search` 工具。
+- [多廠商搜尋決策](../../../.agents/notes/implemented/feature/2026-09-26-multi-vendor-web-search.zh.md)——為什麼是這些廠商，以及為什麼不單獨記錄搜尋請求。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地，经由 `dsh-tool-web`：它保留本提供方受 `maxResults` 限制的回答文字、URL、标题与片段，或把 `<vendor> search failed: <error>`、`<vendor> API error (HTTP <status>) from <url>: <body>`、`<vendor> returned no web sources; the request may not have triggered web search` 与 `<vendor> search aborted` 失败包在消费方的错误包装中。
+間接地，經由 `dsh-tool-web`：它保留本提供者受 `maxResults` 限制的回答文字、URL、標題與片段，或把 `<vendor> search failed: <error>`、`<vendor> API error (HTTP <status>) from <url>: <body>`、`<vendor> returned no web sources; the request may not have triggered web search` 與 `<vendor> search aborted` 失敗包在消費方的錯誤包裝中。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不直接造成失效；请求前缀的变化由上述消费方负责。
+不直接造成失效；請求字首的變化由上述消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **厂商请求不是 Session 事件。** 与 DeepSeek 提供方不同，这些提供方不记录其辅助请求；模型发送的查询与收到的结果保留在工具调用与工具结果中。
-- **不提供 Qwen、Groq 与 Kimi。** 它们的搜索响应没有本包无需猜测即可映射的、有文档说明的结构化来源列表。
-- **设置页只编辑提供方选择与密钥。** 端点、模型与工具限制属于组合配置；插件页不编辑它们。
+- **廠商請求不是 Session 事件。** 與 DeepSeek 提供者不同，這些提供者不記錄其輔助請求；模型傳送的查詢與收到的結果保留在工具呼叫與工具結果中。
+- **不提供 Qwen、Groq 與 Kimi。** 它們的搜尋回應沒有本包無需猜測即可對映的、有文件說明的結構化來源列表。
+- **設定頁只編輯提供者選擇與金鑰。** 端點、模型與工具限制屬於組合設定；外掛頁不編輯它們。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作备注——点击展开</summary>
+<summary>維護者工作備註——點選展開</summary>
 
-本开发备注是给维护者的工作背景：未决问题与尚未确定的方向。它明确不具权威性——已发布的行为、限制与理由位于上面各节及所链接的 Agent Note。
+本開發備註是給維護者的工作背景：未決問題與尚未確定的方向。它明確不具權威性——已釋出的行為、限制與理由位於上面各節及所連結的 Agent Note。
 
-#### 后续：实时的厂商设置
+#### 後續：即時的廠商設定
 
-把各厂商分区设为 volatile 后，插件页就能编辑模型与端点；按引用写入密钥的页面届时会读取各分区的 `apiKeyEnv`，而不是出厂默认值。
+把各廠商分割槽設為 volatile 後，外掛頁就能編輯模型與端點；按引用寫入金鑰的頁面屆時會讀取各分割槽的 `apiKeyEnv`，而不是出廠預設值。
 
 </details>

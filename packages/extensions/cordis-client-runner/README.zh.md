@@ -1,5 +1,5 @@
 ---
-description: "动态 Cordis 包的浏览器半说明，供选择、组合或排查页面如何应答运行请求并装载浏览器半代码的用户与维护者阅读。"
+description: "動態 Cordis 包的瀏覽器半說明，供選擇、組合或排查頁面如何應答執行請求並裝載瀏覽器半程式碼的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,139 +9,139 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-cordis-client-runner` 为程序调用方和现有浏览器控件运行进程内动态包的浏览器部分。它在请求获批或用户显式操作后加载定义，并在 Host 撤销运行时移除定义。页面刷新不会恢复定义。Creator UI 插件通过 Plugin Manager 使用已安装的 Client 模块。
+`dsh-cordis-client-runner` 為程式呼叫方和現有瀏覽器控制元件執行程序內動態包的瀏覽器部分。它在請求獲批或使用者顯式操作後載入定義，並在 Host 撤銷執行時移除定義。頁面重新整理不會恢復定義。Creator UI 外掛透過 Plugin Manager 使用已安裝的 Client 模組。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在组合里同时挂载了 host runner 的 web 客户端中挂载本插件——host 半跑在进程里，浏览器半跑在页面里。当某个带浏览器半的动态包被运行时，打开的页面会收到一次运行请求；本包在本页执行装载，UI 包（`ui-cordis`）则渲染人用来应答它的面板与卡片。纯 host 包不需要浏览器半，也就不需要页面：host 自己运行它们。
+在組合裡同時掛載了 host runner 的 web 用戶端中掛載本外掛——host 半跑在程序裡，瀏覽器半跑在頁面裡。當某個帶瀏覽器半的動態包被執行時，開啟的頁面會收到一次執行請求；本包在本頁執行裝載，UI 包（`ui-cordis`）則渲染人用來應答它的面板與卡片。純 host 包不需要瀏覽器半，也就不需要頁面：host 自己執行它們。
 
-### 页面会做什么
+### 頁面會做什麼
 
-浏览器半用纯 JavaScript 编写——无 JSX、无 TypeScript、不能 import 模块——并作为一个 async 函数运行。它拿到一组固定的名字——`React`、`console`、`styles` 与 `host`——而 `fetch`、`setTimeout` 这类浏览器全局不可用。返回的插件只能使用生命周期动词，以及它自己在 `inject` 里声明的服务。从已装载半调用 `host.call(method, args)` 会到达它自己的 host 半。React 渲染已装载半时发生的崩溃会上报 host，点名槽位、崩溃是否已把条目摘掉，以及写给作者的 message。
+瀏覽器半用純 JavaScript 編寫——無 JSX、無 TypeScript、不能 import 模組——並作為一個 async 函式執行。它拿到一組固定的名字——`React`、`console`、`styles` 與 `host`——而 `fetch`、`setTimeout` 這類瀏覽器全域不可用。返回的外掛只能使用生命週期動詞，以及它自己在 `inject` 裡宣告的服務。從已裝載半呼叫 `host.call(method, args)` 會到達它自己的 host 半。React 渲染已裝載半時發生的崩潰會上報 host，點名槽位、崩潰是否已把條目摘掉，以及寫給作者的 message。
 
-### 运行界面提供什么
+### 執行介面提供什麼
 
-运行界面可以应答一次待审批的 host 请求——批准它（可选地同时覆盖同一插件的未来版本）或拒绝它——也可以按用户自己的手势启动一个定义，该手势本身就是授权。每个定义最多有一个在途活动，因此基于该状态构建的控件能在 remount 后存活。界面就本页显示的内容都是页面本地的：每包最后一次渲染崩溃、本页自己的尝试为何失败，以及某个包是否已在本页装载——绝不是 host 眼中「在跑」的视图。
+執行介面可以應答一次待審批的 host 請求——批准它（可選地同時覆蓋同一外掛的未來版本）或拒絕它——也可以按使用者自己的手勢啟動一個定義，該手勢本身就是授權。每個定義最多有一個在途活動，因此基於該狀態建置的控制元件能在 remount 後存活。介面就本頁顯示的內容都是頁面本地的：每包最後一次渲染崩潰、本頁自己的嘗試為何失敗，以及某個包是否已在本頁裝載——絕不是 host 眼中「在跑」的檢視。
 
-### 生命周期边界
+### 生命週期邊界
 
-装载是幂等的：要求装载这一页已在运行的 revision 不会改变任何东西，更新的 revision 顶替已装载的那个，同一 revision 在 retract 之后再装则重新装载。同一定义的操作串行执行。刷新按设计从干净状态开始——host 仍持有定义，本页在再次被要求之前不运行它。
+裝載是冪等的：要求裝載這一頁已在執行的 revision 不會改變任何東西，更新的 revision 頂替已裝載的那個，同一 revision 在 retract 之後再裝則重新裝載。同一定義的操作序列執行。重新整理按設計從乾淨狀態開始——host 仍持有定義，本頁在再次被要求之前不執行它。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释浏览器半背后的设计；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋瀏覽器半背後的設計；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-浏览器半建立在一个原则之上：动态包必须与静态包共享同一套激活门控、fiber effect 清理与状态投影。求值后的插件被塞进模块表，并经 `loader.create` 挂载；卸载先移除 entry，等待其 fiber 清理完成，再使 factory 失效并撤下样式。guard 是一份白名单——生命周期动词加已声明服务——与 host 侧沙箱门面对称，因此包作者在两侧面对同一个约定。一个观察者供两个出口：只有这里监视槽位注册表的 entry-error seam，凡属于本 runner 落座过的包的崩溃，一路上行给 host（给模型），一路发布到本包自己的 `renderFailures`（给面板）。
+瀏覽器半建立在一個原則之上：動態包必須與靜態包共享同一套啟用門控、fiber effect 清理與狀態投影。求值後的外掛被塞進模組表，並經 `loader.create` 掛載；解除安裝先移除 entry，等待其 fiber 清理完成，再使 factory 失效並撤下樣式。guard 是一份白名單——生命週期動詞加已宣告服務——與 host 側沙箱門面對稱，因此包作者在兩側面對同一個約定。一個觀察者供兩個出口：只有這裡監視槽位註冊表的 entry-error seam，凡屬於本 runner 落座過的包的崩潰，一路上行給 host（給模型），一路釋出到本包自己的 `renderFailures`（給面板）。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/client/index.ts`](src/client/index.ts) | 插件入口：runner、编排器、inspect 注册表、转发事件订阅 |
-| [`src/client/runtime.ts`](src/client/runtime.ts) | 装载引擎：按运行标识收敛、guard 挂载、撤回 |
-| [`src/client/orchestrator.ts`](src/client/orchestrator.ts) | 运行编排：先 host 半、再取源码、再浏览器半、一次结算 |
-| [`src/client/evaluator.ts`](src/client/evaluator.ts) | 闭包求值：符号面及其教学陷阱 |
-| [`src/client/guard.ts`](src/client/guard.ts) | 已装载浏览器半收到的白名单 `ctx` façade |
-| [`src/client/inspect-registry.ts`](src/client/inspect-registry.ts) | Client Inspect Provider 与待答查询路由器 |
+| [`src/client/index.ts`](src/client/index.ts) | 外掛入口：runner、編排器、inspect 註冊表、轉發事件訂閱 |
+| [`src/client/runtime.ts`](src/client/runtime.ts) | 裝載引擎：按執行標識收斂、guard 掛載、撤回 |
+| [`src/client/orchestrator.ts`](src/client/orchestrator.ts) | 執行編排：先 host 半、再取原始碼、再瀏覽器半、一次結算 |
+| [`src/client/evaluator.ts`](src/client/evaluator.ts) | 閉包求值：符號面及其教學陷阱 |
+| [`src/client/guard.ts`](src/client/guard.ts) | 已裝載瀏覽器半收到的白名單 `ctx` façade |
+| [`src/client/inspect-registry.ts`](src/client/inspect-registry.ts) | Client Inspect Provider 與待答查詢路由器 |
 | [`src/client/providers.ts`](src/client/providers.ts) | 第一方 client Inspect Provider（slots、theme、events） |
-| [`src/client/timer.ts`](src/client/timer.ts) | 动态包注入的 client 定时器服务 |
+| [`src/client/timer.ts`](src/client/timer.ts) | 動態包注入的 client 定時器服務 |
 
-### 查询槽位输入
+### 查詢槽位輸入
 
-Slots provider 的精确 `listSubTree` 查询包含带说明的 owner 字段及顶层别名、交叉类型和联合类型声明。嵌套字段的值类型只列出引用名称，因此查询 Tool 视图可以获得共享回调和阶段联合，而不会展开完整 Session 类型图。
+Slots provider 的精確 `listSubTree` 查詢包含帶說明的 owner 欄位及頂層別名、交叉型別和聯合型別宣告。巢狀欄位的值型別只列出引用名稱，因此查詢 Tool 檢視可以獲得共享回呼和階段聯合，而不會展開完整 Session 型別圖。
 
-### 一次 run 如何执行
+### 一次 run 如何執行
 
-一条 `cordis/request-run` 事件问这一页要不要运行某个定义。作答的一方——审批后的页面，或按下运行的用户——驱动编排：先 host 半（host 半失败会在浏览器动作之前短路），再取源码，再浏览器半，最后一次结算带上发生的一切。浏览器半源码作为 async 函数体求值，符号面就是参数；返回的插件经 guard 包装后通过 loader 挂载；结算报告已装载的 revision，或失败阶段加闭包、guard 或 fiber 的消息。`host.call` 经 Remote namespace 路由；省略的入参以 `null` 过线，而生成 codec 拒收的载荷会变成一条点名「哪次调用 + 约定是什么」的教学错误。
+一條 `cordis/request-run` 事件問這一頁要不要執行某個定義。作答的一方——審批後的頁面，或按下執行的使用者——驅動編排：先 host 半（host 半失敗會在瀏覽器動作之前短路），再取原始碼，再瀏覽器半，最後一次結算帶上發生的一切。瀏覽器半原始碼作為 async 函式體求值，符號面就是參數；返回的外掛經 guard 包裝後透過 loader 掛載；結算報告已裝載的 revision，或失敗階段加閉包、guard 或 fiber 的訊息。`host.call` 經 Remote namespace 路由；省略的入參以 `null` 過線，而生成 codec 拒收的載荷會變成一條點名「哪次呼叫 + 約定是什麼」的教學錯誤。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从浏览器半逐步进入发问的 host、其运行被应答的工具，以及渲染它的界面。
+當包級約定不夠用時閱讀以下頁面。它們從瀏覽器半逐步進入發問的 host、其執行被應答的工具，以及渲染它的介面。
 
-- [Host runner](../cordis-host-runner/README.zh.md)——本包应答的注册表与运行往返。
-- [工具包](../tool-cordis/README.zh.md)——只读运行时 API 发现。
-- [UI 包](../ui-cordis/README.zh.md)——操作这个面的面板与卡片。
-- [extensions 子系统](../../../docs/subsystems/extensions.zh.md)——生成的 `ctx.dynamicCordisRunner` API 与 `cordis/*` 事件。
-- [客户端外壳与动态包 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-15-client-shells-and-dynamic-packages.zh.md)——浏览器半的包归属与构建面。
+- [Host runner](../cordis-host-runner/README.zh.md)——本包應答的註冊表與執行往返。
+- [工具包](../tool-cordis/README.zh.md)——只讀執行時 API 發現。
+- [UI 包](../ui-cordis/README.zh.md)——操作這個面的面板與卡片。
+- [extensions 子系統](../../../docs/subsystems/extensions.zh.md)——生成的 `ctx.dynamicCordisRunner` API 與 `cordis/*` 事件。
+- [用戶端外殼與動態包 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-15-client-shells-and-dynamic-packages.zh.md)——瀏覽器半的包歸屬與建置面。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### Host 转发的运行结果
+### Host 轉發的執行結果
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-本包不提供工具或提示。它以激活成功、缺失服务、拒绝或 Host/Client 失败响应 `cordis/request-run`。发送给会话的任何消息由 Host runner 负责。
+本包不提供工具或提示。它以啟用成功、缺失服務、拒絕或 Host/Client 失敗回應 `cordis/request-run`。傳送給工作階段的任何訊息由 Host runner 負責。
 
-#### Token 影响
+#### Token 影響
 
-有条件且有界：每次 run 请求最多一个回答，花在 host 本来就会发出的那个 `run` 结果里。文本随数据而定（某个定义自己的错误消息），本包跨请求不留存任何东西——一页后续的装载失败是页面本地诊断，在模型侧没有任何承载物。
+有條件且有界：每次 run 請求最多一個回答，花在 host 本來就會發出的那個 `run` 結果裡。文字隨資料而定（某個定義自己的錯誤訊息），本包跨請求不留存任何東西——一頁後續的裝載失敗是頁面本地診斷，在模型側沒有任何承載物。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-Host steering 追加到会话历史；本包不改写更早的消息。
+Host steering 追加到工作階段歷史；本包不改寫更早的訊息。
 
-### run 落定之后的渲染期失败
+### run 落定之後的渲染期失敗
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-React 可能在加载成功后失败。Client 报告其拥有的每个 entry 失败，包括 slot、消息及 entry 是否已移除。Host 保留最新失败并向所属会话发送 steering；页面也显示本地失败。
+React 可能在載入成功後失敗。Client 報告其擁有的每個 entry 失敗，包括 slot、訊息及 entry 是否已移除。Host 保留最新失敗並向所屬工作階段傳送 steering；頁面也顯示本地失敗。
 
-#### Token 影响
+#### Token 影響
 
-有条件，且其上界由 host 的留存策略决定、不由这一页决定：每次崩溃一条报告，而 host 每包只留最新一条——所以一个反复崩溃的 entry 对模型的代价是一条消息，而不是一张越来越长的清单。报告本身不会自带任何工具结果：模型只在被 steer 或主动去问的时候才为它付费。
+有條件，且其上界由 host 的留存策略決定、不由這一頁決定：每次崩潰一條報告，而 host 每包只留最新一條——所以一個反覆崩潰的 entry 對模型的代價是一條訊息，而不是一張越來越長的清單。報告本身不會自帶任何工具結果：模型只在被 steer 或主動去問的時候才為它付費。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-自身没有。报告经 RPC 送出并被存起来，而不是追加进对话；模型通过一条 steer 消息或自己发起的查看读到它们，那次查看与任何工具结果一样只延长尾部。
+自身沒有。報告經 RPC 送出並被存起來，而不是追加進對話；模型透過一條 steer 訊息或自己發起的檢視讀到它們，那次檢視與任何工具結果一樣只延長尾部。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明浏览器半何时需要特别小心。它们是当前包约束，不是任务积压。
+這些限制說明瀏覽器半何時需要特別小心。它們是目前包約束，不是任務積壓。
 
-- **被拒绝的回答不会重试**——`resolveRequestRun` 的 ack 不读，所以当 host 拒绝一个陈旧的成功答复（`accepted: false`——这一页装载期间定义的 revision 被顶掉了），这一页会保留已装的东西、也不再重新编排。那次请求仍可作答（别的页面作答或调用方取消都能收尾），而顶掉 revision 的那次 stop 会 retract 掉陈旧装载。
-- **host namespace 存在之前插件一直挂起**——它声明 `remote.dynamicCordisRunner`，因此绝不会装载一个永远够不到自己 host 半的浏览器半。
-- **槽位准入没有载体**——下发行声明的是服务，不是目标槽位，因此按部署的槽位允许／拒绝清单无处可驮。
-- **guard 白名单是手抄的孪生**——浏览器 guard 复刻 host 侧沙箱门面；抽取共享规格留待后续。
+- **被拒絕的回答不會重試**——`resolveRequestRun` 的 ack 不讀，所以當 host 拒絕一個陳舊的成功答覆（`accepted: false`——這一頁裝載期間定義的 revision 被頂掉了），這一頁會保留已裝的東西、也不再重新編排。那次請求仍可作答（別的頁面作答或呼叫方取消都能收尾），而頂掉 revision 的那次 stop 會 retract 掉陳舊裝載。
+- **host namespace 存在之前外掛一直掛起**——它宣告 `remote.dynamicCordisRunner`，因此絕不會裝載一個永遠夠不到自己 host 半的瀏覽器半。
+- **槽位準入沒有載體**——下發行宣告的是服務，不是目標槽位，因此按部署的槽位允許／拒絕清單無處可馱。
+- **guard 白名單是手抄的孿生**——瀏覽器 guard 復刻 host 側沙箱門面；抽取共享規格留待後續。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。所属关系（一个 live Plugin 的 loader entry 仅在一个 Plugin Run ID 存活期间存在）是只能通过 Client 半服务访问的浏览器侧状态，Node 平面的伴生入口无法观察。该关系改由本包自己的装载与拆除测试直接断言。
+**執行時不變式：** 不釋出伴生入口。所屬關係（一個 live Plugin 的 loader entry 僅在一個 Plugin Run ID 存活期間存在）是隻能透過 Client 半服務存取的瀏覽器側狀態，Node 平面的伴生入口無法觀察。該關係改由本包自己的裝載與拆除測試直接斷言。

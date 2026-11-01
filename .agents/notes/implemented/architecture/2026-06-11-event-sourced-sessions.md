@@ -6,7 +6,7 @@ English | [中文](2026-06-11-event-sourced-sessions.zh.md)
 
 ## Problem
 
-The MVP requires strict event-based tracing with fully replayable sessions (严格的基于事件的trace、logging系统，session完全可回放).
+The MVP requires strict event-based tracing with fully replayable sessions (嚴格的基於事件的trace、logging系統，session完全可回放).
 
 ## Decision
 

@@ -7,31 +7,31 @@
   zh: 18ff96c2272fee09
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/problem:
   en: 86e01a1c009ac595
-  zh: 91844972d41dd6f9
+  zh: 96a7a6ded1d5ff57
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/decision:
   en: 125dea7427047966
-  zh: 5d0bfd3921b38714
+  zh: 539ed85ddf1c655a
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/how-the-restriction-works-why-no-new-identity:
   en: ac9b3d800889ea39
-  zh: 9db1065b6027f65f
+  zh: c0f1a934db5d4a30
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/alternatives-considered:
   en: 6119e2aff3b6be5a
-  zh: 4237c596c10e1ee9
+  zh: 36b0eec471db78e8
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/alternatives-considered/why-not-mxc-microsoft-xcontainer:
   en: 0bb56896664ab257
-  zh: de921ecab11cf572
+  zh: aa880bdb1d253d4f
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/alternatives-considered/why-not-appcontainer:
   en: 6e7ed26630c25476
-  zh: edd52735b36b0b12
+  zh: 53a869f6e4c59675
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/alternatives-considered/why-not-landstrip:
   en: e2c573d90c4ddeb9
-  zh: f0259213e1321722
+  zh: dbbb50916adca9e4
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/consequences:
   en: b9f3a7c6890707f1
-  zh: c9a344b50732c296
+  zh: c0d40f1a3ba5623d
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/testing:
   en: b223cb2cf13193c9
-  zh: 61ddd0a0b99f8f56
+  zh: 55510cd3e2692663
 /agent-note-windows-sandbox-rung-raw-acl-restricted-tokens-over-mxc-and-appcontainer/related:
   en: dd16f0c5815df991
-  zh: df3c1cf511ee52bf
+  zh: 70a82785fc6c148f

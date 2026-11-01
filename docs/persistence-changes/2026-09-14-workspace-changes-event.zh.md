@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-新增仅写日志的 workspace/changes 事件，记录顶层轮次改动的文件。
+新增僅寫日誌的 workspace/changes 事件，記錄頂層輪次改動的檔案。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -33,16 +33,16 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-同一 Session 格式版本内的新根类型。已有日志没有该事件，保持有效；早于它的读取方遇到它会拒绝该日志，与所有读取时必需的事件一致。该事件只由 Web bundle 的 workspace-changes 插件追加，模型永远看不到；Web 的改动文件卡片是唯一消费者，读取每轮最新的一条。
+同一 Session 格式版本內的新根型別。已有日誌沒有該事件，保持有效；早於它的讀取方遇到它會拒絕該日誌，與所有讀取時必需的事件一致。該事件只由 Web bundle 的 workspace-changes 外掛追加，模型永遠看不到；Web 的改動檔案卡片是唯一消費者，讀取每輪最新的一條。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-pnpm exec vitest run packages/deliverables/workspace-changes packages/client/ui-deliverables：165 个测试通过；snapshots/web/changed-files-turn 通过 Web profile 回放了记录的事件。
+pnpm exec vitest run packages/deliverables/workspace-changes packages/client/ui-deliverables：165 個測試透過；snapshots/web/changed-files-turn 透過 Web profile 回放了記錄的事件。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

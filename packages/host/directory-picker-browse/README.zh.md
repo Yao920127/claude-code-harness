@@ -1,5 +1,5 @@
 ---
-description: "目录选择 seam 的应用内浏览后端：为 web GUI 宿主提供单层目录列举与子目录创建，也能服务于远程客户端。"
+description: "目錄選擇 seam 的應用內瀏覽後端：為 web GUI 主機提供單層目錄列舉與子目錄建立，也能服務於遠端用戶端。"
 kind: "package-reference"
 ---
 
@@ -9,114 +9,114 @@ kind: "package-reference"
 
 ## 概述
 
-无法触达 OS 选择器的用户仍能通过 `dsh-host-directory-picker-browse` 选择工作区目录：它基于 Node 标准库提供单层目录列举与子目录创建，宿主屏幕上不渲染任何东西——因此它能服务原生后端无法触及的远程客户端。列举只返回目录、按名称排序，跟随指向目录的符号链接，并携带宿主判定的 `hidden` 标志；创建不递归，且把名称校验为单个路径段。一行组合配置还会用应用内**选择工作区目录**对话框填满工作区流程的目录扩展位。
+無法觸達 OS 選擇器的使用者仍能透過 `dsh-host-directory-picker-browse` 選擇工作區目錄：它基於 Node 標準庫提供單層目錄列舉與子目錄建立，主機螢幕上不渲染任何東西——因此它能服務原生後端無法觸及的遠端用戶端。列舉只返回目錄、按名稱排序，跟隨指向目錄的符號連結，並攜帶主機判定的 `hidden` 標誌；建立不遞迴，且把名稱驗證為單個路徑段。一行組合設定還會用應用內**選擇工作區目錄**對話方塊填滿工作區流程的目錄擴充功能位。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在远程浏览器、SSH 转发会话或无人值守宿主等无法使用 OS 选择器的场景中，如果必须选择工作区目录，请组合此后端。工作区流程驱动 `directoryPicker/list` 与 `directoryPicker/createDirectory`；两个原语都基于宿主文件系统返回结果。
+在遠端瀏覽器、SSH 轉發工作階段或無人值守主機等無法使用 OS 選擇器的情境中，如果必須選擇工作區目錄，請組合此後端。工作區流程驅動 `directoryPicker/list` 與 `directoryPicker/createDirectory`；兩個原語都基於主機檔案系統返回結果。
 
-### 列举目录
+### 列舉目錄
 
-`list(path?)` 返回一个目录层级：按名称排序的子目录及其绝对路径、`hidden` 标志（POSIX 上为点前缀）、`home` 锚点，以及 `crumbs`——从根到目标的祖先链，其中每个 crumb 都是跳转目标，根以完整路径标注。不带路径时列举宿主账户的家目录。单次调用至多返回 `maxEntries` 行（配置项，默认 1,000——GitHub 网页端对目录列举采用的同一上限），被截断的层级会报告 `truncated: true`，供客户端提示层级不完整。指向目录的符号链接会被跟随；断链与循环链接被跳过。
+`list(path?)` 返回一個目錄層級：按名稱排序的子目錄及其絕對路徑、`hidden` 標誌（POSIX 上為點字首）、`home` 錨點，以及 `crumbs`——從根到目標的祖先鏈，其中每個 crumb 都是跳轉目標，根以完整路徑標註。不帶路徑時列舉主機帳戶的家目錄。單次呼叫至多返回 `maxEntries` 行（設定項，預設 1,000——GitHub 網頁端對目錄列舉採用的同一上限），被截斷的層級會報告 `truncated: true`，供用戶端提示層級不完整。指向目錄的符號連結會被跟隨；斷鏈與迴圈連結被跳過。
 
-### 创建目录
+### 建立目錄
 
-`createDirectory(path, name)` 在既有父目录下创建一个子目录。它不递归——父目录缺失是真实失败，不是要补造的层级——并且拒绝任何非单个非空白路径段的内容（`name` 不得包含分隔符，也不得为 `.` 或 `..`）。
+`createDirectory(path, name)` 在既有父目錄下建立一個子目錄。它不遞迴——父目錄缺失是真實失敗，不是要補造的層級——並且拒絕任何非單個非空白路徑段的內容（`name` 不得包含分隔符，也不得為 `.` 或 `..`）。
 
-### 可观察的失败
+### 可觀察的失敗
 
-两个原语都拒绝非完全限定的路径——相对形态，以及 Windows 上 `isAbsolute` 会放行的无盘符有根形态（`\foo`、`/foo`）与不完整的 UNC 前缀——报 `directory-unreadable` 或 `directory-create-failed`，而不是把它解析到宿主进程工作目录之下。创建已存在的子目录时返回 `directory-exists`。调用方的 `AbortSignal` 会停止进行中的扫描，因此断连或超时不会让扫描比调用方活得更久。
+兩個原語都拒絕非完全限定的路徑——相對形態，以及 Windows 上 `isAbsolute` 會放行的無磁碟機代號有根形態（`\foo`、`/foo`）與不完整的 UNC 字首——報 `directory-unreadable` 或 `directory-create-failed`，而不是把它解析到主機程序工作目錄之下。建立已存在的子目錄時返回 `directory-exists`。呼叫方的 `AbortSignal` 會停止進行中的掃描，因此斷連或超時不會讓掃描比呼叫方活得更久。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `maxEntries` | `1,000` | 单个列举层级的完整结果上限；隐藏行计入该上限 |
+| `maxEntries` | `1,000` | 單個列舉層級的完整結果上限；隱藏行計入該上限 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-directory-picker-browse)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-directory-picker-browse)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 设计理念
+### 設計理念
 
-后端把单个目录层级流式送入一个有界、按名排序的窗口，因此无论目录有多少子项，内存都保持 O(maxEntries)：被截断的层级保留按名排序的头部、隐藏行计入上限、只探测窗口内候选，并报告 `truncated: true`。窗口插入为二分查找、满窗尾部单次比较即拒绝，因此超大型层级在头部之后的每个候选都只需 O(1)，而不是窗口扫描。
+後端把單個目錄層級流式送入一個有界、按名排序的視窗，因此無論目錄有多少子項，記憶體都保持 O(maxEntries)：被截斷的層級保留按名排序的頭部、隱藏行計入上限、只探測視窗內候選，並報告 `truncated: true`。視窗插入為二分查詢、滿窗尾部單次比較即拒絕，因此超大型層級在頭部之後的每個候選都只需 O(1)，而不是視窗掃描。
 
-### 完全限定栅栏
+### 完全限定柵欄
 
-`fullyQualified` 拒绝任何不指向一个与进程状态无关的固定文件系统位置的路径：POSIX 上要求 POSIX 绝对路径；Windows 上只接受盘符限定（`C:\…`）或完整 UNC（`\\server\share…`）形态。无盘符有根形态与不完整 UNC 前缀能通过 `isAbsolute`，却仍会解析到进程的当前盘符，因此后端会拒绝它们，而不是重新定位协议传入的值。
+`fullyQualified` 拒絕任何不指向一個與程序狀態無關的固定檔案系統位置的路徑：POSIX 上要求 POSIX 絕對路徑；Windows 上只接受磁碟機代號限定（`C:\…`）或完整 UNC（`\\server\share…`）形態。無磁碟機代號有根形態與不完整 UNC 字首能透過 `isAbsolute`，卻仍會解析到程序的目前磁碟機代號，因此後端會拒絕它們，而不是重新定位協定傳入的值。
 
-### 中止与探测
+### 中止與探測
 
-每次等待文件系统操作时，都会通过 `raceAbort` 与调用方的信号竞争，因此停滞的网络文件系统无法让已离开的调用方请求继续存活；已放弃的读取操作即使稍后结束，其结果也会被忽略。符号链接的可进入性由 `stat` 探测决定——失败即不可进入——窗口内的断链符号链接不会从窗口外回填，因为发生过驱逐本身已把层级标记为截断。
+每次等待檔案系統操作時，都會透過 `raceAbort` 與呼叫方的訊號競爭，因此停滯的網路檔案系統無法讓已離開的呼叫方請求繼續存活；已放棄的讀取操作即使稍後結束，其結果也會被忽略。符號連結的可進入性由 `stat` 探測決定——失敗即不可進入——視窗內的斷鏈符號連結不會從視窗外回填，因為發生過驅逐本身已把層級標記為截斷。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `BrowseDirectoryPicker` 服务：列举、创建、有界窗口、错误映射 |
-| — | 不发布运行时不变式伴生入口；每次列举或创建都是一次无状态的文件系统往返；文件系统本身保存的状态具有权威性。 |
+| [`src/index.ts`](src/index.ts) | `BrowseDirectoryPicker` 服務：列舉、建立、有界視窗、錯誤對映 |
+| — | 不釋出執行時不變式伴生入口；每次列舉或建立都是一次無狀態的檔案系統往返；檔案系統本身儲存的狀態具有權威性。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当后端约定不够用时阅读以下内容：先看 seam 定义，再看决策记录与原生替代方案。
+當後端約定不夠用時閱讀以下內容：先看 seam 定義，再看決策記錄與原生替代方案。
 
-- [目录选择 seam](../directory-picker/README.zh.md)——`browse` 能力约定与类型化错误词汇。
-- [目录选择能力 seam 决策](../../../.agents/notes/archived/architecture/2026-07-28-directory-picker-capability-seam.md)——列举与创建背后的策略裁决。
-- [原生后端](../directory-picker-native/README.zh.md)——面向本地操作者的 OS 选择器替代方案。
-- [自适应选择器](../directory-picker-auto/README.zh.md)——两个后端之间的启动时判定。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-directory-picker-browse)——每个受支持配置字段及其源声明。
+- [目錄選擇 seam](../directory-picker/README.zh.md)——`browse` 能力約定與型別化錯誤詞彙。
+- [目錄選擇能力 seam 決策](../../../.agents/notes/archived/architecture/2026-07-28-directory-picker-capability-seam.md)——列舉與建立背後的策略裁決。
+- [原生後端](../directory-picker-native/README.zh.md)——面向本地操作者的 OS 選擇器替代方案。
+- [自適應選擇器](../directory-picker-auto/README.zh.md)——兩個後端之間的啟動時判定。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-host-directory-picker-browse)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。GUI 宿主的目录选择后端不注册任何面向模型的内容。
+無。GUI 主機的目錄選擇後端不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明浏览交互在何处不完整或有意不限定范围。它们是当前包约束，不是任务积压。
+這些限制說明瀏覽互動在何處不完整或有意不限定範圍。它們是目前包約束，不是任務積壓。
 
-- **不读取 Windows 隐藏属性**——Node 的 dirent 不暴露 `FILE_ATTRIBUTE_HIDDEN`，因此在所有平台上 `hidden` 都意味着点前缀，直到原生探测值得付出相应成本为止。
-- **不枚举盘符根**——Windows 上祖先链止于盘符根；跨盘依赖浏览器 UI 的路径输入入口，而不是这里的枚举原语。
-- **全盘可浏览**——没有按部署限定的浏览根；`workspace.create` 接受任意路径，因此这里的根会限定 UX 范围，而不是安全边界。
+- **不讀取 Windows 隱藏屬性**——Node 的 dirent 不暴露 `FILE_ATTRIBUTE_HIDDEN`，因此在所有平臺上 `hidden` 都意味著點字首，直到原生探測值得付出相應成本為止。
+- **不列舉磁碟機代號根**——Windows 上祖先鏈止於磁碟機代號根；跨盤依賴瀏覽器 UI 的路徑輸入入口，而不是這裡的列舉原語。
+- **全盤可瀏覽**——沒有按部署限定的瀏覽根；`workspace.create` 接受任意路徑，因此這裡的根會限定 UX 範圍，而不是安全邊界。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

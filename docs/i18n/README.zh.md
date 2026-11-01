@@ -1,16 +1,16 @@
-# 双语文档
+# 雙語文件
 
 [English](README.md) | 中文
 
-本仓库的文档会被公司内外的人和 agent（智能体）阅读，因此范围内的每篇文档都以英文和简体中文维护。本页定义配对约定、检查、范围与排除规则；[translation-rules.md](translation-rules.zh.md) 定义如何翻译；[terminology.md](terminology.md) 是术语真源。agent 的日常工作遵循 [docs/AGENTS.md](../AGENTS.md) 中的轻量路径；扩展版 [.agents/skills/dsh-translate-docs](../../.agents/skills/dsh-translate-docs/SKILL.md) 工作流仅在用户显式调用时可用。
+本儲存庫的文件會被公司內外的人和 agent（智慧代理）閱讀，因此範圍內的每篇文件都以英文和繁體中文（臺灣）維護。本頁定義配對約定、檢查、範圍與排除規則；[translation-rules.md](translation-rules.zh.md) 定義如何翻譯；[terminology.md](terminology.md) 是術語真源。agent 的日常工作遵循 [docs/AGENTS.md](../AGENTS.md) 中的輕量路徑；擴充功能版 [.agents/skills/dsh-translate-docs](../../.agents/skills/dsh-translate-docs/SKILL.md) 工作流僅在使用者顯式呼叫時可用。
 
 <a id="the-pairing-contract"></a>
 
-## 配对约定
+## 配對約定
 
-- **两种语言同权。** 一篇文档可以先用任一语言撰写和评审（先写中文的 Agent Note 与先写英文的一样正当），另一侧由它翻译而来。两个文件谁也不高于谁；约束它们的是二者必须说同样的话。
-- **一对文档是三个同目录文件。** 英文 `foo.md`、中文 `foo.zh.md`，加一份一致性记录 `foo.i18n.yaml`，都在同一目录。不用语言目录，不用独立翻译仓库，不用中英混排的单文件。配对必须整体合并：PR（Pull Request）永远不会只带一种语言而缺其余两个文件。
-- **一致性记录。**`foo.i18n.yaml` 为每个仍含语言特有内容的标题分节保存一个条目。键是该分节英文标题 slug 组成的路径（第一个标题之前的文本为 `/`；重复路径依次加 `~2`、`~3`……），条目保存该分节中两侧不同的英文块与中文块各自的 hash：
+- **兩種語言同權。** 一篇文件可以先用任一語言撰寫和評審（先寫中文的 Agent Note 與先寫英文的一樣正當），另一側由它翻譯而來。兩個檔案誰也不高於誰；約束它們的是二者必須說同樣的話。
+- **一對文件是三個同目錄檔案。** 英文 `foo.md`、中文 `foo.zh.md`，加一份一致性記錄 `foo.i18n.yaml`，都在同一目錄。不用語言目錄，不用獨立翻譯儲存庫，不用中英混排的單檔案。配對必須整體合併：PR（Pull Request）永遠不會只帶一種語言而缺其餘兩個檔案。
+- **一致性記錄。**`foo.i18n.yaml` 為每個仍含語言特有內容的標題分節儲存一個條目。鍵是該分節英文標題 slug 組成的路徑（第一個標題之前的文字為 `/`；重複路徑依次加 `~2`、`~3`……），條目儲存該分節中兩側不同的英文塊與中文塊各自的 hash：
 
   ```yaml
   /foo:
@@ -21,51 +21,51 @@
     zh: de78429597783c7f
   ```
 
-  一侧的第 `i` 个分节对应另一侧的第 `i` 个分节。每侧的 hash 覆盖该分节的全部顶层块，只排除围栏代码块和生成区域——门禁已要求这两类内容在两侧一致；只是碰巧相同的内容仍计入 hash。没有剩余块的分节没有条目。重新生成区域或在两侧同时修改代码块不会改变记录；修改不同分节会改动记录中不同的行，因此 Git 默认文本合并（包括 GitHub 的合并）能组合它们。只有两个分支都修改了同一分节中计入 hash 的内容时，记录才会冲突；解决 Markdown 冲突后重新记录该配对。失去同步的配对是「按被改一侧的 diff 最小化地修补另一侧」，从不整篇重译；门禁会指出每个发生变化的分节。日常工作会直接完成这份修补；用户显式调用扩展工作流时，`pnpm run gen-translation-brief <pair>` 会从内容能生成所记录条目的最新提交中还原上次确认的文本，以能安全对齐的最窄粒度汇集这次更新，并可由 `--apply` 在结构校验后拼接仅涉及围栏代码块的改动。两侧对齐后，`pnpm run verify-translation-pairing --write <pair>` 重新记录这些条目；那份 YAML diff 就是「确认一致」这个动作本身，可以被评审，也正因如此，`--write` 要求点名你确认过的配对（`--write --all` 是显式的全语料形式）。
+  一側的第 `i` 個分節對應另一側的第 `i` 個分節。每側的 hash 覆蓋該分節的全部頂層塊，只排除圍欄程式碼塊和生成區域——門禁已要求這兩類內容在兩側一致；只是碰巧相同的內容仍計入 hash。沒有剩餘塊的分節沒有條目。重新生成區域或在兩側同時修改程式碼塊不會改變記錄；修改不同分節會改動記錄中不同的行，因此 Git 預設文字合併（包括 GitHub 的合併）能組合它們。只有兩個分支都修改了同一分節中計入 hash 的內容時，記錄才會衝突；解決 Markdown 衝突後重新記錄該配對。失去同步的配對是「按被改一側的 diff 最小化地修補另一側」，從不整篇重譯；門禁會指出每個發生變化的分節。日常工作會直接完成這份修補；使用者顯式呼叫擴充功能工作流時，`pnpm run gen-translation-brief <pair>` 會從內容能生成所記錄條目的最新提交中還原上次確認的文字，以能安全對齊的最窄粒度彙集這次更新，並可由 `--apply` 在結構驗證後拼接僅涉及圍欄程式碼塊的改動。兩側對齊後，`pnpm run verify-translation-pairing --write <pair>` 重新記錄這些條目；那份 YAML diff 就是「確認一致」這個動作本身，可以被評審，也正因如此，`--write` 要求點名你確認過的配對（`--write --all` 是顯式的全語料形式）。
 
-  中文文件必须保留指向英文的反向链接；普通撰写的英文源必须保留指向中文的链接，而清单内的生成英文源不作此要求。[按分节记录配对 Agent Note](../../.agents/notes/implemented/process/2026-09-23-section-keyed-translation-pairing-records.zh.md) 负责记录该记录格式与备选方案。
-- **语言切换行。** 中文文件一律在 H1 标题后立即以 `[English](foo.md) | 中文` 链回英文。普通撰写的英文文件在同一位置以 `English | [中文](foo.zh.md)` 互链；清单内的生成英文源省略此行，以便与生成器输出逐字节一致。发布到 GitHub 以外位置的 README（例如 PyPI 项目元数据）可以改用指向同一对侧文件的规范 `https://github.com/deepseek-ai/deepseek-harness/blob/master/<repository-path>` URL，使切换行在该位置仍可访问。
-- **结构与另一侧一一对应。** 标题深度与顺序、列表类型、有序列表起始编号、列表项数量、表格行列数、保留原样 query/fragment 后缀的语义链接目标，以及逐字节一致的代码块在配对两侧一一对应。相对文档链接的目标属于活跃双语语料时，英文侧使用其 `.md` 路径，中文侧使用其 `.zh.md` 路径。该范围内缺少对侧属于配对完整性错误，不得回退；范围外的目标保留原路径。完整保持规则见 [translation-rules.md](translation-rules.zh.md)。既有 Markdown 门禁对 `.zh.md` 文件原样生效（`verify-md-wrap`、`verify-md-links`）。
+  中文件案必須保留指向英文的反向連結；普通撰寫的英文源必須保留指向中文的連結，而清單內的生成英文源不作此要求。[按分節記錄配對 Agent Note](../../.agents/notes/implemented/process/2026-09-23-section-keyed-translation-pairing-records.zh.md) 負責記錄該記錄格式與備選方案。
+- **語言切換行。** 中文件案一律在 H1 標題後立即以 `[English](foo.md) | 中文` 鏈回英文。普通撰寫的英文件案在同一位置以 `English | [中文](foo.zh.md)` 互鏈；清單內的生成英文源省略此行，以便與生成器輸出逐位元組一致。釋出到 GitHub 以外位置的 README（例如 PyPI 專案中繼資料）可以改用指向同一對側檔案的規範 `https://github.com/deepseek-ai/deepseek-harness/blob/master/<repository-path>` URL，使切換行在該位置仍可存取。
+- **結構與另一側一一對應。** 標題深度與順序、列表型別、有序列表起始編號、列表項數量、表格行列數、保留原樣 query/fragment 字尾的語義連結目標，以及逐位元組一致的程式碼塊在配對兩側一一對應。相對文件連結的目標屬於活躍雙語語料時，英文側使用其 `.md` 路徑，中文側使用其 `.zh.md` 路徑。該範圍內缺少對側屬於配對完整性錯誤，不得退回；範圍外的目標保留原路徑。完整保持規則見 [translation-rules.md](translation-rules.zh.md)。既有 Markdown 門禁對 `.zh.md` 檔案原樣生效（`verify-md-wrap`、`verify-md-links`）。
 
-## 门禁：verify-translation-pairing
+## 門禁：verify-translation-pairing
 
-`pnpm run verify-translation-pairing`（`doc-sync`（文档同步门禁）的一环，贡献者会针对文档变更在本地运行，CI 则会完整运行）机械地强制执行这份约定：
+`pnpm run verify-translation-pairing`（`doc-sync`（文件同步門禁）的一環，貢獻者會針對文件變更在本地執行，CI 則會完整執行）機械地強制執行這份約定：
 
-1. 范围内的每篇文档都有完整配对。发现 README 时，basename 不区分大小写，因此 `missions/readme.md` 与其他文档根一样属于范围。
-2. 任何已存在的配对产物都完整且一致：三个文件齐全、记录为规范形式，且其条目等于根据当前内容计算出的条目（任一侧的语言特有内容改了而没重新确认配对就变红）、中文侧和所有普通撰写的英文源都带语言切换行（清单内的生成英文源除外）、每条普通相对文档链接都使用源文件一侧对应的目标 locale，且结构签名按序一致：标题深度、逐字节一致的代码块（信息字符串与内容）、表格行列数、列表类型、有序列表起始编号、列表项数量，以及除切换行之外保留原样 query/fragment 后缀的语义链接目标。
-3. 列为 `excluded` 的文件完全没有 `.zh.md`，也没有 `.i18n.yaml`。`.agents/notes/archived/` 下冻结的 Agent Note 不受这个持续演进的门禁约束；专用校验器会要求其现有的三个配对文件完整，并将其封存。
+1. 範圍內的每篇文件都有完整配對。發現 README 時，basename 不區分大小寫，因此 `missions/readme.md` 與其他文件根一樣屬於範圍。
+2. 任何已存在的配對產物都完整且一致：三個檔案齊全、記錄為規範形式，且其條目等於根據目前內容計算出的條目（任一側的語言特有內容改了而沒重新確認配對就變紅）、中文側和所有普通撰寫的英文源都帶語言切換行（清單內的生成英文源除外）、每條普通相對文件連結都使用原始檔一側對應的目標 locale，且結構簽名按序一致：標題深度、逐位元組一致的程式碼塊（資訊字串與內容）、表格行列數、列表型別、有序列表起始編號、列表項數量，以及除切換行之外保留原樣 query/fragment 字尾的語義連結目標。
+3. 列為 `excluded` 的檔案完全沒有 `.zh.md`，也沒有 `.i18n.yaml`。`.agents/notes/archived/` 下凍結的 Agent Note 不受這個持續演進的門禁約束；專用驗證器會要求其現有的三個配對檔案完整，並將其封存。
 
-面向源码的代码门禁会把精确的 `.zh.md` 围栏序列视为其无后缀兄弟文件的派生内容，而不会再次编译相同代码或在 manifest（元数据清单）中重复登记。该序列必须在长度、顺序、围栏类型和按字节精确的正文上一致；否则两份副本仍会独立受检，配对门禁也会报告结构不匹配。
+面向原始碼的程式碼門禁會把精確的 `.zh.md` 圍欄序列視為其無字尾兄弟檔案的派生內容，而不會再次編譯相同程式碼或在 manifest（中繼資料清單）中重複登記。該序列必須在長度、順序、圍欄型別和按位元組精確的正文上一致；否則兩份副本仍會獨立受檢，配對門禁也會報告結構不匹配。
 
-`pnpm run verify-translation-pairing --list` 打印范围内每篇文档的当前配对状态（missing、out-of-sync 或 ok）。它从不失败；其中 `missing` 与 `out-of-sync` 行指出普通检查会拒绝的违规。
+`pnpm run verify-translation-pairing --list` 列印範圍內每篇文件的目前配對狀態（missing、out-of-sync 或 ok）。它從不失敗；其中 `missing` 與 `out-of-sync` 行指出普通檢查會拒絕的違規。
 
-`pnpm run verify-translation-pairing <pair...>` 只检查被点名的配对——配对的三个文件中的任意一个（或其裸词干）都能点名它——因此更新循环几秒内就能验证自己的配对，而不必重新扫描全语料。`doc-sync` 与 CI 运行的是无参数的全语料形式；限定范围的绿灯在 PR 层面永远不能替代它。
+`pnpm run verify-translation-pairing <pair...>` 只檢查被點名的配對——配對的三個檔案中的任意一個（或其裸詞幹）都能點名它——因此更新迴圈幾秒內就能驗證自己的配對，而不必重新掃描全語料。`doc-sync` 與 CI 執行的是無參數的全語料形式；限定範圍的綠燈在 PR 層面永遠不能替代它。
 
-这个门禁带来的实际规则是：**当一个 PR 修改了已配对文档的任一侧时，同一个 PR 在术语指导下直接一次完成对侧文件的更新，并用 `--write <pair>` 重新记录配对**，与本仓库既有的代码与 README 的 doc-sync 规则完全一致。留下失去同步的配对的 PR 会在 CI 变红。
+這個門禁帶來的實際規則是：**當一個 PR 修改了已配對文件的任一側時，同一個 PR 在術語指導下直接一次完成對側檔案的更新，並用 `--write <pair>` 重新記錄配對**，與本儲存庫既有的程式碼與 README 的 doc-sync 規則完全一致。留下失去同步的配對的 PR 會在 CI 變紅。
 
-门禁的限制很明确：**门禁通过意味着这组文档在当前内容上的一致性得到了确认，不代表确认本身正确可靠。** 它检查记录的 hash 与 Markdown 结构；它无法判断两侧是否在说同样的话，也无法判断措辞是否准确、术语是否得当、行文是否自然；这部分约定由评审者把关，见 [translation-rules.md](translation-rules.zh.md)。重新记录了 hash 但另一侧翻得潦草的配对能通过门禁；它不得通过评审。
+門禁的限制很明確：**門禁透過意味著這組文件在目前內容上的一致性得到了確認，不代表確認本身正確可靠。** 它檢查記錄的 hash 與 Markdown 結構；它無法判斷兩側是否在說同樣的話，也無法判斷措辭是否準確、術語是否得當、行文是否自然；這部分約定由評審者把關，見 [translation-rules.md](translation-rules.zh.md)。重新記錄了 hash 但另一側翻得潦草的配對能透過門禁；它不得透過評審。
 
-## 范围与排除
+## 範圍與排除
 
-**范围**：根目录 `CONTRIBUTING.md`、`BRAND_GUIDELINES.md` 与 `SAFETY.md` 文档、除 vendor 源码外的全部 README，以及 `.agents/notes/**`、`docs/**` 与 `python/**` 下的全部活跃文档。匹配 README 时只看文件名且不区分大小写，因此今后新增的目录无需再修改 manifest。依赖目录、被忽略的构建产物目录以及冻结的 `.agents/notes/archived/` 目录树只在发现阶段排除，不属于持续演进的翻译源文档。
+**範圍**：根目錄 `CONTRIBUTING.md`、`BRAND_GUIDELINES.md` 與 `SAFETY.md` 文件、除 vendor 原始碼外的全部 README，以及 `.agents/notes/**`、`docs/**` 與 `python/**` 下的全部活躍文件。匹配 README 時只看檔名且不區分大小寫，因此今後新增的目錄無需再修改 manifest。依賴目錄、被忽略的建置產物目錄以及凍結的 `.agents/notes/archived/` 目錄樹只在發現階段排除，不屬於持續演進的翻譯源文件。
 
-有经评审的中文对侧的生成英文参考文档和图文档遵循配对规则。生成器把生成数据放在生成区域中，并把每个区域写入两种语言的页面，因此重新生成不需要手工更新中文，也不需要重新记录；只有区域外的说明文字需要翻译并计入记录。新鲜度门禁与配对门禁各自独立强制其约束。
+有經評審的中文對側的生成英文參考文件和圖文件遵循配對規則。生成器把生成資料放在生成區域中，並把每個區域寫入兩種語言的頁面，因此重新生成不需要手工更新中文，也不需要重新記錄；只有區域外的說明文字需要翻譯並計入記錄。新鮮度門禁與配對門禁各自獨立強制其約束。
 
-共享生成区域（例如 Cordis 子系统区域和[配置目录](../config-catalog.zh.md)中每个包的区域）在两种语言间保持每个生成字节相同，仅配对文档路径按语言本地化；区域内的标签使用代码标识符而非译文。整页生成器也可以从相同的结构数据渲染源码维护的双语说明，例如 [persistence-catalog-text.ts](../../scripts/persistence-catalog-text.ts)，并保持 Markdown 结构对应、代码块完全相同。它同时重新生成两页及其一致性记录；评审仍须验证双语说明的含义与术语。
+共享生成區域（例如 Cordis 子系統區域和[設定目錄](../config-catalog.zh.md)中每個包的區域）在兩種語言間保持每個生成位元組相同，僅配對文件路徑按語言在地化；區域內的標籤使用程式碼識別符號而非譯文。整頁生成器也可以從相同的結構資料渲染原始碼維護的雙語說明，例如 [persistence-catalog-text.ts](../../scripts/persistence-catalog-text.ts)，並保持 Markdown 結構對應、程式碼塊完全相同。它同時重新生成兩頁及其一致性記錄；評審仍須驗證雙語說明的含義與術語。
 
-生成的英文源文件不含普通撰写文档所带的语言切换行，因为添加该行会使生成器新鲜度检查失败；中文对侧仍链接回英文源。人工维护的中文对侧只能改写若直译便不再符合经评审译文事实的自指生成与维护说明；所有技术内容仍受普通忠实性规则约束。
+生成的英文原始檔不含普通撰寫文件所帶的語言切換行，因為新增該行會使生成器新鮮度檢查失敗；中文對側仍連結回英文源。人工維護的中文對側只能改寫若直譯便不再符合經評審譯文事實的自指生成與維護說明；所有技術內容仍受普通忠實性規則約束。
 
-**排除**（永不配对，门禁拒绝为它们建 `.zh.md` 或 `.i18n.yaml`）：
+**排除**（永不配對，門禁拒絕為它們建 `.zh.md` 或 `.i18n.yaml`）：
 
-- [cordis-api/inherited.md](../cordis-api/inherited.md)：该生成文档没有经评审的中文对侧，因此网站的两个 locale 都投影英文源文件。
-- `docs/AGENTS.md`、`.agents/notes/**/AGENTS.md` 以及指向它们的 `CLAUDE.md` 指令符号链接：agent 指令，与根 `AGENTS.md` 一样只以英文维护。
-- `docs/i18n/terminology.md` 与 [style-samples.md](style-samples.md)：二者本身即为中英对照文档。
-- [translation-prompt.md](translation-prompt.md)：自动翻译流水线的提示词模板；正文逐字进入模型请求，配对翻译会改变流水线行为。
-- [review-ownership/README.md](../../.github/review-ownership/README.md)：仓库内部审批策略，只以英文维护。
-- `.agents/notes/archived/`：冻结的历史三文件配对。[`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) 校验其完整性和内容封存记录；翻译维护绝不能重写这些文件。
+- [cordis-api/inherited.md](../cordis-api/inherited.md)：該生成文件沒有經評審的中文對側，因此網站的兩個 locale 都投影英文原始檔。
+- `docs/AGENTS.md`、`.agents/notes/**/AGENTS.md` 以及指向它們的 `CLAUDE.md` 指令符號連結：agent 指令，與根 `AGENTS.md` 一樣只以英文維護。
+- `docs/i18n/terminology.md` 與 [style-samples.md](style-samples.md)：二者本身即為中英對照文件。
+- [translation-prompt.md](translation-prompt.md)：自動翻譯流水線的提示詞範本；正文逐字進入模型請求，配對翻譯會改變流水線行為。
+- [review-ownership/README.md](../../.github/review-ownership/README.md)：儲存庫內部審批策略，只以英文維護。
+- `.agents/notes/archived/`：凍結的歷史三檔案配對。[`verify-archived-agent-notes`](../../scripts/verify-archived-agent-notes.ts) 驗證其完整性和內容封存記錄；翻譯維護絕不能重寫這些檔案。
 
-**统一要求**：当前及今后纳入范围的每篇文档，合并时都必须构成完整的双语配对。[scripts/translation-pairing.manifest.json](../../scripts/translation-pairing.manifest.json) 只包含显式排除项；不存在逐文件推进清单、日期分界或 README 专用政策类别。
+**統一要求**：目前及今後納入範圍的每篇文件，合併時都必須構成完整的雙語配對。[scripts/translation-pairing.manifest.json](../../scripts/translation-pairing.manifest.json) 只包含顯式排除項；不存在逐檔案推進清單、日期分界或 README 專用政策類別。
 
 ## 分工
 
-日常更新对侧文件时，负责处理的 agent 会先加载 [terminology.md](terminology.md)，再直接一次性更新；它不会调用翻译 skill（技能）、生成简报、执行单独的翻译评审轮次，也不会委派给 subagent。扩展版 [dsh-translate-docs](../../.agents/skills/dsh-translate-docs/SKILL.md) 工作流保留这些较重的机制，仅供用户显式调用。门禁负责检查配对是否完整、记录的 hash、中文反向链接和普通撰写源的切换行（生成源按本文规则例外），以及本文列出的结构签名；翻译质量、术语和签名未涵盖的结构要求仍由评审把关。提示词约定也有可执行实现：[scripts/translation-prompt.ts](../../scripts/translation-prompt.ts) 会把仓库内置的模板（注入术语表；模板自带经人工校准的规则）渲染为英译中或中译英两个方向的提示词，并解析三段式响应；`doc-sync` 中的 `verify-translation-prompt` 会检查两个渲染方向与仓库内示例。
+日常更新對側檔案時，負責處理的 agent 會先載入 [terminology.md](terminology.md)，再直接一次性更新；它不會呼叫翻譯 skill（技能）、生成簡報、執行單獨的翻譯評審輪次，也不會委派給 subagent。擴充功能版 [dsh-translate-docs](../../.agents/skills/dsh-translate-docs/SKILL.md) 工作流保留這些較重的機制，僅供使用者顯式呼叫。門禁負責檢查配對是否完整、記錄的 hash、中文反向連結和普通撰寫源的切換行（生成源按本文規則例外），以及本文列出的結構簽名；翻譯品質、術語和簽名未涵蓋的結構要求仍由評審把關。提示詞約定也有可執行實作：[scripts/translation-prompt.ts](../../scripts/translation-prompt.ts) 會把儲存庫內建的範本（注入術語表；範本自帶經人工校準的規則）渲染為英譯中或中譯英兩個方向的提示詞，並解析三段式回應；`doc-sync` 中的 `verify-translation-prompt` 會檢查兩個渲染方向與儲存庫內範例。

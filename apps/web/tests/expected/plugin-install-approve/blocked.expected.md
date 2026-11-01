@@ -1,17 +1,17 @@
-- dialog "插件安装失败":
-  - button "返回编辑": 编辑
-  - button "关闭"
-  - alert: 插件安装失败
-  - paragraph: 有依赖的安装脚本需要你允许后才能继续
+- dialog "外掛安裝失敗":
+  - button "返回編輯": 編輯
+  - button "關閉"
+  - alert: 外掛安裝失敗
+  - paragraph: 有依賴的安裝腳本需要你允許後才能繼續
   - paragraph: native-package
   - paragraph: 版本 1.0.0
-  - group "需要允许安装脚本":
-    - heading "需要允许安装脚本" [level=3]
-    - paragraph: 以下包声明了安装脚本，pnpm 默认不运行。
+  - group "需要允許安裝腳本":
+    - heading "需要允許安裝腳本" [level=3]
+    - paragraph: 以下包宣告瞭安裝腳本，pnpm 預設不執行。
     - list:
       - listitem:
         - code: native-package
-    - paragraph: 允许后，脚本会以你的权限在本机运行，授权保存在当前 profile，之后不再询问。
-    - paragraph: 只在信任这些包时允许。
-    - button "允许这些脚本并重试"
-  - button "查看安装详情"
+    - paragraph: 允許後，腳本會以你的權限在本機執行，授權儲存在目前 profile，之後不再詢問。
+    - paragraph: 只在信任這些包時允許。
+    - button "允許這些腳本並重試"
+  - button "檢視安裝詳情"

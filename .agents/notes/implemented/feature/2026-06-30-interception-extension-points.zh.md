@@ -1,59 +1,59 @@
-# Agent Note: 拦截扩展点——钩子编程所面对的类型化 Decision 接口
+# Agent Note: 攔截擴充功能點——掛鉤程式設計所面對的型別化 Decision 介面
 
 Status: implemented
 
 [English](2026-06-30-interception-extension-points.md) | 中文
 
-## 问题
+## 問題
 
-harness 需要一套钩子子系统：用户像 Claude Code（CC）和 Codex 那样在生命周期节点扩展或管控 agent（智能体）。驱动本设计的关键视角转换是：**「原生钩子」不是一个包**——原生钩子只是一个普通的 Cordis 插件，订阅规范的生命周期事件。因此真正的产品是一个*强大、类型完备的规范事件接口*；CC/Codex 桥接（`dsh-hooks-claude-code` / `dsh-hooks-codex` 包）只是将外部 shell 钩子协议映射到同一接口的翻译层。桥接能做的事，普通插件可以直接做——而且更强大（无序列化边界、完整 `ctx`、类型化返回值）。
+harness 需要一套掛鉤子系統：使用者像 Claude Code（CC）和 Codex 那樣在生命週期節點擴充功能或管控 agent（智慧代理）。驅動本設計的關鍵視角轉換是：**「原生掛鉤」不是一個包**——原生掛鉤只是一個普通的 Cordis 外掛，訂閱規範的生命週期事件。因此真正的產品是一個*強大、型別完備的規範事件介面*；CC/Codex 橋接（`dsh-hooks-claude-code` / `dsh-hooks-codex` 包）只是將外部 shell 掛鉤協定對映到同一介面的翻譯層。橋接能做的事，普通外掛可以直接做——而且更強大（無序列化邊界、完整 `ctx`、型別化回傳值）。
 
-该接口需要为以下场景提供各自独立的约定：逐提示词策略（CC 的 `UserPromptSubmit`）、会话启动观测（CC 的 `SessionStart`）、工具执行前策略、环绕调度控制、工具执行后变换、最终结果观测，以及携带面向模型的原因的继续执行。如果把这些阶段混为一谈，插件就会获得不需要的 mutation 通道，而终结性将依赖监听器的注册顺序。[事件域语义 Agent Note](../architecture/2026-06-30-event-domain-semantics.zh.md) 提供了三域规则与类型化 Decision 惯用法；本 Agent Note 将其应用于生命周期扩展点。
+該介面需要為以下情境提供各自獨立的約定：逐提示詞策略（CC 的 `UserPromptSubmit`）、工作階段啟動觀測（CC 的 `SessionStart`）、工具執行前策略、環繞排程控制、工具執行後變換、最終結果觀測，以及攜帶面向模型的原因的繼續執行。如果把這些階段混為一談，外掛就會獲得不需要的 mutation 通道，而終結性將依賴監聽器的註冊順序。[事件域語義 Agent Note](../architecture/2026-06-30-event-domain-semantics.zh.md) 提供了三域規則與型別化 Decision 慣用法；本 Agent Note 將其應用於生命週期擴充功能點。
 
-## 决策
+## 決策
 
-规范接口将可变换策略、环绕调度控制与仅观测通知分离。策略 waterfall（瀑布式事件）返回小型的、扩展点专属的**类型化 Decision 联合类型**；包装层返回规范化结果；通知接收不可变快照，无法影响结果。覆盖的钩子点包括 `session-start`、`prompt-submit`、`pre-tool`、`post-tool`、通过 continuation 实现的 `stop`，同时将非钩子的执行策略留作独立可组合。
+規範介面將可變換策略、環繞排程控制與僅觀測通知分離。策略 waterfall（瀑布式事件）返回小型的、擴充功能點專屬的**型別化 Decision 聯合型別**；包裝層返回規範化結果；通知接收不可變快照，無法影響結果。覆蓋的掛鉤點包括 `session-start`、`prompt-submit`、`pre-tool`、`post-tool`、透過 continuation 實作的 `stop`，同時將非掛鉤的執行策略留作獨立可組合。
 
 **Agent 事件**（`dsh-agent`）：
-- `agent/created({ agent, source, signal? })` ——首个轮次前针对单个 agent 的串行初始化，携带 `SessionStartSource`。监听器可以安装工具，并通过 `agent.inject()` 注入上下文；创建等待监听器完成，失败时拒绝。[可等待创建决策](../architecture/2026-09-09-awaited-agent-creation.zh.md)拥有这一时序，并取代只观察启动的策略。
-- `agent/pre-step({ agent, messages, turn, step, signal }, next) → PreStepDecision` ——waterfall，在每个拟议步骤之前、循环原子移除其独占 inbox 批次后触发。payload 携带该请求的 `turn`、`step` 与取消 `signal`（已退役的 `PreStepContext` 字段位于 payload 中；参见 [payload-object 事件决策](../../archived/architecture/2026-08-06-agent-event-payload-objects.md)）；没有中途输入的工具续步会收到空批次。`enter` 返回完整消息批次，其中包括监听器为当前请求贡献的上下文；`reject` 不打开步骤，并让已领取消息保持已删除。
+- `agent/created({ agent, source, signal? })` ——首個輪次前針對單個 agent 的序列初始化，攜帶 `SessionStartSource`。監聽器可以安裝工具，並透過 `agent.inject()` 注入上下文；建立等待監聽器完成，失敗時拒絕。[可等待建立決策](../architecture/2026-09-09-awaited-agent-creation.zh.md)擁有這一時序，並取代只觀察啟動的策略。
+- `agent/pre-step({ agent, messages, turn, step, signal }, next) → PreStepDecision` ——waterfall，在每個擬議步驟之前、迴圈原子移除其獨佔 inbox 批次後觸發。payload 攜帶該請求的 `turn`、`step` 與取消 `signal`（已退役的 `PreStepContext` 欄位位於 payload 中；參見 [payload-object 事件決策](../../archived/architecture/2026-08-06-agent-event-payload-objects.md)）；沒有中途輸入的工具續步會收到空批次。`enter` 返回完整訊息批次，其中包括監聽器為目前請求貢獻的上下文；`reject` 不開啟步驟，並讓已領取訊息保持已刪除。
 
-**`agent/turn-stopping`** 是自然停止边界上的一次 awaited 通知。需要再执行一步的监听器调用 `agent.steer()`，传入来源显式的 steering（中途引导）内容供模型使用；循环随后重新读取 outbox，继续执行或关闭轮次。
+**`agent/turn-stopping`** 是自然停止邊界上的一次 awaited 通知。需要再執行一步的監聽器呼叫 `agent.steer()`，傳入來源顯式的 steering（中途引導）內容供模型使用；迴圈隨後重新讀取 outbox，繼續執行或關閉輪次。
 
-### 工具流水线为每个阶段赋予一种权限
+### 工具流水線為每個階段賦予一種權限
 
-每次调用遵循 `tools/pre-execute` → guards → `tools/execute` → dispatch → `tools/post-execute` → 由工具定义负责的 `finalizeContent` → `tools/result`。注册表对调用方输入创建快照、实体化并冻结参数、分配一个不透明 token，并在策略开始前对可见定义的最终内容回调创建快照。嵌套调用仅携带父 token。身份始终不可变；只有 `signal` 可在环绕调度时改变。日志、UI 和工具体因此对「执行了什么」达成一致。
+每次呼叫遵循 `tools/pre-execute` → guards → `tools/execute` → dispatch → `tools/post-execute` → 由工具定義負責的 `finalizeContent` → `tools/result`。註冊表對呼叫方輸入建立快照、實體化並凍結參數、分配一個不透明 token，並在策略開始前對可見定義的最終內容回呼建立快照。巢狀呼叫僅攜帶父 token。身份始終不可變；只有 `signal` 可在環繞排程時改變。日誌、UI 和工具體因此對「執行了什麼」達成一致。
 
-- **`tools/pre-execute`** 是可扩展的 waterfall 门禁。其 `PreToolDecision` 允许、拒绝或询问。拒绝跳过 `tools/execute` 与核心调度。询问通过可选的审批 seam 解析：只有 `allowed-once` 继续通过 guards 和调度；拒绝、取消、通道不可用、审批服务缺失或无 agent 调用均规范化为拒绝。每个已解析的 decision 仍会到达后置策略；监听器抛出的异常会成为最终的规范化失败。
-- **`ctx.tools.guard()`** 在整个 pre-execute waterfall 之后安装同步的、作用域感知的策略。guard 可以拒绝或弃权，永远不能强制允许，因此监听器顺序无法复活一个被最终不变式禁止的操作。
-- **`tools/execute`** 是用于超时、重试和指标插件的环绕调度 waterfall。包装层通过 `next()` 委托给核心调度，在此之前可以替换并恢复必需的 `exec.signal`，但不能移除它；包装层接收抛出异常或未知工具产生的、已完成规范化的规范成功／失败结果。包装层自行产生的成功结果会短路调度，并通过已解析的输出声明重新规范化。
-- **`tools/post-execute`** 是检查／变换 waterfall。其 `PostToolDecision` 接受、以反馈阻止、替换呈现内容或规范值，或附加 `additionalContexts`。替换值会重新校验并重新计算呈现；替换内容会保留程序化值，且不构成保密边界。返回的 decision 是受支持的变换通道。
-- **`ToolDefinition.finalizeContent`** 是一个可选、同步、对所有输入都有定义且仅能处理内容的边界，在调用创建时随可见定义一起被快照。注册表将候选结果规范化并创建无损快照后，它恰好运行一次；候选结果包括绕过后续 waterfall 的 pre、around 或 post 监听器失败，以及为另一个结果字段创建快照时发现的错误。它可以替换 `content`，也可返回 `undefined` 保留原内容，但不能重写 `isError`、结构化错误身份、上下文或呈现元数据。工具在此执行自身最后一道内容不变式，而无需将策略失败转换为更弱的阻止 decision。
-- **`tools/result`** 是在所有变换、无损 JSON 实体化和外层错误边界之后的同步且故障受控的通知。它接收相同的冻结执行身份和权威结果的不可变快照；观测者的失败按监听器隔离，无法改变或拒绝 `ToolRuntime.execute()` 返回的结果。
+- **`tools/pre-execute`** 是可擴充功能的 waterfall 門禁。其 `PreToolDecision` 允許、拒絕或詢問。拒絕跳過 `tools/execute` 與核心排程。詢問透過可選的審批 seam 解析：只有 `allowed-once` 繼續透過 guards 和排程；拒絕、取消、通道不可用、審批服務缺失或無 agent 呼叫均規範化為拒絕。每個已解析的 decision 仍會到達後置策略；監聽器丟擲的異常會成為最終的規範化失敗。
+- **`ctx.tools.guard()`** 在整個 pre-execute waterfall 之後安裝同步的、作用域感知的策略。guard 可以拒絕或棄權，永遠不能強制允許，因此監聽器順序無法復活一個被最終不變式禁止的操作。
+- **`tools/execute`** 是用於超時、重試和指標外掛的環繞排程 waterfall。包裝層透過 `next()` 委託給核心排程，在此之前可以替換並恢復必需的 `exec.signal`，但不能移除它；包裝層接收丟擲異常或未知工具產生的、已完成規範化的規範成功／失敗結果。包裝層自行產生的成功結果會短路排程，並透過已解析的輸出宣告重新規範化。
+- **`tools/post-execute`** 是檢查／變換 waterfall。其 `PostToolDecision` 接受、以回饋阻止、替換呈現內容或規範值，或附加 `additionalContexts`。替換值會重新驗證並重新計算呈現；替換內容會保留程式化值，且不構成保密邊界。返回的 decision 是受支援的變換通道。
+- **`ToolDefinition.finalizeContent`** 是一個可選、同步、對所有輸入都有定義且僅能處理內容的邊界，在呼叫建立時隨可見定義一起被快照。註冊表將候選結果規範化並建立無損快照後，它恰好執行一次；候選結果包括繞過後續 waterfall 的 pre、around 或 post 監聽器失敗，以及為另一個結果欄位建立快照時發現的錯誤。它可以替換 `content`，也可返回 `undefined` 保留原內容，但不能重寫 `isError`、結構化錯誤身份、上下文或呈現中繼資料。工具在此執行自身最後一道內容不變式，而無需將策略失敗轉換為更弱的阻止 decision。
+- **`tools/result`** 是在所有變換、無損 JSON 實體化和外層錯誤邊界之後的同步且故障受控的通知。它接收相同的凍結執行身份和權威結果的不可變快照；觀測者的失敗按監聽器隔離，無法改變或拒絕 `ToolRuntime.execute()` 返回的結果。
 
-核心调度与工具体位于规范化边界内部，因此工具、监听器、无效规范值、渲染器／投影器、非 JSON 呈现和身份形状错误均解析为 JSON 安全的 `isError` 结果，而非逃逸出轮次。post-execute 监听器因此可以检查一个抛出异常的工具；由工具定义负责的最终内容不变式也会覆盖外层流水线与候选结果实体化失败；最终观测者会同时看到执行期间的规范值，以及会话日志能够持久化的确切呈现字段。[规范工具输出约定](../architecture/2026-07-20-canonical-tool-output-contract.zh.md)定义值／投影与持久性规则。
+核心排程與工具體位於規範化邊界內部，因此工具、監聽器、無效規範值、渲染器／投影器、非 JSON 呈現和身份形狀錯誤均解析為 JSON 安全的 `isError` 結果，而非逃逸出輪次。post-execute 監聽器因此可以檢查一個丟擲異常的工具；由工具定義負責的最終內容不變式也會覆蓋外層流水線與候選結果實體化失敗；最終觀測者會同時看到執行期間的規範值，以及工作階段日誌能夠持久化的確切呈現欄位。[規範工具輸出約定](../architecture/2026-07-20-canonical-tool-output-contract.zh.md)定義值／投影與永續性規則。
 
-### 三个承重的循环决策
+### 三個承重的迴圈決策
 
-1. **在每个拟议步骤运行 pre-step 策略。** 循环会在首次领取和决策之前打开轮次，因此 reject 会关闭一个持久、blocked 且不含步骤或模型可见消息的轮次。即使工具续步没有新取得所有权的输入，也会提交空批次，使逐请求上下文生产方可以把带日志的消息加入这一次请求。enter 时，循环先开启步骤，再把返回批次作为 `user/message` 追加，然后派生请求。依照[一次 send 对应一个轮次的简化](../simplification/2026-07-17-one-send-one-turn.zh.md)，每个已领取 follow-up 仍是其轮次中唯一的直接提示词。
+1. **在每個擬議步驟執行 pre-step 策略。** 迴圈會在首次領取和決策之前開啟輪次，因此 reject 會關閉一個持久、blocked 且不含步驟或模型可見訊息的輪次。即使工具續步沒有新取得所有權的輸入，也會提交空批次，使逐請求上下文生產方可以把帶日誌的訊息加入這一次請求。enter 時，迴圈先開啟步驟，再把返回批次作為 `user/message` 追加，然後派生請求。依照[一次 send 對應一個輪次的簡化](../simplification/2026-07-17-one-send-one-turn.zh.md)，每個已領取 follow-up 仍是其輪次中唯一的直接提示詞。
 
-2. **工具执行后的 `additionalContexts` 与异步注入进入活跃批次 FIFO，并在该批次结算时追加。** `content`/`feedback` 塑造 `execute()` 返回的结果，但每项上下文都是一条独立的带来源 `user/message`，而单个步骤或组合工具可以产生许多上下文。立即追加上下文会产生 `result(c1) → context → result(c2)` 的交错，或把嵌套上下文放在外层结果之前，破坏工具调用／工具结果邻接性。因此 `ToolRunContext.deferContext()` 会在失败路径上也收集嵌套调度上下文，`execute()` 在 `ToolExecutionResult` 上暴露有序数组，循环再把它接纳到与执行期间 `agent.inject()` 调用相同的 FIFO 中。FIFO 在批次结算时，在所有已记录结果之后追加，其中也包括被中断轮次关闭之前。被接受的外层调用将 deferred contexts 保留在 decision contexts 之前；被外层阻止时则丢弃 deferred contexts，只暴露阻止 decision 显式提供的上下文。
+2. **工具執行後的 `additionalContexts` 與非同步注入進入活躍批次 FIFO，並在該批次結算時追加。** `content`/`feedback` 塑造 `execute()` 返回的結果，但每項上下文都是一條獨立的帶來源 `user/message`，而單個步驟或組合工具可以產生許多上下文。立即追加上下文會產生 `result(c1) → context → result(c2)` 的交錯，或把巢狀上下文放在外層結果之前，破壞工具呼叫／工具結果鄰接性。因此 `ToolRunContext.deferContext()` 會在失敗路徑上也收集巢狀排程上下文，`execute()` 在 `ToolExecutionResult` 上暴露有序陣列，迴圈再把它接納到與執行期間 `agent.inject()` 呼叫相同的 FIFO 中。FIFO 在批次結算時，在所有已記錄結果之後追加，其中也包括被中斷輪次關閉之前。被接受的外層呼叫將 deferred contexts 保留在 decision contexts 之前；被外層阻止時則丟棄 deferred contexts，只暴露阻止 decision 顯式提供的上下文。
 
-3. **stopping 监听器通过 steering 通道请求继续执行**，使得下一步骤在循环顶部排空时将其记录为当前轮次的 steering——同一轮次内的下一*步骤* steering，而非下一*轮次*的提示词。
+3. **stopping 監聽器透過 steering 通道請求繼續執行**，使得下一步驟在迴圈頂部排空時將其記錄為目前輪次的 steering——同一輪次內的下一*步驟* steering，而非下一*輪次*的提示詞。
 
-### 工具执行前输入重写是一个独立的一致性决策
+### 工具執行前輸入重寫是一個獨立的一致性決策
 
-`PreToolDecision` 不能重写参数。历史和审计调用在执行前记录，UI 展示读取相同的输入，因此注册表在策略之前封存参数。有效的重写必须在身份创建之前同时更新历史、审计、展示和执行；该约定属于[输入重写提案](../../proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)。
+`PreToolDecision` 不能重寫參數。歷史和審計呼叫在執行前記錄，UI 展示讀取相同的輸入，因此註冊表在策略之前封存參數。有效的重寫必須在身份建立之前同時更新歷史、審計、展示和執行；該約定屬於[輸入重寫提案](../../proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)。
 
-### 边界
+### 邊界
 
-Service Definition 包**不**声明 `hook/*` 会话事件（持久的钩子调用日志）；那些属于 `dsh-hook-protocol`，因为原生插件使用类型化 decision 而无需外部钩子日志。原生插件集成测试（`packages/core/agent-loop/tests/interception.spec.ts`）通过真实循环组合这些扩展点，不涉及 `hook/*` 协议。压缩（compaction）（`PreCompact`/`PostCompact`）、Notification 和 Codex `PermissionRequest` 不在本决策范围内。[审批 seam](2026-07-06-approval-seam.zh.md) 通过 `ctx.approval` 解析 `ask` decision；终结性的单调停止由工具结果数据表达，而 `agent/turn-stopping` 是引导再执行一步的最后机会。
+Service Definition 包**不**宣告 `hook/*` 工作階段事件（持久的掛鉤呼叫日誌）；那些屬於 `dsh-hook-protocol`，因為原生外掛使用型別化 decision 而無需外部掛鉤日誌。原生外掛整合測試（`packages/core/agent-loop/tests/interception.spec.ts`）透過真實迴圈組合這些擴充功能點，不涉及 `hook/*` 協定。壓縮（compaction）（`PreCompact`/`PostCompact`）、Notification 和 Codex `PermissionRequest` 不在本決策範圍內。[審批 seam](2026-07-06-approval-seam.zh.md) 透過 `ctx.approval` 解析 `ask` decision；終結性的單調停止由工具結果資料表達，而 `agent/turn-stopping` 是引導再執行一步的最後機會。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **将工具执行前输入重写作为本扩展点集合的一部分发布**：推迟，视为越界信号；上文已阐述一致性问题（审计、历史和展示都读取执行前记录的 `tool/call.arguments`），[工具执行前输入重写提案](../../proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)负责该设计。
-- **将持久的 `hook/*` SessionEvents 与扩展点一起声明**：否决。原生插件使用类型化 Decision 而完全不需要钩子日志（实际示例已证明），因此持久日志属于[钩子协议库](../../../../packages/hooks/hook-protocol/README.zh.md)，而非扩展接口。
+- **將工具執行前輸入重寫作為本擴充功能點集合的一部分發布**：推遲，視為越界訊號；上文已闡述一致性問題（審計、歷史和展示都讀取執行前記錄的 `tool/call.arguments`），[工具執行前輸入重寫提案](../../proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)負責該設計。
+- **將持久的 `hook/*` SessionEvents 與擴充功能點一起宣告**：否決。原生外掛使用型別化 Decision 而完全不需要掛鉤日誌（實際範例已證明），因此持久日誌屬於[掛鉤協定庫](../../../../packages/hooks/hook-protocol/README.zh.md)，而非擴充功能介面。
 
-## 后果
+## 後果
 
-规范拦截接口具有统一的类型化，同时不给每个扩展相同的权力：钩子返回 decision，执行包装层做包装，终结 guard 只能拒绝，最终观测者只能观测。循环负责 session-start、pre-step 领取结算、工具执行后上下文缓冲和 stopping；`dsh-tools` 负责身份封存与五阶段执行流水线。它们的约定记录在 [architecture.md](../../../../docs/architecture.zh.md)、各包 README、[核心拦截 decision](../../../../docs/subsystems/core.zh.md#interception-decisions) 与[工具结构](../../../../docs/subsystems/tools.zh.md)中。ACP 桥接会把 blocked 无步骤轮次中的首次 pre-step reject 结算为 `end_turn`，而钩子驱动的快照端到端验证可观测的桥接行为。
+規範攔截介面具有統一的型別化，同時不給每個擴充功能相同的權力：掛鉤返回 decision，執行包裝層做包裝，終結 guard 只能拒絕，最終觀測者只能觀測。迴圈負責 session-start、pre-step 領取結算、工具執行後上下文緩衝和 stopping；`dsh-tools` 負責身份封存與五階段執行流水線。它們的約定記錄在 [architecture.md](../../../../docs/architecture.zh.md)、各包 README、[核心攔截 decision](../../../../docs/subsystems/core.zh.md#interception-decisions) 與[工具結構](../../../../docs/subsystems/tools.zh.md)中。ACP 橋接會把 blocked 無步驟輪次中的首次 pre-step reject 結算為 `end_turn`，而掛鉤驅動的快照端到端驗證可觀測的橋接行為。

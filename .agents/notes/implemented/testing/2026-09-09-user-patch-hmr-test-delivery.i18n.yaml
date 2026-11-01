@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-09-user-patch-hmr-test-delivery.md
 /agent-note-user-patch-tests-control-filesystem-event-delivery:
   en: c2c70a16f6deea8b
-  zh: 3b11c81b87910ce7
+  zh: 9e78721d0252bf77
 /agent-note-user-patch-tests-control-filesystem-event-delivery/problem:
   en: 3f8862080b8c3c89
-  zh: 0e83c485f02c10f1
+  zh: 6ca02c328ab6d0c3
 /agent-note-user-patch-tests-control-filesystem-event-delivery/decision:
   en: a49b4a6e76725b7e
-  zh: 9813f60c40a19f83
+  zh: c5378e3bbd5fe468
 /agent-note-user-patch-tests-control-filesystem-event-delivery/alternatives-considered:
   en: 5d559ee291e2e15e
-  zh: 828e7def587d71e8
+  zh: b1131a6b3d9375fd
 /agent-note-user-patch-tests-control-filesystem-event-delivery/consequences:
   en: da9f64f4d269cece
-  zh: 6bbbcc771c5fbcde
+  zh: 5475abd607377f8f

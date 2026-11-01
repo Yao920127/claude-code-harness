@@ -4,10 +4,10 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/todo.md
 /todo:
   en: 157e8c91aeaf9f64
-  zh: c568d90eecee7b12
+  zh: 9c87aa582a0aff8b
 /todo/todoitem-one-list-entry:
   en: 3580467f183af02a
-  zh: e3fc7208b0c2ee59
+  zh: 4ef92fd309f9fbc2
 /todo/durable-event-and-invariant:
   en: ae4046c1260671ae
-  zh: 4246b14e1965487f
+  zh: a47cee3cea46444f

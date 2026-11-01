@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-14-sidebar-layout-provider-recovery.md
 /agent-note-sidebar-layout-persistence-and-provider-recovery:
   en: 78dee80210908b7d
-  zh: 01a490734740a523
+  zh: adf0f64a11023087
 /agent-note-sidebar-layout-persistence-and-provider-recovery/problem:
   en: 8adb7105e89be803
-  zh: 96c4e92e85b6980e
+  zh: 4ceaadd2c04cfc7f
 /agent-note-sidebar-layout-persistence-and-provider-recovery/decision:
   en: aa09cb90f663dfe8
-  zh: edaabb76aa6dc8de
+  zh: b14b5f3ac9926857
 /agent-note-sidebar-layout-persistence-and-provider-recovery/alternatives-considered:
   en: 4a9b1234b0289ae7
-  zh: 81854e0e9d32b6da
+  zh: f5d2f8f17475e8f4
 /agent-note-sidebar-layout-persistence-and-provider-recovery/consequences:
   en: 4daf813b59205ca3
-  zh: 917c2b975c9a67dd
+  zh: 952ed94950c3cfd9

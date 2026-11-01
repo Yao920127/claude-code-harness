@@ -1,5 +1,5 @@
 ---
-description: "面向模型的 ralph 工具：固定前台 agent loop（智能体循环），让全新 agent 围绕一个不可变目标迭代，供选择或配置此类迭代的用户与维护者阅读。"
+description: "面向模型的 ralph 工具：固定前臺 agent loop（智慧代理迴圈），讓全新 agent 圍繞一個不可變目標迭代，供選擇或設定此類迭代的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,171 +9,171 @@ kind: "package-reference"
 
 ## 概述
 
-`ralph` 针对一个不可变目标运行由多个全新子 agent 组成的前台序列，每个 Round 只接收上一份有界报告与共享工作区状态。它会在 worker 报告完成或具体阻塞，或达到配置的 Round 上限时返回；这些报告不会得到独立验证。父级对话与先前子 agent 会话绝不会复制到新的 Round。仅当直接用户明确要求 Ralph 式全新 agent 迭代时使用它；普通的长期工作请使用 goal 工具，有界委派请使用 subagent 或工作流。
+`ralph` 針對一個不可變目標執行由多個全新子 agent 組成的前臺序列，每個 Round 只接收上一份有界報告與共享工作區狀態。它會在 worker 報告完成或具體阻塞，或達到設定的 Round 上限時返回；這些報告不會得到獨立驗證。父級對話與先前子 agent 工作階段絕不會複製到新的 Round。僅當直接使用者明確要求 Ralph 式全新 agent 迭代時使用它；普通的長期工作請使用 goal 工具，有界委派請使用 subagent 或工作流。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-`ralph` 工具运行固定的前台循环：每个 Round 一个全新子 agent 在共享工作区中处理不可变目标，只有一份有界的结构化报告跨越 Round。仅当直接用户明确要求 Ralph 循环或全新 agent 迭代执行时使用它。普通的长期同会话工作请使用 goal 工具；有界委派与扇出请使用普通 subagent 或 `workflow` 工具。
+`ralph` 工具執行固定的前臺迴圈：每個 Round 一個全新子 agent 在共享工作區中處理不可變目標，只有一份有界的結構化報告跨越 Round。僅當直接使用者明確要求 Ralph 迴圈或全新 agent 迭代執行時使用它。普通的長期同工作階段工作請使用 goal 工具；有界委派與扇出請使用普通 subagent 或 `workflow` 工具。
 
-### 调用工具
+### 呼叫工具
 
-模型提交 `{ objective, maxRounds? }`，调用会阻塞到整个运行结算。部署配置中的 `maxRounds` 既是默认值，也是调用覆盖值的上限。终态结果为 `complete`、`blocked` 或 `budget-limited`，携带最后一份有界报告与已启动的 Round 数量；普通子 agent 失败会返回错误，其中标明失败的 Round，并在存在时保留上一次成功交接。
+模型提交 `{ objective, maxRounds? }`，呼叫會阻塞到整個執行結算。部署設定中的 `maxRounds` 既是預設值，也是呼叫覆蓋值的上限。終態結果為 `complete`、`blocked` 或 `budget-limited`，攜帶最後一份有界報告與已啟動的 Round 數量；普通子 agent 失敗會返回錯誤，其中標明失敗的 Round，並在存在時保留上一次成功交接。
 
-### 每个 Round 看到什么
+### 每個 Round 看到什麼
 
-每个子 agent 只接收不可变目标、当前 Round 及其上限、一条「共享工作区是权威状态」指令与上一份结构化交接；父级对话与先前子 agent 会话绝不会作为种子。工作区是跨 Round 的长期记忆。报告携带状态（`continue`、`complete` 或 `blocked`）、非空摘要、证据、后续步骤与阻塞文本；无效或过大的报告会使工作流失败，而不会被截断或误认为上限耗尽。
+每個子 agent 只接收不可變目標、目前 Round 及其上限、一條「共享工作區是權威狀態」指令與上一份結構化交接；父級對話與先前子 agent 工作階段絕不會作為種子。工作區是跨 Round 的長期記憶。報告攜帶狀態（`continue`、`complete` 或 `blocked`）、非空摘要、證據、後續步驟與阻塞文字；無效或過大的報告會使工作流失敗，而不會被截斷或誤認為上限耗盡。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `subagentProvider` | `spawn` | 每个 Round 使用的全新结构化输出提供方。 |
-| `maxRounds` | `256` | 一次 Ralph 运行的默认值和部署上限。 |
-| `maxHandoffChars` | `16384` | 一份 Round 报告序列化后的最大字符数。 |
-| `maxResultChars` | `16384` | 返回给父级的完整成功结果最大字符数。 |
+| `subagentProvider` | `spawn` | 每個 Round 使用的全新結構化輸出提供者。 |
+| `maxRounds` | `256` | 一次 Ralph 執行的預設值和部署上限。 |
+| `maxHandoffChars` | `16384` | 一份 Round 報告序列化後的最大字元數。 |
+| `maxResultChars` | `16384` | 返回給父級的完整成功結果最大字元數。 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-ralph)是每个受支持字段的穷尽式真源。配置的提供方必须存在、支持结构化输出，并报告 `inheritsParentContext: false`；针对违反此要求的提供方发起调用时，会在任何 Round 开始前直接报错。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-ralph)是每個受支援欄位的窮盡式真源。設定的提供者必須存在、支援結構化輸出，並報告 `inheritsParentContext: false`；針對違反此要求的提供者發起呼叫時，會在任何 Round 開始前直接報錯。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释固定脚本设计以及校验与生命周期机制；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋固定腳本設計以及驗證與生命週期機制；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-循环是部署方拥有的固定脚本：模型只提供数据，无法改变循环、提供方路由、schema 或交接校验。该工具是基于 `ctx.workflowEngine` 与 `ctx.subagents` 的普通插件——不会向 `agent-loop` 添加 Ralph 模式或全新 agent loop，同会话的 goal 领域也保持独立。[Harness 层目标式执行 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-harness-level-loop.zh.md)拥有策略与暂缓事项。
+迴圈是部署方擁有的固定腳本：模型只提供資料，無法改變迴圈、提供者路由、schema 或交接驗證。該工具是基於 `ctx.workflowEngine` 與 `ctx.subagents` 的普通外掛——不會向 `agent-loop` 新增 Ralph 模式或全新 agent loop，同工作階段的 goal 領域也保持獨立。[Harness 層目標式執行 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-harness-level-loop.zh.md)擁有策略與暫緩事項。
 
-### 固定脚本与路由
+### 固定腳本與路由
 
-配置的提供方以 `WorkflowStartRequest.subagentProvider` 传递，因此固定脚本无法检查或更改路由，普通的模型编写 `workflow` 工具也不会因此获得提供方选择器。解析后的 Round 上限以 `WorkflowStartRequest.maxTotalAgents` 传递，使固定循环与引擎的子 agent 总数后备上限协同；上限超过引擎部署上限时，引擎会在发布运行前拒绝。
+設定的提供者以 `WorkflowStartRequest.subagentProvider` 傳遞，因此固定腳本無法檢查或更改路由，普通的模型編寫 `workflow` 工具也不會因此獲得提供者選擇器。解析後的 Round 上限以 `WorkflowStartRequest.maxTotalAgents` 傳遞，使固定迴圈與引擎的子 agent 總數後備上限協同；上限超過引擎部署上限時，引擎會在釋出執行前拒絕。
 
-### 报告校验
+### 報告驗證
 
-特定状态的语义与序列化后的 `maxHandoffChars` 上限会在固定工作流内部及消费方边界各校验一次：继续报告需要后续步骤与空阻塞，完成报告需要证据且没有后续步骤，阻塞报告需要具体阻塞。无效、缺失或过大的报告会使工作流失败。
+特定狀態的語義與序列化後的 `maxHandoffChars` 上限會在固定工作流內部及消費方邊界各驗證一次：繼續報告需要後續步驟與空阻塞，完成報告需要證據且沒有後續步驟，阻塞報告需要具體阻塞。無效、缺失或過大的報告會使工作流失敗。
 
-### 生命周期与取消
+### 生命週期與取消
 
-调用方 agent 是每个全新子 agent 的父级，因此会保留 cwd 与谱系，但不会复制其对话。`exec.signal` 进入工作流引擎，同时也桥接到 `run.cancel()`，以便不依赖具体实现。工具等待 `run.result` 并在 `finally` 中调用 `run.dispose()`，因此被取消的父级步骤会等到进程与子 agent 清理完成后才返回。PTC 引擎不设整体工作流经过时间截止；调用方取消仍然生效。
+呼叫方 agent 是每個全新子 agent 的父級，因此會保留 cwd 與譜系，但不會複製其對話。`exec.signal` 進入工作流引擎，同時也橋接到 `run.cancel()`，以便不依賴具體實作。工具等待 `run.result` 並在 `finally` 中呼叫 `run.dispose()`，因此被取消的父級步驟會等到程序與子 agent 清理完成後才返回。PTC 引擎不設整體工作流經過時間截止；呼叫方取消仍然生效。
 
-### 渲染意图
+### 渲染意圖
 
-待处理调用使用 `generic` 卡片，标题为 `ralph`，不可变目标作为其 `rawInput`；结果继续使用 generic 卡片。两个呈现函数都只依赖工具参数与已结算的工具包络，完成与阻塞标签会说明结果由 worker 报告，而非独立认证。
+待處理呼叫使用 `generic` 卡片，標題為 `ralph`，不可變目標作為其 `rawInput`；結果繼續使用 generic 卡片。兩個呈現函式都只依賴工具參數與已結算的工具包絡，完成與阻塞標籤會說明結果由 worker 報告，而非獨立認證。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：固定脚本、提供方路由、报告校验、工具注册 |
-| — | 不发布运行时不变式伴生入口；该面向模型的编排适配器不拥有独立事件流；工作流与 subagent 归属方会校验该适配器启动的运行及其子 agent 生命周期。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：固定腳本、提供者路由、報告驗證、工具註冊 |
+| — | 不釋出執行時不變式伴生入口；該面向模型的編排介面卡不擁有獨立事件流；工作流與 subagent 歸屬方會驗證該介面卡啟動的執行及其子 agent 生命週期。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当工具级契约不够用时阅读以下页面。它们从共享工作流模型逐步进入引擎、subagent seam 与相邻的 goal 领域。
+當工具級契約不夠用時閱讀以下頁面。它們從共享工作流模型逐步進入引擎、subagent seam 與相鄰的 goal 領域。
 
-- [工作流子系统](../../../docs/subsystems/workflow.zh.md)——固定循环背后的 seam 约定。
-- [工作流 seam](../workflow/README.zh.md)——运行与结果词汇。
-- [PTC 工作流引擎](../workflow-ptc/README.zh.md)——执行固定脚本的引擎。
-- [subagent seam](../../subagent/subagent/README.zh.md)——全新子 agent 的提供方约定。
-- [goal 组](../../goal/goal/README.zh.md)——面向普通长期目标的同会话 goal 工具。
-- [Harness 层目标式执行 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-harness-level-loop.zh.md)——策略、提供方要求与暂缓事项。
+- [工作流子系統](../../../docs/subsystems/workflow.zh.md)——固定迴圈背後的 seam 約定。
+- [工作流 seam](../workflow/README.zh.md)——執行與結果詞彙。
+- [PTC 工作流引擎](../workflow-ptc/README.zh.md)——執行固定腳本的引擎。
+- [subagent seam](../../subagent/subagent/README.zh.md)——全新子 agent 的提供者約定。
+- [goal 組](../../goal/goal/README.zh.md)——面向普通長期目標的同工作階段 goal 工具。
+- [Harness 層目標式執行 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-harness-level-loop.zh.md)——策略、提供者要求與暫緩事項。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 系统提示词
+### 系統提示詞
 
-#### 模型看到什么
+#### 模型看到什麼
 
-在该插件的注册作用域内，每个父级请求都会收到下方固定的路由指导。
+在該外掛的註冊作用域內，每個父級請求都會收到下方固定的路由指導。
 
-##### Ralph 指导
+##### Ralph 指導
 
 ```markdown
 Use the ralph tool ONLY when the direct human explicitly asks for a Ralph loop or fresh-agent iterative execution. Each Ralph round starts a fresh child with no conversation seed and uses the shared workspace as durable memory. Completion and blockers are worker reports, not independent evaluation. Use same-session goal tools for ordinary long-running objectives, and plain subagents or workflows for bounded delegation and fan-out.
 ```
 
-#### Token 影响
+#### Token 影響
 
-插件启用期间，每个请求都会产生少量固定的指导 token 开销。
+外掛啟用期間，每個請求都會產生少量固定的指導 token 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-只要插件作用域与指导文本不变，前缀就保持稳定。启用或 dispose（资源释放）可能会使从该提示词段起的缓存复用失效。
+只要外掛作用域與指導文字不變，字首就保持穩定。啟用或 dispose（資源釋放）可能會使從該提示詞段起的快取複用失效。
 
 ### 工具 schema
 
-#### 模型看到什么
+#### 模型看到什麼
 
-已生成的 [`ralph` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-ralph) 公开一个必填 `objective` 字符串与一个可选 `maxRounds` 数字。提供方选择、交接大小、报告 schema、工作流脚本与编排行为均由部署侧控制，不在调用 schema 中。
+已生成的 [`ralph` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-ralph) 公開一個必填 `objective` 字串與一個可選 `maxRounds` 數字。提供者選擇、交接大小、報告 schema、工作流腳本與編排行為均由部署側控制，不在呼叫 schema 中。
 
-#### Token 影响
+#### Token 影響
 
-工具可见时，每个请求都会产生少量固定的 schema token 开销。
+工具可見時，每個請求都會產生少量固定的 schema token 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-只要定义与可见性不变，前缀就保持稳定。
+只要定義與可見性不變，字首就保持穩定。
 
-### 子 agent 请求与父级结果
+### 子 agent 請求與父級結果
 
-#### 模型看到什么
+#### 模型看到什麼
 
-每个子 agent 都会看到独立的固定 Round 提示词与结构化输出捕获约定。父级只看到原始调用与一个终态结果，其中包含 worker 报告的状态、Round 数量与美化打印的最终报告；中间子 agent 消息与报告不会进入父级对话。普通子 agent 失败时改为产生错误，其中包含对应 Round 编号；从第二个 Round 起，还会包含上一次成功交接。
+每個子 agent 都會看到獨立的固定 Round 提示詞與結構化輸出捕捉約定。父級只看到原始呼叫與一個終態結果，其中包含 worker 報告的狀態、Round 數量與美化列印的最終報告；中間子 agent 訊息與報告不會進入父級對話。普通子 agent 失敗時改為產生錯誤，其中包含對應 Round 編號；從第二個 Round 起，還會包含上一次成功交接。
 
-#### Token 影响
+#### Token 影響
 
-每个 Round 都会支付全新子 agent 上下文的成本。`maxHandoffChars` 限制跨 Round 状态，`maxResultChars` 独立限制完整的父级成功文本；子 agent 工作留在父级上下文之外。
+每個 Round 都會支付全新子 agent 上下文的成本。`maxHandoffChars` 限制跨 Round 狀態，`maxResultChars` 獨立限制完整的父級成功文字；子 agent 工作留在父級上下文之外。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-每个全新子 agent 都有独立的请求缓存。父级结果追加在可复用请求前缀之后。
+每個全新子 agent 都有獨立的請求快取。父級結果追加在可複用請求字首之後。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该工具尚未支持什么。它们是当前约束，不是任务积压。
+這些限制說明該工具尚未支援什麼。它們是目前約束，不是任務積壓。
 
-- **完成由 worker 自行声明**——没有独立评估器或验证器判断目标是否完成；评估器策略与评估器驱动的延续均暂缓。
-- **仅支持前台**——没有 job id、后台收集、进程恢复检查点、调度器或基于挂钟时间的启动策略。
-- **工作区是唯一的跨 Round 长期记忆**——一份有界报告作为显式交接，每个子 agent 结束后，未提交的对话推理都会消失。
-- **一个 Round 对应一个全新子 agent**——Round 内没有扇出、模型或提供方切换、fork 上下文或由模型调用选择的提供方。
-- **普通子 agent 失败会终止运行**——固定脚本报告失败的 Round 与上一次成功交接，但不会重试；致命的工作流基础设施失败可能在该状态返回前结束。
-- **聚合工作量仅受 Round 数量限制**——token、价格与耗时预算均暂缓。
+- **完成由 worker 自行宣告**——沒有獨立評估器或驗證器判斷目標是否完成；評估器策略與評估器驅動的延續均暫緩。
+- **僅支援前臺**——沒有 job id、後臺收集、程序恢復檢查點、排程器或基於掛鐘時間的啟動策略。
+- **工作區是唯一的跨 Round 長期記憶**——一份有界報告作為顯式交接，每個子 agent 結束後，未提交的對話推理都會消失。
+- **一個 Round 對應一個全新子 agent**——Round 內沒有扇出、模型或提供者切換、fork 上下文或由模型呼叫選擇的提供者。
+- **普通子 agent 失敗會終止執行**——固定腳本報告失敗的 Round 與上一次成功交接，但不會重試；致命的工作流基礎設施失敗可能在該狀態返回前結束。
+- **聚合工作量僅受 Round 數量限制**——token、價格與耗時預算均暫緩。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：尚未决定的开放方向。它明确不具权威性——已交付的行为、限制与既定理由以上文、包代码与相关 Agent Note 为准。
+本開發備註是維護者的工作上下文：尚未決定的開放方向。它明確不具權威性——已交付的行為、限制與既定理由以上文、包程式碼與相關 Agent Note 為準。
 
-开放方向：带评估器驱动延续的独立评估器；Round 内扇出与提供方选择；以及 Round 上限之外的 token、价格与耗时预算。
+開放方向：帶評估器驅動延續的獨立評估器；Round 內扇出與提供者選擇；以及 Round 上限之外的 token、價格與耗時預算。
 
 </details>

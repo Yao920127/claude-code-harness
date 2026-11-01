@@ -1,46 +1,46 @@
-# XLSX 模糊测试诊断
+# XLSX 模糊測試診斷
 
 [English](README.md) | 中文
 
-使用 Openpyxl 和 XlsxWriter 生成表格文件，再将源码 XLSX 适配器的结果与独立记录的单元格值、公式和不支持内容类别比较。此诊断任务需要显式运行，会保留失败结果并以非零状态退出；它不属于默认单元测试集。
+使用 Openpyxl 和 XlsxWriter 生成表格檔案，再將原始碼 XLSX 介面卡的結果與獨立記錄的單元格值、公式和不支援內容類別比較。此診斷任務需要顯式執行，會保留失敗結果並以非零狀態退出；它不屬於預設單元測試集。
 
-## 运行测试
+## 執行測試
 
-安装工作区依赖，并准备装有 Openpyxl、XlsxWriter 和 Pillow 的 Python 解释器。在 PowerShell 中，将 `$excelFuzzPython` 设置为该解释器的可执行文件路径。从仓库根目录运行，并使用新的输出目录：
+安裝工作區依賴，並準備裝有 Openpyxl、XlsxWriter 和 Pillow 的 Python 直譯器。在 PowerShell 中，將 `$excelFuzzPython` 設定為該直譯器的可執行檔案路徑。從儲存庫根目錄執行，並使用新的輸出目錄：
 
 ```powershell
 & $excelFuzzPython packages/client/ui-sidebar-documentpreview/tests/fuzz/generate.py .artifacts/excel-fuzz-new --seed 4863 --random-cases 400
 pnpm exec tsx packages/client/ui-sidebar-documentpreview/tests/fuzz/run.client.ts .artifacts/excel-fuzz-new
 ```
 
-种子控制功能组合、数值和字节变异。ZIP 元数据保持固定；复现还依赖 `manifest.json` 记录的写入器版本。生成器先验证内部关系目标，并用 Openpyxl 重新读取预期单元格，再将工作簿归类为合法文件。被排除的候选保留在 `generatorErrors` 中；随机字节变异单独分类。
+種子控制功能組合、數值和位元組變異。ZIP 中繼資料保持固定；復現還依賴 `manifest.json` 記錄的寫入器版本。生成器先驗證內部關係目標，並用 Openpyxl 重新讀取預期單元格，再將工作簿歸類為合法檔案。被排除的候選保留在 `generatorErrors` 中；隨機位元組變異單獨分類。
 
-从已有样本集重跑选定用例：
+從已有樣本集重跑選定案例：
 
 ```sh
 pnpm exec tsx packages/client/ui-sidebar-documentpreview/tests/fuzz/run.client.ts .artifacts/excel-fuzz-new --only openpyxl-table --report table.json
 ```
 
-执行器为每个输入设置 10 秒的可终止 Worker 截止时间，并检查输入不变性、单元格值、公式缓存，以及提示顺序和唯一性。`--timeout-ms` 可修改该诊断时限。报告保留全部结果；`repros/` 包含功能组合较少的代表性失败文件，不声称输入已达到全局最小。被接受的损坏 ZIP 仅作为观察结果，需要单独检查。
+執行器為每個輸入設定 10 秒的可終止 Worker 截止時間，並檢查輸入不變性、單元格值、公式快取，以及提示順序和唯一性。`--timeout-ms` 可修改該診斷時限。報告保留全部結果；`repros/` 包含功能組合較少的代表性失敗檔案，不聲稱輸入已達到全域最小。被接受的損壞 ZIP 僅作為觀察結果，需要單獨檢查。
 
-## 对比旧适配器
+## 對比舊介面卡
 
-`--baseline-ref <commit-or-ref> --report baseline.json` 从 Git 读取该版本的 `xlsx.ts`，并禁用提示比较。它仍使用当前依赖版本和共用转换辅助函数，安装补丁后无法复现未修补 ExcelJS 的基线。须保留原依赖状态下的报告，或在独立检出目录中运行旧版本。Worker 退出后会删除临时基线模块。此对比检查源码解析，不覆盖 FortuneSheet 浏览器渲染或发布的 Web 配置。
+`--baseline-ref <commit-or-ref> --report baseline.json` 從 Git 讀取該版本的 `xlsx.ts`，並停用提示比較。它仍使用目前依賴版本和共用轉換輔助函式，安裝補丁後無法復現未修補 ExcelJS 的基線。須保留原依賴狀態下的報告，或在獨立檢出目錄中執行舊版本。Worker 退出後會刪除臨時基線模組。此對比檢查原始碼解析，不覆蓋 FortuneSheet 瀏覽器渲染或釋出的 Web 設定。
 
-## 保留的回归用例
+## 保留的迴歸案例
 
-[OPC fixture](../fixtures/excel-opc/) 包含从 seed 4863 语料复制的五类独立失败文件，以及一个组合 Openpyxl 工作簿。Openpyxl 3.1.5 生成批注、Table、命名空间前缀和部件名用例，XlsxWriter 3.2.9 生成相对目标用例。组合工作簿加入图表、条件格式、冻结表头、隐藏行／列／工作表、合并、样式、超链接、类似 XML 的字面文本和公式，再应用 `sheet-prefix` 与 `sheet-filename` 变异。Openpyxl 独立校验保存的输入。单元测试和浏览器测试读取已提交的字节，无需 Python。
+[OPC fixture](../fixtures/excel-opc/) 包含從 seed 4863 語料複製的五類獨立失敗檔案，以及一個組合 Openpyxl 工作簿。Openpyxl 3.1.5 生成批註、Table、名稱空間字首和部件名案例，XlsxWriter 3.2.9 生成相對目標案例。組合工作簿加入圖表、條件格式、凍結表頭、隱藏行／列／工作表、合併、樣式、超連結、類似 XML 的字面文字和公式，再應用 `sheet-prefix` 與 `sheet-filename` 變異。Openpyxl 獨立驗證儲存的輸入。單元測試和瀏覽器測試讀取已提交的位元組，無需 Python。
 
-[XML fixture](../fixtures/excel-xml/) 保留一个 XlsxWriter 3.2.9 工作簿及七种等价编码：UTF-16 工作表或元数据 XML、移动工作簿/样式/共享字符串部件、CDATA 文本，以及移动工作表/绘图目录。每个文件都保留公式缓存、Unicode 和类似 XML 的文本、批注、Table、样式、合并、冻结标题、隐藏内容和全部四类提示。升级 ExcelJS 时，应通过 Node 与浏览器入口比较完整预览及批注/Table 元数据，再对构建后的 Worker 运行 `apps/web/tests/excel-opc.e2e.ts`。保留原始语料报告；重放时使用新的 `--report` 文件名，并在独立读取器验证之外单独检查 ZIP 目录完整性。
+[XML fixture](../fixtures/excel-xml/) 保留一個 XlsxWriter 3.2.9 工作簿及七種等價編碼：UTF-16 工作表或中繼資料 XML、移動工作簿/樣式/共享字串部件、CDATA 文字，以及移動工作表/繪圖目錄。每個檔案都保留公式快取、Unicode 和類似 XML 的文字、批註、Table、樣式、合併、凍結標題、隱藏內容和全部四類提示。升級 ExcelJS 時，應透過 Node 與瀏覽器入口比較完整預覽及批註/Table 中繼資料，再對建置後的 Worker 執行 `apps/web/tests/excel-opc.e2e.ts`。保留原始語料報告；重放時使用新的 `--report` 檔名，並在獨立讀取器驗證之外單獨檢查 ZIP 目錄完整性。
 
-[打开回归样例](../excel-opening-fixture.ts)基于 Openpyxl 组合文件派生 Strict URI 别名、根目标与部件名大小写变体，以及孤立 DrawingML。变换保留单元格数据，并通过两个解析入口、完整预览比较和实际发布的浏览器 Worker 验证。ASCII 大小写等价的歧义条目会被拒绝；非 ASCII 名称保持区分。
+[開啟回歸樣例](../excel-opening-fixture.ts)基於 Openpyxl 組合檔案派生 Strict URI 別名、根目標與部件名大小寫變體，以及孤立 DrawingML。變換保留單元格資料，並透過兩個解析入口、完整預覽比較和實際釋出的瀏覽器 Worker 驗證。ASCII 大小寫等價的歧義條目會被拒絕；非 ASCII 名稱保持區分。
 
-运行 Node 和浏览器 bundle 解析器回归测试：
+執行 Node 和瀏覽器 bundle 解析器迴歸測試：
 
 ```sh
 pnpm exec vitest run packages/client/ui-sidebar-documentpreview/tests/excel-opening.client.spec.ts packages/client/ui-sidebar-documentpreview/tests/excel-opc.client.spec.ts packages/client/ui-sidebar-documentpreview/tests/excel-xml.client.spec.ts
 ```
 
-fuzz 报告记录每个输入的 SHA-256、能否打开以及工作区状态。`validOpened` 和 `validRejected` 将打开失败与值差异分开，严格退出状态仍会拒绝这两类缺陷。已知的 1904 时间／累计时长偏移和空字符串公式缓存差异仍作为诊断失败。解析器接受的损坏输入继续作为观察结果单列。
+fuzz 報告記錄每個輸入的 SHA-256、能否開啟以及工作區狀態。`validOpened` 和 `validRejected` 將開啟失敗與值差異分開，嚴格退出狀態仍會拒絕這兩類缺陷。已知的 1904 時間／累計時長偏移和空字串公式快取差異仍作為診斷失敗。解析器接受的損壞輸入繼續作為觀察結果單列。
 
-通过 `pnpm patch` 和 `pnpm patch-commit` 对发布包维护 ExcelJS 补丁。已安装的依赖树包含生成的启动脚本，不得混入补丁。在依赖缓存安装上的测试结果之前，先用 `pnpm patch --edit-dir <new-directory>` 全新解包，验证补丁能够应用。
+透過 `pnpm patch` 和 `pnpm patch-commit` 對釋出包維護 ExcelJS 補丁。已安裝的依賴樹包含生成的啟動腳本，不得混入補丁。在依賴快取安裝上的測試結果之前，先用 `pnpm patch --edit-dir <new-directory>` 全新解包，驗證補丁能夠應用。

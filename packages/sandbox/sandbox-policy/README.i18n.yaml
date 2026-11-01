@@ -4,76 +4,76 @@
 #   pnpm run verify-translation-pairing --write packages/sandbox/sandbox-policy/README.md
 /:
   en: abf71058974a6f37
-  zh: 45c76c1d645a0e67
+  zh: 3148c18efbef64c3
 /deepseek-ai-dsh-sandbox-policy:
   en: 2d1bbc7770b371d4
   zh: 5e0784ae0e0f3a82
 /deepseek-ai-dsh-sandbox-policy/summary:
   en: 62e1a0a017d6bc07
-  zh: 1d9f86eb54f51b8e
+  zh: d83139d5d5fe072c
 /deepseek-ai-dsh-sandbox-policy/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-sandbox-policy/use-this-package:
   en: a75f214ba848bbd1
-  zh: 8ad35e2513b53bd1
+  zh: 19f4c1dde8fc1314
 /deepseek-ai-dsh-sandbox-policy/use-this-package/when-to-choose-it:
   en: 6704447e52ec295b
-  zh: 9ed812d9e29d5533
+  zh: c31053a592280720
 /deepseek-ai-dsh-sandbox-policy/use-this-package/minimal-configuration:
   en: 01c4f068b702b49e
-  zh: a78ae88d3af889fe
+  zh: ca45ea585094d367
 /deepseek-ai-dsh-sandbox-policy/use-this-package/switching-a-session-s-mode:
   en: 957d72691e470e5c
-  zh: c22a3a750af0e4a3
+  zh: 733d5eee99efc5c2
 /deepseek-ai-dsh-sandbox-policy/use-this-package/failures-and-recovery:
   en: 9cef5f64a050f468
-  zh: 5dc42c148b2c902d
+  zh: 2ed9190b15a57152
 /deepseek-ai-dsh-sandbox-policy/understand-the-implementation:
   en: 2d560aa6681fcfb8
-  zh: e1c6361a6fa40c63
+  zh: 7cbb2edfd9ec27b4
 /deepseek-ai-dsh-sandbox-policy/understand-the-implementation/resolution-precedence:
   en: f1f38b10c23947d2
-  zh: 7a591e743d6793f5
+  zh: ce45afc0f01e28bd
 /deepseek-ai-dsh-sandbox-policy/understand-the-implementation/the-per-session-store:
   en: d13dabff02f2acfd
-  zh: f593888b4ffddf36
+  zh: 9a27fedc99fcd16a
 /deepseek-ai-dsh-sandbox-policy/understand-the-implementation/model-visible-text:
   en: d427370cafeecb48
-  zh: 70494b8400c45655
+  zh: 2aebdb23d8e4045e
 /deepseek-ai-dsh-sandbox-policy/understand-the-implementation/source-map:
   en: 184d0ece30be790f
-  zh: 84a1fd1b71f5154d
+  zh: bb601ed2d30c8665
 /deepseek-ai-dsh-sandbox-policy/further-exploration:
   en: 8525667a02f4bbeb
-  zh: 2f09594fbf8d37ed
+  zh: 5062fc088d9fa6da
 /deepseek-ai-dsh-sandbox-policy/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy:
   en: 593b59dbbb02bc8c
-  zh: 38fa746346e9bc06
+  zh: 42e94d3c99296259
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/what-the-model-sees:
   en: 4cd0e0cf93a02d2c
-  zh: 0f8ece0297cf3c0b
+  zh: e15127b62ee4122d
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/what-the-model-sees/read-only:
   en: 36f15579c9444eb9
-  zh: 289f3c4ce040bfe9
+  zh: 17285d04d1ecbb84
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/what-the-model-sees/workspace-write:
   en: 269d494ad304638d
-  zh: a879c1d7cc03e6ac
+  zh: be740edf4250a878
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/what-the-model-sees/danger-full-access:
   en: 4e28324a011422a1
-  zh: bf31ffce30f06a09
+  zh: 25b816df10e998b9
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/token-effect:
   en: e3387fb6eeba1239
-  zh: 06a47393057d3e9b
+  zh: b6d1ba3a66ed9f41
 /deepseek-ai-dsh-sandbox-policy/model-experience/current-file-sandbox-policy/kv-cache-effect:
   en: a16a657e0e5145fb
-  zh: 4b19263a728990dc
+  zh: 17b6f4a80e398b13
 /deepseek-ai-dsh-sandbox-policy/known-limitations-and-deferred-work:
   en: af363d6626eaa9b8
-  zh: 93f8d5f9519db0ae
+  zh: 02ad3dbb3858506d
 /deepseek-ai-dsh-sandbox-policy/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

@@ -1,36 +1,36 @@
-# Agent Note: Web 后台任务展示
+# Agent Note: Web 後臺任務展示
 
 Status: implemented
 
-Superseded：本文放在会话控制流上的名册（`jobsBySession`、`onJobsChanged`）现在从 job 控制器的 `job.list` 流入 `ctx.jobs`——见 [jobs seam 收敛](../architecture/2026-09-03-jobs-seam-consolidation.zh.md)。下文的展示决策（单一名册、分组、时长、没有 kill 控件）仍然成立。
+Superseded：本文放在工作階段控制流上的名冊（`jobsBySession`、`onJobsChanged`）現在從 job 控制器的 `job.list` 流入 `ctx.jobs`——見 [jobs seam 收斂](../architecture/2026-09-03-jobs-seam-consolidation.zh.md)。下文的展示決策（單一名冊、分組、時長、沒有 kill 控制元件）仍然成立。
 
-Update：本文推迟的输出阶段现已作为 `ctx.jobs` 上的逐 job 观测 record 交付——见 [jobs 吸收 record](../architecture/2026-09-01-jobs-absorb-activity-record.zh.md)。
+Update：本文推遲的輸出階段現已作為 `ctx.jobs` 上的逐 job 觀測 record 交付——見 [jobs 吸收 record](../architecture/2026-09-01-jobs-absorb-activity-record.zh.md)。
 
 [English](2026-08-08-web-background-job-display.md) | 中文
 
-## 问题
+## 問題
 
-`ctx.jobs` 已经承载了 harness 在后台启动的全部长时工作——`bash`、`pwsh`、`pty-send`，以及一次性后台 subagent——但它唯一的读者是模型。[`dsh-tool-jobs`](../../../../packages/jobs/tool-jobs/README.zh.md) 暴露了 `job_list`、`job_output` 和 `job_kill`，除此之外没有任何东西观察这个注册表。
+`ctx.jobs` 已經承載了 harness 在後臺啟動的全部長時工作——`bash`、`pwsh`、`pty-send`，以及一次性後臺 subagent——但它唯一的讀者是模型。[`dsh-tool-jobs`](../../../../packages/jobs/tool-jobs/README.zh.md) 暴露了 `job_list`、`job_output` 和 `job_kill`，除此之外沒有任何東西觀察這個註冊表。
 
-于是 Web 端的人类看不到构建正在跑，分不清一个任务是已经完成还是卡死，也无法把它停掉。唯一的痕迹是 transcript 里更早某处那张打印了 job id 的 `run_in_background` 工具卡片，而那张卡片此后再也不会更新。
+於是 Web 端的人類看不到建置正在跑，分不清一個任務是已經完成還是卡死，也無法把它停掉。唯一的痕跡是 transcript 裡更早某處那張列印了 job id 的 `run_in_background` 工具卡片，而那張卡片此後再也不會更新。
 
-会话 header 本来就是每会话后台活动的落点：[`dsh-client-ui-subagent`](../../../../packages/client/ui-subagent/README.zh.md) 把 subagent 目录贡献到 `conversation.session.header.actions`。位置没有争议。缺的是任何一条把任务状态送到浏览器的通道。
+工作階段 header 本來就是每工作階段後臺活動的落點：[`dsh-client-ui-subagent`](../../../../packages/client/ui-subagent/README.zh.md) 把 subagent 目錄貢獻到 `conversation.session.header.actions`。位置沒有爭議。缺的是任何一條把任務狀態送到瀏覽器的通道。
 
-## 决策
+## 決策
 
-任务状态以**每会话一帧的整份 control 快照**到达浏览器，在注册表每一个会改变该会话可见内容的提交点推出。客户端保持一份 last-wins 镜像，由一个 header 入口渲染。没有 RPC，没有轮询，客户端不需要任何过期状态管理。
+任務狀態以**每工作階段一幀的整份 control 快照**到達瀏覽器，在註冊表每一個會改變該工作階段可見內容的提交點推出。用戶端保持一份 last-wins 映像，由一個 header 入口渲染。沒有 RPC，沒有輪詢，用戶端不需要任何過期狀態管理。
 
-本次只交付列表。每个任务的流式输出与人类发起的中断是各自独立的阶段，而通道的形状让两者都不必推翻它。
+本次只交付列表。每個任務的流式輸出與人類發起的中斷是各自獨立的階段，而通道的形狀讓兩者都不必推翻它。
 
-### 线路形状
+### 線路形狀
 
-Session Controller control 流中的一帧：
+Session Controller control 流中的一幀：
 
 ```ts ignore-check
 | { type: 'jobs'; sessionId: SessionId; jobs: SessionJob[] }
 ```
 
-`SessionJob` 是浏览器安全类型，与其他 Session Remote 约定一起由 [`packages/api/session-controller/src/types.ts`](../../../../packages/api/session-controller/src/types.ts) 拥有：
+`SessionJob` 是瀏覽器安全型別，與其他 Session Remote 約定一起由 [`packages/api/session-controller/src/types.ts`](../../../../packages/api/session-controller/src/types.ts) 擁有：
 
 ```ts
 import type { JobId } from '@deepseek-ai/dsh-jobs/brand'
@@ -46,95 +46,95 @@ export interface SessionJob {
 }
 ```
 
-`JobId` 取自不依赖 cordis 的 [`@deepseek-ai/dsh-jobs/brand`](../../../../packages/jobs/jobs/src/brand.ts) 叶子——与 `api/subagents.ts` 已经在用的 `@deepseek-ai/dsh-llm/brand` 导入是同一种安排，因为 `dsh-jobs` 根出口会牵到 `dsh-agent`，即便只作类型也无法被客户端程序触及。和本仓库其他每一个非根子路径一样，它带有显式的 `tsconfig.base.json` `paths` 条目；没有这一条，Typert 分析器会把该 specifier 解析到 `lib/types/` 并判定该引用未被导出。
+`JobId` 取自不依賴 cordis 的 [`@deepseek-ai/dsh-jobs/brand`](../../../../packages/jobs/jobs/src/brand.ts) 葉子——與 `api/subagents.ts` 已經在用的 `@deepseek-ai/dsh-llm/brand` 匯入是同一種安排，因為 `dsh-jobs` 根出口會牽到 `dsh-agent`，即便只作型別也無法被用戶端程式觸及。和本儲存庫其他每一個非根子路徑一樣，它帶有顯式的 `tsconfig.base.json` `paths` 條目；沒有這一條，Typert 分析器會把該 specifier 解析到 `lib/types/` 並判定該引用未被匯出。
 
-线路上的 `kind` 是 `string` 而非 `JobKind`。kind 映射由生产者插件按声明合并扩展，客户端构建无法枚举这个闭集；遇到无法识别的 kind，呈现层走一条有文档的默认分支。
+線路上的 `kind` 是 `string` 而非 `JobKind`。kind 對映由生產者外掛按宣告合併擴充功能，用戶端建置無法列舉這個閉集；遇到無法識別的 kind，呈現層走一條有文件的預設分支。
 
-`JobSnapshot` 的三个字段被刻意省去：`ownerSession`（帧的 `sessionId` 已经带了）、`reported`（内部的通知投递位，对用户无意义），以及 `outputLimitBytes`（生产者拥有的模型呈现策略）。
+`JobSnapshot` 的三個欄位被刻意省去：`ownerSession`（幀的 `sessionId` 已經帶了）、`reported`（內部的通知投遞位，對使用者無意義），以及 `outputLimitBytes`（生產者擁有的模型呈現策略）。
 
-这一帧带整份快照而非增量，因此启动、中断、结算、重连，以及第二个浏览器标签页，全都通过同一个权威值收敛。一个会话的任务集是个位数，帧很小。
+這一幀帶整份快照而非增量，因此啟動、中斷、結算、重連，以及第二個瀏覽器標籤頁，全都透過同一個權威值收斂。一個工作階段的任務集是個位數，幀很小。
 
-### 任务注册表变更订阅
+### 任務註冊表變更訂閱
 
-`JobRegistry` 拥有一个观察方法：
+`JobRegistry` 擁有一個觀察方法：
 
 ```ts ignore-check
 abstract onJobsChanged(listener: JobsChangedListener): () => void
 ```
 
-它在每一个会改变 `list(owner)` 返回内容的提交点**之后**触发：`start()` 末尾的注册、`kill()` 里转入 `stopping`、结算，以及 `disposeOwner()` 执行的移除。`owner` 为 `undefined` 表示一个无主任务发生了变化，因而每一个调用方的视图都变了。
+它在每一個會改變 `list(owner)` 返回內容的提交點**之後**觸發：`start()` 末尾的註冊、`kill()` 裡轉入 `stopping`、結算，以及 `disposeOwner()` 執行的移除。`owner` 為 `undefined` 表示一個無主任務發生了變化，因而每一個呼叫方的檢視都變了。
 
-监听器按 owner 而非按任务分粒度。唯一的消费方推的是整份快照，逐任务记录到手即弃——而且逐任务的订阅根本无法表达 owner 销毁时的移除，除非发明一个别处都不需要的墓碑状态。
+監聽器按 owner 而非按任務分粒度。唯一的消費方推的是整份快照，逐任務記錄到手即棄——而且逐任務的訂閱根本無法表達 owner 銷燬時的移除，除非發明一個別處都不需要的墓碑狀態。
 
-`onJobDone` 不是它的子集。后者按 first-wins 语义投递终态记录和确切的 owner `Agent`，`dsh-tool-jobs` 把这套语义与 `reported` 绑在一起；`onJobsChanged` 是纯观察，不含任何投递含义，也不把任何东西标为已上报。监听器抛错被包住且从不 await，与 `onJobDone` 一致，每次注册都是调用方 fiber 上的 effect。
+`onJobDone` 不是它的子集。後者按 first-wins 語義投遞終態記錄和確切的 owner `Agent`，`dsh-tool-jobs` 把這套語義與 `reported` 綁在一起；`onJobsChanged` 是純觀察，不含任何投遞含義，也不把任何東西標為已上報。監聽器拋錯被包住且從不 await，與 `onJobDone` 一致，每次註冊都是呼叫方 fiber 上的 effect。
 
-服务销毁逐条通告移除：注册表取消并等完自己的 job 之后，丢弃每条记录并对每个 job 发出一个 `removed` 事件，因此注册在更长命 fiber 上的订阅者看到名册逐条清空而不是留着陈旧集合（注册在注册表自身 fiber 上的订阅者此时早已消失）。
+服務銷燬逐條通告移除：註冊表取消並等完自己的 job 之後，丟棄每條記錄並對每個 job 發出一個 `removed` 事件，因此註冊在更長命 fiber 上的訂閱者看到名冊逐條清空而不是留著陳舊集合（註冊在註冊表自身 fiber 上的訂閱者此時早已消失）。
 
-### Session Controller 载体
+### Session Controller 載體
 
-[`SessionControlController.control()`](../../../../packages/api/session-controller/src/control.ts) 先发出一份完整的 Host 范围 baseline，再发送后续 `jobs` 替换帧。每次物理重连都会打开新一代流，因此客户端会先替换进程本地镜像，再应用后续变更。
+[`SessionControlController.control()`](../../../../packages/api/session-controller/src/control.ts) 先發出一份完整的 Host 範圍 baseline，再傳送後續 `jobs` 替換幀。每次物理重連都會開啟新一代流，因此用戶端會先替換程序本地映像，再應用後續變更。
 
-载体守着四条规则：
+載體守著四條規則：
 
-- **绝不 resume。** 变更推送用监听器给出的确切 `Agent` 调 `jobs.list(owner)`，即使该 owner 的 scope 正在拆除、按 id 查找已经查不到，它依然正确。baseline 则读 `ctx.jobs.list(ctx.agents.get(session.id))`，没有 live Agent 的 Session 正确地只得到无主任务。两条路径都不调用 [Session Controller Agent 解析器](../../../../packages/api/session-controller/src/agent.ts)，因为列出任务绝不能复活用户随手划过的 Session。
-- **无主变更要扇出。** `owner` 为 `undefined` 时向每一个已挂接 Session 推一份新快照，因为无主任务对所有调用方可见。
-- **保持可选。** 载体读 `ctx.get('jobs')`。没有挂注册表的组合报告空任务集，客户端也就不渲染入口。
-- **显式表示空集。** opening baseline 为每个已挂接 Session 提供一项，包括 `[]`；后续变更清空一个列表时也会推送 `[]`。客户端因此可以把空集归一化为缺失键，而不会保留陈旧行。
+- **絕不 resume。** 變更推送用監聽器給出的確切 `Agent` 調 `jobs.list(owner)`，即使該 owner 的 scope 正在拆除、按 id 查詢已經查不到，它依然正確。baseline 則讀 `ctx.jobs.list(ctx.agents.get(session.id))`，沒有 live Agent 的 Session 正確地只得到無主任務。兩條路徑都不呼叫 [Session Controller Agent 解析器](../../../../packages/api/session-controller/src/agent.ts)，因為列出任務絕不能復活使用者隨手劃過的 Session。
+- **無主變更要扇出。** `owner` 為 `undefined` 時向每一個已掛接 Session 推一份新快照，因為無主任務對所有呼叫方可見。
+- **保持可選。** 載體讀 `ctx.get('jobs')`。沒有掛註冊表的組合報告空任務集，用戶端也就不渲染入口。
+- **顯式表示空集。** opening baseline 為每個已掛接 Session 提供一項，包括 `[]`；後續變更清空一個列表時也會推送 `[]`。用戶端因此可以把空集歸一化為缺失鍵，而不會保留陳舊行。
 
-### 客户端镜像
+### 用戶端映像
 
-`SessionListState` 带有 `jobsBySession: Readonly<Record<SessionId, readonly JobView[]>>`，由 `SessionManager` 拥有，按 last-wins 从帧折叠而来；被清空的集合存为缺失的键，使「缺失」与 `[]` 成为同一种表示。
+`SessionListState` 帶有 `jobsBySession: Readonly<Record<SessionId, readonly JobView[]>>`，由 `SessionManager` 擁有，按 last-wins 從幀摺疊而來；被清空的集合存為缺失的鍵，使「缺失」與 `[]` 成為同一種表示。
 
-它放在列表镜像而不是 `Session` 上，有三个理由：header 入口本来就通过 `useSessions` 读列表状态；没有 composer 行为依赖任务；将来侧栏加指示器时不必再开第二条通道。
+它放在列表映像而不是 `Session` 上，有三個理由：header 入口本來就透過 `useSessions` 讀列表狀態；沒有 composer 行為依賴任務；將來側欄加指示器時不必再開第二條通道。
 
-两个替换点让它保持诚实。每一代 control 流都会先清空完整任务镜像，再安装新 baseline 中的非空集合。`api-session/removed` 事件也会删除该 Session 的条目，不依赖任务注册表 disposal 通知与它之间的顺序。
+兩個替換點讓它保持誠實。每一代 control 流都會先清空完整任務映像，再安裝新 baseline 中的非空集合。`api-session/removed` 事件也會刪除該 Session 的條目，不依賴任務註冊表 disposal 通知與它之間的順序。
 
 ### header 入口
 
-`@deepseek-ai/dsh-client-ui-jobs` 在 `conversation.session.header.actions` 注册一个条目，排在 preset 标签与 subagent 目录之间（`order: 20`，目录为 30）。呈现契约归它自己的 README；值得记在这里的决策是：会话没有任务时控件根本不渲染；活跃角标为零时省略，让只剩历史的会话保留一个安静的入口；终态行保持可见，因为失败任务的 `detail` 是其失败唯一可读之处。
+`@deepseek-ai/dsh-client-ui-jobs` 在 `conversation.session.header.actions` 註冊一個條目，排在 preset 標籤與 subagent 目錄之間（`order: 20`，目錄為 30）。呈現契約歸它自己的 README；值得記在這裡的決策是：工作階段沒有任務時控制元件根本不渲染；活躍角標為零時省略，讓只剩歷史的工作階段保留一個安靜的入口；終態行保持可見，因為失敗任務的 `detail` 是其失敗唯一可讀之處。
 
-因此一个运行中的一次性后台 subagent 会同时出现在那里和 subagent 目录里。两者回答不同的问题——目录负责进入子会话的 transcript，而这个列表是中断能力唯一可能附着的句柄——在这里屏蔽 `kind: 'subagent'` 会让中断那一期恰好对这批任务没有入口。
+因此一個執行中的一次性後臺 subagent 會同時出現在那裡和 subagent 目錄裡。兩者回答不同的問題——目錄負責進入子工作階段的 transcript，而這個列表是中斷能力唯一可能附著的控制代碼——在這裡遮蔽 `kind: 'subagent'` 會讓中斷那一期恰好對這批任務沒有入口。
 
 ### 刻意不做的事
 
-**没有任何 Web 路径调用 `ctx.jobs.read()`。** 它消费唯一的输出游标，浏览器读一次就悄悄拿走了模型 `job_output` 永远看不到的字节。这该是一条有测试兜底的不变量而不是一条约定，因为它的故障在调用点完全不可见。
+**沒有任何 Web 路徑呼叫 `ctx.jobs.read()`。** 它消費唯一的輸出遊標，瀏覽器讀一次就悄悄拿走了模型 `job_output` 永遠看不到的位元組。這該是一條有測試後備的不變數而不是一條約定，因為它的故障在呼叫點完全不可見。
 
-**不做中断。** 那一期欠一个 seam 当时没有回答的决策：`kill()` 会把终态投递标为已上报，所以照 `kill()` 契约写出来的人类中断，会让模型一直以为它的任务还在跑。[人工任务终止 Note](2026-08-26-human-job-kill.zh.md) 后来解决了它：`kill` 现在接受显式的 `reported` 认领，Web 停止控件传 `reported: false`，完成通知因此仍会投递。
+**不做中斷。** 那一期欠一個 seam 當時沒有回答的決策：`kill()` 會把終態投遞標為已上報，所以照 `kill()` 契約寫出來的人類中斷，會讓模型一直以為它的任務還在跑。[人工任務終止 Note](2026-08-26-human-job-kill.zh.md) 後來解決了它：`kill` 現在接受顯式的 `reported` 認領，Web 停止控制元件傳 `reported: false`，完成通知因此仍會投遞。
 
-**帧上不带输出水位。** 输出那一期的增量通道才是锚点字段该出现的地方；现在加就是一个没有读者的字段。
+**幀上不帶輸出水位。** 輸出那一期的增量通道才是錨點欄位該出現的地方；現在加就是一個沒有讀者的欄位。
 
-## 备选方案
+## 備選方案
 
-**信号帧加 RPC 拉取，即 subagent 目录的形状。** 推一个无 payload 的 `jobs-changed` 信号，防抖后用一元 RPC 重读权威状态。subagent 目录就是这么做的，代价在 [`SessionManager`](../../../../packages/api/session-controller/src/client/sessions/manager.ts) 里一览无余：`catalogInflight` 做单飞行、`catalogStale` 在成员帧落于请求中途时补一次尾拉、`updateCatalogActivity` 既就地打补丁又往在途请求里写一份好让比帧更旧的响应被覆盖、`parentAvailableOverride` 重放一个过期的 `false`，还有重连时逐一重拉每个打开的目录。这套装置之所以存在，是因为目录的权威被劈成两半——持久血缘来自投影，活跃度是响应时刻的采样——而任务没有持久的那一半，不该继承这份复杂度。它还恰好在输出那一期最在意的时刻失效：任务结算，输出流立即关闭，状态却要等防抖加一次往返才到，那段窗口里 UI 显示一个流已死的运行中任务。
+**訊號幀加 RPC 拉取，即 subagent 目錄的形狀。** 推一個無 payload 的 `jobs-changed` 訊號，防抖後用一元 RPC 重讀權威狀態。subagent 目錄就是這麼做的，代價在 [`SessionManager`](../../../../packages/api/session-controller/src/client/sessions/manager.ts) 裡一覽無餘：`catalogInflight` 做單飛行、`catalogStale` 在成員幀落於請求中途時補一次尾拉、`updateCatalogActivity` 既就地打補丁又往在途請求裡寫一份好讓比幀更舊的回應被覆蓋、`parentAvailableOverride` 重放一個過期的 `false`，還有重連時逐一重拉每個開啟的目錄。這套裝置之所以存在，是因為目錄的權威被劈成兩半——持久血緣來自投影，活躍度是回應時刻的取樣——而任務沒有持久的那一半，不該繼承這份複雜度。它還恰好在輸出那一期最在意的時刻失效：任務結算，輸出流立即關閉，狀態卻要等防抖加一次往返才到，那段視窗裡 UI 顯示一個流已死的執行中任務。
 
-**只在弹层打开时轮询，不改 seam。** 最省事，也是唯一不碰 `JobRegistry` 的选项。它无法在不常驻轮询的前提下支持触发器上的常驻计数，而后面两期反正都需要一条真正的变更订阅，所以它省下一周又还回去。
+**只在彈層開啟時輪詢，不改 seam。** 最省事，也是唯一不碰 `JobRegistry` 的選項。它無法在不常駐輪詢的前提下支援觸發器上的常駐計數，而後面兩期反正都需要一條真正的變更訂閱，所以它省下一週又還回去。
 
-**基于持久任务事件的 session-projection 单元。** 投影单元在已提交的会话事件上折叠，所以这条路要先让任务生命周期变持久——`job/started` … `job/settled` 作为一对独立的开合括号，由最后一个 [`session/end-seed`](../../../../packages/core/session/src/types.ts) 把未配对的开括号标为死历史，与 compaction 括号已有的做法完全一致。它在客户端确实更省：`dsh-tool-todo` 用十五行的单元展示了整套模式，而现成的 `session/projection` 帧、history-tail 块和持久化 checkpoint 缓存本可以承载这批数据，无需新线路面、无需载体订阅、无需 manager 状态。否决它，是因为这要拿一次持久格式变更去换一个浏览器列表，而且它并不能延伸到最需要它的那一期：[`spill/`](../../../../packages/spill/README.zh.md) 的存在正是为了让超大工具输出留在日志之外，所以流式任务输出无论如何都不能骑在持久事件上。如果持久任务历史将来凭自身价值站得住，本设计不阻挡重新考虑它。
+**基於持久任務事件的 session-projection 單元。** 投影單元在已提交的工作階段事件上摺疊，所以這條路要先讓任務生命週期變持久——`job/started` … `job/settled` 作為一對獨立的開合括號，由最後一個 [`session/end-seed`](../../../../packages/core/session/src/types.ts) 把未配對的開括號標為死歷史，與 compaction 括號已有的做法完全一致。它在用戶端確實更省：`dsh-tool-todo` 用十五行的單元展示了整套模式，而現成的 `session/projection` 幀、history-tail 塊和持久化 checkpoint 快取本可以承載這批資料，無需新線路面、無需載體訂閱、無需 manager 狀態。否決它，是因為這要拿一次持久格式變更去換一個瀏覽器列表，而且它並不能延伸到最需要它的那一期：[`spill/`](../../../../packages/spill/README.zh.md) 的存在正是為了讓超大工具輸出留在日誌之外，所以流式任務輸出無論如何都不能騎在持久事件上。如果持久任務歷史將來憑自身價值站得住，本設計不阻擋重新考慮它。
 
-**复用 `dsh-tool-jobs` 的 `PublicJobSnapshot`。** 字段几乎就是对的，但它属于面向模型的控制面。浏览器程序从一个 tool 包导入线路类型，会把客户端呈现耦合到面向 prompt 的决策上，并把一个 host-only 包拖进客户端构建。
+**複用 `dsh-tool-jobs` 的 `PublicJobSnapshot`。** 欄位幾乎就是對的，但它屬於面向模型的控制面。瀏覽器程式從一個 tool 包匯入線路型別，會把用戶端呈現耦合到面向 prompt 的決策上，並把一個 host-only 包拖進用戶端建置。
 
-**并进 subagent 目录做成统一的「活动」面板。** 一个入口而不是两个。否决的理由是 `SubagentCatalogAction` 已经 605 行，其主题是含已结束子会话的持久会话血缘树；进程域的任务是第二套数据模型，身份、生命期和可用动作都不同，而目录的懒展开分支、时长与 token 契约全都要重写才能容纳它们。
+**並進 subagent 目錄做成統一的「活動」面板。** 一個入口而不是兩個。否決的理由是 `SubagentCatalogAction` 已經 605 行，其主題是含已結束子工作階段的持久工作階段血緣樹；程序域的任務是第二套資料模型，身份、生命期和可用動作都不同，而目錄的懶展開分支、時長與 token 契約全都要重寫才能容納它們。
 
-**跨全部会话的 host 全局任务列表。**「显示所有运行中任务」的字面读法。否决是因为注册表的鉴权围栏是按 owner 会话的，全局读需要一条新的访问规则，而且全局列表不该出现在某个会话的 header 里——它需要侧栏里自己的位置。本设计没有阻挡后续再加；按会话的帧就是同一批数据。
+**跨全部工作階段的 host 全域任務列表。**「顯示所有執行中任務」的字面讀法。否決是因為註冊表的授權驗證圍欄是按 owner 工作階段的，全域讀需要一條新的存取規則，而且全域列表不該出現在某個工作階段的 header 裡——它需要側欄裡自己的位置。本設計沒有阻擋後續再加；按工作階段的幀就是同一批資料。
 
-## 测试
+## 測試
 
-[web e2e 场景](../../../../apps/web/tests/background-job-list.e2e.ts)是端到端的证据，且无需密钥：一次真实的 `run_in_background` bash 调用注册进 `ctx.jobs`，header 的计数与行在没有任何用户操作的情况下出现，通过注册表杀掉该任务后打开着的列表翻到生产者给出的 detail。它断言的是整条投递链路，而不是其中某一层。
+[web e2e 情境](../../../../apps/web/tests/background-job-list.e2e.ts)是端到端的證據，且無需金鑰：一次真實的 `run_in_background` bash 呼叫註冊進 `ctx.jobs`，header 的計數與行在沒有任何使用者操作的情況下出現，透過註冊表殺掉該任務後開啟著的列表翻到生產者給出的 detail。它斷言的是整條投遞鏈結，而不是其中某一層。
 
-在它之下，[`jobs-local`](../../../../packages/jobs/jobs-local/tests/jobs.spec.ts) 钉住变更订阅的全部四个提交点、对抛错观察者的包容，以及显式销毁与 fiber 拆除两条路径上的注销；[`rows`](../../../../packages/api/job-controller/tests/rows.host.spec.ts) 钉住取代控制流扇出的名册流：打开时的完整可见集、每次生命周期提交后刷新一次且追加不刷新、拥有者移除，以及干净的中止；客户端各套件钉住 baseline 替换、last-wins 折叠、缺失键表示、移除清理，以及组件的排序、时长与关闭行为。
+在它之下，[`jobs-local`](../../../../packages/jobs/jobs-local/tests/jobs.spec.ts) 釘住變更訂閱的全部四個提交點、對拋錯觀察者的包容，以及顯式銷燬與 fiber 拆除兩條路徑上的登出；[`rows`](../../../../packages/api/job-controller/tests/rows.host.spec.ts) 釘住取代控制流扇出的名冊流：開啟時的完整可見集、每次生命週期提交後重新整理一次且追加不重新整理、擁有者移除，以及乾淨的中止；用戶端各套件釘住 baseline 替換、last-wins 摺疊、缺失鍵表示、移除清理，以及元件的排序、時長與關閉行為。
 
-## 影响
+## 影響
 
-**漏掉一个提交点会漏行。** 如果 `disposeOwner()` 的移除有朝一日不再触发订阅，客户端会一直留着已经不存在的任务，直到会话消失。整份快照的形状让这件事可恢复而非损坏——下一次正当变更就修好了——但销毁路径是最容易被忘掉的一条，所以它自带测试。
+**漏掉一個提交點會漏行。** 如果 `disposeOwner()` 的移除有朝一日不再觸發訂閱，用戶端會一直留著已經不存在的任務，直到工作階段消失。整份快照的形狀讓這件事可恢復而非損壞——下一次正當變更就修好了——但銷燬路徑是最容易被忘掉的一條，所以它自帶測試。
 
-**无主任务的扇出很容易做漏。** 只推给变更 owner 所在的会话，对有主任务是对的，对处处可见的无主任务则是悄悄错的。这个 bug 只会在会创建无主任务的组合里显形，所以载体套件直接覆盖了它。
+**無主任務的扇出很容易做漏。** 只推給變更 owner 所在的工作階段，對有主任務是對的，對處處可見的無主任務則是悄悄錯的。這個 bug 只會在會建立無主任務的組合裡顯形，所以載體套件直接覆蓋了它。
 
-**UI 的集合不等于注册表的集合。** header 显示的是「一个会话能看到什么」，所以别的会话拥有的任务在这里永远不出现，尽管注册表里有它；而由于注册表是进程本地的，一次重启会清空所有列表，transcript 里那些启动它们的 `run_in_background` 卡片却还在。无主任务是反过来的情形：它们会进入每一个会话的列表，正如 `list(caller)` 对每个调用方都报告它们。
+**UI 的集合不等於註冊表的集合。** header 顯示的是「一個工作階段能看到什麼」，所以別的工作階段擁有的任務在這裡永遠不出現，儘管註冊表裡有它；而由於註冊表是程序本地的，一次重新啟動會清空所有列表，transcript 裡那些啟動它們的 `run_in_background` 卡片卻還在。無主任務是反過來的情形：它們會進入每一個工作階段的列表，正如 `list(caller)` 對每個呼叫方都報告它們。
 
-**终态行会堆积。** 注册表把已结算任务留到 owner 销毁，所以一个跑了很多后台命令的长会话会积出长列表。如果真的成为抱怨，给终态尾巴加上限是呈现层改动而非协议改动。
+**終態行會堆積。** 註冊表把已結算任務留到 owner 銷燬，所以一個跑了很多後臺命令的長工作階段會積出長列表。如果真的成為抱怨，給終態尾巴加上限是呈現層改動而非協定改動。
 
-**`stopping` 在每条 kill 路径上都可见。** 模型的 `job_kill` 与 Web 停止控件都会产生它；从一开始就把它放进联合类型，正是人工 kill 这一期不必动线路格式的原因。
+**`stopping` 在每條 kill 路徑上都可見。** 模型的 `job_kill` 與 Web 停止控制元件都會產生它；從一開始就把它放進聯合型別，正是人工 kill 這一期不必動線路格式的原因。
 
-**一个运行中的 subagent 有两个入口。** 这是刻意接受的，且被限制在一次性后台委派这一种情况。如果实际用起来读着像噪声，修法是呈现层的——可以让目录行引用那个任务，而不是让任务列表隐藏这个 kind。
+**一個執行中的 subagent 有兩個入口。** 這是刻意接受的，且被限制在一次性後臺委派這一種情況。如果實際用起來讀著像噪聲，修法是呈現層的——可以讓目錄行引用那個任務，而不是讓任務列表隱藏這個 kind。
 
-**新增非根子路径必须补 `paths` 条目。** `@deepseek-ai/dsh-jobs/brand` 得先登记进 `tsconfig.base.json`，Typert 分析器才会接受该引用。它的故障表现是一条来自远离改动处的生成器的、令人困惑的「not exported by」错误，所以这个条目是新增子路径的组成部分，而不是优化。
+**新增非根子路徑必須補 `paths` 條目。** `@deepseek-ai/dsh-jobs/brand` 得先登記進 `tsconfig.base.json`，Typert 分析器才會接受該引用。它的故障表現是一條來自遠離改動處的生成器的、令人困惑的「not exported by」錯誤，所以這個條目是新增子路徑的組成部分，而不是最佳化。

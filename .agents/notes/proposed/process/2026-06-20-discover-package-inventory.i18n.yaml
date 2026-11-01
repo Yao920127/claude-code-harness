@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/process/2026-06-20-discover-package-inventory.md
 /agent-note-discover-package-inventories-instead-of-maintaining-static-lists:
   en: 3e6f3d4389b83ace
-  zh: dc84644418444fe6
+  zh: 8ef49330848b6112
 /agent-note-discover-package-inventories-instead-of-maintaining-static-lists/problem:
   en: 3331c27d7f05a293
-  zh: d3f87bd458a65f1d
+  zh: 5382431a26b32ec7
 /agent-note-discover-package-inventories-instead-of-maintaining-static-lists/proposal:
   en: ce955aa355c15117
-  zh: 4d6f464bd5336981
+  zh: 545a18db83948d7b
 /agent-note-discover-package-inventories-instead-of-maintaining-static-lists/acceptance-criteria:
   en: 99944a56114596df
-  zh: ec13f47fb2deef94
+  zh: d397ed9b54117c08
 /agent-note-discover-package-inventories-instead-of-maintaining-static-lists/risks:
   en: e2876e76daf10637
-  zh: 01126163c6f15960
+  zh: 6225017f33e947c2

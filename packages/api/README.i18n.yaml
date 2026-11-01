@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/api/README.md
 /:
   en: 97a0ed481b7db404
-  zh: bb00e4c6df16ca10
+  zh: 5ed28940dfcd9e18
 /api-remote-api-layers:
   en: 71c07045cf5caa7c
-  zh: 4defca6805607434
+  zh: 822d56ca07f14dde
 /api-remote-api-layers/summary:
   en: ec34e12d173e7e6a
-  zh: 8ebcd87e658665c7
+  zh: be67e1d77b1e02ce
 /api-remote-api-layers/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /api-remote-api-layers/packages:
   en: 9bf51a5550fd4853
-  zh: 4d13dd77d86f7f97
+  zh: 3f807a62448aad99
 /api-remote-api-layers/related-documentation:
   en: 507116ae09161df1
-  zh: f5e538ac5fdaf454
+  zh: 74c5c96f6bb2c72d
 /api-remote-api-layers/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

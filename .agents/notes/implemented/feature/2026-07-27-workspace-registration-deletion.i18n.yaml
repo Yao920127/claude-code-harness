@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-27-workspace-registration-deletion.md
 /agent-note-workspace-registration-deletion:
   en: 68262d0cd61db2ae
-  zh: bb2f78757972aae6
+  zh: 7848bd6030440140
 /agent-note-workspace-registration-deletion/problem:
   en: a51dbe0190d4dff0
-  zh: 25b6c3083ee60627
+  zh: b23bfbed73998c44
 /agent-note-workspace-registration-deletion/decision:
   en: 70182cd2979bdfd6
-  zh: a6580a23cfbe6c07
+  zh: a86da82d92f66f17
 /agent-note-workspace-registration-deletion/durable-commit-and-publication:
   en: f97d526274c3608b
-  zh: b0ae161f4e9febb8
+  zh: 11d326b19e2c2e4a
 /agent-note-workspace-registration-deletion/client-convergence:
   en: 84e56775e22ecf23
-  zh: ab146e3179868efb
+  zh: 75cbc836a8b28999
 /agent-note-workspace-registration-deletion/confirmation-interaction:
   en: 95178832030a9697
-  zh: 3a2bd50680ed0c97
+  zh: a1607ff13fdfc721
 /agent-note-workspace-registration-deletion/alternatives-considered:
   en: d7b866f763db5364
-  zh: 5e0865d42522d189
+  zh: 34fbc7098371242b
 /agent-note-workspace-registration-deletion/verification:
   en: a7e98d39e3ffdba7
-  zh: 9c4f8168e3fff83e
+  zh: 4c1890056d6783ab
 /agent-note-workspace-registration-deletion/consequences:
   en: 3a50bfb5d93f6ef7
-  zh: 80b8dd19b2d50b16
+  zh: 213eb45e65b950c9

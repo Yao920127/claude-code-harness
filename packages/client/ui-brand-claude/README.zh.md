@@ -1,5 +1,5 @@
 ---
-description: "用于 Web 客户端的 Claude 品牌占位者、页面图标以及 Claude 配色与字体，面向通过 harness 使用 Claude Code 的用户，以及替换品牌呈现的维护者。"
+description: "用於 Web 用戶端的 Claude 品牌佔位者、頁面圖示以及 Claude 配色與字型，面向透過 harness 使用 Claude Code 的使用者，以及替換品牌呈現的維護者。"
 kind: "package-bundle"
 ---
 
@@ -9,84 +9,84 @@ kind: "package-bundle"
 
 ## 概述
 
-安装这个 Profile Bundle，即可以 Claude 标记与 Claude Code Harness 文字标识取代外壳的鱼形标记。它占用侧边栏的标记与名称 slot，以及空白会话主视觉的标记与文字标识 slot，在加载期间把页面图标指向 Claude 标记，并套用 Claude 的配色与字体。为通过 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md) 与 Claude Code 对话的 Profile 选择本包；Claude 标记是 Anthropic 的商标，因此提供给他人的部署需要取得 Anthropic 的许可才能显示。
+安裝這個 Profile Bundle，即可以 Claude 標記與 Claude Code Harness 文字標識取代外殼的魚形標記。它佔用側邊欄的標記與名稱 slot，以及空白工作階段主視覺的標記與文字標識 slot，在載入期間把頁面圖示指向 Claude 標記，並套用 Claude 的配色與字型。為透過 [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.zh.md) 與 Claude Code 對話的 Profile 選擇本包；Claude 標記是 Anthropic 的商標，因此提供給他人的部署需要取得 Anthropic 的許可才能顯示。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-把本包安装进 Profile，然后重启该 Profile。
+把本包安裝進 Profile，然後重新啟動該 Profile。
 
 ```sh
 dsh plugin --profile <name> add @deepseek-ai/dsh-client-ui-brand-claude
 ```
 
-Bundle 补丁插入一个浏览器行 `ui-brand-claude`。侧边栏在 Claude Code Harness 名称旁显示 Claude 标记，侧边栏窄于名称宽度时以省略号截断而不换行；新 Session 主视觉以 Claude 衬线展示字体把同一名称显示为文字标识，旁边是 Claude 标记；浏览器分页以 Claude 标记作为图标。移除本包后，下次启动 Profile 时每个位置都会回到之前的占位者。在 `official` 构建中不要同时挂载 [`dsh-client-ui-brand-official`](../ui-brand-official/README.zh.md)，因为两者占用相同的单一占位侧边栏 slot。
+Bundle 補丁插入一個瀏覽器行 `ui-brand-claude`。側邊欄在 Claude Code Harness 名稱旁顯示 Claude 標記，側邊欄窄於名稱寬度時以省略號截斷而不換行；新 Session 主視覺以 Claude 襯線展示字型把同一名稱顯示為文字標識，旁邊是 Claude 標記；瀏覽器分頁以 Claude 標記作為圖示。移除本包後，下次啟動 Profile 時每個位置都會回到之前的佔位者。在 `official` 建置中不要同時掛載 [`dsh-client-ui-brand-official`](../ui-brand-official/README.zh.md)，因為兩者佔用相同的單一佔位側邊欄 slot。
 
-加载期间，本包还会按 Claude 的设计为整个 Web 客户端换装：奶油色画布与暖色深色表面、珊瑚色的主要按钮、开关、链接与焦点环、Inter 正文字体，以及用于主视觉标语与 Markdown h1 至 h3 标题的 EB Garamond。设置 → 外观仍然选择浅色、深色或跟随系统，Claude 配色随之切换。中文等非拉丁文字保留平台字体。
+載入期間，本包還會按 Claude 的設計為整個 Web 用戶端換裝：奶油色畫布與暖色深色表面、珊瑚色的主要按鈕、開關、連結與焦點環、Inter 正文字型，以及用於主視覺標語與 Markdown h1 至 h3 標題的 EB Garamond。設定 → 外觀仍然選擇淺色、深色或跟隨系統，Claude 配色隨之切換。中文等非拉丁文字保留平臺字型。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现内部细节——点击展开</summary>
+<summary>實作內部細節——點選展開</summary>
 
-[`src/client/index.ts`](src/client/index.ts) 注册 `brand.claude` 词典，把两个侧边栏 slot 作为一组感知声明的注册集合填充，并把 `conversation.hero.brand.mark`（取代宿主所请求尺寸的 44px 标记）与 `conversation.hero.brand.headline`（翻译后的名称，以主视觉文字标识呈现）作为第二组填充。页面图标 effect 把每个 `link[rel~="icon"]` 的 `href` 改写为该标记的 SVG data URL，并在卸载时还原每个原先的 `href`；没有 document 的运行会跳过此步。[`src/client/mark.ts`](src/client/mark.ts) 保存标记的路径与颜色，[`src/client/Brand.tsx`](src/client/Brand.tsx) 渲染标记、主视觉标记与文字标识，以及侧边栏名称——它用自己的 CSS class 截断而不是换行进入侧边栏的固定高度行。node 半侧是空的 Loader 席位。
+[`src/client/index.ts`](src/client/index.ts) 註冊 `brand.claude` 詞典，把兩個側邊欄 slot 作為一組感知宣告的註冊集合填充，並把 `conversation.hero.brand.mark`（取代主機所請求尺寸的 44px 標記）與 `conversation.hero.brand.headline`（翻譯後的名稱，以主視覺文字標識呈現）作為第二組填充。頁面圖示 effect 把每個 `link[rel~="icon"]` 的 `href` 改寫為該標記的 SVG data URL，並在解除安裝時還原每個原先的 `href`；沒有 document 的執行會跳過此步。[`src/client/mark.ts`](src/client/mark.ts) 儲存標記的路徑與顏色，[`src/client/Brand.tsx`](src/client/Brand.tsx) 渲染標記、主視覺標記與文字標識，以及側邊欄名稱——它用自己的 CSS class 截斷而不是換行進入側邊欄的固定高度行。node 半側是空的 Loader 席位。
 
-[`src/client/theme.ts`](src/client/theme.ts) 把 Claude 取值作为一个 `ctx.theme.overrideTokens` 层保存，每个 token 各有浅色与深色取值。它以暖色中性色替换共享的 `neutral-bluish` 色阶，以珊瑚色替换 `deepseek` 强调色阶，因此直接读取这些色阶的组件样式会与别名一起变化；它还设置品牌、链接、表面与字体 token。卸载时移除该层。[`src/fonts/fonts.css`](src/fonts/fonts.css) 以 data URI 内嵌同目录下 Inter 与 EB Garamond 的拉丁子集，因为客户端 bundle 把样式表内联为文本，而宿主不提供插件字体文件；一个测试会把内嵌字节与 `.woff2` 文件比对。Desktop 欢迎窗口改为复制 `eb-garamond-latin.woff2`，因为其内容安全策略会阻止 data URI 字体。
+[`src/client/theme.ts`](src/client/theme.ts) 把 Claude 取值作為一個 `ctx.theme.overrideTokens` 層儲存，每個 token 各有淺色與深色取值。它以暖色中性色替換共享的 `neutral-bluish` 色階，以珊瑚色替換 `deepseek` 強調色階，因此直接讀取這些色階的元件樣式會與別名一起變化；它還設定品牌、連結、表面與字型 token。解除安裝時移除該層。[`src/fonts/fonts.css`](src/fonts/fonts.css) 以 data URI 內嵌同目錄下 Inter 與 EB Garamond 的拉丁子集，因為用戶端 bundle 把樣式表內聯為文字，而主機不提供外掛字型檔案；一個測試會把內嵌位元組與 `.woff2` 檔案比對。Desktop 歡迎視窗改為複製 `eb-garamond-latin.woff2`，因為其內容安全策略會阻止 data URI 字型。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [ui-sidebar](../ui-sidebar/README.zh.md)——声明 `sidebar.brand.mark` 与 `sidebar.brand.name` 并渲染它们的回退内容。
-- [ui-conversation](../ui-conversation/README.zh.md)——在主视觉中声明 `conversation.hero.brand.mark` 与 `conversation.hero.brand.headline`。
+- [ui-sidebar](../ui-sidebar/README.zh.md)——宣告 `sidebar.brand.mark` 與 `sidebar.brand.name` 並渲染它們的退回內容。
+- [ui-conversation](../ui-conversation/README.zh.md)——在主視覺中宣告 `conversation.hero.brand.mark` 與 `conversation.hero.brand.headline`。
 - [dsh-llm-claude-code](../../llm/llm-claude-code/README.zh.md)——本品牌所搭配的 Claude Code 模型路由。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为本包只贡献浏览器呈现；这里没有任何内容进入模型请求。
+無，因為本包只貢獻瀏覽器呈現；這裡沒有任何內容進入模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **浏览器标题独立设置**——`DSH_CLIENT_TITLE` 在构建时选择标题文字，而不是通过 UI slot。
-- **服务器提供的图标文件不变**——页面图标在客户端加载后才改变；应用 manifest 与服务器发送的图标文件仍是之前的标记。
-- **字体覆盖范围**——内嵌字体只覆盖拉丁文字；正文与衬线标题字体栈中的中日韩文字都回退到平台字体。
+- **瀏覽器標題獨立設定**——`DSH_CLIENT_TITLE` 在建置時選擇標題文字，而不是透過 UI slot。
+- **伺服器提供的圖示檔案不變**——頁面圖示在用戶端載入後才改變；應用 manifest 與伺服器傳送的圖示檔案仍是之前的標記。
+- **字型覆蓋範圍**——內嵌字型只覆蓋拉丁文字；正文與襯線標題字型棧中的中日韓文字都退回到平臺字型。
 
-- **商标**——Claude 标记属于 Anthropic；在提供给他人的部署中显示它需要取得 Anthropic 的许可。
+- **商標**——Claude 標記屬於 Anthropic；在提供給他人的部署中顯示它需要取得 Anthropic 的許可。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作背景——点击展开</summary>
+<summary>維護者工作背景——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变量：** 不发布配套模块。除了会还原的图标链接外，本包不保留可变状态，其 slot 占位者、主题层与字体样式表通过插件 effect 安装与离开。
+**執行時不變數：** 不釋出配套模組。除了會還原的圖示連結外，本包不保留可變狀態，其 slot 佔位者、主題層與字型樣式表透過外掛 effect 安裝與離開。

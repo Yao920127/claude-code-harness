@@ -4,79 +4,79 @@
 #   pnpm run verify-translation-pairing --write packages/web/web-search-perplexity/README.md
 /:
   en: 526b58d952111706
-  zh: 463049f0091c6fa3
+  zh: c079cb1b00e64116
 /deepseek-ai-dsh-web-search-perplexity:
   en: 81fab27010167b07
   zh: 673d38ae33bd95c0
 /deepseek-ai-dsh-web-search-perplexity/summary:
   en: 355bf2550d1655df
-  zh: c659fa3e25a02d91
+  zh: a972114852d7e0b9
 /deepseek-ai-dsh-web-search-perplexity/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-web-search-perplexity/use-this-package:
   en: 1b854e582c65f3b4
-  zh: 0e5dd9657ac6a721
+  zh: 7ccf440b4a6a2954
 /deepseek-ai-dsh-web-search-perplexity/use-this-package/when-to-choose-it:
   en: 194e1c83cf5a3281
-  zh: c262d5dd92b62ea7
+  zh: c71f053f0bef3232
 /deepseek-ai-dsh-web-search-perplexity/use-this-package/minimal-configuration:
   en: c253774c9d932f39
-  zh: 08f693d10dcd54ed
+  zh: b483c902c701d43c
 /deepseek-ai-dsh-web-search-perplexity/use-this-package/what-a-search-returns:
   en: 99d01f74dcf5aed9
-  zh: 3c7bdaa3bd35847f
+  zh: 05633d5337bd8627
 /deepseek-ai-dsh-web-search-perplexity/use-this-package/failures-and-recovery:
   en: 5740595fa2cebf20
-  zh: d99555411a131d2f
+  zh: a91f0573612ad61c
 /deepseek-ai-dsh-web-search-perplexity/understand-the-implementation:
   en: 9842c69ad3636bb3
-  zh: 3cdc3f816cbdd0cb
+  zh: 1ea0cb6e2365c1f3
 /deepseek-ai-dsh-web-search-perplexity/understand-the-implementation/design-philosophy:
   en: aee86ee45c4635c0
-  zh: 45cecc44ae467520
+  zh: bbe7348e487ebed8
 /deepseek-ai-dsh-web-search-perplexity/understand-the-implementation/source-map:
   en: f481a8541f09f1cf
-  zh: c0c47902eae6973d
+  zh: 8e17414876e99740
 /deepseek-ai-dsh-web-search-perplexity/understand-the-implementation/request-and-mapping-flow:
   en: ff5efa9c7b1a9cda
-  zh: ca1e246eb8e7eaee
+  zh: 86b683ce7c167067
 /deepseek-ai-dsh-web-search-perplexity/further-exploration:
   en: 67cf289420662cf2
-  zh: 9f7e6e7d32e45ee7
+  zh: c2dbb3d9b81503d4
 /deepseek-ai-dsh-web-search-perplexity/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-web-search-perplexity/model-experience/auxiliary-perplexity-request:
   en: 9d564a5863828a46
-  zh: 143112cfc85fe3f3
+  zh: 0fddc3bcda023a2a
 /deepseek-ai-dsh-web-search-perplexity/model-experience/auxiliary-perplexity-request/what-the-model-sees:
   en: eacb10a5e907e796
-  zh: 74fbd30db7c983a1
+  zh: 6f9d940b61ce8152
 /deepseek-ai-dsh-web-search-perplexity/model-experience/auxiliary-perplexity-request/token-effect:
   en: 5f5b2bf40168d371
-  zh: 25bc3b50bc74ff20
+  zh: c2072ca4e17cf239
 /deepseek-ai-dsh-web-search-perplexity/model-experience/auxiliary-perplexity-request/kv-cache-effect:
   en: ca308291b52b8028
-  zh: 12e8f89f79a2756c
+  zh: 210cb3db76f6ce24
 /deepseek-ai-dsh-web-search-perplexity/model-experience/conversation-tool-result-indirectly:
   en: 666f5753c99783ab
-  zh: b44328e99bcc45c9
+  zh: fabc4b9259cc43f0
 /deepseek-ai-dsh-web-search-perplexity/model-experience/conversation-tool-result-indirectly/what-the-model-sees:
   en: 1bab9dad335b62eb
-  zh: 1d64c077b88c316e
+  zh: 6ff20ff07964ac5a
 /deepseek-ai-dsh-web-search-perplexity/model-experience/conversation-tool-result-indirectly/token-effect:
   en: 8c5d9983ba129daf
-  zh: 3e7889629bed353d
+  zh: 5f2cb722f6710fdf
 /deepseek-ai-dsh-web-search-perplexity/model-experience/conversation-tool-result-indirectly/kv-cache-effect:
   en: f5d5f97a153f7c70
-  zh: f681f89596f500f5
+  zh: af5ca44799c3c39f
 /deepseek-ai-dsh-web-search-perplexity/known-limitations-and-deferred-work:
   en: db86c590e6ffb159
-  zh: 35c4cfa9f4b6a1fa
+  zh: 5e8894be2c11344b
 /deepseek-ai-dsh-web-search-perplexity/known-limitations-and-deferred-work/dev-note:
   en: 7f775cc79dbce94b
-  zh: 12b8f68f9e7c48ca
+  zh: f972366a86466627
 /deepseek-ai-dsh-web-search-perplexity/known-limitations-and-deferred-work/dev-note/future-wider-perplexity-control-surface:
   en: 86cd7f67c96e6b0e
-  zh: ab991807ddf2f470
+  zh: 8bcc9abedb1e9b3f

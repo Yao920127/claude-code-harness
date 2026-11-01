@@ -55,11 +55,11 @@ class OfficeCheckTest(unittest.TestCase):
 
     def test_docx_merged_cells_distinct_sections_and_cjk_are_not_layout_failures(self):
         path = self.package("docx", {"word/document.xml": f'''<w:document xmlns:w="{W}"><w:body>
-          <w:p><w:r><w:t>中文报告</w:t></w:r><w:pPr><w:sectPr><w:pgSz w:w="16000"/><w:pgMar w:left="1000" w:right="1000"/></w:sectPr></w:pPr></w:p>
-          <w:tbl><w:tblGrid><w:gridCol w:w="5000"/><w:gridCol w:w="5000"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:gridSpan w:val="2"/></w:tcPr><w:p><w:r><w:t>合并标题</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
+          <w:p><w:r><w:t>中文報告</w:t></w:r><w:pPr><w:sectPr><w:pgSz w:w="16000"/><w:pgMar w:left="1000" w:right="1000"/></w:sectPr></w:pPr></w:p>
+          <w:tbl><w:tblGrid><w:gridCol w:w="5000"/><w:gridCol w:w="5000"/></w:tblGrid><w:tr><w:tc><w:tcPr><w:gridSpan w:val="2"/></w:tcPr><w:p><w:r><w:t>合併標題</w:t></w:r></w:p></w:tc></w:tr></w:tbl>
           <w:sectPr><w:pgSz w:w="6000"/><w:pgMar w:left="1000" w:right="1000"/></w:sectPr>
         </w:body></w:document>'''})
-        code, report = self.run_check(path, "--contains", "中文报告")
+        code, report = self.run_check(path, "--contains", "中文報告")
         self.assertEqual(code, 0)
         self.assertEqual(report["summary"]["tables"], [{"rows": 1, "columns": 2}])
         self.assertEqual(len(report["summary"]["sections"]), 2)
@@ -71,10 +71,10 @@ class OfficeCheckTest(unittest.TestCase):
         parts = {
             "ppt/presentation.xml": f'<p:presentation xmlns:p="{P}" xmlns:r="{R}"><p:sldIdLst><p:sldId id="256" r:id="r1"/></p:sldIdLst></p:presentation>',
             "ppt/_rels/presentation.xml.rels": f'<Relationships xmlns="{PKG}"><Relationship Id="r1" Target="slides/slide1.xml"/></Relationships>',
-            "ppt/slides/slide1.xml": f'<p:sld xmlns:p="{P}" xmlns:a="{A}"><a:p><a:r><a:t>季度总结</a:t></a:r></a:p></p:sld>',
+            "ppt/slides/slide1.xml": f'<p:sld xmlns:p="{P}" xmlns:a="{A}"><a:p><a:r><a:t>季度總結</a:t></a:r></a:p></p:sld>',
         }
         path = self.package("pptx", parts)
-        self.assertEqual(self.run_check(path, "--contains", "季度总结", "--count", "1")[0], 0)
+        self.assertEqual(self.run_check(path, "--contains", "季度總結", "--count", "1")[0], 0)
         self.assertEqual(self.run_check(path, "--count", "2")[0], 1)
         parts["ppt/_rels/presentation.xml.rels"] = f'<Relationships xmlns="{PKG}"/>'
         code, report = self.run_check(self.package("pptx", parts))
@@ -190,11 +190,11 @@ class OfficeCheckTest(unittest.TestCase):
         parts = {
             "xl/workbook.xml": f'<workbook xmlns="{S}" xmlns:r="{R}"><sheets><sheet name="Data" sheetId="1" r:id="r1"/></sheets></workbook>',
             "xl/_rels/workbook.xml.rels": f'<Relationships xmlns="{PKG}"><Relationship Id="r1" Target="/xl/worksheets/sheet1.xml"/></Relationships>',
-            "xl/sharedStrings.xml": f'<sst xmlns="{S}"><si><t>Deleted value</t></si><si><r><t>实际</t></r><r><t>内容</t></r></si></sst>',
+            "xl/sharedStrings.xml": f'<sst xmlns="{S}"><si><t>Deleted value</t></si><si><r><t>實際</t></r><r><t>內容</t></r></si></sst>',
             "xl/worksheets/sheet1.xml": f'<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1" t="s"><v>1</v></c><c r="B1" t="inlineStr"><is><t>Inline value</t></is></c></row></sheetData></worksheet>',
         }
         path = self.package("xlsx", parts)
-        self.assertEqual(self.run_check(path, "--contains", "实际内容", "--contains", "Inline value")[0], 0)
+        self.assertEqual(self.run_check(path, "--contains", "實際內容", "--contains", "Inline value")[0], 0)
         code, report = self.run_check(path, "--contains", "Deleted value")
         self.assertEqual(code, 1)
         self.assertEqual(report["checks"][-1]["status"], "fail")

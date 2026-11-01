@@ -1,55 +1,55 @@
 ---
-description: "会话压缩（compaction）功能家族的包映射：自动压缩、按需 /compact 命令与工具输出修剪。"
+description: "工作階段壓縮（compaction）功能家族的包對映：自動壓縮、按需 /compact 命令與工具輸出修剪。"
 kind: "package-group"
 ---
 
-# compaction/ — 压缩能力家族
+# compaction/ — 壓縮能力家族
 
 [English](README.md) | 中文
 
 ## 概述
 
-`compaction/` 组让长时 agent（智能体）会话在接近模型上下文上限时仍能正常工作：token 压力上升时自动把较早历史压缩为摘要，可用 `/compact` 按需压缩，超大工具输出也可以先被修剪，从而减少需要压缩的内容，支持图片的路由发不出的图片则被替换为占位文本。随附 `dsh` 基础配置默认启用该功能。显式挂载各包即可调整压缩发生的时机与方式。决定何时压缩的 token 测量属于独立的 LLM（大语言模型）家族服务。
+`compaction/` 組讓長時 agent（智慧代理）工作階段在接近模型上下文上限時仍能正常工作：token 壓力上升時自動把較早歷史壓縮為摘要，可用 `/compact` 按需壓縮，超大工具輸出也可以先被修剪，從而減少需要壓縮的內容，支援圖片的路由發不出的圖片則被替換為佔位文字。隨附 `dsh` 基礎設定預設啟用該功能。顯式掛載各包即可調整壓縮發生的時機與方式。決定何時壓縮的 token 測量屬於獨立的 LLM（大語言模型）家族服務。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-以下每个包提供该功能的一个环节；打开对应包页面了解如何使用。
+以下每個包提供該功能的一個環節；開啟對應包頁面瞭解如何使用。
 
-| 包 | 职责 | ctx key |
+| 包 | 職責 | ctx key |
 |---|---|---|
-| [`compaction/`](compaction/README.zh.md) | 共享的压缩约定：所有后端与触发器使用的操作与摘要格式 | `ctx.compaction` |
-| [`compaction-basic/`](compaction-basic/README.zh.md) | 随 token 压力上升自动把较早历史压缩为摘要 | 注册 `ctx.compaction` |
-| [`compaction-tool-result-pruner/`](compaction-tool-result-pruner/README.zh.md) | 修剪超大工具输出，减少需要压缩的历史 | `ctx.toolResultPruner` |
-| [`compaction-image-offload/`](compaction-image-offload/README.zh.md) | 支持图片的路由拒绝请求时，把超出预算的请求图片替换为占位文本 | 监听 `agent/request-error` |
-| [`command-compact/`](command-compact/README.zh.md) | 按需压缩历史的 `/compact` 命令 | 注册到 `ctx.commands` |
+| [`compaction/`](compaction/README.zh.md) | 共享的壓縮約定：所有後端與觸發器使用的操作與摘要格式 | `ctx.compaction` |
+| [`compaction-basic/`](compaction-basic/README.zh.md) | 隨 token 壓力上升自動把較早歷史壓縮為摘要 | 註冊 `ctx.compaction` |
+| [`compaction-tool-result-pruner/`](compaction-tool-result-pruner/README.zh.md) | 修剪超大工具輸出，減少需要壓縮的歷史 | `ctx.toolResultPruner` |
+| [`compaction-image-offload/`](compaction-image-offload/README.zh.md) | 支援圖片的路由拒絕請求時，把超出預算的請求圖片替換為佔位文字 | 監聽 `agent/request-error` |
+| [`command-compact/`](command-compact/README.zh.md) | 按需壓縮歷史的 `/compact` 命令 | 註冊到 `ctx.commands` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解共享词汇，再阅读两份 Agent Note 了解设计依据。
+先從子系統參考瞭解共享詞彙，再閱讀兩份 Agent Note 瞭解設計依據。
 
-- [压缩子系统参考](../../docs/subsystems/compaction.zh.md)——压缩词汇、结果与服务行为。
-- [压缩能力 seam Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)——家族如何拆分，以及为何依赖会话与 LLM 词汇。
-- [排队手动压缩 Agent Note](../../.agents/notes/implemented/feature/2026-07-30-queued-manual-compaction.zh.md)——按需 `/compact` 如何与运行中的轮次串行化。
+- [壓縮子系統參考](../../docs/subsystems/compaction.zh.md)——壓縮詞彙、結果與服務行為。
+- [壓縮能力 seam Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)——家族如何拆分，以及為何依賴工作階段與 LLM 詞彙。
+- [排隊手動壓縮 Agent Note](../../.agents/notes/implemented/feature/2026-07-30-queued-manual-compaction.zh.md)——按需 `/compact` 如何與執行中的輪次序列化。
 - [能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)——本家族遵循的 Service Definition / Service Provider / Consumer 拆分。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

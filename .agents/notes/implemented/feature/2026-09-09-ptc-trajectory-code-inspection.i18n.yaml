@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-09-ptc-trajectory-code-inspection.md
 /agent-note-inspect-recorded-ptc-source-in-trajectory:
   en: 29f601adfcaa6019
-  zh: bdd1c59d1bbbff62
+  zh: f4801df5ddbe6c09
 /agent-note-inspect-recorded-ptc-source-in-trajectory/problem:
   en: 6b49bc4faca04ae0
-  zh: 60165937e0a7c71d
+  zh: 8be77ba88642694d
 /agent-note-inspect-recorded-ptc-source-in-trajectory/decision:
   en: 43dd488c270c1664
-  zh: 3fdf6d374c49fee3
+  zh: 1d709e0625366bd2
 /agent-note-inspect-recorded-ptc-source-in-trajectory/alternatives-considered:
   en: bbf705774c5c608a
-  zh: 1af9b4aa3d4fa025
+  zh: c2c82bf7df1e00c1
 /agent-note-inspect-recorded-ptc-source-in-trajectory/consequences:
   en: c680634fe8b95880
-  zh: 7660cd3354522ef8
+  zh: 7f7b1171614ed98b

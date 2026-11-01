@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-在 subagent/catalog 中使用 unknown 模式保留不可读的历史子会话。
+在 subagent/catalog 中使用 unknown 模式保留不可讀的歷史子工作階段。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -33,16 +33,16 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-Catalog 载荷 v0 保持不变。载荷 v1 增加 unknown 模式，当前读取器支持 v0 和 v1。完整事实继续使用 v0；迁移为未知子会话写入 v1。已有日志无需改写，Session header 保持 V4。旧读取器拒绝 v1。分类器仅在所有旧载荷分支保持不变时允许增加更高的事件载荷版本；同版本扩展和移除旧版读取支持仍属于破坏性变更。
+Catalog 載荷 v0 保持不變。載荷 v1 增加 unknown 模式，目前讀取器支援 v0 和 v1。完整事實繼續使用 v0；遷移為未知子工作階段寫入 v1。已有日誌無需改寫，Session header 保持 V4。舊讀取器拒絕 v1。分類器僅在所有舊載荷分支保持不變時允許增加更高的事件載荷版本；同版本擴充功能和移除舊版讀取支援仍屬於破壞性變更。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-迁移、恢复、投影和 Web 回归覆盖未知成员保留与子会话局部报错。分类器测试接受保留前代的更高载荷版本，并拒绝同版本新增、无效版本、旧分支修改或删除，以及 header/model-surface 变更。
+遷移、恢復、投影和 Web 迴歸覆蓋未知成員保留與子工作階段區域性報錯。分類器測試接受保留前代的更高載荷版本，並拒絕同版本新增、無效版本、舊分支修改或刪除，以及 header/model-surface 變更。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

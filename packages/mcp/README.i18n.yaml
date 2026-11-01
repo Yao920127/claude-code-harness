@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/mcp/README.md
 /:
   en: e6a2aa771ce2d33c
-  zh: e072e7f0f03d7f0f
+  zh: 199534af98021f68
 /mcp-model-context-protocol:
   en: be340e963004963c
-  zh: adc5f7ca52d59bb8
+  zh: 4ab7b40a594cb0be
 /mcp-model-context-protocol/summary:
   en: b7924c83f407b302
-  zh: 87ce606631f8a3ec
+  zh: 2c98277b8d22de9c
 /mcp-model-context-protocol/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /mcp-model-context-protocol/packages:
   en: ff8d121ea1436a65
-  zh: 6a66e0265884fa7b
+  zh: d0d07195b05d8c5e
 /mcp-model-context-protocol/related-documentation:
   en: cd505cf851d46a53
-  zh: 7d47dd75334475ee
+  zh: 571a7766ffa3c5b7
 /mcp-model-context-protocol/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

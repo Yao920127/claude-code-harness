@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-26-dependencies-over-hand-rolling.md
 /agent-note-prefer-maintained-dependencies-over-hand-rolling:
   en: 5cf63576459c1942
-  zh: c3f2dbc5e4656693
+  zh: 952e8980c3c6038f
 /agent-note-prefer-maintained-dependencies-over-hand-rolling/problem:
   en: 5c13c4dd8707db61
-  zh: b788b35b54bec861
+  zh: 5222ae6a1fc79e2d
 /agent-note-prefer-maintained-dependencies-over-hand-rolling/decision:
   en: 2b8c6ea6c61732cd
-  zh: 946b2ef6142eaca3
+  zh: 4653c3dff6b24a2f
 /agent-note-prefer-maintained-dependencies-over-hand-rolling/alternatives-considered:
   en: c3575c5c8b4a6e51
-  zh: f20aa07eefed8a3b
+  zh: d7bb043076957778
 /agent-note-prefer-maintained-dependencies-over-hand-rolling/consequences:
   en: abac778b1b57b62a
-  zh: 7cd7b253d637726b
+  zh: dd8a66c70d95830c

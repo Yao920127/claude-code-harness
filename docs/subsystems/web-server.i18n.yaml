@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/web-server.md
 /http-server:
   en: 8ddf00047d960062
-  zh: 79fa692e5c59e1c9
+  zh: cacf827fb79ef375
 /http-server/routes:
   en: 940bc78642c990b0
-  zh: 901d2ba7e354a766
+  zh: 423d4965902f437a
 /http-server/config:
   en: 30118110a0ea3702
-  zh: 940f2b69d2dd54af
+  zh: 4bc6f5e188adcc71
 /http-server/the-service:
   en: e304734ab2143438
-  zh: 065f9c2acbbb07ca
+  zh: 02e9f2cd44a519dc

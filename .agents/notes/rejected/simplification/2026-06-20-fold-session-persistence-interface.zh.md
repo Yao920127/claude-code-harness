@@ -1,31 +1,31 @@
-# Agent Note: 将持久化接口合并进 dsh-session
+# Agent Note: 將持久化介面合併進 dsh-session
 
-Status: rejected — 独立的持久化 Service Definition 包是持久化能力 seam 预期的模块化角色拆分。将其折叠进 `dsh-session` 虽能减少包数量，却会牺牲更清晰的后端边界。
+Status: rejected — 獨立的持久化 Service Definition 包是持久化能力 seam 預期的模組化角色拆分。將其摺疊進 `dsh-session` 雖能減少包數量，卻會犧牲更清晰的後端邊界。
 
 [English](2026-06-20-fold-session-persistence-interface.md) | 中文
 
-## 问题
+## 問題
 
-`dsh-session-persistence` 是一个 Service Definition 包，其核心概念已经由 `dsh-session` 拥有：`SessionHeader`、`SessionEvent`、`SessionId`、`session/event` 与 `session/flush`。该包额外添加了抽象的 `SessionPersistence` 服务、共享写入协调器和约定辅助工具。提供方包依赖它，为实现恢复，`agent-loop`（智能体循环）还需要按需查找这个同级服务。
+`dsh-session-persistence` 是一個 Service Definition 包，其核心概念已經由 `dsh-session` 擁有：`SessionHeader`、`SessionEvent`、`SessionId`、`session/event` 與 `session/flush`。該包額外新增了抽象的 `SessionPersistence` 服務、共享寫入協調器和約定輔助工具。提供者包依賴它，為實作恢復，`agent-loop`（智慧代理迴圈）還需要按需查詢這個同級服務。
 
-当持久化还是一个全新的可替换后端设计时，能力 seam 的拆分是合理的。但在可变摘要被移除之后，这个 Service Definition 包基本上只是包装了会话日志自身的存储职责。继续保持独立可能带来的仪式感多于清晰度。
+當持久化還是一個全新的可替換後端設計時，能力 seam 的拆分是合理的。但在可變摘要被移除之後，這個 Service Definition 包基本上只是包裝了工作階段日誌自身的儲存職責。繼續保持獨立可能帶來的儀式感多於清晰度。
 
 ## 提案
 
-将抽象的 `SessionPersistence` 服务、协调器和持久化约定辅助工具移入 `dsh-session`。JSONL 和 SQLite 仍作为独立的后端包，注册由会话包拥有的服务。这样既保留了后端可替换性，又删除了一个支撑包和一条跨包边界。
+將抽象的 `SessionPersistence` 服務、協調器和持久化約定輔助工具移入 `dsh-session`。JSONL 和 SQLite 仍作為獨立的後端包，註冊由工作階段包擁有的服務。這樣既保留了後端可替換性，又刪除了一個支撐包和一條跨包邊界。
 
-实施 PR（Pull Request）应更新[能力 seam](../../implemented/architecture/2026-06-13-capability-seams.zh.md) 指南，补充此例外：持久化不同于 bash 或 LLM（大语言模型），因为它的词汇和生命周期事件本就属于会话包的核心领域。
+實施 PR（Pull Request）應更新[能力 seam](../../implemented/architecture/2026-06-13-capability-seams.zh.md) 指南，補充此例外：持久化不同於 bash 或 LLM（大語言模型），因為它的詞彙和生命週期事件本就屬於工作階段包的核心領域。
 
-## 验收标准
+## 驗收標準
 
-- `@deepseek-ai/dsh-session-persistence` 作为包被移除。
-- `dsh-session` 导出持久化服务类型、协调器和约定辅助工具。
-- JSONL 和 SQLite 后端包直接依赖 `dsh-session`。
-- `agent-loop` 的恢复功能使用会话包拥有的服务键。
-- [会话持久化](../../implemented/architecture/2026-06-14-session-persistence.zh.md)、[基于句柄的会话持久化](../../implemented/architecture/2026-08-27-handle-based-session-persistence.zh.md)与[包文档](../../../../packages/session/session-persistence/README.zh.md)说明后端实现为何仍保持独立。
+- `@deepseek-ai/dsh-session-persistence` 作為包被移除。
+- `dsh-session` 匯出持久化服務型別、協調器和約定輔助工具。
+- JSONL 和 SQLite 後端包直接依賴 `dsh-session`。
+- `agent-loop` 的恢復功能使用工作階段包擁有的服務鍵。
+- [工作階段持久化](../../implemented/architecture/2026-06-14-session-persistence.zh.md)、[基於控制代碼的工作階段持久化](../../implemented/architecture/2026-08-27-handle-based-session-persistence.zh.md)與[包文件](../../../../packages/session/session-persistence/README.zh.md)說明後端實作為何仍保持獨立。
 
-## 放弃了什么
+## 放棄了什麼
 
-`dsh-session` 变得更重：它同时拥有内存日志和持久化 Service Definition。这就是代价。如果第三方持久化后端已经形成公开生态，独立的 Service Definition 包会是更清晰的 SDK 边界；但在预发布阶段尚无外部消费方时，这个额外的包更像是过早引入的抽象。
+`dsh-session` 變得更重：它同時擁有記憶體日誌和持久化 Service Definition。這就是代價。如果第三方持久化後端已經形成公開生態，獨立的 Service Definition 包會是更清晰的 SDK 邊界；但在預釋出階段尚無外部消費方時，這個額外的包更像是過早引入的抽象。
 
 <!-- agent-note-format: alternatives-not-recorded (pre-format Agent Note) -->

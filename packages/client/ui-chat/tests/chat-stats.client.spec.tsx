@@ -319,20 +319,20 @@ describe('StatsPills', () => {
     const { source } = makeSource({ nodes: [timedStep()] })
     const view = render(<StatsPills {...props(source, { tokenUsage: tokenUsage(9_995, 5) })} t={t} />)
     const [timePill, usagePill] = [...view.getAllByRole('button')] as [HTMLElement, HTMLElement]
-    expect(timePill.textContent).toBe('1 轮 1 步·20 tok/s')
+    expect(timePill.textContent).toBe('1 輪 1 步·20 tok/s')
     // Whole-log total 9995 + 5 + 1 compacts to 10K.
-    expect(usagePill.textContent).toBe('10K tok·缓存命中 99.95%')
+    expect(usagePill.textContent).toBe('10K tok·快取命中 99.95%')
     fireEvent.click(timePill)
     const timeDialog = view.getByRole('dialog')
-    expect(timeDialog.getAttribute('aria-label')).toBe('会话统计')
-    expect(timeDialog.textContent).toContain('模型用时3.8秒')
+    expect(timeDialog.getAttribute('aria-label')).toBe('工作階段統計')
+    expect(timeDialog.textContent).toContain('模型用時3.8秒')
     expect(timeDialog.textContent).toContain('首 token 平均（TTFT）0.8秒')
-    expect(timeDialog.textContent).toContain('输出速度（TPS）20 tok/s')
+    expect(timeDialog.textContent).toContain('輸出速度（TPS）20 tok/s')
     fireEvent.keyDown(document, { key: 'Escape' })
     fireEvent.click(usagePill)
     const usageDialog = view.getByRole('dialog')
     expect(usageDialog.getAttribute('aria-label')).toBe('Token 用量')
-    expect(usageDialog.textContent).toContain('未缓存输入5 tok')
+    expect(usageDialog.textContent).toContain('未快取輸入5 tok')
   })
 
   it('keeps the durable usage pill after the visible step window is empty', () => {
@@ -401,7 +401,7 @@ describe('StatsPills', () => {
   })
 
   it('renders whole-log speed and dialog figures from the projection, not the loaded window', () => {
-    // The 加载更早 hazard beyond counts: the pill's speed segment and the
+    // The 載入更早 hazard beyond counts: the pill's speed segment and the
     // dialog's time split, TTFT, and throughput must not grow per loaded page
     // either. An untimed 1-node window renders the projection's whole-log figures.
     const { source } = makeSource({ nodes: [assistant(1, 1)] })

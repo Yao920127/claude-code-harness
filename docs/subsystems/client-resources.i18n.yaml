@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/client-resources.md
 /client-resources:
   en: a7972413b1780235
-  zh: 74d70a11d7e7f7e3
+  zh: 241ee8922e5da43a
 /client-resources/addresses:
   en: 47da087087a3b0c5
-  zh: ddf0ffe347a1fe0c
+  zh: 80a788452be098c3
 /client-resources/registering-a-provider:
   en: bfe0d08fb20a8f55
-  zh: a569b0e65a343943
+  zh: 01ded749552f2ac1
 /client-resources/reading-a-resource:
   en: d1c77f944148b976
-  zh: 882f95a6046ccc80
+  zh: e56d8a565cc1b56c
 /client-resources/holding-and-releasing:
   en: 4b904d5298237dd3
-  zh: 6952e56fecf9de78
+  zh: 3530ad4d5ab9cb6a
 /client-resources/limits:
   en: 0bb8c1e28d645c4a
-  zh: 1c353afec3af2546
+  zh: c4e2c8799bcc57a1

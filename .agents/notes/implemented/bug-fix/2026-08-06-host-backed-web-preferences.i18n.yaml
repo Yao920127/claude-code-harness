@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-06-host-backed-web-preferences.md
 /agent-note-persist-web-user-preferences-through-host-settings:
   en: da28d8677a4d9f9c
-  zh: a5311ab734f576d3
+  zh: d8df89c4c050881e
 /agent-note-persist-web-user-preferences-through-host-settings/problem:
   en: 18b583ecb58b9e06
-  zh: 55570d758b75852a
+  zh: e7eb7f3dfd44a08b
 /agent-note-persist-web-user-preferences-through-host-settings/decision:
   en: 2846c0d0f8615da7
-  zh: 511d61ea4ea6efa6
+  zh: c1e2f529bd7425d3
 /agent-note-persist-web-user-preferences-through-host-settings/alternatives-considered:
   en: a91ebb47ec1ee356
-  zh: d5ce0b7f48195093
+  zh: a853ebf71d908c80
 /agent-note-persist-web-user-preferences-through-host-settings/consequences:
   en: 7defab72acfd5e78
-  zh: 566cbbd3eb3cd9e3
+  zh: 952cb5e9f5ad2216

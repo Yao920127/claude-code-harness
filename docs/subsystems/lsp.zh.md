@@ -1,14 +1,14 @@
-# LSP 导航
+# LSP 導航
 
 [English](lsp.md) | 中文
 
-LSP seam 是一个[能力 seam](../glossary.zh.md#capability-seam)：它在单一 `ctx.lsp` 服务上公开语义代码导航，并拆分到多个包：Service Definition（[dsh-lsp](../../packages/lsp/lsp)，`ctx.lsp` + 提供方注册表）、通用 Service Provider（[dsh-lsp-stdio](../../packages/lsp/lsp-stdio)，经过配置的 stdio 语言服务器宿主）和 Consumer（[dsh-tool-lsp](../../packages/lsp/tool-lsp)，即 `lsp` 工具 schema）。LSP 是**一项可选能力**，不属于 agent loop（智能体循环）主干，因此其词汇定义在此而非 [core.md](core.zh.md) 中。更换提供方不会改变模型请求导航的方式。
+LSP seam 是一個[能力 seam](../glossary.zh.md#capability-seam)：它在單一 `ctx.lsp` 服務上公開語義程式碼導航，並拆分到多個包：Service Definition（[dsh-lsp](../../packages/lsp/lsp)，`ctx.lsp` + 提供者註冊表）、通用 Service Provider（[dsh-lsp-stdio](../../packages/lsp/lsp-stdio)，經過設定的 stdio 語言伺服器主機）和 Consumer（[dsh-tool-lsp](../../packages/lsp/tool-lsp)，即 `lsp` 工具 schema）。LSP 是**一項可選能力**，不屬於 agent loop（智慧代理迴圈）主幹，因此其詞彙定義在此而非 [core.md](core.zh.md) 中。更換提供者不會改變模型請求導航的方式。
 
-源文件：[`packages/lsp/lsp/src/types.ts`](../../packages/lsp/lsp/src/types.ts)
+原始檔：[`packages/lsp/lsp/src/types.ts`](../../packages/lsp/lsp/src/types.ts)
 
-## 操作与坐标
+## 操作與座標
 
-seam 与模型恰好公开 4 项语义查询；该联合是闭合的，因此新增一项查询会通过编译强制要求同步修改 seam、提供方和工具。位置与范围采用从零开始的 UTF-16 坐标，与协议一致；面向模型的工具采用从 1 开始的光标约定，并在输入和输出时进行转换。
+seam 與模型恰好公開 4 項語義查詢；該聯合是閉合的，因此新增一項查詢會透過編譯強制要求同步修改 seam、提供者和工具。位置與範圍採用從零開始的 UTF-16 座標，與協定一致；面向模型的工具採用從 1 開始的游標約定，並在輸入和輸出時進行轉換。
 
 ```ts type-equiv
 /**
@@ -37,9 +37,9 @@ interface LspRange {
 }
 ```
 
-## 请求
+## 請求
 
-每个字段都是必填项：`workspaceRoot` 由调用方提供，`languageId` 来自提供方注册而非请求，超时与结果上限由消费方决定。因此没有字段需要由实现提供默认值，也不存在 `resolve()` 步骤。提供方收到调用方请求和派生的 `languageId`；后者只用于同步瞬态文档，从不参与选择。
+每個欄位都是必填項：`workspaceRoot` 由呼叫方提供，`languageId` 來自提供者註冊而非請求，超時與結果上限由消費方決定。因此沒有欄位需要由實作提供預設值，也不存在 `resolve()` 步驟。提供者收到呼叫方請求和派生的 `languageId`；後者只用於同步瞬態文件，從不參與選擇。
 
 ```ts type-equiv
 /**
@@ -71,9 +71,9 @@ interface LspProviderQuery extends LspQueryRequest {
 }
 ```
 
-## 结果
+## 結果
 
-这是一个闭合的可辨识联合：导航操作规范化为 `locations`，`hover` 规范化为内容或 `null`。消费方使用 `switch` 对 `kind` 做穷尽处理，因此新增分支会使编译失败，直到完成处理。`findReferences` 始终包含声明；提供方在内部强制保证这一点，因此调用方没有对应 flag。`locations` 变体携带 `resolvedWorkspaceUri`，即提供方的规范工作区 `file:` URI。调用方相对化位置 URI 时应使用这一坐标，而不是对可能经过符号链接的请求根目录应用宿主平台路径规则。
+這是一個閉合的可辨識聯合：導航操作規範化為 `locations`，`hover` 規範化為內容或 `null`。消費方使用 `switch` 對 `kind` 做窮盡處理，因此新增分支會使編譯失敗，直到完成處理。`findReferences` 始終包含宣告；提供者在內部強制保證這一點，因此呼叫方沒有對應 flag。`locations` 變體攜帶 `resolvedWorkspaceUri`，即提供者的規範工作區 `file:` URI。呼叫方相對化位置 URI 時應使用這一座標，而不是對可能經過符號連結的請求根目錄應用主機平臺路徑規則。
 
 ```ts type-equiv
 /** One resolved location: a document URI and the range within it. */
@@ -111,9 +111,9 @@ type LspQueryResult =
   | { readonly kind: 'hover'; readonly hover: LspHover | null }
 ```
 
-## 提供方与服务
+## 提供者與服務
 
-每个提供方拥有一个稳定的品牌化 `id`，以及一份互斥的、小写且以点开头的扩展名映射。`registerProvider` 会原子预留 id 和每个扩展名：注册无效或冲突时不发布任何内容；其 disposer 会释放所有保留项。每次查询独立选择提供方，且选择与顺序无关；没有匹配项时抛出 `LspError` `LSP_UNAVAILABLE`。该 seam 不公开协议类型、进程或文档控制，也不提供通用 JSON-RPC 逃生口。
+每個提供者擁有一個穩定的品牌化 `id`，以及一份互斥的、小寫且以點開頭的副檔名對映。`registerProvider` 會原子預留 id 和每個副檔名：註冊無效或衝突時不釋出任何內容；其 disposer 會釋放所有保留項。每次查詢獨立選擇提供者，且選擇與順序無關；沒有匹配項時丟擲 `LspError` `LSP_UNAVAILABLE`。該 seam 不公開協定型別、程序或文件控制，也不提供通用 JSON-RPC 逃生口。
 
 ```ts type-equiv
 /**
@@ -162,7 +162,7 @@ interface LspService {
 }
 ```
 
-`LspProviderId` 是该 seam 的品牌化 id（来自 [dsh-brand](../../packages/util/brand) 的 `Branded<'LspProviderId'>`）；`LspError` 扩展 `HarnessError`，提供 `LSP_INVALID_PROVIDER`、`LSP_CONFLICT`、`LSP_UNAVAILABLE`、`LSP_DISPOSED`、`LSP_UNSUPPORTED_OPERATION` 和 `LSP_MALFORMED_RESPONSE` 等稳定错误码，调用方应按错误码路由，而不是解析 `message`。
+`LspProviderId` 是該 seam 的品牌化 id（來自 [dsh-brand](../../packages/util/brand) 的 `Branded<'LspProviderId'>`）；`LspError` 擴充功能 `HarnessError`，提供 `LSP_INVALID_PROVIDER`、`LSP_CONFLICT`、`LSP_UNAVAILABLE`、`LSP_DISPOSED`、`LSP_UNSUPPORTED_OPERATION` 和 `LSP_MALFORMED_RESPONSE` 等穩定錯誤碼，呼叫方應按錯誤碼路由，而不是解析 `message`。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

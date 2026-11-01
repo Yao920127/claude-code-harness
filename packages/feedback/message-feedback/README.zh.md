@@ -1,5 +1,5 @@
 ---
-description: "在权威 Session 日志中保存已完成 assistant 消息的评分、分类与备注。"
+description: "在權威 Session 日誌中儲存已完成 assistant 訊息的評分、分類與備註。"
 kind: "package-reference"
 ---
 
@@ -9,95 +9,95 @@ kind: "package-reference"
 
 ## 概述
 
-本服务为已完成的 assistant 消息记录好评、差评、固定反馈分类表中的可选分类，以及可选的原样备注。每次创建、编辑和删除都由权威 Session 日志保存；`list`、`put` 和 `delete` 提供当前反馈，不会构造或唤醒 agent（智能体）。反馈仅写入日志，不进入模型历史。
+本服務為已完成的 assistant 訊息記錄好評、差評、固定回饋分類表中的可選分類，以及可選的原樣備註。每次建立、編輯和刪除都由權威 Session 日誌儲存；`list`、`put` 和 `delete` 提供目前回饋，不會建構或喚醒 agent（智慧代理）。回饋僅寫入日誌，不進入模型歷史。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-将 `dsh-message-feedback` 与 `sessions`、`sessionPersistence` 一起挂载。它不需要 storage-domain 服务。Web 组合提供浏览器消费方，并将备注上限设为 8192 字节。
+將 `dsh-message-feedback` 與 `sessions`、`sessionPersistence` 一起掛載。它不需要 storage-domain 服務。Web 組合提供瀏覽器消費方，並將備註上限設為 8192 位元組。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `maxNoteBytes` | 必填 | 单条可选备注的 UTF-8 字节上限，必须为大于零的安全整数。 |
+| `maxNoteBytes` | 必填 | 單條可選備註的 UTF-8 位元組上限，必須為大於零的安全整數。 |
 
-提交的备注必须包含非空白字符，且不超过配置的字节上限。空白备注返回 `note-blank`；过长备注返回 `note-too-large`。通过校验的文本会完整保留，包括首尾空白。省略备注会清除它。备注校验先于 Session 查找。提交的分类必须是[固定反馈分类](../command-feedback/README.zh.md#the-web-feedback-dialog)之一；Remote schema 拒绝其他值，省略分类会清除它。
+提交的備註必須包含非空白字元，且不超過設定的位元組上限。空白備註返回 `note-blank`；過長備註返回 `note-too-large`。透過驗證的文字會完整保留，包括首尾空白。省略備註會清除它。備註驗證先於 Session 查詢。提交的分類必須是[固定回饋分類](../command-feedback/README.zh.md#the-web-feedback-dialog)之一；Remote schema 拒絕其他值，省略分類會清除它。
 
-### 读取与修改反馈
+### 讀取與修改回饋
 
-| 操作 | 请求 | 成功 | 业务失败 |
+| 操作 | 請求 | 成功 | 業務失敗 |
 |---|---|---|---|
-| `list` | Session id | 按创建顺序返回当前条目 | Session 不存在 |
-| `put` | Session、消息、评分、可选备注、可选分类、预期版本 | 当前条目 | Session 或目标不存在、版本冲突、备注无效 |
-| `delete` | Session、消息、预期版本 | 条目不存在 | Session 不存在、版本冲突 |
+| `list` | Session id | 按建立順序返回目前條目 | Session 不存在 |
+| `put` | Session、訊息、評分、可選備註、可選分類、預期版本 | 目前條目 | Session 或目標不存在、版本衝突、備註無效 |
+| `delete` | Session、訊息、預期版本 | 條目不存在 | Session 不存在、版本衝突 |
 
-创建时传入 `ifVersion: null`；编辑或删除时使用返回的版本。陈旧修改返回 `version-conflict` 及当前条目。每次实质 put 都生成新 token，并保留原始创建时间。重复已存评分、备注与分类的 put 是无变化操作：返回相同条目，不追加事件。删除不存在的条目始终成功，不受所传版本影响，也不追加事件。重新创建已删除条目会产生新的创建时间和排序位置。
+建立時傳入 `ifVersion: null`；編輯或刪除時使用返回的版本。陳舊修改返回 `version-conflict` 及目前條目。每次實質 put 都生成新 token，並保留原始建立時間。重複已存評分、備註與分類的 put 是無變化操作：返回相同條目，不追加事件。刪除不存在的條目始終成功，不受所傳版本影響，也不追加事件。重新建立已刪除條目會產生新的建立時間和排序位置。
 
-目标必须是由 append 来源事件产生的非空 assistant 消息。用户消息、空 assistant 占位及 replacement 来源消息返回 `target-not-found`。反馈跨重启保留；fork 即使继承了包含父会话反馈的前缀，初始时也没有自有反馈。
+目標必須是由 append 來源事件產生的非空 assistant 訊息。使用者訊息、空 assistant 佔位及 replacement 來源訊息返回 `target-not-found`。回饋跨重新啟動保留；fork 即使繼承了包含父工作階段回饋的字首，初始時也沒有自有回饋。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-### 权威日志与持久性
+### 權威日誌與永續性
 
-`feedback/message-put` 保存所属 Session id 及完整条目，包括版本和时间戳。`feedback/message-delete` 保存所属 Session 和消息 id。当前状态从这些事件推导，忽略属于其他 Session 的事件。持久化 payload 在使用前经过校验。不存在第二个反馈存储或缓存。
+`feedback/message-put` 儲存所屬 Session id 及完整條目，包括版本和時間戳。`feedback/message-delete` 儲存所屬 Session 和訊息 id。目前狀態從這些事件推導，忽略屬於其他 Session 的事件。持久化 payload 在使用前經過驗證。不存在第二個回饋儲存或快取。
 
-活跃会话通过 `Session.append` 追加，并等待 `sessions.flush`，然后通过持久化读句柄核实捕获的日志末端与 Session header，才会报告成功。冷会话修改在读取、校验、比较、追加、flush 和关闭期间持有持久化写句柄。冷读取使用读句柄。两条路径都不会构造 Session 或追加生命周期事件。
+活躍工作階段透過 `Session.append` 追加，並等待 `sessions.flush`，然後透過持久化讀控制代碼核實捕捉的日誌末端與 Session header，才會報告成功。冷工作階段修改在讀取、驗證、比較、追加、flush 和關閉期間持有持久化寫控制代碼。冷讀取使用讀控制代碼。兩條路徑都不會建構 Session 或追加生命週期事件。
 
-每个 Session 的队列在同一服务实例内串行化操作；持久化写句柄排除其他冷写入方。销毁时停止接收操作并排空已接收操作，然后释放服务。持久化故障会 reject，而非变成业务失败。flush 失败不会回滚已接受的事件；调用方可以读取并使用其版本重试。成功的无变化修改也会 flush 当前前缀。
+每個 Session 的佇列在同一服務實例內序列化操作；持久化寫控制代碼排除其他冷寫入方。銷燬時停止接收操作並排空已接收操作，然後釋放服務。持久化故障會 reject，而非變成業務失敗。flush 失敗不會復原已接受的事件；呼叫方可以讀取並使用其版本重試。成功的無變化修改也會 flush 目前字首。
 
-冷会话的实质修改在 flush 后发出 `feedback/committed` 通知，其中携带借用的只读权威日志前缀；观察方在转移所有权前必须对其进行深拷贝。观察方在写入所有权释放前完成，不得等待同一 Session 的其他反馈操作，也不能使已提交的修改失败。活跃会话消费方观察 `session/event`。
+冷工作階段的實質修改在 flush 後發出 `feedback/committed` 通知，其中攜帶借用的只讀權威日誌字首；觀察方在轉移所有權前必須對其進行深複製。觀察方在寫入所有權釋放前完成，不得等待同一 Session 的其他回饋操作，也不能使已提交的修改失敗。活躍工作階段消費方觀察 `session/event`。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | Remote 服务、payload 校验、事件投影与持久化所有权 |
-| [`src/types.ts`](src/types.ts) | 请求、结果和 Session 事件声明；仅类型 |
+| [`src/index.ts`](src/index.ts) | Remote 服務、payload 驗證、事件投影與持久化所有權 |
+| [`src/types.ts`](src/types.ts) | 請求、結果和 Session 事件宣告；僅型別 |
 
-不发布运行时不变式伴生入口：服务直接从校验后的权威事件推导反馈，不持有可独立修改的投影。
+不釋出執行時不變式伴生入口：服務直接從驗證後的權威事件推導回饋，不持有可獨立修改的投影。
 
-各自的 API 见[反馈子系统](../../../docs/subsystems/feedback.zh.md)、[Session 持久化](../../../docs/subsystems/persistence.zh.md)和[浏览器消费方](../../client/ui-message-feedback/README.zh.md)。
+各自的 API 見[回饋子系統](../../../docs/subsystems/feedback.zh.md)、[Session 持久化](../../../docs/subsystems/persistence.zh.md)和[瀏覽器消費方](../../client/ui-message-feedback/README.zh.md)。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 消息反馈
+### 訊息回饋
 
-#### 模型看到什么
+#### 模型看到什麼
 
-无。`feedback/message-put` 和 `feedback/message-delete` 不携带 surface 位置、工具、提示词段落或模型可见上下文。日志导出与投递策略由相应消费方负责。
+無。`feedback/message-put` 和 `feedback/message-delete` 不攜帶 surface 位置、工具、提示詞段落或模型可見上下文。日誌匯出與投遞策略由相應消費方負責。
 
-#### Token 影响
+#### Token 影響
 
-为零。评分、备注和服务结果不进入模型请求。
+為零。評分、備註和服務結果不進入模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-相互独立。反馈不改变模型请求前缀。
+相互獨立。回饋不改變模型請求字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **仅日志具有权威性：**不读取或迁移现有 `message_feedback` 伴随数据。这些文件保持不变，但其反馈无法通过本服务访问。
-- **删除保留历史：**delete 移除当前反馈，不会从仅追加日志中清除更早的评分或备注；它不是隐私擦除操作。
-- **写入所有权：**另一个进程持有 Session 写句柄时，冷会话修改会 reject。服务不会唤醒该所有者，也不协调跨进程 Remote 调用。
-- **受信任调用方：**请求不包含经过认证的 actor 或审计身份。部署方必须保护 Host 网关。
-- **遥测导出：**对于所有用户和提供方，包括 `deepseek-official`，随附 OTel 后端在 `FEEDBACK_ONLY` 模式下仅在新的显式文本反馈、评分、备注或分类编辑、撤回后释放完整权威日志前缀。前缀包含上下文和原样备注；后续记录等待下一次反馈，`DISABLED` 阻止捕获。部署方负责脱敏；见 [OTel 导出策略](../../session/session-telemetry-otel/README.zh.md)。
-- **扫描成本：**每次访问已有 Session 的 `list`、`put` 或 `delete` 都会扫描完整事件日志来推导当前反馈；冷会话操作还会从持久化存储读取完整日志。工作量随 Session 历史总量增长，而不只是反馈条目数。
-- **保留量：**`maxNoteBytes` 只限制单条备注，不限制日志总大小或变更次数。
+- **僅日誌具有權威性：**不讀取或遷移現有 `message_feedback` 伴隨資料。這些檔案保持不變，但其回饋無法透過本服務存取。
+- **刪除保留歷史：**delete 移除目前回饋，不會從僅追加日誌中清除更早的評分或備註；它不是隱私擦除操作。
+- **寫入所有權：**另一個程序持有 Session 寫控制代碼時，冷工作階段修改會 reject。服務不會喚醒該所有者，也不協調跨程序 Remote 呼叫。
+- **受信任呼叫方：**請求不包含經過認證的 actor 或審計身份。部署方必須保護 Host 閘道。
+- **遙測匯出：**對於所有使用者和提供者，包括 `deepseek-official`，隨附 OTel 後端在 `FEEDBACK_ONLY` 模式下僅在新的顯式文字回饋、評分、備註或分類編輯、撤回後釋放完整權威日誌字首。字首包含上下文和原樣備註；後續記錄等待下一次回饋，`DISABLED` 阻止捕捉。部署方負責脫敏；見 [OTel 匯出策略](../../session/session-telemetry-otel/README.zh.md)。
+- **掃描成本：**每次存取已有 Session 的 `list`、`put` 或 `delete` 都會掃描完整事件日誌來推導目前回饋；冷工作階段操作還會從持久化儲存讀取完整日誌。工作量隨 Session 歷史總量增長，而不只是回饋條目數。
+- **保留量：**`maxNoteBytes` 只限制單條備註，不限制日誌總大小或變更次數。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-[包测试](tests/message-feedback.spec.ts)覆盖当前状态与持久历史语义；[Loader 组合](tests/loader-composition.spec.ts)验证跨重启的活跃和冷 JSONL 操作。
+[包測試](tests/message-feedback.spec.ts)覆蓋目前狀態與持久歷史語義；[Loader 組合](tests/loader-composition.spec.ts)驗證跨重新啟動的活躍和冷 JSONL 操作。

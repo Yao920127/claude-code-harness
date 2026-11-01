@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/cordis-tutorial/index.md
 /cordis-tutorial:
   en: 07671d53f483c796
-  zh: 495179dd609bf5a9
+  zh: 3bc75323927e27c7
 /cordis-tutorial/setup:
   en: beffc06ab58daf2d
-  zh: a0a2dd15e4a3989e
+  zh: 5a1187e3fedc4ea9
 /cordis-tutorial/chapters:
   en: 1b72d8e48e2688f3
-  zh: a4beaacdca936766
+  zh: f959307564851135
 /cordis-tutorial/typescript-notes:
   en: 60a3f108ca98e532
-  zh: 1cd4aabf471a576a
+  zh: eb4d5340c22a955a

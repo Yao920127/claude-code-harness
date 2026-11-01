@@ -1,18 +1,18 @@
-# Agent Note: 规范工具输出约定
+# Agent Note: 規範工具輸出約定
 
 Status: implemented
 
 [English](2026-07-20-canonical-tool-output-contract.md) | 中文
 
-## 问题
+## 問題
 
-工具主体过去直接编写面向模型的 `ContentBlock[]`，并可选择将其与不透明的 `meta` 包装在一起。因此，Native 模式的 Function Calling（函数调用）虽然拥有可供人阅读的投影，但程序化调用方没有稳定的领域值：PTC mode 会将内容块重新展平为字符串，动态工具会重复定义内容形态，策略也可以替换展示内容，却无法区分这项变更究竟是替换展示，还是替换操作结果。多个能力 seam 已经返回了信息更丰富的提供方值，却又在面向模型的工具边界丢弃这些值。
+工具主體過去直接編寫面向模型的 `ContentBlock[]`，並可選擇將其與不透明的 `meta` 包裝在一起。因此，Native 模式的 Function Calling（函式呼叫）雖然擁有可供人閱讀的投影，但程式化呼叫方沒有穩定的領域值：PTC mode 會將內容塊重新展平為字串，動態工具會重複定義內容形態，策略也可以替換展示內容，卻無法區分這項變更究竟是替換展示，還是替換操作結果。多個能力 seam 已經返回了資訊更豐富的提供者值，卻又在面向模型的工具邊界丟棄這些值。
 
-持久会话约定将这份展示内容视为回放时的权威来源，但如果持久化每一个信息丰富的中间值，就会扩大日志、使实现数据进入压缩（compaction）和迁移流程，还会错误地把执行期本地 API 变成会话格式的一部分。因此，系统底层需要在执行期间保留一个类型化值，并显式将其投影为现有的持久化内容和模型可见内容。
+持久工作階段約定將這份展示內容視為回放時的權威來源，但如果持久化每一個資訊豐富的中間值，就會擴大日誌、使實作資料進入壓縮（compaction）和遷移流程，還會錯誤地把執行期本地 API 變成工作階段格式的一部分。因此，系統底層需要在執行期間保留一個型別化值，並顯式將其投影為現有的持久化內容和模型可見內容。
 
-## 决策
+## 決策
 
-每个工具都必须声明规范输出，并且只能返回该声明描述的值：
+每個工具都必須宣告規範輸出，並且只能返回該宣告描述的值：
 
 ```ts ignore-check
 output: {
@@ -22,9 +22,9 @@ output: {
 }
 ```
 
-`defineTool` 从统一的 `ValueSchemaSpec` 推导工具主体返回值和两个投影器的类型。原始定义和动态定义则提供编译后的 `JsonSchemaNode` 形式。注册时会拒绝缺失输出声明或采用不受支持的原始 schema 的定义，不提供兼容旧式内容返回值的路径。
+`defineTool` 從統一的 `ValueSchemaSpec` 推導工具主體回傳值和兩個投影器的型別。原始定義和動態定義則提供編譯後的 `JsonSchemaNode` 形式。註冊時會拒絕缺失輸出宣告或採用不受支援的原始 schema 的定義，不提供相容舊式內容回傳值的路徑。
 
-每次成功分发时，注册表会将返回值快照为无损 `JsonValue`，依据 `output.schema` 校验并深度冻结，然后调用纯渲染器；对于直接的外层调用，还会调用可选的元数据投影器。渲染器、投影器、schema 或无损 JSON 处理失败都会被收敛为普通 `ToolOutputError` 结果。围绕 `tools/execute` 的包装层接收并返回规范的成功／失败联合；包装层自行产生的成功结果会再次通过已解析工具的输出声明完成归一化，而不会信任其独立编写的内容。每个规范结果都与创建它的不可变分发 token 绑定；因此，如果包装层返回来自其他调用或工具的缓存结果，系统会依据当前生效的输出声明重新执行归一化，而不会绕过这一步。
+每次成功分發時，註冊表會將回傳值快照為無損 `JsonValue`，依據 `output.schema` 驗證並深度凍結，然後呼叫純渲染器；對於直接的外層呼叫，還會呼叫可選的中繼資料投影器。渲染器、投影器、schema 或無損 JSON 處理失敗都會被收斂為普通 `ToolOutputError` 結果。圍繞 `tools/execute` 的包裝層接收並返回規範的成功／失敗聯合；包裝層自行產生的成功結果會再次透過已解析工具的輸出宣告完成歸一化，而不會信任其獨立編寫的內容。每個規範結果都與建立它的不可變分發 token 繫結；因此，如果包裝層返回來自其他呼叫或工具的快取結果，系統會依據目前生效的輸出宣告重新執行歸一化，而不會繞過這一步。
 
 ```ts ignore-check
 type ToolExecutionResult =
@@ -32,48 +32,48 @@ type ToolExecutionResult =
   | { isError: true; error: { message: string; info?: { name: string; code: string } }; content: ContentBlock[]; meta?: JsonValue; additionalContexts?: HookContext[] }
 ```
 
-`tools/post-execute` 为成功结果提供两种互斥的投影方式。替换 `content` 只改变 Native／模型展示，并保留规范值和元数据。替换 `value` 会重新校验替代值，并重新计算两份展示投影。阻止操作会移除值并转为失败。因此，替换内容并不是保密机制：必须阻止程序化访问的策略，应当阻止调用或替换值。
+`tools/post-execute` 為成功結果提供兩種互斥的投影方式。替換 `content` 只改變 Native／模型展示，並保留規範值和中繼資料。替換 `value` 會重新驗證替代值，並重新計算兩份展示投影。阻止操作會移除值並轉為失敗。因此，替換內容並不是保密機制：必須阻止程式化存取的策略，應當阻止呼叫或替換值。
 
-规范值仅存在于执行期间。agent loop（智能体循环）持久化的 `tool/result` 只包含 `content`、`error` 和可选的 `meta`；PTC mode 的 `tool/ptc-dispatch` 持久化子调用渲染后的 `content` 与 `isError`。两个事件都不存储规范中间值，因此回放可以重现展示，却无法重建程序化结果。当工具声明 `presentationMeta` 时，系统只会为直接的外层调用计算它；嵌套 Code 分发没有元数据。Client 可以从原始参数与渲染后的内容派生[嵌套 terminal 卡片](../bug-fix/2026-09-05-nested-terminal-cards.zh.md)，无需这些元数据。外层 `run_code` 卡片则读取最终的 post-policy 内容，并且不声明展示元数据。通用以及工具自有的 spill 投影同样跳过嵌套分发，因为它们的规范值永远不会进入模型上下文。
+規範值僅存在於執行期間。agent loop（智慧代理迴圈）持久化的 `tool/result` 只包含 `content`、`error` 和可選的 `meta`；PTC mode 的 `tool/ptc-dispatch` 持久化子呼叫渲染後的 `content` 與 `isError`。兩個事件都不儲存規範中間值，因此回放可以重現展示，卻無法重建程式化結果。當工具宣告 `presentationMeta` 時，系統只會為直接的外層呼叫計算它；巢狀 Code 分發沒有中繼資料。Client 可以從原始參數與渲染後的內容派生[巢狀 terminal 卡片](../bug-fix/2026-09-05-nested-terminal-cards.zh.md)，無需這些中繼資料。外層 `run_code` 卡片則讀取最終的 post-policy 內容，並且不宣告展示中繼資料。通用以及工具自有的 spill 投影同樣跳過巢狀分發，因為它們的規範值永遠不會進入模型上下文。
 
-第一方工具在保持现有 Native 文本不变的同时返回领域 DTO：
+第一方工具在保持現有 Native 文字不變的同時返回領域 DTO：
 
-| 工具系列 | 规范值 |
+| 工具系列 | 規範值 |
 |---|---|
 | `read` | `{ path, offset, lines: [{ number, text }], totalLines }` |
 | `write` | `{ path, operation: "create" | "update", before: string | null, after }` |
 | `edit` | `{ path, before, after }` |
 | `glob` | `{ paths: string[] }` |
 | `grep` | `{ matches: [{ path, lineNumber, line }] }` |
-| `web_search` ／ `web_fetch` | 归一化后的 `WebSearchResult` ／ `WebFetchResult` |
+| `web_search` ／ `web_fetch` | 歸一化後的 `WebSearchResult` ／ `WebFetchResult` |
 | `lsp` | `{ kind: "locations", locations, resolvedWorkspaceUri }` 或 `{ kind: "hover", hover }` |
 | `bash` | `{ kind: "background", jobId }` 或 `{ kind: "foreground" } & ShellRunResult` |
-| `terminal_open` ／ `terminal_list` ／ `terminal_send` ／ `terminal_read` ／ `terminal_signal` ／ `terminal_close` | 公开会话快照、有界的读取／发送 DTO、信号／关闭操作结果，或后台任务句柄 |
-| `job_output` ／ `job_list` ／ `job_kill` | 不含所有者或通知管理信息的公开任务快照 |
-| `subagent` | 后台任务句柄或 `{ kind: "foreground", runId, output: JsonValue[] }` |
+| `terminal_open` ／ `terminal_list` ／ `terminal_send` ／ `terminal_read` ／ `terminal_signal` ／ `terminal_close` | 公開工作階段快照、有界的讀取／傳送 DTO、訊號／關閉操作結果，或後臺任務控制代碼 |
+| `job_output` ／ `job_list` ／ `job_kill` | 不含所有者或通知管理資訊的公開任務快照 |
+| `subagent` | 後臺任務控制代碼或 `{ kind: "foreground", runId, output: JsonValue[] }` |
 | `workflow` ／ `ralph` | `{ runId, agentsStarted, result: JsonValue }` |
 | `skill` | `{ name, provider, resourceBase?, content }` |
 | `todo_write` | `{ todos, counts }` |
 | `ask_user_question` | `{ answers: [{ id, selected, custom? }] }` |
 | `exit_plan_mode` | `{ approved: true }` |
-| `cordis_inspect` ／ `cordis_mount` ／ `cordis_unmount` | 检查文本或类型化的临时插件句柄 |
+| `cordis_inspect` ／ `cordis_mount` ／ `cordis_unmount` | 檢查文字或型別化的臨時外掛控制代碼 |
 | `structured_output` | `{ recorded: true }` |
 | `run_code` | `{ logs: string[], result?: JsonValue }` |
 
-提供方和执行器的采集上限仍会实际限制规范值。仅用于格式化的限制归 `render` 所有；例如，`glob` 和 `grep` 会在 `value` 中保留所有已采集项，而其 Native 投影会保留配置指定的第一页，并尽力将其写入 spill 文件。通用 spill 会前置注册其 post-execute 监听器，并让该监听器先向后委托，因此无论插件加载顺序如何，普通工具自有的异步投影都会在通用字节数上限处理之前完成。文件系统变更工具根据 `args` 和规范的变更前／后值推导可回放的 diff 元数据，不再由工具主体返回 UI 状态。
+提供者和執行器的採集上限仍會實際限制規範值。僅用於格式化的限制歸 `render` 所有；例如，`glob` 和 `grep` 會在 `value` 中保留所有已採集項，而其 Native 投影會保留設定指定的第一頁，並盡力將其寫入 spill 檔案。通用 spill 會前置註冊其 post-execute 監聽器，並讓該監聽器先向後委託，因此無論外掛載入順序如何，普通工具自有的非同步投影都會在通用位元組數上限處理之前完成。檔案系統變更工具根據 `args` 和規範的變更前／後值推導可回放的 diff 中繼資料，不再由工具主體返回 UI 狀態。
 
-MCP 桥接层通过 `McpResult<{...}> = { content: JsonValue[]; structuredContent? }` 保留协议内容块。当公布的 `outputSchema` 属于受支持的原始子集时，系统会强制校验；不受支持的 schema 则回退为 `JsonValue`，而不会假装已完成校验。Native 渲染仍使用现有的 MCP 到 `ContentBlock` 投影，MCP `isError` 则会变为失败的工具结果。
+MCP 橋接層透過 `McpResult<{...}> = { content: JsonValue[]; structuredContent? }` 保留協定內容塊。當公佈的 `outputSchema` 屬於受支援的原始子集時，系統會強制驗證；不受支援的 schema 則退回為 `JsonValue`，而不會假裝已完成驗證。Native 渲染仍使用現有的 MCP 到 `ContentBlock` 投影，MCP `isError` 則會變為失敗的工具結果。
 
-## 备选方案
+## 備選方案
 
-- **向 PTC mode 返回渲染后的文本：**不予采纳。调用方仍需从自然语言中提取 job id、挂载 id、路径和结构化提供方结果。
-- **在 `tool/result` 上持久化规范值：**不予采纳。嵌套执行值不属于模型历史记录，无需在回放后继续存在；持久化还会引入与 Native 重建无关的会话格式和存储承诺。
-- **允许工具同时返回值和内容：**不予采纳。由作者分别维护的两份结果可能互相矛盾，策略也无法说明哪一份才是权威结果。渲染器会根据已校验值确定性地产生展示。
-- **将内容替换视为值脱敏：**不予采纳。展示内容和程序化访问面向不同消费方；只隐藏前者会制造虚假的安全边界。
-- **要求工具输出必须以对象为根：**不予采纳。标量、数组和 null 结果都是合理的 JSON API。只有由调用方定义的 subagent／工作流结构化输出仍受消费方的对象根规则约束。
+- **向 PTC mode 返回渲染後的文字：**不予採納。呼叫方仍需從自然語言中提取 job id、掛載 id、路徑和結構化提供者結果。
+- **在 `tool/result` 上持久化規範值：**不予採納。巢狀執行值不屬於模型歷史記錄，無需在回放後繼續存在；持久化還會引入與 Native 重建無關的工作階段格式和儲存承諾。
+- **允許工具同時回傳值和內容：**不予採納。由作者分別維護的兩份結果可能互相矛盾，策略也無法說明哪一份才是權威結果。渲染器會根據已驗證值確定性地產生展示。
+- **將內容替換視為值脫敏：**不予採納。展示內容和程式化存取面向不同消費方；只隱藏前者會製造虛假的安全邊界。
+- **要求工具輸出必須以物件為根：**不予採納。標量、陣列和 null 結果都是合理的 JSON API。只有由呼叫方定義的 subagent／工作流結構化輸出仍受消費方的物件根規則約束。
 
-## 影响
+## 影響
 
-Native 和回放行为仍以内容为先，并保持逐字节兼容；执行期调用方则无需解析内容，即可使用经过校验的领域值。失败结果必须包含消息，并可选择附加内部类名／代码信息；成功与失败结果由判别字段区分，失败结果绝不会承诺存在值。工具作者必须一并设计值及其 Native 投影；增加这项声明是有意为之，因为它避免从自然语言内容意外推导出程序化约定。
+Native 和回放行為仍以內容為先，並保持逐位元組相容；執行期呼叫方則無需解析內容，即可使用經過驗證的領域值。失敗結果必須包含訊息，並可選擇附加內部類名／程式碼資訊；成功與失敗結果由判別欄位區分，失敗結果絕不會承諾存在值。工具作者必須一併設計值及其 Native 投影；增加這項宣告是有意為之，因為它避免從自然語言內容意外推匯出程式化約定。
 
-中间值只受产生它们的能力和进程内存限制。日志不包含这些值，因此回放无法恢复；仅处理内容的 post 策略也无法隐藏这些值。这些都是执行期本地约定的明确属性，并非意外缺口。
+中間值只受產生它們的能力和程序記憶體限制。日誌不包含這些值，因此回放無法恢復；僅處理內容的 post 策略也無法隱藏這些值。這些都是執行期本地約定的明確屬性，並非意外缺口。

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-24-web-default-schedule-composition.md
 /agent-note-schedule-in-the-shipped-web-composition:
   en: 39229d7ab6ed433b
-  zh: 54287471d371a11c
+  zh: 6994d77c73498b7b
 /agent-note-schedule-in-the-shipped-web-composition/problem:
   en: 2871fd5ed881c007
-  zh: d03c78d402d186da
+  zh: b1312f611de0b2b6
 /agent-note-schedule-in-the-shipped-web-composition/decision:
   en: bb19ad12b2ab0ffc
-  zh: 971f33e95474a36c
+  zh: 224b105c118b796a
 /agent-note-schedule-in-the-shipped-web-composition/recorded-sessions:
   en: 5539a42052f4ddb7
-  zh: 98cc190ae63b4549
+  zh: 65f60a50fc5b3494
 /agent-note-schedule-in-the-shipped-web-composition/alternatives-considered:
   en: ca032a407c2ee8cb
-  zh: 748a4fcf2485a3da
+  zh: 5bf1723704f6746b
 /agent-note-schedule-in-the-shipped-web-composition/consequences:
   en: 4f23bda8fda37987
-  zh: 9f7c4a3538bd2979
+  zh: 8b17ef3032108b49

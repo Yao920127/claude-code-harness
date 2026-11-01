@@ -280,7 +280,7 @@ describe('the chip introduce cue', () => {
     vi.useFakeTimers()
     renderSeat({
       current: 'creator',
-      options: [{ id: 'creator', name: '创造模式' }],
+      options: [{ id: 'creator', name: '創造模式' }],
       introduce: true,
     })
 

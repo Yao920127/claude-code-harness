@@ -1,10 +1,10 @@
-# 实践指南：即时配置表单
+# 實踐指南：即時設定表單
 
 [English](adding-a-settings-card.md) | 中文
 
-在插件 Config schema 中声明即时字段，并通过产品所属的设置卡片提供编辑入口。导出的 `Config` 接口描述插件收到的值，包括每个 `Volatile<T>` 引用。
+在外掛 Config schema 中宣告即時欄位，並透過產品所屬的設定卡片提供編輯入口。匯出的 `Config` 介面描述外掛收到的值，包括每個 `Volatile<T>` 引用。
 
-## 1. 声明即时字段
+## 1. 宣告即時欄位
 
 ```ts
 import type { Context, Volatile } from '@deepseek-ai/cordis'
@@ -27,23 +27,23 @@ export function apply(ctx: Context, config: Config): void {
 }
 ```
 
-在操作开始时读取 `.get()`。需要一致快照的请求一次性捕获所需值。使用 `.check()` 进行跨字段 Config 验证；这些检查在持久化前由 Host 执行，不进入序列化的表单 schema。
+在操作開始時讀取 `.get()`。需要一致快照的請求一次性捕捉所需值。使用 `.check()` 進行跨欄位 Config 驗證；這些檢查在持久化前由 Host 執行，不進入序列化的表單 schema。
 
-## 2. 组合插件
+## 2. 組合外掛
 
-为每个实例分配唯一的 profile 条目 id。基础组合包挂载 settings 和 config-editor。自定义 profile 挂载这些服务前，请阅读相应包的 README。
+為每個實例分配唯一的 profile 條目 id。基礎組合包掛載 settings 和 config-editor。自定義 profile 掛載這些服務前，請閱讀相應包的 README。
 
-`role('secret')` 阻止值进入表单响应。对于凭据域管理的值，使用凭据引用。普通字段不进入设置 schema。
+`role('secret')` 阻止值進入表單回應。對於憑證域管理的值，使用憑證引用。普通欄位不進入設定 schema。
 
-## 3. 验证编辑
+## 3. 驗證編輯
 
-在插件页面修改字段并保存。验证 profile patch、消费者下一次操作、插件实例标识不变，以及重启后的恢复。提交无效值，并确认文件和即时值均未改变。
+在外掛頁面修改欄位並儲存。驗證 profile patch、消費者下一次操作、外掛實例標識不變，以及重新啟動後的恢復。提交無效值，並確認檔案和即時值均未改變。
 
-自定义插件页面从 Plugins 页面所有者接收 `form.state` 和 `form.mutate(operations, expectedRevision)`。Host 校验完整 Config，并通过 ConfigEditor 和 volatile HMR 应用修改。[插件设置包](../../packages/client/ui-settings-plugins/README.zh.md) 提供现有卡片示例。
+自定義外掛頁面從 Plugins 頁面所有者接收 `form.state` 和 `form.mutate(operations, expectedRevision)`。Host 驗證完整 Config，並透過 ConfigEditor 和 volatile HMR 應用修改。[外掛設定包](../../packages/client/ui-settings-plugins/README.zh.md) 提供現有卡片範例。
 
-## 4. 向其他插件的页面贡献内容
+## 4. 向其他外掛的頁面貢獻內容
 
-对某个不属于自己的组合包、行或官方插件有话要说的插件，注册进 `plugins.detail.actions`（页头的控件）、`plugins.detail.badge`（标题旁的标签）或 `plugins.detail.section`（页面自身内容之下的区块）。每个条目都以页面的 `subject` 渲染——`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`——对无话可说的 subject 返回 null：
+對某個不屬於自己的組合包、行或官方外掛有話要說的外掛，註冊進 `plugins.detail.actions`（頁頭的控制元件）、`plugins.detail.badge`（標題旁的標籤）或 `plugins.detail.section`（頁面自身內容之下的區塊）。每個條目都以頁面的 `subject` 渲染——`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`——對無話可說的 subject 返回 null：
 
 ```tsx ignore-check
 ctx.slots.inject('plugins.detail.badge', () => ctx.slots.register({
@@ -53,11 +53,11 @@ ctx.slots.inject('plugins.detail.badge', () => ctx.slots.register({
 }, ({ t, subject }) => subject.kind === 'bundle' && hasUpdate(subject.pkg) ? <Tag tone="info">{t('update')}</Tag> : null))
 ```
 
-## 5. 浏览器半侧挂在哪里
+## 5. 瀏覽器半側掛在哪裡
 
-浏览器半侧由[客户端模块系统](../../packages/client/modules)送到页面：它扫描已启用的 Loader 条目，找出声明了 `dsh.client` 的包，送出每个包构建好的 `./client` 导出——但它只把一个包的半侧挂在说明符恰为裸包名的那一行上。从子路径导出挂载的行永远不带半侧，因此把一个包拆成多行的组合包，其半侧留在根行上，它注册的每个页面都随根行关闭而消失。需要在其他行关闭时仍保留页面的子插件，应作为独立的包发布。
+瀏覽器半側由[用戶端模組系統](../../packages/client/modules)送到頁面：它掃描已啟用的 Loader 條目，找出宣告瞭 `dsh.client` 的包，送出每個包建置好的 `./client` 匯出——但它只把一個包的半側掛在說明符恰為裸包名的那一行上。從子路徑匯出掛載的行永遠不帶半側，因此把一個包拆成多行的組合包，其半側留在根行上，它註冊的每個頁面都隨根行關閉而消失。需要在其他行關閉時仍保留頁面的子外掛，應作為獨立的包釋出。
 
-构建出的 `./client` 文件必须是客户端模块系统的 lazy-CJS factory 格式：一段脚本，向页面的模块加载器登记包名和一个 `factory(require)`，见[客户端模块系统的 README](../../packages/client/modules/README.zh.md)。生成它的 `clientBundle` tsdown 预设位于 `packages/client/tsdown.client.ts`，而不在任何已发布的包里，因此仓库之外的包要自己复刻这一步构建。
+建置出的 `./client` 檔案必須是用戶端模組系統的 lazy-CJS factory 格式：一段腳本，向頁面的模組載入器登記包名和一個 `factory(require)`，見[用戶端模組系統的 README](../../packages/client/modules/README.zh.md)。生成它的 `clientBundle` tsdown 預設位於 `packages/client/tsdown.client.ts`，而不在任何已釋出的包裡，因此儲存庫之外的包要自己復刻這一步建置。
 
 ```jsonc
 {
@@ -69,4 +69,4 @@ ctx.slots.inject('plugins.detail.badge', () => ctx.slots.register({
 }
 ```
 
-内置命名空间的伴生包就是同样的浏览器半侧放在一个纯客户端包里，宿主 `apply` 为空，列入 Web 组合的插件花名册（[`packages/bundle/web-app/cordis.patch.yml`](../../packages/bundle/web-app/cordis.patch.yml)），并通过 `ctx.configForms.whileServed` 注册进 `plugins.item`，页面因此恰好在 Host 服务该命名空间期间存在。
+內建名稱空間的伴生包就是同樣的瀏覽器半側放在一個純用戶端包裡，主機 `apply` 為空，列入 Web 組合的外掛花名冊（[`packages/bundle/web-app/cordis.patch.yml`](../../packages/bundle/web-app/cordis.patch.yml)），並透過 `ctx.configForms.whileServed` 註冊進 `plugins.item`，頁面因此恰好在 Host 服務該名稱空間期間存在。

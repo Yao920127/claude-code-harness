@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-27-web-subagent-conversations.md
 /agent-note-web-subagent-catalog-and-human-continuation:
   en: c6373db2300cb803
-  zh: 4d0589f21ec284ff
+  zh: ed2db40f3b4107cd
 /agent-note-web-subagent-catalog-and-human-continuation/problem:
   en: dfdbe64d34f9e05b
-  zh: 4cb7a92a6d3dc3e3
+  zh: 39c89034cdf66afc
 /agent-note-web-subagent-catalog-and-human-continuation/decision:
   en: 8892eea7f62d45ed
-  zh: 18f64966ff53e38b
+  zh: 4ded21b96b45cd48
 /agent-note-web-subagent-catalog-and-human-continuation/design-context:
   en: 3c44fc5af90bc807
-  zh: 478538d028a52858
+  zh: 1152fbafaf03febb
 /agent-note-web-subagent-catalog-and-human-continuation/product-contract:
   en: 2060d607d1cd1ef3
-  zh: e7100887358625c4
+  zh: def200384d4afc49
 /agent-note-web-subagent-catalog-and-human-continuation/host-adapter-and-wire-contract:
   en: e0e82599b0a8d3bf
-  zh: e671e1f0f98795b4
+  zh: 9488298a5ce9016d
 /agent-note-web-subagent-catalog-and-human-continuation/client-object-layer-and-presentation:
   en: c0c891d86b1f7e1e
-  zh: c7b8da2bee81755d
+  zh: 3385f9c51f6846a5
 /agent-note-web-subagent-catalog-and-human-continuation/default-web-assembly:
   en: 6d4d8db99535aa18
-  zh: 803554b55a67acb1
+  zh: f62f7aaca199da17
 /agent-note-web-subagent-catalog-and-human-continuation/alternatives-considered:
   en: 427f0a8ace8ad692
-  zh: 876771621858f77d
+  zh: 5fbcb2050c73d89c
 /agent-note-web-subagent-catalog-and-human-continuation/testing:
   en: 0c2f7f5cc473ecff
-  zh: 00b2c22e109b3429
+  zh: bef2cf78ab3b3bb2
 /agent-note-web-subagent-catalog-and-human-continuation/consequences:
   en: 143fc76c6d09e8fb
-  zh: 01a042fb32b0d6e0
+  zh: d05dd4f3821cec42

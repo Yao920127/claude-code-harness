@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-sidebar-files/README.md
 /:
   en: d6514e0d092a210b
-  zh: 9980cb0f4fc6f903
+  zh: ecb83e5e7c7eac96
 /deepseek-ai-dsh-client-ui-sidebar-files:
   en: ae5625c23b3a864f
   zh: 20cf48a229e806bf
 /deepseek-ai-dsh-client-ui-sidebar-files/summary:
   en: 1605ae92aee5c231
-  zh: ad519ddb9e338892
+  zh: cc315490c065e52a
 /deepseek-ai-dsh-client-ui-sidebar-files/table-of-contents:
   en: 9411fb4809692e09
-  zh: dd13990d39c5be7f
+  zh: 3eea96b8da322ff1
 /deepseek-ai-dsh-client-ui-sidebar-files/what-it-registers:
   en: a13aadd9b0294870
-  zh: d30dc67f177f6c2d
+  zh: 4f7773205db1be3d
 /deepseek-ai-dsh-client-ui-sidebar-files/the-tree:
   en: a0ae0b1f223b3df1
-  zh: 8ddc325519bd75b2
+  zh: f4427e870c0d5c37
 /deepseek-ai-dsh-client-ui-sidebar-files/model-experience:
   en: a18a43f6842f1371
-  zh: 69f2a2b35f06dfc7
+  zh: 2b53ac9c7e854ac8
 /deepseek-ai-dsh-client-ui-sidebar-files/model-experience/kv-cache-effect:
   en: 5a6febb45089991a
-  zh: b17ed755fd098b83
+  zh: e643e5a71c8ec20c
 /deepseek-ai-dsh-client-ui-sidebar-files/known-limitations-and-deferred-work:
   en: c0e1831d8975186c
-  zh: 332aac8738458bb0
+  zh: edc6f523d4a0d5a3
 /deepseek-ai-dsh-client-ui-sidebar-files/known-limitations-and-deferred-work/dev-note:
   en: 3e8f2f242d43973b
-  zh: fb919fb393d51b20
+  zh: c8347f0daa470807

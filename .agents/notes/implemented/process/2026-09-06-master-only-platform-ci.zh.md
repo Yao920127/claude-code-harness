@@ -1,4 +1,4 @@
-# Agent Note: 仅 master 执行的平台 CI
+# Agent Note: 僅 master 執行的平臺 CI
 
 Status: implemented
 
@@ -6,28 +6,28 @@ Status: implemented
 
 ## Problem
 
-macOS Intel、ARM 与 Linux ARM64 上的 Python 运行时构建，以及通过 Wine 执行的 Windows 构建和网站检查，会在每次拉取请求修订时消耗付费托管容量。原生 Linux 与 Windows x64 已提供必需的可执行文件和安装后 wheel 包证据，原生 Windows 检查也会在合并前覆盖构建与进程行为。
+macOS Intel、ARM 與 Linux ARM64 上的 Python 執行時建置，以及透過 Wine 執行的 Windows 建置和網站檢查，會在每次拉取請求修訂時消耗付費託管容量。原生 Linux 與 Windows x64 已提供必需的可執行檔案和安裝後 wheel 包證據，原生 Windows 檢查也會在合併前覆蓋建置與程序行為。
 
 ## Decision
 
-[CI](../../../../.github/workflows/ci.yml) 要求 Linux x64 与 Windows x64 上的 Python 运行时验证。[CI master](../../../../.github/workflows/ci-master.yml) 仅在 master 推送时通过同一可复用构建器选择 Linux ARM64、macOS ARM64 与 macOS x64。两个调用方均传入 `ci: true` 和显式外部 API 密钥，保留完整的无密钥安装后 wheel 包场景及可信 live 测试的明确失败。Fork 与 Dependabot 拉取请求仍不带密钥；运行器信任与回退选择器保持不变。Python 发布保留全部五个目标。
+[CI](../../../../.github/workflows/ci.yml) 要求 Linux x64 與 Windows x64 上的 Python 執行時驗證。[CI master](../../../../.github/workflows/ci-master.yml) 僅在 master 推送時透過同一可複用建置器選擇 Linux ARM64、macOS ARM64 與 macOS x64。兩個呼叫方均傳入 `ci: true` 和顯式外部 API 金鑰，保留完整的無金鑰安裝後 wheel 包情境及可信 live 測試的明確失敗。Fork 與 Dependabot 拉取請求仍不帶金鑰；執行器信任與退回選擇器保持不變。Python 釋出保留全部五個目標。
 
-Wine 作为独立的托管 Ubuntu master 作业运行一次。其现有的按镜像标识的 apt 缓存恢复和保存也负责生成默认分支缓存，因此不需要单独的缓存预热作业。原生 Linux 与 Windows 串行聚合不调用 Wine。Wine 保持托管运行，避免在持久 Linux VM 上执行共享宿主机 apt 事务和共享 Wine prefix 清理。脚本负责临时快照、checkout 内的 Wine prefix 和经过校验和验证的 Windows Node 缓存；环境准备、失败传播及始终执行的清理保持不变。
+Wine 作為獨立的託管 Ubuntu master 作業執行一次。其現有的按映像標識的 apt 快取恢復和儲存也負責生成預設分支快取，因此不需要單獨的快取預熱作業。原生 Linux 與 Windows 序列聚合不呼叫 Wine。Wine 保持託管執行，避免在持久 Linux VM 上執行共享主機 apt 事務和共享 Wine prefix 清理。腳本負責臨時快照、checkout 內的 Wine prefix 和經過總和檢查碼驗證的 Windows Node 快取；環境準備、失敗傳播及始終執行的清理保持不變。
 
-[被取代 CI 的取消策略](2026-09-09-cancel-superseded-ci.zh.md) 适用于父工作流与可复用运行时工作流：更新的 master 推送或手动运行会取消同一工作流/引用组内的旧验证，而发布所属的构建仍受保护。master 推送会调度全部三个选定载体，但不保证每个中间提交都得到结果。
+[被取代 CI 的取消策略](2026-09-09-cancel-superseded-ci.zh.md) 適用於父工作流與可複用執行時工作流：更新的 master 推送或手動執行會取消同一工作流/引用組內的舊驗證，而釋出所屬的建置仍受保護。master 推送會排程全部三個選定載體，但不保證每個中間提交都得到結果。
 
-本决策部分取代[安装后 wheel 包验证](../testing/2026-08-23-installed-python-wheel-black-box-ci.zh.md)、[原生 Windows CI](2026-08-08-native-windows-pull-request-ci.zh.md)、[串行参考](2026-07-21-serial-cross-platform-ci-reference.zh.md)和[故障切换手册](2026-07-26-ci-failover-runbook.zh.md)中的调度策略。这些记录仍保留产物来源、平台保真度、串行完整性与信任规则的决策价值。
+本決策部分取代[安裝後 wheel 包驗證](../testing/2026-08-23-installed-python-wheel-black-box-ci.zh.md)、[原生 Windows CI](2026-08-08-native-windows-pull-request-ci.zh.md)、[序列參考](2026-07-21-serial-cross-platform-ci-reference.zh.md)和[故障切換手冊](2026-07-26-ci-failover-runbook.zh.md)中的排程策略。這些記錄仍保留產物來源、平臺保真度、序列完整性與信任規則的決策價值。
 
 ## Alternatives considered
 
-**在拉取请求上保留全部目标和 Wine 必需检查。** 这能在合并前发现平台特定缺陷，但会在每次修订时重复付费原生构建。所选策略明确接受这四项检查在合并后发现问题。
+**在拉取請求上保留全部目標和 Wine 必需檢查。** 這能在合併前發現平臺特定缺陷，但會在每次修訂時重複付費原生建置。所選策略明確接受這四項檢查在合併後發現問題。
 
-**等到发布或要求手动派发。** 这会失去自动的默认分支信号。master 推送保留定期触发的检查，不缩减发布矩阵。
+**等到釋出或要求手動派發。** 這會失去自動的預設分支訊號。master 推送保留定期觸發的檢查，不縮減釋出矩陣。
 
-**把 Wine 合入自托管串行聚合。** 聚合并未覆盖 Wine。加入它会改变持久宿主机依赖、共享缓存归属与清理隔离；此次调度优化不需要这种迁移。
+**把 Wine 合入自託管序列聚合。** 聚合並未覆蓋 Wine。加入它會改變持久主機依賴、共享快取歸屬與清理隔離；此次排程最佳化不需要這種遷移。
 
 ## Consequences
 
-macOS、Linux ARM64 或 Wine 特定回归可能在必需 PR 检查为绿时合并。master 失败仍是普通失败作业，不是 `continue-on-error` 观测项。Linux/Windows x64 安装后 wheel 包检查及原生 Windows 构建和进程检查继续阻塞 PR 聚合；其依赖绝不引用已移除的 Wine PR 作业。
+macOS、Linux ARM64 或 Wine 特定迴歸可能在必需 PR 檢查為綠時合併。master 失敗仍是普通失敗作業，不是 `continue-on-error` 觀測項。Linux/Windows x64 安裝後 wheel 包檢查及原生 Windows 建置和程序檢查繼續阻塞 PR 聚合；其依賴絕不引用已移除的 Wine PR 作業。
 
-[路由回归测试](../../../../scripts/tests/ci-master-platforms.spec.ts) 通过现有脚本 spec 覆盖率清单运行，检查目标划分、仅 master 条件、凭据传递、取消、Wine 唯一性、聚合依赖有效性及完整发布矩阵。已执行的负对照移除 Intel 目标、错误路由 Wine 并恢复失效聚合依赖；每项均产生预期失败。真实平台执行仍由 CI 负责；本地调度测试不声称执行了原生运行时或 Wine。
+[路由迴歸測試](../../../../scripts/tests/ci-master-platforms.spec.ts) 透過現有腳本 spec 覆蓋率清單執行，檢查目標劃分、僅 master 條件、憑證傳遞、取消、Wine 唯一性、聚合依賴有效性及完整發布矩陣。已執行的負對照移除 Intel 目標、錯誤路由 Wine 並恢復失效聚合依賴；每項均產生預期失敗。真實平臺執行仍由 CI 負責；本地排程測試不聲稱執行了原生執行時或 Wine。

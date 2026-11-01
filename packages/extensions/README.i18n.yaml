@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/extensions/README.md
 /:
   en: 622a9da424be9ad7
-  zh: f275f918a42b45ab
+  zh: e8a73376d5613cbc
 /packages-extensions:
   en: 3629b9b795f2e174
   zh: 30dbc9ce39af47c4
 /packages-extensions/summary:
   en: c4b1aae7c562ee51
-  zh: dc1d97b0b317fd3c
+  zh: d14e08ccf1689f31
 /packages-extensions/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-extensions/packages:
   en: d5bc1d3c23a4f809
-  zh: 933071a3a1a2b395
+  zh: d5c75626379aad0d
 /packages-extensions/related-documentation:
   en: 7eff95bfa2d67114
-  zh: bdd0319d8485dd62
+  zh: b5b305807cb9ce17
 /packages-extensions/dev-note:
   en: 905661ec39275901
-  zh: 802bf1ef52f66e0e
+  zh: 129c35000d688519

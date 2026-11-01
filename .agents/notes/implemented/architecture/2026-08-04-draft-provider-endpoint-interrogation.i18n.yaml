@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-04-draft-provider-endpoint-interrogation.md
 /agent-note-interrogating-a-draft-provider-endpoint:
   en: a465a218bbc2f74e
-  zh: 60d1eae3c79337a0
+  zh: 8703f8c8b8fa087b
 /agent-note-interrogating-a-draft-provider-endpoint/problem:
   en: c50e44492b4b30a2
-  zh: 74a17b3d3ec6cf0d
+  zh: 6708197813e13c12
 /agent-note-interrogating-a-draft-provider-endpoint/decision:
   en: dc323940d59008f4
-  zh: fc94284fcda71542
+  zh: 3fb797d13c72696d
 /agent-note-interrogating-a-draft-provider-endpoint/decision/why-not-pi-ai-s-own-refresh-machinery:
   en: a9654499e32c91b3
-  zh: cfb5a76500b6fe1a
+  zh: 5c11d47414d62f5f
 /agent-note-interrogating-a-draft-provider-endpoint/alternatives-considered:
   en: 3b4b4c33401d862a
-  zh: bb79062a431576f1
+  zh: ecf06956e6c4016d
 /agent-note-interrogating-a-draft-provider-endpoint/consequences:
   en: a4911a205e713f60
-  zh: 04adc6be1f4f34c7
+  zh: 26360e7c4cf01bbe
 /agent-note-interrogating-a-draft-provider-endpoint/testing:
   en: 40cf0cf6141eba6e
-  zh: 54a6097cf125b846
+  zh: 1ca3803882b5ad0e

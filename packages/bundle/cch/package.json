@@ -34,7 +34,6 @@
     }
   },
   "dependencies": {
-    "@deepseek-ai/dsh-client-locale-zh-hant": "workspace:*",
     "@deepseek-ai/dsh-client-ui-brand-claude": "workspace:*",
     "@deepseek-ai/dsh-client-ui-claude-code-usage": "workspace:*",
     "@deepseek-ai/dsh-client-ui-git": "workspace:*",

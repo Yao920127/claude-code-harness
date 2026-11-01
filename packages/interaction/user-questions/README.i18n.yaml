@@ -4,40 +4,40 @@
 #   pnpm run verify-translation-pairing --write packages/interaction/user-questions/README.md
 /:
   en: 49ea5bf7d681936e
-  zh: e65549bc2fc385a4
+  zh: d9dda0a7865f78ce
 /deepseek-ai-dsh-user-questions:
   en: 79d2910e509a2512
   zh: 7af1982658f00d64
 /deepseek-ai-dsh-user-questions/summary:
   en: d27ce8b495269248
-  zh: 691a7cc7f3d892d0
+  zh: 4d215b860b3889cb
 /deepseek-ai-dsh-user-questions/table-of-contents:
   en: ad3919bb107cc38d
-  zh: 557af29a8318b65c
+  zh: fe0af281a2a0fab3
 /deepseek-ai-dsh-user-questions/service-userquestionservice-ctx-key-userquestions:
   en: 1ba3467a2588da42
-  zh: 74f6e516f71116d9
+  zh: b5e8182536d4f1f3
 /deepseek-ai-dsh-user-questions/service-userquestionservice-ctx-key-userquestions/public-api:
   en: f7c183c8728b05cd
-  zh: f0104632d8eb2938
+  zh: 58784ebad1c56cef
 /deepseek-ai-dsh-user-questions/service-userquestionservice-ctx-key-userquestions/key-types:
   en: 10637ca40891d520
-  zh: 015662eb651d19cb
+  zh: b22e4dea6261946e
 /deepseek-ai-dsh-user-questions/service-userquestionservice-ctx-key-userquestions/presentation-intent:
   en: d3809cfa854f1c02
-  zh: f9bcc88f1db8fd83
+  zh: 2d26120e0fd998d5
 /deepseek-ai-dsh-user-questions/role:
   en: 1d4b9680e35350a7
-  zh: fcba25211099b880
+  zh: 539477e728311ec4
 /deepseek-ai-dsh-user-questions/model-experience:
   en: 95167d0c957a0ab5
-  zh: 582c04395648786c
+  zh: 3fd37bc89e666686
 /deepseek-ai-dsh-user-questions/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: cd40bdfe1a1c37dc
+  zh: 2c3d6b58341ef848
 /deepseek-ai-dsh-user-questions/known-limitations-and-deferred-work:
   en: 9c2d868427856d56
-  zh: f0d19979fd90d826
+  zh: e950c0660e4d98df
 /deepseek-ai-dsh-user-questions/known-limitations-and-deferred-work/dev-note:
   en: f5f2c82d2e085ccf
-  zh: d04ca73d1db0ef0f
+  zh: 18d3745a354f3155

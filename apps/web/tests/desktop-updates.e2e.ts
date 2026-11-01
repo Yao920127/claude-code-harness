@@ -49,9 +49,9 @@ describe('web e2e: Desktop update workspace chrome', () => {
           await page.waitForSelector('[class*="frame"]')
           await expect.poll(() => page.evaluate(() => (window as FixtureWindow).updateFixture.listeners.size)).toBe(1)
           const availableLabel = locale === 'zh-CN' ? '新版本' : 'Update'
-          const retryLabel = locale === 'zh-CN' ? '重试更新' : 'Retry update'
-          const errorDetail = locale === 'zh-CN' ? '下载更新失败，请重试。' : 'Could not download the update. Please try again.'
-          const readyLabel = locale === 'zh-CN' ? '安装并重启' : 'Install and Restart'
+          const retryLabel = locale === 'zh-CN' ? '重試更新' : 'Retry update'
+          const errorDetail = locale === 'zh-CN' ? '下載更新失敗，請重試。' : 'Could not download the update. Please try again.'
+          const readyLabel = locale === 'zh-CN' ? '安裝並重新啟動' : 'Install and Restart'
           const version = '0.1.5-nightly.20260911'
           // The carrier classification deliberately uses English shell copy; Web copy follows its own locale.
           const available = presentDesktopUpdate({ phase: 'available', version }, en)
@@ -82,8 +82,8 @@ describe('web e2e: Desktop update workspace chrome', () => {
           expect(await opens()).toBe(1)
           await page.screenshot({ path: join(evidence, 'downloading.png') })
 
-          const collapse = locale === 'zh-CN' ? '收起侧边栏' : 'Collapse sidebar'
-          const expand = locale === 'zh-CN' ? '打开侧边栏' : 'Open sidebar'
+          const collapse = locale === 'zh-CN' ? '收起側邊欄' : 'Collapse sidebar'
+          const expand = locale === 'zh-CN' ? '開啟側邊欄' : 'Open sidebar'
           await page.getByRole('button', { name: collapse, exact: true }).click()
           const toggle = page.getByRole('button', { name: expand, exact: true })
           const badge = toggle.getByRole('img', { name: '58%', exact: true })

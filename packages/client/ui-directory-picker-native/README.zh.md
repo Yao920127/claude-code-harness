@@ -1,5 +1,5 @@
 ---
-description: "原生目录选择表面：驱动本地 Desktop 或 Host 操作系统选择器的浏览器半部，用于工作区目录流程；供选择拾取交互的用户与维护者阅读。"
+description: "原生目錄選擇表面：驅動本地 Desktop 或 Host 作業系統選擇器的瀏覽器半部，用於工作區目錄流程；供選擇拾取互動的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,84 +9,84 @@ kind: "package-reference"
 
 ## 概述
 
-本包提供 Web GUI 的原生目录拾取表面：当工作区流程请求一个目录时，一个无渲染的浏览器填充会在本地机器上打开操作系统自带的选择器，并回报唯一结果——拾取的路径、取消或失败。它填充 `ui-workspace` 声明的两个目录流程 slot，用一行 `cordis.yml` 组合出原生拾取交互的客户端一侧。当浏览器与 Host 运行在同一台机器上时选择它；进程内与远程浏览器部署则需要 [`-browse`](../ui-directory-picker-browse/README.zh.md) 表面。
+本包提供 Web GUI 的原生目錄拾取表面：當工作區流程請求一個目錄時，一個無渲染的瀏覽器填充會在本地機器上開啟作業系統自帶的選擇器，並回報唯一結果——拾取的路徑、取消或失敗。它填充 `ui-workspace` 宣告的兩個目錄流程 slot，用一行 `cordis.yml` 組合出原生拾取互動的用戶端一側。當瀏覽器與 Host 執行在同一臺機器上時選擇它；程序內與遠端瀏覽器部署則需要 [`-browse`](../ui-directory-picker-browse/README.zh.md) 表面。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-与 `ui-workspace` 及 Host 后端 [`dsh-host-directory-picker-native`](../../host/directory-picker-native/README.zh.md) 一起挂载本插件；一行 `cordis.yml` 随即组合出完整的原生拾取交互。当工作区添加或选择器流程发起目录请求时，用户看到操作系统的文件夹对话框；拾取的路径被工作区流程采纳，取消则关闭对话框。
+與 `ui-workspace` 及 Host 後端 [`dsh-host-directory-picker-native`](../../host/directory-picker-native/README.zh.md) 一起掛載本外掛；一行 `cordis.yml` 隨即組合出完整的原生拾取互動。當工作區新增或選擇器流程發起目錄請求時，使用者看到作業系統的資料夾對話方塊；拾取的路徑被工作區流程採納，取消則關閉對話方塊。
 
-在本地 Electron 应用中，此流程使用 preload 提供的窄目录选择接口。取消和失败都不会改用 Host 选择器重试。普通 Web 使用 Host 调用；独立的浏览组合始终列出 Host 目录。
+在本地 Electron 應用中，此流程使用 preload 提供的窄目錄選擇介面。取消和失敗都不會改用 Host 選擇器重試。普通 Web 使用 Host 呼叫；獨立的瀏覽組合始終列出 Host 目錄。
 
-### 何时选择
+### 何時選擇
 
-当浏览器与 Host 运行在同一台机器上、操作系统对话框可以在那里打开时，选择此表面。当浏览器为远程或进程内、没有本地选择器时，选择 [`-browse`](../ui-directory-picker-browse/README.zh.md) 表面。两个表面填充相同的 slot，因此切换只是组合改动，而非代码改动。
+當瀏覽器與 Host 執行在同一臺機器上、作業系統對話方塊可以在那裡開啟時，選擇此表面。當瀏覽器為遠端或程序內、沒有本地選擇器時，選擇 [`-browse`](../ui-directory-picker-browse/README.zh.md) 表面。兩個表面填充相同的 slot，因此切換隻是組合改動，而非程式碼改動。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-两个 slot 注册经嵌套的 `ctx.slots.inject()` 调用作为一个事务性 effect 安装，因为任一声明条目都可能晚些激活或替换其声明。填充在每个上升沿 `open` 时只武装一次，因此重渲染永远不会再拉起一个选择器；结算结果挂在 ref 上，让答复到达持有方最新的处理器。HMR（热模块替换）导致填充被替换时，卸载会整体丢弃结算：wire 没有按请求中止的机制，因此 Host 侧选择器会一直存活到被答复，而它的答复无处落地。node 半部是一个空 `apply`，让插件留在 Host 名单上。
+兩個 slot 註冊經巢狀的 `ctx.slots.inject()` 呼叫作為一個事務性 effect 安裝，因為任一宣告條目都可能晚些啟用或替換其宣告。填充在每個上升沿 `open` 時只武裝一次，因此重渲染永遠不會再拉起一個選擇器；結算結果掛在 ref 上，讓答覆到達持有方最新的處理器。HMR（熱模組替換）導致填充被替換時，解除安裝會整體丟棄結算：wire 沒有按請求中止的機制，因此 Host 側選擇器會一直存活到被答覆，而它的答覆無處落實。node 半部是一個空 `apply`，讓外掛留在 Host 名單上。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当拾取面不够用时阅读以下页面。它们从浏览器半部进入 Host 后端与它所填充的 slot。
+當拾取面不夠用時閱讀以下頁面。它們從瀏覽器半部進入 Host 後端與它所填充的 slot。
 
-- [dsh-host-directory-picker-native](../../host/directory-picker-native/README.zh.md)——本表面驱动的操作系统选择器后端。
-- [ui-workspace](../ui-workspace/README.zh.md)——声明目录流程 slot 并拥有拾取对话。
-- [ui-directory-picker-browse](../ui-directory-picker-browse/README.zh.md)——面向远程与进程内部署的应用内浏览替代方案。
-- [Web 客户端架构](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——浏览器插件行如何加载并注册 slot。
+- [dsh-host-directory-picker-native](../../host/directory-picker-native/README.zh.md)——本表面驅動的作業系統選擇器後端。
+- [ui-workspace](../ui-workspace/README.zh.md)——宣告目錄流程 slot 並擁有拾取對話。
+- [ui-directory-picker-browse](../ui-directory-picker-browse/README.zh.md)——面向遠端與程序內部署的應用內瀏覽替代方案。
+- [Web 用戶端架構](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——瀏覽器外掛行如何載入並註冊 slot。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为目录选择器属于浏览器界面；本包中的任何内容都不会进入模型请求。
+無，因為目錄選擇器屬於瀏覽器介面；本包中的任何內容都不會進入模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制界定了原生选择器的适用时机。它们是当前包约束，不是通用选择器对比或任务积压。
+這些限制界定了原生選擇器的適用時機。它們是目前包約束，不是通用選擇器對比或任務積壓。
 
-- **无法取消已打开的选择器**——wire 没有按请求中止的机制，因此已显示在本地的选择器无法从浏览器关闭；被丢弃的结算会被忽略。
-- **仅限本地承载**——Electron 对话框选择本地路径；普通 Web 打开 Host 选择器。远程浏览器与进程内部署使用 `-browse` 组合。平台失败经由持有方的可重试文件夹对话框呈现。
-- **Linux 自动选择**——缺少 zenity 或 kdialog 时，Host 即使在 Desktop 中也选择浏览模式，不使用 Electron 对话框。
+- **無法取消已開啟的選擇器**——wire 沒有按請求中止的機制，因此已顯示在本地的選擇器無法從瀏覽器關閉；被丟棄的結算會被忽略。
+- **僅限本地承載**——Electron 對話方塊選擇本地路徑；普通 Web 開啟 Host 選擇器。遠端瀏覽器與程序內部署使用 `-browse` 組合。平臺失敗經由持有方的可重試資料夾對話方塊呈現。
+- **Linux 自動選擇**——缺少 zenity 或 kdialog 時，Host 即使在 Desktop 中也選擇瀏覽模式，不使用 Electron 對話方塊。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。插件将一个无渲染 flow occupant 作为一个事务性 effect 注册到两个 workspace hole；HMR 安全性规范证明该 effect 的释放行为，并且插件在各次 pick 之间不保留状态。
+**執行時不變式：** 不釋出伴生入口。外掛將一個無渲染 flow occupant 作為一個事務性 effect 註冊到兩個 workspace hole；HMR 安全性規範證明該 effect 的釋放行為，並且外掛在各次 pick 之間不保留狀態。

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/plan/README.md
 /:
   en: 7d0618763591cc1e
-  zh: 2787cf286ad71524
+  zh: 8f08109eb3682d1c
 /plan-plan-collaboration-state:
   en: 88bfa63f89c7720d
-  zh: 8017ab5c89bd13cf
+  zh: 5af924c67dda0f85
 /plan-plan-collaboration-state/summary:
   en: e7e55e6490c766ec
-  zh: 16bc34cebd0b453a
+  zh: 7c18f6d61b7ce1e0
 /plan-plan-collaboration-state/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /plan-plan-collaboration-state/packages:
   en: 851a053859e914fc
-  zh: 2430d56699265408
+  zh: 1dc5a2ec0cfde6c9
 /plan-plan-collaboration-state/related-documentation:
   en: d67e4daabfde8465
-  zh: 7fe00aa5e6b558e5
+  zh: 029e1bd0e8053a5c
 /plan-plan-collaboration-state/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

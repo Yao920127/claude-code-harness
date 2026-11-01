@@ -110,7 +110,7 @@ describe('MenuView', () => {
     // The icon token renders as an SVG glyph, not text.
     expect(options[0]?.querySelector('svg')).not.toBeNull()
     expect(options[1]?.querySelector('svg')).toBeNull()
-    const status = screen.getByRole('status', { name: '正在加载…' })
+    const status = screen.getByRole('status', { name: '正在載入…' })
     expect(status.children).toHaveLength(2)
   })
 
@@ -121,17 +121,17 @@ describe('MenuView', () => {
         source: 'command',
         status: 'ready',
         items: [
-          { name: 'plan', label: '计划', description: '进入或退出计划模式', icon: Glyph, section: '添加' },
-          { name: 'file', label: 'File', section: '添加' },
+          { name: 'plan', label: '計劃', description: '進入或退出計劃模式', icon: Glyph, section: '新增' },
+          { name: 'file', label: 'File', section: '新增' },
         ],
       }],
     }))
     const options = screen.getAllByRole('option')
-    expect(options.map(o => o.textContent)).toEqual(['计划plan进入或退出计划模式', 'File'])
+    expect(options.map(o => o.textContent)).toEqual(['計劃plan進入或退出計劃模式', 'File'])
     expect(options[0]?.querySelector('[data-glyph="plan"]')?.getAttribute('width')).toBe('14')
     // A label that is the name in another letter case renders no alias.
     expect(options[1]?.querySelectorAll('span')).toHaveLength(1)
-    expect(screen.getAllByText('添加')).toHaveLength(1)
+    expect(screen.getAllByText('新增')).toHaveLength(1)
   })
 
   it('keeps an opted-out source title hidden while its candidates are pending', () => {
@@ -140,7 +140,7 @@ describe('MenuView', () => {
       highlight: null,
     }))
     expect(screen.queryByText('reference')).toBeNull()
-    expect(screen.getByRole('status', { name: '正在加载…' })).toBeTruthy()
+    expect(screen.getByRole('status', { name: '正在載入…' })).toBeTruthy()
   })
 
   it('renders retained items instead of skeletons while a refinement is pending', () => {
@@ -170,16 +170,16 @@ describe('MenuView', () => {
         source: 'reference',
         status: 'ready',
         items: [
-          { name: 'Folder · src/', section: '文件与文件夹' },
-          { name: 'File · README.md', section: '文件与文件夹' },
-          { name: 'Session · Research', section: '对话' },
+          { name: 'Folder · src/', section: '檔案與資料夾' },
+          { name: 'File · README.md', section: '檔案與資料夾' },
+          { name: 'Session · Research', section: '對話' },
         ],
       }],
       highlight: { source: 'reference', index: 0 },
     }))
     expect(screen.queryByText('reference')).toBeNull()
-    expect(screen.getAllByText('文件与文件夹')).toHaveLength(1)
-    expect(screen.getAllByText('对话')).toHaveLength(1)
+    expect(screen.getAllByText('檔案與資料夾')).toHaveLength(1)
+    expect(screen.getAllByText('對話')).toHaveLength(1)
     const options = screen.getAllByRole('option')
     expect(options.map(option => option.textContent)).toEqual([
       'Folder · src/',
@@ -202,7 +202,7 @@ describe('MenuView', () => {
       }],
       highlight: { source: 'reference', index: 0 },
     }))
-    const chevrons = screen.getAllByRole('button', { name: '进入目录' })
+    const chevrons = screen.getAllByRole('button', { name: '進入目錄' })
     expect(chevrons).toHaveLength(1)
     // The chevron drills; the row body still settles the pick untouched.
     fireEvent.mouseDown(chevrons[0]!)
@@ -348,7 +348,7 @@ describe('MenuView', () => {
       { label: 'src', value: 'src' },
       { label: 'module1', value: 'module1', current: true },
     ]]]))
-    const nav = screen.getByRole('navigation', { name: '目录导航' })
+    const nav = screen.getByRole('navigation', { name: '目錄導航' })
     expect([...nav.querySelectorAll('button')].map(button => button.textContent))
       .toEqual(['Workspace', 'src', 'module1'])
     // The listbox holds options alone; the header is its sibling, not a row.
@@ -360,7 +360,7 @@ describe('MenuView', () => {
       { label: 'Workspace', value: 'root' },
       { label: 'src', value: 'src', current: true },
     ]]]))
-    const crumbs = screen.getByRole('navigation', { name: '目录导航' }).querySelectorAll('button')
+    const crumbs = screen.getByRole('navigation', { name: '目錄導航' }).querySelectorAll('button')
     expect(fireEvent.mouseDown(crumbs[0]!)).toBe(false)
     expect(onCrumb).toHaveBeenCalledWith('command', 0)
     onCrumb.mockClear()

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/computer-use/computer-use/README.md
 /:
   en: 5c5d7b5f1329ac1b
-  zh: b68d332df957109f
+  zh: 0d5e0d16a3ca2ece
 /deepseek-ai-dsh-computer-use:
   en: 2efee0c5f0d577bc
   zh: fef4b81bfc121052
 /deepseek-ai-dsh-computer-use/summary:
   en: 4de047849e68701f
-  zh: 90a32c0e279b4b05
+  zh: 049faf8dd393cc4b
 /deepseek-ai-dsh-computer-use/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 405b30feaf48c087
+  zh: f922b4fb64600ded
 /deepseek-ai-dsh-computer-use/use-this-package:
   en: 0a298fbbcd8dbc00
-  zh: 950de2af46c87f82
+  zh: 9615015b45b55d3d
 /deepseek-ai-dsh-computer-use/understand-the-implementation:
   en: c8a8d72c6944586c
-  zh: 0b216f8e9599543d
+  zh: 8d128812f9f429d8
 /deepseek-ai-dsh-computer-use/further-exploration:
   en: b1bdbcbc150036b3
-  zh: 1d356e0522587abc
+  zh: 4c7f29fc56da4753
 /deepseek-ai-dsh-computer-use/model-experience:
   en: 8780c250dfaefaaa
-  zh: 1c4b3598a131fb65
+  zh: 413be3695901dc72
 /deepseek-ai-dsh-computer-use/model-experience/kv-cache-effect:
   en: 0cc866a67a19d08b
-  zh: e1c3bb5ee2fed596
+  zh: b6a89281f2cb9637
 /deepseek-ai-dsh-computer-use/known-limitations-and-deferred-work:
   en: 6b8a90585a227a46
-  zh: 7e0e3bf026fd67e9
+  zh: 6d8d8d9f27ae3653
 /deepseek-ai-dsh-computer-use/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 6c5f9788c6536776
+  zh: 790d4671846c084b

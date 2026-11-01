@@ -42,9 +42,9 @@ function mount(overrides: Partial<FeedbackDialogState> = {}) {
 
 describe('FeedbackDialog', () => {
   it('owns the conversation-log disclosure and stability category in both supported locales', () => {
-    expect(zh['dialog.hint']).toBe('填写详情以帮助我们改进体验，提交内容会包括当前对话的日志')
+    expect(zh['dialog.hint']).toBe('填寫詳情以幫助我們改進體驗，提交內容會包括目前對話的日誌')
     expect(en['dialog.hint']).toBe('Add details to help us improve. Your submission will include the current conversation log.')
-    expect(zh['category.service-stability']).toBe('稳定性和速度')
+    expect(zh['category.service-stability']).toBe('穩定性和速度')
     expect(en['category.service-stability']).toBe('Stability and speed')
   })
 

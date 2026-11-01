@@ -1,51 +1,51 @@
-# Agent Note: PR CI 使用 runner 管理的临时存储
+# Agent Note: PR CI 使用 runner 管理的臨時儲存
 
 Status: implemented
 
 [English](2026-09-06-pr-ci-runner-temporary-storage.md) | 中文
 
-## 问题
+## 問題
 
-Linux 故障切换池在同一台虚拟机上运行多个 runner 实例。PR 覆盖率和快照进程使用操作系统临时目录存放转换后的模块与测试夹具。runner 临时目录之外的文件不受作业清理管理，取消执行阻止进程自行清理时也不例外。该共享目录耗尽会让无关 PR 在测试执行前就失败。
+Linux 故障切換池在同一臺虛擬機器上執行多個 runner 實例。PR 覆蓋率和快照程序使用作業系統臨時目錄存放轉換後的模組與測試夾具。runner 臨時目錄之外的檔案不受作業清理管理，取消執行阻止程序自行清理時也不例外。該共享目錄耗盡會讓無關 PR 在測試執行前就失敗。
 
-## 决策
+## 決策
 
-[PR CI](../../../../.github/workflows/ci.yml) 的静态检查、覆盖率和消费者作业在任何准备或测试进程启动前，在首个步骤通过 `GITHUB_ENV` 导出 `TMPDIR=runner.temp`。Node、Vite、tsx 和临时测试消费者继承 runner 管理的位置。每个 runner 管理自己的目录，GitHub Actions 在作业开始和完成时清除其中可删除的内容；测试夹具仍分配唯一子目录，并保留自身清理逻辑。
+[PR CI](../../../../.github/workflows/ci.yml) 的靜態檢查、覆蓋率和消費者作業在任何準備或測試程序啟動前，在首個步驟透過 `GITHUB_ENV` 匯出 `TMPDIR=runner.temp`。Node、Vite、tsx 和臨時測試消費者繼承 runner 管理的位置。每個 runner 管理自己的目錄，GitHub Actions 在作業開始和完成時清除其中可刪除的內容；測試夾具仍分配唯一子目錄，並保留自身清理邏輯。
 
-npm 保留配置的持久化缓存，在 POSIX 上通常为 `$HOME/.npm`；主 CI 和发布工作流不设置每作业覆盖。pnpm store 保持共享于 `$HOME/.local/share/pnpm/store`。两者依靠包管理器的并发访问支持保留跨 runner 复用；共享缓存容量及文件系统故障仍由运维负责。消费者作业将 Playwright 浏览器下载和安装锁放在 `RUNNER_TEMP` 旁；托管缓存恢复使用同一位置。
+npm 保留設定的持久化快取，在 POSIX 上通常為 `$HOME/.npm`；主 CI 和釋出工作流不設定每作業覆蓋。pnpm store 保持共享於 `$HOME/.local/share/pnpm/store`。兩者依靠包管理器的並行存取支援保留跨 runner 複用；共享快取容量及檔案系統故障仍由運維負責。消費者作業將 Playwright 瀏覽器下載和安裝鎖放在 `RUNNER_TEMP` 旁；託管快取恢復使用同一位置。
 
-[发布演练决策](../process/2026-09-06-release-rehearsal-selfhosted.zh.md) 对发布消费者采用相同的生命周期规则。[故障切换运行手册](../process/2026-07-26-ci-failover-runbook.zh.md) 继续负责 runner 选择和共享主机容量。本变更不调整作业目标、不降低并发、不重试测试、不削弱断言，也不修改仅在 master 上执行的 CI。
+[釋出演練決策](../process/2026-09-06-release-rehearsal-selfhosted.zh.md) 對釋出消費者採用相同的生命週期規則。[故障切換執行手冊](../process/2026-07-26-ci-failover-runbook.zh.md) 繼續負責 runner 選擇和共享主機容量。本變更不調整作業目標、不降低並行、不重試測試、不削弱斷言，也不修改僅在 master 上執行的 CI。
 
-## ACP 完成顺序的录制
+## ACP 完成順序的錄製
 
-[ACP 诊断场景](../../../../snapshots/session/subagent-acp-diagnostic/cordis.snapshot.yml) 暂停脚本化的后台响应，直到 `job_output` 开始等待完成。没有这种同步，快速子进程可能在录制的父步骤之间发布合法的作业通知。场景本地 wrapper 在 jobs 服务注册完成等待器后释放子进程；mock 在测试私有 workspace 中监听独占创建的标记，并在释放后关闭 watcher。夹具在销毁时恢复被包装的方法。录制的 Session 字节和生产作业通知行为保持不变。
+[ACP 診斷情境](../../../../snapshots/session/subagent-acp-diagnostic/cordis.snapshot.yml) 暫停腳本化的後臺回應，直到 `job_output` 開始等待完成。沒有這種同步，快速子程序可能在錄製的父步驟之間釋出合法的作業通知。情境本地 wrapper 在 jobs 服務註冊完成等待器後釋放子程序；mock 在測試私有 workspace 中監聽獨佔建立的標記，並在釋放後關閉 watcher。夾具在銷燬時恢復被包裝的方法。錄製的 Session 位元組和生產作業通知行為保持不變。
 
-## Workspace 授权夹具的位置
+## Workspace 授權夾具的位置
 
-Headless 的 `session-sandbox-root` 夹具声明 `workspace.parent: outside-temp`，而不是依赖 home 所在文件系统。分配器在父目录可写且避开系统临时授权时选择规范化平台临时根目录的同级目录，否则使用 home，并拒绝已被自动临时写授权覆盖的 cwd。在故障切换 runner 上，这让测试留在数据卷中，同时不会让写入借助临时目录豁免而成功。文件系统沙箱的包含关系测试使用同一分配器创建 workspace 及被拒绝的同级目录，并在成功获取目录后立即注册清理。原子 workspace 分配、录制的 Session 字节以及独立预期文件保持不变。
+Headless 的 `session-sandbox-root` 夾具宣告 `workspace.parent: outside-temp`，而不是依賴 home 所在檔案系統。分配器在父目錄可寫且避開系統臨時授權時選擇規範化平臺臨時根目錄的同級目錄，否則使用 home，並拒絕已被自動臨時寫授權覆蓋的 cwd。在故障切換 runner 上，這讓測試留在資料卷中，同時不會讓寫入藉助臨時目錄豁免而成功。檔案系統沙箱的包含關係測試使用同一分配器建立 workspace 及被拒絕的同級目錄，並在成功取得目錄後立即註冊清理。原子 workspace 分配、錄製的 Session 位元組以及獨立預期檔案保持不變。
 
-## 在线验证与浏览器夹具输入
+## 線上驗證與瀏覽器夾具輸入
 
-已安装 wheel 的在线 SDK 测试在要求模型验证前，由外部将创建的文件替换为新的、仅主机知道的挑战值；验证提示不暴露该值。两个 turn 必须包含模型请求的工具调用，验证器同时比较返回值及真实文件字节。
+已安裝 wheel 的線上 SDK 測試在要求模型驗證前，由外部將建立的檔案替換為新的、僅主機知道的挑戰值；驗證提示不暴露該值。兩個 turn 必須包含模型請求的工具呼叫，驗證器同時比較回傳值及真實檔案位元組。
 
-Reference-composer 夹具将已知的 home 缩写 workspace 显示映射到既有 cwd token，并在选择前等待当前精确建议集；主机路径或过时建议都不决定测试结果。共享浏览器时区、Inspector 订阅同步及 PowerShell 完成行为遵循[既有平台测试决策](2026-09-07-pwsh-ci-observable-completion.zh.md)。
+Reference-composer 夾具將已知的 home 縮寫 workspace 顯示對映到既有 cwd token，並在選擇前等待目前精確建議集；主機路徑或過時建議都不決定測試結果。共享瀏覽器時區、Inspector 訂閱同步及 PowerShell 完成行為遵循[既有平臺測試決策](2026-09-07-pwsh-ci-observable-completion.zh.md)。
 
-高级 Python 快照仅暂停其匹配的 workflow 子进程首次 pre-step，直到观察到父 Session 的持久化 workflow 成员事件。夹具支持事件先到或等待先建立两种顺序，并在取消或销毁时结束未完成等待。这固定了场景的跨 Session 顺序，而不排序通知或改变生产调度。
+高階 Python 快照僅暫停其匹配的 workflow 子程序首次 pre-step，直到觀察到父 Session 的持久化 workflow 成員事件。夾具支援事件先到或等待先建立兩種順序，並在取消或銷燬時結束未完成等待。這固定了情境的跨 Session 順序，而不排序通知或改變生產排程。
 
-Queue 快照在捕获前将指针移离 Stop/Send 控件，并等待其 Send tooltip 关闭。Workspace-management 测试通过操作按钮定位唯一非空 Session，而不依赖行位置；在断言归档会移除空的 Ungrouped 分组前，先选中该 Session。Hover 行为、队列内容、持久化归档身份及重载断言保持不变。并发 spill 隔离测试将每个根目录与其运行结果关联，而不假设文件系统分配完成顺序与输入顺序一致。
+Queue 快照在捕捉前將指標移離 Stop/Send 控制元件，並等待其 Send tooltip 關閉。Workspace-management 測試透過操作按鈕定位唯一非空 Session，而不依賴行位置；在斷言歸檔會移除空的 Ungrouped 分組前，先選中該 Session。Hover 行為、佇列內容、持久化歸檔身份及過載斷言保持不變。並行 spill 隔離測試將每個根目錄與其執行結果關聯，而不假設檔案系統分配完成順序與輸入順序一致。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**由 PR 作业删除共享临时文件。** 其他 runner 可能仍在使用这些文件。仓库作业不得按路径或文件年龄回收共享目录。
+**由 PR 作業刪除共享臨時檔案。** 其他 runner 可能仍在使用這些檔案。儲存庫作業不得按路徑或檔案年齡回收共享目錄。
 
-**重试测试或增大超时。** 两者都不能恢复存储空间，也不能为残留文件指定清理责任方。
+**重試測試或增大超時。** 兩者都不能恢復儲存空間，也不能為殘留檔案指定清理責任方。
 
-**将所有作业切换到托管 runner。** 这能避开受影响的虚拟机，但故障切换路径的缺陷仍在，也会改变运维人员独立选择的执行池。
+**將所有作業切換到託管 runner。** 這能避開受影響的虛擬機器，但故障切換路徑的缺陷仍在，也會改變運維人員獨立選擇的執行池。
 
-## 影响
+## 影響
 
-遵循 `TMPDIR` 的输出随作业生命周期清理，而不累积于无人管理的主机存储。包管理器和浏览器缓存保持持久化。本方案不回收既有共享临时文件、不保证文件系统容量，也不清理 runner 账号无权删除的文件。历史残留、磁盘配置以及本 PR 工作流以外的作业仍由运维人员负责。
+遵循 `TMPDIR` 的輸出隨作業生命週期清理，而不累積於無人管理的主機儲存。包管理器和瀏覽器快取保持持久化。本方案不回收既有共享臨時檔案、不保證檔案系統容量，也不清理 runner 帳號無權刪除的檔案。歷史殘留、磁碟設定以及本 PR 工作流以外的作業仍由運維人員負責。
 
-Linux bwrap 和 Landlock 的 workspace-write profile 允许写入字面路径 `/tmp` 和 workspace，而不允许写入其外部继承的 `TMPDIR`；受限测试夹具必须将临时写入放在这些已授权路径中。[快照 spill helper](../../../../packages/test-support/session-snapshot/src/harness.ts) 将固定长度的逻辑定位符与原子分配的实际存储分开。仅用于夹具的适配器将保存操作委托给真实的本地 spill provider，并仅将本次运行已保存的定位符解析到实际文件。录制的预览长度、省略计数及检索断言保持不变；逻辑 `/tmp/dsh-acp-snap-*` 前缀下不分配文件。本变更不扩大产品沙箱授权。
+Linux bwrap 和 Landlock 的 workspace-write profile 允許寫入字面路徑 `/tmp` 和 workspace，而不允許寫入其外部繼承的 `TMPDIR`；受限測試夾具必須將臨時寫入放在這些已授權路徑中。[快照 spill helper](../../../../packages/test-support/session-snapshot/src/harness.ts) 將固定長度的邏輯定位符與原子分配的實際儲存分開。僅用於夾具的介面卡將儲存操作委託給真實的本地 spill provider，並僅將本次執行已儲存的定位符解析到實際檔案。錄製的預覽長度、省略計數及檢索斷言保持不變；邏輯 `/tmp/dsh-acp-snap-*` 字首下不分配檔案。本變更不擴大產品沙箱授權。
 
-[ci-workflow.spec.ts](../../../../scripts/ci-workflow.spec.ts) 的 YAML 解析用例要求三个 worker 都包含该赋值，并拒绝步骤级别的覆盖。它们在未修改的工作流上失败。独立进程 smoke 检查和重复 PR 运行验证实际工具链；仅有 YAML 断言不能证明主机容量充足。
+[ci-workflow.spec.ts](../../../../scripts/ci-workflow.spec.ts) 的 YAML 解析案例要求三個 worker 都包含該賦值，並拒絕步驟級別的覆蓋。它們在未修改的工作流上失敗。獨立程序 smoke 檢查和重複 PR 執行驗證實際工具鏈；僅有 YAML 斷言不能證明主機容量充足。

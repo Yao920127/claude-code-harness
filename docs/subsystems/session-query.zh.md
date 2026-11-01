@@ -1,14 +1,14 @@
-# 会话查询
+# 工作階段查詢
 
 [English](session-query.md) | 中文
 
-本文定义逻辑会话语料库的查询词汇；当 live 数据存在时，该语料库优先使用 live 数据。[Service Definition 包](../../packages/session-query/session-query)负责精确读取、来源优先级、关系追踪、语义提取，以及与提供方无关的过滤器；[SQLite 提供方](../../packages/session-query/session-query-sqlite)负责具体全文索引的生命周期。
+本文定義邏輯工作階段語料庫的查詢詞彙；當 live 資料存在時，該語料庫優先使用 live 資料。[Service Definition 包](../../packages/session-query/session-query)負責精確讀取、來源優先順序、關係追蹤、語義提取，以及與提供者無關的過濾器；[SQLite 提供者](../../packages/session-query/session-query-sqlite)負責具體全文索引的生命週期。
 
-源码：[`packages/session-query/session-query/src/types.ts`](../../packages/session-query/session-query/src/types.ts)
+原始碼：[`packages/session-query/session-query/src/types.ts`](../../packages/session-query/session-query/src/types.ts)
 
-## 逻辑记录
+## 邏輯記錄
 
-`SessionRecord` 由全语料库列表返回。它除了克隆的、优先取自 live 源的 header 外，还单独公开各源的可用性。`SessionEventRecord` 是轻量的原始日志投影；分类使用与模型历史推导相同的 `foldSurface()` 状态转换。
+`SessionRecord` 由全語料庫列表返回。它除了克隆的、優先取自 live 源的 header 外，還單獨公開各源的可用性。`SessionEventRecord` 是輕量的原始日誌投影；分類使用與模型歷史推導相同的 `foldSurface()` 狀態轉換。
 
 ```ts type-equiv
 /** Whether an event is current model context, replaced context, or raw-log-only. */
@@ -27,7 +27,7 @@ interface SessionRecord {
 }
 ```
 
-`SessionLogSnapshot` 是供恢复预检使用的完整原始日志：它脱离运行时，并经过回放验证。`SessionSurfaceSnapshot` 表示一次精确读取的 surface 观测结果，而不是持续保留的订阅。
+`SessionLogSnapshot` 是供恢復預檢使用的完整原始日誌：它脫離執行時，並經過回放驗證。`SessionSurfaceSnapshot` 表示一次精確讀取的 surface 觀測結果，而不是持續保留的訂閱。
 
 ```ts type-equiv
 /** One validated detached observation of a logical session's complete raw log. */
@@ -55,7 +55,7 @@ interface SessionSurfaceSnapshot {
 }
 ```
 
-`SessionTitleObservation` 将同样的原子观测规则应用于标题折叠，使执行授权检查的消费方能够验证提供标题的源 header。批量读取会按顺序为每个唯一请求 id 返回一个 `SessionTitleObservationResult`：操作失败只影响对应 id，而取消会拒绝整个操作。
+`SessionTitleObservation` 將同樣的原子觀測規則應用於標題摺疊，使執行授權檢查的消費方能夠驗證提供標題的源 header。批次讀取會按順序為每個唯一請求 id 返回一個 `SessionTitleObservationResult`：操作失敗隻影響對應 id，而取消會拒絕整個操作。
 
 ```ts type-equiv
 /** Latest folded title bound to the same session-header observation. */
@@ -104,9 +104,9 @@ interface SessionEventRecord {
 }
 ```
 
-## 与提供方无关的过滤器和文档
+## 與提供者無關的過濾器和文件
 
-会话和事件过滤器数组内的各项按逻辑与（AND）组合；单个列表子句中的各值按逻辑或（OR）组合。范围包含两端。事件的 `text` 子句会对提取出的语义文本执行正则表达式扫描：搜索文本按字面量处理，按 Unicode 规则执行不区分大小写的匹配，并允许灵活匹配空白字符；该过程与全文搜索提供方无关。
+工作階段和事件過濾器陣列內的各項按邏輯與（AND）組合；單個列表子句中的各值按邏輯或（OR）組合。範圍包含兩端。事件的 `text` 子句會對提取出的語義文字執行正規表示式掃描：搜尋文字按字面量處理，按 Unicode 規則執行不區分大小寫的匹配，並允許靈活匹配空白字元；該過程與全文搜尋提供者無關。
 
 ```ts type-equiv
 /**
@@ -142,11 +142,11 @@ interface SessionEventSearchDocument extends SessionEventRecord {
 }
 ```
 
-`ctx.sessionQuery.filterSessions(filters)` 会对完整的逻辑会话语料库应用 `SessionResultFilter`；`ctx.sessionQuery.filterEvents(sessionId, filters)` 按 seq 升序返回匹配的文档。消息、工具调用和工具结果、待办事项，以及失败和状态详情会纳入语义文本；推理（reasoning）块、被阻止的提示词、结构事件和流分片则不会。
+`ctx.sessionQuery.filterSessions(filters)` 會對完整的邏輯工作階段語料庫應用 `SessionResultFilter`；`ctx.sessionQuery.filterEvents(sessionId, filters)` 按 seq 升序返回匹配的文件。訊息、工具呼叫和工具結果、待辦事項，以及失敗和狀態詳情會納入語義文字；推理（reasoning）塊、被阻止的提示詞、結構事件和流分片則不會。
 
-## 全文搜索结果页
+## 全文搜尋結果頁
 
-整合后的 `ctx.sessionQuery` seam 提供两个全文搜索范围。`searchSessions()` 按匹配度最强的事件对语料库分组；`searchEvents()` 搜索单个会话。请求将不透明游标与规范化后的查询、元数据过滤器和结果数量上限绑定。提供方的元数据过滤器有意不包含事件文本扫描。
+整合後的 `ctx.sessionQuery` seam 提供兩個全文搜尋範圍。`searchSessions()` 按匹配度最強的事件對語料庫分組；`searchEvents()` 搜尋單個工作階段。請求將不透明遊標與規範化後的查詢、中繼資料過濾器和結果數量上限繫結。提供者的中繼資料過濾器有意不包含事件文字掃描。
 
 ```ts type-equiv
 /** Provider-owned opaque continuation token returned by session search. */
@@ -195,7 +195,7 @@ interface SessionSearchPage<T> {
 }
 ```
 
-与跨会话分组 hit 不同，会话内搜索结果即使没有命中项，也必须公开搜索时观测到的目标 header。
+與跨工作階段分組 hit 不同，工作階段內搜尋結果即使沒有命中項，也必須公開搜尋時觀測到的目標 header。
 
 ```ts type-equiv
 /** Event-search results bound to the indexed target-session observation. */
@@ -221,9 +221,9 @@ interface SessionSearchHit extends SessionRecord {
 }
 ```
 
-## 会话谱系
+## 工作階段譜系
 
-`SessionLineageTrace` 按由近及远的顺序携带已知 parent，以及由直接 descendant 递归嵌套而成的森林。完整性判别字段使已知 root 与缺失 parent 互斥。
+`SessionLineageTrace` 按由近及遠的順序攜帶已知 parent，以及由直接 descendant 遞迴巢狀而成的森林。完整性判別欄位使已知 root 與缺失 parent 互斥。
 
 ```ts type-equiv
 /** Recursive descendant node in a session-lineage trace. */
@@ -260,9 +260,9 @@ type SessionLineageTrace = {
 )
 ```
 
-## 有界事件读取
+## 有界事件讀取
 
-请求指定一个原始 seq 及可选的邻近数量。结果携带 `SessionHeader` 而非可用性标志，使已知的 live 目标可以独立于持久化健康状态。
+請求指定一個原始 seq 及可選的鄰近數量。結果攜帶 `SessionHeader` 而非可用性標誌，使已知的 live 目標可以獨立於持久化健康狀態。
 
 ```ts type-equiv
 /** Request for one event plus raw neighboring log context. */
@@ -296,9 +296,9 @@ interface SessionEventWindow {
 }
 ```
 
-## 事件关系
+## 事件關係
 
-事件追踪会区分位置替换与被引用为来源的事件。除 `replacementChain` 外，每个 seq 列表都只包含直接链接；该链从目标沿直接 replacer 追踪到最终的位置替换。
+事件追蹤會區分位置替換與被引用為來源的事件。除 `replacementChain` 外，每個 seq 列表都只包含直接連結；該鏈從目標沿直接 replacer 追蹤到最終的位置替換。
 
 ```ts type-equiv
 /** Request for direct surface replacements and relationships to cited source events around one event. */
@@ -336,9 +336,9 @@ interface SessionEventTraceObservation extends SessionEventTrace {
 }
 ```
 
-## 错误
+## 錯誤
 
-封闭的 code 联合类型区分请求校验、目标缺失、surface 日志格式错误、可选后端故障、部署关闭搜索与矛盾的源元数据。
+封閉的 code 聯合型別區分請求驗證、目標缺失、surface 日誌格式錯誤、可選後端故障、部署關閉搜尋與矛盾的源中繼資料。
 
 ```ts type-equiv
 /** Stable machine-routable failure taxonomy for session reads, traces, and search. */

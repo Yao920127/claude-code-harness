@@ -1,5 +1,5 @@
 ---
-description: "浏览器 UI 渲染器：普通 Slot 与可复用 Component Factory 的 React 绑定、ctx.uiRenderer 与组装后的 dsh Web 应用根。"
+description: "瀏覽器 UI 渲染器：普通 Slot 與可複用 Component Factory 的 React 繫結、ctx.uiRenderer 與組裝後的 dsh Web 應用根。"
 kind: "package-reference"
 ---
 
@@ -9,97 +9,97 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-renderer` 挂载组装完成的 dsh Web 客户端 GUI：完整客户端插件名册稳定后，启动内核调用 `ctx.uiRenderer.mount(container)`，它会 hydrate 不依赖框架的启动页，并在下一次绘制前切换到完整的 React 应用。业务插件仍是接收类型化 props 的普通 React 组件，通过 props 获取会话与 Workspace 数据，永远不需要自行接线订阅——渲染器在 slot outlet 处把运行时的裸 observable source 绑定为 selector 钩子。Web 外壳与启动内核是它仅有的直接消费方，因此只要组合需要 React 渲染的 GUI，就需要它。
+`dsh-client-ui-renderer` 掛載組裝完成的 dsh Web 用戶端 GUI：完整用戶端外掛名冊穩定後，啟動核心呼叫 `ctx.uiRenderer.mount(container)`，它會 hydrate 不依賴框架的啟動頁，並在下一次繪製前切換到完整的 React 應用。業務外掛仍是接收型別化 props 的普通 React 元件，透過 props 取得工作階段與 Workspace 資料，永遠不需要自行接線訂閱——渲染器在 slot outlet 處把執行時的裸 observable source 繫結為 selector 掛鉤。Web 外殼與啟動核心是它僅有的直接消費方，因此只要組合需要 React 渲染的 GUI，就需要它。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-本包属于基础设施：Web 外壳与启动内核是它仅有的直接消费方。只要组合需要 React 渲染的 GUI，就需要它——`dsh-client-web` 加载名册，等待每个 entry 激活，然后调用 `ctx.uiRenderer.mount(container)`。
+本包屬於基礎設施：Web 外殼與啟動核心是它僅有的直接消費方。只要組合需要 React 渲染的 GUI，就需要它——`dsh-client-web` 載入名冊，等待每個 entry 啟用，然後呼叫 `ctx.uiRenderer.mount(container)`。
 
-### 挂载做什么
+### 掛載做什麼
 
-`mount(container)` 会安装 slot 渲染器、在存在时 hydrate 现有启动 DOM、在下一次绘制前把组装后的应用渲染进容器，并返回一个卸载 React 根的 disposer。渲染器执行全程序唯一一次上下文级 `renderSlot('root')` 调用；注册的根占用方拥有产品布局与文档元数据。
+`mount(container)` 會安裝 slot 渲染器、在存在時 hydrate 現有啟動 DOM、在下一次繪製前把組裝後的應用渲染進容器，並返回一個解除安裝 React 根的 disposer。渲染器執行全程式唯一一次上下文級 `renderSlot('root')` 呼叫；註冊的根佔用方擁有產品佈局與文件中繼資料。
 
-### 对业务插件
+### 對業務外掛
 
-业务插件注册普通 Slot entry 或可复用 Component Factory；渲染器在渲染位置把运行时的会话与 Workspace observable source 绑定为 selector 钩子。插件通过推导出的 Component props 收到标准 scope props——它绝不导入渲染器，也不触碰 React 内部机制。每个由 renderer 创建的 Component 都能渲染 Factory occurrence，Factory 也能暴露由调用方选择的局部 Component，而无需在包之间共享实现值。
+業務外掛註冊普通 Slot entry 或可複用 Component Factory；渲染器在渲染位置把執行時的工作階段與 Workspace observable source 繫結為 selector 掛鉤。外掛透過推匯出的 Component props 收到標準 scope props——它絕不匯入渲染器，也不觸碰 React 內部機制。每個由 renderer 建立的 Component 都能渲染 Factory occurrence，Factory 也能暴露由呼叫方選擇的區域性 Component，而無需在包之間共享實作值。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本包实现一条边界：对象层（运行时，无 React）拥有业务状态；这里是 ctx 到 React 集成唯一发生的位置——slot 渲染器、`SessionProvider` 与 `useSyncExternalStore` 适配器。
+本包實作一條邊界：物件層（執行時，無 React）擁有業務狀態；這裡是 ctx 到 React 整合唯一發生的位置——slot 渲染器、`SessionProvider` 與 `useSyncExternalStore` 介面卡。
 
-### 激活与挂载
+### 啟用與掛載
 
-插件在 `slots`、`sessions` 与 `layout` 就绪后激活；它安装 `createSlotRenderer()` 并 reflect `uiRenderer` 服务。`mountApp` 会查找启动内核的 `[data-dsh-boot]` 元素：存在时经 `BootHandoff`（一个保留加载 DOM 的单帧透传）hydrate，否则创建全新的根节点并同步提交渲染。
+外掛在 `slots`、`sessions` 與 `layout` 就緒後啟用；它安裝 `createSlotRenderer()` 並 reflect `uiRenderer` 服務。`mountApp` 會查詢啟動核心的 `[data-dsh-boot]` 元素：存在時經 `BootHandoff`（一個保留載入 DOM 的單幀直接傳遞）hydrate，否則建立全新的根節點並同步提交渲染。
 
-### Slot 绑定
+### Slot 繫結
 
-`createSlotRenderer` 把 slot 注册表连接到 React：普通 entry list 与 Factory definition 成为响应式 source，每个 outlet 或 occurrence 经已安装的渲染器渲染。业务插件通过带类型的 `hooks` 传递裸 observable source；渲染器经 uSES 适配器在渲染位置完成绑定。Factory Store factory 保持 lazy，直到 occurrence 首次物化时才创建 handle；其 exclusive handle 拒绝持久化，渲染期记录保持弱引用，幂等 effect 仅强引用 mounted occurrences，同时在 effect replay 期间保留 identity。Factory 错误使用普通监督通道且不会 abdicate 共享 definition：definition 及其 fallback 局部 Component 的失败归属 definition，调用方所选局部 Component 的失败归属调用方 registration，每个边界随自身 scope incarnation 重置。
+`createSlotRenderer` 把 slot 註冊表連線到 React：普通 entry list 與 Factory definition 成為回應式 source，每個 outlet 或 occurrence 經已安裝的渲染器渲染。業務外掛透過帶型別的 `hooks` 傳遞裸 observable source；渲染器經 uSES 介面卡在渲染位置完成繫結。Factory Store factory 保持 lazy，直到 occurrence 首次物化時才建立 handle；其 exclusive handle 拒絕持久化，渲染期記錄保持弱引用，冪等 effect 僅強引用 mounted occurrences，同時在 effect replay 期間保留 identity。Factory 錯誤使用普通監督通道且不會 abdicate 共享 definition：definition 及其 fallback 區域性 Component 的失敗歸屬 definition，呼叫方所選區域性 Component 的失敗歸屬呼叫方 registration，每個邊界隨自身 scope incarnation 重置。
 
 ### 身份
 
-React、React DOM、Cordis、ui-slots 与 ui-primitives 通过 Web 外壳的静态模块表保持同一浏览器身份；本包则以动态客户端 bundle 的形式加载。
+React、React DOM、Cordis、ui-slots 與 ui-primitives 透過 Web 外殼的靜態模組表保持同一瀏覽器身份；本包則以動態用戶端 bundle 的形式載入。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖周边机制与组合模型。
+以下頁面覆蓋周邊機制與組合模型。
 
-- [ui-slots](../ui-slots/README.zh.md)——本渲染器绑定到 React 的 slot 注册表纯核心。
-- [web](../web/README.zh.md)——加载名册并调用 `mount` 的外壳。
-- [ui-session](../ui-session/README.zh.md)——提供本渲染器所绑定标准会话 source 与钩子的适配器。
-- [Web 客户端架构](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——加载链、对象层与分层红线。
-- [slot 系统标准](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——权威组合模型。
-- [Component Factory](../../../.agents/notes/implemented/architecture/2026-09-10-component-factories-and-local-slots.zh.md)——可复用 definitions、局部 Component 选择与 occurrence 生命周期。
+- [ui-slots](../ui-slots/README.zh.md)——本渲染器繫結到 React 的 slot 註冊表純核心。
+- [web](../web/README.zh.md)——載入名冊並呼叫 `mount` 的外殼。
+- [ui-session](../ui-session/README.zh.md)——提供本渲染器所繫結標準工作階段 source 與掛鉤的介面卡。
+- [Web 用戶端架構](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——載入鏈、物件層與分層紅線。
+- [slot 系統標準](../../../.agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.zh.md)——權威組合模型。
+- [Component Factory](../../../.agents/notes/implemented/architecture/2026-09-10-component-factories-and-local-slots.zh.md)——可複用 definitions、區域性 Component 選擇與 occurrence 生命週期。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端渲染组装层，不注册任何面向模型的内容。
+無。該包是瀏覽器端渲染組裝層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明应用首帧何时出现、按区域就绪能走多远；它们是当前包约束。
+這些限制說明應用首幀何時出現、按區域就緒能走多遠；它們是目前包約束。
 
-- **应用首帧会等待全部客户端 entry**：启动内核只在 loader 名册稳定后交出挂载点；按区域就绪仍属暂缓事项。
-- **slot 渲染没有 Suspense 集成或逐 entry 惰性加载**：完整插件名册稳定后，渲染器才挂载根节点。
+- **應用首幀會等待全部用戶端 entry**：啟動核心只在 loader 名冊穩定後交出掛載點；按區域就緒仍屬暫緩事項。
+- **slot 渲染沒有 Suspense 整合或逐 entry 惰性載入**：完整外掛名冊穩定後，渲染器才掛載根節點。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

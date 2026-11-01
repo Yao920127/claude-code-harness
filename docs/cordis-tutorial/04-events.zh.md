@@ -2,11 +2,11 @@
 
 [English](04-events.md) | 中文
 
-服务支持直接调用；**事件**让插件无需知道有哪些插件正在监听，就能发出通知。harness 使用事件处理工具结果、模型请求和审批决定等交互。
+服務支援直接呼叫；**事件**讓外掛無需知道有哪些外掛正在監聽，就能發出通知。harness 使用事件處理工具結果、模型請求和審批決定等互動。
 
-## 声明、发出与监听
+## 宣告、發出與監聽
 
-创建 `stats.ts`，将它放在 `tmp/cordis-tutorial` 中。它是一项负责计数并在每次变化时发出通知的服务：
+建立 `stats.ts`，將它放在 `tmp/cordis-tutorial` 中。它是一項負責計數並在每次變化時發出通知的服務：
 
 ```ts
 import { Service, type Context } from '@deepseek-ai/cordis'
@@ -41,9 +41,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-`interface Events` 合并与第 3 章的 `interface Context` 合并在事件系统中相互对应：它声明事件名称及其监听器签名，因此 `ctx.emit` 和 `ctx.on` 都具有完整类型。`namespace/action` 命名约定让扁平的事件命名空间保持易读。
+`interface Events` 合併與第 3 章的 `interface Context` 合併在事件系統中相互對應：它宣告事件名稱及其監聽器簽名，因此 `ctx.emit` 和 `ctx.on` 都具有完整型別。`namespace/action` 命名約定讓扁平的事件名稱空間保持易讀。
 
-创建 `reporter.ts`：
+建立 `reporter.ts`：
 
 ```ts ignore-check
 import type { Context } from '@deepseek-ai/cordis'
@@ -62,7 +62,7 @@ export function apply(ctx: Context) {
 }
 ```
 
-`import type {} from './stats.ts'` 行不会在运行时导入任何内容；它的作用是让 TypeScript 看到声明合并。组合并运行：
+`import type {} from './stats.ts'` 行不會在執行時匯入任何內容；它的作用是讓 TypeScript 看到宣告合併。組合並執行：
 
 ```yaml
 - name: './stats.ts'
@@ -75,25 +75,25 @@ export function apply(ctx: Context) {
 [stats] prompt -> 1
 ```
 
-因为 `ctx.on()` 属于 effect，监听器会随插件一同消失，绝不需要手动维护 `removeListener`。
+因為 `ctx.on()` 屬於 effect，監聽器會隨外掛一同消失，絕不需要手動維護 `removeListener`。
 
-## 分发模式
+## 分發模式
 
-`emit` 是 5 种分发模式之一。事件采用哪种模式是其约定的一部分，决定了监听器能否返回值、能否并发运行，以及能否彼此短路：
+`emit` 是 5 種分發模式之一。事件採用哪種模式是其約定的一部分，決定了監聽器能否回傳值、能否並行執行，以及能否彼此短路：
 
-| 模式 | 调用 | 语义 |
+| 模式 | 呼叫 | 語義 |
 |---|---|---|
-| emit | `ctx.emit(name, ...args)` | 同步广播；不会等待或收集返回的 promise 与值。 |
-| parallel | `await ctx.parallel(name, ...args)` | 所有监听器并发运行，并一同等待。 |
-| serial | `await ctx.serial(name, ...args)` | 监听器按顺序运行并等待；第一个非 `null`/`false`/`undefined` 返回值胜出，并停止后续监听器。 |
+| emit | `ctx.emit(name, ...args)` | 同步廣播；不會等待或收集返回的 promise 與值。 |
+| parallel | `await ctx.parallel(name, ...args)` | 所有監聽器並行執行，並一同等待。 |
+| serial | `await ctx.serial(name, ...args)` | 監聽器按順序執行並等待；第一個非 `null`/`false`/`undefined` 回傳值勝出，並停止後續監聽器。 |
 | bail | `ctx.bail(name, ...args)` | serial 的同步版本。 |
-| waterfall（瀑布式事件） | `ctx.waterfall(name, ...args, next)` | 环绕中间件，见下文。 |
+| waterfall（瀑布式事件） | `ctx.waterfall(name, ...args, next)` | 環繞中介軟體，見下文。 |
 
-每个 harness 事件都会在其所属[子系统页面](../subsystems/core.zh.md)自动生成的参考文档中记录其模式。
+每個 harness 事件都會在其所屬[子系統頁面](../subsystems/core.zh.md)自動生成的參考文件中記錄其模式。
 
-## waterfall：转换或短路
+## waterfall：轉換或短路
 
-waterfall 是实现拦截的模式。每个监听器都会收到参数和一个 `next()` continuation；它可以转换 `next()` 的返回值，也可以不调用 `next()` 就直接返回，从而短路链条的其余部分。Cordis 文档把后一种行为称为否决。创建 `waterfall-demo.ts`：
+waterfall 是實作攔截的模式。每個監聽器都會收到參數和一個 `next()` continuation；它可以轉換 `next()` 的回傳值，也可以不呼叫 `next()` 就直接返回，從而短路鏈條的其餘部分。Cordis 文件把後一種行為稱為否決。建立 `waterfall-demo.ts`：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -126,19 +126,19 @@ export function apply(ctx: Context) {
 }
 ```
 
-让 `cordis.yml` 只指向该文件并运行：
+讓 `cordis.yml` 只指向該檔案並執行：
 
 ```
 HELLO
 ** BLOCKED **
 ```
 
-按顺序看第二行如何产生：监听器 1 先运行并调用 `next()`，从而调用监听器 2；监听器 2 看到 `blocked` 后直接返回而不调用 `next()`，因此最内层默认逻辑（传给 `ctx.waterfall` 的函数）从未运行；返回途中，监听器 1 再把替换消息转换为大写。
+按順序看第二行如何產生：監聽器 1 先執行並呼叫 `next()`，從而呼叫監聽器 2；監聽器 2 看到 `blocked` 後直接返回而不呼叫 `next()`，因此最內層預設邏輯（傳給 `ctx.waterfall` 的函式）從未執行；返回途中，監聽器 1 再把替換訊息轉換為大寫。
 
-由此得到一项纪律：**只负责观察或标注的 waterfall 监听器必须调用 `next()`**；不调用就直接返回代表有意短路。如果日志监听器忘记调用 `next()`，会悄无声息地吞掉所有下游的默认行为。这是本仓库的常设规则（[waterfall 语义](../cordis-primer.zh.md#cordis-waterfall-semantics)）。
+由此得到一項紀律：**只負責觀察或標註的 waterfall 監聽器必須呼叫 `next()`**；不呼叫就直接返回代表有意短路。如果日誌監聽器忘記呼叫 `next()`，會悄無聲息地吞掉所有下游的預設行為。這是本儲存庫的常設規則（[waterfall 語義](../cordis-primer.zh.md#cordis-waterfall-semantics)）。
 
-harness 使用 waterfall 处理协作插件可以包装或回答的决策：[`agent/request`](../subsystems/core.zh.md#agentrequest--waterfall) 允许插件替换模型调用配置，[`approval/request`](../subsystems/approval.zh.md#approvalrequest--waterfall) 允许策略代替用户作答。
+harness 使用 waterfall 處理協作外掛可以包裝或回答的決策：[`agent/request`](../subsystems/core.zh.md#agentrequest--waterfall) 允許外掛替換模型呼叫設定，[`approval/request`](../subsystems/approval.zh.md#approvalrequest--waterfall) 允許策略代替使用者作答。
 
-下一章：[配置](05-config.zh.md)：来自 `cordis.yml` 的插件选项。
+下一章：[設定](05-config.zh.md)：來自 `cordis.yml` 的外掛選項。
 
 [![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-consumer-owned-startup-strictness.md
 /agent-note-consumer-owned-startup-strictness:
   en: 52b6747530b4c023
-  zh: dc2f8c1f0c300d0a
+  zh: 4d4fce9d488e2062
 /agent-note-consumer-owned-startup-strictness/problem:
   en: 4548e7fbdbee5b5a
-  zh: 0078762ea92fa180
+  zh: e3afd753520122cb
 /agent-note-consumer-owned-startup-strictness/decision:
   en: eb2b83f5f65c6b6a
-  zh: b85a9aa4645c9a20
+  zh: a5faca7e85ef71c2
 /agent-note-consumer-owned-startup-strictness/alternatives-considered:
   en: 1b67e062213184cd
-  zh: 91cc8a015de2bfe4
+  zh: 09548a8055610860
 /agent-note-consumer-owned-startup-strictness/consequences:
   en: 283dec1b336c540d
-  zh: 2ed358079072cfff
+  zh: 6e08727ecf8d0ae4
 /agent-note-consumer-owned-startup-strictness/testing:
   en: d8cafae30ea1347b
-  zh: de47e4e7ba863261
+  zh: 31f0b413f46bffcc

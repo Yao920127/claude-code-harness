@@ -122,7 +122,7 @@ export const SETTINGS_NS = 'settings.locale'
 
 /** The two locales and dictionaries shipped by this package. */
 const BUILT_IN_LOCALE_METADATA = {
-  zh: { label: '中文', fallback: 'en' },
+  zh: { label: '繁體中文', fallback: 'en' },
   en: { label: 'English' },
 } as const satisfies Record<BuiltInLocaleId, Omit<LocaleDefinition, 'id'>>
 const BUILT_IN_LOCALES: readonly LocaleDefinition[] = Object.freeze(
@@ -154,7 +154,7 @@ function normalizeLanguage(input: LanguageRegistration): Readonly<Omit<LanguageR
 function syncDocumentLanguage(snapshot: LocaleSnapshot): void {
   // Non-browser runs (node boots of the client tree) have no document.
   if (typeof document === 'undefined') return
-  const language = snapshot.active === 'zh' ? 'zh-CN' : snapshot.active
+  const language = snapshot.active === 'zh' ? 'zh-TW' : snapshot.active
   if (document.documentElement.lang !== language) document.documentElement.lang = language
 }
 

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-21-archive-stops-running-session-work.md
 /agent-note-archiving-a-session-with-running-work:
   en: 0fbbf70c0c7c2bfa
-  zh: 5d3119ee84af3796
+  zh: 0d07b3a6deeeb0ce
 /agent-note-archiving-a-session-with-running-work/problem:
   en: 7926983089aebab2
-  zh: 366e32db00674a83
+  zh: 47a0a533fc86a783
 /agent-note-archiving-a-session-with-running-work/decision:
   en: 23adfbe72d671d6c
-  zh: 6fec976acfa54720
+  zh: ab455a9794a27b48
 /agent-note-archiving-a-session-with-running-work/alternatives-considered:
   en: 708268e1fe4b4b75
-  zh: 64a8f6d6f333e090
+  zh: 2372d06c22c7a181
 /agent-note-archiving-a-session-with-running-work/consequences:
   en: cb3fdefd60483d62
-  zh: 87d3cead6dc8c37c
+  zh: d955aa66595982fe

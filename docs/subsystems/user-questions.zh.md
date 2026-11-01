@@ -1,14 +1,14 @@
-# 用户交互
+# 使用者互動
 
 [English](user-questions.md) | 中文
 
-[dsh-user-questions](../../packages/interaction/user-questions) 的用户交互 seam。它是工具或权限插件需要人类回答后 agent（智能体）才能继续时所使用的、提供方无关的词汇。Agent-scoped waterfall listener 组合可用的 UI 界面，其中包括转发到已连接 client 的 listener。
+[dsh-user-questions](../../packages/interaction/user-questions) 的使用者互動 seam。它是工具或權限外掛需要人類回答後 agent（智慧代理）才能繼續時所使用的、提供者無關的詞彙。Agent-scoped waterfall listener 組合可用的 UI 介面，其中包括轉發到已連線 client 的 listener。
 
-源码：[`packages/interaction/user-questions/src/index.ts`](../../packages/interaction/user-questions/src/index.ts)
+原始碼：[`packages/interaction/user-questions/src/index.ts`](../../packages/interaction/user-questions/src/index.ts)
 
-## 问题选项
+## 問題選項
 
-`AskUserQuestionOption` 包含一个可供选择的选项。`label` 是面向用户的选项文字，同时也是面向模型的选中值；`description` 是可选的 UI 帮助文本。
+`AskUserQuestionOption` 包含一個可供選擇的選項。`label` 是面向使用者的選項文字，同時也是面向模型的選中值；`description` 是可選的 UI 幫助文字。
 
 ```ts type-equiv
 /** One selectable answer offered to the user. */
@@ -20,9 +20,9 @@ interface AskUserQuestionOption {
 }
 ```
 
-## 呈现意图
+## 呈現意圖
 
-`AskUserQuestionIntent` 可选地声明一种已知的决策类型。它按 `kind` 打标签，因此可以增加新的意图；不认识某个标签的 UI 渲染通用选项列表。意图只改变呈现方式——遵循它的 UI 回答的仍是通用 UI 会发送的那些选项标签，因此调用方两种情况下读到的回答字段相同。`approve` 指名肯定选项，而不依赖选项顺序。`ask()` 会拒绝两种无法由类型系统表达的情况：`approve` 未指向该问题自身的任何选项，以及为没有 `detail` 的问题指定意图。
+`AskUserQuestionIntent` 可選地宣告一種已知的決策型別。它按 `kind` 打標籤，因此可以增加新的意圖；不認識某個標籤的 UI 渲染通用選項列表。意圖只改變呈現方式——遵循它的 UI 回答的仍是通用 UI 會傳送的那些選項標籤，因此呼叫方兩種情況下讀到的回答欄位相同。`approve` 指名肯定選項，而不依賴選項順序。`ask()` 會拒絕兩種無法由型別系統表達的情況：`approve` 未指向該問題自身的任何選項，以及為沒有 `detail` 的問題指定意圖。
 
 ```ts type-equiv
 /**
@@ -46,9 +46,9 @@ type AskUserQuestionIntent = {
 }
 ```
 
-## 问题条目
+## 問題條目
 
-`AskUserQuestionItem` 是请求中的一个问题。调用方提供稳定的 `id`，它会随答案原样返回，使批量问题仍可路由。可选的 `detail` 携带辅助文本；提供方会将其随问题渲染，但不会放入可选选项标签。
+`AskUserQuestionItem` 是請求中的一個問題。呼叫方提供穩定的 `id`，它會隨答案原樣返回，使批次問題仍可路由。可選的 `detail` 攜帶輔助文字；提供者會將其隨問題渲染，但不會放入可選選項標籤。
 
 ```ts type-equiv
 /** One question in a user-questions request. */
@@ -70,9 +70,9 @@ interface AskUserQuestionItem {
 }
 ```
 
-## 提问请求
+## 提問請求
 
-`AskUserQuestionRequest` 是跨包请求。`questions` 是数组，这样 UI 可以在一个流程中呈现相关提示，同时保持每个回答有稳定的 id。如提供 `agent`，它必须与存活调用方是同一实例；只有当当前注册表将该实例识别为运行时根时，交互 seam 才会接纳该 agent。
+`AskUserQuestionRequest` 是跨包請求。`questions` 是陣列，這樣 UI 可以在一個流程中呈現相關提示，同時保持每個回答有穩定的 id。如提供 `agent`，它必須與存活呼叫方是同一實例；只有噹噹前註冊表將該實例識別為執行時根時，互動 seam 才會接納該 agent。
 
 ```ts type-equiv
 /** Request for a human answer. */
@@ -81,7 +81,7 @@ interface AskUserQuestionRequest extends AskUserQuestionRequestEvent {}
 
 ## 回答
 
-提供方为每个问题 id 返回一个回答项。`selected` 包含选中的选项标签，`custom` 在用户输入自由文本时携带「其他」回答。对于单选题，`custom` 会覆盖选中的选项，且 `selected` 为空。对于多选题，`custom` 可以补充 `selected` 中的标签。UI 也可以使用 `selected` 为空且不含 `custom` 的回答项，在其余问题均已完成的批次中保留被跳过的问题。
+提供者為每個問題 id 返回一個回答項。`selected` 包含選中的選項標籤，`custom` 在使用者輸入自由文字時攜帶「其他」回答。對於單選題，`custom` 會覆蓋選中的選項，且 `selected` 為空。對於多選題，`custom` 可以補充 `selected` 中的標籤。UI 也可以使用 `selected` 為空且不含 `custom` 的回答項，在其餘問題均已完成的批次中保留被跳過的問題。
 
 ```ts type-equiv
 /** Answer to one question. */
@@ -103,9 +103,9 @@ interface AskUserQuestionAnswer {
 }
 ```
 
-## 错误
+## 錯誤
 
-`UserQuestionError` 继承 `HarnessError`，因此 `ctx.tools.execute()` 会保留 `{ name, code }`，用于面向模型的工具失败，如 `EMPTY_QUESTIONS`、`NO_PROVIDER`、`ASK_ABORTED` 或 UI 侧取消。
+`UserQuestionError` 繼承 `HarnessError`，因此 `ctx.tools.execute()` 會保留 `{ name, code }`，用於面向模型的工具失敗，如 `EMPTY_QUESTIONS`、`NO_PROVIDER`、`ASK_ABORTED` 或 UI 側取消。
 
 ```ts type-equiv
 /** Stable error taxonomy for user-questions failures. */

@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-09-14-image-offload.md
 /:
   en: 3d5a424ae7d7e46b
-  zh: c22a8e4a62d8cc1a
+  zh: 630ac71355b9ea16
 /2026-09-14-image-offload:
   en: 7628bc0bd8620f3d
   zh: 3fc5d55ce02d199c
 /2026-09-14-image-offload/summary:
   en: 798e2d62e41e244c
-  zh: 49cbb41d2f8e0760
+  zh: 75932af1e835b95b
 /2026-09-14-image-offload/table-of-contents:
   en: 6cf314a069ceb451
-  zh: 9adff678e9ecab3b
+  zh: 378f31ff431be8cb
 /2026-09-14-image-offload/declaration:
   en: 6907136f28e48c90
-  zh: 02f8298485f3d8e7
+  zh: c57270ea21c7a438
 /2026-09-14-image-offload/compatibility:
   en: 746db8940f232b0a
-  zh: 1cf1e720bdb4bbb9
+  zh: 8fd059a6fda8597a
 /2026-09-14-image-offload/verification:
   en: e9e881607a71fba6
-  zh: 8f6eb03617cd6133
+  zh: 3f45889f03144c08
 /2026-09-14-image-offload/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

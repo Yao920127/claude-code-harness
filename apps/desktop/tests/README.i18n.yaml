@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write apps/desktop/tests/README.md
 /desktop-local-update-verification:
   en: 194f1f0f1ca90743
-  zh: 773ca28e04c8911f
+  zh: 2ff2737e484dbf14
 /desktop-local-update-verification/summary:
   en: 94559f431b0b2151
-  zh: 1a22166a2bc59686
+  zh: cc4c84e69634d868
 /desktop-local-update-verification/table-of-contents:
   en: a5edee063916cd27
-  zh: 7a5286350ff09e58
+  zh: c31f5dc866e00710
 /desktop-local-update-verification/native-overlay-visibility:
   en: cff2c259a195bb57
-  zh: fa03ff3fdc32a346
+  zh: 94c9b3203df7c495
 /desktop-local-update-verification/manual-walkthrough:
   en: c4b4ee8763d8464a
-  zh: ee2159bc08966592
+  zh: 6fad6803e0d38895
 /desktop-local-update-verification/evidence:
   en: 331a6709d0f7d03f
-  zh: 98499192ef9d3a81
+  zh: 8fd7d02839dca7bc
 /desktop-local-update-verification/open-verification:
   en: 20e9ea47acb1ff50
-  zh: acce24b56d57e12c
+  zh: acfe0ab5c2824d3c

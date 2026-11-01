@@ -1,51 +1,51 @@
 ---
-description: "schedule 包组：Host 拥有的定时提醒与任务管理。"
+description: "schedule 包組：Host 擁有的定時提醒與任務管理。"
 kind: "package-group"
 ---
 
-# schedule/ — Host 拥有的提醒
+# schedule/ — Host 擁有的提醒
 
 [English](README.md) | 中文
 
 ## 概述
 
-为对话创建一次性、固定速率、每日、每周或 cron 提醒，并在 Host 重启后保留它们。无需打开原 Session，即可查看活动和已结束任务。使用 Schedule 创建和投递提醒，使用可选的任务页面跨 Session 查看任务并确认删除。到期提醒作为普通 follow-up 消息进入原对话，而不是电子邮件、短信或推送通知。
+為對話建立一次性、固定速率、每日、每週或 cron 提醒，並在 Host 重新啟動後保留它們。無需開啟原 Session，即可檢視活動和已結束任務。使用 Schedule 建立和投遞提醒，使用可選的任務頁面跨 Session 檢視任務並確認刪除。到期提醒作為普通 follow-up 訊息進入原對話，而不是電子郵件、簡訊或推送通知。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-选择此包进行持久提醒管理。
+選擇此包進行持久提醒管理。
 
-| 包 | 职责 |
+| 包 | 職責 |
 |---|---|
-| [`schedule/`](schedule/README.zh.md) | Host 拥有的提醒持久化、调度、查询与显式删除 |
+| [`schedule/`](schedule/README.zh.md) | Host 擁有的提醒持久化、排程、查詢與顯式刪除 |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [Schedule 子系统](../../docs/subsystems/schedule.zh.md)——任务记录、最近一次回执、时间与投递约定。
-- [生成的工具目录](../../docs/tool-catalog.zh.md#deepseek-aidsh-schedule)——模型接收的 `schedule_create`／`schedule_list`／`schedule_update`／`schedule_delete` schema。
-- [Schedule 用户指南](../../docs/user/guide/schedule.zh.md)——启用提醒并查看活动或已结束任务。
-- [Web 任务页面与提醒目录](../client/ui-schedule/README.zh.md)——在浏览器中查询任务并确认删除。
+- [Schedule 子系統](../../docs/subsystems/schedule.zh.md)——任務記錄、最近一次回執、時間與投遞約定。
+- [生成的工具目錄](../../docs/tool-catalog.zh.md#deepseek-aidsh-schedule)——模型接收的 `schedule_create`／`schedule_list`／`schedule_update`／`schedule_delete` schema。
+- [Schedule 使用者指南](../../docs/user/guide/schedule.zh.md)——啟用提醒並檢視活動或已結束任務。
+- [Web 任務頁面與提醒目錄](../client/ui-schedule/README.zh.md)——在瀏覽器中查詢任務並確認刪除。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

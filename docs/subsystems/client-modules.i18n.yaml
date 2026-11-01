@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/client-modules.md
 /client-modules:
   en: e256a29cc5bc2726
-  zh: e181d6b1a6e5c647
+  zh: d5849896e7d2d5b5
 /client-modules/the-wire:
   en: 5734d296e8ea39d1
-  zh: 27bedf34fc90d892
+  zh: 5bb853af62f97b25
 /client-modules/the-scan:
   en: 91ce66fab388a8a2
-  zh: 77428943582ae3f6
+  zh: 73ad978cc4437d5a
 /client-modules/the-bundle-route-and-index-injection:
   en: d653be500d3a0d67
-  zh: fffb1901ce8ba7d9
+  zh: 010edfad77ca61c3
 /client-modules/the-service:
   en: 000882ed7f09ad3f
-  zh: c17c05f087d9574d
+  zh: 5d62d241d634e932

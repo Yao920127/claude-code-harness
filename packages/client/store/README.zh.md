@@ -1,5 +1,5 @@
 ---
-description: "具有显式快照、订阅与生命周期所有权的浏览器可观察状态存储。"
+description: "具有顯式快照、訂閱與生命週期所有權的瀏覽器可觀察狀態儲存。"
 kind: "package-library"
 ---
 # @deepseek-ai/dsh-client-store
@@ -8,41 +8,41 @@ kind: "package-library"
 
 ## 概述
 
-供 Client 控制器与 renderer 适配器共用的不依赖 React 的 observable 和快照存储基础原语。本包负责同步与 animation-frame 发布、基于 Immer 的更新、浅比较和可选的浏览器持久化；React 钩子的构造仍属于 `@deepseek-ai/dsh-client-ui-renderer`。当 Client 状态必须在不依赖 React 的情况下发布稳定快照时，请使用它。
+供 Client 控制器與 renderer 介面卡共用的不依賴 React 的 observable 和快照儲存基礎原語。本包負責同步與 animation-frame 釋出、基於 Immer 的更新、淺比較和可選的瀏覽器持久化；React 掛鉤的建構仍屬於 `@deepseek-ai/dsh-client-ui-renderer`。當 Client 狀態必須在不依賴 React 的情況下發布穩定快照時，請使用它。
 
-## 目录
+## 目錄
 
-- [模型体验](#model-experience)
-- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [模型體驗](#model-experience)
+- [已知限制與暫緩事項](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为本包提供浏览器侧状态基础原语，不注册任何面向模型的内容。
+無，因為本包提供瀏覽器側狀態基礎原語，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；这些存储既不组装也不发送模型请求。
+無；這些儲存既不組裝也不傳送模型請求。
 
-## 已知限制与暂缓事项
+## 已知限制與暫緩事項
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **持久化仅限浏览器本地**——持久化存储使用 `localStorage` 中的 JSON；非浏览器运行时会禁用持久化，本包也不提供跨设备同步。
-- **Web 壳构建输入**——静态 ESM 为 Vite 保留第三方导入；独立消费方自行提供开发依赖（[依赖规则](../AGENTS.md#dependency-declaration)）。
+- **持久化僅限瀏覽器本地**——持久化儲存使用 `localStorage` 中的 JSON；非瀏覽器執行時會停用持久化，本包也不提供跨裝置同步。
+- **Web 殼建置輸入**——靜態 ESM 為 Vite 保留第三方匯入；獨立消費方自行提供開發依賴（[依賴規則](../AGENTS.md#dependency-declaration)）。
 
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包只导出库引擎，不创建进程全局状态；每个存储实例由其所属测试覆盖。
+**執行時不變式：** 不釋出伴生入口。本包只匯出庫引擎，不建立程序全域狀態；每個儲存實例由其所屬測試覆蓋。

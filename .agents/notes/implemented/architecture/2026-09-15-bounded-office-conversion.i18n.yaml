@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-15-bounded-office-conversion.md
 /agent-note-bounded-shared-office-conversion:
   en: 10c171aa2a5ab0c2
-  zh: 13e8e134e3a68e98
+  zh: 3cfd8796b0b8fa0a
 /agent-note-bounded-shared-office-conversion/problem:
   en: b305613daff5a763
-  zh: 1aba13289664f65c
+  zh: d85a1e956b549708
 /agent-note-bounded-shared-office-conversion/decision:
   en: bcd0780f95f173bf
-  zh: 2a7f49db2575c59d
+  zh: 4b068a3cc1e1062f
 /agent-note-bounded-shared-office-conversion/alternatives-considered:
   en: 9d5cfb7fa5f66bd6
-  zh: 4f4133daa2f02f43
+  zh: 4b7b3c04a33679df
 /agent-note-bounded-shared-office-conversion/consequences:
   en: c2800ff56c8f89d1
-  zh: 3b3710072b59c443
+  zh: d7fc8b302e43a2dc
 /agent-note-bounded-shared-office-conversion/related:
   en: 2e7b1a0f01c1f617
-  zh: ed2abc0181ea4abe
+  zh: fbf6990cf2cf2240

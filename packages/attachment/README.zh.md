@@ -1,5 +1,5 @@
 ---
-description: "持久图片附件能力族的包映射：你可以用图片附件做什么，以及你的图片存放在哪里。"
+description: "持久圖片附件能力族的包對映：你可以用圖片附件做什麼，以及你的圖片存放在哪裡。"
 kind: "package-group"
 ---
 
@@ -9,43 +9,43 @@ kind: "package-group"
 
 ## 概述
 
-`attachment/` 组提供持久图片附件：把图片附加到提示词和命令，harness 会把它保存到你的机器上，重新显示在对话历史中，并在后续轮次发送给模型。随附的 `dsh` 组合无需任何设置即可支持这一点。该能力与它的存储拆分为两个包，见下文。已存储的图片在重启后依然存在且永远不会被自动删除，并且只支持光栅图片格式。
+`attachment/` 組提供持久圖片附件：把圖片附加到提示詞和命令，harness 會把它儲存到你的機器上，重新顯示在對話歷史中，並在後續輪次傳送給模型。隨附的 `dsh` 組合無需任何設定即可支援這一點。該能力與它的儲存拆分為兩個包，見下文。已儲存的圖片在重新啟動後依然存在且永遠不會被自動刪除，並且只支援光柵圖片格式。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-这两个包提供持久图片附件；每个 README 描述其各自部分可以做什么。
+這兩個包提供持久圖片附件；每個 README 描述其各自部分可以做什麼。
 
-| 包 | 角色 | ctx 键 |
+| 包 | 角色 | ctx 鍵 |
 |---|---|---|
-| [`attachment/`](attachment/README.zh.md) | 可用于提示词与命令、会持久保存并回到历史中的图片附件 | `ctx.attachments` |
-| [`attachment-local/`](attachment-local/README.zh.md) | 把附加图片存储在本机 `DSH_HOME` 下 | 注册到 `ctx.attachments` |
+| [`attachment/`](attachment/README.zh.md) | 可用於提示詞與命令、會持久儲存並回到歷史中的圖片附件 | `ctx.attachments` |
+| [`attachment-local/`](attachment-local/README.zh.md) | 把附加圖片儲存在本機 `DSH_HOME` 下 | 註冊到 `ctx.attachments` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解服务约定，再看能力 seam 表与本地后端的配置面。
+先從子系統參考瞭解服務約定，再看能力 seam 表與本地後端的設定面。
 
-- [附件子系统参考](../../docs/subsystems/attachment.zh.md)——服务约定、载荷类型与 `ctx.attachments` 的 Cordis 接口面。
+- [附件子系統參考](../../docs/subsystems/attachment.zh.md)——服務約定、載荷型別與 `ctx.attachments` 的 Cordis 介面面。
 - [能力 seam](../../docs/capability-seams.zh.md)——本家族遵循的 Service Definition / Service Provider / Consumer 拆分。
-- [生成配置目录](../../docs/config-catalog.zh.md#deepseek-aidsh-attachment-local)——本地后端的每个受支持字段。
+- [生成設定目錄](../../docs/config-catalog.zh.md#deepseek-aidsh-attachment-local)——本地後端的每個受支援欄位。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

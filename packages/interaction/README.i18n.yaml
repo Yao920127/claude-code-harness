@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/interaction/README.md
 /:
   en: 58d959ac012a9bbf
-  zh: 79281fff8f4fe583
+  zh: 339b752f7a9d9fb1
 /interaction-the-human-collaboration-plane:
   en: 3feabaefdc19a9af
-  zh: dbbb782d5a9c5556
+  zh: 5444c8d81693077c
 /interaction-the-human-collaboration-plane/summary:
   en: b3d2ced329e2ccec
-  zh: 852f0e5f4f526ab5
+  zh: 78fb8c6d0262365e
 /interaction-the-human-collaboration-plane/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /interaction-the-human-collaboration-plane/packages:
   en: ccceebf8138e3e16
-  zh: fcb20d56fed52173
+  zh: fa6d448f299ab494
 /interaction-the-human-collaboration-plane/related-documentation:
   en: cccdb31d52ad2938
-  zh: d63855e30e60cc6d
+  zh: f5996cb637e6b611
 /interaction-the-human-collaboration-plane/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

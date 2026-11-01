@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write docs/testing.md
 /testing-policy:
   en: 0d7399a58529b9eb
-  zh: 7f445b06430f21a4
+  zh: bda2510dc496a5c5
 /testing-policy/tiers:
   en: 180c81863aa3f4dd
-  zh: ff3e96d3175c5cea
+  zh: 0a8fe9aaed074c0a
 /testing-policy/how-specs-execute:
   en: 298c13b105e86eae
-  zh: 4f1b0b7742fb7b49
+  zh: 84a86aa5f6565704
 /testing-policy/the-with-key-policy-inference-is-cheap-here:
   en: d555af53068bf523
-  zh: ddc4265e5de5b3be
+  zh: fc987d12e04cd233
 /testing-policy/prefer-the-real-implementation-over-a-mock:
   en: 96a5bdcea4960b25
-  zh: 98ad9d468e55a5ed
+  zh: 183a0918c9d6ce4d
 /testing-policy/verify-the-world-not-the-self-report:
   en: e7cbafc4f96b72c2
-  zh: 0c5a0aa2afd9a812
+  zh: 71db293860136a6e
 /testing-policy/test-the-real-entry-path:
   en: 002e4c4a1bcbef50
-  zh: c3dd3820c0b2164f
+  zh: 804784590cf60fa5
 /testing-policy/test-resolution-source-plane-only:
   en: 8a142fe4cbd196d7
-  zh: 0f8c682cd8c654de
+  zh: 2208ac2942e32d72
 /testing-policy/test-subprocess-launch-modes:
   en: 5ea1c7ff7a9a5728
-  zh: bbae70e0cd2d5cbf
+  zh: fa90fb1386df925d
 /testing-policy/when-a-snapshot-test-is-required:
   en: bc88377209d1077a
-  zh: 369a688d74a11df2
+  zh: 79504aaf7c65e286

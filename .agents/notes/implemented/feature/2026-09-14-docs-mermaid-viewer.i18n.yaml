@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-14-docs-mermaid-viewer.md
 /agent-note-documentation-diagram-and-image-viewer:
   en: c43de97ff7fbe82d
-  zh: 5e2ecb9d39255ad7
+  zh: 535d442c2478277a
 /agent-note-documentation-diagram-and-image-viewer/problem:
   en: 3630dd02a8e8dfdf
-  zh: f25b00903e05bd05
+  zh: d47381a279057e6c
 /agent-note-documentation-diagram-and-image-viewer/decision:
   en: e82d48a7ebee05c8
-  zh: af5c517d1d728f07
+  zh: 4586fa1314fe3cb0
 /agent-note-documentation-diagram-and-image-viewer/alternatives-considered:
   en: bdebec164a27c787
-  zh: 8acb59417c96b807
+  zh: db79634ffc5d7f68
 /agent-note-documentation-diagram-and-image-viewer/consequences:
   en: f7bc4c0588dda49d
-  zh: 9261c0bde08031b1
+  zh: 44dbaa04984cd0e7

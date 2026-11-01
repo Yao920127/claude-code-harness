@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write packages/experimental/webworker-runtime/README.md
 /:
   en: 9a7ee334bf98bb3d
-  zh: 0a78ada4049c27fe
+  zh: 0e02b9a23eb32a62
 /deepseek-ai-dsh-experimental-webworker-runtime:
   en: ca354d8ca21609bb
   zh: 2eff66603192a3ff
 /deepseek-ai-dsh-experimental-webworker-runtime/summary:
   en: cfff0da51e5e9bde
-  zh: 38e7960b16c77c2c
+  zh: 29430992306ae33f
 /deepseek-ai-dsh-experimental-webworker-runtime/table-of-contents:
   en: 4e53164159b5ce41
-  zh: 89582dc0294d0776
+  zh: 23e6fbceb637807b
 /deepseek-ai-dsh-experimental-webworker-runtime/use-this-package:
   en: b26cf7ab7c321c58
-  zh: 0adf7210dfdf68bb
+  zh: fa6bb87c31bd424b
 /deepseek-ai-dsh-experimental-webworker-runtime/model-experience:
   en: 61fce9b4c7dc96e6
-  zh: dc2d931063a38327
+  zh: 3190b9da2ea30320
 /deepseek-ai-dsh-experimental-webworker-runtime/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: 64715dc7e6d02f71
+  zh: 50bf606762e3ebe6
 /deepseek-ai-dsh-experimental-webworker-runtime/known-limitations-and-deferred-work:
   en: fd920819d48b7b70
-  zh: 20852dfc8efadfe4
+  zh: b8ba2dfaf6784c07
 /deepseek-ai-dsh-experimental-webworker-runtime/known-limitations-and-deferred-work/dev-note:
   en: f14ab6f2449c3c53
-  zh: e3f7d3a3d772c0b7
+  zh: 18c8a70709ab500f

@@ -7,37 +7,37 @@
   zh: 6dac0279cf244edc
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/problem:
   en: 325f283354af59f6
-  zh: 059179e883da78c2
+  zh: eb29b977bbdb4a84
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision:
   en: 472a34f28ed5200a
-  zh: 70dcbbd2e26dc32f
+  zh: ca908daec96067d6
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/closing-text:
   en: 229151705efda8a9
-  zh: b4e94b52280a2076
+  zh: adb9c1e95dd4e141
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/runtime-source:
   en: b2e4931dfb6c21b1
-  zh: 9bf619cd5b697e68
+  zh: d367187f9809d3d9
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/two-ordering-rules-and-why-the-manager-owns-them:
   en: 34fad866d5c6377b
-  zh: e865e2cb70c3e00a
+  zh: bab2c2401a8c859d
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/establishment-holds-ownership-open:
   en: bcaf3f22ba44fa01
-  zh: d7b0968990f41a66
+  zh: 716ab9157087e30e
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/scheduling:
   en: 3d1862329727a379
-  zh: 92fcf4ffd366ea30
+  zh: b0c6e63dc750bfaf
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/the-epoch-s-own-log-is-the-whole-account:
   en: f444a596a75f0180
-  zh: ec9c0b61a38a3458
+  zh: 280e34d4a9181503
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/decision/snapshot-coverage:
   en: 9e50e4014df1d5b0
-  zh: 1a111b53a149a21b
+  zh: e920b40d8fd6a8d4
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/alternatives-considered:
   en: dd3073a05a8e13bd
-  zh: e58debc18a591077
+  zh: 05187408972b896b
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/consequences:
   en: 10ebfbc70ff94e20
-  zh: c32a335007de89d1
+  zh: c00bc33f25842eab
 /agent-note-settlement-delivery-belongs-to-the-continuation-manager/consequences/accepted-risks:
   en: 615cd09443411b4d
-  zh: f74b5dcab43975d3
+  zh: 173e6f40f8f4d11f

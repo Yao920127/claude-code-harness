@@ -1,5 +1,5 @@
 ---
-description: "受管 DSH_* shell 环境，供选择、配置或扩展每次模型 shell 调用所运行环境的使用者与维护者阅读。"
+description: "受管 DSH_* shell 環境，供選擇、設定或擴充功能每次模型 shell 呼叫所執行環境的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-shell-env` 提供每次模型 shell 调用——bash 或 pwsh——所运行的受信 `DSH_*` 环境：内置事实如 `DSH_HOME`、`DSH_SHELL=1`、agent（智能体）的 `DSH_SESSION_ID`，以及所启动 profile 的 `DSH_PROFILE` 与 `DSH_PROFILE_DIR`。插件作者可以注册自己的事实，带声明键、按每次执行收集，并随插件释放；重复所有权或未声明的运行时键会明确报错，而不是静默覆盖。注册表不会改变模型看到的其他任何内容——shell 工具拥有各自的 schema 与提示词。任何挂载了模型 shell 工具的组合都适合选择它；配置只决定 Harness 主目录。
+`dsh-shell-env` 提供每次模型 shell 呼叫——bash 或 pwsh——所執行的受信 `DSH_*` 環境：內建事實如 `DSH_HOME`、`DSH_SHELL=1`、agent（智慧代理）的 `DSH_SESSION_ID`，以及所啟動 profile 的 `DSH_PROFILE` 與 `DSH_PROFILE_DIR`。外掛作者可以註冊自己的事實，帶宣告鍵、按每次執行收集，並隨外掛釋放；重複所有權或未宣告的執行時鍵會明確報錯，而不是靜默覆蓋。註冊表不會改變模型看到的其他任何內容——shell 工具擁有各自的 schema 與提示詞。任何掛載了模型 shell 工具的組合都適合選擇它；設定只決定 Harness 主目錄。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在任何挂载模型 shell 工具（`dsh-tool-bash` 或 `dsh-tool-pwsh`）的组合中加载本插件：此后每次前台或后台 shell 调用都会运行在新收集的受管环境中，而不是进程继承来的任意 `DSH_*` 值。
+在任何掛載模型 shell 工具（`dsh-tool-bash` 或 `dsh-tool-pwsh`）的組合中載入本外掛：此後每次前臺或後臺 shell 呼叫都會執行在新收集的受管環境中，而不是程序繼承來的任意 `DSH_*` 值。
 
-### 每次 shell 调用都会收到什么
+### 每次 shell 呼叫都會收到什麼
 
-每次调用都会收到 `DSH_HOME`（Harness 主目录的绝对路径）、`DSH_SHELL=1`，agent 调用还会收到 `DSH_SESSION_ID`（调用方会话的 id）。启动器提供了 profile 上下文时，每次调用还会收到 `DSH_PROFILE`（profile 名）与 `DSH_PROFILE_DIR`（其绝对目录；其 `node_modules` 只存放 profile 自行安装的包，harness 自带的组合包从 dsh 安装目录解析）；不带 profile 启动的组合则两者都没有。
+每次呼叫都會收到 `DSH_HOME`（Harness 主目錄的絕對路徑）、`DSH_SHELL=1`，agent 呼叫還會收到 `DSH_SESSION_ID`（呼叫方工作階段的 id）。啟動器提供了 profile 上下文時，每次呼叫還會收到 `DSH_PROFILE`（profile 名）與 `DSH_PROFILE_DIR`（其絕對目錄；其 `node_modules` 只存放 profile 自行安裝的包，harness 自帶的組合包從 dsh 安裝目錄解析）；不帶 profile 啟動的組合則兩者都沒有。
 
-### 添加你自己的环境事实
+### 新增你自己的環境事實
 
-其他插件通过注册一个 contributor 来贡献事实，需要提供稳定名称、它可能返回的完整 `DSH_*` 键集合、每个键的描述，以及为一次执行计算取值的 resolver：
+其他外掛透過註冊一個 contributor 來貢獻事實，需要提供穩定名稱、它可能返回的完整 `DSH_*` 鍵集合、每個鍵的描述，以及為一次執行計算取值的 resolver：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -50,91 +50,91 @@ export function apply(ctx: Context): void {
 }
 ```
 
-contributor 必须声明它返回的每个键；返回未声明或非字符串的值会让该次调用失败。注册随注册插件的释放而释放，因此热重载插件会移除它的事实。
+contributor 必須宣告它返回的每個鍵；返回未宣告或非字串的值會讓該次呼叫失敗。註冊隨註冊外掛的釋放而釋放，因此熱過載外掛會移除它的事實。
 
-### 选择 Harness 主目录
+### 選擇 Harness 主目錄
 
-唯一配置字段决定暴露为 `DSH_HOME` 的主目录；默认解析顺序为 `dshHome` 配置、环境变量 `$DSH_HOME`，然后是 `~/.dsh`。
+唯一設定欄位決定暴露為 `DSH_HOME` 的主目錄；預設解析順序為 `dshHome` 設定、環境變數 `$DSH_HOME`，然後是 `~/.dsh`。
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `dshHome` | `$DSH_HOME`，然后 `~/.dsh` | 暴露为 `DSH_HOME` 的 Harness 主目录绝对路径 |
+| `dshHome` | `$DSH_HOME`，然後 `~/.dsh` | 暴露為 `DSH_HOME` 的 Harness 主目錄絕對路徑 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 可能出什么问题
+### 可能出什麼問題
 
-两个 contributor 声明同一个键，或 contributor 声称拥有保留内置键（`DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE`、`DSH_PROFILE_DIR`），都会导致插件加载时明确报错。`DSH_*` 键必须全大写并带下划线（例如 `DSH_REGION`），缺少描述也会让注册失败。
+兩個 contributor 宣告同一個鍵，或 contributor 聲稱擁有保留內建鍵（`DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE`、`DSH_PROFILE_DIR`），都會導致外掛載入時明確報錯。`DSH_*` 鍵必須全大寫並帶下劃線（例如 `DSH_REGION`），缺少描述也會讓註冊失敗。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释注册表背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋註冊表背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **受信命名空间，每次调用重建。** 环境是归 Harness 所有的 `DSH_*` 命名空间：shell 执行器丢弃继承的 `DSH_*` 值，并为每次执行合并注册表的当前快照，因此嵌套 harness 与并发的父子 agent 无法泄漏陈旧身份，`process.env` 也永不被修改。
-- **声明所有权，冲突明确报错。** contributor 预先声明键，使重复所有权在第一条命令之前就被发现；resolver 只能返回已声明的键。
-- **内置键留在这里。** `DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE` 与 `DSH_PROFILE_DIR` 为注册表保留；contributor 不能声称拥有它们。
+- **受信名稱空間，每次呼叫重建。** 環境是歸 Harness 所有的 `DSH_*` 名稱空間：shell 執行器丟棄繼承的 `DSH_*` 值，併為每次執行合併註冊表的目前快照，因此巢狀 harness 與並行的父子 agent 無法洩漏陳舊身份，`process.env` 也永不被修改。
+- **宣告所有權，衝突明確報錯。** contributor 預先宣告鍵，使重複所有權在第一條命令之前就被發現；resolver 只能返回已宣告的鍵。
+- **內建鍵留在這裡。** `DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE` 與 `DSH_PROFILE_DIR` 為註冊表保留；contributor 不能聲稱擁有它們。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口、`ShellEnvRegistry` 服务与内置事实 |
-| — | 不发布运行时不变式伴生入口；环境注册表会在每次注册和收集时校验所有权与收集值，也不发布可供伴生入口交叉检查的独立快照。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口、`ShellEnvRegistry` 服務與內建事實 |
+| — | 不釋出執行時不變式伴生入口；環境註冊表會在每次註冊和收集時驗證所有權與收集值，也不釋出可供伴生入口交叉檢查的獨立快照。 |
 
 ### 收集
 
-`collect(execution)` 从内置键出发，当执行携带 agent 时加入会话 id，再按 contributor 名称排序合并每个已注册 contributor 解析出的值。结果是一个冻结、按键排序的快照，通过 `ShellExecRequest.dshEnv` 传递。`list()` 枚举声明而不运行 resolver，因此无法反映依赖执行的值。
+`collect(execution)` 從內建鍵出發，當執行攜帶 agent 時加入工作階段 id，再按 contributor 名稱排序合併每個已註冊 contributor 解析出的值。結果是一個凍結、按鍵排序的快照，透過 `ShellExecRequest.dshEnv` 傳遞。`list()` 列舉宣告而不執行 resolver，因此無法反映依賴執行的值。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从 shell 家族逐步进入执行器 seam 与生成目录。
+當包級約定不夠用時閱讀以下頁面。它們從 shell 家族逐步進入執行器 seam 與生成目錄。
 
-- [shell 包映射](../README.zh.md)——bash 能力家族及其角色。
-- [Bash 执行器子系统](../../../docs/subsystems/shell.zh.md)——工具执行所经由的 `ctx.shell` seam。
-- [tool-bash](../tool-bash/README.zh.md)——消费本环境的 bash 工具。
-- [tool-pwsh](../tool-pwsh/README.zh.md)——消费本环境的 pwsh 工具。
+- [shell 包對映](../README.zh.md)——bash 能力家族及其角色。
+- [Bash 執行器子系統](../../../docs/subsystems/shell.zh.md)——工具執行所經由的 `ctx.shell` seam。
+- [tool-bash](../tool-bash/README.zh.md)——消費本環境的 bash 工具。
+- [tool-pwsh](../tool-pwsh/README.zh.md)——消費本環境的 pwsh 工具。
 - [home paths 包](../../util/home-paths/README.zh.md)——`DSH_HOME` 如何解析。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)——每个受支持配置字段及其源声明。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-shell-env)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 shell 工具（`dsh-tool-bash`、`dsh-tool-pwsh`）间接产生影响；这些工具把本注册表的受管 `DSH_*` 事实暴露在每次 shell 工具调用中。
+透過 shell 工具（`dsh-tool-bash`、`dsh-tool-pwsh`）間接產生影響；這些工具把本註冊表的受管 `DSH_*` 事實暴露在每次 shell 工具呼叫中。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-受管环境永远不会进入请求前缀，因此不会使提供方缓存复用失效；任何前缀变更都取决于 shell 工具定义与当前请求信封。
+受管環境永遠不會進入請求字首，因此不會使提供者快取複用失效；任何字首變更都取決於 shell 工具定義與目前請求信封。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明注册表何时不合适或需要小心使用。它们是当前包约束，不是任务积压。
+這些限制說明註冊表何時不合適或需要小心使用。它們是目前包約束，不是任務積壓。
 
-- **`list()` 只枚举插件贡献的变量**——注册表自有的内置键（`DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE`、`DSH_PROFILE_DIR`）不包含在内，因此诊断、提示词或 UI 代码不得把 `list()` 当作完整的环境目录。
+- **`list()` 只列舉外掛貢獻的變數**——註冊表自有的內建鍵（`DSH_HOME`、`DSH_SHELL`、`DSH_SESSION_ID`、`DSH_PROFILE`、`DSH_PROFILE_DIR`）不包含在內，因此診斷、提示詞或 UI 程式碼不得把 `list()` 當作完整的環境目錄。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

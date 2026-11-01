@@ -1,79 +1,79 @@
-# Agent Note: 标准 ACP v1 自动化控制
+# Agent Note: 標準 ACP v1 自動化控制
 
 Status: implemented
 
 [English](2026-08-22-standard-acp-automation-controls.md) | 中文
 
-> 本说明仅取代 [ACP 作为纯自动化协议](../simplification/2026-07-23-acp-automation-only-protocol.zh.md) 中仅支持提示词的协议清单。该决策关于禁止 ACP 成为第二套产品 UI 的规定仍具权威性。
+> 本說明僅取代 [ACP 作為純自動化協定](../simplification/2026-07-23-acp-automation-only-protocol.zh.md) 中僅支援提示詞的協定清單。該決策關於禁止 ACP 成為第二套產品 UI 的規定仍具權威性。
 
-## 问题
+## 問題
 
-纯自动化 ACP 桥接层可以创建新会话、一次提交一个提示词、取消提示词、接收已提交 assistant 消息，并回答一次性权限请求。通用外部自动化控制器仍需依赖私有进程知识，才能发现模型、挂载 MCP 服务器、在重启后找到持久会话、恢复会话、独立关闭一个会话，以及观察 reasoning、工具或上下文压力进度。如果在集成专用 runtime 中复制这些控制，ACP 只会名义上可互操作，而 DSH 自动化仍依赖私有旁路协议。
+純自動化 ACP 橋接層可以建立新工作階段、一次提交一個提示詞、取消提示詞、接收已提交 assistant 訊息，並回答一次性權限請求。通用外部自動化控制器仍需依賴私有程序知識，才能發現模型、掛載 MCP 伺服器、在重新啟動後找到持久工作階段、恢復工作階段、獨立關閉一個工作階段，以及觀察 reasoning、工具或上下文壓力進度。如果在整合專用 runtime 中複製這些控制，ACP 只會名義上可互操作，而 DSH 自動化仍依賴私有旁路協定。
 
-稳定 ACP v1 协议已经定义所需的控制词汇。增加私有 `_meta`、自定义方法、用例专用环境处理或展示投影会割裂该词汇，并重新引入纯自动化决策已经移除的 UI 耦合。
+穩定 ACP v1 協定已經定義所需的控制詞彙。增加私有 `_meta`、自定義方法、案例專用環境處理或展示投影會割裂該詞彙，並重新引入純自動化決策已經移除的 UI 耦合。
 
-## 决策
+## 決策
 
-`@deepseek-ai/dsh-acp` 实现通用控制器需要的完整标准 ACP v1 自动化子集：`session/new`、`session/list`、`session/resume`、`session/close`、`session/prompt`、`session/cancel`、`session/set_config_option`、JSON-RPC `$/cancel_request`、`session/update` 和 `session/request_permission`。仓库内每条连接的两端都使用 `@agentclientprotocol/sdk` 1.4 的 app／context 接口。
+`@deepseek-ai/dsh-acp` 實作通用控制器需要的完整標準 ACP v1 自動化子集：`session/new`、`session/list`、`session/resume`、`session/close`、`session/prompt`、`session/cancel`、`session/set_config_option`、JSON-RPC `$/cancel_request`、`session/update` 和 `session/request_permission`。儲存庫內每條連線的兩端都使用 `@agentclientprotocol/sdk` 1.4 的 app／context 介面。
 
-能力会省略未支持的方法和功能。DSH 不增加自定义方法、能力标记或 `_meta`，也不为客户端元数据赋予私有含义。`session/load`、`session/delete`、`session/fork`、附加目录、SSE 和 ACP 传输 MCP、模式、命令、计划、终端、客户端文件系统操作和 elicitation 仍不受支持。会话控制和语义更新是自动化协议数据；它们不会使 ACP 成为人工 UI。
+能力會省略未支援的方法和功能。DSH 不增加自定義方法、能力標記或 `_meta`，也不為用戶端中繼資料賦予私有含義。`session/load`、`session/delete`、`session/fork`、附加目錄、SSE 和 ACP 傳輸 MCP、模式、命令、計劃、終端、用戶端檔案系統操作和 elicitation 仍不受支援。工作階段控制和語義更新是自動化協定資料；它們不會使 ACP 成為人工 UI。
 
-## Per-session 所有权
+## Per-session 所有權
 
-每个已公布 Agent 由一个 `AcpSession` 模块拥有，该模块同时拥有所选模型状态、请求 MCP 挂载、单提示词槽位、有序更新链和记忆化关闭操作。全局事件监听器只识别确切 Agent 或 Session，再委托给该模块。模块会在内存中把准入快照与已识别消息关联到 inbox claim 时刻，再将其固定到已准入轮次。因此，图片能力检查、提示词变量、请求 header 和每个模型步骤都使用同一个提供方／模型／reasoning tuple，而普通持久用户 source 保持不变。并发配置变更从下一个 ACP 轮次开始生效。
+每個已公佈 Agent 由一個 `AcpSession` 模組擁有，該模組同時擁有所選模型狀態、請求 MCP 掛載、單提示詞槽位、有序更新鏈和記憶化關閉操作。全域事件監聽器只識別確切 Agent 或 Session，再委託給該模組。模組會在記憶體中把准入快照與已識別訊息關聯到 inbox claim 時刻，再將其固定到已准入輪次。因此，圖片能力檢查、提示詞變數、請求 header 和每個模型步驟都使用同一個提供者／模型／reasoning tuple，而普通持久使用者 source 保持不變。並行設定變更從下一個 ACP 輪次開始生效。
 
-显式 `session/close`、连接丢失和插件释放调用同一个关闭操作。它会先取消准入和 Agent 工作，再等待；随后 drain 已提交更新和可继续后代、flush 持久化，并释放 Agent scope 及其 MCP 客户端。关闭流程会保留事件路由直到 drain 完成。只有所有自有会话 teardown 都完成后才报告失败，其他前端的 Agent 和后代不受影响。
+顯式 `session/close`、連線丟失和外掛釋放呼叫同一個關閉操作。它會先取消准入和 Agent 工作，再等待；隨後 drain 已提交更新和可繼續後代、flush 持久化，並釋放 Agent scope 及其 MCP 用戶端。關閉流程會保留事件路由直到 drain 完成。只有所有自有工作階段 teardown 都完成後才報告失敗，其他前端的 Agent 和後代不受影響。
 
-## 持久会话控制
+## 持久工作階段控制
 
-完整 ACP 生命周期支持要求挂载会话持久化。`session/list` 读取已实体化的顶层 header，排除活动会话和后代会话，按规范物理 `cwd` 过滤，按创建时间和 id 排序，并通过不透明 keyset cursor 返回有界页面。摘要有意省略标题和展示元数据。
+完整 ACP 生命週期支援要求掛載工作階段持久化。`session/list` 讀取已實體化的頂層 header，排除活動工作階段和後代工作階段，按規範物理 `cwd` 過濾，按建立時間和 id 排序，並透過不透明 keyset cursor 返回有界頁面。摘要有意省略標題和展示中繼資料。
 
-`session/new` 会显式要求持久化在不虚构会话事件的情况下实体化 live session header，因此即使空会话也可以关闭、列出和恢复。其他前端仍保留持久化 seam 的惰性默认行为，不会实体化被放弃的空会话。`session/resume` 拒绝活动 id，以及非顶层或未知的持久 id；在组合 Agent 前校验请求的规范 `cwd`；恢复持久日志但不向客户端重放；挂载该请求提供的 MCP 声明。`session/close` 让持久日志可供后续进程使用。
+`session/new` 會顯式要求持久化在不虛構工作階段事件的情況下實體化 live session header，因此即使空工作階段也可以關閉、列出和恢復。其他前端仍保留持久化 seam 的惰性預設行為，不會實體化被放棄的空工作階段。`session/resume` 拒絕活動 id，以及非頂層或未知的持久 id；在組合 Agent 前驗證請求的規範 `cwd`；恢復持久日誌但不向用戶端重放；掛載該請求提供的 MCP 宣告。`session/close` 讓持久日誌可供後續程序使用。
 
-持久化有意把 `create(meta)` 视为 live registration：交付的 JSONL provider 在首次追加事件前不创建 artifact。该默认行为会移除被放弃的空会话，但 ACP 不能继承它，因为 `session/new` 会在任何提示词出现前公布会话身份，而进程可能在返回成功响应后、收到 `session/close` 前停止。桥接层只在 Agent 和 MCP 组合成功后、返回 `session/new` 前执行实体化；组合失败仍不留下残留物，每个已返回 id 则都能在重启后继续存在。
+持久化有意把 `create(meta)` 視為 live registration：交付的 JSONL provider 在首次追加事件前不建立 artifact。該預設行為會移除被放棄的空工作階段，但 ACP 不能繼承它，因為 `session/new` 會在任何提示詞出現前公佈工作階段身份，而程序可能在返回成功回應後、收到 `session/close` 前停止。橋接層只在 Agent 和 MCP 組合成功後、返回 `session/new` 前執行實體化；組合失敗仍不留下殘留物，每個已返回 id 則都能在重新啟動後繼續存在。
 
-bridge 经由普通的持久性屏障实体化：`ctx.sessions.flush(session)` 抵达该会话的写句柄，其 `flush` 在尚无任何追加时写入仅 header 实体化。JSONL 写入一个 header frame；仓库外 provider 必须原子实体化等价 header 状态，否则拒绝该操作。重复调用幂等。让 `create` 全面 eager 会改变所有前端放弃会话的行为；追加 synthetic event 会仅为触发存储而虚构 sequence 与 replay 事实；等到关闭时再写入则会让持久性与进程丢失竞争。
+bridge 經由普通的永續性屏障實體化：`ctx.sessions.flush(session)` 抵達該工作階段的寫控制代碼，其 `flush` 在尚無任何追加時寫入僅 header 實體化。JSONL 寫入一個 header frame；儲存庫外 provider 必須原子實體化等價 header 狀態，否則拒絕該操作。重複呼叫冪等。讓 `create` 全面 eager 會改變所有前端放棄工作階段的行為；追加 synthetic event 會僅為觸發儲存而虛構 sequence 與 replay 事實；等到關閉時再寫入則會讓永續性與程序丟失競爭。
 
-## 标准配置选项
+## 標準設定選項
 
-建议性 LLM catalog 现在服务于另一个自动化 consumer，但不会成为请求校验。ACP 公开按提供方分组的 `model` select，其不透明值保留提供方／模型对；还会公开来自已解析确切模型的依赖 `reasoning_effort` select。具有 efforts 但没有 adapter 配置默认值的模型会包含 `Provider default`，以保留省略状态并让提供方自行选择。新建、恢复和设置响应都返回完整状态。Adapter 拓扑事件发出 `config_option_update`；每个会话按接收顺序串行处理变更。配置的 ACP 提供方／模型仍是初始选择；未列出的配置路由会合成到返回选项中，而不会被拒绝。
+建議性 LLM catalog 現在服務於另一個自動化 consumer，但不會成為請求驗證。ACP 公開按提供者分組的 `model` select，其不透明值保留提供者／模型對；還會公開來自已解析確切模型的依賴 `reasoning_effort` select。具有 efforts 但沒有 adapter 設定預設值的模型會包含 `Provider default`，以保留省略狀態並讓提供者自行選擇。新建、恢復和設定回應都返回完整狀態。Adapter 拓撲事件發出 `config_option_update`；每個工作階段按接收順序序列處理變更。設定的 ACP 提供者／模型仍是初始選擇；未列出的設定路由會合成到返回選項中，而不會被拒絕。
 
-## 标准 MCP 映射
+## 標準 MCP 對映
 
-`session/new` 和 `session/resume` 接受标准 stdio 和 Streamable HTTP MCP 声明。Stdio 使用会话 `cwd`；HTTP 使用已声明 URL 和 header；两者都保留 `dsh-mcp-client` 的超时和重连默认值。名称、命令、URL、环境项、header 和重复的规范化 namespace 都会在 Agent 公布前校验。初始连接或发现失败会回滚尚未公布的 Agent。
+`session/new` 和 `session/resume` 接受標準 stdio 和 Streamable HTTP MCP 宣告。Stdio 使用工作階段 `cwd`；HTTP 使用已宣告 URL 和 header；兩者都保留 `dsh-mcp-client` 的超時和重連預設值。名稱、命令、URL、環境項、header 和重複的規範化 namespace 都會在 Agent 公佈前驗證。初始連線或發現失敗會復原尚未公佈的 Agent。
 
-MCP namespace reservation 跟随最近的 DSH registration scope，而不是进程 root。独立 Agent scope 可以使用同一服务器名，同一 Agent 内的重复名称仍会失败。Scoped disposal 会释放工具、传输和 reservation。
+MCP namespace reservation 跟隨最近的 DSH registration scope，而不是程序 root。獨立 Agent scope 可以使用同一伺服器名，同一 Agent 內的重複名稱仍會失敗。Scoped disposal 會釋放工具、傳輸和 reservation。
 
-ACP 客户端是受信任的控制器：stdio 声明授权执行进程，HTTP 声明授权携带其 header 发起请求。DSH 不增加每服务器私有 cwd 或超时字段。工具挂载后，普通 DSH 工具策略仍然约束调用。
+ACP 用戶端是受信任的控制器：stdio 宣告授權執行程序，HTTP 宣告授權攜帶其 header 發起請求。DSH 不增加每伺服器私有 cwd 或超時欄位。工具掛載後，普通 DSH 工具策略仍然約束呼叫。
 
-## 语义更新投影
+## 語義更新投影
 
-只有已提交的持久事实会进入 `session/update`。Assistant 文本／图片变成 `agent_message_chunk`；reasoning 变成 `agent_thought_chunk`；工具调用／结果变成通用 `tool_call` 和 `tool_call_update`；已知的测量上下文压力与容量变成 `usage_update`；adapter 拓扑变化变成 `config_option_update`。持久消息 id 和工具调用 id 保留关联。规范 DSH 工具名作为标准工具调用 title。
+只有已提交的持久事實會進入 `session/update`。Assistant 文字／圖片變成 `agent_message_chunk`；reasoning 變成 `agent_thought_chunk`；工具呼叫／結果變成通用 `tool_call` 和 `tool_call_update`；已知的測量上下文壓力與容量變成 `usage_update`；adapter 拓撲變化變成 `config_option_update`。持久訊息 id 和工具呼叫 id 保留關聯。規範 DSH 工具名作為標準工具呼叫 title。
 
-Per-session 链会串行处理所有更新，并在提示词完成前 drain。引用工具调用的权限请求只会在该工具调用通知 drain 后发送。原始模型 delta、重试尝试、卡片、终端状态、diff、位置、计划、标题、todo 和不受支持内容不会进入 wire。
+Per-session 鏈會序列處理所有更新，並在提示詞完成前 drain。引用工具呼叫的權限請求只會在該工具呼叫通知 drain 後傳送。原始模型 delta、重試嘗試、卡片、終端狀態、diff、位置、計劃、標題、todo 和不受支援內容不會進入 wire。
 
-`session/cancel` 和 `$/cancel_request` 进入同一个提示词自有取消路径。关联结尾只映射到标准 stop reason 和 JSON-RPC error；模型输出达到上限时报告 `max_tokens`。ACP 不返回额外 DSH 结果结构。
+`session/cancel` 和 `$/cancel_request` 進入同一個提示詞自有取消路徑。關聯結尾只對映到標準 stop reason 和 JSON-RPC error；模型輸出達到上限時報告 `max_tokens`。ACP 不返回額外 DSH 結果結構。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**增加私有控制器扩展。** 已拒绝，因为标准 ACP v1 已经承载所需生命周期、配置、MCP、取消、权限和语义更新概念。私有扩展会使通用 SDK 客户端不完整。
+**增加私有控制器擴充功能。** 已拒絕，因為標準 ACP v1 已經承載所需生命週期、設定、MCP、取消、權限和語義更新概念。私有擴充功能會使通用 SDK 用戶端不完整。
 
-**恢复之前的编辑器投影。** 已拒绝，因为计划、终端、diff、卡片、导航和人工 elicitation 属于展示职责。语义工具和 reasoning 事实可以作为有用的自动化遥测，而无需导入展示模块。
+**恢復之前的編輯器投影。** 已拒絕，因為計劃、終端、diff、卡片、導航和人工 elicitation 屬於展示職責。語義工具和 reasoning 事實可以作為有用的自動化遙測，而無需匯入展示模組。
 
-**实现所有 ACP 会话方法。** 已拒绝。列出、恢复和关闭已经完成持久自动化生命周期。加载／重放、删除和 fork 会引入本用例不需要的独立 transcript、破坏性存储和 lineage 语义。
+**實作所有 ACP 工作階段方法。** 已拒絕。列出、恢復和關閉已經完成持久自動化生命週期。載入／重放、刪除和 fork 會引入本案例不需要的獨立 transcript、破壞性儲存和 lineage 語義。
 
-**使用不稳定 provider 方法发现模型。** 已拒绝，因为标准会话配置选项可以表达该选择，并保持会话 scope。
+**使用不穩定 provider 方法發現模型。** 已拒絕，因為標準工作階段設定選項可以表達該選擇，並保持工作階段 scope。
 
-**把每个 DSH runtime 字段复制到 ACP 元数据。** 已拒绝，因为精确 token 明细、私有结果状态、程序化展示名称和每 MCP tunable 没有稳定 ACP v1 对应项。
+**把每個 DSH runtime 欄位複製到 ACP 中繼資料。** 已拒絕，因為精確 token 明細、私有結果狀態、程式化展示名稱和每 MCP tunable 沒有穩定 ACP v1 對應項。
 
-## 验证
+## 驗證
 
-聚焦测试覆盖：无私有元数据的确切能力公布；模型／reasoning 选择、无效和并发变更、拓扑更新以及图片路由固定；stdio／HTTP MCP 设置、声明回滚、scope 隔离、恢复和释放；列表分页、规范 workspace 校验、活动冲突、关闭／恢复和重启恢复；消息／思考／工具／用量顺序与 id；工具先于权限；标准 stop reason；请求和会话取消；连接丢失 teardown。
+聚焦測試覆蓋：無私有中繼資料的確切能力公佈；模型／reasoning 選擇、無效和並行變更、拓撲更新以及圖片路由固定；stdio／HTTP MCP 設定、宣告復原、scope 隔離、恢復和釋放；列表分頁、規範 workspace 驗證、活動衝突、關閉／恢復和重新啟動恢復；訊息／思考／工具／用量順序與 id；工具先於權限；標準 stop reason；請求和工作階段取消；連線丟失 teardown。
 
-通用 keyless conformance 测试会启动真实 ACP demo 两次，并且只使用公开 ACP SDK：选择模型和 reasoning effort、挂载 MCP 服务器、执行工具轮次、观察标准更新、关闭、重启、列出、恢复和取消。它不包含集成专用名称、依赖、元数据或环境行为。
+通用 keyless conformance 測試會啟動真實 ACP demo 兩次，並且只使用公開 ACP SDK：選擇模型和 reasoning effort、掛載 MCP 伺服器、執行工具輪次、觀察標準更新、關閉、重新啟動、列出、恢復和取消。它不包含整合專用名稱、依賴、中繼資料或環境行為。
 
-## 后果
+## 後果
 
-外部自动化项目可以通过稳定 ACP v1 使用 DSH，而无需维护 DSH 专用 runtime 协议。桥接层的控制接口变大，但仍小于 UI：它拥有生命周期和语义互操作，而人工展示和交互仍属于产品客户端。
+外部自動化專案可以透過穩定 ACP v1 使用 DSH，而無需維護 DSH 專用 runtime 協定。橋接層的控制介面變大，但仍小於 UI：它擁有生命週期和語義互操作，而人工展示和互動仍屬於產品用戶端。
 
-持久生命周期和请求 MCP 挂载让会话创建更严格。配置错误和初始 MCP 失败会在公布前拒绝，关闭会等待真实完全停稳和持久化。这是避免部分 Agent、泄漏工具或孤儿进程所需的所有权证明。
+持久生命週期和請求 MCP 掛載讓工作階段建立更嚴格。設定錯誤和初始 MCP 失敗會在公佈前拒絕，關閉會等待真實完全停穩和持久化。這是避免部分 Agent、洩漏工具或孤兒程序所需的所有權證明。

@@ -95,17 +95,17 @@ afterEach(async () => {
 })
 
 describe('page Markdown actions', () => {
-  it.each(['en-US', 'zh-CN'])('preserves the accessible controls and status in %s', async (lang) => {
+  it.each(['en-US', 'zh-TW'])('preserves the accessible controls and status in %s', async (lang) => {
     data.lang.value = lang
     data.frontmatter.value = { rawMarkdownPath: `${lang === 'en-US' ? 'en/' : ''}guide/quickstart.md` }
     await mount()
     await expect(`${host.innerHTML}\n`).toMatchFileSnapshot(`./expected/page-markdown-actions.${lang}.html`)
-    fireEvent.click(getByRole(host, 'button', { name: lang === 'en-US' ? 'More page actions' : '更多页面操作' }))
+    fireEvent.click(getByRole(host, 'button', { name: lang === 'en-US' ? 'More page actions' : '更多頁面操作' }))
     await nextTick()
     await expect(`${host.innerHTML}\n`).toMatchFileSnapshot(`./expected/page-markdown-menu.${lang}.html`)
   })
 
-  it.each(['en-US', 'zh-CN'])('offers a working raw link before hydration in %s', async (lang) => {
+  it.each(['en-US', 'zh-TW'])('offers a working raw link before hydration in %s', async (lang) => {
     data.lang.value = lang
     data.site.value = { base: '/deepseek-harness/' }
     const path = `${lang === 'en-US' ? 'en/' : ''}guide/quickstart.md`
@@ -116,7 +116,7 @@ describe('page Markdown actions', () => {
     expect(link.getAttribute('href')).toBe(`/deepseek-harness/${path}`)
     expect(link.getAttribute('target')).toBe('_blank')
     expect(link.getAttribute('aria-label')).toBe(lang === 'en-US'
-      ? 'View as Markdown (opens in a new tab)' : '以 Markdown 格式查看（在新标签页打开）')
+      ? 'View as Markdown (opens in a new tab)' : '以 Markdown 格式檢視（在新標籤頁開啟）')
     await expect(`${host.innerHTML}\n`).toMatchFileSnapshot(`./expected/page-markdown-static.${lang}.html`)
     expect(fetchMock).not.toHaveBeenCalled()
   })
@@ -395,7 +395,7 @@ describe('page Markdown actions', () => {
     if (change === 'unmount') { app?.unmount(); app = undefined }
     else {
       route.path = change === 'route' ? '/en/reference/' : '/guide/quickstart'
-      data.lang.value = change === 'route' ? 'en-US' : 'zh-CN'
+      data.lang.value = change === 'route' ? 'en-US' : 'zh-TW'
       data.frontmatter.value = { rawMarkdownPath: change === 'route' ? 'en/reference/index.md' : 'guide/quickstart.md' }
     }
     await nextTick()
@@ -407,8 +407,8 @@ describe('page Markdown actions', () => {
     if (change === 'unmount') expect(host.textContent).toBe('')
     else {
       expect(getByRole(host, 'status').textContent).toBe('')
-      fireEvent.click(getByRole(host, 'button', { name: change === 'route' ? 'Copy page' : '复制页面' }))
-      await waitFor(() => { expect(getByRole(host, 'status').textContent).toBe(change === 'route' ? 'Markdown copied.' : '已复制 Markdown。') })
+      fireEvent.click(getByRole(host, 'button', { name: change === 'route' ? 'Copy page' : '複製頁面' }))
+      await waitFor(() => { expect(getByRole(host, 'status').textContent).toBe(change === 'route' ? 'Markdown copied.' : '已複製 Markdown。') })
       expect(fetchMock.mock.calls[1]?.[0]).toBe(change === 'route' ? '/en/reference/index.md?dsh-raw=1' : '/guide/quickstart.md?dsh-raw=1')
     }
   })

@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write native/system/packages/linux-arm64/README.md
 /:
   en: 942d2c5dd9dbc58f
-  zh: d30204e653a55bd4
+  zh: a27c6ade2e08b611
 /deepseek-ai-node-addon-system-linux-arm64:
   en: ff40f2ee61173e91
-  zh: 076fcf1246428ecc
+  zh: 573af82c3b8b3002

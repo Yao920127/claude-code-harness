@@ -1,44 +1,44 @@
-# Agent Note: 共享文件类型图标
+# Agent Note: 共享檔案型別圖示
 
 Status: implemented
 
 [English](2026-09-08-shared-file-type-icons.md) | 中文
 
-## 问题
+## 問題
 
-客户端功能插件只能通过 `@deepseek-ai/dsh-client-ui-primitives` 共享 React 组件，但文件卡片没有共享的文件类型呈现。本包拥有唯一一份扩展名分类表，并为 `LinkIconMedium` 将细分文件类型有意折叠为六种链接类别；附件卡片、已发送消息附件、排队文件和工作区文件行使用细分文件图形。在其他位置增加精细文件图标，需要再复制一份扩展名表或让功能插件之间产生运行时 import。
+用戶端功能外掛只能透過 `@deepseek-ai/dsh-client-ui-primitives` 共享 React 元件，但檔案卡片沒有共享的檔案型別呈現。本包擁有唯一一份副檔名分類表，併為 `LinkIconMedium` 將細分檔案型別有意摺疊為六種連結類別；附件卡片、已傳送訊息附件、排隊檔案和工作區檔案行使用細分檔案圖形。在其他位置增加精細檔案圖示，需要再複製一份副檔名錶或讓功能外掛之間產生執行時 import。
 
-## 决策
+## 決策
 
-`ui-primitives` 统一拥有一套 Cordis-free 的文件分类与渲染 API。`fileExtension(path)` 对两种路径分隔符采用共享的 basename 与最终点号语义。`classifyFileType(path)` 不区分大小写，并返回闭合的 `FileType` 联合：传统的 `code`、`excel`、`folder`、`html`、`image`、`markdown`、`other`、`pdf`、`ppt`、`video`、`word` 类别，以及由 `CodeFileIcon` 渲染的细分 `CodeFileType` 集合。解析按完整文件名、文件名前缀、文件名后缀、可选项目上下文、扩展名的顺序执行。路径分类器返回 `folder` 之外的全部成员；调用方确认条目是目录时，通过 `FileTypeIcon` 的显式 `kind` 覆盖指定目录。未知扩展名、无扩展名和末尾点号回退到 `other`，但共享表识别 `Dockerfile`、`Makefile`、`package.json`、`.gitignore`、`README`、`CHANGELOG` 等具名文件。
+`ui-primitives` 統一擁有一套 Cordis-free 的檔案分類與渲染 API。`fileExtension(path)` 對兩種路徑分隔符采用共享的 basename 與最終點號語義。`classifyFileType(path)` 不區分大小寫，並返回閉合的 `FileType` 聯合：傳統的 `code`、`excel`、`folder`、`html`、`image`、`markdown`、`other`、`pdf`、`ppt`、`video`、`word` 類別，以及由 `CodeFileIcon` 渲染的細分 `CodeFileType` 集合。解析按完整檔名、檔名字首、檔名字尾、可選專案上下文、副檔名的順序執行。路徑分類器返回 `folder` 之外的全部成員；呼叫方確認條目是目錄時，透過 `FileTypeIcon` 的顯式 `kind` 覆蓋指定目錄。未知副檔名、無副檔名和末尾點號退回到 `other`，但共享表識別 `Dockerfile`、`Makefile`、`package.json`、`.gitignore`、`README`、`CHANGELOG` 等具名檔案。
 
-`FileTypeIcon` 接受路径、共享 `IconProps`、显式 `kind`和可选的项目文件快照。传统文件类型把所提供的 28px 文档与文件夹轮廓渲染为 inline SVG。表格图形使用所提供的未缩放 1.2px 表格网格；Markdown、PDF、PPT、Word 的前景标记围绕自身视觉中心缩放至 122%，其余带标记的传统图形使用 112%。文件底板与折角保持源图几何，通用文件不凭空增加中心标记。底板使用实色分类颜色，前景标记与普通折角使用白色，通用文件使用较深的灰色折角。CSS 通过静态设计 token 分配所提供的分类调色板：code/HTML/Markdown 使用 DeepSeek 蓝，Word 使用较浅的 DeepSeek 蓝，表格使用绿色，folder/PPT 使用两档琥珀色，PDF 使用红色，未知文件使用中性灰。image 与 video 通过组件本地变量共用所提供的紫色，因为设计平台没有匹配的紫色 token。调用方可通过 `--dsh-file-type-icon-color` 覆盖传统底板颜色。
+`FileTypeIcon` 接受路徑、共享 `IconProps`、顯式 `kind`和可選的專案檔案快照。傳統檔案型別把所提供的 28px 文件與資料夾輪廓渲染為 inline SVG。表格圖形使用所提供的未縮放 1.2px 表格網格；Markdown、PDF、PPT、Word 的前景標記圍繞自身視覺中心縮放至 122%，其餘帶標記的傳統圖形使用 112%。檔案底板與折角保持源圖幾何，通用檔案不憑空增加中心標記。底板使用實色分類顏色，前景標記與普通折角使用白色，通用檔案使用較深的灰色折角。CSS 透過靜態設計 token 分配所提供的分類調色盤：code/HTML/Markdown 使用 DeepSeek 藍，Word 使用較淺的 DeepSeek 藍，表格使用綠色，folder/PPT 使用兩檔琥珀色，PDF 使用紅色，未知檔案使用中性灰。image 與 video 透過元件本地變數共用所提供的紫色，因為設計平臺沒有匹配的紫色 token。呼叫方可透過 `--dsh-file-type-icon-color` 覆蓋傳統底板顏色。
 
-已识别的代码与配置文件把对应的 20px 方形图稿缩放到请求的图标尺寸。内嵌静态表只包含现有 48 个 `CodeFileType` 条目；资源包中额外的图稿不会新增类别，相邻 manifest 记录负责的设计归属方与来源摘要。测试会拒绝该表中的脚本、事件属性、外部引用与重复 id。`CodeFileIcon` 在插入前为本地 SVG id 加上组件实例前缀，使重复渐变与裁剪路径互不干扰。这些技术标记保留自身内嵌的多色填充，是普通 current-color 图标规则的明确例外。映射让 React 优先于 TypeScript/JavaScript、Angular 文件名后缀优先于基础扩展名，并按文件名识别 Docker/Node/Git/Make/CMake；只有可选项目快照包含内容带 `flutter:` 的 `pubspec.yaml` 时才选择 Flutter。Markdown 与 SVG 仍由传统 Markdown 和图片类别拥有。CSV、TSV、Excel 工作簿与模板、OpenDocument 表格和 Numbers 在文件卡片、文件行及预览标题中使用表格图标，其可点击链接使用文档类别。`.env` 和以 `.env` 结尾的文件名均使用环境配置图标。所有传统与技术 SVG 都是 `aria-hidden` 的，拥有文件身份的卡片、行或按钮提供无障碍名称。
+已識別的程式碼與設定檔把對應的 20px 方形圖稿縮放到請求的圖示尺寸。內嵌靜態表只包含現有 48 個 `CodeFileType` 條目；資源包中額外的圖稿不會新增類別，相鄰 manifest 記錄負責的設計歸屬方與來源摘要。測試會拒絕該表中的腳本、事件屬性、外部引用與重複 id。`CodeFileIcon` 在插入前為本地 SVG id 加上元件實例字首，使重複漸變與裁剪路徑互不干擾。這些技術標記保留自身內嵌的多色填充，是普通 current-color 圖示規則的明確例外。對映讓 React 優先於 TypeScript/JavaScript、Angular 檔名字尾優先於基礎副檔名，並按檔名識別 Docker/Node/Git/Make/CMake；只有可選專案快照包含內容帶 `flutter:` 的 `pubspec.yaml` 時才選擇 Flutter。Markdown 與 SVG 仍由傳統 Markdown 和圖片類別擁有。CSV、TSV、Excel 工作簿與範本、OpenDocument 表格和 Numbers 在檔案卡片、檔案行及預覽標題中使用表格圖示，其可點選連結使用文件類別。`.env` 和以 `.env` 結尾的檔名均使用環境設定圖示。所有傳統與技術 SVG 都是 `aria-hidden` 的，擁有檔案身份的卡片、行或按鈕提供無障礙名稱。
 
-`LinkIconMedium` 委托 `classifyFileType` 做扩展名分类，再把精细结果折叠进原有链接词汇：code 与 HTML 使用 `code`，图片使用 `image`，PDF/Word/Excel/PPT 使用 `document`，Markdown、video 与未知文件使用 `other`。无扩展名文件在链接语境中仍是 `other`，因此[链接样式规则](../../../../docs/web-styling.zh.md)定义的 14px 外观不变。
+`LinkIconMedium` 委託 `classifyFileType` 做副檔名分類，再把精細結果摺疊進原有連結詞彙：code 與 HTML 使用 `code`，圖片使用 `image`，PDF/Word/Excel/PPT 使用 `document`，Markdown、video 與未知檔案使用 `other`。無副檔名檔案在連結語境中仍是 `other`，因此[連結樣式規則](../../../../docs/web-styling.zh.md)定義的 14px 外觀不變。
 
-附件上传卡片、已发送消息文件卡片、排队文件行和工作区文件行渲染 `FileTypeIcon`。Files 标签页标题使用显式的 `folder` 类别，尺寸为 16px。显式交付卡片使用 20px 的 `FileTypeIcon`，并通过 `fileExtension` 提供默认元数据。两处元数据行统一使用 `fileExtension`；`.env` 这样的前导点 basename 会显示 `ENV`，无后缀或末尾点号则不显示扩展名 label。图片内容继续渲染为预览而不是文件类型图形，产物文件链接与 Markdown 文件提及继续使用 `LinkIconMedium`，因为它们属于链接表面。
+附件上傳卡片、已傳送訊息檔案卡片、排隊檔案行和工作區檔案行渲染 `FileTypeIcon`。Files 標籤頁標題使用顯式的 `folder` 類別，尺寸為 16px。顯式交付卡片使用 20px 的 `FileTypeIcon`，並透過 `fileExtension` 提供預設中繼資料。兩處中繼資料行統一使用 `fileExtension`；`.env` 這樣的前導點 basename 會顯示 `ENV`，無字尾或末尾點號則不顯示副檔名 label。圖片內容繼續渲染為預覽而不是檔案型別圖形，產物檔案連結與 Markdown 檔案提及繼續使用 `LinkIconMedium`，因為它們屬於連結表面。
 
-## 备选方案
+## 備選方案
 
-**所有文件表面都使用 `LinkIconMedium`。** 否决。它的六种类别和 14px outline 图形用于在文字尺寸下表达链接目标；28px 文件卡片有空间表达所提供的 HTML、Markdown、PDF、Word、Excel、PPT 与 video 身份。
+**所有檔案表面都使用 `LinkIconMedium`。** 否決。它的六種類別和 14px outline 圖形用於在文字尺寸下表達連結目標；28px 檔案卡片有空間表達所提供的 HTML、Markdown、PDF、Word、Excel、PPT 與 video 身份。
 
-**在 `LinkIconMedium` 旁保留第二份扩展名表。** 否决。任一列表增长后，同一路径可能漂移到不同类别。一份精细表加一个显式的精细到链接适配，能同时保住两类消费方的语义。
+**在 `LinkIconMedium` 旁保留第二份副檔名錶。** 否決。任一列表增長後，同一路徑可能漂移到不同類別。一份精細表加一個顯式的精細到連結適應，能同時保住兩類消費方的語義。
 
-**把所提供的传统文件颜色直接写入每一条 SVG path。** 否决。传统 SVG 几何保持可复用，并遵守图标集的 `currentColor` 规则；组件样式表拥有默认分类调色板，渲染点只需一个 CSS 变量即可覆盖颜色，不需要重写 path 填充。技术图稿是例外，因为其内嵌的多色标记用于识别语言或工具，而不是装饰通用文件轮廓。
+**把所提供的傳統檔案顏色直接寫入每一條 SVG path。** 否決。傳統 SVG 幾何保持可複用，並遵守圖示集的 `currentColor` 規則；元件樣式表擁有預設分類調色盤，渲染點只需一個 CSS 變數即可覆蓋顏色，不需要重寫 path 填充。技術圖稿是例外，因為其內嵌的多色標記用於識別語言或工具，而不是裝飾通用檔案輪廓。
 
-**为了对称增加 archive、audio 与 data 类别。** 否决。提供的图稿与当前消费方都不需要这些图形。新增 `FileType` 成员必须有已发布的渲染点，以及在 28px slot 中仍可辨认的图稿。
+**為了對稱增加 archive、audio 與 data 類別。** 否決。提供的圖稿與目前消費方都不需要這些圖形。新增 `FileType` 成員必須有已釋出的渲染點，以及在 28px slot 中仍可辨認的圖稿。
 
-## 测试
+## 測試
 
-`ui-primitives` 测试覆盖不区分大小写的后缀、两种路径分隔符、前导点文件、无后缀与末尾点号、常见具名文件、未知回退、全部细分代码映射、规则优先级、Flutter 上下文、精确的 48 键图稿集、被拒绝的资源包额外类别、静态 markup 安全性、实例安全的 SVG id 与引用、`aria-hidden`、尺寸/class 转发、不同图稿、所提供的表格网格、112% 与 122% 前景标记变换，以及不含 SVG 字面颜色的传统实色底板/对比标记层。样式表测试钉住每一项传统类别到颜色的映射、调用方覆盖变量与本地紫色值。`LinkIconMedium` 分类表钉住它的粗粒度输出，包括 `Makefile` 仍为 `other`。附件、聊天、队列和侧边栏组件测试覆盖迁移后的渲染路径；由于图形仍是装饰性的，其无障碍输出不变。
+`ui-primitives` 測試覆蓋不區分大小寫的字尾、兩種路徑分隔符、前導點檔案、無字尾與末尾點號、常見具名檔案、未知退回、全部細分程式碼對映、規則優先順序、Flutter 上下文、精確的 48 鍵圖稿集、被拒絕的資源包額外類別、靜態 markup 安全性、實例安全的 SVG id 與引用、`aria-hidden`、尺寸/class 轉發、不同圖稿、所提供的表格網格、112% 與 122% 前景標記變換，以及不含 SVG 字面顏色的傳統實色底板/對比標記層。樣式表測試釘住每一項傳統類別到顏色的對映、呼叫方覆蓋變數與本地紫色值。`LinkIconMedium` 分類表釘住它的粗粒度輸出，包括 `Makefile` 仍為 `other`。附件、聊天、佇列和側邊欄元件測試覆蓋遷移後的渲染路徑；由於圖形仍是裝飾性的，其無障礙輸出不變。
 
-## 后果
+## 後果
 
-- 客户端包使用一个文件名解析器与一份精细文件类型表，不再 import 或重新实现功能包本地逻辑。
-- 新后缀只在已有图形能准确表达它时加入精细表。若它的链接类别与当前适配不同，这次改动还必须决定是否改变 14px 链接外观。
-- 代码与配置图稿保留内嵌调色板，不接受传统图形的 `--dsh-file-type-icon-color` 覆盖。
-- 固定的 48 项图稿表为共享浏览器 bundle 增加约 35 kB 未压缩体积和 17 kB gzip 体积；新增类别必须证明这份静态基线成本是必要的。
-- primitive 不拥有文案，但拥有默认文件类型调色板。消费方继续拥有无障碍 label 与周围文字，并可通过 `--dsh-file-type-icon-color` 替换分类颜色。
-- 精细类别名称描述展示意图，不是 MIME 校验。后缀只是展示提示，不能证明文件内容或可信度。
+- 用戶端包使用一個檔名解析器與一份精細檔案型別表，不再 import 或重新實作功能包本地邏輯。
+- 新字尾只在已有圖形能準確表達它時加入精細表。若它的連結類別與目前適應不同，這次改動還必須決定是否改變 14px 連結外觀。
+- 程式碼與設定圖稿保留內嵌調色盤，不接受傳統圖形的 `--dsh-file-type-icon-color` 覆蓋。
+- 固定的 48 項圖稿表為共享瀏覽器 bundle 增加約 35 kB 未壓縮體積和 17 kB gzip 體積；新增類別必須證明這份靜態基線成本是必要的。
+- primitive 不擁有文案，但擁有預設檔案型別調色盤。消費方繼續擁有無障礙 label 與周圍文字，並可透過 `--dsh-file-type-icon-color` 替換分類顏色。
+- 精細類別名稱描述展示意圖，不是 MIME 驗證。字尾只是展示提示，不能證明檔案內容或可信度。

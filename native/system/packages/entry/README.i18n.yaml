@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write native/system/packages/entry/README.md
 /:
   en: 944c02a61291ff07
-  zh: 7fd2384098ea4c7f
+  zh: 59ae70a06347cc54
 /deepseek-ai-node-addon-system:
   en: f37a5c105b7db656
-  zh: f2c57e01f3c91be0
+  zh: 56702d596843cc98

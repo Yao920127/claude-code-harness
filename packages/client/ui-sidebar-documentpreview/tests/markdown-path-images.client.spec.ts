@@ -9,7 +9,7 @@ describe('Markdown preview image URLs', () => {
     ['./images/a.png', '/work/guide/./images/a.png'],
     ['../a.png', '/work/guide/../a.png'],
     ['/tmp/a.png', '/tmp/a.png'],
-    ['images/中文%20图.png?size=2#detail', '/work/guide/images/中文 图.png'],
+    ['images/中文%20圖.png?size=2#detail', '/work/guide/images/中文 圖.png'],
     ['images/a%23b%3Fc%25.png', '/work/guide/images/a#b?c%.png'],
   ])('serves %s through the deployment file route', (destination, path) => {
     const url = new URL(markdownImageUrl(BASE, '/work/guide/notes.md', destination)!)
@@ -49,10 +49,10 @@ describe('Markdown preview image URLs', () => {
   })
 
   it('resolves relative and absolute images through the Desktop file route', () => {
-    for (const destination of ['图%20片.png', '/work/guide/图%20片.png']) {
+    for (const destination of ['圖%20片.png', '/work/guide/圖%20片.png']) {
       const url = new URL(markdownImageUrl('dsh-app://app/', '/work/guide/notes.md', destination)!)
       expect(url.href.split('?')[0]).toBe('dsh-app://app/api/file')
-      expect(url.searchParams.get('path')).toBe('/work/guide/图 片.png')
+      expect(url.searchParams.get('path')).toBe('/work/guide/圖 片.png')
     }
   })
 })

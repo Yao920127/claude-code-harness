@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/session-query/README.md
 /:
   en: 03834649fae34d8d
-  zh: c5faab18f14666f4
+  zh: a8a3aa6d5dac17b3
 /session-query-session-retrieval-capability-family:
   en: 65758f8a3a8d5406
-  zh: e6f4d737bf11851a
+  zh: 206aaca81c848927
 /session-query-session-retrieval-capability-family/summary:
   en: 34f1f2b609594cfa
-  zh: 868a29d637dd7f8d
+  zh: 10eab6eec0cebf9b
 /session-query-session-retrieval-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /session-query-session-retrieval-capability-family/packages:
   en: a4261b2c9c0fc9eb
-  zh: e1e439d5438e9542
+  zh: 2c3c6d8712f7b91c
 /session-query-session-retrieval-capability-family/related-documentation:
   en: dae8951ca37f8c47
-  zh: 1f63549ca52ed298
+  zh: 5129db7f2be5606d
 /session-query-session-retrieval-capability-family/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

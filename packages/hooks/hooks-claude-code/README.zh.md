@@ -1,5 +1,5 @@
 ---
-description: "在 agent 运行期间使用你现有的 Claude Code hooks.json 或 settings 钩子配置——阻塞提示词与工具、附加上下文或强制继续——供本桥接的用户与维护者阅读。"
+description: "在 agent 執行期間使用你現有的 Claude Code hooks.json 或 settings 掛鉤設定——阻塞提示詞與工具、附加上下文或強制繼續——供本橋接的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,29 +9,29 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-hooks-claude-code` 在 agent（智能体）运行期间执行你现有 Claude Code `hooks.json` 或 settings 文件中的 command 钩子，无需重写。受支持的钩子会在会话、提示词、工具、停止或 subagent 到达对应时刻时运行。它们可以带模型可见的原因阻塞提示词或工具调用、添加对话上下文，或强制模型再执行一个轮次。需要在 harness 中复用 Claude Code command 钩子时选择本包；没有 Claude Code 对应物的行为应使用原生插件。
+`dsh-hooks-claude-code` 在 agent（智慧代理）執行期間執行你現有 Claude Code `hooks.json` 或 settings 檔案中的 command 掛鉤，無需重寫。受支援的掛鉤會在工作階段、提示詞、工具、停止或 subagent 到達對應時刻時執行。它們可以帶模型可見的原因阻塞提示詞或工具呼叫、新增對話上下文，或強制模型再執行一個輪次。需要在 harness 中複用 Claude Code command 掛鉤時選擇本包；沒有 Claude Code 對應物的行為應使用原生外掛。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-挂载本包并把 `configPath` 指向你的钩子配置，你已有的钩子就会在 agent 运行中的对应时刻开始触发。在第一个钩子生效之前无需其他设置。
+掛載本包並把 `configPath` 指向你的掛鉤設定，你已有的掛鉤就會在 agent 執行中的對應時刻開始觸發。在第一個掛鉤生效之前無需其他設定。
 
-### 何时选择
+### 何時選擇
 
-当你持有 Claude Code `hooks.json`（或 `hooks` key 存放配置的 settings 文件）、且其中的 command 钩子需要把关提示词、工具与轮次时，使用它。没有 Claude Code 对应物的行为请跳过它：原生插件拥有完整的 harness API，而本桥接只运行参考工具的 command hook 子集。
+當你持有 Claude Code `hooks.json`（或 `hooks` key 存放設定的 settings 檔案）、且其中的 command 掛鉤需要把關提示詞、工具與輪次時，使用它。沒有 Claude Code 對應物的行為請跳過它：原生外掛擁有完整的 harness API，而本橋接只執行參考工具的 command hook 子集。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-hooks-claude-code'
@@ -41,154 +41,154 @@ kind: "package-reference"
     projectDir: .
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `configPath` | 必填 | `hooks.json` 或 `hooks` key 存放配置的 settings 文件路径 |
-| `pluginRoot` | — | 替换命令字符串中的 `${CLAUDE_PLUGIN_ROOT}` |
-| `projectDir` | 会话工作区 | 替换 `${CLAUDE_PROJECT_DIR}` 并设置 `CLAUDE_PROJECT_DIR` 环境变量 |
-| `defaultTimeoutMs` | `600,000` | hook 未设置时的每 hook 超时（即 Claude Code 默认值） |
-| `stderrSummaryMaxChars` | `500` | 持久化 `hook/result` stderr 摘要的字符上限 |
+| `configPath` | 必填 | `hooks.json` 或 `hooks` key 存放設定的 settings 檔案路徑 |
+| `pluginRoot` | — | 替換命令字串中的 `${CLAUDE_PLUGIN_ROOT}` |
+| `projectDir` | 工作階段工作區 | 替換 `${CLAUDE_PROJECT_DIR}` 並設定 `CLAUDE_PROJECT_DIR` 環境變數 |
+| `defaultTimeoutMs` | `600,000` | hook 未設定時的每 hook 超時（即 Claude Code 預設值） |
+| `stderrSummaryMaxChars` | `500` | 持久化 `hook/result` stderr 摘要的字元上限 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-hooks-claude-code)是每个受支持字段的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-hooks-claude-code)是每個受支援欄位的窮盡式真源。
 
-### 你的钩子能做什么
+### 你的掛鉤能做什麼
 
-| 你的钩子 | 运行时机 | 能做什么 |
+| 你的掛鉤 | 執行時機 | 能做什麼 |
 |---|---|---|
-| `SessionStart` | 会话开始时 | 附加该会话中模型可见的上下文 |
-| `UserPromptSubmit` | agent 收到提示词时 | 阻塞提示词，或附加上下文 |
-| `PreToolUse` | 工具运行前 | 阻塞工具，或在运行前请求批准 |
-| `PostToolUse` | 工具运行后 | 带反馈阻塞结果，或附加上下文 |
-| `Stop` | 运行即将停止时 | 带原因强制再执行一步 |
-| `SubagentStart` | subagent 启动时 | 向仍在运行的 subagent 附加上下文（仅限同进程） |
-| `SubagentStop` | subagent 结束时 | 只观测——不能阻塞或添加上下文 |
+| `SessionStart` | 工作階段開始時 | 附加該工作階段中模型可見的上下文 |
+| `UserPromptSubmit` | agent 收到提示詞時 | 阻塞提示詞，或附加上下文 |
+| `PreToolUse` | 工具執行前 | 阻塞工具，或在執行前請求批准 |
+| `PostToolUse` | 工具執行後 | 帶回饋阻塞結果，或附加上下文 |
+| `Stop` | 執行即將停止時 | 帶原因強制再執行一步 |
+| `SubagentStart` | subagent 啟動時 | 向仍在執行的 subagent 附加上下文（僅限同程序） |
+| `SubagentStop` | subagent 結束時 | 只觀測——不能阻塞或新增上下文 |
 
-### 钩子如何运行与失败
+### 掛鉤如何執行與失敗
 
-- 钩子在你的项目目录（agent 的会话工作区）中运行，因此钩子里的 `pwd` 与相对路径指向你的项目，而非服务器启动目录。
-- 命令字符串中的 `${CLAUDE_PLUGIN_ROOT}` 与 `${CLAUDE_PROJECT_DIR}` 会按你的配置替换，且每个钩子进程都会设置 `CLAUDE_PROJECT_DIR`。
-- 一份配置应用于整个进程：启动时只读取一次，相对 `configPath` 从启动进程的目录解析。
-- 同一事件上的钩子按配置顺序逐个运行。
-- 如果配置无法读取或解析，桥接会记录警告且不运行任何钩子——agent 仍会启动。
-- 运行失败的钩子（命令错误或崩溃）会被记录，agent 继续运行。
+- 掛鉤在你的專案目錄（agent 的工作階段工作區）中執行，因此掛鉤裡的 `pwd` 與相對路徑指向你的專案，而非伺服器啟動目錄。
+- 命令字串中的 `${CLAUDE_PLUGIN_ROOT}` 與 `${CLAUDE_PROJECT_DIR}` 會按你的設定替換，且每個掛鉤程序都會設定 `CLAUDE_PROJECT_DIR`。
+- 一份設定應用於整個程序：啟動時只讀取一次，相對 `configPath` 從啟動程序的目錄解析。
+- 同一事件上的掛鉤按設定順序逐個執行。
+- 如果設定無法讀取或解析，橋接會記錄警告且不執行任何掛鉤——agent 仍會啟動。
+- 執行失敗的掛鉤（命令錯誤或崩潰）會被記錄，agent 繼續執行。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释桥接背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋橋接背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### Hook 点映射
+### Hook 點對映
 
-每个受支持事件都面向一个 harness 扩展点：`SessionStart` 在首个轮次前通过需等待的 `agent/created` 初始化加入上下文，`UserPromptSubmit` 与 `PreToolUse` 是能拒绝传入动作的 waterfall（瀑布式事件）（`agent/pre-step`、`tools/pre-execute`），`PostToolUse` 是能带反馈阻塞或向下游决策添加上下文的 waterfall（`tools/post-execute`），`Stop` 是串行监听器，其阻塞结果通过 `steer()` 强制再执行一步（`agent/turn-stopping`）。两个 subagent 事件面向 child 生命周期发射（`subagent/start`、`subagent/end`）：start 向仍在运行的同进程 child 注入上下文，stop 只观测。仅提供上下文的 hook 总是先通过 `next()` 委托，再把带来源的消息折叠进下游决策，因此后续监听器仍可拒绝或改写；阻塞决策映射为 `deny`（`PreToolUse` 为 `ask`）。逐事件接线位于 [`src/index.ts`](src/index.ts)。
+每個受支援事件都面向一個 harness 擴充功能點：`SessionStart` 在首個輪次前透過需等待的 `agent/created` 初始化加入上下文，`UserPromptSubmit` 與 `PreToolUse` 是能拒絕傳入動作的 waterfall（瀑布式事件）（`agent/pre-step`、`tools/pre-execute`），`PostToolUse` 是能帶回饋阻塞或向下遊決策新增上下文的 waterfall（`tools/post-execute`），`Stop` 是序列監聽器，其阻塞結果透過 `steer()` 強制再執行一步（`agent/turn-stopping`）。兩個 subagent 事件面向 child 生命週期發射（`subagent/start`、`subagent/end`）：start 向仍在執行的同程序 child 注入上下文，stop 只觀測。僅提供上下文的 hook 總是先透過 `next()` 委託，再把帶來源的訊息摺疊進下游決策，因此後續監聽器仍可拒絕或改寫；阻塞決策對映為 `deny`（`PreToolUse` 為 `ask`）。逐事件接線位於 [`src/index.ts`](src/index.ts)。
 
-### 载荷与环境
+### 載荷與環境
 
-桥接从 `session_id`、字符串形态的 `transcript_path`、`cwd` 与 `hook_event_name` 的基础字段加逐事件字段构建每个事件的 stdin payload。`transcript_path` 出于兼容性保留在 payload 中，但始终为 `''`：持久化 seam 不暴露产物路径，且默认使用 Zstandard 压缩的会话日志无法被 hook 脚本读取。省略 `projectDir` 时，`CLAUDE_PROJECT_DIR` 按次默认到会话工作区，与钩子运行的目录一致；`${CLAUDE_PLUGIN_ROOT}` 与 `${CLAUDE_PROJECT_DIR}` 替换在配置解析时进行。
+橋接從 `session_id`、字串形態的 `transcript_path`、`cwd` 與 `hook_event_name` 的基礎欄位加逐事件欄位建置每個事件的 stdin payload。`transcript_path` 出於相容性保留在 payload 中，但始終為 `''`：持久化 seam 不暴露產物路徑，且預設使用 Zstandard 壓縮的工作階段日誌無法被 hook 腳本讀取。省略 `projectDir` 時，`CLAUDE_PROJECT_DIR` 按次預設到工作階段工作區，與掛鉤執行的目錄一致；`${CLAUDE_PLUGIN_ROOT}` 與 `${CLAUDE_PROJECT_DIR}` 替換在設定解析時進行。
 
-### Matcher subject 与串行执行
+### Matcher subject 與序列執行
 
-matcher subject 是工具名称（`PreToolUse`／`PostToolUse`）、会话源（`SessionStart`），或常量 `agent_type` `general-purpose`（`SubagentStart`／`SubagentStop`——subagent seam 不携带每 kind 标签）；`UserPromptSubmit` 与 `Stop` 忽略 matcher。匹配 hook 按配置顺序串行运行，这使每个 hook 的 `hook/invoked`／`hook/result` 对在日志中相邻，且最严格折叠与顺序无关（`deny > ask > allow`）。
+matcher subject 是工具名稱（`PreToolUse`／`PostToolUse`）、工作階段源（`SessionStart`），或常數 `agent_type` `general-purpose`（`SubagentStart`／`SubagentStop`——subagent seam 不攜帶每 kind 標籤）；`UserPromptSubmit` 與 `Stop` 忽略 matcher。匹配 hook 按設定順序序列執行，這使每個 hook 的 `hook/invoked`／`hook/result` 對在日誌中相鄰，且最嚴格摺疊與順序無關（`deny > ask > allow`）。
 
-### 脱离运行与释放
+### 脫離執行與釋放
 
-三个 emit 点（`SessionStart`、`SubagentStart`、`SubagentStop`）以脱离方式运行——没有扩展点等待它们。每条运行链都会被跟踪，对桥接执行 dispose（资源释放）时会中止仍在运行的 hook 进程，并在 dispose 完成前排空 continuation（`createDetachedRuns`，位于 `dsh-hook-protocol`）。
+三個 emit 點（`SessionStart`、`SubagentStart`、`SubagentStop`）以脫離方式執行——沒有擴充功能點等待它們。每條執行鏈都會被跟蹤，對橋接執行 dispose（資源釋放）時會中止仍在執行的 hook 程序，並在 dispose 完成前排空 continuation（`createDetachedRuns`，位於 `dsh-hook-protocol`）。
 
-### 设计理念
+### 設計理念
 
-- **兼容适配器，而非强力工具。** 桥接的存在意义是运行现有 Claude Code 配置中显式受支持的 command hook 子集；定制行为应放在同一批扩展点上的原生插件中。
-- **添加上下文不是否决。** 仅提供上下文的 hook 会先通过 `next()` 委托，再把其消息折叠进下游 enter 决策，因此后续 `agent/pre-step` 或 `tools/post-execute` 监听器仍可拒绝或改写。
-- **每个失败点都受控。** 配置读取／解析失败与无效 matcher 不注册任何内容；抛异常的脱离注入会被捕获并记录，而不是破坏会话启动或循环。
-- **dispose 必须达到完全停稳。** 脱离运行会被跟踪并在释放时排空，因此不会有 hook 进程或迟到回调超出 fiber 存活。
-- **串行而非并发。** 匹配 hook 按配置顺序串行运行：每个 `hook/invoked`／`hook/result` 对在日志中保持相邻，且决策折叠与顺序无关，因此结果与参考引擎的并发启动一致，代价是串行化的延迟。
+- **相容介面卡，而非強力工具。** 橋接的存在意義是執行現有 Claude Code 設定中顯式受支援的 command hook 子集；定製行為應放在同一批擴充功能點上的原生外掛中。
+- **新增上下文不是否決。** 僅提供上下文的 hook 會先透過 `next()` 委託，再把其訊息摺疊進下游 enter 決策，因此後續 `agent/pre-step` 或 `tools/post-execute` 監聽器仍可拒絕或改寫。
+- **每個失敗點都受控。** 設定讀取／解析失敗與無效 matcher 不註冊任何內容；拋異常的脫離注入會被捕捉並記錄，而不是破壞工作階段啟動或迴圈。
+- **dispose 必須達到完全停穩。** 脫離執行會被跟蹤並在釋放時排空，因此不會有 hook 程序或遲到回呼超出 fiber 存活。
+- **序列而非並行。** 匹配 hook 按設定順序序列執行：每個 `hook/invoked`／`hook/result` 對在日誌中保持相鄰，且決策摺疊與順序無關，因此結果與參考引擎的並行啟動一致，代價是序列化的延遲。
 
-[hook-bridges Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-bridges.md) 记录了桥接设计与延期缺口；[hook-protocol-lib Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-protocol-lib.md) 记录了共享与逐方言的划分。
+[hook-bridges Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-bridges.md) 記錄了橋接設計與延期缺口；[hook-protocol-lib Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-protocol-lib.md) 記錄了共享與逐方言的劃分。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：配置校验、监听器注册、逐事件 payload、决策映射 |
-| [`src/config.ts`](src/config.ts) | Claude Code 配置解析：受支持事件、matcher 校验、命令替换 |
-| — | 不发布运行时不变式伴生入口；本桥接发布 hook-protocol 会话事件，既有 companion 负责校验每个结果所引用的调用事件。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：設定驗證、監聽器註冊、逐事件 payload、決策對映 |
+| [`src/config.ts`](src/config.ts) | Claude Code 設定解析：受支援事件、matcher 驗證、命令替換 |
+| — | 不釋出執行時不變式伴生入口；本橋接釋出 hook-protocol 工作階段事件，既有 companion 負責驗證每個結果所引用的呼叫事件。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享协议进入桥接设计，以及桥接所面向的扩展点。
+當包級約定不夠用時閱讀以下頁面。它們從共享協定進入橋接設計，以及橋接所面向的擴充功能點。
 
-- [hooks 组地图](../README.zh.md)——同级组页面及其包表。
-- [hook 协议库](../hook-protocol/README.zh.md)——本桥接应用的共享钩子规则。
-- [钩子桥接 Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-bridges.md)——桥接设计、决策映射与延期缺口。
-- [拦截扩展点 Agent Note](../../../.agents/notes/implemented/feature/2026-06-30-interception-extension-points.zh.md)——桥接所映射的类型化 Decision 接口面。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-hooks-claude-code)——每个受支持配置字段及其源声明。
+- [hooks 組地圖](../README.zh.md)——同級組頁面及其包表。
+- [hook 協定庫](../hook-protocol/README.zh.md)——本橋接應用的共享掛鉤規則。
+- [掛鉤橋接 Agent Note](../../../.agents/notes/archived/feature/2026-06-30-hook-bridges.md)——橋接設計、決策對映與延期缺口。
+- [攔截擴充功能點 Agent Note](../../../.agents/notes/implemented/feature/2026-06-30-interception-extension-points.zh.md)——橋接所對映的型別化 Decision 介面面。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-hooks-claude-code)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
 ### Hook 提供的上下文
 
-#### 模型看到什么
+#### 模型看到什麼
 
-`SessionStart`、已接受提示词、工具后与实时同进程 subagent-start hook 可以添加带源归因的上下文消息；阻塞 `Stop` hook 将原因添加为下一步 steering（中途引导）。远程 child 注入没有本地目标。
+`SessionStart`、已接受提示詞、工具後與即時同程序 subagent-start hook 可以新增帶源歸因的上下文訊息；阻塞 `Stop` hook 將原因新增為下一步 steering（中途引導）。遠端 child 注入沒有本地目標。
 
-#### Token 影响
+#### Token 影響
 
-hook 不返回上下文时没有成本。Hook 文本取决于数据，会被记录，并在后续会话请求中重发，直到压缩（compaction）。
+hook 不返回上下文時沒有成本。Hook 文字取決於資料，會被記錄，並在後續工作階段請求中重發，直到壓縮（compaction）。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-### 已阻塞提示词或工具结果
+### 已阻塞提示詞或工具結果
 
-#### 模型看到什么
+#### 模型看到什麼
 
-提供方提供的原因逐字传递。缺失原因时，已拒绝工具变为 `Error: blocked by PreToolUse hook`，已阻塞工具后反馈精确为 `blocked by PostToolUse hook`，阻塞 stop 则精确添加 steering `continue: blocked by Stop hook`；已阻塞提示词不会产生任何模型可见消息，而是以 `blocked` 结束该轮次。`systemMessage` 与 `updatedInput` 会被记录或警告，但在此实现中对模型不可见。
+提供者提供的原因逐字傳遞。缺失原因時，已拒絕工具變為 `Error: blocked by PreToolUse hook`，已阻塞工具後回饋精確為 `blocked by PostToolUse hook`，阻塞 stop 則精確新增 steering `continue: blocked by Stop hook`；已阻塞提示詞不會產生任何模型可見訊息，而是以 `blocked` 結束該輪次。`systemMessage` 與 `updatedInput` 會被記錄或警告，但在此實作中對模型不可見。
 
-#### Token 影响
+#### Token 影響
 
-阻塞提示词不会产生该提示词对应的模型请求 token；拒绝或反馈会添加保留的回退或提供方文本；强制 continuation 需要另一个完整请求。
+阻塞提示詞不會產生該提示詞對應的模型請求 token；拒絕或回饋會新增保留的退回或提供者文字；強制 continuation 需要另一個完整請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-已阻塞提示词不发送请求，不会导致失效。拒绝、反馈与强制 continuation 上下文会追加在可复用前缀之后，不改写前缀。
+已阻塞提示詞不傳送請求，不會導致失效。拒絕、回饋與強制 continuation 上下文會追加在可複用字首之後，不改寫字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制描述你的 Claude Code 钩子目前还无法通过本桥接做到的事情，以及行为与参考工具的差异。它们是当前包约束，而非任务积压。
+這些限制描述你的 Claude Code 掛鉤目前還無法透過本橋接做到的事情，以及行為與參考工具的差異。它們是目前包約束，而非任務積壓。
 
-- **不支持的 hook 事件（Claude Code 当前 30 项中的 23 项）**——`Setup`、`InstructionsLoaded`、`UserPromptExpansion`、`MessageDisplay`、`PermissionRequest`、`PostToolUseFailure`、`PostToolBatch`、`PermissionDenied`、`Notification`、`TaskCreated`、`TaskCompleted`、`StopFailure`、`TeammateIdle`、`ConfigChange`、`CwdChanged`、`FileChanged`、`WorktreeCreate`、`WorktreeRemove`、`PreCompact`、`PostCompact`、`SessionEnd`、`Elicitation` 与 `ElicitationResult`。这些事件的配置会在配置组解析前被忽略，因此不支持的事件既不会使配置失效，也不会注册 hook。比较基线是 Claude Code [官方 hook 事件参考](https://code.claude.com/docs/en/hooks#hook-events)。
-- **`SessionStart` 只支持部分功能**——会消费 JSON `additionalContext`，但不支持纯 stdout 上下文、`initialUserMessage`、`sessionTitle`、`watchPaths`、`reloadSkills` 与 `CLAUDE_ENV_FILE`。hook 脱离运行，因此上下文可能错过第一个请求，payload 会省略 `model`、`agent_type` 与 `session_title` 等可选字段。
-- **`UserPromptSubmit` 只支持部分功能**——支持阻塞与 JSON `additionalContext`，但不支持纯 stdout 上下文、`sessionTitle` 与 `suppressOriginalPrompt`。除非被覆盖，否则桥接还会使用自身 600 秒默认值，而非 Claude Code 的事件特定 30 秒 command 超时。
-- **`PreToolUse` 只支持部分功能**——`deny` 与 `ask` 决策可用；`allow` 不会预审批，`defer` 不受支持，`additionalContext` 会被忽略，`updatedInput` 会被记录 + 警告但不应用（见 [pre-tool-input-rewrite Agent Note](../../../.agents/notes/proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)）。
-- **`PostToolUse` 只支持部分功能**——支持阻塞反馈与 JSON `additionalContext`，但不支持 `updatedToolOutput` 与 `updatedMCPToolOutput`，`tool_response` 会展平为文本。
-- **`SubagentStart` 与 `SubagentStop` 只支持部分功能**——两者均报告常量 `agent_type` `general-purpose`，并在 Claude Code 报告父会话的位置使用 child 会话 id。Start 上下文是尽力而为，且只能到达仍在运行的同进程 child；stop 只观测，无法阻塞 subagent 或向其提供上下文。Stop 省略 `agent_transcript_path`、`last_assistant_message`、`background_tasks` 与 `session_crons`，并始终报告 `stop_hook_active: false`。
-- **`Stop` 只支持部分功能**——阻塞会强制另一个模型轮次，但 `stop_hook_active` 始终为 `false`，会省略 `last_assistant_message`、`background_tasks` 与 `session_crons`，且未实现连续阻塞上限。因此，无条件阻塞 hook 会在每个步骤中强制 continuation，除非它自我限制。
-- **通用 payload 与输出字段只支持部分功能**——已映射事件会省略 Claude Code 原本会提供的 `prompt_id`、`permission_mode` 与 `effort`，且 `transcript_path` 永不填充：它始终为空字符串，因为持久化 seam 不暴露产物路径，且默认使用 Zstandard 压缩的会话日志无法被 hook 脚本读取。`systemMessage` 会被记录 + 警告但不呈现；`{"continue": false}` 会被记录但不会停止运行；`suppressOutput`、`stopReason` 与 `terminalSequence` 不会被应用。
-- **Handler 与配置只支持部分功能**——只运行 shell 形态 command handler。会跳过 `http`、`mcp_tool`、`prompt` 与 `agent` handler；`args`、`async`、`asyncRewake`、`shell`、`if`、`once` 与 `statusMessage` 等 command handler 选项不会被遵循。匹配 handler 串行运行且不去重，而 Claude Code 会并行运行并对相同 handler 去重。一个进程级 `configPath` 会在加载时解析一次；尚未实现 Claude Code 的分层项目、用户、插件与策略发现以及实时重新加载。
+- **不支援的 hook 事件（Claude Code 目前 30 項中的 23 項）**——`Setup`、`InstructionsLoaded`、`UserPromptExpansion`、`MessageDisplay`、`PermissionRequest`、`PostToolUseFailure`、`PostToolBatch`、`PermissionDenied`、`Notification`、`TaskCreated`、`TaskCompleted`、`StopFailure`、`TeammateIdle`、`ConfigChange`、`CwdChanged`、`FileChanged`、`WorktreeCreate`、`WorktreeRemove`、`PreCompact`、`PostCompact`、`SessionEnd`、`Elicitation` 與 `ElicitationResult`。這些事件的設定會在設定組解析前被忽略，因此不支援的事件既不會使設定失效，也不會註冊 hook。比較基線是 Claude Code [官方 hook 事件參考](https://code.claude.com/docs/en/hooks#hook-events)。
+- **`SessionStart` 只支援部分功能**——會消費 JSON `additionalContext`，但不支援純 stdout 上下文、`initialUserMessage`、`sessionTitle`、`watchPaths`、`reloadSkills` 與 `CLAUDE_ENV_FILE`。hook 脫離執行，因此上下文可能錯過第一個請求，payload 會省略 `model`、`agent_type` 與 `session_title` 等可選欄位。
+- **`UserPromptSubmit` 只支援部分功能**——支援阻塞與 JSON `additionalContext`，但不支援純 stdout 上下文、`sessionTitle` 與 `suppressOriginalPrompt`。除非被覆蓋，否則橋接還會使用自身 600 秒預設值，而非 Claude Code 的事件特定 30 秒 command 超時。
+- **`PreToolUse` 只支援部分功能**——`deny` 與 `ask` 決策可用；`allow` 不會預審批，`defer` 不受支援，`additionalContext` 會被忽略，`updatedInput` 會被記錄 + 警告但不應用（見 [pre-tool-input-rewrite Agent Note](../../../.agents/notes/proposed/feature/2026-06-30-pre-tool-input-rewrite.zh.md)）。
+- **`PostToolUse` 只支援部分功能**——支援阻塞回饋與 JSON `additionalContext`，但不支援 `updatedToolOutput` 與 `updatedMCPToolOutput`，`tool_response` 會展平為文字。
+- **`SubagentStart` 與 `SubagentStop` 只支援部分功能**——兩者均報告常數 `agent_type` `general-purpose`，並在 Claude Code 報告父工作階段的位置使用 child 工作階段 id。Start 上下文是盡力而為，且只能到達仍在執行的同程序 child；stop 只觀測，無法阻塞 subagent 或向其提供上下文。Stop 省略 `agent_transcript_path`、`last_assistant_message`、`background_tasks` 與 `session_crons`，並始終報告 `stop_hook_active: false`。
+- **`Stop` 只支援部分功能**——阻塞會強制另一個模型輪次，但 `stop_hook_active` 始終為 `false`，會省略 `last_assistant_message`、`background_tasks` 與 `session_crons`，且未實作連續阻塞上限。因此，無條件阻塞 hook 會在每個步驟中強制 continuation，除非它自我限制。
+- **通用 payload 與輸出欄位只支援部分功能**——已對映事件會省略 Claude Code 原本會提供的 `prompt_id`、`permission_mode` 與 `effort`，且 `transcript_path` 永不填充：它始終為空字串，因為持久化 seam 不暴露產物路徑，且預設使用 Zstandard 壓縮的工作階段日誌無法被 hook 腳本讀取。`systemMessage` 會被記錄 + 警告但不呈現；`{"continue": false}` 會被記錄但不會停止執行；`suppressOutput`、`stopReason` 與 `terminalSequence` 不會被應用。
+- **Handler 與設定只支援部分功能**——只執行 shell 形態 command handler。會跳過 `http`、`mcp_tool`、`prompt` 與 `agent` handler；`args`、`async`、`asyncRewake`、`shell`、`if`、`once` 與 `statusMessage` 等 command handler 選項不會被遵循。匹配 handler 序列執行且不去重，而 Claude Code 會並行執行並對相同 handler 去重。一個程序級 `configPath` 會在載入時解析一次；尚未實作 Claude Code 的分層專案、使用者、外掛與策略發現以及即時重新載入。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为、限制与既定理由以上文、包代码和相关 Agent Note 为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為、限制與既定理由以上文、包程式碼和相關 Agent Note 為準。
 
-上面的延期缺口就是工作队列：按会话的 hook 配置发现、会话启动投递门、stop 循环防护，以及 `continue: false` 的运行级停止。目前均无设计；官方 Claude Code 参考是实现其中任何一项的基线。
+上面的延期缺口就是工作佇列：按工作階段的 hook 設定發現、工作階段啟動投遞門、stop 迴圈防護，以及 `continue: false` 的執行級停止。目前均無設計；官方 Claude Code 參考是實作其中任何一項的基線。
 
 </details>

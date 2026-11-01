@@ -6,73 +6,73 @@ Status: implemented
 
 ## Problem
 
-无密钥快照语料通过 ACP 控制许多场景，但这些场景断言的行为实际属于组装后的 Agent、工具、持久化或其他产品接口。这使自动化协议看似拥有后端行为，同时在受支持的 `dsh` 启动器之外保留了测试专用应用入口，并将录制会话分散在示例、SDK、Web 和脚本目录中。
+無金鑰快照語料透過 ACP 控制許多情境，但這些情境斷言的行為實際屬於組裝後的 Agent、工具、持久化或其他產品介面。這使自動化協定看似擁有後端行為，同時在受支援的 `dsh` 啟動器之外保留了測試專用應用入口，並將錄製工作階段分散在範例、SDK、Web 和腳本目錄中。
 
-快照一词也用于互不相关的 ARIA、几何、生成器和包级单元测试预期输出。贡献者无法从路径判断测试是否由录制会话驱动、会话是否同时作为回放输入和预期输出，或哪个命令负责刷新。
+快照一詞也用於互不相關的 ARIA、幾何、生成器和包級單元測試預期輸出。貢獻者無法從路徑判斷測試是否由錄製工作階段驅動、工作階段是否同時作為回放輸入和預期輸出，或哪個命令負責重新整理。
 
 ## Decision
 
-顶层 `snapshots/` 树和 `*.snapshot.ts` 后缀只用于拥有或显式引用录制会话 JSONL 的场景。每个进程级场景都通过 `dsh` 启动一个随附 profile；小型适配器控制 headless、SDK、ACP 或 Web 行为，但不成为另一个应用入口。声明式 `snapshot.yml` 只保存已完成会话无法表达的 profile、patch、生命周期控制、平台、header pin 和 workspace 事实。
+頂層 `snapshots/` 樹和 `*.snapshot.ts` 字尾只用於擁有或顯式引用錄製工作階段 JSONL 的情境。每個程序級情境都透過 `dsh` 啟動一個隨附 profile；小型介面卡控制 headless、SDK、ACP 或 Web 行為，但不成為另一個應用入口。宣告式 `snapshot.yml` 只儲存已完成工作階段無法表達的 profile、patch、生命週期控制、平臺、header pin 和 workspace 事實。
 
-本决策取代[一次录制／确定性回放决策](2026-06-19-acp-snapshot-tests.zh.md)中 ACP 专属的放置位置与控制器所有权；后者继续负责会话日志回放、例外 override、规范化和 ACP transcript 比较。
+本決策取代[一次錄製／確定性回放決策](2026-06-19-acp-snapshot-tests.zh.md)中 ACP 專屬的放置位置與控制器所有權；後者繼續負責工作階段日誌回放、例外 override、規範化和 ACP transcript 比較。
 
-录制会话仍是主要输入，并在当前代际场景中同时作为预期输出。来自用户的消息驱动所选公开接口，录制的 assistant chunk 驱动确定性模型回放，规范化后的持久化结果必须等于 fixture。父会话和子会话共享同一类型化脱敏映射。提交的 fixture 使用保留关系的身份 token，并将请求 system prompt 和工具 schema 替换为 token；每个不同 header 类仍保留一个显式 sidecar 所有者。
+錄製工作階段仍是主要輸入，並在目前代際情境中同時作為預期輸出。來自使用者的訊息驅動所選公開介面，錄製的 assistant chunk 驅動確定性模型回放，規範化後的持久化結果必須等於 fixture。父工作階段和子工作階段共享同一型別化脫敏對映。提交的 fixture 使用保留關係的身份 token，並將請求 system prompt 和工具 schema 替換為 token；每個不同 header 類仍保留一個顯式 sidecar 所有者。
 
-Fixture 解码与比较只取决于选定 JSONL 内容；文件名标识 inventory role，但不是 parser 输入。replay、seed、record、refresh 与规范化比较路径都使用同一个严格静态 catalog 校验。
+Fixture 解碼與比較只取決於選定 JSONL 內容；檔名標識 inventory role，但不是 parser 輸入。replay、seed、record、refresh 與規範化比較路徑都使用同一個嚴格靜態 catalog 驗證。
 
-Headless stderr 重建会同时展开 `assistant/message` 与仅写入日志的 `assistant/attempt` settlement 中嵌入的 reasoning，因此失败或重试尝试的 reasoning 仍属于进程输出投影。
+Headless stderr 重建會同時展開 `assistant/message` 與僅寫入日誌的 `assistant/attempt` settlement 中嵌入的 reasoning，因此失敗或重試嘗試的 reasoning 仍屬於程序輸出投影。
 
-每个 parent 或 child 角色都使用 `session[.<ordinal>][.vN].jsonl`；v0 省略版本，且每个文件名都与其 header 一致。回放、录制与刷新按角色选择数值最高的 generation。大多数 owner 省略 `sessionFormat` 并跟随当前 writer；受限的历史 owner 会声明精确版本与封闭 coverage 名称。语料保留选定 v0 角色，覆盖多跳、打包行、重试／失败与随附 profile，并保留选定 v1 角色覆盖完整迁移链中的 v1→v2 结构 edge。录制与刷新绝不改写显式保留的历史 fixture、重命名已提交 generation 或通过自动清理删除 generation。保留 Session generation 不会冻结非 Session 预期输出：refresh 仍会根据当前 run 写入 owner 持有的 system-prompt 与 tool-schema sidecar。受审阅的源树整理只有在同角色存在已验证的当前后继后才移除前代。语料策略要求选定当前角色始终占多数，并将选定历史角色上限设为十个；更低的前代 generation 可以保留在选定当前后继旁。
+每個 parent 或 child 角色都使用 `session[.<ordinal>][.vN].jsonl`；v0 省略版本，且每個檔名都與其 header 一致。回放、錄製與重新整理按角色選擇數值最高的 generation。大多數 owner 省略 `sessionFormat` 並跟隨目前 writer；受限的歷史 owner 會宣告精確版本與封閉 coverage 名稱。語料保留選定 v0 角色，覆蓋多跳、打包行、重試／失敗與隨附 profile，並保留選定 v1 角色覆蓋完整遷移鏈中的 v1→v2 結構 edge。錄製與重新整理絕不改寫顯式保留的歷史 fixture、重新命名已提交 generation 或透過自動清理刪除 generation。保留 Session generation 不會凍結非 Session 預期輸出：refresh 仍會根據目前 run 寫入 owner 持有的 system-prompt 與 tool-schema sidecar。受審閱的源樹整理只有在同角色存在已驗證的目前後繼後才移除前代。語料策略要求選定目前角色始終佔多數，並將選定歷史角色上限設為十個；更低的前代 generation 可以保留在選定目前後繼旁。
 
-场景拥有的 HTTP fixture 将会话中录制的稳定 authority 与传输 listener 分离。每个 fixture 在回环地址上绑定端口 `0`，由操作系统以一次原子操作分配并绑定端口，再将录制的 URL 或 endpoint 通过真实 provider 映射到该 listener。任何进程全局传输拦截只匹配录制 endpoint，由 fixture fiber 拥有，并在关闭 listener 前恢复。
+情境擁有的 HTTP fixture 將工作階段中錄製的穩定 authority 與傳輸 listener 分離。每個 fixture 在迴環地址上繫結埠 `0`，由作業系統以一次原子操作分配並繫結埠，再將錄製的 URL 或 endpoint 透過真實 provider 對映到該 listener。任何程序全域傳輸攔截只匹配錄製 endpoint，由 fixture fiber 擁有，並在關閉 listener 前恢復。
 
-每个现有 ACP 场景都获得一个保留行为的目标。普通单次行为使用 headless profile，需要持久机器控制的行为使用 SDK profile，只有 ACP 协议行为继续归 ACP 所有。由录制会话驱动的 Web 场景加入该语料，并保留其 ARIA 或几何预期输出作为辅助证据。没有录制会话来源的 Web 和包级测试保留归属方本地的预期输出，并停止使用快照路径或文件名。
+每個現有 ACP 情境都獲得一個保留行為的目標。普通單次行為使用 headless profile，需要持久機器控制的行為使用 SDK profile，只有 ACP 協定行為繼續歸 ACP 所有。由錄製工作階段驅動的 Web 情境加入該語料，並保留其 ARIA 或幾何預期輸出作為輔助證據。沒有錄製工作階段來源的 Web 和包級測試保留歸屬方本地的預期輸出，並停止使用快照路徑或檔名。
 
-Workspace 输入继续归各场景本地所有。变更文件的场景比较完整的预期最终 workspace，record 与 refresh 绝不改写该预期，因此模型或工具的自报结果无法满足测试。现有的有意会话复用继续使用显式、无环的所有者引用；语料不增加 workspace 继承或通用 fixture 合并机制。
+Workspace 輸入繼續歸各情境本地所有。變更檔案的情境比較完整的預期最終 workspace，record 與 refresh 絕不改寫該預期，因此模型或工具的自報結果無法滿足測試。現有的有意工作階段複用繼續使用顯式、無環的所有者引用；語料不增加 workspace 繼承或通用 fixture 合併機制。
 
-当前 writer 的 request-header pin 与保留的迁移输入分离：`tool-call-turn` 固定 default 组合，`empty-response-retry-current` 固定 retry 组合。可读 sidecar 仍由 `text-turn` 持有。六份保留的历史输入保持字节冻结，并继续被选为回放输入；其固定历史版本的目录不含会取代它们的更新的规范同角色文件。单独的 `writer.expected.jsonl` 与 `writer.<ordinal>.expected.jsonl` 文件固定精确的规范化原生当前格式的父子会话输出，保留历史输入的 SDK 场景则通过 `notifications.current.expected.jsonl` 固定当前通知。这些输出比较基准不是 replay 代际。[快照工具包](../../../../packages/test-support/session-snapshot/README.zh.md)负责选择与刷新行为。结构迁移可以保留请求含义而不复现原生 writer 的事件布局，因此正式迁移拥有独立的正确性测试。反向投影为历史 header、剥除结构差异、跳过输出相等断言或替换冻结输入都会掩盖回归，而不是验证这些相互独立的约定。
+目前 writer 的 request-header pin 與保留的遷移輸入分離：`tool-call-turn` 固定 default 組合，`empty-response-retry-current` 固定 retry 組合。可讀 sidecar 仍由 `text-turn` 持有。六份保留的歷史輸入保持位元組凍結，並繼續被選為回放輸入；其固定歷史版本的目錄不含會取代它們的更新的規範同角色檔案。單獨的 `writer.expected.jsonl` 與 `writer.<ordinal>.expected.jsonl` 檔案固定精確的規範化原生目前格式的父子工作階段輸出，保留歷史輸入的 SDK 情境則透過 `notifications.current.expected.jsonl` 固定目前通知。這些輸出比較基準不是 replay 代際。[快照工具包](../../../../packages/test-support/session-snapshot/README.zh.md)負責選擇與重新整理行為。結構遷移可以保留請求含義而不復現原生 writer 的事件佈局，因此正式遷移擁有獨立的正確性測試。反向投影為歷史 header、剝除結構差異、跳過輸出相等斷言或替換凍結輸入都會掩蓋迴歸，而不是驗證這些相互獨立的約定。
 
 ## Alternatives considered
 
-**继续将 ACP 作为通用驱动器。** 这会保留现有 harness，但继续把后端覆盖耦合到低优先级协议，也无法证明受支持的 headless、SDK 和 Web 启动路径。
+**繼續將 ACP 作為通用驅動器。** 這會保留現有 harness，但繼續把後端覆蓋耦合到低優先順序協定，也無法證明受支援的 headless、SDK 和 Web 啟動路徑。
 
-**将每个场景移动到新的 headless 测试驱动器。** 私有驱动器会重现应用入口问题，也无法表达随附 SDK profile 已提供的多轮、取消或后台生命周期控制。
+**將每個情境移動到新的 headless 測試驅動器。** 私有驅動器會重現應用入口問題，也無法表達隨附 SDK profile 已提供的多輪、取消或後臺生命週期控制。
 
-**将每种预期输出集中到 `snapshots/`。** ARIA、几何、生成器和单元测试预期不会把录制会话同时用作输入和结果。混合这些内容会保留当前含糊的术语，并削弱包所有权。
+**將每種預期輸出集中到 `snapshots/`。** ARIA、幾何、生成器和單元測試預期不會把錄製工作階段同時用作輸入和結果。混合這些內容會保留目前含糊的術語，並削弱包所有權。
 
-**创建统一的声明式浏览器和终端语言。** 复杂 UI 和 PTY 场景需要交互代码。共享快照核心加接口适配器可以移除应用驱动器，而无需增加第二套测试框架。
+**建立統一的宣告式瀏覽器和終端語言。** 複雜 UI 和 PTY 情境需要互動程式碼。共享快照核心加介面介面卡可以移除應用驅動器，而無需增加第二套測試框架。
 
-**自动去重 workspace 和录制会话。** 当前 workspace 重复很少，有意保持本地性更易审查。只有现有的语义会话复用值得显式引用。
+**自動去重 workspace 和錄製工作階段。** 目前 workspace 重複很少，有意保持本地性更易審查。只有現有的語義工作階段複用值得顯式引用。
 
-**直接绑定录制 URL 的数值端口。** 稳定 listener 端口使传输值与 transcript 值一致，但同一主机上的并发快照 job 共享网络命名空间，会争用该端口。
+**直接繫結錄製 URL 的數值埠。** 穩定 listener 埠使傳輸值與 transcript 值一致，但同一主機上的並行快照 job 共享網路名稱空間，會爭用該埠。
 
-**在启动场景前探测未使用端口。** 子进程绑定前释放已探测端口会产生检查时间与使用时间竞态。在拥有该端口的进程内绑定端口 `0`，可使分配与所有权保持原子性。
+**在啟動情境前探測未使用埠。** 子程序繫結前釋放已探測埠會產生檢查時間與使用時間競態。在擁有該埠的程序內繫結埠 `0`，可使分配與所有權保持原子性。
 
-**让每个选定 fixture 都使用当前版本。** 这会减少 fixture 版本，却移除随附 profile 对完整相邻迁移链仍可还原已发布输入的证明。
+**讓每個選定 fixture 都使用目前版本。** 這會減少 fixture 版本，卻移除隨附 profile 對完整相鄰遷移鏈仍可還原已釋出輸入的證明。
 
-**让每个场景都继续选择其最旧 generation。** 这会最大化迁移调用，却使快照语料不再把当前 writer 与当前格式快速路径作为普通情况来覆盖。
+**讓每個情境都繼續選擇其最舊 generation。** 這會最大化遷移呼叫，卻使快照語料不再把目前 writer 與目前格式快速路徑作為普通情況來覆蓋。
 
 ## Invariants
 
-- 每个现有录制会话场景都在移除旧所有者之前拥有一个通过的替代场景。
-- 每个进程级快照都通过 `dsh` 启动，应用入口清单不再允许已退休的快照驱动器。
-- 每个顶层场景都拥有或引用会话 JSONL；非会话预期输出继续归所有者本地所有。
-- 提交的会话 fixture 是脱敏固定点，不含 system prompt 或工具 schema 正文，并为每个 header 类保留且仅保留一个 pin。
-- 规范 fixture 名称与其 header 版本一致；每项引用都指向 owner 选定的 parent generation；最多十个选定角色使用显式 v0/v1 声明，选定当前角色多于这些历史角色，且后者的 coverage 名称涵盖每项保留的迁移行为。
-- 变更内容的场景从外部验证最终 workspace。
-- 所属位置的进程预期使用 `*.expected.e2e.ts`，并由单独的构建产物门禁运行。
-- 源码与构建适配器在隔离的 profile fallback 中安装仅回放包；不同的提示词 section 顺序值使两种模式的请求 header 保持字节一致。
-- 场景 HTTP fixture 绑定由操作系统分配的回环端口，同时保留录制的模型可见 authority。
-- 源码和构建启动模式、浏览器回放、SDK 投影、打包 Python 运行时场景、文档门禁和仓库卫生检查通过。
+- 每個現有錄製工作階段情境都在移除舊所有者之前擁有一個透過的替代情境。
+- 每個程序級快照都透過 `dsh` 啟動，應用入口清單不再允許已退休的快照驅動器。
+- 每個頂層情境都擁有或引用工作階段 JSONL；非工作階段預期輸出繼續歸所有者本地所有。
+- 提交的工作階段 fixture 是脫敏固定點，不含 system prompt 或工具 schema 正文，併為每個 header 類保留且僅保留一個 pin。
+- 規範 fixture 名稱與其 header 版本一致；每項引用都指向 owner 選定的 parent generation；最多十個選定角色使用顯式 v0/v1 宣告，選定目前角色多於這些歷史角色，且後者的 coverage 名稱涵蓋每項保留的遷移行為。
+- 變更內容的情境從外部驗證最終 workspace。
+- 所屬位置的程序預期使用 `*.expected.e2e.ts`，並由單獨的建置產物門禁執行。
+- 原始碼與建置介面卡在隔離的 profile fallback 中安裝僅回放包；不同的提示詞 section 順序值使兩種模式的請求 header 保持位元組一致。
+- 情境 HTTP fixture 繫結由作業系統分配的迴環埠，同時保留錄製的模型可見 authority。
+- 原始碼和建置啟動模式、瀏覽器回放、SDK 投影、打包 Python 執行時情境、文件門禁和儲存庫衛生檢查透過。
 
 ## Consequences
 
-该语料让控制器所有权可见：普通 Agent 行为不再继承 ACP 协议输出，SDK 和 Web 投影保留各自接口专有的证据，只有 ACP 取消与权限交换仍归 ACP 所有。贡献者审查一份规范化会话差异，以及提供独立证据的 sidecar 或 UI 预期。新增组合必须提供 manifest 类别 pin；新增易变身份必须添加保留关系的带类型脱敏规则，而不是扩大文本清洗范围。并发 job 可以回放依赖网络的 fixture，而无需预留仓库级端口，代价是 fixture 内需要维护录制 authority 与传输 listener 的映射。
+該語料讓控制器所有權可見：普通 Agent 行為不再繼承 ACP 協定輸出，SDK 和 Web 投影保留各自介面專有的證據，只有 ACP 取消與權限交換仍歸 ACP 所有。貢獻者審查一份規範化工作階段差異，以及提供獨立證據的 sidecar 或 UI 預期。新增組合必須提供 manifest 類別 pin；新增易變身份必須新增保留關係的帶型別脫敏規則，而不是擴大文字清洗範圍。並行 job 可以回放依賴網路的 fixture，而無需預留儲存庫級埠，代價是 fixture 內需要維護錄製 authority 與傳輸 listener 的對映。
 
-历史迁移覆盖的代价是显式逐场景元数据与保留的前代文件；选定当前角色占多数则防止兼容性 fixture 隐藏当前 writer 回归。
+歷史遷移覆蓋的代價是顯式逐情境中繼資料與保留的前代檔案；選定目前角色佔多數則防止相容性 fixture 隱藏目前 writer 迴歸。
 
 ## Risks
 
-语料可能变更数百个 fixture，generation 名称改动可能掩盖行为变化。因此，diff 与验证必须能分别归属机械 generation 输出、规范化行为与控制器行为，预期输出改写需要逐场景审查。
+語料可能變更數百個 fixture，generation 名稱改動可能掩蓋行為變化。因此，diff 與驗證必須能分別歸屬機械 generation 輸出、規範化行為與控制器行為，預期輸出改寫需要逐情境審查。
 
-将一份录制会话同时用作回放输入和预期输出，可能会稳定复现错误的模型脚本。独立的世界状态断言、协议或 UI 预期、真实模型录制和聚焦包级测试仍是必要的补充证据。
+將一份錄製工作階段同時用作回放輸入和預期輸出，可能會穩定復現錯誤的模型腳本。獨立的世界狀態斷言、協定或 UI 預期、真實模型錄制和聚焦包級測試仍是必要的補充證據。

@@ -1,49 +1,49 @@
-# Agent Note: parent 自有的 subagent 目录事件
+# Agent Note: parent 自有的 subagent 目錄事件
 
 Status: implemented
 
 [English](2026-09-01-parent-owned-subagent-catalog.md) | 中文
 
-## 问题
+## 問題
 
-直接 child discovery 曾从全局 Session 语料与每个入选 child 的日志重建目录。创建过程已经知道直接 parent、child id、mode 与 label，因此仓库范围枚举和 child 日志读取重复推导了已有归属的事实，并让浏览器刷新成本取决于无关 Session。
+直接 child discovery 曾從全域 Session 語料與每個入選 child 的日誌重建目錄。建立過程已經知道直接 parent、child id、mode 與 label，因此儲存庫範圍列舉和 child 日誌讀取重複推導了已有歸屬的事實，並讓瀏覽器重新整理成本取決於無關 Session。
 
-child descriptor 对恢复与 composition 仍然必要，但它不能作为 discovery 来源，因为读取方必须先找到并打开 child 才能读取 descriptor。fork 还有独立要求：从 parent 日志播种的副本不能继承原 Session 的 child。
+child descriptor 對恢復與 composition 仍然必要，但它不能作為 discovery 來源，因為讀取方必須先找到並開啟 child 才能讀取 descriptor。fork 還有獨立要求：從 parent 日誌播種的副本不能繼承原 Session 的 child。
 
-## 决策
+## 決策
 
-parent Session 的 required `subagent/catalog` 事件是直接 child discovery 的持久化权威。每个事件都是一条成功创建事实，包含 `childId`、`childCreatedAt`、mode 与按 mode 区分的 label。没有本地 Session 的远程 one-shot run 不进入该目录。无效的自身 fact（包括不支持的 payload 版本）会使 projection 恢复失败，因为静默丢弃 required fact 会返回不完整的目录。
+parent Session 的 required `subagent/catalog` 事件是直接 child discovery 的持久化權威。每個事件都是一條成功建立事實，包含 `childId`、`childCreatedAt`、mode 與按 mode 區分的 label。沒有本地 Session 的遠端 one-shot run 不進入該目錄。無效的自身 fact（包括不支援的 payload 版本）會使 projection 恢復失敗，因為靜默丟棄 required fact 會返回不完整的目錄。
 
-创建只发布成功事实。one-shot run 在 provider 返回本地 child 后、run 到达调用方前追加目录事件。continuable run 先准入初始 prompt，再追加目录事件，最后返回 child id。准入或目录追加失败时，创建失败并释放 activation；不存在补偿目录事件或 rollback 协议。
+建立只發布成功事實。one-shot run 在 provider 返回本地 child 後、run 到達呼叫方前追加目錄事件。continuable run 先准入初始 prompt，再追加目錄事件，最後返回 child id。准入或目錄追加失敗時，建立失敗並釋放 activation；不存在補償目錄事件或 rollback 協定。
 
-child header 与 `subagent/descriptor` 继续拥有恢复与 composition 权威。Activation 与精确 parent 关系继续拥有授权与投递权威。mode 与 label 只快照一次，同一份分离值写入 parent catalog fact 与 child descriptor。
+child header 與 `subagent/descriptor` 繼續擁有恢復與 composition 權威。Activation 與精確 parent 關係繼續擁有授權與投遞權威。mode 與 label 只快照一次，同一份分離值寫入 parent catalog fact 與 child descriptor。
 
-注册的 `subagentCatalog` projection 物化 parent fact。它将存储、追加、迭代和检查点校验交给 [`dsh-chunked-list`](../../../../packages/util/chunked-list/README.zh.md)，后者以每块 64 项的持久 stack 保存事实，因此 append 最多复制 head chunk，以有界 O(1) 工作完成。materialization 从旧到新访问 chunk，对 D 条事实以 O(D) 时间保留父目录事件顺序。并发创建按目录成功追加的顺序排列，与 child 时间戳和 id 无关。projection checkpoint 以 O(D) 克隆 state；projection-cache 继续异步写入，并使用既有创建、turn-end 与 disposal 强制点。
+註冊的 `subagentCatalog` projection 物化 parent fact。它將儲存、追加、迭代和檢查點驗證交給 [`dsh-chunked-list`](../../../../packages/util/chunked-list/README.zh.md)，後者以每塊 64 項的持久 stack 儲存事實，因此 append 最多複製 head chunk，以有界 O(1) 工作完成。materialization 從舊到新存取 chunk，對 D 條事實以 O(D) 時間保留父目錄事件順序。並行建立按目錄成功追加的順序排列，與 child 時間戳和 id 無關。projection checkpoint 以 O(D) 克隆 state；projection-cache 繼續非同步寫入，並使用既有建立、turn-end 與 disposal 強制點。
 
-工具库拥有分块布局及其共享容量常量；目录拥有事件校验、fork 过滤和目录行转换。目录 projection state 版本 2 保存通用块值，因此 projection registry 从 Session 事件重建不兼容的缓存。Session 事件载荷和公开目录行保持各自格式。
+工具庫擁有分塊佈局及其共享容量常數；目錄擁有事件驗證、fork 過濾和目錄行轉換。目錄 projection state 版本 2 儲存通用塊值，因此 projection registry 從 Session 事件重建不相容的快取。Session 事件載荷和公開目錄行保持各自格式。
 
-fork 隔离使用 projection 初始化时提供的精确 `Session.inheritedEventCount`。fold 忽略该 offset 之前的 `subagent/catalog` 事件。state 保存 inherited offset，但不保存每条 event seq，因为接受判定已在 fold 时完成。
+fork 隔離使用 projection 初始化時提供的精確 `Session.inheritedEventCount`。fold 忽略該 offset 之前的 `subagent/catalog` 事件。state 儲存 inherited offset，但不儲存每條 event seq，因為接受判定已在 fold 時完成。
 
-Headless 快照采集按父目录顺序分配同父子级的 fixture 角色，不依赖子级创建时间戳：provider 启动可能在较新的 Session 之后发布较旧的 Session。采集过程原样保留每份日志。
+Headless 快照採集按父目錄順序分配同父子級的 fixture 角色，不依賴子級建立時間戳：provider 啟動可能在較新的 Session 之後釋出較舊的 Session。採集過程原樣保留每份日誌。
 
-snapshot normalizer 会把 `childCreatedAt` 归零，因为它来自 process clock。事件顺序与来源事件引用保持不变：相邻 fact 也可能来自顺序创建，因此相邻关系不能证明可交换性。
+snapshot normalizer 會把 `childCreatedAt` 歸零，因為它來自 process clock。事件順序與來源事件引用保持不變：相鄰 fact 也可能來自順序建立，因此相鄰關係不能證明可交換性。
 
-即使 replay 输入保留历史 Session generation，当前 writer 的快照预期也包含 catalog 事实。比较保留 catalog 及其来源事件引用；历史 replay 文件保持不变。
+即使 replay 輸入保留歷史 Session generation，目前 writer 的快照預期也包含 catalog 事實。比較保留 catalog 及其來源事件引用；歷史 replay 檔案保持不變。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**扁平不可变数组。** 用 `[...facts, fact]` append 会复制 D 个 fact，因此创建是 O(D)。修改共享数组会违反 projection state ownership 与 checkpoint 安全。
+**扁平不可變陣列。** 用 `[...facts, fact]` append 會複製 D 個 fact，因此建立是 O(D)。修改共享陣列會違反 projection state ownership 與 checkpoint 安全。
 
-**每 fact 一个 node 的 linked list。** 它提供 O(1) append 与 O(D) read，但持久 projection checkpoint 会形成 D 层 JSON 嵌套。每块 64 项保留渐进复杂度，同时降低嵌套深度。
+**每 fact 一個 node 的 linked list。** 它提供 O(1) append 與 O(D) read，但持久 projection checkpoint 會形成 D 層 JSON 巢狀。每塊 64 項保留漸進複雜度，同時降低巢狀深度。
 
-**独立的 host state 观察输出。** 返回内部 projection state 会重复已有观察结果机制，并复制与子级发现无关的状态。目录视图通过既有的类型化 projection map 提供直接子级列表。
+**獨立的 host state 觀察輸出。** 返回內部 projection state 會重複已有觀察結果機制，並複製與子級發現無關的狀態。目錄檢視透過既有的型別化 projection map 提供直接子級列表。
 
-**持久 SQLite child index。** index 会为 parent Session 日志中已有顺序的 fact 增加另一套写路径、reconciliation protocol、schema 与 corruption surface。
+**持久 SQLite child index。** index 會為 parent Session 日誌中已有順序的 fact 增加另一套寫路徑、reconciliation protocol、schema 與 corruption surface。
 
-**补偿失败事件。** 在初始 prompt 准入前记录 catalog membership 会引入第二种 operation、配对规则、rollback 清理与 client reconciliation。把成功事实推迟到准入完成后即可删除该协议。
+**補償失敗事件。** 在初始 prompt 准入前記錄 catalog membership 會引入第二種 operation、配對規則、rollback 清理與 client reconciliation。把成功事實推遲到准入完成後即可刪除該協定。
 
-## 后果
+## 後果
 
-Session observation 与 client snapshot 通过 `projections.values.subagentCatalog` 暴露直接子级列表。目录状态变化时，projection change feed 发布完整列表。每次 view 的成本为 O(D)，因此 D 次创建可能累计产生 O(D²) 的 view 工作量；这沿用现有 projection 机制。`listChildren()` 通过一次 live-preferred Session observation 读取父 projection；后代枚举按目录顺序递归调用同一读取函数。可达目录事实提供身份和成员关系，无需全局 Session 扫描或独立的子身份缓存路径。不可读分支保留为诊断；未进入目录的 Session 不在发现范围内。[Web projection 消费决策](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 说明浏览器加载与同步。
+Session observation 與 client snapshot 透過 `projections.values.subagentCatalog` 暴露直接子級列表。目錄狀態變化時，projection change feed 釋出完整列表。每次 view 的成本為 O(D)，因此 D 次建立可能累計產生 O(D²) 的 view 工作量；這沿用現有 projection 機制。`listChildren()` 透過一次 live-preferred Session observation 讀取父 projection；後代列舉按目錄順序遞迴呼叫同一讀取函式。可達目錄事實提供身份和成員關係，無需全域 Session 掃描或獨立的子身份快取路徑。不可讀分支保留為診斷；未進入目錄的 Session 不在發現範圍內。[Web projection 消費決策](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 說明瀏覽器載入與同步。
 
-[创建元数据排除决策](../simplification/2026-09-16-subagent-catalog-membership-only.zh.md) 说明目录事实为何不包含模型配置。
+[建立中繼資料排除決策](../simplification/2026-09-16-subagent-catalog-membership-only.zh.md) 說明目錄事實為何不包含模型設定。

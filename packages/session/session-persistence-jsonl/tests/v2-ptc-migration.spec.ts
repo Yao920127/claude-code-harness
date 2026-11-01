@@ -13,12 +13,12 @@ import { generationLogPath } from '../src/format.ts'
 
 const userMessage = {
   id: 'tools-code-mode:user', role: 'user', source: { kind: 'user' },
-  content: [{ type: 'text', text: 'Keep tools-code-mode and tool/code-dispatch in this text. 图片' }],
+  content: [{ type: 'text', text: 'Keep tools-code-mode and tool/code-dispatch in this text. 圖片' }],
 }
 const titleMessage = {
   id: 'tools-code-mode:title-input', role: 'user',
   source: { kind: 'plugin', plugin: 'dsh-session-title-llm' },
-  content: [{ type: 'text', text: 'Generate the session title from this JSON array of human messages:\n[{"seq":2,"text":"Keep tools-code-mode and tool/code-dispatch in this text. 图片"}]' }],
+  content: [{ type: 'text', text: 'Generate the session title from this JSON array of human messages:\n[{"seq":2,"text":"Keep tools-code-mode and tool/code-dispatch in this text. 圖片"}]' }],
 }
 const toolCall = {
   type: 'tool-call', id: 'tools-code-mode:root-call', name: 'run_code',

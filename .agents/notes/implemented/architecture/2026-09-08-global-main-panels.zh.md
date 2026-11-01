@@ -1,37 +1,37 @@
-# Agent Note: 不增加默认界面的全局主面板
+# Agent Note: 不增加預設介面的全域主面板
 
 Status: implemented
 
 [English](2026-09-08-global-main-panels.md) | 中文
 
-## 问题
+## 問題
 
-插件需要不属于任何会话的应用级视图。会话作用域的 Conversation 视图无法提供这种生命周期，而替换 Conversation 的 single slot 又会移除普通会话界面。增加此扩展不能在默认应用中增加导航控件或预留空间。
+外掛需要不屬於任何工作階段的應用級檢視。工作階段作用域的 Conversation 檢視無法提供這種生命週期，而替換 Conversation 的 single slot 又會移除普通工作階段介面。增加此擴充功能不能在預設應用中增加導航控制元件或預留空間。
 
-## 决策
+## 決策
 
-布局声明 root 作用域的 keyed `main` slot。保留的 `conversation` key 属于 Conversation。`ui-session` 根据 `uiWorkspace` 的 `mainView` 所有权标记得出根 Session binding；`main.conversation` 及其关联右 Sidebar 继承该 Provider binding。其他主面板条目不获得隐式会话绑定。[Client 会话引用](2026-09-15-client-session-references.zh.md)拥有引用获取与来源元数据；本篇拥有全局面板选择。
+佈局宣告 root 作用域的 keyed `main` slot。保留的 `conversation` key 屬於 Conversation。`ui-session` 根據 `uiWorkspace` 的 `mainView` 所有權標記得出根 Session binding；`main.conversation` 及其關聯右 Sidebar 繼承該 Provider binding。其他主面板條目不獲得隱式工作階段繫結。[Client 工作階段引用](2026-09-15-client-session-references.zh.md)擁有引用取得與來源中繼資料；本篇擁有全域面板選擇。
 
-侧栏拥有 root 作用域的 `sidebar.panellist` list。每个 list 条目提供图标，以及与主面板条目匹配的 id；字符串或随语言变化的标签提供普通可见文字、无障碍名称和折叠提示。本决定落地时默认组合不注册面板条目，因此空列表没有 DOM 或间距；现在 web bundle 的插件管理器注册了第一个条目（[插件管理移到 Web 侧栏](2026-09-09-plugin-management-in-the-web-sidebar.zh.md)）。选中操作检查实时主面板条目，对缺失的 key 报错而不替换当前面板。
+側欄擁有 root 作用域的 `sidebar.panellist` list。每個 list 條目提供圖示，以及與主面板條目匹配的 id；字串或隨語言變化的標籤提供普通可見文字、無障礙名稱和摺疊提示。本決定落實時預設組合不註冊面板條目，因此空列表沒有 DOM 或間距；現在 web bundle 的外掛管理器註冊了第一個條目（[外掛管理移到 Web 側欄](2026-09-09-plugin-management-in-the-web-sidebar.zh.md)）。選中操作檢查即時主面板條目，對缺失的 key 報錯而不替換目前面板。
 
-渲染器与布局控制器共享一个直接创建的 root 存储。其 `panelInfo` 和 `layoutInfo` 对象保持独立的引用。框架提供 `usePanelInfo`；各行和中央内容订阅所需的选中态值，AppFrame 仅读取布局信息。右侧 Sidebar 的 root 控制器决定是否挂载其会话子树，并把最终所需的列宽报告给框架。
+渲染器與佈局控制器共享一個直接建立的 root 儲存。其 `panelInfo` 和 `layoutInfo` 物件保持獨立的引用。框架提供 `usePanelInfo`；各行和中央內容訂閱所需的選中態值，AppFrame 僅讀取佈局資訊。右側 Sidebar 的 root 控制器決定是否掛載其工作階段子樹，並把最終所需的列寬報告給框架。
 
-`uiWorkspace.openSession(target)` 先获取显式目标，再替换主引用并让中央区域返回 Conversation。`openWorkspace` 和 `forkSession` 保留布局既有的 `beginNavigation()` 信号与服务生命周期。`openWorkspace` 在获取完成后、替换主引用前执行既有的同步准备动作。请求被替代会阻止迟到的 UI 提交，不阻止会话创建。直接打开会话不增加全局导航取消。面板导航既不释放所持主会话，也不写入会话事件。
+`uiWorkspace.openSession(target)` 先取得顯式目標，再替換主引用並讓中央區域返回 Conversation。`openWorkspace` 和 `forkSession` 保留佈局既有的 `beginNavigation()` 訊號與服務生命週期。`openWorkspace` 在取得完成後、替換主引用前執行既有的同步準備動作。請求被替代會阻止遲到的 UI 提交，不阻止工作階段建立。直接開啟工作階段不增加全域導航取消。面板導航既不釋放所持主工作階段，也不寫入工作階段事件。
 
-DOM 焦点不是导航选中态。搜索和目录选择控件可以获得焦点，同时保留全局面板及其侧栏行的选中态；打开会话才改变中央区域的选中态。
+DOM 焦點不是導航選中態。搜尋和目錄選擇控制元件可以獲得焦點，同時保留全域面板及其側欄行的選中態；開啟工作階段才改變中央區域的選中態。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**会话作用域的主视图。** 其生命周期和标准 props 会把应用级状态绑定到恰好处于当前态的会话。
+**工作階段作用域的主檢視。** 其生命週期和標準 props 會把應用級狀態繫結到恰好處於目前態的工作階段。
 
-**另一套导航栈。** 新会话和工作区会话行已经提供明确目标，不需要返回按钮或保存返回目的地。
+**另一套導航棧。** 新工作階段和工作區工作階段行已經提供明確目標，不需要返回按鈕或儲存返回目的地。
 
-**React 标题 slot。** 导航条目的可见文字与无障碍名称使用同一个普通标签；独立的标题注册不属于这一呈现方式。
+**React 標題 slot。** 導航條目的可見文字與無障礙名稱使用同一個普通標籤；獨立的標題註冊不屬於這一呈現方式。
 
-**平铺选中态和布局状态，再做浅比较。** 将两者存为独立对象可以直接保持引用相等，避免每次选择面板都分配并比较新的布局投影。
+**平鋪選中態和佈局狀態，再做淺比較。** 將兩者存為獨立物件可以直接保持引用相等，避免每次選擇面板都分配並比較新的佈局投影。
 
-## 后果
+## 後果
 
-默认侧栏快照保持不变。扩展面板没有右侧 Sidebar，选择另一个全局面板不会改变布局偏好。在显示右侧 Sidebar 的 Conversation 与全局面板之间切换时，所需列宽仍会变化；这并不保证浏览器完全不计算布局。
+預設側欄快照保持不變。擴充功能面板沒有右側 Sidebar，選擇另一個全域面板不會改變佈局偏好。在顯示右側 Sidebar 的 Conversation 與全域面板之間切換時，所需列寬仍會變化；這並不保證瀏覽器完全不計算佈局。
 
-面板选中态是瞬时状态，刷新后重置。插件 dispose（资源释放）会移除其贡献；移除当前选中的主面板条目会使中央区域回到 Conversation。测试注册真实临时面板，覆盖行交互、焦点、存储引用的独立性、无效 id、过期异步导航、声明生命周期和默认空侧栏。[Slots 参考](../../../../docs/subsystems/slots.zh.md)拥有组合 API 的说明。
+面板選中態是瞬時狀態，重新整理後重置。外掛 dispose（資源釋放）會移除其貢獻；移除目前選中的主面板條目會使中央區域回到 Conversation。測試註冊真實臨時面板，覆蓋行互動、焦點、儲存引用的獨立性、無效 id、過期非同步導航、宣告生命週期和預設空側欄。[Slots 參考](../../../../docs/subsystems/slots.zh.md)擁有組合 API 的說明。

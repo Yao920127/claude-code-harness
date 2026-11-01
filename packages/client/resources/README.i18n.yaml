@@ -4,46 +4,46 @@
 #   pnpm run verify-translation-pairing --write packages/client/resources/README.md
 /:
   en: cba471bd978172bc
-  zh: 5b340d07a353981c
+  zh: ee45f3066fe71238
 /deepseek-ai-dsh-client-resources:
   en: c76d57811976a1f3
   zh: e80bb1fe3ff00a3e
 /deepseek-ai-dsh-client-resources/summary:
   en: fa2401e27bf7e4b7
-  zh: 0c03d44bf2084180
+  zh: 2b1c03e5c75a94cd
 /deepseek-ai-dsh-client-resources/table-of-contents:
   en: 5ebb8e58ef105ee0
-  zh: 78123884b88ec480
+  zh: 8246bb395f77aaa6
 /deepseek-ai-dsh-client-resources/use-this-package:
   en: 1dedca736c288345
-  zh: afcd8458cc28af08
+  zh: fc34c356e493e5e3
 /deepseek-ai-dsh-client-resources/use-this-package/read-a-resource:
   en: 0cc9ab6867cd8fa3
-  zh: ebce7636fddfb344
+  zh: 4e71b7e75dc208cf
 /deepseek-ai-dsh-client-resources/use-this-package/provide-a-protocol:
   en: 1b08ccec8adcd7dd
-  zh: b12a6d94ab0cfc71
+  zh: c29af8ea733e94b2
 /deepseek-ai-dsh-client-resources/use-this-package/hold-a-resource-open:
   en: 7ee907c3a9abbad8
-  zh: 4abf10503ff2ed51
+  zh: e684f7bd0acb6673
 /deepseek-ai-dsh-client-resources/understand-the-implementation:
   en: 4047863df464d986
-  zh: 7fe00ab7e4a1d37a
+  zh: 362233b76938fc57
 /deepseek-ai-dsh-client-resources/understand-the-implementation/lifecycle:
   en: ea2ad0aaff232650
-  zh: 49f4a77f70179f03
+  zh: e254cbc155508435
 /deepseek-ai-dsh-client-resources/understand-the-implementation/failures:
   en: bf3b0512cb35dc18
-  zh: 50b7469f78ca3585
+  zh: c8678ff01dc33404
 /deepseek-ai-dsh-client-resources/model-experience:
   en: ff167f1f3cf373b0
-  zh: ed8871bef6f705e2
+  zh: fb9e53ff05af43a4
 /deepseek-ai-dsh-client-resources/model-experience/kv-cache-effect:
   en: 7fff384eb8a62c5a
-  zh: 347f7f5aa8b6c1c4
+  zh: 9171c1c8a4688a1e
 /deepseek-ai-dsh-client-resources/known-limitations-and-deferred-work:
   en: c79b85b72a55cdd4
-  zh: 612c401b31c3a136
+  zh: ded5876d68e65c49
 /deepseek-ai-dsh-client-resources/known-limitations-and-deferred-work/dev-note:
   en: 9bbb90f2302b50e0
-  zh: f16c794374fc1079
+  zh: 3b4784fab79ef295

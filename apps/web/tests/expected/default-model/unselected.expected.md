@@ -1,6 +1,6 @@
-- textbox "描述你想要构建的内容, / 调用指令, @ 文件或对话"
-- button "添加文件或调用指令"
-- button "访问模式，当前：工作区内修改": 工作区内修改
-- button "切换终端面板"
-- button "选择模型，当前 acme-gateway/acme-large": acme-gateway/acme-large
-- button "发送消息" [disabled]
+- textbox "描述你想要建置的內容, / 呼叫指令, @ 檔案或對話"
+- button "新增檔案或呼叫指令"
+- button "存取模式，目前：工作區內修改": 工作區內修改
+- button "切換終端面板"
+- button "選擇模型，目前 acme-gateway/acme-large": acme-gateway/acme-large
+- button "傳送訊息" [disabled]

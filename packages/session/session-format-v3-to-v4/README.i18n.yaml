@@ -4,88 +4,88 @@
 #   pnpm run verify-translation-pairing --write packages/session/session-format-v3-to-v4/README.md
 /:
   en: a24b02a97921b07a
-  zh: 92428dfee88d27fd
+  zh: d1572624fe353bd9
 /deepseek-ai-dsh-session-format-v3-to-v4:
   en: f27dbda33d994f9b
   zh: 209b0ad95219767a
 /deepseek-ai-dsh-session-format-v3-to-v4/summary:
   en: 0162a0e7e6493e0a
-  zh: 4107af760c449097
+  zh: 01b2f82935f9c9f8
 /deepseek-ai-dsh-session-format-v3-to-v4/table-of-contents:
   en: b501b06f4b21cc31
-  zh: bd67928bedf6c786
+  zh: d881877581dc5865
 /deepseek-ai-dsh-session-format-v3-to-v4/use-this-package:
   en: e3e7a08fb807c750
-  zh: 9550a2094e203551
+  zh: fe62d3d738958470
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification:
   en: d3463f5e222c44a2
-  zh: ec932eb4acac30f4
+  zh: a077e596ae460f5c
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/header-and-physical-framing:
   en: 69f24696bd941ceb
-  zh: bc51ca330a4aa361
+  zh: 773da5188d8678a6
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/tool-result-representation:
   en: 32b845f1e1867195
-  zh: 3e4e046dbc36478e
+  zh: 0edba379a4ff84a8
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/extension-data:
   en: 3e7af0248b029e9a
-  zh: b73ddd133db65d05
+  zh: 45c827ef64443494
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/message-source-conversion:
   en: 83df80655a2ea5ab
-  zh: be1dd03bc0464fce
+  zh: fd46f98c76d7f817
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/parent-catalog-prerequisites:
   en: 06093e37658e414b
-  zh: 2480e78d405af862
+  zh: c687b1b1b14fde07
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/sequence-references-and-inheritance:
   en: 8543a15b3c24cd43
-  zh: 5eacb6ffd009d1bc
+  zh: d45bfc26b4ab1bde
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/delivery-generations:
   en: 1af75967fd8296c7
-  zh: 4efd2a3a3a288610
+  zh: c7f8a2a6a7d8f67f
 /deepseek-ai-dsh-session-format-v3-to-v4/v3-to-v4-specification/source-audit-and-refusal:
   en: bfc56afb05348d19
-  zh: 21afbb4ced91e87f
+  zh: 74d46087ab698cf2
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission:
   en: 7c2a1375c98e9b9f
-  zh: 39a57a82df56a2d4
+  zh: 11352738c9fdc746
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission/header-messages-and-surface-metadata:
   en: 610f35b8c44538a2
-  zh: 17e5c07f09783106
+  zh: 7d1c76fcfd2c2252
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission/lifecycle-and-reference-relationships:
   en: 74f51036958ba3bc
-  zh: 6eeb65f15bb33e56
+  zh: 43458942285a02e7
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission/developer-changes-and-deferred-schemas:
   en: 471f0e087806057a
-  zh: 76b2ee1f58118d71
+  zh: 2fc8419b0775534b
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission/fork-generated-results:
   en: db82b002989ac151
-  zh: da80b797bf321c3f
+  zh: 63851bbe72264398
 /deepseek-ai-dsh-session-format-v3-to-v4/native-v4-admission/validation-entry-points-and-recovery:
   en: 1d6db95cf7a82846
-  zh: 837c690fe87f47db
+  zh: 155cf1d4b7b9cfce
 /deepseek-ai-dsh-session-format-v3-to-v4/understand-the-implementation:
   en: d27e081c4e2ecd86
-  zh: 0dd639484f67dba9
+  zh: e2cb22c8ed717d0b
 /deepseek-ai-dsh-session-format-v3-to-v4/further-exploration:
   en: d54326f96c09a0a0
-  zh: 862147d701ce9049
+  zh: ee1511a8a3c81f08
 /deepseek-ai-dsh-session-format-v3-to-v4/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-session-format-v3-to-v4/model-experience/historical-restoration:
   en: e63dd8ef6de7cf7c
-  zh: f1e356f01b601079
+  zh: 2c288066e501584f
 /deepseek-ai-dsh-session-format-v3-to-v4/model-experience/historical-restoration/what-the-model-sees:
   en: 8885a0ae5f305b88
-  zh: 2064d2d02dd1b303
+  zh: 9ebf8a51516a1e1e
 /deepseek-ai-dsh-session-format-v3-to-v4/model-experience/historical-restoration/token-effect:
   en: adb2bef43125d1df
-  zh: 02f8d1d6a25d57ab
+  zh: f164e2f170017aad
 /deepseek-ai-dsh-session-format-v3-to-v4/model-experience/historical-restoration/kv-cache-effect:
   en: 143ddba012e03d0c
-  zh: 93dfdb806bf9a697
+  zh: 54e916d04c8acd90
 /deepseek-ai-dsh-session-format-v3-to-v4/known-limitations-and-deferred-work:
   en: c5a232c1f0b8a5a5
-  zh: 5634f98f97060c7c
+  zh: 2892b716ebfdc9f5
 /deepseek-ai-dsh-session-format-v3-to-v4/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 8ec3e73528ddb1a6
+  zh: 6443901b0186f637

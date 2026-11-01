@@ -1,75 +1,75 @@
-# Agent Note: 事件词汇的运行时 schema（Zod 与 merge-extensible-map 模式之辩）
+# Agent Note: 事件詞彙的執行時 schema（Zod 與 merge-extensible-map 模式之辯）
 
 Status: rejected — runtime event-schema registry declined; event maps stay compile-time, Zod validates projection state, migrations validate durable payloads
 
 [English](2026-06-16-typed-event-schemas.md) | 中文
 
-## 问题
+## 問題
 
-harness 将其核心词汇——内容块、消息来源、结束原因、轮次触发器、轮次结束原因与会话事件——建模为 **merge-extensible map**：一个 TypeScript `interface`（如 `SessionEventMap`、`ContentBlockMap`），插件通过声明合并对其扩展，公开联合类型则以 `Map[keyof Map]` 派生。这是本仓库的通用扩展模式，记录在 [docs/architecture.md](../../../../docs/architecture.zh.md) 中（「The same merge-extensible-map pattern is used for `MessageSource`, `FinishReason`, `TurnTrigger`, and `TurnEndReason`」），`defineTool` 的 `InferArgs` DSL 和 `assertNever` 穷举约定都依赖于它。
+harness 將其核心詞彙——內容塊、訊息來源、結束原因、輪次觸發器、輪次結束原因與工作階段事件——建模為 **merge-extensible map**：一個 TypeScript `interface`（如 `SessionEventMap`、`ContentBlockMap`），外掛透過宣告合併對其擴充功能，公開聯合型別則以 `Map[keyof Map]` 派生。這是本儲存庫的通用擴充功能模式，記錄在 [docs/architecture.md](../../../../docs/architecture.zh.md) 中（「The same merge-extensible-map pattern is used for `MessageSource`, `FinishReason`, `TurnTrigger`, and `TurnEndReason`」），`defineTool` 的 `InferArgs` DSL 和 `assertNever` 窮舉約定都依賴於它。
 
-该模式**仅存在于编译期**。类型在运行时消失：没有 schema 对象可供校验传入值、解析不可信输入或在运行时枚举变体。[会话持久化约定](../../implemented/architecture/2026-06-14-session-persistence.zh.md)暴露了两个后果：
+該模式**僅存在於編譯期**。型別在執行時消失：沒有 schema 物件可供驗證傳入值、解析不可信輸入或在執行時列舉變體。[工作階段持久化約定](../../implemented/architecture/2026-06-14-session-persistence.zh.md)暴露了兩個後果：
 
-1. **持久化将 `event.data` 视为不透明 JSON。** JSONL provider 对每个事件原样执行 `JSON.stringify`/`JSON.parse`；唯一的运行时守卫是 `isJsonValue`（往返可序列化性检查：拒绝 BigInt、函数、循环引用、非有限数等），而非结构校验。一个损坏但仍为合法 JSON 的事件数据（字段类型错误、字段缺失）会静默往返，只有在后续消费方的 `switch` 中才可能被捕获。
-2. **插件新增变体没有运行时约定。** 一个通过声明合并添加新 `SessionEventMap` 键的插件，在自身代码中获得了编译期类型，但没有任何机制校验它产出的值是否符合它所声明的形状——无论是在生产者处、持久化边界处还是重新加载时。
+1. **持久化將 `event.data` 視為不透明 JSON。** JSONL provider 對每個事件原樣執行 `JSON.stringify`/`JSON.parse`；唯一的執行時守衛是 `isJsonValue`（往返可序列化性檢查：拒絕 BigInt、函式、迴圈引用、非有限數等），而非結構驗證。一個損壞但仍為合法 JSON 的事件資料（欄位型別錯誤、欄位缺失）會靜默往返，只有在後續消費方的 `switch` 中才可能被捕捉。
+2. **外掛新增變體沒有執行時約定。** 一個透過宣告合併新增新 `SessionEventMap` 鍵的外掛，在自身程式碼中獲得了編譯期型別，但沒有任何機制驗證它產出的值是否符合它所宣告的形狀——無論是在生產者處、持久化邊界處還是重新載入時。
 
-由此引出问题：事件词汇是否应迁移到 **Zod** 或其他运行时 schema 库，使持久化边界和插件边界拥有运行时 schema 而非被擦除的类型。
+由此引出問題：事件詞彙是否應遷移到 **Zod** 或其他執行時 schema 庫，使持久化邊界和外掛邊界擁有執行時 schema 而非被擦除的型別。
 
-## 为什么这不是一个持久化层的改动
+## 為什麼這不是一個持久化層的改動
 
-很容易把「用 Zod 做序列化」理解为对 `dsh-session-persistence-jsonl/src/format.ts` 的局部修改。但它不是，原因在于一个结构性事实：**插件无法对 Zod schema 进行声明合并。** 声明合并是 TypeScript 编译期机制；Zod schema 是运行时值。要用 Zod 校验事件，就需要一个**运行时注册表**，每个产出事件的包向其贡献自己的 schema（如 `ctx.sessionEvents.register('compaction/marker', z.object({…}))`），每个消费方从中读取。这个注册表——而非持久化后端——将成为词汇的真源，取代 merge-extensible 接口。
+很容易把「用 Zod 做序列化」理解為對 `dsh-session-persistence-jsonl/src/format.ts` 的區域性修改。但它不是，原因在於一個結構性事實：**外掛無法對 Zod schema 進行宣告合併。** 宣告合併是 TypeScript 編譯期機制；Zod schema 是執行時值。要用 Zod 驗證事件，就需要一個**執行時註冊表**，每個產出事件的包向其貢獻自己的 schema（如 `ctx.sessionEvents.register('compaction/marker', z.object({…}))`），每個消費方從中讀取。這個註冊表——而非持久化後端——將成為詞彙的真源，取代 merge-extensible 介面。
 
-因此，真正的提案是：**用运行时 schema 注册表替换编译期的 merge-extensible-map 模式，范围覆盖整个仓库。** 这是一次核心词汇的重新设计。
+因此，真正的提案是：**用執行時 schema 註冊表替換編譯期的 merge-extensible-map 模式，範圍覆蓋整個儲存庫。** 這是一次核心詞彙的重新設計。
 
-## 影响范围（已度量）
+## 影響範圍（已度量）
 
-将事件/词汇接口迁移到运行时 schema，至少涉及：
+將事件/詞彙介面遷移到執行時 schema，至少涉及：
 
-- **六个 merge-extensible map**（约 370 行核心类型）：`ContentBlockMap`、`MessageSourceMap`、`FinishReasonMap`（位于 `dsh-llm`）；`TurnTriggerMap`、`TurnEndReasonMap`、`SessionEventMap`（位于 `dsh-session`）。
-- **约 10 处 `declare module` 声明增补位置**，分布在 `dsh-agent`、`dsh-agent-loop`、`dsh-shell`、`dsh-llm`、`dsh-session`、`dsh-session-persistence`、`dsh-system-prompt`、`dsh-tools` 各包中——每处都将从声明合并改为运行时 `register()` 调用。
-- **事件生产者**——agent loop（智能体循环）中 16 处 `session.append(...)` 调用——形状不变，但现在在边界处被校验。
-- **约 7 个 switch 消费方**，对这些联合类型进行分支：`deriveMessages` 与包自有的不变式 companion（`dsh-session`）、`BlockAssembler`（`dsh-llm`）、两个 LLM（大语言模型）适配器（`dsh-llm-deepseek`、`dsh-llm-pi-ai`）以及工具 schema 层（`dsh-tools`）。`assertNever` 对封闭联合类型的穷举 vs 对可扩展联合类型的 fall-through 约定（一条已记录的 lint 规则）需要重新考量——运行时变体在静态层面不可穷举。
-- **`defineTool` 的 `InferArgs` DSL**（`dsh-tools`），它从编译期 schema 规范派生出零类型转换的 `execute` 参数类型——这是当前方案的标杆用例。
-- **文档**：architecture.md（该模式被描述为基础性的）、[开发模式不变式](../../implemented/architecture/2026-06-11-dev-invariants-over-deep-readonly.zh.md)，以及所有引用该模式的 Agent Note。
+- **六個 merge-extensible map**（約 370 行核心型別）：`ContentBlockMap`、`MessageSourceMap`、`FinishReasonMap`（位於 `dsh-llm`）；`TurnTriggerMap`、`TurnEndReasonMap`、`SessionEventMap`（位於 `dsh-session`）。
+- **約 10 處 `declare module` 宣告增補位置**，分佈在 `dsh-agent`、`dsh-agent-loop`、`dsh-shell`、`dsh-llm`、`dsh-session`、`dsh-session-persistence`、`dsh-system-prompt`、`dsh-tools` 各包中——每處都將從宣告合併改為執行時 `register()` 呼叫。
+- **事件生產者**——agent loop（智慧代理迴圈）中 16 處 `session.append(...)` 呼叫——形狀不變，但現在在邊界處被驗證。
+- **約 7 個 switch 消費方**，對這些聯合型別進行分支：`deriveMessages` 與包自有的不變式 companion（`dsh-session`）、`BlockAssembler`（`dsh-llm`）、兩個 LLM（大語言模型）介面卡（`dsh-llm-deepseek`、`dsh-llm-pi-ai`）以及工具 schema 層（`dsh-tools`）。`assertNever` 對封閉聯合型別的窮舉 vs 對可擴充功能聯合型別的 fall-through 約定（一條已記錄的 lint 規則）需要重新考量——執行時變體在靜態層面不可窮舉。
+- **`defineTool` 的 `InferArgs` DSL**（`dsh-tools`），它從編譯期 schema 規範派生出零型別轉換的 `execute` 參數型別——這是目前方案的標杆案例。
+- **文件**：architecture.md（該模式被描述為基礎性的）、[開發模式不變式](../../implemented/architecture/2026-06-11-dev-invariants-over-deep-readonly.zh.md)，以及所有引用該模式的 Agent Note。
 
-这是一次仓库级别的词汇重新设计，而非持久化的实现细节。
+這是一次儲存庫級別的詞彙重新設計，而非持久化的實作細節。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-### A. 维持现状——merge-extensible 类型 + 持久化边界处 `isJsonValue`
-保留编译期模式。持久化继续使用不透明 JSON + 可序列化性守卫。插件通过声明合并扩展；事件 *形状*的正确性由生产者负责，并由 TypeScript 在编译期保证。启用包自有的不变式 companion 后，它们会检查选定的跨记录关系，但不提供通用运行时形状 schema。
+### A. 維持現狀——merge-extensible 型別 + 持久化邊界處 `isJsonValue`
+保留編譯期模式。持久化繼續使用不透明 JSON + 可序列化性守衛。外掛透過宣告合併擴充功能；事件 *形狀*的正確性由生產者負責，並由 TypeScript 在編譯期保證。啟用包自有的不變式 companion 後，它們會檢查選定的跨記錄關係，但不提供通用執行時形狀 schema。
 
-- **优点**：零变动；插件扩展只需一行 `interface` 增补，享有完整类型推断，无需运行时注册仪式；无新运行时依赖；`defineTool` DSL 与 `assertNever` 穷举继续工作。
-- **缺点**：持久化边界和插件边界处无运行时结构校验；格式错误但仍为合法 JSON 的数据被延迟捕获。
+- **優點**：零變動；外掛擴充功能只需一行 `interface` 增補，享有完整型別推斷，無需執行時註冊儀式；無新執行時依賴；`defineTool` DSL 與 `assertNever` 窮舉繼續工作。
+- **缺點**：持久化邊界和外掛邊界處無執行時結構驗證；格式錯誤但仍為合法 JSON 的資料被延遲捕捉。
 
-### B. 仅对头部/封闭形状做校验（schemastery），事件仍为不透明
-仅对那些已有手写类型守卫的真正封闭形状加以收紧——例如 JSONL 的 `HeaderLine` 守卫（`isHeaderLine`）——使用 **schemastery**（仓库现有的 schema 库，已用于每个插件的 `static Config`）。merge-extensible 事件联合类型保持不变。
+### B. 僅對頭部/封閉形狀做驗證（schemastery），事件仍為不透明
+僅對那些已有手寫型別守衛的真正封閉形狀加以收緊——例如 JSONL 的 `HeaderLine` 守衛（`isHeaderLine`）——使用 **schemastery**（儲存庫現有的 schema 庫，已用於每個外掛的 `static Config`）。merge-extensible 事件聯合型別保持不變。
 
-- **优点**：改动小，契合现有约定（schemastery，而非新库）；用声明式 schema 替换封闭形状上的手写守卫；无核心重新设计。
-- **缺点**：不解决事件数据校验问题；仅固定的元数据记录得到改善。
+- **優點**：改動小，契合現有約定（schemastery，而非新庫）；用宣告式 schema 替換封閉形狀上的手寫守衛；無核心重新設計。
+- **缺點**：不解決事件資料驗證問題；僅固定的中繼資料記錄得到改善。
 
-### C. 为整个词汇建立运行时 schema 注册表（Zod 或 schemastery）
-用运行时注册表替换 merge-extensible map，生产者向其贡献 schema，持久化/消费路径据此校验。
+### C. 為整個詞彙建立執行時 schema 註冊表（Zod 或 schemastery）
+用執行時註冊表替換 merge-extensible map，生產者向其貢獻 schema，持久化/消費路徑據此驗證。
 
-- **优点**：持久化边界和插件边界处获得真正的运行时校验；单一真源；可支撑通用工具（自动生成文档、模糊测试、协议格式（wire format）检查）。
-- **缺点**：上述全部影响范围；**Zod 目前不是直接依赖**（仅作为 `@earendil-works/pi-ai` 的传递依赖），仓库选定的 schema 库是 **schemastery**——广泛引入 Zod 本身就是一个依赖决策；声明合并的易用性（一行插件扩展、完整推断）被运行时注册 + 手动类型接线取代；`assertNever` 穷举保证弱化（运行时变体在静态层面不可穷举）。
+- **優點**：持久化邊界和外掛邊界處獲得真正的執行時驗證；單一真源；可支撐通用工具（自動生成文件、模糊測試、協定格式（wire format）檢查）。
+- **缺點**：上述全部影響範圍；**Zod 目前不是直接依賴**（僅作為 `@earendil-works/pi-ai` 的傳遞依賴），儲存庫選定的 schema 庫是 **schemastery**——廣泛引入 Zod 本身就是一個依賴決策；宣告合併的易用性（一行外掛擴充功能、完整推斷）被執行時註冊 + 手動型別接線取代；`assertNever` 窮舉保證弱化（執行時變體在靜態層面不可窮舉）。
 
 ## 提案
 
-推迟。如果需要在持久化边界做运行时校验，**方案 B**（对封闭的头部和元数据形状使用 schemastery）是现有约定下的适度步骤。**方案 C** 是一个架构决策，需要自己的实现 Agent Note，其中包括 Zod 与 schemastery 之间的选择。
+推遲。如果需要在持久化邊界做執行時驗證，**方案 B**（對封閉的頭部和中繼資料形狀使用 schemastery）是現有約定下的適度步驟。**方案 C** 是一個架構決策，需要自己的實作 Agent Note，其中包括 Zod 與 schemastery 之間的選擇。
 
-## 验收标准
+## 驗收標準
 
-- 方案 C 只能通过自己的实现 Agent Note 推进，绝不能作为持久化的附带改动。
-- 如果采纳方案 B，封闭的头部/元数据形状（JSONL 的 `isHeaderLine` 守卫及同类）改用 schemastery 校验，替代手写守卫，merge-extensible map 保持不动。
+- 方案 C 只能透過自己的實作 Agent Note 推進，絕不能作為持久化的附帶改動。
+- 如果採納方案 B，封閉的頭部/中繼資料形狀（JSONL 的 `isHeaderLine` 守衛及同類）改用 schemastery 驗證，替代手寫守衛，merge-extensible map 保持不動。
 
-## 风险
+## 風險
 
-- 推迟意味着事件 `data` 在持久化边界处仍无结构校验：格式错误但仍为合法 JSON 的数据被延迟捕获，由消费方的 `switch` 兜底——这是现状的代价，有意接受。
-- 如果方案 C 最终被采纳，易用性的损失是真实的：一行声明合并变为运行时注册加手动类型接线，`assertNever` 的静态穷举保证弱化。
+- 推遲意味著事件 `data` 在持久化邊界處仍無結構驗證：格式錯誤但仍為合法 JSON 的資料被延遲捕捉，由消費方的 `switch` 後備——這是現狀的代價，有意接受。
+- 如果方案 C 最終被採納，易用性的損失是真實的：一行宣告合併變為執行時註冊加手動型別接線，`assertNever` 的靜態窮舉保證弱化。
 
-## 待解问题
+## 待解問題
 
-- 如果采用注册表，库选 **schemastery**（已在仓库中，已作为配置 schema 库）还是 **Zod**（生态更丰富，目前仅为传递依赖）？同时维护两个 schema 库本身就是一种成本。
-- 能否采用混合方案：保留编译期推断（使 `defineTool` 和插件开发体验不受影响），同时为每个变体添加*可选*的运行时 schema，仅在持久化/协议边界校验，而非每次进程内 append 都校验？
-- `ctx.invariants` 服务启用后是否已覆盖了足够多的运行时形状缺口，使得边界校验仅在面对真正不可信输入（重新加载外部修改过的日志）时才有必要？
+- 如果採用註冊表，庫選 **schemastery**（已在儲存庫中，已作為設定 schema 庫）還是 **Zod**（生態更豐富，目前僅為傳遞依賴）？同時維護兩個 schema 庫本身就是一種成本。
+- 能否採用混合方案：保留編譯期推斷（使 `defineTool` 和外掛開發體驗不受影響），同時為每個變體新增*可選*的執行時 schema，僅在持久化/協定邊界驗證，而非每次程序內 append 都驗證？
+- `ctx.invariants` 服務啟用後是否已覆蓋了足夠多的執行時形狀缺口，使得邊界驗證僅在面對真正不可信輸入（重新載入外部修改過的日誌）時才有必要？

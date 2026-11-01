@@ -225,13 +225,13 @@ describe('ui-permission browser plugin', () => {
     })
     b.locale.setLocale('zh')
     const localized = await b.popup().options(proj, new AbortController().signal)
-    expect(localized.map(option => option.label)).toEqual(['仅可查看', '工作区内修改', '完全权限', 'Auto review'])
+    expect(localized.map(option => option.label)).toEqual(['僅可檢視', '工作區內修改', '完全權限', 'Auto review'])
     expect(localized.find(option => option.id === 'danger-full-access')?.confirmation).toEqual({
-      title: '确认启用完全权限？',
+      title: '確認啟用完全權限？',
       description: accessZh['confirm.description'],
-      acknowledgeLabel: '我已了解风险，并愿意继续',
+      acknowledgeLabel: '我已瞭解風險，並願意繼續',
       cancelLabel: '取消',
-      confirmLabel: '启用完全权限',
+      confirmLabel: '啟用完全權限',
     })
     b.setCatalog({ ...CATALOG, options: [
       { value: 'workspace-write', name: 'Project Files' },
@@ -309,7 +309,7 @@ describe('ui-permission browser plugin', () => {
     b.values.set(sid('s1'), { currentValue: 'workspace-write' })
     const options = await b.popup().options(proj, new AbortController().signal)
     expect(options.find(option => option.id === 'auto')?.detail)
-      .toBe('无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。')
+      .toBe('無沙箱執行；每次原生工具呼叫和 PTC 內層呼叫前由同一模型進行實驗性審查。')
   })
 
   it('a pick submits the /permission line; rejection and unmatched throw', async () => {

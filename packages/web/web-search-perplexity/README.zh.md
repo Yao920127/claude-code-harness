@@ -1,5 +1,5 @@
 ---
-description: "ctx.web 的 Perplexity 搜索提供方：部署方如何挂载 OpenAI 兼容的 Perplexity 搜索，获得生成答案与引用。"
+description: "ctx.web 的 Perplexity 搜尋提供者：部署方如何掛載 OpenAI 相容的 Perplexity 搜尋，獲得生成答案與引用。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-有了 `dsh-web-search-perplexity`，harness 可以通过 Perplexity 搜索 web，一次调用同时获得模型生成的答案与可引用来源。当部署持有 Perplexity API 密钥、并希望获得生成答案时选择它。Perplexity 没有结果数量控制，因此返回的来源会在事后被截断到请求的上限。Perplexity 省略结构化结果元数据时，来源回退为只含 URL 的引用。面向模型的 `web_search` 工具位于 `dsh-tool-web`。
+有了 `dsh-web-search-perplexity`，harness 可以透過 Perplexity 搜尋 web，一次呼叫同時獲得模型生成的答案與可引用來源。當部署持有 Perplexity API 金鑰、並希望獲得生成答案時選擇它。Perplexity 沒有結果數量控制，因此返回的來源會在事後被截斷到請求的上限。Perplexity 省略結構化結果中繼資料時，來源退回為只含 URL 的引用。面向模型的 `web_search` 工具位於 `dsh-tool-web`。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在已加载 web 服务的组合中挂载本提供方；它以 `perplexity` 搜索提供方身份注册，因此当它是唯一可用的搜索后端时，`ctx.web.search()` 会自动解析到它——也可以用 `searchProvider: perplexity` 固定。
+在已載入 web 服務的組合中掛載本提供者；它以 `perplexity` 搜尋提供者身份註冊，因此當它是唯一可用的搜尋後端時，`ctx.web.search()` 會自動解析到它——也可以用 `searchProvider: perplexity` 固定。
 
-### 何时选择
+### 何時選擇
 
-当部署持有 Perplexity API 密钥、并希望一次搜索同时获得模型生成的答案与可引用来源时选择此后端。密钥为空或端点基址无法解析时，提供方不可用——每次搜索调用都会以结构化错误失败。
+當部署持有 Perplexity API 金鑰、並希望一次搜尋同時獲得模型生成的答案與可引用來源時選擇此後端。金鑰為空或端點基址無法解析時，提供者不可用——每次搜尋呼叫都會以結構化錯誤失敗。
 
-### 最小配置
+### 最小設定
 
-加载 web 服务与本提供方；API 密钥回退到启动环境中的 `$PERPLEXITY_API_KEY`，其余设置都有安全默认值。
+載入 web 服務與本提供者；API 金鑰退回到啟動環境中的 `$PERPLEXITY_API_KEY`，其餘設定都有安全預設值。
 
 ```yaml
 - name: '@deepseek-ai/dsh-web'
@@ -42,125 +42,125 @@ kind: "package-reference"
     apiKey: !!js process.env.PERPLEXITY_API_KEY
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `apiKey` | `$PERPLEXITY_API_KEY` | Perplexity API 密钥；为空或缺失时提供方不可用 |
-| `baseURL` | `https://api.perplexity.ai` | 端点基址；追加 `/chat/completions`。无法解析时提供方不可用 |
-| `model` | `sonar` | 搜索模型名称 |
-| `maxTokens` | `1024` | 生成答案 token 上限（`max_tokens`）；必须是正整数 |
-| `searchRecency` | （未设置） | 以 `search_recency_filter` 发送的新近程度窗口：`day`、`week`、`month` 或 `year`。未设置时不发送过滤条件 |
+| `apiKey` | `$PERPLEXITY_API_KEY` | Perplexity API 金鑰；為空或缺失時提供者不可用 |
+| `baseURL` | `https://api.perplexity.ai` | 端點基址；追加 `/chat/completions`。無法解析時提供者不可用 |
+| `model` | `sonar` | 搜尋模型名稱 |
+| `maxTokens` | `1024` | 生成答案 token 上限（`max_tokens`）；必須是正整數 |
+| `searchRecency` | （未設定） | 以 `search_recency_filter` 傳送的新近程度視窗：`day`、`week`、`month` 或 `year`。未設定時不傳送過濾條件 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-perplexity)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-perplexity)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 搜索返回什么
+### 搜尋返回什麼
 
-`content` 携带 Perplexity 的生成答案。`sources[]` 优先使用结构化 `search_results[]`（`url`、`title`、`snippet`、`publishedAt` 取自 `date`），仅当 `search_results` 缺失时才回退到只含 URL 的 `citations[]` 数组——这正是服务上 `title`／`snippet`／`publishedAt` 为可选字段的原因。Perplexity 不公开结果数量控制，因此服务通过截断并标记来强制执行 `maxResults`。
+`content` 攜帶 Perplexity 的生成答案。`sources[]` 優先使用結構化 `search_results[]`（`url`、`title`、`snippet`、`publishedAt` 取自 `date`），僅當 `search_results` 缺失時才退回到只含 URL 的 `citations[]` 陣列——這正是服務上 `title`／`snippet`／`publishedAt` 為可選欄位的原因。Perplexity 不公開結果數量控制，因此服務透過截斷並標記來強制執行 `maxResults`。
 
-### 失败与恢复
+### 失敗與恢復
 
-提供方失败——HTTP 错误、网络失败、响应体无法解析或结构不符——以 `WebError` `WEB_PROVIDER_ERROR` 呈现；中止请求以 `WEB_ABORTED` 呈现。HTTP 重定向会在访问 `Location` 指向的目标之前被拒绝，并以 `WEB_PROVIDER_ERROR` 呈现。调用方根据错误码进行路由；面向模型的 `web_search` 工具会在自己的错误包装层内把失败呈现给模型。
+提供者失敗——HTTP 錯誤、網路失敗、回應體無法解析或結構不符——以 `WebError` `WEB_PROVIDER_ERROR` 呈現；中止請求以 `WEB_ABORTED` 呈現。HTTP 重定向會在存取 `Location` 指向的目標之前被拒絕，並以 `WEB_PROVIDER_ERROR` 呈現。呼叫方根據錯誤碼進行路由；面向模型的 `web_search` 工具會在自己的錯誤包裝層內把失敗呈現給模型。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋提供者背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该提供方是 Perplexity chat-completions 端点之上的薄适配器，遵循两条刻意的规则：
+該提供者是 Perplexity chat-completions 端點之上的薄介面卡，遵循兩條刻意的規則：
 
-- **生成答案直接用作 `content`。** 与其他搜索后端不同，Perplexity 返回模型生成的答案，本提供方将其作为规范化 `content` 字段透传。
-- **结构化来源优先；只含 URL 的引用是回退。** `search_results[]` 携带可移植字段；`citations[]` 只携带 URL，服务词汇把这些字段设为可选，正是为了这种情况。
+- **生成答案直接用作 `content`。** 與其他搜尋後端不同，Perplexity 返回模型生成的答案，本提供者將其作為規範化 `content` 欄位直接傳遞。
+- **結構化來源優先；只含 URL 的引用是退回。** `search_results[]` 攜帶可移植欄位；`citations[]` 只攜帶 URL，服務詞彙把這些欄位設為可選，正是為了這種情況。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：配置 schema、环境变量回退、提供方注册 |
-| [`src/provider.ts`](src/provider.ts) | `PerplexitySearchProvider`：请求分发、中止分类、答案与来源映射 |
-| [`src/types.ts`](src/types.ts) | chat-completions 响应的 Perplexity 协议类型 |
-| — | 不发布运行时不变量配套入口；除所属 seam 强制执行的约定外，本包不公开独立的事件序列或可变数据关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：設定 schema、環境變數退回、提供者註冊 |
+| [`src/provider.ts`](src/provider.ts) | `PerplexitySearchProvider`：請求分發、中止分類、答案與來源對映 |
+| [`src/types.ts`](src/types.ts) | chat-completions 回應的 Perplexity 協定型別 |
+| — | 不釋出執行時不變數配套入口；除所屬 seam 強制執行的約定外，本包不公開獨立的事件序列或可變資料關係。 |
 
-### 请求与映射流程
+### 請求與對映流程
 
-`search()` 以 `redirect: 'error'` 把查询连同模型、token 上限与可选新近程度过滤条件 POST 到 `{baseURL}/chat/completions`。响应的 `content` 变为 `content`；存在 `search_results[]` 时它变为 `sources[]`，否则每个 `citations[]` 条目变为只含 URL 的来源；服务在返回路径上应用最终的 `maxResults` 上限。中止——名为 `AbortError` 的 `DOMException`——变为 `WEB_ABORTED`；其余情况变为 `WEB_PROVIDER_ERROR`。
+`search()` 以 `redirect: 'error'` 把查詢連同模型、token 上限與可選新近程度過濾條件 POST 到 `{baseURL}/chat/completions`。回應的 `content` 變為 `content`；存在 `search_results[]` 時它變為 `sources[]`，否則每個 `citations[]` 條目變為只含 URL 的來源；服務在返回路徑上應用最終的 `maxResults` 上限。中止——名為 `AbortError` 的 `DOMException`——變為 `WEB_ABORTED`；其餘情況變為 `WEB_PROVIDER_ERROR`。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享词汇逐步进入服务、面向模型的工具与设计依据。
+當包級約定不夠用時閱讀以下頁面。它們從共享詞彙逐步進入服務、面向模型的工具與設計依據。
 
-- [web 子系统](../../../docs/subsystems/web.zh.md)——穷尽式的搜索请求／结果词汇与错误码。
-- [web 包映射](../README.zh.md)——六包家族与各角色。
-- [dsh-web](../web/README.zh.md)——本提供方注册进入的 web 服务。
-- [dsh-tool-web](../tool-web/README.zh.md)——渲染本提供方来源的面向模型 `web_search` 工具。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-perplexity)——每个受支持配置字段及其源声明。
-- [web 能力 seam 决策](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)——搜索与抓取为何共用一项提供方选择服务。
+- [web 子系統](../../../docs/subsystems/web.zh.md)——窮盡式的搜尋請求／結果詞彙與錯誤碼。
+- [web 包對映](../README.zh.md)——六包家族與各角色。
+- [dsh-web](../web/README.zh.md)——本提供者註冊進入的 web 服務。
+- [dsh-tool-web](../tool-web/README.zh.md)——渲染本提供者來源的面向模型 `web_search` 工具。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-search-perplexity)——每個受支援設定欄位及其源宣告。
+- [web 能力 seam 決策](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)——搜尋與抓取為何共用一項提供者選擇服務。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 辅助 Perplexity 请求
+### 輔助 Perplexity 請求
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-独立的 Perplexity 模型通过 chat-completions 端点将 `<query>` 原样作为唯一用户消息接收。该请求不属于会话模型上下文。
+獨立的 Perplexity 模型透過 chat-completions 端點將 `<query>` 原樣作為唯一使用者訊息接收。該請求不屬於工作階段模型上下文。
 
-#### Token 影响
+#### Token 影響
 
-每次搜索都会产生独立的提供方 token；`maxTokens` 限制生成答案。
+每次搜尋都會產生獨立的提供者 token；`maxTokens` 限制生成答案。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与会话请求缓存相互独立。同一模型路由下的相同查询可能复用提供方缓存；查询或路由改变会建立不同前缀。
+與工作階段請求快取相互獨立。同一模型路由下的相同查詢可能複用提供者快取；查詢或路由改變會建立不同字首。
 
-### 间接的会话工具结果
+### 間接的工作階段工具結果
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-通过 `dsh-tool-web`，会话模型会看到生成答案及结构化结果元数据，或只含 URL 的引用。该提供方确切的错误消息为 `Perplexity search aborted`、`Perplexity search request failed: <error>` 和 `Perplexity returned an unprocessable response body: <error>`；HTTP 失败保留提供方消息。错误包装层属于消费方。
+透過 `dsh-tool-web`，工作階段模型會看到生成答案及結構化結果中繼資料，或只含 URL 的引用。該提供者確切的錯誤訊息為 `Perplexity search aborted`、`Perplexity search request failed: <error>` 和 `Perplexity returned an unprocessable response body: <error>`；HTTP 失敗保留提供者訊息。錯誤包裝層屬於消費方。
 
-#### Token 影响
+#### Token 影響
 
-注册不会直接产生会话 token。答案与来源 token 取决于数据，来源数量受服务限制；保留的结果或错误会重复发送，直到发生压缩（compaction）。
+註冊不會直接產生工作階段 token。答案與來源 token 取決於資料，來源數量受服務限制；保留的結果或錯誤會重複傳送，直到發生壓縮（compaction）。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明提供方在哪些情况下不合适。它们是当前包约束。
+這些限制說明提供者在哪些情況下不合適。它們是目前包約束。
 
-- **引用回退来源只含 URL**——Perplexity 省略结构化 `search_results[]` 时，来源不含 `title`／`snippet`／`publishedAt`，因此工具只渲染纯主机名标签。
-- **超量返回的来源仍会增加 token 消耗与延迟**——协议没有结果数量控制，`maxResults` 只能由服务在事后截断。
-- **只公开 `model`／`maxTokens`／`searchRecency`**——Perplexity 的其他搜索控制项（域名过滤条件、`web_search_options` 上下文大小、图片）等待提供方无关的服务字段（见 [seam Agent Note](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)）。
-- **按错误形状分类中止**——只有名为 `AbortError` 的 `DOMException` 才映射为 `WEB_ABORTED`；携带自定义原因的中止（例如 `dsh-timeout` 的 `TimeoutReason`）呈现为 `WEB_PROVIDER_ERROR`。
+- **引用退回來源只含 URL**——Perplexity 省略結構化 `search_results[]` 時，來源不含 `title`／`snippet`／`publishedAt`，因此工具只渲染純主機名標籤。
+- **超量返回的來源仍會增加 token 消耗與延遲**——協定沒有結果數量控制，`maxResults` 只能由服務在事後截斷。
+- **只公開 `model`／`maxTokens`／`searchRecency`**——Perplexity 的其他搜尋控制項（域名過濾條件、`web_search_options` 上下文大小、圖片）等待提供者無關的服務欄位（見 [seam Agent Note](../../../.agents/notes/implemented/architecture/2026-06-24-web-capability-seam.zh.md)）。
+- **按錯誤形狀分類中止**——只有名為 `AbortError` 的 `DOMException` 才對映為 `WEB_ABORTED`；攜帶自定義原因的中止（例如 `dsh-timeout` 的 `TimeoutReason`）呈現為 `WEB_PROVIDER_ERROR`。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为、限制与既定理由以上文和相关 Agent Note 为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為、限制與既定理由以上文和相關 Agent Note 為準。
 
-#### 未来：更宽的 Perplexity 控制面
+#### 未來：更寬的 Perplexity 控制面
 
-Perplexity 的域名过滤条件、`web_search_options` 上下文大小与图片支持仍未公开。公开它们需要先有提供方无关的服务字段，让家族以一个协调一致的控制项、而非厂商专有参数的方式新增。
+Perplexity 的域名過濾條件、`web_search_options` 上下文大小與圖片支援仍未公開。公開它們需要先有提供者無關的服務欄位，讓家族以一個協調一致的控制項、而非廠商專有參數的方式新增。
 
 </details>

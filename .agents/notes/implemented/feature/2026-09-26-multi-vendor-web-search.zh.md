@@ -1,4 +1,4 @@
-# Agent Note: 多厂商网页搜索
+# Agent Note: 多廠商網頁搜尋
 
 Status: implemented
 
@@ -6,24 +6,24 @@ Status: implemented
 
 ## Problem
 
-出厂组合只挂载需要 DeepSeek API 密钥的 DeepSeek 搜索提供方。通过 Claude Code 登录、没有 DeepSeek 密钥的 CCH 安装因此没有可用的 `web_search`，持有其他模型厂商密钥的用户也无法使用这些厂商的搜索。web 服务还只在启动时读取一次所选提供方，因此没有任何设置界面能切换提供方。
+出廠組合只掛載需要 DeepSeek API 金鑰的 DeepSeek 搜尋提供者。透過 Claude Code 登入、沒有 DeepSeek 金鑰的 CCH 安裝因此沒有可用的 `web_search`，持有其他模型廠商金鑰的使用者也無法使用這些廠商的搜尋。web 服務還只在啟動時讀取一次所選提供者，因此沒有任何設定介面能切換提供者。
 
 ## Decision
 
-两个提供方包加入 [web seam](../architecture/2026-06-24-web-capability-seam.zh.md)。[`dsh-web-search-claude-code`](../../../../packages/web/web-search-claude-code/README.zh.md) 每次搜索用 Host 的登录运行一次 Claude Code 查询，该查询唯一的工具是 `WebSearch`，回答是 JSON schema 结构化输出。[`dsh-web-search-vendors`](../../../../packages/web/web-search-vendors/README.zh.md) 注册 Claude API、OpenAI、xAI、Gemini、OpenRouter、Mistral 与 Z.AI 提供方，每个提供方在每次搜索时解析自己的凭据引用。Claude API 提供方使用官方 Anthropic SDK 与 `web_search` 服务端工具。
+兩個提供者包加入 [web seam](../architecture/2026-06-24-web-capability-seam.zh.md)。[`dsh-web-search-claude-code`](../../../../packages/web/web-search-claude-code/README.zh.md) 每次搜尋用 Host 的登入執行一次 Claude Code 查詢，該查詢唯一的工具是 `WebSearch`，回答是 JSON schema 結構化輸出。[`dsh-web-search-vendors`](../../../../packages/web/web-search-vendors/README.zh.md) 註冊 Claude API、OpenAI、xAI、Gemini、OpenRouter、Mistral 與 Z.AI 提供者，每個提供者在每次搜尋時解析自己的憑證引用。Claude API 提供者使用官方 Anthropic SDK 與 `web_search` 伺服器端工具。
 
-base bundle 在 DeepSeek 之外挂载各厂商提供方、Exa 与 Perplexity，并仍选择 DeepSeek。CCH bundle 挂载并选择 Claude Code 提供方。`dsh-web` 的 `searchProvider` 为 volatile，并在每次搜索时读取，因此插件页新增的**搜索来源**页面无需重启即可切换提供方，并通过凭据域保存所选提供方的密钥。
+base bundle 在 DeepSeek 之外掛載各廠商提供者、Exa 與 Perplexity，並仍選擇 DeepSeek。CCH bundle 掛載並選擇 Claude Code 提供者。`dsh-web` 的 `searchProvider` 為 volatile，並在每次搜尋時讀取，因此外掛頁新增的**搜尋來源**頁面無需重新啟動即可切換提供者，並透過憑證域儲存所選提供者的金鑰。
 
 ## Alternatives considered
 
-**每个厂商一个包。** 七个包会重复同样的凭据、取消与错误处理，以及七组 README，而这些提供方的差异只有一个请求和一种映射。
+**每個廠商一個包。** 七個包會重複同樣的憑證、取消與錯誤處理，以及七組 README，而這些提供者的差異只有一個請求和一種對映。
 
-**像 DeepSeek 一样把每个辅助厂商请求记为 Session 事件。** 每个厂商都会新增一种持久事件类型、持久化类型审查与 SDK 预期输出。模型可见的输入已是工具调用中的查询，模型可见的输出是工具结果；Perplexity 与 Exa 已遵循这一规则。
+**像 DeepSeek 一樣把每個輔助廠商請求記為 Session 事件。** 每個廠商都會新增一種持久事件型別、持久化型別審查與 SDK 預期輸出。模型可見的輸入已是工具呼叫中的查詢，模型可見的輸出是工具結果；Perplexity 與 Exa 已遵循這一規則。
 
-**纳入 Qwen、Groq 与 Kimi。** 它们的搜索响应没有文档说明的结构化来源列表，映射只能猜测字段，或只返回没有来源的回答文字。
+**納入 Qwen、Groq 與 Kimi。** 它們的搜尋回應沒有文件說明的結構化來源列表，對映只能猜測欄位，或只返回沒有來源的回答文字。
 
-**读取 Claude Code 保存的登录并直接调用 Messages API。** 这会绕过被借用登录的产品本身；[Claude Code 模型路由](2026-09-25-claude-code-model-route.zh.md)已否决同样的捷径。
+**讀取 Claude Code 儲存的登入並直接呼叫 Messages API。** 這會繞過被借用登入的產品本身；[Claude Code 模型路由](2026-09-25-claude-code-model-route.zh.md)已否決同樣的捷徑。
 
 ## Consequences
 
-选择一个未保存密钥的厂商会以写明引用的 `WEB_PROVIDER_CREDENTIAL_MISSING` 失败。设置页只知道各提供方出厂的密钥引用，因此修改某厂商 `apiKeyEnv` 的部署也必须在新引用下保存密钥。Claude Code 搜索每次都启动一个进程，并计入已登录账号的用量。各厂商的默认模型与端点属于组合配置。单元测试覆盖各厂商的请求与映射、凭据与取消失败、代理出口、Claude Code 查询选项与输出校验、提供方实时切换以及设置页；Loader 组合测试通过出厂 headless profile 选中这两类新提供方。
+選擇一個未儲存金鑰的廠商會以寫明引用的 `WEB_PROVIDER_CREDENTIAL_MISSING` 失敗。設定頁只知道各提供者出廠的金鑰引用，因此修改某廠商 `apiKeyEnv` 的部署也必須在新引用下儲存金鑰。Claude Code 搜尋每次都啟動一個程序，並計入已登入帳號的用量。各廠商的預設模型與端點屬於組合設定。單元測試覆蓋各廠商的請求與對映、憑證與取消失敗、代理出口、Claude Code 查詢選項與輸出驗證、提供者即時切換以及設定頁；Loader 組合測試透過出廠 headless profile 選中這兩類新提供者。

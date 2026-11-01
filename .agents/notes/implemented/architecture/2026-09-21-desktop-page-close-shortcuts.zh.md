@@ -1,27 +1,27 @@
-# Agent Note: Desktop 关闭快捷键跟随页面焦点
+# Agent Note: Desktop 關閉快捷鍵跟隨頁面焦點
 
 Status: implemented
 
 [English](2026-09-21-desktop-page-close-shortcuts.md) | 中文
 
-## 问题
+## 問題
 
-[快捷键 PRD](https://trtgsjkv6r.feishu.cn/wiki/APvtwgbztiBLzvk9DM4cQbccnhf) 为关闭命令规定了两类目标：获得焦点的右侧栏页面，或没有可关闭页面时的 Desktop 窗口。Electron 原生 close role 绕过页面 owner。Windows 关闭最后一个窗口还会退出 Desktop 实例并停止其 Host 任务，因此该回退属于生命周期选择，不只是菜单标签变更。
+[快捷鍵 PRD](https://trtgsjkv6r.feishu.cn/wiki/APvtwgbztiBLzvk9DM4cQbccnhf) 為關閉命令規定了兩類目標：獲得焦點的右側欄頁面，或沒有可關閉頁面時的 Desktop 視窗。Electron 原生 close role 繞過頁面 owner。Windows 關閉最後一個視窗還會退出 Desktop 實例並停止其 Host 任務，因此該退回屬於生命週期選擇，不只是選單標籤變更。
 
-## 决策
+## 決策
 
-侧栏页面 owner 根据实时焦点解析关闭操作，并捕获目标的 Session、窗格、tab occurrence 和导航 revision。它通过资源清理处理器关闭该页面，或收起唯一的停靠引导页。过期侧栏目标不会回退到其他页面或窗口。没有可关闭页面时，Desktop 请求原生窗口关闭；Web 没有窗口回退。
+側欄頁面 owner 根據即時焦點解析關閉操作，並捕捉目標的 Session、窗格、tab occurrence 和導航 revision。它透過資源清理處理器關閉該頁面，或收起唯一的停靠引導頁。過期側欄目標不會退回到其他頁面或視窗。沒有可關閉頁面時，Desktop 請求原生視窗關閉；Web 沒有視窗退回。
 
-macOS File 菜单通过同一个 owner 路由“关闭页面或窗口”，并显示已接受的单键绑定。原生关闭要求配置 revision 仍为当前值、产品窗口已聚焦且启用，并且没有在录制快捷键。现有窗口生命周期直接生效，不增加快捷键专用确认：macOS 最后一个窗口关闭后保留应用；Windows 和 Linux 退出并停止 Host。
+macOS File 選單透過同一個 owner 路由“關閉頁面或視窗”，並顯示已接受的單鍵繫結。原生關閉要求設定 revision 仍為目前值、產品視窗已聚焦且啟用，並且沒有在錄製快捷鍵。現有視窗生命週期直接生效，不增加快捷鍵專用確認：macOS 最後一個視窗關閉後保留應用；Windows 和 Linux 退出並停止 Host。
 
-本决策接管[标准 macOS 菜单记录](../bug-fix/2026-09-16-desktop-window-menus.zh.md)中 close role 选择所涉及的 File 菜单和关闭行为。该记录保留原生 Window 与应用隐藏命令的理由。[快捷键偏好持久化](2026-09-20-device-local-shortcut-preferences.zh.md)负责已接受绑定及 revision 发布。
+本決策接管[標準 macOS 選單記錄](../bug-fix/2026-09-16-desktop-window-menus.zh.md)中 close role 選擇所涉及的 File 選單和關閉行為。該記錄保留原生 Window 與應用隱藏命令的理由。[快捷鍵偏好持久化](2026-09-20-device-local-shortcut-preferences.zh.md)負責已接受繫結及 revision 釋出。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**使用 Electron 原生 close role。** 它不询问获得焦点的页面 owner 就关闭窗口，无法保留页面清理和已接受自定义绑定的路由。
+**使用 Electron 原生 close role。** 它不詢問獲得焦點的頁面 owner 就關閉視窗，無法保留頁面清理和已接受自定義繫結的路由。
 
-**禁用 Windows 窗口回退。** 这能避免关闭快捷键停止任务，但会遗漏 PRD 明确要求的 Desktop 回退。产品保留原生关窗语义；需要应用继续运行时，用户可以最小化窗口。
+**停用 Windows 視窗退回。** 這能避免關閉快捷鍵停止任務，但會遺漏 PRD 明確要求的 Desktop 退回。產品保留原生關窗語義；需要應用繼續執行時，使用者可以最小化視窗。
 
-## 影响
+## 影響
 
-快捷键与 macOS File 菜单的关闭行为一致。在 Windows 和 Linux 上，焦点不在可关闭侧栏页面时按下该快捷键，可能因退出实例而停止活动任务。该命令不增加后台 Host 生命周期或感知任务状态的退出确认。Desktop 键盘测试覆盖 revision 和焦点保护；侧栏焦点测试覆盖捕获的页面身份和过期目标；启动测试覆盖各平台菜单声明。
+快捷鍵與 macOS File 選單的關閉行為一致。在 Windows 和 Linux 上，焦點不在可關閉側欄頁面時按下該快捷鍵，可能因退出實例而停止活動任務。該命令不增加後臺 Host 生命週期或感知任務狀態的退出確認。Desktop 鍵盤測試覆蓋 revision 和焦點保護；側欄焦點測試覆蓋捕捉的頁面身份和過期目標；啟動測試覆蓋各平臺選單宣告。

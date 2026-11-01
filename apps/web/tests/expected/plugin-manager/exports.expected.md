@@ -1,25 +1,25 @@
-- button "返回插件列表": 插件列表
-- button "卸载 @fixture/bundle": 卸载
-- switch "启用 @fixture/bundle"
+- button "返回外掛列表": 外掛列表
+- button "解除安裝 @fixture/bundle": 解除安裝
+- switch "啟用 @fixture/bundle"
 - heading "@fixture/bundle" [level=3]
 - text: v0.0.1
 - paragraph:
   - code: "@fixture/bundle"
 - paragraph: Registry description for the fixture bundle.
-- heading "包含的组件" [level=4]
-- text: 共 3 个 · 3 已停用
+- heading "包含的元件" [level=4]
+- text: 共 3 個 · 3 已停用
 - list:
   - listitem:
     - text: "@fixture/bundle Registry description for the fixture bundle."
     - code: fixture-row
-    - text: 已关闭
+    - text: 已關閉
   - listitem:
-    - text: 文件搜索 搜索工作区中的文件。
+    - text: 檔案搜尋 搜尋工作區中的檔案。
     - code: fixture-search
     - code: "@fixture/bundle/search"
-    - text: 已关闭
+    - text: 已關閉
   - listitem:
-    - text: 代码审查 审查工作区中的改动。
+    - text: 程式碼審查 審查工作區中的改動。
     - code: fixture-review
     - code: "@fixture/bundle/review"
-    - text: 已关闭
+    - text: 已關閉

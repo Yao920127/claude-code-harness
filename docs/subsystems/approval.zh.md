@@ -1,14 +1,14 @@
-# 用户审批
+# 使用者審批
 
 [English](approval.md) | 中文
 
-[dsh-user-approval](../../packages/interaction/user-approval) 的用户审批 seam 回答一个问题：这个具体操作是否可以继续？它拥有共享的请求/结果词汇、`ctx.approval` 分发服务、`approval/request` 应答者 waterfall（瀑布式事件）、仅记录日志的审计事件对，以及按会话的 `ask`/`never` 策略。UI 通道可以提供人类应答者；[ACP（Agent Client Protocol）自动化桥接层](../../packages/acp/acp)为其拥有的 agent（智能体）提供一次性机器决策。调用方如 [dsh-tools](../../packages/core/tools) 和 [dsh-tool-bash](../../packages/shell/tool-bash) 消费闭合的结果，除非结果为 `allowed-once`，否则一律拒绝。
+[dsh-user-approval](../../packages/interaction/user-approval) 的使用者審批 seam 回答一個問題：這個具體操作是否可以繼續？它擁有共享的請求/結果詞彙、`ctx.approval` 分發服務、`approval/request` 應答者 waterfall（瀑布式事件）、僅記錄日誌的審計事件對，以及按工作階段的 `ask`/`never` 策略。UI 通道可以提供人類應答者；[ACP（Agent Client Protocol）自動化橋接層](../../packages/acp/acp)為其擁有的 agent（智慧代理）提供一次性機器決策。呼叫方如 [dsh-tools](../../packages/core/tools) 和 [dsh-tool-bash](../../packages/shell/tool-bash) 消費閉合的結果，除非結果為 `allowed-once`，否則一律拒絕。
 
-源码：[`packages/interaction/user-approval/src/index.ts`](../../packages/interaction/user-approval/src/index.ts)
+原始碼：[`packages/interaction/user-approval/src/index.ts`](../../packages/interaction/user-approval/src/index.ts)
 
-## 标识与结果
+## 標識與結果
 
-每个请求都会获得一个全新的 `ApprovalRequestId`。该品牌类型将 `approval/asked` 与 `approval/decided` 审计事件配对，同时不会让审批 id 与工具调用 id 或 agent/会话 id 互换。
+每個請求都會獲得一個全新的 `ApprovalRequestId`。該品牌型別將 `approval/asked` 與 `approval/decided` 審計事件配對，同時不會讓審批 id 與工具呼叫 id 或 agent/工作階段 id 互換。
 
 ```ts type-equiv
 /**
@@ -18,7 +18,7 @@
 type ApprovalRequestId = Branded<'ApprovalRequestId'>
 ```
 
-`ApprovalOutcome` 是闭合的，且失败时拒绝。`allowed-once` 仅授权所询问的那一个操作；调用方对 `rejected`、`cancelled` 和 `unavailable` 均执行拒绝。缺失、不负责该请求、抛异常或不合规的应答者会产生 `unavailable`，而非放行。
+`ApprovalOutcome` 是閉合的，且失敗時拒絕。`allowed-once` 僅授權所詢問的那一個操作；呼叫方對 `rejected`、`cancelled` 和 `unavailable` 均執行拒絕。缺失、不負責該請求、拋異常或不合規的應答者會產生 `unavailable`，而非放行。
 
 ```ts type-equiv
 /**
@@ -28,9 +28,9 @@ type ApprovalRequestId = Branded<'ApprovalRequestId'>
 type ApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'
 ```
 
-## 按会话策略
+## 按工作階段策略
 
-`ApprovalPolicy` 决定在交互式应答者运行之前发生什么。`ask` 委托给组合的应答者链，链的无应答默认值为 `unavailable`；`never` 确定性地返回 `rejected`，不分发任何应答者。生效值为会话日志中最后一条 `approval/policy` 事件，回退到服务配置。消费方通过 `ctx.approval.effectivePolicy(session)` 读取；`setApprovalPolicy(session, policy)` 是唯一的写入路径，因此回放能重建覆盖值。
+`ApprovalPolicy` 決定在互動式應答者執行之前發生什麼。`ask` 委託給組合的應答者鏈，鏈的無應答預設值為 `unavailable`；`never` 確定性地返回 `rejected`，不分發任何應答者。生效值為工作階段日誌中最後一條 `approval/policy` 事件，退回到服務設定。消費方透過 `ctx.approval.effectivePolicy(session)` 讀取；`setApprovalPolicy(session, policy)` 是唯一的寫入路徑，因此回放能重建覆蓋值。
 
 ```ts type-equiv
 /**
@@ -46,11 +46,11 @@ type ApprovalOutcome = 'allowed-once' | 'rejected' | 'cancelled' | 'unavailable'
 type ApprovalPolicy = 'ask' | 'never'
 ```
 
-两种策略都会将各自完整的当前含义贡献给缓存安全的运行时上下文快照。带来源的 `user/message` 是持久化且模型可见的输入；审批状态变化时，会在保留的历史后追加一份新的完整快照，而不触碰承载渲染后系统提示词的 `system/message` 节点。
+兩種策略都會將各自完整的目前含義貢獻給快取安全的執行時上下文快照。帶來源的 `user/message` 是持久化且模型可見的輸入；審批狀態變化時，會在保留的歷史後追加一份新的完整快照，而不觸碰承載渲染後系統提示詞的 `system/message` 節點。
 
-## 审批请求
+## 審批請求
 
-`ApprovalRequest` 以足够精确的方式标识 agent 和工具操作，以便路由和审计该问题。它有意省略工具参数：应答者通过 `callId` 将提示附加到已流式输出的工具调用上，而非渲染另一份可能漂移的副本。可选的 `displayReason` 向界面传递请求方提供的本地化字符串；`reason` 仍是审计文本。
+`ApprovalRequest` 以足夠精確的方式標識 agent 和工具操作，以便路由和審計該問題。它有意省略工具參數：應答者透過 `callId` 將提示附加到已流式輸出的工具呼叫上，而非渲染另一份可能漂移的副本。可選的 `displayReason` 向介面傳遞請求方提供的在地化字串；`reason` 仍是審計文字。
 
 ```ts type-equiv
 /**
@@ -81,11 +81,11 @@ interface ApprovalRequest extends ApprovalRequestEvent {
 }
 ```
 
-## 分发与审计
+## 分發與審計
 
-`ctx.approval.request(req)` 要求发起请求的会话处于一个尚未结束的轮次内。它追加 `approval/asked`，获取一个结果，追加对应的 `approval/decided`，然后以该结果完成。`never` 策略在服务内部、waterfall 分发之前强制执行，因此即使后来以 `prepend` 注册的应答者也无法绕过它。应答者在负责处理该请求时返回结果，否则调用 `next()` 委托；第一个应答占据唯一的决策槽位。
+`ctx.approval.request(req)` 要求發起請求的工作階段處於一個尚未結束的輪次內。它追加 `approval/asked`，取得一個結果，追加對應的 `approval/decided`，然後以該結果完成。`never` 策略在服務內部、waterfall 分發之前強制執行，因此即使後來以 `prepend` 註冊的應答者也無法繞過它。應答者在負責處理該請求時返回結果，否則呼叫 `next()` 委託；第一個應答佔據唯一的決策槽位。
 
-审计事件仅写入日志，不进入模型 transcript（文本记录）。模型可见的行为是调用方派生的工具结果与当前运行时上下文快照。服务 dispose（资源释放）时会移除其上下文贡献；应答者监听器独立地通过 effect 绑定到其所属插件。
+審計事件僅寫入日誌，不進入模型 transcript（文字記錄）。模型可見的行為是呼叫方派生的工具結果與目前執行時上下文快照。服務 dispose（資源釋放）時會移除其上下文貢獻；應答者監聽器獨立地透過 effect 繫結到其所屬外掛。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

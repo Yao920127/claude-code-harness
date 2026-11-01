@@ -4,70 +4,70 @@
 #   pnpm run verify-translation-pairing --write packages/session-query/session-log-export/README.md
 /:
   en: 3b67077a6dfacd19
-  zh: e5b78d039d310dc2
+  zh: e918265334eae5a2
 /deepseek-ai-dsh-session-log-export:
   en: eea87f5da57ff494
   zh: db388203522b840f
 /deepseek-ai-dsh-session-log-export/summary:
   en: 26be400b3e9f7bb7
-  zh: b6e78f1f417a0e4e
+  zh: 29946553f458e168
 /deepseek-ai-dsh-session-log-export/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-session-log-export/use-this-package:
   en: 1135b03eb3423c74
-  zh: 2fd2a18d503df70c
+  zh: efdb6e76d74a7646
 /deepseek-ai-dsh-session-log-export/use-this-package/when-to-choose-it:
   en: 2b9dbec4877d332e
-  zh: dcf6638938eedb01
+  zh: cebeecd2645d576d
 /deepseek-ai-dsh-session-log-export/use-this-package/composition:
   en: 2fef1fe4411cc5da
-  zh: cff5dbcc4901402b
+  zh: 7f0538f08985cc5b
 /deepseek-ai-dsh-session-log-export/use-this-package/configuration:
   en: 377a0d8860c46f63
-  zh: 9eb7698f813b2fa3
+  zh: 449e2906b385514c
 /deepseek-ai-dsh-session-log-export/use-this-package/command-contract:
   en: 26329688b9a924a7
-  zh: 94e21c10fdcfc1ac
+  zh: 6c625c631c5f8840
 /deepseek-ai-dsh-session-log-export/use-this-package/what-to-expect:
   en: 44be1f1d1903d12a
-  zh: c8f1eb5b92b71a30
+  zh: f493bab033652ec5
 /deepseek-ai-dsh-session-log-export/use-this-package/failures:
   en: 3fc8985946d67024
-  zh: 5bb40a4b531d68f4
+  zh: 9d50ce8eb7b1ee2e
 /deepseek-ai-dsh-session-log-export/understand-the-implementation:
   en: 7cb82a6851405f95
-  zh: b8c525170d19dc6c
+  zh: 216ad7c54d22132d
 /deepseek-ai-dsh-session-log-export/understand-the-implementation/design-split:
   en: d135d90a02c6d829
-  zh: 587d7ff2d17b056b
+  zh: 1ada2996ff9587ba
 /deepseek-ai-dsh-session-log-export/understand-the-implementation/download-flow:
   en: 028ea3bff05250ba
-  zh: 63250c4d3369ebbd
+  zh: 7ddc43c1edcdf537
 /deepseek-ai-dsh-session-log-export/further-exploration:
   en: 8eef7e6c58c9f962
-  zh: 6c720c91c7f26299
+  zh: bb1bd21d3a01ffd0
 /deepseek-ai-dsh-session-log-export/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-session-log-export/model-experience/human-export-control:
   en: 55c1a61a041a2aeb
-  zh: 48e05043cc42304f
+  zh: 089436350a4dfc4a
 /deepseek-ai-dsh-session-log-export/model-experience/human-export-control/what-the-model-sees:
   en: 6b3c3cfc5d68d5f9
-  zh: b1689c57ee3b4ccb
+  zh: 4c5632d78fb2a311
 /deepseek-ai-dsh-session-log-export/model-experience/human-export-control/token-effect:
   en: 380535e564a4ea2c
-  zh: 2672eac76afd90f5
+  zh: 314f8e95bf3f76a0
 /deepseek-ai-dsh-session-log-export/model-experience/human-export-control/kv-cache-effect:
   en: 78163c30fdf0b43d
-  zh: 165043e307b38cb3
+  zh: 1be1307db14433f1
 /deepseek-ai-dsh-session-log-export/known-limitations-and-deferred-work:
   en: 9978d234cbfe7e73
-  zh: 9ba0b12300ff4d38
+  zh: 08eee0620835da06
 /deepseek-ai-dsh-session-log-export/known-limitations-and-deferred-work/dev-note:
   en: 4ee4d24c26c127bf
-  zh: 1facdfbfa3ccefbc
+  zh: f931bdc610a36fdd
 /deepseek-ai-dsh-session-log-export/known-limitations-and-deferred-work/dev-note/future-export-destinations-beyond-the-browser:
   en: 226726899a479680
-  zh: 26f72519513d4782
+  zh: 08ea9eee48e260db

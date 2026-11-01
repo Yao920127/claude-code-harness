@@ -1,39 +1,39 @@
-# Agent Note: Web 浏览器预期输出的必需 CI 门禁
+# Agent Note: Web 瀏覽器預期輸出的必需 CI 門禁
 
 Status: implemented
 
 [English](2026-07-30-web-browser-snapshot-ci-gate.md) | 中文
 
-## 问题
+## 問題
 
-[无密钥 Web 浏览器 e2e 车道](2026-07-24-web-gui-browser-e2e-lane.zh.md)只由本地 `pnpm run test:web` 运行，PR CI 不比较 `snapshots/web/` 或 `apps/web/tests/expected/` 下的 Web 预期输出。因此，改变用户可见 Web 输出的 PR 可以在漏刷预期输出时保持绿色；后来任意分支显式运行 `DSH_SNAPSHOT=refresh`，都会替前序变更补账并产生与本分支无关的 diff。普通本地运行已经默认使用只读 replay，缺口是 PR 级的强制执行，而不是禁止 refresh 写入。
+[無金鑰 Web 瀏覽器 e2e 車道](2026-07-24-web-gui-browser-e2e-lane.zh.md)只由本地 `pnpm run test:web` 執行，PR CI 不比較 `snapshots/web/` 或 `apps/web/tests/expected/` 下的 Web 預期輸出。因此，改變使用者可見 Web 輸出的 PR 可以在漏刷預期輸出時保持綠色；後來任意分支顯式執行 `DSH_SNAPSHOT=refresh`，都會替前序變更補帳併產生與本分支無關的 diff。普通本地執行已經預設使用只讀 replay，缺口是 PR 級的強制執行，而不是禁止 refresh 寫入。
 
-## 决策
+## 決策
 
-Linux PR 的 `node 24 / snapshots and artifacts` 必须运行完整 Web 浏览器 replay/compare。配置 `DSH_WEB_SNAPSHOT_WORKERS` 后，`scripts/run-gates.ts` 把 `test:web:ci` 登记为 `ci-consumers` 门禁，并显式注入 `DSH_SNAPSHOT=replay`；CI 永不以 `record` 或 `refresh` 模式运行，因此提交的预期输出与当前组装应用不一致时测试直接失败，不会在 runner 内静默改写后通过。
+Linux PR 的 `node 24 / snapshots and artifacts` 必須執行完整 Web 瀏覽器 replay/compare。設定 `DSH_WEB_SNAPSHOT_WORKERS` 後，`scripts/run-gates.ts` 把 `test:web:ci` 登記為 `ci-consumers` 門禁，並顯式注入 `DSH_SNAPSHOT=replay`；CI 永不以 `record` 或 `refresh` 模式執行，因此提交的預期輸出與目前組裝應用不一致時測試直接失敗，不會在 runner 內靜默改寫後透過。
 
-消费方 job 在[消费方独立构建](../../archived/process/2026-07-30-independent-ci-consumer-build.md)中负责唯一一次 Linux 构建，因此 `apps/web/dist` 和包的 `lib/` 目录会保留在其工作区中，供浏览器套件使用。Chromium 运行完整套件；模型与推理强度选择场景还在 WebKit 中运行，以覆盖原生鼠标焦点行为。在托管运行器上，CI 按锁文件中的 Playwright 版本安装这两种引擎及其系统依赖。在持久化故障切换 VM 上，镜像负责预装两种引擎的 Linux 系统软件包，CI 只安装浏览器程序，避免每次运行都通过 `apt` 改动系统。PR 恢复以操作系统和锁文件为键的浏览器缓存，使必需路径无需承担压缩和上传开销，并可在锁文件变化时按操作系统前缀回退。没有任何 master 作业生成这些 hosted 缓存，因此恢复只能命中仍有归档的旧条目，直至其被逐出。自托管热备运行相同的比较，但不执行托管缓存操作。
+消費方 job 在[消費方獨立建置](../../archived/process/2026-07-30-independent-ci-consumer-build.md)中負責唯一一次 Linux 建置，因此 `apps/web/dist` 和包的 `lib/` 目錄會保留在其工作區中，供瀏覽器套件使用。Chromium 執行完整套件；模型與推理強度選擇情境還在 WebKit 中執行，以覆蓋原生滑鼠焦點行為。在託管執行器上，CI 按鎖檔案中的 Playwright 版本安裝這兩種引擎及其系統依賴。在持久化故障切換 VM 上，映像負責預裝兩種引擎的 Linux 系統軟體包，CI 只安裝瀏覽器程式，避免每次執行都透過 `apt` 改動系統。PR 恢復以作業系統和鎖檔案為鍵的瀏覽器快取，使必需路徑無需承擔壓縮和上傳開銷，並可在鎖檔案變化時按作業系統字首退回。沒有任何 master 作業生成這些 hosted 快取，因此恢復只能命中仍有歸檔的舊條目，直至其被逐出。自託管熱備執行相同的比較，但不執行託管快取操作。
 
-本地 `pnpm run test:web` 仍先构建，再串行运行完整浏览器套件；`test:web:built` 是已有构建产物的串行执行入口。开发者只在确认用户可见输出有意变化后显式运行 `DSH_SNAPSHOT=refresh pnpm run test:web`，评审每一处预期输出 diff，再以 replay 模式复验不再写文件。
+本地 `pnpm run test:web` 仍先建置，再序列執行完整瀏覽器套件；`test:web:built` 是已有建置產物的序列執行入口。開發者只在確認使用者可見輸出有意變化後顯式執行 `DSH_SNAPSHOT=refresh pnpm run test:web`，評審每一處預期輸出 diff，再以 replay 模式複驗不再寫檔案。
 
-CI 的 `scripts/run-web-snapshots.ts` 单独运行会修改构建产物的 `hmr-live.e2e.ts`。随后由一个六 worker Vitest 池运行其余文件，包括历史 Cordis 卡片渲染。所有子进程继承 stdio，由 `run-gates` 流式转发输出。
+CI 的 `scripts/run-web-snapshots.ts` 單獨執行會修改建置產物的 `hmr-live.e2e.ts`。隨後由一個六 worker Vitest 池執行其餘檔案，包括歷史 Cordis 卡片渲染。所有子程序繼承 stdio，由 `run-gates` 流式轉發輸出。
 
-对 PR 而言，门禁仅在 Linux 消费方 job 中运行：这些场景面向 POSIX，其他 PR job 不会同时安装这两种引擎。自托管的默认分支 Linux 串行热备也包含该比较，而 macOS 和 Windows 串行 job 仍不使用浏览器（不存在托管的 Linux 串行聚合）。PR 的 `all checks passed` 已依赖消费方 job，因此浏览器比较失败会阻止合并，无需新增 branch-protection check 名称。
+對 PR 而言，門禁僅在 Linux 消費方 job 中執行：這些情境面向 POSIX，其他 PR job 不會同時安裝這兩種引擎。自託管的預設分支 Linux 序列熱備也包含該比較，而 macOS 和 Windows 序列 job 仍不使用瀏覽器（不存在託管的 Linux 序列聚合）。PR 的 `all checks passed` 已依賴消費方 job，因此瀏覽器比較失敗會阻止合併，無需新增 branch-protection check 名稱。
 
-完整本地 replay 中，6-worker 浏览器命令耗时约 65–71 秒。12-worker 对比约为 50 秒，因此把浏览器 worker 预算减半只增加约 15–20 秒，而不是让墙钟时间翻倍。门禁调度器会在 `built-package-invariants` 成功后立即启动浏览器快照，并发运行彼此独立的门禁，因此既不需要专用 job 超时，也不需要手动制定 YAML 顺序规则。
+完整本地 replay 中，6-worker 瀏覽器命令耗時約 65–71 秒。12-worker 對比約為 50 秒，因此把瀏覽器 worker 預算減半隻增加約 15–20 秒，而不是讓牆鍾時間翻倍。門禁排程器會在 `built-package-invariants` 成功後立即啟動瀏覽器快照，並行執行彼此獨立的門禁，因此既不需要專用 job 超時，也不需要手動制定 YAML 順序規則。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**继续只要求本地运行。** 已否决：执行依赖开发者记忆，正是陈旧 golden 跨 PR 漂移的原因，不能保证产生行为变化的 PR 自己携带预期输出 diff。
+**繼續只要求本地執行。** 已否決：執行依賴開發者記憶，正是陳舊 golden 跨 PR 漂移的原因，不能保證產生行為變化的 PR 自己攜帶預期輸出 diff。
 
-**让 CI 以 `refresh` 模式运行后检查工作树。** 已否决：写后比较把断言机制变成生成器，若工作树检查接入有误，就可能把回归变成能够通过的预期输出更新；replay 直接比较已有 golden，失败面更小。
+**讓 CI 以 `refresh` 模式執行後檢查工作樹。** 已否決：寫後比較把斷言機制變成生成器，若工作樹檢查接入有誤，就可能把迴歸變成能夠透過的預期輸出更新；replay 直接比較已有 golden，失敗面更小。
 
-**新建独立 browser job 并重新构建全仓。** 已否决：它会重复依赖安装和发布构建。现有 Linux 消费方 job 已负责该构建，并已被统一的 required verdict 聚合。
+**新建獨立 browser job 並重新建置全倉。** 已否決：它會重複依賴安裝和釋出建置。現有 Linux 消費方 job 已負責該建置，並已被統一的 required verdict 聚合。
 
-**在并行池中运行 HMR。** 拒绝，因为它会修改共享构建产物。其他浏览器 fixture 拥有隔离状态，共用一个有界池。
+**在並行池中執行 HMR。** 拒絕，因為它會修改共享建置產物。其他瀏覽器 fixture 擁有隔離狀態，共用一個有界池。
 
-**用 jsdom 快照代替真实 Chromium。** 已否决：jsdom 不覆盖浏览器、HTTP/SSE 承载及真实客户端插件包的组合；它仍可用于快速的下层反馈，但不能替代组装后的浏览器链路。
+**用 jsdom 快照代替真實 Chromium。** 已否決：jsdom 不覆蓋瀏覽器、HTTP/SSE 承載及真實用戶端外掛包的組合；它仍可用於快速的下層回饋，但不能替代組裝後的瀏覽器鏈結。
 
-## 后果
+## 後果
 
-每个 PR 都在合并前证明当前 Web 组装与所有已提交的浏览器预期输出一致；漏刷会在改变该组装的同一个 PR 中失败。成本是消费方 job 需要安装 Chromium 和 WebKit、串行运行 1 个场景并执行 1 个有界 6-worker 池；消费方独立构建与浏览器缓存避免重跑时重复构建和下载。并行文件的失败会立即流式显示，但 worker 预算的任何变化仍需要完整端到端测量，而不能依据运行中耗时猜测。门禁不声称跨平台浏览器一致性，Playwright 或浏览器升级若改变 ARIA 格式，升级 PR 必须显式 refresh 并评审 churn。
+每個 PR 都在合併前證明目前 Web 組裝與所有已提交的瀏覽器預期輸出一致；漏刷會在改變該組裝的同一個 PR 中失敗。成本是消費方 job 需要安裝 Chromium 和 WebKit、序列執行 1 個情境並執行 1 個有界 6-worker 池；消費方獨立建置與瀏覽器快取避免重跑時重複建置和下載。並行檔案的失敗會立即流式顯示，但 worker 預算的任何變化仍需要完整端到端測量，而不能依據執行中耗時猜測。門禁不聲稱跨平臺瀏覽器一致性，Playwright 或瀏覽器升級若改變 ARIA 格式，升級 PR 必須顯式 refresh 並評審 churn。

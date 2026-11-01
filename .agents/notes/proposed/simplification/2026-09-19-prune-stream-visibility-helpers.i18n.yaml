@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-prune-stream-visibility-helpers.md
 /agent-note-prune-unused-stream-visibility-helpers:
   en: 5d82ce82cac8a687
-  zh: 4cfc68fceb215e35
+  zh: 30ad511eaa0dfcc5
 /agent-note-prune-unused-stream-visibility-helpers/problem:
   en: da5bf344b0d704c1
-  zh: 6826b064d8b66373
+  zh: 6d469df8039d5e0b
 /agent-note-prune-unused-stream-visibility-helpers/proposal:
   en: b6cec09bd23a2f5a
-  zh: ac348bbe47ea7cc9
+  zh: ca55b0117830c294
 /agent-note-prune-unused-stream-visibility-helpers/alternatives-considered:
   en: 1a190cf86a9f7ec9
-  zh: 2a30aa235c69bdc7
+  zh: 44bd9f639a0e132d
 /agent-note-prune-unused-stream-visibility-helpers/acceptance-criteria:
   en: ee2de1dbabc60983
-  zh: d01c9f1e399266af
+  zh: ed2be99903d14e7e
 /agent-note-prune-unused-stream-visibility-helpers/risks:
   en: 466ed8d1fb426011
-  zh: 1c0765622c9fdf32
+  zh: 9634f2d2b192a51a

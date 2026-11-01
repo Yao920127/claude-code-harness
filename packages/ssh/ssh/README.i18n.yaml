@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write packages/ssh/ssh/README.md
 /:
   en: e8056e7ebc59ace5
-  zh: 69512c6dc08b162f
+  zh: ba097b5efd677640
 /deepseek-ai-dsh-ssh:
   en: aa72983e0421a4ab
   zh: 5a916f668fa9be67
 /deepseek-ai-dsh-ssh/summary:
   en: e502352c9360fce5
-  zh: c61e21f82e4743d5
+  zh: 82713fde68bedb09
 /deepseek-ai-dsh-ssh/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 725b47765ee8f30b
+  zh: d6460a652726fe53
 /deepseek-ai-dsh-ssh/use-this-package:
   en: 8fbb876fefb42f3c
-  zh: ddd38f747088e032
+  zh: 6b2304aa73d6fe1e
 /deepseek-ai-dsh-ssh/use-this-package/deployment-prerequisites:
   en: 2c1bea2f0de4d928
-  zh: aab17df22231b6a6
+  zh: 92de165c0da98291
 /deepseek-ai-dsh-ssh/understand-the-implementation:
   en: 745134e2c519e805
-  zh: c2cfa395fca03d44
+  zh: 03998fdbf6c8a4cc
 /deepseek-ai-dsh-ssh/further-exploration:
   en: 1d179b90a32af26b
-  zh: 683cf3c0085147e1
+  zh: ba43b794baf7f04e
 /deepseek-ai-dsh-ssh/model-experience:
   en: 46f8a19ad50774a3
-  zh: cfa8af8f94f691f5
+  zh: a9dd554a565f89e8
 /deepseek-ai-dsh-ssh/model-experience/kv-cache-effect:
   en: 21f304c66e5ba98b
-  zh: 18185d5b164f8216
+  zh: f5d729b673090bec
 /deepseek-ai-dsh-ssh/known-limitations-and-deferred-work:
   en: c173949c197e6deb
-  zh: a951c8cfeca150ab
+  zh: 9496e5c45446cc20
 /deepseek-ai-dsh-ssh/known-limitations-and-deferred-work/dev-note:
   en: 6ca4f1d4b4810fff
-  zh: e42f580ca971972b
+  zh: 8acb938f7b6b4a66

@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的默认 agent（智能体）驱动器说明，用于选择、配置或调试 agent 的创建方式以及轮次与步骤的运行方式。"
+description: "面向使用者與維護者的預設 agent（智慧代理）驅動器說明，用於選擇、設定或除錯 agent 的建立方式以及輪次與步驟的執行方式。"
 kind: "package-reference"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-agent-loop` 创建全新 agent 或恢复持久化会话，随后通过模型请求、流式响应、工具执行和持久会话历史驱动每个轮次。标准 agent 组合应挂载本包；声明式条目会在启动时启动 agent，公开的 `ctx.agents` API 则支持以编程方式创建和恢复 agent。`maxParallelToolCalls` 限制同时运行的并行安全调用数量，独占调用保留顺序。取消会保留已经流式交付给用户的文本。只有标准的「调用模型、运行工具、重复」生命周期无法满足需求时，才应选择自定义 `Agent` 实现。
+`dsh-agent-loop` 建立全新 agent 或恢復持久化工作階段，隨後透過模型請求、流式回應、工具執行和持久工作階段歷史驅動每個輪次。標準 agent 組合應掛載本包；宣告式條目會在啟動時啟動 agent，公開的 `ctx.agents` API 則支援以程式設計方式建立和恢復 agent。`maxParallelToolCalls` 限制同時執行的並行安全呼叫數量，獨佔呼叫保留順序。取消會保留已經流式交付給使用者的文字。只有標準的「呼叫模型、執行工具、重複」生命週期無法滿足需求時，才應選擇自定義 `Agent` 實作。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在任何应运行 agent 的组合中挂载 `dsh-agent-loop`。它提供 `ctx.agents` 背后的驱动器，并启动你在配置中声明的 agent；[`dsh-base`](../../bundle/base/README.zh.md) 与 [`dsh-sdk-minimal`](../../bundle/sdk-minimal/README.zh.md) 都将它作为显式配置行挂载。
+在任何應執行 agent 的組合中掛載 `dsh-agent-loop`。它提供 `ctx.agents` 背後的驅動器，並啟動你在設定中宣告的 agent；[`dsh-base`](../../bundle/base/README.zh.md) 與 [`dsh-sdk-minimal`](../../bundle/sdk-minimal/README.zh.md) 都將它作為顯式設定行掛載。
 
-### 配置声明式 agent
+### 設定宣告式 agent
 
-配置中声明的 agent 会在插件加载时自动启动。每个条目需要一个 `id` 标签；模型调用还同时需要 `provider` 与 `model`（`agent/request` 可以在分发前补齐缺失的这一对值）。
+設定中宣告的 agent 會在外掛載入時自動啟動。每個條目需要一個 `id` 標籤；模型呼叫還同時需要 `provider` 與 `model`（`agent/request` 可以在分發前補齊缺失的這一對值）。
 
 ```yaml
 - name: '@deepseek-ai/dsh-agent-loop'
@@ -43,22 +43,22 @@ kind: "package-reference"
         cwd: /workspace
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `maxParallelToolCalls` | `10` | 每个步骤同时在途的并行安全工具调用数；`1` 为串行 |
-| `agents[].id` | 必填 | 稳定标签；未设置 `sessionId` 时，全新会话会生成 `${id}-session-<uuid>` |
-| `agents[].provider` / `agents[].model` | — | 模型路由；分发前两者都必须存在 |
-| `agents[].reasoningEffort` | — | 非空的初始推理强度；`agent/request` 可以覆盖它 |
-| `agents[].maxTokens` | — | 正数的逐请求输出 token 上限 |
-| `agents[].cwd` | — | 全新会话的工作目录 |
-| `agents[].sessionId` | — | 确切身份：首次使用创建，重新挂载时恢复已实体化的历史 |
-| `agents[].resumeSessionId` | — | 加载这个持久化会话而不是创建新会话；与 `sessionId` 互斥 |
+| `maxParallelToolCalls` | `10` | 每個步驟同時在途的並行安全工具呼叫數；`1` 為序列 |
+| `agents[].id` | 必填 | 穩定標籤；未設定 `sessionId` 時，全新工作階段會生成 `${id}-session-<uuid>` |
+| `agents[].provider` / `agents[].model` | — | 模型路由；分發前兩者都必須存在 |
+| `agents[].reasoningEffort` | — | 非空的初始推理強度；`agent/request` 可以覆蓋它 |
+| `agents[].maxTokens` | — | 正數的逐請求輸出 token 上限 |
+| `agents[].cwd` | — | 全新工作階段的工作目錄 |
+| `agents[].sessionId` | — | 確切身份：首次使用建立，重新掛載時恢復已實體化的歷史 |
+| `agents[].resumeSessionId` | — | 載入這個持久化工作階段而不是建立新工作階段；與 `sessionId` 互斥 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-agent-loop) 列出所有接受的字段。`maxParallelToolCalls` 是在下一个工具组开始时读取的 volatile Config 字段；`agents` 仍是启动配置。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-agent-loop) 列出所有接受的欄位。`maxParallelToolCalls` 是在下一個工具組開始時讀取的 volatile Config 欄位；`agents` 仍是啟動設定。
 
-### 以编程方式创建或恢复 agent
+### 以程式設計方式建立或恢復 agent
 
-插件与宿主通过 `ctx.agents.create()` 创建 agent，通过 `ctx.agents.resume()` 恢复持久化会话；两者都返回 `AgentHandle`，其 `dispose()`（资源释放）负责精确拆除对应的 agent。循环会把每个创建的 agent 运行到完成——只有调用方需要自行拆除 agent 时才需要句柄。
+外掛與主機透過 `ctx.agents.create()` 建立 agent，透過 `ctx.agents.resume()` 恢復持久化工作階段；兩者都返回 `AgentHandle`，其 `dispose()`（資源釋放）負責精確拆除對應的 agent。迴圈會把每個建立的 agent 執行到完成——只有呼叫方需要自行拆除 agent 時才需要控制代碼。
 
 ```text
 const handle = await ctx.agents.create({
@@ -68,145 +68,145 @@ const handle = await ctx.agents.create({
 })
 ```
 
-每次 inbox 变更都会提交一条规范化的 `agent/inbox/spliced` 事件。投影注册表会同步折叠该事件，因此 `Session.append()` 返回时，实时投影已经反映该 splice。插入、编辑、移除、领取与取消都通过同一组标准 splice 坐标回放。普通删除携带 `outcome: 'canceled'` 并发出 `agent/inbox/discarded { message }`；领取使用不带 outcome 的纯删除，并发出 `agent/inbox/claimed`。每次插入都会发出 `agent/inbox/inserted { message }`。`MessageId` 在两个待处理列表之间保持唯一。需要被移除消息的消费方应使用 claimed 或 discarded 通知，而不依赖 splice 前的 `session/event` 投影视图。
+每次 inbox 變更都會提交一條規範化的 `agent/inbox/spliced` 事件。投影註冊表會同步摺疊該事件，因此 `Session.append()` 返回時，即時投影已經反映該 splice。插入、編輯、移除、領取與取消都透過同一組標準 splice 座標回放。普通刪除攜帶 `outcome: 'canceled'` 並行出 `agent/inbox/discarded { message }`；領取使用不帶 outcome 的純刪除，並行出 `agent/inbox/claimed`。每次插入都會發出 `agent/inbox/inserted { message }`。`MessageId` 在兩個待處理列表之間保持唯一。需要被移除訊息的消費方應使用 claimed 或 discarded 通知，而不依賴 splice 前的 `session/event` 投影檢視。
 
-### 一个步骤做什么
+### 一個步驟做什麼
 
-每个步骤都会发送会话的派生历史——最新的非空 `system/message` 节点是有效提示词，渲染提示词为空时则没有系统消息——及其可见工具 schema；模型的工具调用经过受守卫的工具流水线，每个被接纳的事实都会在下一步据此派生之前追加到会话日志。并行安全调用最多可重叠 `maxParallelToolCalls` 个；独占调用单独运行并构成排序屏障。取消是协作式的：`agent.cancel()` 中止当前活动，并在未设置 `keepInbox` 时清除待处理工作；被取消的流会终结已送达用户的文本。
+每個步驟都會傳送工作階段的派生歷史——最新的非空 `system/message` 節點是有效提示詞，渲染提示詞為空時則沒有系統訊息——及其可見工具 schema；模型的工具呼叫經過受守衛的工具流水線，每個被接納的事實都會在下一步據此派生之前追加到工作階段日誌。並行安全呼叫最多可重疊 `maxParallelToolCalls` 個；獨佔呼叫單獨執行並構成排序屏障。取消是協作式的：`agent.cancel()` 中止目前活動，並在未設定 `keepInbox` 時清除待處理工作；被取消的流會終結已送達使用者的文字。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释该包如何实现上述行为；可观察约定已在[使用本包](#use-this-package)中完整说明。
+本節解釋該包如何實作上述行為；可觀察約定已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该包是公开 `Agent` 约定的唯一具象实现。它在 `ctx.agents` 上把自身注册为 `AgentFactory`，因此消费方从不导入本包；每个创建 agent 的所有权归属于调用方 fiber 与循环提供方，并汇合到同一个记忆化的完全停稳边界。每个可观察效果都通过会话事件与 `agent/*` 分类体系发生——包内部实现绝不属于公开接口。
+該包是公開 `Agent` 約定的唯一具象實作。它在 `ctx.agents` 上把自身註冊為 `AgentFactory`，因此消費方從不匯入本包；每個建立 agent 的所有權歸屬於呼叫方 fiber 與迴圈提供者，並匯合到同一個記憶化的完全停穩邊界。每個可觀察效果都透過工作階段事件與 `agent/*` 分類體系發生——包內部實作絕不屬於公開介面。
 
-### 请求 header 与适配器默认值
+### 請求 header 與介面卡預設值
 
-`agent/request` 返回后，`ctx.llm.prepareCall()` 会在活跃轮次信号下校验适配器持有的字段，并解析推理强度和输出 token 默认值。循环会在解析、`request/header` 记录与分派期间保留同一个适配器。循环会为首次请求、变化的 envelope（配置或工具——提示词不属于 header）、显式消息序列起点、surface 替换或图片省略决定后的请求及恢复写入完整 header；同一序列内内容未变的步骤、重试与普通后续轮次继承最新 header，历史内追加提示词不是替换，因此紧随其后的请求同样继承 header。在 header 之外，循环还会记录 `request/context`——提供方、模型、`contextWindow` 以及来自 `prepareCall()` 的路由 `systemPromptUpdate` 模式——且仅在其中任何一项与最新快照不同时记录。下一次 waterfall 分发前，循环移除适配器默认字段，使当前路由重新解析它们；显式设置则保留。未处理的路由仍以 `NO_ADAPTER` 失败。
+`agent/request` 返回後，`ctx.llm.prepareCall()` 會在活躍輪次訊號下驗證介面卡持有的欄位，並解析推理強度和輸出 token 預設值。迴圈會在解析、`request/header` 記錄與分派期間保留同一個介面卡。迴圈會為首次請求、變化的 envelope（設定或工具——提示詞不屬於 header）、顯式訊息序列起點、surface 替換或圖片省略決定後的請求及恢復寫入完整 header；同一序列內內容未變的步驟、重試與普通後續輪次繼承最新 header，歷史內追加提示詞不是替換，因此緊隨其後的請求同樣繼承 header。在 header 之外，迴圈還會記錄 `request/context`——提供者、模型、`contextWindow` 以及來自 `prepareCall()` 的路由 `systemPromptUpdate` 模式——且僅在其中任何一項與最新快照不同時記錄。下一次 waterfall 分發前，迴圈移除介面卡預設欄位，使目前路由重新解析它們；顯式設定則保留。未處理的路由仍以 `NO_ADAPTER` 失敗。
 
-循环在每个派生消息对象首次进入请求时执行深冻结，并且仅在同一 agent 内复用该证明。恢复的消息保留对象身份；构造请求不会冻结包含消息的事件包装对象。每个请求都会冻结本地规范化 header、新消息数组和请求封装，同时保留取消信号的可变性。[请求冻结决策](../../../.agents/notes/implemented/simplification/2026-09-06-agent-request-freeze-evidence.zh.md)解释了所有权与测量依据。
+迴圈在每個派生訊息物件首次進入請求時執行深凍結，並且僅在同一 agent 內複用該證明。恢復的訊息保留物件身份；建構請求不會凍結包含訊息的事件包裝物件。每個請求都會凍結本地規範化 header、新訊息陣列和請求封裝，同時保留取消訊號的可變性。[請求凍結決策](../../../.agents/notes/implemented/simplification/2026-09-06-agent-request-freeze-evidence.zh.md)解釋了所有權與測量依據。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`AgentLoop` 服务、配置 schema、声明式 agent 启动、工厂注册 |
-| [`src/agent.ts`](src/agent.ts) | 具体 `ReactLoopAgent` 驱动器：收件箱、轮次／步骤状态机、取消 |
-| [`src/inbox.ts`](src/inbox.ts) | 包内部的 `ReactLoopInbox`：持久投影、结构化命令与仅供循环使用的领取状态 |
-| [`src/tool-calls.ts`](src/tool-calls.ts) | 工具调度：独占屏障与有界并行池 |
-| [`src/runtime-context.ts`](src/runtime-context.ts) | 逐步骤运行时上下文快照处理 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`AgentLoop` 服務、設定 schema、宣告式 agent 啟動、工廠註冊 |
+| [`src/agent.ts`](src/agent.ts) | 具體 `ReactLoopAgent` 驅動器：收件箱、輪次／步驟狀態機、取消 |
+| [`src/inbox.ts`](src/inbox.ts) | 包內部的 `ReactLoopInbox`：持久投影、結構化命令與僅供迴圈使用的領取狀態 |
+| [`src/tool-calls.ts`](src/tool-calls.ts) | 工具排程：獨佔屏障與有界並行池 |
+| [`src/runtime-context.ts`](src/runtime-context.ts) | 逐步驟執行時上下文快照處理 |
 | [`src/constants.ts`](src/constants.ts) | `DEFAULT_MAX_PARALLEL_TOOL_CALLS` |
-| [`src/invariant.ts`](src/invariant.ts) | 不变式配套：从会话日志重建请求 |
+| [`src/invariant.ts`](src/invariant.ts) | 不變式配套：從工作階段日誌重建請求 |
 
-### 创建与拆除
+### 建立與拆除
 
-创建是同一个受回滚保护的事务：构造私有会话、具象 agent 与带作用域上下文；等待可选 setup；进入两个注册表；宣告 `session/created`；等待串行 `agent/created` 监听器；随后释放已排队输入。创建运行时子 Agent 的调用方设置 `options.parentAgent`；调用方 Context 则单独拥有事务和存活句柄。Setup、commit、监听器失败或所有者 dispose 都会回滚已准备的资源。已送达的宣告仍可被观察，并有配对的销毁通知。Teardown 停止并排空驱动器、撤销作用域、关闭会话写路径、detach agent，再 detach 会话。每次 detach 都绑定到确切进入的对象，因此陈旧 disposer 无法移除之后出现的同 id 替代项。
+建立是同一個受復原保護的事務：建構私有工作階段、具象 agent 與帶作用域上下文；等待可選 setup；進入兩個註冊表；宣告 `session/created`；等待序列 `agent/created` 監聽器；隨後釋放已排隊輸入。建立執行時子 Agent 的呼叫方設定 `options.parentAgent`；呼叫方 Context 則單獨擁有事務和存活控制代碼。Setup、commit、監聽器失敗或所有者 dispose 都會復原已準備的資源。已送達的宣告仍可被觀察，並有配對的銷燬通知。Teardown 停止並排空驅動器、撤銷作用域、關閉工作階段寫路徑、detach agent，再 detach 工作階段。每次 detach 都繫結到確切進入的物件，因此陳舊 disposer 無法移除之後出現的同 id 替代項。
 
-### 持久化集成
+### 持久化整合
 
-循环是会话写句柄在生产环境中的获取点。挂载 `ctx.sessionPersistence` 后，`create`/`createAgent` 调用 `persistence.create(header)`——在发布之前存储持久身份并取得写所有权——并通过句柄追加构造 seed；`resume` 先调用 `persistence.open(id, 'write')`（排除同 id 的并发恢复），通过句柄读取物理上有效的日志，并为在轮次中途崩溃的日志把 `interruptedTurnClosers` 作为普通批次追加——语义崩溃修复是 agent 层的职责，而非存储入口。发布前的最后一刻，`appendUnstoredSuffix` 存储 setup 窗口期间追加的事件（seed 标记、委派策略记录），它们绝不会经由 `session/event` 重新发出。发布之后，挂载的后端按会话 id 把该会话的 `session/event` 批次、`session/flush` 屏障与 `session/disposed` 退役路由进活跃写句柄；循环只通过它拥有的句柄触碰存储。记忆化的 teardown 在循环提交会话的收尾事件之后关闭句柄——close 会排空任何已路由的缓冲——可证明地释放写所有权。没有后端时，会话只存在于内存中，其余一切不变。
+迴圈是工作階段寫控制代碼在生產環境中的取得點。掛載 `ctx.sessionPersistence` 後，`create`/`createAgent` 呼叫 `persistence.create(header)`——在釋出之前儲存持久身份並取得寫所有權——並透過控制代碼追加建構 seed；`resume` 先呼叫 `persistence.open(id, 'write')`（排除同 id 的並行恢復），透過控制代碼讀取物理上有效的日誌，併為在輪次中途崩潰的日誌把 `interruptedTurnClosers` 作為普通批次追加——語義崩潰修復是 agent 層的職責，而非儲存入口。釋出前的最後一刻，`appendUnstoredSuffix` 儲存 setup 視窗期間追加的事件（seed 標記、委派策略記錄），它們絕不會經由 `session/event` 重新發出。釋出之後，掛載的後端按工作階段 id 把該工作階段的 `session/event` 批次、`session/flush` 屏障與 `session/disposed` 退役路由進活躍寫控制代碼；迴圈只透過它擁有的控制代碼觸碰儲存。記憶化的 teardown 在迴圈提交工作階段的收尾事件之後關閉控制代碼——close 會排空任何已路由的緩衝——可證明地釋放寫所有權。沒有後端時，工作階段只存在於記憶體中，其餘一切不變。
 
-### 轮次与步骤流程
+### 輪次與步驟流程
 
-驱动器在其整个生命周期内拥有一个 agent，并在 `ctx.agents.withInitiator(agent, ...)` 内运行。`AgentLoop` 在服务生命周期内注册标准 `inbox` 投影，因此冷读取在没有 Agent 和所有 Agent 卸载后都可用。其包内部 `ReactLoopInbox` 使用该共享投影执行结构化命令与仅供 loop 使用的领取操作。在轮次边界，它先打开持久轮次，再原子领取待处理的 next-step 输入与一条排队提示词；在步骤之间则只领取 next-step 输入。驱动器组装提示词与工具、投影运行时上下文，并运行 `agent/pre-step`。被拒绝的决定或空的首批输入不打开步骤。接纳后的首次尝试先记录 `step/start`，再运行 `agent/request` waterfall 与 `prepareCall()`；这两个异步阶段都看不到待提交的系统提示词与已接纳用户消息进入历史，在任一阶段取消都不会提交这两者。每次尝试时，循环随后依据已准备调用的能力，同步将渲染后的提示词与存活的 `system/message` 节点协调一致、仅在首次尝试追加已接纳的 `user/message` 批次、按需记录 header 与 context，再派生并冻结请求，通过该绑定的已准备调用发起流式请求。重试复用同一份已渲染组装结果，不重复组装、`agent/pre-step` 或用户消息准入。协调过程可见 pre-step 与重试中的压缩；序列中断时将提示词归并到头部，而非在已提交用户消息之后追加更新。请求由 `header.config`、`deriveMessages()` 与 `header.tools` 构成，不携带 `system` 字段。每次模型尝试会发出一个进程本地 `start`，仅在匹配的持久 assistant-frame 结算之后发出各个 `chunk`，并恰好发出一个终态 `end`；最终组装或消息追加失败时以 `aborted` 结算，`committed` 则出现在持久 `assistant/message` 之后。每次成功的模型调用都恰好追加一个 message 锚点，被取消的流则追加带 `interrupted: true` 的锚点并携带已交付前缀，使下一次请求包含用户看到的内容。在步骤内，独占调用形成屏障，并行安全调用使用有界滚动池；策略、持久结果与结果上下文保持模型顺序。
+驅動器在其整個生命週期內擁有一個 agent，並在 `ctx.agents.withInitiator(agent, ...)` 內執行。`AgentLoop` 在服務生命週期內註冊標準 `inbox` 投影，因此冷讀取在沒有 Agent 和所有 Agent 解除安裝後都可用。其包內部 `ReactLoopInbox` 使用該共享投影執行結構化命令與僅供 loop 使用的領取操作。在輪次邊界，它先開啟持久輪次，再原子領取待處理的 next-step 輸入與一條排隊提示詞；在步驟之間則只領取 next-step 輸入。驅動器組裝提示詞與工具、投影執行時上下文，並執行 `agent/pre-step`。被拒絕的決定或空的首批輸入不開啟步驟。接納後的首次嘗試先記錄 `step/start`，再執行 `agent/request` waterfall 與 `prepareCall()`；這兩個非同步階段都看不到待提交的系統提示詞與已接納使用者訊息進入歷史，在任一階段取消都不會提交這兩者。每次嘗試時，迴圈隨後依據已準備呼叫的能力，同步將渲染後的提示詞與存活的 `system/message` 節點協調一致、僅在首次嘗試追加已接納的 `user/message` 批次、按需記錄 header 與 context，再派生並凍結請求，透過該繫結的已準備呼叫發起流式請求。重試複用同一份已渲染組裝結果，不重複組裝、`agent/pre-step` 或使用者訊息准入。協調過程可見 pre-step 與重試中的壓縮；序列中斷時將提示詞歸併到頭部，而非在已提交使用者訊息之後追加更新。請求由 `header.config`、`deriveMessages()` 與 `header.tools` 構成，不攜帶 `system` 欄位。每次模型嘗試會發出一個程序本地 `start`，僅在匹配的持久 assistant-frame 結算之後發出各個 `chunk`，並恰好發出一個終態 `end`；最終組裝或訊息追加失敗時以 `aborted` 結算，`committed` 則出現在持久 `assistant/message` 之後。每次成功的模型呼叫都恰好追加一個 message 錨點，被取消的流則追加帶 `interrupted: true` 的錨點並攜帶已交付字首，使下一次請求包含使用者看到的內容。在步驟內，獨佔呼叫形成屏障，並行安全呼叫使用有界滾動池；策略、持久結果與結果上下文保持模型順序。
 
-提示词准入依据实际的 `prepareCall()` 结果，而非先前的 `request/context`。没有系统节点时，即使提示词为空也追加（预留第 0 号节点，但不产生协议消息）。在不具备能力的路由上或新请求序列开始时，非空渲染文本归并到首个系统节点：每个非空的后续系统节点分别收到有日志记录的空内容替换，随后按需重写头节点。未生效的空尾节点无需替换，也不决定有效文本。即使最新有效文本未变，也执行归并。延续中的 `in-history` 序列在有效提示词不变时不产生事件，非空变更则追加。无论路由或序列状态如何，空渲染文本都会通过有日志记录的逐节点空内容替换清除每个非空的后续系统节点，再按需清空头节点。模型不会继续看到旧指令。空头节点且没有生效的后续系统节点表示没有提示词；重复清除与恢复会话都保持为空。重新提供的非空提示词遵循同一路由／序列规则：延续中的具备能力路由可以追加它，不具备能力的路由或新序列则重新填充头节点。以下情况开启序列：pre-step 决定声明 `startsRequestSeries`，或 `session.surface.contentGeneration` 自附接或上次请求以来发生变化（替换或图片省略决定）。仅当已准备路由未声明 `toolUpdate` 时，可见工具 schema 变化才强制归并提示词。同时支持工具和系统提示词更新的路由可以追加变更后的提示词并激活新增工具，无需改写此前消息。如果其他准入条件替换系统节点，请求会以当前工具声明开启新序列。恢复与单纯的提供方或模型切换都延续序列；准入仍由已准备的路由决定。逐节点的空内容替换保留其间历史，无需 surface 删除操作。
+提示詞准入依據實際的 `prepareCall()` 結果，而非先前的 `request/context`。沒有系統節點時，即使提示詞為空也追加（預留第 0 號節點，但不產生協定訊息）。在不具備能力的路由上或新請求序列開始時，非空渲染文字歸併到首個系統節點：每個非空的後續系統節點分別收到有日誌記錄的空內容替換，隨後按需重寫頭節點。未生效的空尾節點無需替換，也不決定有效文字。即使最新有效文字未變，也執行歸併。延續中的 `in-history` 序列在有效提示詞不變時不產生事件，非空變更則追加。無論路由或序列狀態如何，空渲染文字都會透過有日誌記錄的逐節點空內容替換清除每個非空的後續系統節點，再按需清空頭節點。模型不會繼續看到舊指令。空頭節點且沒有生效的後續系統節點表示沒有提示詞；重複清除與恢復工作階段都保持為空。重新提供的非空提示詞遵循同一路由／序列規則：延續中的具備能力路由可以追加它，不具備能力的路由或新序列則重新填充頭節點。以下情況開啟序列：pre-step 決定宣告 `startsRequestSeries`，或 `session.surface.contentGeneration` 自附接或上次請求以來發生變化（替換或圖片省略決定）。僅當已準備路由未宣告 `toolUpdate` 時，可見工具 schema 變化才強制歸併提示詞。同時支援工具和系統提示詞更新的路由可以追加變更後的提示詞並啟用新增工具，無需改寫此前訊息。如果其他准入條件替換系統節點，請求會以目前工具宣告開啟新序列。恢復與單純的提供者或模型切換都延續序列；准入仍由已準備的路由決定。逐節點的空內容替換保留其間歷史，無需 surface 刪除操作。
 
-### 失败与取消
+### 失敗與取消
 
-`turn/end` 声明的类型是 `TurnEndCancelCause`；取消时，循环在其中记录一份新的 `AgentCancelCause`，保留调用方的 `kind` 和 hook 的 `reason` 文本。实时 `AbortSignal.reason` 仍是调用方的那个对象，传输层可能向其添加属性——Node 的 fetch 会给它赋一个 `stack`——因此这份拷贝既让该调用栈不进入日志，也让结束事件保持可追加。
+`turn/end` 宣告的型別是 `TurnEndCancelCause`；取消時，迴圈在其中記錄一份新的 `AgentCancelCause`，保留呼叫方的 `kind` 和 hook 的 `reason` 文字。即時 `AbortSignal.reason` 仍是呼叫方的那個物件，傳輸層可能向其新增屬性——Node 的 fetch 會給它賦一個 `stack`——因此這份複製既讓該呼叫堆疊不進入日誌，也讓結束事件保持可追加。
 
-最终适配器选择、分发与迭代失败以终止结束的形式到达并进入 `agent/request-error`；处理该失败的监听器返回 `{ kind: 'retry' }` 且不调用 `next()`，未被处理的失败则是终态。Middleware、结果处理、工具及其他扩展失败仍会抛出并直接关闭轮次——插件失败结束的是轮次，不是循环。取消后未分发的模型工具调用会收到合成的 `tool/call` 加 `ABORTED_BEFORE_DISPATCH` 结果对。[显式取消决策](../../../.agents/notes/implemented/architecture/2026-07-16-explicit-turn-cancellation.zh.md)拥有信号生命周期。
+最終介面卡選擇、分發與迭代失敗以終止結束的形式到達並進入 `agent/request-error`；處理該失敗的監聽器返回 `{ kind: 'retry' }` 且不呼叫 `next()`，未被處理的失敗則是終態。Middleware、結果處理、工具及其他擴充功能失敗仍會丟擲並直接關閉輪次——外掛失敗結束的是輪次，不是迴圈。取消後未分發的模型工具呼叫會收到合成的 `tool/call` 加 `ABORTED_BEFORE_DISPATCH` 結果對。[顯式取消決策](../../../.agents/notes/implemented/architecture/2026-07-16-explicit-turn-cancellation.zh.md)擁有訊號生命週期。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-包级约定对大多数消费方已经足够；需要周边领域与设计原理时再阅读以下页面。
+包級約定對大多數消費方已經足夠；需要周邊領域與設計原理時再閱讀以下頁面。
 
-- [agent 包](../agent/README.zh.md)——本循环实现的 `Agent` 句柄、注册表与 `agent/*` 事件。
-- [Core 子系统](../../../docs/subsystems/core.zh.md)——轮次流与拦截决策。
-- [会话子系统](../../../docs/subsystems/session.zh.md)——循环写入并据此派生的持久日志。
-- [工具子系统](../../../docs/subsystems/tools.zh.md)——循环分发所经过的流水线。
-- [显式取消 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-16-explicit-turn-cancellation.zh.md)——信号生命周期与取消竞态。
-- [core 分组地图](../README.zh.md)——core 各包如何组合。
+- [agent 包](../agent/README.zh.md)——本迴圈實作的 `Agent` 控制代碼、註冊表與 `agent/*` 事件。
+- [Core 子系統](../../../docs/subsystems/core.zh.md)——輪次流與攔截決策。
+- [工作階段子系統](../../../docs/subsystems/session.zh.md)——迴圈寫入並據此派生的持久日誌。
+- [工具子系統](../../../docs/subsystems/tools.zh.md)——迴圈分發所經過的流水線。
+- [顯式取消 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-16-explicit-turn-cancellation.zh.md)——訊號生命週期與取消競態。
+- [core 分組地圖](../README.zh.md)——core 各包如何組合。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 完整对话请求
+### 完整對話請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-每个步骤中，循环会发送会话的派生消息与可见工具 schema。非空的 `system/message` 节点承载提示词，最新一条是有效版本；空渲染文本会从派生历史中清除所有提示词版本。它提供 `provider`、`model` 与 `cwd` 变量值，但不添加固定文案。 请求头始终记录当前有效工具。将其名称与前一请求头比较后，添加和移除合并为一条 `developer/message`，不依赖模型能力；添加记录引用新请求头。请求还携带 `Session.toolHistory()`，供 LLM 运行时构造提供方声明。
+每個步驟中，迴圈會傳送工作階段的派生訊息與可見工具 schema。非空的 `system/message` 節點承載提示詞，最新一條是有效版本；空渲染文字會從派生歷史中清除所有提示詞版本。它提供 `provider`、`model` 與 `cwd` 變數值，但不新增固定文案。 請求頭始終記錄目前有效工具。將其名稱與前一請求頭比較後，新增和移除合併為一條 `developer/message`，不依賴模型能力；新增記錄引用新請求頭。請求還攜帶 `Session.toolHistory()`，供 LLM 執行時建構提供者宣告。
 
-#### Token 影响
+#### Token 影響
 
-系统文本与 schema 在每个步骤都会再次计入，在 `in-history` 路由上，每个保留的提示词版本都会持续计入，直到压缩将其遮蔽或提示词协调将其清空。逐 agent 作用域决定贡献，而权威组装 waterfall 可以改变最终请求，并使其监听器负责保持协议连贯。
+系統文字與 schema 在每個步驟都會再次計入，在 `in-history` 路由上，每個保留的提示詞版本都會持續計入，直到壓縮將其遮蔽或提示詞協調將其清空。逐 agent 作用域決定貢獻，而權威組裝 waterfall 可以改變最終請求，並使其監聽器負責保持協定連貫。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-前缀复用要求在同一提供方与模型路由下，此前消息和声明保持逐字节一致。渲染后的提示词未变时，缓存前缀得以保留，除非不具备能力的路由或新请求序列必须归并保留的历史内系统节点。原地替换某个系统节点的提示词变更会使请求从该节点的第一个 token 起就不同——该节点是第 0 号节点时则整个请求都不同——因此提供方前缀缓存从那里开始未命中；当已准备调用声明 `systemPromptUpdate: 'in-history'` 时，同一请求序列延续期间的非空提示词变更会追加到已缓存历史之后，因此直到该历史末尾的前缀仍可复用。更改保留工具的定义或重建声明，会从第一个改变的请求 token 起使复用失效。
+字首複用要求在同一提供者與模型路由下，此前訊息和宣告保持逐位元組一致。渲染後的提示詞未變時，快取字首得以保留，除非不具備能力的路由或新請求序列必須歸併保留的歷史內系統節點。原地替換某個系統節點的提示詞變更會使請求從該節點的第一個 token 起就不同——該節點是第 0 號節點時則整個請求都不同——因此提供者字首快取從那裡開始未命中；當已準備呼叫宣告 `systemPromptUpdate: 'in-history'` 時，同一請求序列延續期間的非空提示詞變更會追加到已快取歷史之後，因此直到該歷史末尾的字首仍可複用。更改保留工具的定義或重建宣告，會從第一個改變的請求 token 起使複用失效。
 
-### 保留的消息历史
+### 保留的訊息歷史
 
-#### 模型看到什么
+#### 模型看到什麼
 
-已接纳的 user 消息、assistant 消息、工具调用与结果、注入上下文与 steering（中途引导）都会记录，并在后续步骤中发送。原始流分片、生命周期边界与其他仅写入日志的事件会被排除。
+已接納的 user 訊息、assistant 訊息、工具呼叫與結果、注入上下文與 steering（中途引導）都會記錄，並在後續步驟中傳送。原始流分片、生命週期邊界與其他僅寫入日誌的事件會被排除。
 
-#### Token 影响
+#### Token 影響
 
-输入会随每条表层消息增长，直到压缩替换遮蔽较旧节点；包含多个步骤的工具轮次会在每个步骤重新发送累积的历史。
+輸入會隨每條表層訊息增長，直到壓縮替換遮蔽較舊節點；包含多個步驟的工具輪次會在每個步驟重新傳送累積的歷史。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-普通历史增长仅追加，并保留可复用条目。表层替换或压缩会从第一个被遮蔽的历史 token 起使复用失效。
+普通曆史增長僅追加，並保留可複用條目。表層替換或壓縮會從第一個被遮蔽的歷史 token 起使複用失效。
 
-### 取消后未分发的调用
+### 取消後未分發的呼叫
 
-#### 模型看到什么
+#### 模型看到什麼
 
-如果后续请求回放一个中止的步骤，取消所阻止分发的每个工具调用都有错误码 `ABORTED_BEFORE_DISPATCH`，结果文本为 `Error: tool call aborted before dispatch`。
+如果後續請求回放一箇中止的步驟，取消所阻止分發的每個工具呼叫都有錯誤碼 `ABORTED_BEFORE_DISPATCH`，結果文字為 `Error: tool call aborted before dispatch`。
 
-#### Token 影响
+#### Token 影響
 
-每个跳过的调用都会在历史中保留一个固定错误结果，直到压缩将其遮蔽。
+每個跳過的呼叫都會在歷史中保留一個固定錯誤結果，直到壓縮將其遮蔽。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；每个合成结果都位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；每個合成結果都位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明循环何时需要特别留意。它们是当前包约束，不是任务积压。
+這些限制說明迴圈何時需要特別留意。它們是目前包約束，不是任務積壓。
 
-- **分类是一元的**：安全性取决于比较同级调用或资源的调用必须保持独占（[原理](../../../.agents/notes/implemented/feature/2026-07-10-parallel-tool-call-execution.zh.md)）。
-- **配置标签默认对应新会话**：省略 `sessionId` 时，每次启动都会创建新的 `${id}-session-<uuid>`；如需确切的恢复或创建行为，必须显式提供稳定的 `sessionId`，而 `resumeSessionId` 要求已有持久化历史。
-- **配置 agent 没有逐 agent persona 字段或 setup 钩子**：它们使用部署 persona；只有编程式 `ctx.agents.create()` / `resume()` 工厂选项支持带作用域的 persona 与工具组合。
-- **没有内置轮次预算**：工具调用或 steering 会让当前轮次继续；限制失控轮次的策略必须从既有生命周期扩展点（如 `agent/turn-stopping`）执行取消。
+- **分類是一元的**：安全性取決於比較同級呼叫或資源的呼叫必須保持獨佔（[原理](../../../.agents/notes/implemented/feature/2026-07-10-parallel-tool-call-execution.zh.md)）。
+- **設定標籤預設對應新工作階段**：省略 `sessionId` 時，每次啟動都會建立新的 `${id}-session-<uuid>`；如需確切的恢復或建立行為，必須顯式提供穩定的 `sessionId`，而 `resumeSessionId` 要求已有持久化歷史。
+- **設定 agent 沒有逐 agent persona 欄位或 setup 掛鉤**：它們使用部署 persona；只有程式設計式 `ctx.agents.create()` / `resume()` 工廠選項支援帶作用域的 persona 與工具組合。
+- **沒有內建輪次預算**：工具呼叫或 steering 會讓目前輪次繼續；限制失控輪次的策略必須從既有生命週期擴充功能點（如 `agent/turn-stopping`）執行取消。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

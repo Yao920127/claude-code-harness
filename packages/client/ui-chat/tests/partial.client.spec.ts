@@ -26,11 +26,11 @@ describe('PartialAccumulator', () => {
 
   it('accumulates text deltas, starting from empty when prev is missing or another kind', () => {
     const acc = new PartialAccumulator(1, 0)
-    acc.push(chunk({ type: 'text-delta', index: 0, text: '无 start ' })) // prev missing
-    acc.push(chunk({ type: 'text-delta', index: 0, text: '也累积' }))
-    expect(acc.toPartial().blocks).toEqual([{ kind: 'text', text: '无 start 也累积' }])
-    acc.push(chunk({ type: 'reasoning-delta', index: 0, text: '换型重起' })) // prev is text → restart
-    expect(acc.toPartial().blocks).toEqual([{ kind: 'reasoning', text: '换型重起' }])
+    acc.push(chunk({ type: 'text-delta', index: 0, text: '無 start ' })) // prev missing
+    acc.push(chunk({ type: 'text-delta', index: 0, text: '也累積' }))
+    expect(acc.toPartial().blocks).toEqual([{ kind: 'text', text: '無 start 也累積' }])
+    acc.push(chunk({ type: 'reasoning-delta', index: 0, text: '換型重起' })) // prev is text → restart
+    expect(acc.toPartial().blocks).toEqual([{ kind: 'reasoning', text: '換型重起' }])
   })
 
   it('accumulates reasoning deltas on the reasoning lane', () => {
@@ -58,7 +58,7 @@ describe('PartialAccumulator', () => {
 
   it('replaces the accumulated block wholesale on block-end', () => {
     const acc = new PartialAccumulator(1, 0)
-    acc.push(chunk({ type: 'text-delta', index: 0, text: '中间态' }))
+    acc.push(chunk({ type: 'text-delta', index: 0, text: '中間態' }))
     acc.push(chunk({ type: 'block-end', index: 0, block: { type: 'text', text: '定稿全文' } }))
     expect(acc.toPartial().blocks).toEqual([{ kind: 'text', text: '定稿全文' }])
   })

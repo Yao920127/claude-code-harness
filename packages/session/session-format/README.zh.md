@@ -1,5 +1,5 @@
 ---
-description: "纯函数式相邻会话格式规划、无损 JSON 值检查、仅标头迁移与物理编解码分派。"
+description: "純函式式相鄰工作階段格式規劃、無損 JSON 值檢查、僅標頭遷移與物理編解碼分派。"
 kind: "package-library"
 ---
 
@@ -9,25 +9,25 @@ kind: "package-library"
 
 ## 概述
 
-`dsh-session-format` 让持久化代码可以直接还原当前会话，或在只消费一次物理行的同时组合唯一的相邻迁移序列。一次还原会让调用方拥有的已解析值流经有状态 Stage，不复制或冻结中间产物。物理分帧、压缩、不可变 generation 命名、排他发布和 Cordis 生命周期行为不属于本库。
+`dsh-session-format` 讓持久化程式碼可以直接還原目前工作階段，或在只消費一次物理行的同時組合唯一的相鄰遷移序列。一次還原會讓呼叫方擁有的已解析值流經有狀態 Stage，不複製或凍結中間產物。物理分幀、壓縮、不可變 generation 命名、排他釋出和 Cordis 生命週期行為不屬於本庫。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-### 何时使用
+### 何時使用
 
-当持久化或格式目录代码需要分类物理会话 header、还原当前逻辑值或组合已发布相邻迁移时，使用本库。它不是 Cordis 插件，也没有 profile 挂载行。它不发布运行时不变式伴生入口，因为每个已完成操作都会校验结果；decoder 与 transformer 状态只属于一次尚未完成的流式还原，绝不在多次还原间共享。
+當持久化或格式目錄程式碼需要分類物理工作階段 header、還原目前邏輯值或組合已釋出相鄰遷移時，使用本庫。它不是 Cordis 外掛，也沒有 profile 掛載行。它不釋出執行時不變式伴生入口，因為每個已完成操作都會驗證結果；decoder 與 transformer 狀態只屬於一次尚未完成的流式還原，絕不在多次還原間共享。
 
 ### 入口
 
@@ -41,72 +41,72 @@ const headerRecord = catalog.encodeCurrentHeader(current.header, current.inherit
 const eventRecords = current.events.map(catalog.encodeCurrentEvent)
 ```
 
-`createSessionFormatCatalog()` 接收每个受支持版本的一个冻结 codec、当前格式的逐记录 encoder、每组相邻版本的一个迁移，以及当前产物与 header 还原器。`readHeader()` 在不读取事件的情况下返回 `current`、`migration-required`、`unsupported` 或 `malformed` 描述符。正文读取方创建一次 restore，把每个已解析物理行传给 `decodeRow()`，再调用一次 `finish()` 获得当前产物。写入方逐条编码其 header 与事件。
+`createSessionFormatCatalog()` 接收每個受支援版本的一個凍結 codec、目前格式的逐記錄 encoder、每組相鄰版本的一個遷移，以及目前產物與 header 還原器。`readHeader()` 在不讀取事件的情況下返回 `current`、`migration-required`、`unsupported` 或 `malformed` 描述符。正文讀取方建立一次 restore，把每個已解析物理行傳給 `decodeRow()`，再呼叫一次 `finish()` 獲得目前產物。寫入方逐條編碼其 header 與事件。
 
-`recovery` 选项决定严格拒绝故障行，还是执行可恢复后缀处理。`validation: 'current'` 会执行所有已安装的 current 格式校验。`validation: 'transformed'` 会在历史迁移后执行已发布的 current 格式校验；已经是 current 的输入则只接受其 codec 的物理校验。
+`recovery` 選項決定嚴格拒絕故障行，還是執行可恢復字尾處理。`validation: 'current'` 會執行所有已安裝的 current 格式驗證。`validation: 'transformed'` 會在歷史遷移後執行已釋出的 current 格式驗證；已經是 current 的輸入則只接受其 codec 的物理驗證。
 
-可恢复解码器返回已接受的逻辑前缀。编解码器可以丢弃一个格式错误或序号不连续的行及其未提交后缀，但后续成功解码的 `turn/end` 会使原始问题成为致命错误。
+可恢復解碼器返回已接受的邏輯字首。編解碼器可以丟棄一個格式錯誤或序號不連續的行及其未提交字尾，但後續成功解碼的 `turn/end` 會使原始問題成為致命錯誤。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-迁移链在构造时校验唯一且无缺口的顺序。源切点可以在 EOF 前保持未知；依赖头部切点的 Stage 拒绝缺失值，而基于标记的 Stage 从已发出的事件推导切点。每个 Stage 在完成时返回精确的目标切点，且必须与预声明切点一致。Catalog 把一个行 decoder 与有状态的相邻事件 transformer 组合起来，只保留其有界状态与最终当前事件，并在 `finish()` 时执行目标校验；只有调用方决定是否发布该结果以及如何发布。
+遷移鏈在建構時驗證唯一且無缺口的順序。源切點可以在 EOF 前保持未知；依賴頭部切點的 Stage 拒絕缺失值，而基於標記的 Stage 從已發出的事件推導切點。每個 Stage 在完成時返回精確的目標切點，且必須與預宣告切點一致。Catalog 把一個行 decoder 與有狀態的相鄰事件 transformer 組合起來，只保留其有界狀態與最終目前事件，並在 `finish()` 時執行目標驗證；只有呼叫方決定是否釋出該結果以及如何釋出。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/chain.ts`](src/chain.ts) | 相邻计划构造与当前格式绕过 |
-| [`src/catalog.ts`](src/catalog.ts) | 物理版本分派与标头分类 |
-| [`src/json.ts`](src/json.ts) | 分离的无损 JSON 快照与通用坐标校验 |
-| [`src/filename.ts`](src/filename.ts) | 持久化、导出与 fixture（测试前置数据）共用的规范 `session[.vN].jsonl` 文件名 |
+| [`src/chain.ts`](src/chain.ts) | 相鄰計劃建構與目前格式繞過 |
+| [`src/catalog.ts`](src/catalog.ts) | 物理版本分派與標頭分類 |
+| [`src/json.ts`](src/json.ts) | 分離的無損 JSON 快照與通用座標驗證 |
+| [`src/filename.ts`](src/filename.ts) | 持久化、匯出與 fixture（測試前置資料）共用的規範 `session[.vN].jsonl` 檔名 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [已发布 v0 到 v1 迁移边](../session-format-v0-to-v1/README.zh.md)——冻结的历史解码与恒等转换。
-- [静态目录](../session-format-catalog/README.zh.md)——第一方编解码器与迁移装配。
-- [JSONL 持久化](../session-persistence-jsonl/README.zh.md)——持久化分帧与代际发布。
+- [已釋出 v0 到 v1 遷移邊](../session-format-v0-to-v1/README.zh.md)——凍結的歷史解碼與恆等轉換。
+- [靜態目錄](../session-format-catalog/README.zh.md)——第一方編解碼器與遷移裝配。
+- [JSONL 持久化](../session-persistence-jsonl/README.zh.md)——持久化分幀與代際釋出。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 会话还原
+### 工作階段還原
 
-#### 模型看到什么
+#### 模型看到什麼
 
-没有直接内容。消费方通过 `deriveMessages()` 从经过校验的当前产物重建模型历史。
+沒有直接內容。消費方透過 `deriveMessages()` 從經過驗證的目前產物重建模型歷史。
 
-#### Token 影响
+#### Token 影響
 
-不直接产生 token。
+不直接產生 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-没有直接影响。迁移若改变当前历史，可能改变由请求重建逻辑拥有的缓存身份。
+沒有直接影響。遷移若改變目前歷史，可能改變由請求重建邏輯擁有的快取身份。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **最终当前历史仍常驻内存**——流式处理只保留有界中间状态，但返回的当前事件数组和必需的序号重映射表仍为 O(事件数)。
-- **仅支持相邻整数版本**——本库不暴露 span、稳定事件身份或通用引用重写代数。
+- **最終目前歷史仍常駐記憶體**——流式處理只保留有界中間狀態，但返回的目前事件陣列和必需的序號重對映表仍為 O(事件數)。
+- **僅支援相鄰整數版本**——本庫不暴露 span、穩定事件身份或通用引用重寫代數。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

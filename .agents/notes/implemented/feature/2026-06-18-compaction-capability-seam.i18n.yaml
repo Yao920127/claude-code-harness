@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.md
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend:
   en: 6808ccbe73762daa
-  zh: 11f3669e6ae4512c
+  zh: 422567b419e25d84
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/problem:
   en: ed3fddc1dce0f229
-  zh: fab2663b344cd851
+  zh: 0ae43935aecee61a
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/compaction-is-a-capability-seam-with-separate-service-definition-and-service-provider-roles:
   en: 785c69730accbb4d
-  zh: ee9bd2a8a7dc3b72
+  zh: 0081c2935711ec65
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/the-contract-depends-on-dsh-session-and-dsh-llm-a-deliberate-deviation:
   en: 5c07a5a6429f6752
-  zh: 8bf83da6e0563a66
+  zh: 986276280ae88179
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/three-abstract-operations-algorithm-in-the-backend:
   en: 62191e0e65c79673
-  zh: cbaa5bece0f5b45a
+  zh: 2a07de5e781af123
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/automatic-pressure-runs-after-successful-durable-step-work:
   en: b246f9837c9c9a6b
-  zh: c19c51456c8fd8b7
+  zh: c99f8f112d0a843a
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/retention-is-turn-agnostic-tool-pairing-balance-is-the-only-structural-guard:
   en: 3126c249c48e90b9
-  zh: dc82bc9a37d90474
+  zh: 7144b8f79173141e
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/head-anchoring-one-auto-checkpoint-always-at-the-head:
   en: 26f187b321217e4c
-  zh: b324dcdb6da4bf02
+  zh: 3f1a40ea48ef8425
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/approximate-convergence-invariant:
   en: 4870032f23833fc4
-  zh: b30180c31ba84a5a
+  zh: c7f4f09ca11ba789
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/surface-replacement-compaction-events-are-log-only-one-user-message-carries-the-summary:
   en: 6d50dfe66a35f6fb
-  zh: 6ff9e66553f10ac6
+  zh: 0cf7362acd4e4f3e
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/checkpoint-framing-incremental-merge-backend-private:
   en: 1c71cf67450e78d5
-  zh: fb44b3cf5cee070a
+  zh: 9eef8ee21c167f28
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/decision/blocking-via-a-log-recorded-lock-plus-a-crash-recoverable-failure-taxonomy:
   en: 5aed57a49e031b1e
-  zh: 1424f332197ef541
+  zh: 8370915cc7839119
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/alternatives-considered:
   en: 24a7bb1949445136
-  zh: 7914ea99f498ed67
+  zh: 51cedd839b1da464
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/consequences:
   en: 400bf1cadb974d04
-  zh: 7612a4634ae98b32
+  zh: 7bd1bfb02fb62d35
 /agent-note-compaction-as-a-capability-seam-abstract-contract-basic-backend/testing:
   en: 843476bd607fe832
-  zh: 50be0b06553a54d0
+  zh: fe0ad42f1987e945

@@ -2,11 +2,11 @@
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'session.new': '新会话',
-  'session.new.label': '新建会话',
-  'toggle.open': '打开侧边栏',
-  'toggle.collapse': '收起侧边栏',
-  'panels.label': '全局面板',
+  'session.new': '新工作階段',
+  'session.new.label': '新建工作階段',
+  'toggle.open': '開啟側邊欄',
+  'toggle.collapse': '收起側邊欄',
+  'panels.label': '全域面板',
 } satisfies Record<string, string>
 
 /** The sidebar namespace key union. */

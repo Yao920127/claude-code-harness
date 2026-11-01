@@ -1,4 +1,4 @@
-# Agent Note: 由一个 dsh 启动应用 profile
+# Agent Note: 由一個 dsh 啟動應用 profile
 
 Status: implemented
 
@@ -6,23 +6,23 @@ Status: implemented
 
 ## Problem
 
-DeepSeek Harness 应用进程需要由同一个机制负责组合、插件解析、环境发现、关闭和用户自定义。带完整 `cordis.yml` 的专用应用 bin 会在 profile 启动之外形成第二套生命周期：安装到 profile 的插件无法到达它，行为会与 `dsh-base` 偏离，SDK 调用方还需要学习任意进程 argv，而不是产品的组合模型。
+DeepSeek Harness 應用程序需要由同一個機制負責組合、外掛解析、環境發現、關閉和使用者自定義。帶完整 `cordis.yml` 的專用應用 bin 會在 profile 啟動之外形成第二套生命週期：安裝到 profile 的外掛無法到達它，行為會與 `dsh-base` 偏離，SDK 呼叫方還需要學習任意程序 argv，而不是產品的組合模型。
 
-Python SDK 通过四个平台 wheel 包分发原生可执行文件。其打包进程使用同一 profile 启动器，同时保留封闭的 VFS 依赖树、原生伴随文件与 installed-wheel 证据。
+Python SDK 透過四個平臺 wheel 包分發原生可執行檔案。其打包程序使用同一 profile 啟動器，同時保留封閉的 VFS 依賴樹、原生伴隨檔案與 installed-wheel 證據。
 
 ## Decision
 
-### 启动范围
+### 啟動範圍
 
-所有受支持的 Node 应用都通过 `dsh` CLI 与一个具名 profile 启动。随附 profile 为 `web`、`headless`、`sdk`、`sdk-minimal` 和 `acp`，可通过 `dsh --profile <name>` 或 `dsh <name>` 选择。`plugin` 表示管理命令；同名 profile 必须用 `--profile plugin` 选择。
+所有受支援的 Node 應用都透過 `dsh` CLI 與一個具名 profile 啟動。隨附 profile 為 `web`、`headless`、`sdk`、`sdk-minimal` 和 `acp`，可透過 `dsh --profile <name>` 或 `dsh <name>` 選擇。`plugin` 表示管理命令；同名 profile 必須用 `--profile plugin` 選擇。
 
-Vendor CLI、仅用于构建和测试的可执行文件、进程内直接挂载插件以及私有浏览器 WebWorker 预览都不属于应用启动清单。包应用 bin 或直接启动包入口的根 demo 都不是可接受的扩展点。
+Vendor CLI、僅用於建置和測試的可執行檔案、程序內直接掛載外掛以及私有瀏覽器 WebWorker 預覽都不屬於應用啟動清單。包應用 bin 或直接啟動包入口的根 demo 都不是可接受的擴充功能點。
 
-### Profile 应用
+### Profile 應用
 
-`@deepseek-ai/dsh-sdk-app` 与 `@deepseek-ai/dsh-acp-app` 在 `@deepseek-ai/dsh-base` 之上组合完整协议应用。SDK 组合包增加 JSON-RPC 服务器、应用自有帮助和 stdio 生命周期；ACP 组合包增加仅用于自动化的 ACP 服务器与相同的应用职责。两者都采用 base 层的模型、工具、持久化、settings、credentials、策略和环境行为。[独立 sdk-minimal profile](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)复用 SDK 启动与 JSON-RPC 服务，但刻意拥有不含 `dsh-base` 的完整显式配置树。
+`@deepseek-ai/dsh-sdk-app` 與 `@deepseek-ai/dsh-acp-app` 在 `@deepseek-ai/dsh-base` 之上組合完整協定應用。SDK 組合包增加 JSON-RPC 伺服器、應用自有幫助和 stdio 生命週期；ACP 組合包增加僅用於自動化的 ACP 伺服器與相同的應用職責。兩者都採用 base 層的模型、工具、持久化、settings、credentials、策略和環境行為。[獨立 sdk-minimal profile](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)複用 SDK 啟動與 JSON-RPC 服務，但刻意擁有不含 `dsh-base` 的完整顯式設定樹。
 
-Profile manifest 负责 patch 重载：
+Profile manifest 負責 patch 過載：
 
 | Profile | `patchReload` |
 |---|---|
@@ -32,69 +32,69 @@ Profile manifest 负责 patch 重载：
 | `sdk-minimal` | `startup` |
 | `acp` | `startup` |
 
-自定义 profile 默认为 `live`。`startup` profile 仍会应用组合包、profile、home 级与调用时 `--patch` 各层，但启动后不会监视这些文件。`dsh-base` 插入的模块 HMR（热模块替换）配置项默认禁用；具有经过验证的源码模块重载生命周期的 profile 必须显式启用它。随附 profile 均不启用服务器模块 HMR：`patchReload: live` 使用启动器的仅配置 watcher，`startup` profile 则不安装 watcher。SDK 与 ACP 无法在一个自有 stdio 连接内安全替换其服务器、agent、持久化或工具注册表。
+自定義 profile 預設為 `live`。`startup` profile 仍會應用組合包、profile、home 級與呼叫時 `--patch` 各層，但啟動後不會監視這些檔案。`dsh-base` 插入的模組 HMR（熱模組替換）設定項預設停用；具有經過驗證的原始碼模組過載生命週期的 profile 必須顯式啟用它。隨附 profile 均不啟用伺服器模組 HMR：`patchReload: live` 使用啟動器的僅設定 watcher，`startup` profile 則不安裝 watcher。SDK 與 ACP 無法在一個自有 stdio 連線內安全替換其伺服器、agent、持久化或工具註冊表。
 
-随附协议 profile 将 stdout 保留给协议帧，显示帮助时不启动 transport，并通过有界根节点 dispose（资源释放）处理 stdin EOF 与信号。ACP 继续仅用于自动化。SDK JSON-RPC 方法、通知字段与 `initialize.serverInfo.name` 保持稳定。完整 profile 的模型可见工具与持久化默认值来自 `dsh-base`，包括其[默认编辑器选择](../simplification/2026-09-05-base-default-file-editor.zh.md)；`sdk-minimal` 拥有自己的显式默认值。可运行快照负责固定已组装的应用输出。
+隨附協定 profile 將 stdout 保留給協定幀，顯示幫助時不啟動 transport，並透過有界根節點 dispose（資源釋放）處理 stdin EOF 與訊號。ACP 繼續僅用於自動化。SDK JSON-RPC 方法、通知欄位與 `initialize.serverInfo.name` 保持穩定。完整 profile 的模型可見工具與持久化預設值來自 `dsh-base`，包括其[預設編輯器選擇](../simplification/2026-09-05-base-default-file-editor.zh.md)；`sdk-minimal` 擁有自己的顯式預設值。可執行快照負責固定已組裝的應用輸出。
 
-### TypeScript SDK 自定义
+### TypeScript SDK 自定義
 
-`@deepseek-ai/dsh-sdk-client` 依赖同版本的 `@deepseek-ai/dsh` 包，解析其已安装 CLI 模块，通过当前 Node 可执行文件运行该模块，并默认选择 `sdk`。两层客户端都暴露 `dshBin`、`profile`、有序 `patches`、`dshHome`、进程 cwd、环境和超时；任意 command/argv 启动只保留为 fake-runtime 测试的内部适配器。
+`@deepseek-ai/dsh-sdk-client` 依賴同版本的 `@deepseek-ai/dsh` 包，解析其已安裝 CLI 模組，透過目前 Node 可執行檔案執行該模組，並預設選擇 `sdk`。兩層用戶端都暴露 `dshBin`、`profile`、有序 `patches`、`dshHome`、程序 cwd、環境和超時；任意 command/argv 啟動只保留為 fake-runtime 測試的內部介面卡。
 
-SDK 用户通过 profile 自定义插件。`dsh plugin --profile <name> ...` 管理持久依赖与组合包顺序，profile 的 `cordis.patch.yml` 负责持久配置项变更，启动时 `patches` 提供有序临时覆盖。自定义 profile 必须保留 `@deepseek-ai/dsh-sdk-app` 或另一个 SDK 服务器配置项。相对 CLI 模块、patch、显式 home 与进程 cwd 路径会在 spawn 前变为绝对路径；初始化具有有限时限，诊断会写明所选 profile。
+SDK 使用者透過 profile 自定義外掛。`dsh plugin --profile <name> ...` 管理持久依賴與組合包順序，profile 的 `cordis.patch.yml` 負責持久設定項變更，啟動時 `patches` 提供有序臨時覆蓋。自定義 profile 必須保留 `@deepseek-ai/dsh-sdk-app` 或另一個 SDK 伺服器設定項。相對 CLI 模組、patch、顯式 home 與程序 cwd 路徑會在 spawn 前變為絕對路徑；初始化具有有限時限，診斷會寫明所選 profile。
 
-直接使用 SDK 时遵循普通 Harness home 解析：显式 `dshHome`、继承的 `DSH_HOME`，最后是 `~/.dsh`。`subagent-dsh-sdk` 则要求显式绝对 home，因此嵌套运行时不会通过操作系统 home 发现个人 profile、已安装插件、凭据或会话。DSH 专用 ACP 子进程示例同样传入隔离 home；ACP 后端自身继续适用于非 DSH agent。
+直接使用 SDK 時遵循普通 Harness home 解析：顯式 `dshHome`、繼承的 `DSH_HOME`，最後是 `~/.dsh`。`subagent-dsh-sdk` 則要求顯式絕對 home，因此巢狀執行時不會透過作業系統 home 發現個人 profile、已安裝外掛、憑證或工作階段。DSH 專用 ACP 子程序範例同樣傳入隔離 home；ACP 後端自身繼續適用於非 DSH agent。
 
-### Python 运行时
+### Python 執行時
 
-Python 运行时 wheel 将 [`python/sdk-runtime/runtime-bootstrap.mjs`](../../../../python/sdk-runtime/runtime-bootstrap.mjs) 暂存为 `dsh-python-runtime-closure` 入口。其普通分支调用公开 CLI export；提供方私有选择会在 CLI 解析前分派到内部子进程 runner，而不是应用入口。[原生 containment 决策](2026-08-28-subprocess-native-containment.zh.md)负责该私有分派。Python 客户端默认选择 `dsh --profile sdk`、有序 patch 文件与显式 Harness home；`python/sdk/examples` 下的可运行示例选择 `sdk-minimal`。安装的 `dsh` 控制台命令暴露相同的 profile 语法，包括 `web` profile。
+Python 執行時 wheel 將 [`python/sdk-runtime/runtime-bootstrap.mjs`](../../../../python/sdk-runtime/runtime-bootstrap.mjs) 暫存為 `dsh-python-runtime-closure` 入口。其普通分支呼叫公開 CLI export；提供者私有選擇會在 CLI 解析前分派到內部子程序 runner，而不是應用入口。[原生 containment 決策](2026-08-28-subprocess-native-containment.zh.md)負責該私有分派。Python 用戶端預設選擇 `dsh --profile sdk`、有序 patch 檔案與顯式 Harness home；`python/sdk/examples` 下的可執行範例選擇 `sdk-minimal`。安裝的 `dsh` 控制檯命令暴露相同的 profile 語法，包括 `web` profile。
 
-可执行文件族是 `deepseek-harness-sdk-runtime-<platform>-<arch>`。SDK 协议格式、wheel 与 import 分发名称、伴随文件名称，以及协议 identity `deepseek-harness-sdk-runtime` 保持稳定。SDK 包族是 `@deepseek-ai/dsh-sdk-client`、`@deepseek-ai/dsh-sdk-protocol` 与 `@deepseek-ai/dsh-sdk-jsonrpc-server`；`@deepseek-ai/dsh-acp` 继续作为 ACP 协议插件。仓库不保留 Python 专用 Node 应用、检入的完整配置、兼容包、转发可执行文件、后备解析器或 SDK／ACP 启动别名。[docs/architecture.md](../../../../docs/architecture.zh.md)负责该启动方式，[`python/sdk-runtime` README](../../../../python/sdk-runtime/README.zh.md)负责 Windows 载体。
+可執行檔案族是 `deepseek-harness-sdk-runtime-<platform>-<arch>`。SDK 協定格式、wheel 與 import 分發名稱、伴隨檔名稱，以及協定 identity `deepseek-harness-sdk-runtime` 保持穩定。SDK 包族是 `@deepseek-ai/dsh-sdk-client`、`@deepseek-ai/dsh-sdk-protocol` 與 `@deepseek-ai/dsh-sdk-jsonrpc-server`；`@deepseek-ai/dsh-acp` 繼續作為 ACP 協定外掛。儲存庫不保留 Python 專用 Node 應用、檢入的完整設定、相容包、轉發可執行檔案、後備解析器或 SDK／ACP 啟動別名。[docs/architecture.md](../../../../docs/architecture.zh.md)負責該啟動方式，[`python/sdk-runtime` README](../../../../python/sdk-runtime/README.zh.md)負責 Windows 載體。
 
-### 强制校验
+### 強制驗證
 
-`verify-application-entrypoints` 扫描应用／包 manifest、可执行源码和根 demo 脚本。允许清单对 `dsh` 产品 bin、排除的 vendor 范围、私有 WebWorker 构建工具和测试支持进行分类。未分类的 shebang、新包 bin 或绕过 `apps/cli/src/bin.ts` 的 demo wrapper 都会使 hygiene 与 primary／static CI 聚合失败。
+`verify-application-entrypoints` 掃描應用／包 manifest、可執行原始碼和根 demo 腳本。允許清單對 `dsh` 產品 bin、排除的 vendor 範圍、私有 WebWorker 建置工具和測試支援進行分類。未分類的 shebang、新包 bin 或繞過 `apps/cli/src/bin.ts` 的 demo wrapper 都會使 hygiene 與 primary／static CI 聚合失敗。
 
-## 既有决策与取代关系
+## 既有決策與取代關係
 
-[Profile 命令简写](../feature/2026-09-15-profile-command-shorthand.zh.md)取代本 Note 中仅为 Web 提供简写的机制；本 Note 继续负责应用组合与生命周期的所有权。
+[Profile 命令簡寫](../feature/2026-09-15-profile-command-shorthand.zh.md)取代本 Note 中僅為 Web 提供簡寫的機制；本 Note 繼續負責應用組合與生命週期的所有權。
 
-本决策取代 [profile 插件组合包](2026-08-05-profile-plugin-bundles.zh.md)、[TypeScript SDK 客户端与 SDK subagent 后端](../../archived/feature/2026-07-27-typescript-sdk-and-sdk-subagent-backend.md)、[移除 SDK 项目工具链](../../archived/simplification/2026-08-11-remove-sdk-project-toolchain.md)和[单文件 Python SDK 运行时分发](2026-07-10-single-file-executable-sdk-runtime-distribution.zh.md)中的应用启动与包名事实。这些 Note 对 profile 分层、客户端／协议语义、已删除的项目工具链与原生打包仍分别具有独立权威。
+本決策取代 [profile 外掛組合包](2026-08-05-profile-plugin-bundles.zh.md)、[TypeScript SDK 用戶端與 SDK subagent 後端](../../archived/feature/2026-07-27-typescript-sdk-and-sdk-subagent-backend.md)、[移除 SDK 專案工具鏈](../../archived/simplification/2026-08-11-remove-sdk-project-toolchain.md)和[單檔案 Python SDK 執行時分發](2026-07-10-single-file-executable-sdk-runtime-distribution.zh.md)中的應用啟動與包名事實。這些 Note 對 profile 分層、用戶端／協定語義、已刪除的專案工具鏈與原生打包仍分別具有獨立權威。
 
-[ACP 仅自动化协议](../simplification/2026-07-23-acp-automation-only-protocol.zh.md)继续负责 ACP 协议格式与交互范围。[添加包实操手册](../../../../docs/cookbook/adding-a-package.zh.md)负责基于角色的包名。[独立 sdk-minimal profile](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)部分取代本 Note 的 base 优先规则与完整配置树替代方案，同时保留本 Note 对 launcher 所有权的决策。没有任何活跃 Note 被完全取代，也没有 Note 符合归档条件。
+[ACP 僅自動化協定](../simplification/2026-07-23-acp-automation-only-protocol.zh.md)繼續負責 ACP 協定格式與互動範圍。[新增包實操手冊](../../../../docs/cookbook/adding-a-package.zh.md)負責基於角色的包名。[獨立 sdk-minimal profile](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)部分取代本 Note 的 base 優先規則與完整設定樹替代方案，同時保留本 Note 對 launcher 所有權的決策。沒有任何活躍 Note 被完全取代，也沒有 Note 符合歸檔條件。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**保留直启 bin，只声明推荐 profile。** 拒绝：只要受支持的可执行文件仍然绕过 profile，文档就无法让 profile 真正负责插件安装、环境加载、关闭和测试。
+**保留直啟 bin，只宣告推薦 profile。** 拒絕：只要受支援的可執行檔案仍然繞過 profile，文件就無法讓 profile 真正負責外掛安裝、環境載入、關閉和測試。
 
-**保留转发兼容 bin。** 拒绝：转发可执行文件仍然形成另一个公开启动名称与兼容承诺。预发布仓库可以让调用方直接迁移到 profile。
+**保留轉發相容 bin。** 拒絕：轉發可執行檔案仍然形成另一個公開啟動名稱與相容承諾。預釋出儲存庫可以讓呼叫方直接遷移到 profile。
 
-**把调用方提供的完整 Cordis 树放到 profile wrapper 后面。** 拒绝：这只集中 argv，没有集中应用组合。完整 profile 使用 `dsh-base` 加轻量应用组合包，使共享策略只有一个归属。只有当显式清单本身属于产品行为时，才允许仓库自有且有版本的独立组合包，具体见 [sdk-minimal](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)。
+**把呼叫方提供的完整 Cordis 樹放到 profile wrapper 後面。** 拒絕：這隻集中 argv，沒有集中應用組合。完整 profile 使用 `dsh-base` 加輕量應用組合包，使共享策略只有一個歸屬。只有當顯式清單本身屬於產品行為時，才允許儲存庫自有且有版本的獨立組合包，具體見 [sdk-minimal](../../archived/architecture/2026-08-24-standalone-sdk-minimal-profile.md)。
 
-**在 TypeScript 构造函数中接受内联插件或完整 `cordis.yml`。** 拒绝：SDK 会因此成为另一个包安装器和应用组合器。具名 profile 与 patch 文件已通过统一解析模型提供持久与逐次启动自定义。
+**在 TypeScript 建構函式中接受內聯外掛或完整 `cordis.yml`。** 拒絕：SDK 會因此成為另一個包安裝器和應用組合器。具名 profile 與 patch 檔案已透過統一解析模型提供持久與逐次啟動自定義。
 
-**只从 `PATH` 解析 `dsh`。** 拒绝：普通 Node 进程不一定继承项目本地 `.bin` 路径。同版本包依赖可以提供确定的运行时。
+**只從 `PATH` 解析 `dsh`。** 拒絕：普通 Node 程序不一定繼承專案本地 `.bin` 路徑。同版本包依賴可以提供確定的執行時。
 
-**在 `dsh-base` 中启用模块 HMR，再由不安全的 profile 逐一禁用。** 拒绝：共享 base 同样承载自定义 profile；默认启用会要求每个新应用都记得退出源码模块替换。base 默认禁用会让模块 HMR 成为显式的 profile 能力，同时保留 `patchReload: live` 配置监视。
+**在 `dsh-base` 中啟用模組 HMR，再由不安全的 profile 逐一停用。** 拒絕：共享 base 同樣承載自定義 profile；預設啟用會要求每個新應用都記得退出原始碼模組替換。base 預設停用會讓模組 HMR 成為顯式的 profile 能力，同時保留 `patchReload: live` 設定監視。
 
-**热重载协议 profile。** 拒绝：替换协议服务器或其依赖可能破坏待处理协议帧与 SDK 自有 agent。进程重启是 SDK 与 ACP 配置变更的采用边界。
+**熱過載協定 profile。** 拒絕：替換協定伺服器或其依賴可能破壞待處理協定幀與 SDK 自有 agent。程序重新啟動是 SDK 與 ACP 設定變更的採用邊界。
 
-**不做独立打包证明就把 Python 可执行文件迁移到 profile。** 拒绝：原生 VFS 闭包、四个平台 wheel 包、profile 资源、ripgrep 与 spawn-helper 伴随文件和干净安装行为都需要自己的迁移证据。
+**不做獨立打包證明就把 Python 可執行檔案遷移到 profile。** 拒絕：原生 VFS 閉包、四個平臺 wheel 包、profile 資源、ripgrep 與 spawn-helper 伴隨檔案和乾淨安裝行為都需要自己的遷移證據。
 
-## 验证
+## 驗證
 
-- 源码与构建后 CLI 验收覆盖 `sdk`、`sdk-minimal` 和 `acp` 的帮助、transport 启动、stdout 纯净性、EOF、信号与根节点 dispose。
-- 组合包配置测试钉住 `dsh-base` 默认禁用模块 HMR，随附模式覆盖层不含该策略；自定义 live profile 的 e2e 钉住启动器仅监视 fallback 提供的配置重载。
-- 聚焦单元套件覆盖 profile 启动解析、初始化时限、SDK 重试、服务器就绪和嵌套隔离 home，并对变更后的运行时源码实现 100% 覆盖率。
-- 免密钥 ACP 与 SDK 快照启动真实 `dsh` profile，并钉住协议输出与持久化日志；嵌套 SDK 组合会启动第二个真实 profile 运行时。
-- 真实 API 工作流把文件并行度限制为 4，因为一个 profile e2e 文件可能拥有多个完整 `dsh` 子进程树；工作流测试会钉住该资源上限。
-- Python 套件同时测试 exe 与 node 载体；打包运行时场景、原生 macOS 可执行文件构建、两个 wheel 包以及干净 wheel 默认／MCP 冒烟测试会钉住 `deepseek-harness-sdk-runtime-*` 产物与 profile 启动。
-- `verify-application-entrypoints` 包含包 bin、可执行源码、直启包的 demo wrapper 与未分类 demo 等非法 fixture（测试前置数据）。
+- 原始碼與建置後 CLI 驗收覆蓋 `sdk`、`sdk-minimal` 和 `acp` 的幫助、transport 啟動、stdout 純淨性、EOF、訊號與根節點 dispose。
+- 組合包設定測試釘住 `dsh-base` 預設停用模組 HMR，隨附模式覆蓋層不含該策略；自定義 live profile 的 e2e 釘住啟動器僅監視 fallback 提供的設定過載。
+- 聚焦單元套件覆蓋 profile 啟動解析、初始化時限、SDK 重試、伺服器就緒和巢狀隔離 home，並對變更後的執行時原始碼實作 100% 覆蓋率。
+- 免金鑰 ACP 與 SDK 快照啟動真實 `dsh` profile，並釘住協定輸出與持久化日誌；巢狀 SDK 組合會啟動第二個真實 profile 執行時。
+- 真實 API 工作流把檔案並行度限制為 4，因為一個 profile e2e 檔案可能擁有多個完整 `dsh` 子程序樹；工作流測試會釘住該資源上限。
+- Python 套件同時測試 exe 與 node 載體；打包執行時情境、原生 macOS 可執行檔案建置、兩個 wheel 包以及乾淨 wheel 預設／MCP 冒煙測試會釘住 `deepseek-harness-sdk-runtime-*` 產物與 profile 啟動。
+- `verify-application-entrypoints` 包含包 bin、可執行原始碼、直啟包的 demo wrapper 與未分類 demo 等非法 fixture（測試前置資料）。
 
-## 影响
+## 影響
 
-- 用户通过具名 profile 与有序 patch 更改 SDK 应用的插件组合，使用与其他所有 dsh 应用相同的安装与解析模型。
-- 自定义 profile 可以在不启用服务器模块 HMR 的情况下获得实时配置监视，只有显式覆盖配置项才会启用源码模块替换。
-- 完整 SDK 与 ACP profile 共享完整 base 应用和同一份策略与工具；`sdk-minimal` 拥有自己的显式独立清单，快照会呈现这些刻意采用的组装差异。
-- 增加 `@deepseek-ai/dsh` 会扩大 TypeScript 客户端的安装体积，换来确定的同版本运行时。
-- 受信任用户 patch 可以增加写入 stdout 的插件并破坏自己的协议流；随附 profile 保证纯净，不为任意第三方组合提供保证。
-- Python 打包普通 `dsh` profile 启动器，同时保留封闭原生运行时，wheel 用户无需系统 Node。
+- 使用者透過具名 profile 與有序 patch 更改 SDK 應用的外掛組合，使用與其他所有 dsh 應用相同的安裝與解析模型。
+- 自定義 profile 可以在不啟用伺服器模組 HMR 的情況下獲得即時設定監視，只有顯式覆蓋設定項才會啟用原始碼模組替換。
+- 完整 SDK 與 ACP profile 共享完整 base 應用和同一份策略與工具；`sdk-minimal` 擁有自己的顯式獨立清單，快照會呈現這些刻意採用的組裝差異。
+- 增加 `@deepseek-ai/dsh` 會擴大 TypeScript 用戶端的安裝體積，換來確定的同版本執行時。
+- 受信任使用者 patch 可以增加寫入 stdout 的外掛並破壞自己的協定流；隨附 profile 保證純淨，不為任意第三方組合提供保證。
+- Python 打包普通 `dsh` profile 啟動器，同時保留封閉原生執行時，wheel 使用者無需系統 Node。

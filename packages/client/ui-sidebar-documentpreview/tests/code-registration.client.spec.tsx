@@ -65,7 +65,7 @@ describe('code renderer registration', () => {
     await act(async () => { h.locale.setLocale('en') })
     expect(definition?.title()).toBe('Code')
     await act(async () => { h.locale.setLocale('zh') })
-    expect(definition?.title()).toBe('代码')
+    expect(definition?.title()).toBe('程式碼')
     await feature.dispose()
     expect(h.previews.getSnapshot()).toEqual([])
     expect(h.rt.slots.entries(SLOT)).toEqual([])

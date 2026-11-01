@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-将持久化的 schedule/change create 记录中 after、at、every 三个变体的已存 title 改为可选。
+將持久化的 schedule/change create 記錄中 after、at、every 三個變體的已存 title 改為可選。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -33,16 +33,16 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-在 title 出现之前写入的版本 1 Session 事件没有 title 成员，因此这些日志可以在没有该成员的情况下解码与折叠，而不会被拒绝。需要名称的读取方将缺失的 title 视为未命名任务。宿主任务记录仍然要求该成员：存储解码器拒绝没有它的已存任务，创建、更新与 schedule 工具也仍然要求它。
+在 title 出現之前寫入的版本 1 Session 事件沒有 title 成員，因此這些日誌可以在沒有該成員的情況下解碼與摺疊，而不會被拒絕。需要名稱的讀取方將缺失的 title 視為未命名任務。主機任務記錄仍然要求該成員：儲存解碼器拒絕沒有它的已存任務，建立、更新與 schedule 工具也仍然要求它。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-pnpm exec vitest run packages/schedule/schedule/tests：18 个文件、789 个测试通过。
+pnpm exec vitest run packages/schedule/schedule/tests：18 個檔案、789 個測試透過。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

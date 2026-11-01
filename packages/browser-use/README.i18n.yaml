@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/browser-use/README.md
 /:
   en: 7828318b1f33a9cc
-  zh: c717cb9b25765cfa
+  zh: c76f01be01c4d3b5
 /packages-browser-use:
   en: e361426b3627aa83
   zh: c7d75a83ba962803
 /packages-browser-use/summary:
   en: 5f716c82f5880031
-  zh: 0ac74cbb608bed38
+  zh: 751fd81f20ba9b3a
 /packages-browser-use/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-browser-use/packages:
   en: 2f9f23600f51f0a0
-  zh: 80d5faa88efc1008
+  zh: c69778f54fc3ff81
 /packages-browser-use/related-documentation:
   en: 6196ae1f5095358b
-  zh: ede54d56642b0e16
+  zh: 885b2c4d21825502
 /packages-browser-use/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

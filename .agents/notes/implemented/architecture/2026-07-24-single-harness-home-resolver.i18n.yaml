@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-24-single-harness-home-resolver.md
 /agent-note-one-harness-home-resolver:
   en: 4177acbdd51411da
-  zh: 53f10d4c54b431b2
+  zh: 3d61371c94968ce4
 /agent-note-one-harness-home-resolver/problem:
   en: fa4d3622fb18dd58
-  zh: 2b98640594c8344b
+  zh: f6e07dd551fdd0f2
 /agent-note-one-harness-home-resolver/decision:
   en: bbab99c7a1aae2fc
-  zh: 87453b98ca265699
+  zh: 9b36d1e4f41c0784
 /agent-note-one-harness-home-resolver/alternatives-considered:
   en: b1c9535540171d47
-  zh: 7df816d42945db94
+  zh: 65c6709854e6c9cc
 /agent-note-one-harness-home-resolver/consequences:
   en: 7d0f569b98feadf5
-  zh: 5c84624e7cc8d1d4
+  zh: a174ab65db37cf8b

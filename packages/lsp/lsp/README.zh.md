@@ -1,5 +1,5 @@
 ---
-description: "LSP 能力 seam（ctx.lsp）：按文件扩展名选择提供方、四种规范化的代码导航操作与结构化错误，供组合或扩展代码导航的用户与维护者阅读。"
+description: "LSP 能力 seam（ctx.lsp）：按副檔名選擇提供者、四種規範化的程式碼導航操作與結構化錯誤，供組合或擴充功能程式碼導航的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `dsh-lsp` 为 agent（智能体）提供语言服务器导航，包括定义、引用、实现与悬停文档。查询按文件扩展名选择已配置的提供方，并返回规范化结果与结构化错误，因此更换后端不会改变导航请求或模型可见的响应。导航只读，并刻意排除通用 JSON-RPC 访问、重命名、格式化、诊断与符号列表。本包必须与 `dsh-lsp-stdio` 等提供方及面向模型的 `dsh-tool-lsp` 组合；单独使用时不提供导航。
+使用 `dsh-lsp` 為 agent（智慧代理）提供語言伺服器導航，包括定義、引用、實作與懸停文件。查詢按副檔名選擇已設定的提供者，並返回規範化結果與結構化錯誤，因此更換後端不會改變導航請求或模型可見的回應。導航只讀，並刻意排除通用 JSON-RPC 存取、重新命名、格式化、診斷與符號列表。本包必須與 `dsh-lsp-stdio` 等提供者及面向模型的 `dsh-tool-lsp` 組合；單獨使用時不提供導航。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-挂载语言服务器提供方与 `lsp` 工具，即可为 agent 提供文本搜索无法可靠给出的、基于语义的代码导航——区分同名函数、跟随导入别名、把接口连接到其实现，或读取推断出的类型。本包就是这些包所注册的服务；它自身不定义任何 UI、工具或提供方。
+掛載語言伺服器提供者與 `lsp` 工具，即可為 agent 提供文字搜尋無法可靠給出的、基於語義的程式碼導航——區分同名函式、跟隨匯入別名、把介面連線到其實作，或讀取推斷出的型別。本包就是這些包所註冊的服務；它自身不定義任何 UI、工具或提供者。
 
-### 何时选择
+### 何時選擇
 
-当部署希望模型可见的代码导航由语言服务器支撑时，选择此服务。它覆盖只读导航——定义、引用、实现与悬停——并刻意排除修改（重命名、code action、格式化）、符号列表与诊断。该服务提供方无关：本地 stdio 服务器、远程服务器与沙箱原生提供方都以相同方式注册，因此更换后端不会改变模型看到的内容或请求方式。
+當部署希望模型可見的程式碼導航由語言伺服器支撐時，選擇此服務。它覆蓋只讀導航——定義、引用、實作與懸停——並刻意排除修改（重新命名、code action、格式化）、符號列表與診斷。該服務提供者無關：本地 stdio 伺服器、遠端伺服器與沙箱原生提供者都以相同方式註冊，因此更換後端不會改變模型看到的內容或請求方式。
 
-### 组合导航栈
+### 組合導航棧
 
-seam 需要提供方与消费方才能发挥作用。最小组合挂载服务、stdio 提供方与工具：
+seam 需要提供者與消費方才能發揮作用。最小組合掛載服務、stdio 提供者與工具：
 
 ```yaml
 - name: '@deepseek-ai/dsh-fs-local'
@@ -43,98 +43,98 @@ seam 需要提供方与消费方才能发挥作用。最小组合挂载服务、
 - name: '@deepseek-ai/dsh-tool-lsp'
 ```
 
-服务器命令、扩展名映射与文件系统／子进程配对在提供方与工具包中配置；见 [dsh-lsp-stdio](../lsp-stdio/README.zh.md) 与 [dsh-tool-lsp](../tool-lsp/README.zh.md)。
+伺服器命令、副檔名對映與檔案系統／子程序配對在提供者與工具包中設定；見 [dsh-lsp-stdio](../lsp-stdio/README.zh.md) 與 [dsh-tool-lsp](../tool-lsp/README.zh.md)。
 
-### 四种操作
+### 四種操作
 
-每个查询在源文件的某个光标位置提出四个语义问题之一；结果是被规范化的位置或悬停内容，绝不是原始协议载荷。
+每個查詢在原始檔的某個游標位置提出四個語義問題之一；結果是被規範化的位置或懸停內容，絕不是原始協定載荷。
 
-| 操作 | agent 获得的内容 |
+| 操作 | agent 獲得的內容 |
 |---|---|
-| `goToDefinition` | 光标处符号的定义位置 |
-| `findReferences` | 所有引用，始终包含声明 |
-| `goToImplementation` | 具体实现位置 |
-| `hover` | 该符号的规范化文档，或没有 |
+| `goToDefinition` | 游標處符號的定義位置 |
+| `findReferences` | 所有引用，始終包含宣告 |
+| `goToImplementation` | 具體實作位置 |
+| `hover` | 該符號的規範化文件，或沒有 |
 
-`findReferences` 始终包含声明，因此影响分析绝不会遗漏定义位置。协议上的位置是从零开始的 UTF-16；面向模型的工具接受从 1 开始的光标坐标并自行转换。
+`findReferences` 始終包含宣告，因此影響分析絕不會遺漏定義位置。協定上的位置是從零開始的 UTF-16；面向模型的工具接受從 1 開始的游標座標並自行轉換。
 
-### 失败与恢复
+### 失敗與恢復
 
-当没有注册的提供方处理该文件扩展名时，查询会以结构化错误 `LSP_UNAVAILABLE` 失败——为该扩展名添加提供方，或查询受支持的文件。无效或冲突的提供方注册会在任何路由发布前以 `LSP_INVALID_PROVIDER` 或 `LSP_CONFLICT` 失败；对已释放提供方的查询以 `LSP_DISPOSED` 失败。消费方捕获 `LspError` 并按稳定的 `code` 路由；经由工具，这些会呈现为模型可读的错误结果。
+當沒有註冊的提供者處理該副檔名時，查詢會以結構化錯誤 `LSP_UNAVAILABLE` 失敗——為該副檔名新增提供者，或查詢受支援的檔案。無效或衝突的提供者註冊會在任何路由釋出前以 `LSP_INVALID_PROVIDER` 或 `LSP_CONFLICT` 失敗；對已釋放提供者的查詢以 `LSP_DISPOSED` 失敗。消費方捕捉 `LspError` 並按穩定的 `code` 路由；經由工具，這些會呈現為模型可讀的錯誤結果。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释 seam 背后的设计决策并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋 seam 背後的設計決策並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **能力 seam，Service Definition 角色。** 本包拥有 `ctx.lsp` 与提供方注册表；提供方注册的是能力而非工具，`dsh-tool-lsp` 是面向模型表层的唯一 owner。
-- **原子注册。** `registerProvider()` 在变更前验证并检查全部冲突：无效或冲突的注册不会发布任何内容，其 disposer 会一并释放 id 与全部扩展名保留。
-- **与顺序无关的选择。** `query()` 按文件的最终扩展名（规范化为小写、以点开头的形式）路由；注册与 HMR（热模块替换）顺序绝不会改变路由。language id 只用于同步临时文档，绝不参与选择。
-- **封闭的词汇。** 四种操作的联合是封闭的——新增操作是跨 seam、提供方与工具的编译期强制变更。没有 JSON-RPC 逃生口，且每个请求字段都必填，因此不存在 `resolve()` 步骤。
-- **提供方拥有的工作区坐标。** 位置结果携带提供方的规范工作区 URI，消费方据此在执行世界的命名空间内相对化文件 URI，而不是应用宿主平台路径规则。
+- **能力 seam，Service Definition 角色。** 本包擁有 `ctx.lsp` 與提供者註冊表；提供者註冊的是能力而非工具，`dsh-tool-lsp` 是面向模型表層的唯一 owner。
+- **原子註冊。** `registerProvider()` 在變更前驗證並檢查全部衝突：無效或衝突的註冊不會發布任何內容，其 disposer 會一併釋放 id 與全部副檔名保留。
+- **與順序無關的選擇。** `query()` 按檔案的最終副檔名（規範化為小寫、以點開頭的形式）路由；註冊與 HMR（熱模組替換）順序絕不會改變路由。language id 只用於同步臨時文件，絕不參與選擇。
+- **封閉的詞彙。** 四種操作的聯合是封閉的——新增操作是跨 seam、提供者與工具的編譯期強制變更。沒有 JSON-RPC 逃生口，且每個請求欄位都必填，因此不存在 `resolve()` 步驟。
+- **提供者擁有的工作區座標。** 位置結果攜帶提供者的規範工作區 URI，消費方據此在執行世界的名稱空間內相對化檔案 URI，而不是應用主機平臺路徑規則。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`Lsp` 服务、`registerProvider`／`query`、`finalExtension`、`LspError` code |
-| [`src/types.ts`](src/types.ts) | seam 词汇：请求、结果、提供方与服务约定 |
-| [`src/brand.ts`](src/brand.ts) | `LspProviderId` 品牌化 id 类型与工厂 |
-| — | 不发布运行时不变式伴生入口；提供方 id 与扩展名路由属于以原子方式更新的私有状态；该 seam 既不公开可枚举快照，也不公开可供独立比较的生命周期事件。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`Lsp` 服務、`registerProvider`／`query`、`finalExtension`、`LspError` code |
+| [`src/types.ts`](src/types.ts) | seam 詞彙：請求、結果、提供者與服務約定 |
+| [`src/brand.ts`](src/brand.ts) | `LspProviderId` 品牌化 id 型別與工廠 |
+| — | 不釋出執行時不變式伴生入口；提供者 id 與副檔名路由屬於以原子方式更新的私有狀態；該 seam 既不公開可列舉快照，也不公開可供獨立比較的生命週期事件。 |
 
-### 注册与选择生命周期
+### 註冊與選擇生命週期
 
-注册与释放通过 `ctx.effect()` 执行，因此提供方路由随注册 fiber 一同存活与消亡。`finalExtension()` 按两种路径分隔符切分，对没有扩展名的名称或点开头的 dotfile 返回 `''`，任何路由都不会匹配。`LspError` 扩展 `HarnessError`，携带稳定的 code（`LSP_INVALID_PROVIDER`、`LSP_CONFLICT`、`LSP_UNAVAILABLE`、`LSP_DISPOSED`、`LSP_UNSUPPORTED_OPERATION`、`LSP_MALFORMED_RESPONSE`），调用方据此路由，而不是解析 `message`。
+註冊與釋放透過 `ctx.effect()` 執行，因此提供者路由隨註冊 fiber 一同存活與消亡。`finalExtension()` 按兩種路徑分隔符切分，對沒有副檔名的名稱或點開頭的 dotfile 返回 `''`，任何路由都不會匹配。`LspError` 擴充功能 `HarnessError`，攜帶穩定的 code（`LSP_INVALID_PROVIDER`、`LSP_CONFLICT`、`LSP_UNAVAILABLE`、`LSP_DISPOSED`、`LSP_UNSUPPORTED_OPERATION`、`LSP_MALFORMED_RESPONSE`），呼叫方據此路由，而不是解析 `message`。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享的导航模型逐步进入提供方与工具。
+當包級約定不夠用時閱讀以下頁面。它們從共享的導航模型逐步進入提供者與工具。
 
-- [LSP 导航子系统](../../../docs/subsystems/lsp.zh.md)——操作、坐标、请求与结果，以及 `LspError` code。
-- [dsh-lsp-stdio](../lsp-stdio/README.zh.md)——注册到该 seam 的 stdio 提供方。
-- [dsh-tool-lsp](../tool-lsp/README.zh.md)——基于该 seam 的面向模型工具。
-- [lsp 组地图](../README.zh.md)——三个包的家族及其相关文档。
+- [LSP 導航子系統](../../../docs/subsystems/lsp.zh.md)——操作、座標、請求與結果，以及 `LspError` code。
+- [dsh-lsp-stdio](../lsp-stdio/README.zh.md)——註冊到該 seam 的 stdio 提供者。
+- [dsh-tool-lsp](../tool-lsp/README.zh.md)——基於該 seam 的面向模型工具。
+- [lsp 組地圖](../README.zh.md)——三個包的家族及其相關文件。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-tool-lsp` 间接影响；该工具拥有面向模型的 `lsp` schema、提示词指引与渲染结果，本注册表自身不贡献提示词或 schema。
+透過 `dsh-tool-lsp` 間接影響；該工具擁有面向模型的 `lsp` schema、提示詞指引與渲染結果，本註冊表自身不貢獻提示詞或 schema。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接失效；请求前缀变更由 `dsh-tool-lsp` 负责。
+不會直接失效；請求字首變更由 `dsh-tool-lsp` 負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义 seam 当前的范围。它们是包约束，不是任务积压。
+這些限制定義 seam 目前的範圍。它們是包約束，不是任務積壓。
 
-- **同一运行时内扩展名归属互斥**——两个提供方不能同时声明 `.ts`，即使 language id 不同；重叠会使注册失败。预期扩展是在注册之上增加部署配置的 selector，它可以在不把提供方选择加入模型输入的前提下放宽互斥保留。
-- **仅四种只读操作**——symbol 与 call hierarchy 因需要不同 schema 而推迟；diagnostics 需要独立的新鲜度与累积规则；修改（重命名、code action、格式化）需要独立工具，并集成预览、权限与写入策略。
-- **没有观测表层**——可用性只能通过运行 `query()` 并按抛出的 `LspError` code 路由来观测；没有提供方变更事件或能力状态查询。
+- **同一執行時內副檔名歸屬互斥**——兩個提供者不能同時宣告 `.ts`，即使 language id 不同；重疊會使註冊失敗。預期擴充功能是在註冊之上增加部署設定的 selector，它可以在不把提供者選擇加入模型輸入的前提下放寬互斥保留。
+- **僅四種只讀操作**——symbol 與 call hierarchy 因需要不同 schema 而推遲；diagnostics 需要獨立的新鮮度與累積規則；修改（重新命名、code action、格式化）需要獨立工具，並整合預覽、權限與寫入策略。
+- **沒有觀測表層**——可用性只能透過執行 `query()` 並按丟擲的 `LspError` code 路由來觀測；沒有提供者變更事件或能力狀態查詢。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/api/terminal-controller/README.md
 /:
   en: 6a19f6d3fdfe0db2
-  zh: a361afe6b8cd3010
+  zh: cb18940272c5b489
 /deepseek-ai-dsh-api-terminal-controller:
   en: d5eb7912c65b4e26
   zh: 7deb2a8167a82c90
 /deepseek-ai-dsh-api-terminal-controller/summary:
   en: 3fea850fce8a2be1
-  zh: 9ac09edfef2261dc
+  zh: fb59a5abae3edec2
 /deepseek-ai-dsh-api-terminal-controller/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 1fa9a72d1ee045cc
+  zh: 50facf9b23b627cc
 /deepseek-ai-dsh-api-terminal-controller/use-this-package:
   en: 234403af4f95ea67
-  zh: d711c2e62d7d37f8
+  zh: d12fc8256273deaf
 /deepseek-ai-dsh-api-terminal-controller/understand-the-implementation:
   en: c590a010a7da6e8a
-  zh: 7aa93c952558ca38
+  zh: fb4c1063cec7a14e
 /deepseek-ai-dsh-api-terminal-controller/further-exploration:
   en: ed95aefc979326e6
-  zh: 62309c59543f8664
+  zh: 141db959e8747a0d
 /deepseek-ai-dsh-api-terminal-controller/model-experience:
   en: 2c52eec781441d2a
-  zh: 35a7c88f180f74a1
+  zh: 12246298894f1481
 /deepseek-ai-dsh-api-terminal-controller/model-experience/kv-cache-effect:
   en: 507d3b3b80596fdc
-  zh: 4659007c4671afdc
+  zh: 526cb0f434a01e93
 /deepseek-ai-dsh-api-terminal-controller/known-limitations-and-deferred-work:
   en: 6af6663b852441db
-  zh: 244ed7729cae8d81
+  zh: 41ac5c317dd2ba8d
 /deepseek-ai-dsh-api-terminal-controller/known-limitations-and-deferred-work/dev-note:
   en: 2acda84e5b9a3ce2
-  zh: f86e92da1c66ffff
+  zh: ada0bea62bc6d2d8

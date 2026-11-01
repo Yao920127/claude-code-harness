@@ -1,5 +1,5 @@
 ---
-description: "goal 组地图：每会话一个持久的完成目标，以及模型工具、用户命令与自动续行，供浏览本组的用户与维护者阅读。"
+description: "goal 組地圖：每工作階段一個持久的完成目標，以及模型工具、使用者命令與自動續行，供瀏覽本組的使用者與維護者閱讀。"
 kind: "package-group"
 ---
 
@@ -9,44 +9,44 @@ kind: "package-group"
 
 ## 概述
 
-goal 组让一个 agent（智能体）会话在重启、恢复和 fork 后继续追求一个持久的完成目标。agent 可以创建和更新该目标，用户也可以用 `/goal` 直接检查或控制它，而不消耗模型轮次。可选的续行包可以让进行中的工作连续执行多个 Round。每个会话只有一个当前目标，该目标记录完成状态而不调度工作；因此，自动续行必须单独启用。
+goal 組讓一個 agent（智慧代理）工作階段在重新啟動、恢復和 fork 後繼續追求一個持久的完成目標。agent 可以建立和更新該目標，使用者也可以用 `/goal` 直接檢查或控制它，而不消耗模型輪次。可選的續行包可以讓進行中的工作連續執行多個 Round。每個工作階段只有一個目前目標，該目標記錄完成狀態而不排程工作；因此，自動續行必須單獨啟用。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`goal`](goal/README.zh.md) | 每个会话一个持久目标：创建、编辑、暂停、恢复、完成、阻塞和清除 | `ctx.goals` |
-| [`tool-goal`](tool-goal/README.zh.md) | 模型工具 `get_goal`、`create_goal`、`update_goal` | 注册到 `ctx.tools` |
-| [`command-goal`](command-goal/README.zh.md) | UI 命令平面中的用户 `/goal` 命令 | 注册到 `ctx.commands` |
-| [`goal-round-driver`](goal-round-driver/README.zh.md) | 自动续行：把进行中的目标变成连续的 Round | 无服务键 |
+| [`goal`](goal/README.zh.md) | 每個工作階段一個持久目標：建立、編輯、暫停、恢復、完成、阻塞和清除 | `ctx.goals` |
+| [`tool-goal`](tool-goal/README.zh.md) | 模型工具 `get_goal`、`create_goal`、`update_goal` | 註冊到 `ctx.tools` |
+| [`command-goal`](command-goal/README.zh.md) | UI 命令平面中的使用者 `/goal` 命令 | 註冊到 `ctx.commands` |
+| [`goal-round-driver`](goal-round-driver/README.zh.md) | 自動續行：把進行中的目標變成連續的 Round | 無服務鍵 |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [目标子系统](../../docs/subsystems/goal.zh.md)——目标类型、持久的 `goal/change` 事件与生成的服务 API。
-- [生成的工具目录](../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)——模型接收的三个目标工具 schema。
-- [生成的配置目录](../../docs/config-catalog.zh.md#deepseek-aidsh-goal)——目标服务的每个受支持配置字段。
-- [目标领域 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.zh.md)——领域设计及其决策。
+- [目標子系統](../../docs/subsystems/goal.zh.md)——目標型別、持久的 `goal/change` 事件與生成的服務 API。
+- [生成的工具目錄](../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)——模型接收的三個目標工具 schema。
+- [生成的設定目錄](../../docs/config-catalog.zh.md#deepseek-aidsh-goal)——目標服務的每個受支援設定欄位。
+- [目標領域 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-persisted-same-session-goal-domain.zh.md)——領域設計及其決策。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

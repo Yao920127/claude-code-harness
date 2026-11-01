@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-28-ci-node-compile-cache-data-disk.md
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp:
   en: 52bb1466b8f7f8fe
-  zh: fa7c282d3d207e53
+  zh: 5ad01af879f55ba4
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/problem:
   en: 3efe58882ca81bf7
-  zh: 14f802e97e26f03d
+  zh: 35671bc6274b8a29
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/decision:
   en: cb66e6c4ad73b50b
-  zh: 43540cec116e342a
+  zh: 248b978dc9a88f24
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/verification:
   en: e23de17356f97224
-  zh: b28bcafb4d1a72ad
+  zh: d475d22a4725fa6a
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/alternatives-considered:
   en: 6119e2aff3b6be5a
-  zh: e01a6c669a9ec6aa
+  zh: 2180c0e1bcde3232
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/alternatives-considered/why-not-disable-the-compile-cache-entirely:
   en: cee8de5b45031309
-  zh: 6ce10a304e63bdbb
+  zh: b4635dfde0872b28
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/alternatives-considered/why-not-add-node-compile-cache-to-the-dsh-residue-sweep:
   en: 7e06d9c4df7a9f56
-  zh: f3151fe2671fd91e
+  zh: 91abf73605856926
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/alternatives-considered/why-not-job-level-env-or-gate-step-env-only:
   en: 4ba6c9a14bafbc80
-  zh: 410149f4a3e930e6
+  zh: f9780148ad40472f
 /agent-note-redirect-the-node-compile-cache-to-the-data-volume-runner-temp/consequences:
   en: 083e2665e1550111
-  zh: 70560c09ca2b3750
+  zh: 825240a93c7e960f

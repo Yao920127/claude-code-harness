@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-09-headless-machine-readable-run-surface.md
 /agent-note-headless-machine-readable-run-surface:
   en: bcf2251478004e35
-  zh: 70ade47c837c6bab
+  zh: c037c6335dacf372
 /agent-note-headless-machine-readable-run-surface/problem:
   en: 9d2c64ed47b82129
-  zh: bb0de126368e9f07
+  zh: a898570e80fc3a23
 /agent-note-headless-machine-readable-run-surface/decision:
   en: ed08acff9c4ea030
-  zh: 484c2646de4aa5d8
+  zh: 1a4dee9ee208c1f7
 /agent-note-headless-machine-readable-run-surface/decision/command-line-contract:
   en: 59470d5c2eba0a57
-  zh: 342c1ac9042c6b46
+  zh: 5f36f3038c9fb0dc
 /agent-note-headless-machine-readable-run-surface/decision/event-stream:
   en: b6837e3de1305559
-  zh: 183956da3319a126
+  zh: 42122ab40881e92c
 /agent-note-headless-machine-readable-run-surface/decision/session-identity:
   en: ebb2c5da4ea076a9
-  zh: a706416d290e7424
+  zh: e32505309df67c82
 /agent-note-headless-machine-readable-run-surface/consequences:
   en: 1ba14087f533dd8e
-  zh: 66f4aa9d63a0da23
+  zh: fc7859ba58e34b18
 /agent-note-headless-machine-readable-run-surface/alternatives-considered:
   en: 42f321bd399f906e
-  zh: 3b13791afa256781
+  zh: e3686d3f27ccd417

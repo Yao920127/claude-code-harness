@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-subagent/README.md
 /:
   en: ff1b1fbd0d7f629b
-  zh: c68a59640e73c0ce
+  zh: cc2824885b939da0
 /deepseek-ai-dsh-client-ui-subagent:
   en: 930db612ece65ad4
   zh: ad7e9d9afb4545ac
 /deepseek-ai-dsh-client-ui-subagent/summary:
   en: 50f267d55833a683
-  zh: 89d6b827576baa8b
+  zh: d15ae899105302db
 /deepseek-ai-dsh-client-ui-subagent/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-subagent/use-this-package:
   en: 06f6bac3153361f5
-  zh: e8b23941cbd16036
+  zh: 822293c221f128e9
 /deepseek-ai-dsh-client-ui-subagent/use-this-package/browsing-the-tree:
   en: 3508631091820123
-  zh: ec7da9e5bedb22ba
+  zh: b433ab238c2d1e2d
 /deepseek-ai-dsh-client-ui-subagent/use-this-package/continuing-a-conversation:
   en: 876e7152c8b9c4a6
-  zh: f89f5e2a812e8451
+  zh: b73f2b1d82827295
 /deepseek-ai-dsh-client-ui-subagent/use-this-package/the-reference-source:
   en: 6a5f91b7dfcefafe
-  zh: 2d11441952cfea53
+  zh: 5889bddc7ca2eb69
 /deepseek-ai-dsh-client-ui-subagent/understand-the-implementation:
   en: 8dc3c556cd57bdd8
-  zh: f5c86a690bba7f7d
+  zh: b093955ebece6b7a
 /deepseek-ai-dsh-client-ui-subagent/understand-the-implementation/catalog-derivation:
   en: 5e1c83ef8eb26c52
-  zh: f5be8f1e78c74859
+  zh: 97db1c7932ebd954
 /deepseek-ai-dsh-client-ui-subagent/understand-the-implementation/duration-completion-and-tokens:
   en: b817e9907392f59c
-  zh: e42feb97d572a989
+  zh: 6f42687a845ad783
 /deepseek-ai-dsh-client-ui-subagent/understand-the-implementation/composer-election:
   en: 1c15af4dd7c0b791
-  zh: f789737ab4dd8cb2
+  zh: 398d2d813f1b6d61
 /deepseek-ai-dsh-client-ui-subagent/further-exploration:
   en: 3b9b3cb4ad8f65f6
-  zh: 63a2c10a4613cca1
+  zh: f5571c8d455e9b6e
 /deepseek-ai-dsh-client-ui-subagent/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-client-ui-subagent/model-experience/subagent-label-text-in-the-user-prompt:
   en: 7207881f1c032278
-  zh: 911d6e8b319da21a
+  zh: c1783246669f2446
 /deepseek-ai-dsh-client-ui-subagent/model-experience/subagent-label-text-in-the-user-prompt/what-the-model-sees:
   en: 5688696ee061a0e1
-  zh: 7199ef8cb8697960
+  zh: 15e157489bb01b3f
 /deepseek-ai-dsh-client-ui-subagent/model-experience/subagent-label-text-in-the-user-prompt/token-effect:
   en: bf3c483598710d54
-  zh: 32742fbb880db1b2
+  zh: 3c60f635df9ccd99
 /deepseek-ai-dsh-client-ui-subagent/model-experience/subagent-label-text-in-the-user-prompt/kv-cache-effect:
   en: de2762a99572475f
-  zh: 9b41107ad14ebf8a
+  zh: 48d37cbc01a19cb9
 /deepseek-ai-dsh-client-ui-subagent/known-limitations-and-deferred-work:
   en: ee310ff3cd487639
-  zh: 23793aa1c28a23af
+  zh: 0153aac399ec1376
 /deepseek-ai-dsh-client-ui-subagent/known-limitations-and-deferred-work/dev-note:
   en: 3dd148cecbb1a4df
-  zh: 626cc5ed9f65c72a
+  zh: 86769f19fef77190

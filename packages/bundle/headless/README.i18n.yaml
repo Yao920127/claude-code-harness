@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/bundle/headless/README.md
 /:
   en: 68ff17b596cbc6aa
-  zh: 8c6f3d309403ba81
+  zh: 2124af700b652556
 /deepseek-ai-dsh-headless:
   en: 605b67ee9f21d085
   zh: df2687a69f362493
 /deepseek-ai-dsh-headless/summary:
   en: 2c31f2cf129ed020
-  zh: 2b34e3640b011475
+  zh: adf84e23f4e3b1ec
 /deepseek-ai-dsh-headless/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-headless/use-this-package:
   en: 4447012f4c84100d
-  zh: faf579ae9f04c096
+  zh: a1c213806d9da4fc
 /deepseek-ai-dsh-headless/use-this-package/running-a-one-shot-task:
   en: 76a22e98d2b3cc2f
-  zh: c9eb624609b8cc32
+  zh: 6ab701e037ccdb94
 /deepseek-ai-dsh-headless/use-this-package/choosing-the-session-identity:
   en: dbaa2fac63910a4c
-  zh: 4fd5c17815ca444b
+  zh: 1926e7359fee5fa5
 /deepseek-ai-dsh-headless/use-this-package/machine-readable-output:
   en: 2804a96e88857b16
-  zh: fe20dc0fb9962785
+  zh: 7c342277bff089b0
 /deepseek-ai-dsh-headless/use-this-package/when-to-use-it:
   en: 5262b93dcef0d489
-  zh: 1638965b2aabcd38
+  zh: d90384a1f27e3774
 /deepseek-ai-dsh-headless/use-this-package/help-and-task-errors:
   en: ecd381558cf7b0e7
-  zh: a351efbf4a1a2ac5
+  zh: 45730094c30d6c46
 /deepseek-ai-dsh-headless/understand-the-implementation:
   en: be1b73a6d0ee3902
-  zh: bdba099685d68b27
+  zh: 47c4b756083d0293
 /deepseek-ai-dsh-headless/understand-the-implementation/run-flow:
   en: 2f2adf0c346c6c1b
-  zh: f1e988c7e597a852
+  zh: 5e0d5a619a9f5d41
 /deepseek-ai-dsh-headless/understand-the-implementation/patch-surface-over-base:
   en: a22752c052878579
-  zh: 1e42c946d8673eeb
+  zh: 464d16d3f4a4b12a
 /deepseek-ai-dsh-headless/understand-the-implementation/exit-mapping:
   en: cc6c485a42d40d28
-  zh: c57775d9319d8dfd
+  zh: ed7320c63b11b68b
 /deepseek-ai-dsh-headless/understand-the-implementation/source-map:
   en: 20a37f62e58b3ddb
-  zh: ede1fb8cfbae7a0e
+  zh: 696b6994dac447f1
 /deepseek-ai-dsh-headless/understand-the-implementation/invariant-ownership:
   en: 329f170dec4b2279
-  zh: bb40f8beda5b3a1c
+  zh: 21566137640da6ff
 /deepseek-ai-dsh-headless/further-exploration:
   en: 65aebf0f8ab3047c
-  zh: 85616d3859073c4b
+  zh: 755c69c98716720a
 /deepseek-ai-dsh-headless/model-experience:
   en: c5a0991833f64dd7
-  zh: 46f9feb255778f11
+  zh: 016011710ac0177e
 /deepseek-ai-dsh-headless/model-experience/kv-cache-effect:
   en: 0b0f74b412c7c6d8
-  zh: 6e8f918d0c4bf342
+  zh: 8aa2337e79719b6e
 /deepseek-ai-dsh-headless/known-limitations-and-deferred-work:
   en: b2df65836d53ba03
-  zh: 82a56dc1255a0c3b
+  zh: ace0ef4263e6ab22
 /deepseek-ai-dsh-headless/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

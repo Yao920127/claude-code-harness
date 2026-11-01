@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-workspace-file-read-authority.md
 /agent-note-workspace-file-read-authority:
   en: 7ca22246a308d511
-  zh: c51c7343db9c8cfa
+  zh: 76d29708adc120a4
 /agent-note-workspace-file-read-authority/problem:
   en: ee5703dcce5d81c5
-  zh: 6c1aec04723d211b
+  zh: 3a819ae7973cd1a1
 /agent-note-workspace-file-read-authority/decision:
   en: 92dbdf6087e00f04
-  zh: 2c8720a081d492f9
+  zh: 7c259043508f496f
 /agent-note-workspace-file-read-authority/alternatives-considered:
   en: 329e575be02d7392
-  zh: a78f428b36d40f59
+  zh: c8502a86b96964bc
 /agent-note-workspace-file-read-authority/consequences:
   en: 5596ccd54a474e24
-  zh: d31721c8d39b7fdc
+  zh: 5011221805c6e370

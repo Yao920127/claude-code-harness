@@ -1,125 +1,125 @@
-# Agent Note: 打开大型 Session 的必需 CI 性能 gate
+# Agent Note: 開啟大型 Session 的必需 CI 效能 gate
 
 Status: implemented
 
 [English](2026-09-04-session-open-performance-gate.md) | 中文
 
-## 问题
+## 問題
 
-Session format v2 的推出改变了两条成本随模型输出增长的路径：JSONL backend 迁移并发布 released-v0 log，Client fold 每个已结算回复中嵌入的紧凑 stream。两条路径都没有可执行的性能检查，因此首次打开在 127,400 事件的合成 log 上从约 35 ms 增长到约 5 s（在 575,000 chunk 的真实 log 上从约 0.3 s 增长到 26 s，峰值 RSS 2.7 GB，并在 512 MB 堆限制下耗尽堆），Client fold 也随流式 delta 数而不是紧凑记录数线性增长，这些退化未被察觉地进入了 master。
+Session format v2 的推出改變了兩條成本隨模型輸出增長的路徑：JSONL backend 遷移並行布 released-v0 log，Client fold 每個已結算回覆中嵌入的緊湊 stream。兩條路徑都沒有可執行的效能檢查，因此首次開啟在 127,400 事件的合成 log 上從約 35 ms 增長到約 5 s（在 575,000 chunk 的真實 log 上從約 0.3 s 增長到 26 s，峰值 RSS 2.7 GB，並在 512 MB 堆限制下耗盡堆），Client fold 也隨流式 delta 數而不是緊湊記錄數線性增長，這些退化未被察覺地進入了 master。
 
-只测 `SessionPersistence.open()` 不能稳定表达用户或 Host 等待的结果。工作可以在 `open()`、`SessionHandle.read()`、Session restore 与 projection 之间移动，而首次历史页和冷 Agent 恢复还包含这些操作之上的独立编排。操作结束时未经 GC 的一次 `heapUsed` 采样也不能区分仍被 Session 持有的数据与可回收的迁移临时对象。
+只測 `SessionPersistence.open()` 不能穩定表達使用者或 Host 等待的結果。工作可以在 `open()`、`SessionHandle.read()`、Session restore 與 projection 之間移動，而首次歷史頁和冷 Agent 恢復還包含這些操作之上的獨立編排。操作結束時未經 GC 的一次 `heapUsed` 取樣也不能區分仍被 Session 持有的資料與可回收的遷移臨時物件。
 
-## 决定
+## 決定
 
-Linux pull request 运行必需的 `node 24 / benchmarks` job，执行 `pnpm run check:ci:bench` → `pnpm run test:bench`。私有 `@deepseek-ai/dsh-benchmarks` workspace 拥有 benchmark 专属依赖。该命令先构建 workspace library 和 `benchmarks/.dsh-build/` 下的专用 worker，再调用 `vitest.bench.config.ts`。[标准托管运行器决策](2026-09-06-standard-hosted-benchmark-runner.zh.md)拥有运行器选择及外层 job 超时。该 job 单独运行 benchmark lane；Vitest 逐文件运行，只负责准备输入、启动测量子进程、汇总结果和执行预算断言。每条被计时的 Node CPU 路径都以纯 Node 执行编译后的 JavaScript，并移除 `NODE_OPTIONS` 且不加载 TypeScript runtime；workspace 裸导入因此从 `benchmarks/node_modules` 通过 package exports 解析到构建后的 `lib/` 入口。
+Linux pull request 執行必需的 `node 24 / benchmarks` job，執行 `pnpm run check:ci:bench` → `pnpm run test:bench`。私有 `@deepseek-ai/dsh-benchmarks` workspace 擁有 benchmark 專屬依賴。該命令先建置 workspace library 和 `benchmarks/.dsh-build/` 下的專用 worker，再呼叫 `vitest.bench.config.ts`。[標準託管執行器決策](2026-09-06-standard-hosted-benchmark-runner.zh.md)擁有執行器選擇及外層 job 超時。該 job 單獨執行 benchmark lane；Vitest 逐檔案執行，只負責準備輸入、啟動測量子程序、彙總結果和執行預算斷言。每條被計時的 Node CPU 路徑都以純 Node 執行編譯後的 JavaScript，並移除 `NODE_OPTIONS` 且不載入 TypeScript runtime；workspace 裸匯入因此從 `benchmarks/node_modules` 透過 package exports 解析到建置後的 `lib/` 入口。
 
-必需性能 gate 位于顶层 `benchmarks/`，按被测用户路径而非 package 归属组织。Host 文件使用 `*.bench.ts`，Client 面文件使用 `*.bench.client.ts`，场景专属 worker 与 fixture 留在对应 benchmark 旁且不带 benchmark 后缀。包内 `.perf.ts` 文件仍是非门禁诊断；`scripts/` 负责编排而不承载 benchmark case。
+必需效能 gate 位於頂層 `benchmarks/`，按被測使用者路徑而非 package 歸屬組織。Host 檔案使用 `*.bench.ts`，Client 面檔案使用 `*.bench.client.ts`，情境專屬 worker 與 fixture 留在對應 benchmark 旁且不帶 benchmark 字尾。包內 `.perf.ts` 檔案仍是非門禁診斷；`scripts/` 負責編排而不承載 benchmark case。
 
-Session benchmark 使用固定参数合成 released-v0 输入：200 轮，每轮 500 个 text delta 与 125 个 reasoning delta，共 127,400 个逻辑事件。输入使用 Zstandard，并固定 logical rows 的分组与 frame 拆分，使每次运行处理相同的事件、字节与 frame 分布。每个合成 turn 先开始 step，再追加 user surface 输入，使 V2-to-V3 migration 能预留受保护的 system head 而不重排历史。fixture 直接构造 released-v0 physical rows，不依赖当前 runtime 的历史 encoder；压缩以及所有被测读取和 migration 入口仍使用生产代码。输入在计时前写入每个样本独占的临时目录；benchmark 不使用录制的 Session。
+Session benchmark 使用固定參數合成 released-v0 輸入：200 輪，每輪 500 個 text delta 與 125 個 reasoning delta，共 127,400 個邏輯事件。輸入使用 Zstandard，並固定 logical rows 的分組與 frame 拆分，使每次執行處理相同的事件、位元組與 frame 分佈。每個合成 turn 先開始 step，再追加 user surface 輸入，使 V2-to-V3 migration 能預留受保護的 system head 而不重排歷史。fixture 直接建構 released-v0 physical rows，不依賴目前 runtime 的歷史 encoder；壓縮以及所有被測讀取和 migration 入口仍使用生產程式碼。輸入在計時前寫入每個樣本獨佔的臨時目錄；benchmark 不使用錄製的 Session。
 
-每个 Session endpoint 都针对用户生命周期中的两个时点运行。`first-open` 最初只有 released V0 generation，包含 migration；只读消费者不发布后继文件，可写 Agent resume 才会发布。测试准备阶段在计时外通过同一套生产 migration 生成一次 `post-upgrade-reopen`，再把未改动的 V0 前代和已发布的当前 generation 后继一起复制到每个样本目录。Reopen 样本使用全新进程，因此测量用户升级完成后的磁盘再次打开，不包含 migration 或进程内 cache。
+每個 Session endpoint 都針對使用者生命週期中的兩個時點執行。`first-open` 最初只有 released V0 generation，包含 migration；只讀消費者不釋出後繼檔案，可寫 Agent resume 才會釋出。測試準備階段在計時外透過同一套生產 migration 生成一次 `post-upgrade-reopen`，再把未改動的 V0 前代和已釋出的目前 generation 後繼一起複製到每個樣本目錄。Reopen 樣本使用全新程序，因此測量使用者升級完成後的磁碟再次開啟，不包含 migration 或程序內 cache。
 
-每个 access kind 与 endpoint 的样本都在全新、已编译的 Node 子进程中运行。模块加载、Host 服务初始化和 fixture 准备在测量开始前完成；测量进程不执行额外的预热解析。正常堆模式运行五个独立样本，报告全部样本及最小值、中位数和最大值，并以中位数执行各访问状态独立的固定预算。另一个子进程使用固定 128 MB old-space 上限运行同一路径，只判断能否完成；低堆限制引起的额外 GC 不进入正常时间基线。
+每個 access kind 與 endpoint 的樣本都在全新、已編譯的 Node 子程序中執行。模組載入、Host 服務初始化和 fixture 準備在測量開始前完成；測量程序不執行額外的預熱解析。正常堆模式執行五個獨立樣本，報告全部樣本及最小值、中位數和最大值，並以中位數執行各存取狀態獨立的固定預算。另一個子程序使用固定 128 MB old-space 上限執行同一路徑，只判斷能否完成；低堆限制引起的額外 GC 不進入正常時間基線。
 
-该 lane 包含三个独立的 Session 打开 benchmark，并保留 Client fold benchmark：
+該 lane 包含三個獨立的 Session 開啟 benchmark，並保留 Client fold benchmark：
 
-| Benchmark | 被测路径 | 时间指标 |
+| Benchmark | 被測路徑 | 時間指標 |
 |---|---|---|
-| 阶段剖面 | 分别为 first open 与 post-upgrade reopen 执行真实 persistence open、handle read、Session restore 与 projection | `openMs`、`readMs`、`sessionRestoreMs`、`projectionMs` 各自使用固定预算；只读 migration 归入 first-open `openMs`；后继编码、verify 与 publish 属于可写 Agent resume |
-| 首屏历史 | 两种 access kind 分别经 Host Session history controller 读取到首个分页 snapshot | First open 与 reopen 各有一个端到端预算；均包含 source stat、读取、Session restore、projection、分页与 snapshot 构造，first open 还包含 migration；两者都不包含 Gateway 网络传输、Client fold 或浏览器 paint |
-| Agent resume | 对两种 access kind 分别调用 `ctx.agents.resume()`，直到 Agent 创建、setup、发布与 loop 启动完成 | First open 与 reopen 各有一个端到端预算；两条路径都不与首屏历史串行，也不依赖它留下的 cache |
-| Client fold | 大小两个 v2 history window 经真实 `ConversationNodeAssembler` 与全部 Chat Definition fold | 大窗口的绝对时间与相对小窗口的缩放比各自使用固定预算 |
+| 階段剖面 | 分別為 first open 與 post-upgrade reopen 執行真實 persistence open、handle read、Session restore 與 projection | `openMs`、`readMs`、`sessionRestoreMs`、`projectionMs` 各自使用固定預算；只讀 migration 歸入 first-open `openMs`；後繼編碼、verify 與 publish 屬於可寫 Agent resume |
+| 首屏歷史 | 兩種 access kind 分別經 Host Session history controller 讀取到首個分頁 snapshot | First open 與 reopen 各有一個端到端預算；均包含 source stat、讀取、Session restore、projection、分頁與 snapshot 建構，first open 還包含 migration；兩者都不包含 Gateway 網路傳輸、Client fold 或瀏覽器 paint |
+| Agent resume | 對兩種 access kind 分別呼叫 `ctx.agents.resume()`，直到 Agent 建立、setup、釋出與 loop 啟動完成 | First open 與 reopen 各有一個端到端預算；兩條路徑都不與首屏歷史序列，也不依賴它留下的 cache |
+| Client fold | 大小兩個 v2 history window 經真實 `ConversationNodeAssembler` 與全部 Chat Definition fold | 大視窗的絕對時間與相對小視窗的縮放比各自使用固定預算 |
 
-阶段剖面显式调用各层正式入口，不复制 decode、migration、restore 或 projection 算法。首屏历史和 Agent resume 分别以新的 first-open 与 reopen 根目录运行真实上层入口，因此组件数据不冒充端到端结果，一个场景也不会给另一个场景预热进程或 Session cache。四阶段之和仅用于解释成本；首屏与 Agent resume 的端到端时间各自由外层时钟直接测量。
+階段剖面顯式呼叫各層正式入口，不複製 decode、migration、restore 或 projection 演算法。首屏歷史和 Agent resume 分別以新的 first-open 與 reopen 根目錄執行真實上層入口，因此元件資料不冒充端到端結果，一個情境也不會給另一個情境預熱程序或 Session cache。四階段之和僅用於解釋成本；首屏與 Agent resume 的端到端時間各自由外層時鐘直接測量。
 
-正常堆模式在 Host 初始化完成且 Session 尚未访问时执行固定的两轮显式 GC，记录起点内存；操作计时结束后，在该场景要求的长期对象仍明确可达时再次执行同样的 GC，再记录终点内存。Agent resume 场景在终点保留 Agent、Session、完整 events 与正常服务 cache，它的 `heapUsed` 增量是常驻 Session 内存预算的主指标。每个场景同时报告 `external`、`arrayBuffers`、GC 后 RSS 和 `process.resourceUsage().maxRSS`；128 MB 模式继续防止瞬时分配峰值被终点 GC 隐藏。显式 GC 时间不计入操作时间。
+正常堆模式在 Host 初始化完成且 Session 尚未存取時執行固定的兩輪顯式 GC，記錄起點記憶體；操作計時結束後，在該情境要求的長期物件仍明確可達時再次執行同樣的 GC，再記錄終點記憶體。Agent resume 情境在終點保留 Agent、Session、完整 events 與正常服務 cache，它的 `heapUsed` 增量是常駐 Session 記憶體預算的主指標。每個情境同時報告 `external`、`arrayBuffers`、GC 後 RSS 和 `process.resourceUsage().maxRSS`；128 MB 模式繼續防止瞬時分配峰值被終點 GC 隱藏。顯式 GC 時間不計入操作時間。
 
-一个不计时的小型 fixture 前置用例验证当前 migration、消息保留、V0 字节不变及后继再次打开。Worker 失败时保留 stderr 首尾各十行或致命堆错误，使准备阶段拒绝与预算超限可区分。计时性能用例不重复功能测试的内容断言，只要求目标调用完成并到达对应的可观察终点。Client fold benchmark 继续使用真实 `ConversationNodeAssembler` 与全部 Chat Definition，要求大窗口的绝对时间和相对小窗口的缩放比均低于固定预算。
+一個不計時的小型 fixture 前置案例驗證目前 migration、訊息保留、V0 位元組不變及後繼再次開啟。Worker 失敗時保留 stderr 首尾各十行或致命堆錯誤，使準備階段拒絕與預算超限可區分。計時效能案例不重複功能測試的內容斷言，只要求目標呼叫完成併到達對應的可觀察終點。Client fold benchmark 繼續使用真實 `ConversationNodeAssembler` 與全部 Chat Definition，要求大視窗的絕對時間和相對小視窗的縮放比均低於固定預算。
 
-预算按各测量终点分别校准。两次 Node 24.19 x64 CI 运行的中位数最大相差 5.2%；其 CPU 密集型壁钟时间是 Node 24.18 arm64 参考运行的 1.95–2.06 倍。除当前 generation `open` 和 first-open Agent resume 外，源码常量记录参考机器上的预期耗时；`ciTimeBudget()` 将其乘以实测的 2 倍 CI 时间系数和 1.25 倍波动余量。当前 generation `open` 使用标准运行器直接测得的 50 ms 预期值，仅乘以 1.25 倍余量，向上取整得到 63 ms 预算。First-open Agent resume 使用经审查的 562 ms 托管上限。GC 后增量堆与 Client fold 缩放预算不属于壁钟时间，因此只使用 1.25 倍余量。128 MB 完成性检查仍是独立的瞬时分配限制。由此得到的 first-open 时间上限、受限堆检查与 Client fold 上限都会拒绝已知退化。参考固定为 PR #3533 的合并结果，只用于校准和评审预算；CI 不 checkout 或执行历史仓库。预算是源码中的受评审常量，不由环境变量覆盖。
+預算按各測量終點分別校準。兩次 Node 24.19 x64 CI 執行的中位數最大相差 5.2%；其 CPU 密集型壁鐘時間是 Node 24.18 arm64 參考執行的 1.95–2.06 倍。除目前 generation `open` 和 first-open Agent resume 外，原始碼常數記錄參考機器上的預期耗時；`ciTimeBudget()` 將其乘以實測的 2 倍 CI 時間係數和 1.25 倍波動餘量。目前 generation `open` 使用標準執行器直接測得的 50 ms 預期值，僅乘以 1.25 倍餘量，向上取整得到 63 ms 預算。First-open Agent resume 使用經審查的 562 ms 託管上限。GC 後增量堆與 Client fold 縮放預算不屬於壁鐘時間，因此只使用 1.25 倍餘量。128 MB 完成性檢查仍是獨立的瞬時分配限制。由此得到的 first-open 時間上限、受限堆檢查與 Client fold 上限都會拒絕已知退化。參考固定為 PR #3533 的合併結果，只用於校準和評審預算；CI 不 checkout 或執行歷史儲存庫。預算是原始碼中的受評審常數，不由環境變數覆蓋。
 
-## 校准证据
+## 校準證據
 
-比较按用户生命周期正交，而不是按产物表示正交。两种实现的 first open 都接收完全相同的固定 V0 字节。Reopen 时，每种实现都在全新进程中读取自己认定的当前格式：栈前参考版本仍读取 V0，V2 实现则读取它已发布的 V2 后继。这里有意比较同一用户后续打开的体验，而不是让两个 codec 处理同一种数据结构。
+比較按使用者生命週期正交，而不是按產物表示正交。兩種實作的 first open 都接收完全相同的固定 V0 位元組。Reopen 時，每種實作都在全新程序中讀取自己認定的目前格式：棧前參考版本仍讀取 V0，V2 實作則讀取它已釋出的 V2 後繼。這裡有意比較同一使用者後續開啟的體驗，而不是讓兩個 codec 處理同一種資料結構。
 
-同一台 Node 24 参考机器上的五次样本中位数构成正反例：
+同一臺 Node 24 參考機器上的五次樣本中位數構成正反例：
 
-| Access kind | 实现 | 四阶段总时间 | 首屏历史 | Agent resume | Agent GC 后增量堆 | 128 MB old space |
+| Access kind | 實作 | 四階段總時間 | 首屏歷史 | Agent resume | Agent GC 後增量堆 | 128 MB old space |
 |---|---|---:|---:|---:|---:|---|
-| First open | 栈前参考版本 | 249.0 ms | 253.8 ms | 100.7 ms | 26.1 MB | 完成 |
-| First open | 重复 snapshot 退化实现 | 4,197.5 ms | 4,284.8 ms | 4,197.9 ms | 4.4 MB | 堆耗尽 |
-| Post-upgrade reopen | 栈前参考版本 | 251.1 ms | 253.8 ms | 100.7 ms | 26.1 MB | 完成 |
-| Post-upgrade reopen | 重复 snapshot 退化实现 | 49.2 ms | 50.4 ms | 43.8 ms | 4.5 MB | 完成 |
+| First open | 棧前參考版本 | 249.0 ms | 253.8 ms | 100.7 ms | 26.1 MB | 完成 |
+| First open | 重複 snapshot 退化實作 | 4,197.5 ms | 4,284.8 ms | 4,197.9 ms | 4.4 MB | 堆耗盡 |
+| Post-upgrade reopen | 棧前參考版本 | 251.1 ms | 253.8 ms | 100.7 ms | 26.1 MB | 完成 |
+| Post-upgrade reopen | 重複 snapshot 退化實作 | 49.2 ms | 50.4 ms | 43.8 ms | 4.5 MB | 完成 |
 
-栈前实现以 V0 作为当前格式，因此 first open 不改变磁盘表示；它的原生 V0 首屏历史与 Agent resume 测量同时适用于两个生命周期行。
+棧前實作以 V0 作為目前格式，因此 first open 不改變磁碟表示；它的原生 V0 首屏歷史與 Agent resume 測量同時適用於兩個生命週期行。
 
-PR #3640 的标准双 CPU 运行 (run 34023970384, job 101461539961)使用 Node 24.20.0 x64 和 Ubuntu 镜像 `20260831.293.1`。当前 generation `open` 的五次样本为 49.2、47.4、49.1、48.6 和 48.1 ms：中位数 48.6 ms，最大值 49.2 ms。取整后的 50 ms CI 预期值给出 63 ms 上限，不重复乘以 2 倍机器系数。日志标明两个可用 CPU，但未记录型号；它无法区分硬件变化与 Node 版本变化的影响。这是端点专属的运行器校准，不是应用优化或参考机器新测量的证据。其他每项 benchmark 均通过既有预算。确定性正反例在历史 30 ms 上限下拒绝实测中位数，在 63 ms 下接受它，拒绝合成的 75 ms reopen 中位数，并以未改变的 550 ms 上限拒绝合成的 4,000 ms 首次打开耗时。这些正反例验证预算执行，不代表测得新的退化。
+PR #3640 的標準雙 CPU 執行 (run 34023970384, job 101461539961)使用 Node 24.20.0 x64 和 Ubuntu 映像 `20260831.293.1`。目前 generation `open` 的五次樣本為 49.2、47.4、49.1、48.6 和 48.1 ms：中位數 48.6 ms，最大值 49.2 ms。取整後的 50 ms CI 預期值給出 63 ms 上限，不重複乘以 2 倍機器係數。日誌標明兩個可用 CPU，但未記錄型號；它無法區分硬體變化與 Node 版本變化的影響。這是端點專屬的執行器校準，不是應用最佳化或參考機器新測量的證據。其他每項 benchmark 均透過既有預算。確定性正反例在歷史 30 ms 上限下拒絕實測中位數，在 63 ms 下接受它，拒絕合成的 75 ms reopen 中位數，並以未改變的 550 ms 上限拒絕合成的 4,000 ms 首次開啟耗時。這些正反例驗證預算執行，不代表測得新的退化。
 
-一次冷 verifier 打包调整移除了运行时 workspace 模块加载，未改变这些预算或测量终点。在 macOS arm64、Node 24.18.0 上，verifier 打包前对同一份 127,400-event fixture 的首次 writable resume 耗时为 164.2、162.4、159.7、149.3、167.7 ms（中位数 162.4 ms）。通过 workspace build 打包 verifier 后为 119.8、120.9、121.9、122.3、121.8 ms（中位数 121.8 ms，降低 25%）。Retained heap 保持 5.4 MB；peak RSS 中位数从 144.9 变为 143.7 MB。Reopen 中位数为 27.5 和 27.1 ms，包含 128 MB completion check 的全部 16 项 Session 用例通过。CPU profile 将旧 verifier 的部分成本归因于模块解析和编译。隔离 package 的 built-worker 测试在旧 worker 上因无法解析 workspace import 而失败，在打包后的 worker 上通过，同时验证错误的 event count 会被拒绝。这些本地结果不能证明 Linux runner 耗时；这些用例使用 450 ms CI 上限。
+一次冷 verifier 打包調整移除了執行時 workspace 模組載入，未改變這些預算或測量終點。在 macOS arm64、Node 24.18.0 上，verifier 打包前對同一份 127,400-event fixture 的首次 writable resume 耗時為 164.2、162.4、159.7、149.3、167.7 ms（中位數 162.4 ms）。透過 workspace build 打包 verifier 後為 119.8、120.9、121.9、122.3、121.8 ms（中位數 121.8 ms，降低 25%）。Retained heap 保持 5.4 MB；peak RSS 中位數從 144.9 變為 143.7 MB。Reopen 中位數為 27.5 和 27.1 ms，包含 128 MB completion check 的全部 16 項 Session 案例透過。CPU profile 將舊 verifier 的部分成本歸因於模組解析和編譯。隔離 package 的 built-worker 測試在舊 worker 上因無法解析 workspace import 而失敗，在打包後的 worker 上透過，同時驗證錯誤的 event count 會被拒絕。這些本地結果不能證明 Linux runner 耗時；這些案例使用 450 ms CI 上限。
 
-托管运行 (run 34265057987, job 102192211510)包含已打包的 verifier，first-open Agent-resume 样本为 454.2、454.8、455.4、457.8 和 459.8 ms：中位数 455.4 ms，超过 450 ms。代码等价的前一次运行 (run 34263062688, job 102185561214)报告 436.2 ms 中位数；两个 head 之间只有请求历史双语 README 及其配对记录不同。经审查的上限为 562 ms，即 `floor(450 × 1.25)`，增加 24.89%，比观测到的 455.4 ms 中位数高 23.4%。五次新进程 M4 Pro / Node 24.19 样本范围为 150.07–158.22 ms，中位数为 152.57 ms。一次有界的主线程 profile 未发现明显的小型优化；它不包含 verifier 线程 CPU，也不能证明托管耗时变化的原因。对照在 450 ms 下拒绝已记录中位数，在 562 ms 下接受该值，并拒绝 600 ms。Verifier 打包优化、工作负载、其他时间预算、共享缩放和内存限制均保持不变。
+託管執行 (run 34265057987, job 102192211510)包含已打包的 verifier，first-open Agent-resume 樣本為 454.2、454.8、455.4、457.8 和 459.8 ms：中位數 455.4 ms，超過 450 ms。程式碼等價的前一次執行 (run 34263062688, job 102185561214)報告 436.2 ms 中位數；兩個 head 之間只有請求歷史雙語 README 及其配對記錄不同。經審查的上限為 562 ms，即 `floor(450 × 1.25)`，增加 24.89%，比觀測到的 455.4 ms 中位數高 23.4%。五次新程序 M4 Pro / Node 24.19 樣本範圍為 150.07–158.22 ms，中位數為 152.57 ms。一次有界的主執行緒 profile 未發現明顯的小型最佳化；它不包含 verifier 執行緒 CPU，也不能證明託管耗時變化的原因。對照在 450 ms 下拒絕已記錄中位數，在 562 ms 下接受該值，並拒絕 600 ms。Verifier 打包最佳化、工作負載、其他時間預算、共享縮放和記憶體限制均保持不變。
 
-校准后的源码预算如下：
+校準後的原始碼預算如下：
 
-| 测量项 | 参考机预期 | CI 预算 |
+| 測量項 | 參考機預期 | CI 預算 |
 |---|---:|---:|
 | First-open `open` | 220 ms | 550 ms |
-| 当前 generation `open` | 12 ms（历史参考值；CI 预期值：50 ms） | 63 ms |
+| 目前 generation `open` | 12 ms（歷史參考值；CI 預期值：50 ms） | 63 ms |
 | 完整 read | 8 ms | 20 ms |
 | Session restore | 24 ms | 60 ms |
 | Projection | 14 ms | 35 ms |
-| First-open 首屏历史 | 220 ms | 550 ms |
-| 当前 generation 首屏历史 | 48 ms | 120 ms |
-| First-open Agent resume | 180 ms（历史参考） | 562 ms |
-| 当前 generation Agent resume | 40 ms | 100 ms |
-| Agent GC 后增量堆 | 26.1 MB | 33 MB |
-| Client fold 绝对时间 | 16 ms | 40 ms |
-| Client fold delta 缩放比 | 2.5× | 3.125× |
+| First-open 首屏歷史 | 220 ms | 550 ms |
+| 目前 generation 首屏歷史 | 48 ms | 120 ms |
+| First-open Agent resume | 180 ms（歷史參考） | 562 ms |
+| 目前 generation Agent resume | 40 ms | 100 ms |
+| Agent GC 後增量堆 | 26.1 MB | 33 MB |
+| Client fold 絕對時間 | 16 ms | 40 ms |
+| Client fold delta 縮放比 | 2.5× | 3.125× |
 | 受限 old space | — | 128 MB |
 
-### 按索引遍历持久化 JSON 数组
+### 按索引遍歷持久化 JSON 陣列
 
-JSONL backend 在 memo 化前冻结解码后的 event graph。原生 decoder 与固定 migration catalog 产出无环 JSON graph，其中数组只包含索引值。按数字索引遍历数组仍会冻结每个嵌套对象和数组，同时避免枚举 compact stream 中 125,000 个文本条目和 124,600 个时间差值的字符串键。对象遍历继续保留自有的 `__proto__` 和 `constructor` 数据。Admission、关系校验、解码与冻结都仍在被测 open 终点前完成；浅层 `Object.isFrozen()` 结果不会跳过后代遍历。
+JSONL backend 在 memo 化前凍結解碼後的 event graph。原生 decoder 與固定 migration catalog 產出無環 JSON graph，其中陣列只包含索引值。按數字索引遍歷陣列仍會凍結每個巢狀物件和陣列，同時避免列舉 compact stream 中 125,000 個文字條目和 124,600 個時間差值的字串鍵。物件遍歷繼續保留自有的 `__proto__` 和 `constructor` 資料。Admission、關係驗證、解碼與凍結都仍在被測 open 終點前完成；淺層 `Object.isFrozen()` 結果不會跳過後代遍歷。
 
-在 Apple M4 Pro、Node 24.19.0 上，仅覆盖 open 的 CPU profile 将约 4.2 ms 归因于完整 event 冻结。独立的全新进程 V4 运行得到以下结果；末列恢复并重新构建完全相同的原始遍历，作为负对照：
+在 Apple M4 Pro、Node 24.19.0 上，僅覆蓋 open 的 CPU profile 將約 4.2 ms 歸因於完整 event 凍結。獨立的全新程序 V4 執行得到以下結果；末列恢復並重新建置完全相同的原始遍歷，作為負對照：
 
-| Reopen 测量项 | 原始遍历 | 索引遍历 | 恢复原始遍历 |
+| Reopen 測量項 | 原始遍歷 | 索引遍歷 | 恢復原始遍歷 |
 |---|---|---|---|
-| `open` 样本（ms） | 22.2, 22.4, 22.8, 22.6, 22.9 | 17.7, 18.4, 17.4, 17.8, 17.6 | 21.7, 22.4, 22.2, 21.7, 21.6 |
-| `open` 中位数（ms） | 22.6 | 17.7 | 21.7 |
-| 首屏历史中位数（ms） | 35.0 | 30.6 | 33.6 |
-| Agent resume 中位数（ms） | 30.5 | 26.8 | 29.8 |
+| `open` 樣本（ms） | 22.2, 22.4, 22.8, 22.6, 22.9 | 17.7, 18.4, 17.4, 17.8, 17.6 | 21.7, 22.4, 22.2, 21.7, 21.6 |
+| `open` 中位數（ms） | 22.6 | 17.7 | 21.7 |
+| 首屏歷史中位數（ms） | 35.0 | 30.6 | 33.6 |
+| Agent resume 中位數（ms） | 30.5 | 26.8 | 29.8 |
 | Agent 保留堆（MB） | 4.5 | 4.5 | 4.5 |
 
-每次运行的全部 17 个 Session 用例均通过，包括 128 MB 完成性检查。原始实现在本机仍低于 63 ms；恢复原始遍历展示了被移除的成本，而托管 benchmark 仍负责给出必须满足的预算结果。工作负载、时间上限、内存上限、冷进程准备与测量终点保持不变。JSONL owner 测试覆盖历史 V3 和当前读取中的嵌套不透明 JSON、修改拒绝及不可变 event 共享。这些测量确认了 reopen 改善，但没有确认一致的 first-open 改善或托管运行器耗时。
+每次執行的全部 17 個 Session 案例均透過，包括 128 MB 完成性檢查。原始實作在本機仍低於 63 ms；恢復原始遍歷展示了被移除的成本，而託管 benchmark 仍負責給出必須滿足的預算結果。工作負載、時間上限、記憶體上限、冷程序準備與測量終點保持不變。JSONL owner 測試覆蓋歷史 V3 和目前讀取中的巢狀不透明 JSON、修改拒絕及不可變 event 共享。這些測量確認了 reopen 改善，但沒有確認一致的 first-open 改善或託管執行器耗時。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**每次 CI checkout 历史提交并做相对比较。** 拒绝：历史 checkout 需要独立安装，旧版与当前版还可能把工作放在不同 API 阶段，增加时间、依赖和接口漂移。固定 workload 与经正反例校准的静态预算更容易复现和评审。
+**每次 CI checkout 歷史提交併做相對比較。** 拒絕：歷史 checkout 需要獨立安裝，舊版與目前版還可能把工作放在不同 API 階段，增加時間、依賴和介面漂移。固定 workload 與經正反例校準的靜態預算更容易復現和評審。
 
-**只测从 V0 first open。** 拒绝：migration 是一次性升级成本，不能防止进入稳定当前 generation 后的后续打开发生退化。两种 access kind 需要独立的测量与预算。
+**只測從 V0 first open。** 拒絕：migration 是一次性升級成本，不能防止進入穩定目前 generation 後的後續開啟發生退化。兩種 access kind 需要獨立的測量與預算。
 
-**只测四个组件阶段。** 拒绝：组件测量便于定位，但会遗漏 source stat、编排、分页和 snapshot 构造，也不能证明首屏路径整体仍然可用且足够快。
+**只測四個元件階段。** 拒絕：元件測量便於定位，但會遺漏 source stat、編排、分頁和 snapshot 建構，也不能證明首屏路徑整體仍然可用且足夠快。
 
-**只测首屏或 Agent resume 总时间。** 拒绝：端到端数字能保护结果，却不能指出退化来自存储、读取、Session restore 还是 projection；四阶段预算保留可操作的归因。
+**只測首屏或 Agent resume 總時間。** 拒絕：端到端數字能保護結果，卻不能指出退化來自儲存、讀取、Session restore 還是 projection；四階段預算保留可操作的歸因。
 
-**在生产实现内部添加细粒度计时桩。** 拒绝：这些桩会扩大生产接口并让 benchmark 与实现细节耦合。测试只使用既有服务和对象边界；无法由这些边界解释的成本保留在端到端结果中。
+**在生產實作內部新增細粒度計時樁。** 拒絕：這些樁會擴大生產介面並讓 benchmark 與實作細節耦合。測試只使用既有服務和物件邊界；無法由這些邊界解釋的成本保留在端到端結果中。
 
-**从 TypeScript 源码运行被测 worker。** 拒绝：源码 loader 会改变模块解析与启动行为，并使嵌套 worker 选择仅适用于源码的启动路径。Vitest 仍可作为不计时的编排层；每个被计时的 worker 都像纯 Node 消费方一样执行构建产物。
+**從 TypeScript 原始碼執行被測 worker。** 拒絕：原始碼 loader 會改變模組解析與啟動行為，並使巢狀 worker 選擇僅適用於原始碼的啟動路徑。Vitest 仍可作為不計時的編排層；每個被計時的 worker 都像純 Node 消費方一樣執行建置產物。
 
-**只用时间预算或只看 GC 后内存。** 拒绝：时间无法发现内存退化，终点存活内存也看不到迁移期间的瞬时爆发。正常堆的 GC 后增量与受限堆的完成性分别覆盖两类风险。
+**只用時間預算或只看 GC 後記憶體。** 拒絕：時間無法發現記憶體退化，終點存活記憶體也看不到遷移期間的瞬時爆發。正常堆的 GC 後增量與受限堆的完成性分別覆蓋兩類風險。
 
-**用真实录制语料做 benchmark。** 拒绝：语料 fixture 按策略保持小体量，录制材料不得成为 benchmark 输入，且其重新录制会静默移动 workload。
+**用真實錄制語料做 benchmark。** 拒絕：語料 fixture 按策略保持小體量，錄製材料不得成為 benchmark 輸入，且其重新錄製會靜默移動 workload。
 
-**把 benchmark 放进现有 gate 聚合中运行。** 拒绝：聚合在一个 runner 上并发运行各 gate，壁钟测量会继承邻居的 CPU 负载。
+**把 benchmark 放進現有 gate 聚合中執行。** 拒絕：聚合在一個 runner 上並行執行各 gate，壁鐘測量會繼承鄰居的 CPU 負載。
 
-**把每个跨包 gate 放在一个参与的产品 package 下。** 拒绝：Session 打开跨越 persistence、migration、projection、Host history 与 Agent resume；任选一个参与方都会形成误导性的归属和仅为 benchmark 增加的 package 依赖。仓库级目录拥有集成用户路径，包内诊断仍留在对应实现旁。
+**把每個跨包 gate 放在一個參與的產品 package 下。** 拒絕：Session 開啟跨越 persistence、migration、projection、Host history 與 Agent resume；任選一個參與方都會形成誤導性的歸屬和僅為 benchmark 增加的 package 依賴。儲存庫級目錄擁有整合使用者路徑，包內診斷仍留在對應實作旁。
 
-**把 benchmark case 放在 `scripts/` 下。** 拒绝：scripts 拥有命令、生成器与编排，而 benchmark case 拥有带类型的测试文件、worker、fixture、预算和生命周期清理。未来的报告或校准命令可以消费 `benchmarks/`，不需要把 case 移入其中。
+**把 benchmark case 放在 `scripts/` 下。** 拒絕：scripts 擁有命令、生成器與編排，而 benchmark case 擁有帶型別的測試檔案、worker、fixture、預算和生命週期清理。未來的報告或校準命令可以消費 `benchmarks/`，不需要把 case 移入其中。
 
-## 后果
+## 後果
 
-每个 pull request 多付出一个必需 Linux job；该 job 的 Session 部分运行多个短生命周期子进程，以换取冷 cache、独立 V8 heap、明确 GC 状态和可归因的失败。仓库级 benchmark 目录接受有意的跨包测试依赖，而不修改产品 package manifest。固定 Zstandard workload 同时覆盖事件规模与 frame 拓扑；first-open 测量保护一次性升级体验，reopen 测量防止后续打开退化，四阶段预算定位成本归属，首屏预算保护用户可见等待，Agent resume 预算与 GC 后增量保护完整冷恢复及常驻内存，128 MB 模式保护瞬时分配上限。
+每個 pull request 多付出一個必需 Linux job；該 job 的 Session 部分執行多個短生命週期子程序，以換取冷 cache、獨立 V8 heap、明確 GC 狀態和可歸因的失敗。儲存庫級 benchmark 目錄接受有意的跨包測試依賴，而不修改產品 package manifest。固定 Zstandard workload 同時覆蓋事件規模與 frame 拓撲；first-open 測量保護一次性升級體驗，reopen 測量防止後續開啟退化，四階段預算定位成本歸屬，首屏預算保護使用者可見等待，Agent resume 預算與 GC 後增量保護完整冷恢復及常駐記憶體，128 MB 模式保護瞬時分配上限。
 
-Session 与 Node-fold 场景不测量网络传输、浏览器渲染或真实录制 Session，也不是持续性能趋势系统。[前端性能预算](2026-09-06-frontend-performance-budgets.zh.md)拥有浏览器工作流测量。Node 或 runner 变化需要用同一 workload 重新采样并评审预算；修改业务实现时不得顺带放宽预算而不提供新的正反例数据。
+Session 與 Node-fold 情境不測量網路傳輸、瀏覽器渲染或真實錄制 Session，也不是持續效能趨勢系統。[前端效能預算](2026-09-06-frontend-performance-budgets.zh.md)擁有瀏覽器工作流測量。Node 或 runner 變化需要用同一 workload 重新取樣並評審預算；修改業務實作時不得順帶放寬預算而不提供新的正反例資料。

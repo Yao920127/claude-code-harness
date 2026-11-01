@@ -1,25 +1,25 @@
-- button "返回插件列表": 插件列表
-- heading "子智能体" [level=3]
-- paragraph: 设置子智能体的递归层级、数量和模型。
-- region "运行限制":
-  - heading "运行限制" [level=3]
-  - text: 最大递归深度
-  - button "最大递归深度说明"
-  - text: 已覆盖
-  - button "恢复默认"
-  - textbox "最大递归深度":
+- button "返回外掛列表": 外掛列表
+- heading "子智慧代理" [level=3]
+- paragraph: 設定子智慧代理的遞迴層級、數量和模型。
+- region "執行限制":
+  - heading "執行限制" [level=3]
+  - text: 最大遞迴深度
+  - button "最大遞迴深度說明"
+  - text: 已覆蓋
+  - button "恢復預設"
+  - textbox "最大遞迴深度":
     - /placeholder: ""
     - text: "2"
-  - text: 子智能体并行数量上限
-  - button "子智能体并行数量上限说明"
-  - text: 已覆盖
-  - button "恢复默认"
-  - textbox "子智能体并行数量上限":
+  - text: 子智慧代理並行數量上限
+  - button "子智慧代理並行數量上限說明"
+  - text: 已覆蓋
+  - button "恢復預設"
+  - textbox "子智慧代理並行數量上限":
     - /placeholder: ""
     - text: "12"
-- region "模型选择":
-  - heading "模型选择" [level=3]
-  - text: 允许 Agent 为子智能体选择模型
-  - switch "允许 Agent 为子智能体选择模型"
-  - paragraph: 关闭后，子智能体使用配置的默认模型或继承父 Agent 的模型；已选模型会保留。
-- button "保存" [disabled]
+- region "模型選擇":
+  - heading "模型選擇" [level=3]
+  - text: 允許 Agent 為子智慧代理選擇模型
+  - switch "允許 Agent 為子智慧代理選擇模型"
+  - paragraph: 關閉後，子智慧代理使用設定的預設模型或繼承父 Agent 的模型；已選模型會保留。
+- button "儲存" [disabled]

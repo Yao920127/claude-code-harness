@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-16-unified-model-input-controls.md
 /agent-note-unified-model-input-controls:
   en: a22f2dd1b73eb314
-  zh: 1f43526fa6af593a
+  zh: 39b5fb13b060c5eb
 /agent-note-unified-model-input-controls/problem:
   en: e28035e73033057d
-  zh: 262cf7551cdb783a
+  zh: 39b3f1ef75ea55ce
 /agent-note-unified-model-input-controls/decision:
   en: 6b4872a76d480c8a
-  zh: f833a14a48d2e9d7
+  zh: 446423081935c04c
 /agent-note-unified-model-input-controls/alternatives-considered:
   en: 83f8ffa39259a9f4
-  zh: e158cb5868c82d74
+  zh: 46f6904bed63710f
 /agent-note-unified-model-input-controls/consequences:
   en: 768bb77e3a4d72be
-  zh: 81080b075b0cc26c
+  zh: 771bac5b38e2af70

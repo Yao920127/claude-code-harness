@@ -36,7 +36,7 @@ test('empty input launches no verifier and returns no rows', async () => {
 test.skipIf(process.platform !== 'win32')('Unicode paths retain the same Windows trust result as individual inspection', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'signature-batch-'))
   t.onTestFinished(() => rm(root, { recursive: true, force: true }))
-  const path = join(root, "验证 ' 文件.exe")
+  const path = join(root, "驗證 ' 檔案.exe")
   await copyFile(join(process.env.SystemRoot!, 'System32', 'cmd.exe'), path)
   const expected = await inspectWindowsRuntimeSignature(path)
   assert.equal(expected.status, 'Valid')

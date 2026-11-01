@@ -84,7 +84,7 @@
             {
               "id": "deepseek-v4-flash",
               "name": "DeepSeek-V4-Flash",
-              "description": "快速响应",
+              "description": "快速回應",
               "reasoning": {
                 "efforts": [
                   {
@@ -106,7 +106,7 @@
             {
               "id": "deepseek-v4-pro",
               "name": "DeepSeek-V4-Pro",
-              "description": "复杂任务",
+              "description": "複雜任務",
               "reasoning": {
                 "efforts": [
                   {
@@ -189,11 +189,11 @@
     "value": [
       {
         "name": "compact",
-        "description": "fixture：压缩当前会话上下文"
+        "description": "fixture：壓縮目前工作階段上下文"
       },
       {
         "name": "echo",
-        "description": "fixture：回显参数",
+        "description": "fixture：回顯參數",
         "input": {
           "hint": "text to echo"
         }
@@ -273,22 +273,22 @@
               "lastUsed": null,
               "next": null
             },
-            "title": "Fixture 历史会话",
+            "title": "Fixture 歷史工作階段",
             "todos": [
               {
                 "content": "梳理需求",
                 "status": "completed"
               },
               {
-                "content": "实现 fixture 样本",
+                "content": "實作 fixture 樣本",
                 "status": "in_progress"
               },
               {
-                "content": "跑后台构建",
+                "content": "跑後臺建置",
                 "status": "in_progress"
               },
               {
-                "content": "浏览器验收",
+                "content": "瀏覽器驗收",
                 "status": "pending"
               }
             ],
@@ -500,7 +500,7 @@
       "agentId": "fx-alpha",
       "request": {
         "toolName": "dangerous_tool",
-        "reason": "fixture 常驻审批（可答：批准/拒绝后消失）"
+        "reason": "fixture 常駐審批（可答：批准/拒絕後消失）"
       }
     },
     {
@@ -513,52 +513,52 @@
           {
             "id": "harness-profile",
             "header": "偏好",
-            "question": "你现在更想招哪类 Agent/Harness 候选人？",
+            "question": "你現在更想招哪類 Agent/Harness 候選人？",
             "options": [
               {
-                "label": "工程落地型 (Recommended)",
-                "description": "更看重能直接做 runtime、tool executor、sandbox、trace 和线上问题排查。"
+                "label": "工程落實型 (Recommended)",
+                "description": "更看重能直接做 runtime、tool executor、sandbox、trace 和線上問題排查。"
               },
               {
-                "label": "研究潜力型",
-                "description": "更看重 Agent 理解、训练评测思路和长期成长空间。"
+                "label": "研究潛力型",
+                "description": "更看重 Agent 理解、訓練評測思路和長期成長空間。"
               },
               {
                 "label": "均衡型",
-                "description": "同时要求工程能力和 Agent 认知，但可能筛选门槛更高。"
+                "description": "同時要求工程能力和 Agent 認知，但可能篩選門檻更高。"
               }
             ]
           },
           {
             "id": "work-mode",
             "header": "方式",
-            "question": "你希望候选人优先展示哪种工作方式？",
+            "question": "你希望候選人優先展示哪種工作方式？",
             "options": [
               {
                 "label": "先做小型原型 (Recommended)",
-                "description": "用可运行结果尽快验证关键假设。"
+                "description": "用可執行結果儘快驗證關鍵假設。"
               },
               {
-                "label": "先写完整设计",
-                "description": "先收敛边界、协议和风险，再开始实现。"
+                "label": "先寫完整設計",
+                "description": "先收斂邊界、協定和風險，再開始實作。"
               }
             ]
           },
           {
             "id": "signals",
-            "header": "信号",
-            "question": "哪些面试信号最重要？",
-            "detail": "按当前招聘目标选择；跳过则视为不设偏好。",
+            "header": "訊號",
+            "question": "哪些面試訊號最重要？",
+            "detail": "按目前招聘目標選擇；跳過則視為不設偏好。",
             "multiSelect": true,
             "options": [
               {
-                "label": "系统设计"
+                "label": "系統設計"
               },
               {
-                "label": "代码质量"
+                "label": "程式碼品質"
               },
               {
-                "label": "Agent 产品判断"
+                "label": "Agent 產品判斷"
               }
             ]
           }
@@ -599,7 +599,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 51：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 51：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -637,7 +637,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "回答 51：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 51：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -671,7 +671,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "回答 51：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 51：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -750,7 +750,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 52：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 52：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -788,11 +788,11 @@
               "content": [
                 {
                   "type": "reasoning",
-                  "text": "思考过程 52：这是一段可折叠的 reasoning 内容。"
+                  "text": "思考過程 52：這是一段可摺疊的 reasoning 內容。"
                 },
                 {
                   "type": "text",
-                  "text": "回答 52：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 52：這是 fixture 生成的歷史回覆正文。"
                 },
                 {
                   "type": "tool-call",
@@ -832,7 +832,7 @@
                   "index": 0,
                   "block": {
                     "type": "reasoning",
-                    "text": "思考过程 52：这是一段可折叠的 reasoning 内容。"
+                    "text": "思考過程 52：這是一段可摺疊的 reasoning 內容。"
                   }
                 }
               },
@@ -853,7 +853,7 @@
                   "index": 1,
                   "block": {
                     "type": "text",
-                    "text": "回答 52：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 52：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -990,7 +990,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "工具结果已消化（turn 52）。"
+                  "text": "工具結果已消化（turn 52）。"
                 }
               ],
               "source": {
@@ -1024,7 +1024,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "工具结果已消化（turn 52）。"
+                    "text": "工具結果已消化（turn 52）。"
                   }
                 }
               },
@@ -1103,7 +1103,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 53：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 53：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -1141,7 +1141,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "回答 53：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 53：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -1175,7 +1175,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "回答 53：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 53：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -1254,7 +1254,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 54：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 54：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -1292,7 +1292,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "回答 54：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 54：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -1326,7 +1326,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "回答 54：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 54：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -1405,7 +1405,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 55：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 55：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -1443,11 +1443,11 @@
               "content": [
                 {
                   "type": "reasoning",
-                  "text": "思考过程 55：这是一段可折叠的 reasoning 内容。"
+                  "text": "思考過程 55：這是一段可摺疊的 reasoning 內容。"
                 },
                 {
                   "type": "text",
-                  "text": "回答 55：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 55：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -1481,7 +1481,7 @@
                   "index": 0,
                   "block": {
                     "type": "reasoning",
-                    "text": "思考过程 55：这是一段可折叠的 reasoning 内容。"
+                    "text": "思考過程 55：這是一段可摺疊的 reasoning 內容。"
                   }
                 }
               },
@@ -1502,7 +1502,7 @@
                   "index": 1,
                   "block": {
                     "type": "text",
-                    "text": "回答 55：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 55：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -1581,7 +1581,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 56：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 56：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -1619,7 +1619,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "回答 56：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 56：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -1653,7 +1653,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "回答 56：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 56：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -1732,7 +1732,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 57：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 57：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -1770,7 +1770,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "回答 57：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 57：這是 fixture 生成的歷史回覆正文。"
                 },
                 {
                   "type": "tool-call",
@@ -1810,7 +1810,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "回答 57：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 57：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -1947,7 +1947,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "工具结果已消化（turn 57）。"
+                  "text": "工具結果已消化（turn 57）。"
                 }
               ],
               "source": {
@@ -1981,7 +1981,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "工具结果已消化（turn 57）。"
+                    "text": "工具結果已消化（turn 57）。"
                   }
                 }
               },
@@ -2060,7 +2060,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 58：fixture 历史消息，用于翻页与渲染验收。"
+                "text": "問題 58：fixture 歷史訊息，用於翻頁與渲染驗收。"
               }
             ],
             "source": {
@@ -2121,11 +2121,11 @@
               "content": [
                 {
                   "type": "reasoning",
-                  "text": "思考过程 58：这是一段可折叠的 reasoning 内容。"
+                  "text": "思考過程 58：這是一段可摺疊的 reasoning 內容。"
                 },
                 {
                   "type": "text",
-                  "text": "回答 58：这是 fixture 生成的历史回复正文。"
+                  "text": "回答 58：這是 fixture 生成的歷史回覆正文。"
                 }
               ],
               "source": {
@@ -2159,7 +2159,7 @@
                   "index": 0,
                   "block": {
                     "type": "reasoning",
-                    "text": "思考过程 58：这是一段可折叠的 reasoning 内容。"
+                    "text": "思考過程 58：這是一段可摺疊的 reasoning 內容。"
                   }
                 }
               },
@@ -2180,7 +2180,7 @@
                   "index": 1,
                   "block": {
                     "type": "text",
-                    "text": "回答 58：这是 fixture 生成的历史回复正文。"
+                    "text": "回答 58：這是 fixture 生成的歷史回覆正文。"
                   }
                 }
               },
@@ -2259,7 +2259,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "用户字面量：# 不渲染 `code` [link](https://example.com)"
+                "text": "使用者字面量：# 不渲染 `code` [link](https://example.com)"
               }
             ],
             "source": {
@@ -2410,7 +2410,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 60：bash 样本。"
+                "text": "問題 60：bash 樣本。"
               }
             ],
             "source": {
@@ -2450,7 +2450,7 @@
                   "type": "tool-call",
                   "id": "fx-call-60",
                   "name": "bash",
-                  "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture\"}"
+                  "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture\"}"
                 }
               ],
               "source": {
@@ -2486,7 +2486,7 @@
                     "type": "tool-call",
                     "id": "fx-call-60",
                     "name": "bash",
-                    "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture\"}"
+                    "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture\"}"
                   }
                 }
               },
@@ -2528,7 +2528,7 @@
             "step": 0,
             "callId": "fx-call-60",
             "name": "bash",
-            "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture\"}"
+            "arguments": "{\"command\":\"ls -la\\necho done\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture\"}"
           }
         }
       },
@@ -2609,7 +2609,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 61：write 样本。"
+                "text": "問題 61：write 樣本。"
               }
             ],
             "source": {
@@ -2817,7 +2817,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 62：edit 样本。"
+                "text": "問題 62：edit 樣本。"
               }
             ],
             "source": {
@@ -2960,7 +2960,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "已编辑"
+                  "text": "已編輯"
                 }
               ],
               "isError": false
@@ -3025,7 +3025,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 63：write 样本。"
+                "text": "問題 63：write 樣本。"
               }
             ],
             "source": {
@@ -3168,7 +3168,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "已写入"
+                  "text": "已寫入"
                 }
               ],
               "isError": false
@@ -3233,7 +3233,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 64：edit 样本。"
+                "text": "問題 64：edit 樣本。"
               }
             ],
             "source": {
@@ -3376,7 +3376,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "已编辑"
+                  "text": "已編輯"
                 }
               ],
               "isError": false
@@ -3446,7 +3446,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 65：run_code 样本。"
+                "text": "問題 65：run_code 樣本。"
               }
             ],
             "source": {
@@ -3770,7 +3770,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 66：bash 样本。"
+                "text": "問題 66：bash 樣本。"
               }
             ],
             "source": {
@@ -3810,7 +3810,7 @@
                   "type": "tool-call",
                   "id": "fx-call-66",
                   "name": "bash",
-                  "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
+                  "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
                 }
               ],
               "source": {
@@ -3846,7 +3846,7 @@
                     "type": "tool-call",
                     "id": "fx-call-66",
                     "name": "bash",
-                    "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
+                    "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
                   }
                 }
               },
@@ -3888,7 +3888,7 @@
             "step": 0,
             "callId": "fx-call-66",
             "name": "bash",
-            "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 终端样本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
+            "arguments": "{\"command\":\"pnpm run check\",\"description\":\"fixture 終端樣本\",\"workdir\":\"/tmp/fixture/deep/nested\"}"
           }
         }
       },
@@ -3969,7 +3969,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 67：grep 样本。"
+                "text": "問題 67：grep 樣本。"
               }
             ],
             "source": {
@@ -4226,7 +4226,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 68：glob 样本。"
+                "text": "問題 68：glob 樣本。"
               }
             ],
             "source": {
@@ -4437,7 +4437,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 69：read 样本。"
+                "text": "問題 69：read 樣本。"
               }
             ],
             "source": {
@@ -4688,7 +4688,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 70：web_search 样本。"
+                "text": "問題 70：web_search 樣本。"
               }
             ],
             "source": {
@@ -4908,7 +4908,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 71：web_fetch 样本。"
+                "text": "問題 71：web_fetch 樣本。"
               }
             ],
             "source": {
@@ -5112,7 +5112,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 72：请完整列出全部一百条条目。"
+                "text": "問題 72：請完整列出全部一百條條目。"
               }
             ],
             "source": {
@@ -5150,7 +5150,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "条目 1：第一条。条目 2：第二条。条目 3：这一条写到一半被"
+                  "text": "條目 1：第一條。條目 2：第二條。條目 3：這一條寫到一半被"
                 }
               ],
               "source": {
@@ -5184,7 +5184,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "条目 1：第一条。条目 2：第二条。条目 3：这一条写到一半被"
+                    "text": "條目 1：第一條。條目 2：第二條。條目 3：這一條寫到一半被"
                   }
                 }
               },
@@ -5274,7 +5274,7 @@
               },
               {
                 "type": "text",
-                "text": "历史用户图片"
+                "text": "歷史使用者圖片"
               }
             ],
             "source": {
@@ -5312,7 +5312,7 @@
               "content": [
                 {
                   "type": "text",
-                  "text": "结构化模型图片："
+                  "text": "結構化模型圖片："
                 },
                 {
                   "type": "image",
@@ -5357,7 +5357,7 @@
                   "index": 0,
                   "block": {
                     "type": "text",
-                    "text": "结构化模型图片："
+                    "text": "結構化模型圖片："
                   }
                 }
               },
@@ -5464,7 +5464,7 @@
             "content": [
               {
                 "type": "text",
-                "text": "问题 74：todo_write 样本。"
+                "text": "問題 74：todo_write 樣本。"
               }
             ],
             "source": {
@@ -5504,7 +5504,7 @@
                   "type": "tool-call",
                   "id": "fx-call-74",
                   "name": "todo_write",
-                  "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"实现 fixture 样本\",\"status\":\"in_progress\"},{\"content\":\"跑后台构建\",\"status\":\"in_progress\"},{\"content\":\"浏览器验收\",\"status\":\"pending\"}]}"
+                  "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"實作 fixture 樣本\",\"status\":\"in_progress\"},{\"content\":\"跑後臺建置\",\"status\":\"in_progress\"},{\"content\":\"瀏覽器驗收\",\"status\":\"pending\"}]}"
                 }
               ],
               "source": {
@@ -5540,7 +5540,7 @@
                     "type": "tool-call",
                     "id": "fx-call-74",
                     "name": "todo_write",
-                    "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"实现 fixture 样本\",\"status\":\"in_progress\"},{\"content\":\"跑后台构建\",\"status\":\"in_progress\"},{\"content\":\"浏览器验收\",\"status\":\"pending\"}]}"
+                    "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"實作 fixture 樣本\",\"status\":\"in_progress\"},{\"content\":\"跑後臺建置\",\"status\":\"in_progress\"},{\"content\":\"瀏覽器驗收\",\"status\":\"pending\"}]}"
                   }
                 }
               },
@@ -5582,7 +5582,7 @@
             "step": 0,
             "callId": "fx-call-74",
             "name": "todo_write",
-            "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"实现 fixture 样本\",\"status\":\"in_progress\"},{\"content\":\"跑后台构建\",\"status\":\"in_progress\"},{\"content\":\"浏览器验收\",\"status\":\"pending\"}]}"
+            "arguments": "{\"todos\":[{\"content\":\"梳理需求\",\"status\":\"completed\"},{\"content\":\"實作 fixture 樣本\",\"status\":\"in_progress\"},{\"content\":\"跑後臺建置\",\"status\":\"in_progress\"},{\"content\":\"瀏覽器驗收\",\"status\":\"pending\"}]}"
           }
         }
       },
@@ -5598,15 +5598,15 @@
                 "status": "completed"
               },
               {
-                "content": "实现 fixture 样本",
+                "content": "實作 fixture 樣本",
                 "status": "in_progress"
               },
               {
-                "content": "跑后台构建",
+                "content": "跑後臺建置",
                 "status": "in_progress"
               },
               {
-                "content": "浏览器验收",
+                "content": "瀏覽器驗收",
                 "status": "pending"
               }
             ]
@@ -5678,22 +5678,22 @@
           "lastUsed": null,
           "next": null
         },
-        "title": "Fixture 历史会话",
+        "title": "Fixture 歷史工作階段",
         "todos": [
           {
             "content": "梳理需求",
             "status": "completed"
           },
           {
-            "content": "实现 fixture 样本",
+            "content": "實作 fixture 樣本",
             "status": "in_progress"
           },
           {
-            "content": "跑后台构建",
+            "content": "跑後臺建置",
             "status": "in_progress"
           },
           {
-            "content": "浏览器验收",
+            "content": "瀏覽器驗收",
             "status": "pending"
           }
         ],

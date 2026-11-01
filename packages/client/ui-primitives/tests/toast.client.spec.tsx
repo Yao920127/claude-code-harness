@@ -11,9 +11,9 @@ describe('Toast', () => {
     vi.useFakeTimers()
     try {
       const onDone = vi.fn()
-      const view = render(<Toast text="最多添加 50 张图片" icon={<svg data-testid="icon" />} onDone={onDone} />)
+      const view = render(<Toast text="最多新增 50 張圖片" icon={<svg data-testid="icon" />} onDone={onDone} />)
       const banner = view.getByRole('alert')
-      expect(banner.textContent).toContain('最多添加 50 张图片')
+      expect(banner.textContent).toContain('最多新增 50 張圖片')
       expect(view.getByTestId('icon')).toBeTruthy()
       vi.advanceTimersByTime(3999)
       expect(onDone).not.toHaveBeenCalled()
@@ -28,7 +28,7 @@ describe('Toast', () => {
     vi.useFakeTimers()
     try {
       const onDone = vi.fn()
-      const view = render(<Toast text="切换失败" holdMs={6000} onDone={onDone} />)
+      const view = render(<Toast text="切換失敗" holdMs={6000} onDone={onDone} />)
       // One value drives both, so a banner can never unmount mid-fade: the
       // timer waits the hold plus the fade, and the stylesheet delays the
       // fade by the same hold.
@@ -85,11 +85,11 @@ describe('Toast', () => {
       const filter = vi.fn()
       const view = render(
         <Toast
-          text="会话已归档，可"
+          text="工作階段已歸檔，可"
           tone="success"
           actions={[
-            { label: '撤销', onClick: undo },
-            { prefix: '或', label: '筛选已归档会话', onClick: filter },
+            { label: '撤銷', onClick: undo },
+            { prefix: '或', label: '篩選已歸檔工作階段', onClick: filter },
           ]}
           onDone={vi.fn()}
         />,
@@ -98,10 +98,10 @@ describe('Toast', () => {
       const glyph = view.getByRole('alert').querySelector('[aria-hidden]')
       expect(glyph?.className).toContain('success')
       expect(glyph?.querySelector('svg')).toBeTruthy()
-      expect(view.getByRole('alert').textContent).toBe('会话已归档，可撤销或筛选已归档会话')
-      fireEvent.click(view.getByRole('button', { name: '撤销' }))
+      expect(view.getByRole('alert').textContent).toBe('工作階段已歸檔，可撤銷或篩選已歸檔工作階段')
+      fireEvent.click(view.getByRole('button', { name: '撤銷' }))
       expect(undo).toHaveBeenCalledTimes(1)
-      fireEvent.click(view.getByRole('button', { name: '筛选已归档会话' }))
+      fireEvent.click(view.getByRole('button', { name: '篩選已歸檔工作階段' }))
       expect(filter).toHaveBeenCalledTimes(1)
     } finally {
       vi.useRealTimers()

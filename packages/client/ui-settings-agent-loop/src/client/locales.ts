@@ -26,18 +26,18 @@ export const en: Record<AgentLoopSettingsLocaleKey, string> = {
 
 /** Simplified Chinese copy. */
 export const zh: Record<AgentLoopSettingsLocaleKey, string> = {
-  title: 'Agent 循环',
-  description: '控制 Agent 派发工具调用的方式。',
-  maxParallel: '并行工具调用数',
-  maxParallelHint: '同一步内最多同时运行多少个可并行的调用。',
-  overridden: '已覆盖',
-  reset: '恢复默认',
-  readOnly: '本部署的设置为只读。',
-  unavailable: '该插件当前未加载，暂时无法配置。',
-  save: '保存',
-  saving: '保存中…',
-  saveFailed: '本部署没有接受这些值，已保留供你修改。',
-  invalidNumber: '请填数字；留空表示使用默认值。',
+  title: 'Agent 迴圈',
+  description: '控制 Agent 派發工具呼叫的方式。',
+  maxParallel: '並行工具呼叫數',
+  maxParallelHint: '同一步內最多同時執行多少個可並行的呼叫。',
+  overridden: '已覆蓋',
+  reset: '恢復預設',
+  readOnly: '本部署的設定為只讀。',
+  unavailable: '該外掛目前未載入，暫時無法設定。',
+  save: '儲存',
+  saving: '儲存中…',
+  saveFailed: '本部署沒有接受這些值，已保留供你修改。',
+  invalidNumber: '請填數字；留空表示使用預設值。',
 }
 
 /**

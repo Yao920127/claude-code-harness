@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-07-31-fail-loud-releases-the-terminal.md
 /agent-note-fail-loud-releases-the-terminal-before-exiting:
   en: c070ae81b744a18b
-  zh: 8379e89b11e263c4
+  zh: 8e82db5cdbf55c26
 /agent-note-fail-loud-releases-the-terminal-before-exiting/problem:
   en: 705893ebb3a11d92
-  zh: 7d19929c62213a3c
+  zh: 3af831df628cb761
 /agent-note-fail-loud-releases-the-terminal-before-exiting/decision:
   en: a28315c307acdf90
-  zh: fb7b2df986ffdffc
+  zh: f695dfc12731b73f
 /agent-note-fail-loud-releases-the-terminal-before-exiting/alternatives-considered:
   en: 5ee239978e8f1ece
-  zh: 55267740c7726c25
+  zh: 1a438288bb79c1ae
 /agent-note-fail-loud-releases-the-terminal-before-exiting/consequences:
   en: 19241cdfdb6c4e56
-  zh: 24534e8660ae2f96
+  zh: b8a154ed5251970a
 /agent-note-fail-loud-releases-the-terminal-before-exiting/testing:
   en: 8a7b0c74ec32d5a0
-  zh: 5bbb564ecc8a9870
+  zh: 74e41f4f51241a98

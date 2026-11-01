@@ -4,10 +4,10 @@
 #   pnpm run verify-translation-pairing --write README.md
 /claude-code-harness:
   en: 48cc65079a2691fc
-  zh: 83d1c0f3d5e9c6f9
+  zh: 888218345345f7ad
 /claude-code-harness/what-this-fork-adds:
-  en: af0f703232c846c4
-  zh: 349dc29453c5ba54
+  en: ba07041f1f3f893e
+  zh: d338a3d260286ba4
 /claude-code-harness/before-you-start:
   en: bed3161d73e75967
   zh: ee489156b4bf40ec
@@ -19,7 +19,7 @@
   zh: 5fe2d32e4a3fe9d0
 /claude-code-harness/run/run-from-source:
   en: ec85350ea3129a34
-  zh: c30146d791d65db0
+  zh: 62987236f3f9c2b8
 /claude-code-harness/developer-preview:
   en: 9de630cd02b2e8f8
   zh: 4c96842af9c48614
@@ -28,10 +28,10 @@
   zh: 33cd15d94169bf5b
 /claude-code-harness/credits:
   en: 785185c19dd3e28a
-  zh: e58a0f25d3ca653b
+  zh: ee441026c704944a
 /claude-code-harness/trademarks-and-distribution:
   en: 8860cec6f0caeb92
   zh: a16b225cea01db9a
 /claude-code-harness/license:
   en: 1f6c1ba839ec8527
-  zh: 3ecba6f6b41dace6
+  zh: b0f87f1bba00027a

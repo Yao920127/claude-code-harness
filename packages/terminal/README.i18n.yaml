@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/terminal/README.md
 /:
   en: fdd04a148c1d980e
-  zh: 49025df3a0380a37
+  zh: 17c054c69c6f82ea
 /terminal-persistent-pty-capability-family:
   en: 23811d44b564b29d
   zh: a74d2f7625f5f6dd
 /terminal-persistent-pty-capability-family/summary:
   en: 46a33b055e27a19a
-  zh: 63be22dcced5db81
+  zh: f6462c9e04ca47e8
 /terminal-persistent-pty-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /terminal-persistent-pty-capability-family/packages:
   en: 5e04c5c04ff4133b
-  zh: 55913a1fc3537342
+  zh: a827fea936998524
 /terminal-persistent-pty-capability-family/related-documentation:
   en: 2abf795bb34e5aea
-  zh: a268d0d5bb74e4d7
+  zh: 7b81976e8c4e291d
 /terminal-persistent-pty-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

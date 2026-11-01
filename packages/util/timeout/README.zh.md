@@ -1,5 +1,5 @@
 ---
-description: "共享超时运算、截止时间融合与超时和取消分类，供需要限制调用方超时提示、启动 deadline 并在之后区分二者的能力使用。"
+description: "共享超時運算、截止時間融合與超時和取消分類，供需要限制呼叫方超時提示、啟動 deadline 並在之後區分二者的能力使用。"
 kind: "package-library"
 ---
 
@@ -9,25 +9,25 @@ kind: "package-library"
 
 ## 概述
 
-`dsh-timeout` 让调用方为工作设置有上限的截止时间、区分本地超时与上游取消，并监测流式读取是否空闲。`clampTimeout` 在提示缺失时填入后端默认值，把结果限制在允许的最大值以内，并在工作开始前拒绝无效值。`deadline` 将选定的超时与上游取消合并到一个信号中，而调用方仍负责真正停止自己的进程、套接字或任务。`idleWatchdog` 只计算等待提供方读取所花的时间；零仍保留给后端自有的不计时工作，而不是公开配置。
+`dsh-timeout` 讓呼叫方為工作設定有上限的截止時間、區分本地超時與上游取消，並監測流式讀取是否空閒。`clampTimeout` 在提示缺失時填入後端預設值，把結果限制在允許的最大值以內，並在工作開始前拒絕無效值。`deadline` 將選定的超時與上游取消合併到一個訊號中，而呼叫方仍負責真正停止自己的程序、套接字或任務。`idleWatchdog` 只計算等待提供者讀取所花的時間；零仍保留給後端自有的不計時工作，而不是公開設定。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当能力要在调用方可见的超时下运行一个工作单元时使用 `deadline`，读取流式传输时使用 `idleWatchdog`。先用 `clampTimeout` 验证调用方提示，确保到达 `deadline` 的 `timeoutMs` 总是正有限值。
+當能力要在呼叫方可見的超時下執行一個工作單元時使用 `deadline`，讀取流式傳輸時使用 `idleWatchdog`。先用 `clampTimeout` 驗證呼叫方提示，確保到達 `deadline` 的 `timeoutMs` 總是正有限值。
 
-### 限制超时提示
+### 限制超時提示
 
 ```ts
 import { clampTimeout } from '@deepseek-ai/dsh-timeout'
@@ -39,9 +39,9 @@ declare const MAX_TIMEOUT_MS: number
 const timeoutMs = clampTimeout(requested, DEFAULT_TIMEOUT_MS, MAX_TIMEOUT_MS, 'bash-local: request.timeoutMs')
 ```
 
-提示缺失时 `clampTimeout` 填入后端默认值，把结果限制在后端最大值以内，并以调用方提供的名字拒绝非正数或非有限值的提示。此处绝不接受 0：它不是公开的禁用超时值。
+提示缺失時 `clampTimeout` 填入後端預設值，把結果限制在後端最大值以內，並以呼叫方提供的名字拒絕非正數或非有限值的提示。此處絕不接受 0：它不是公開的停用超時值。
 
-### 在 deadline 下运行工作
+### 在 deadline 下執行工作
 
 ```text
 import { deadline, timeoutOf } from '@deepseek-ai/dsh-timeout'
@@ -52,13 +52,13 @@ const timedOut = timeoutOf(d.signal, 'BASH_TIMEOUT') !== undefined
 const aborted = d.signal.aborted && !timedOut
 ```
 
-该信号只负责通知：调用方必须接入自己的终止机制——把 `d.signal` 传给 `fetch`，或监听 `abort` 并杀死子进程。让 promise 与 timer 竞速，会在子进程或套接字仍在泄漏时就让工具调用完成。
+該訊號只負責通知：呼叫方必須接入自己的終止機制——把 `d.signal` 傳給 `fetch`，或監聽 `abort` 並殺死子程序。讓 promise 與 timer 競速，會在子程序或套接字仍在洩漏時就讓工具呼叫完成。
 
-### 分类结果
+### 分類結果
 
-只有当本 deadline 的 timer 先触发时，`timeoutOf(signal, code)` 才恢复超时原因。传入你自己的 `code`，让分类在嵌套场景中正确组合：当 `upstream` 本身是 deadline 信号时，外部超时会被当作普通的上游取消，而不是声称本地 timer 已到期。
+只有當本 deadline 的 timer 先觸發時，`timeoutOf(signal, code)` 才恢復超時原因。傳入你自己的 `code`，讓分類在巢狀情境中正確組合：當 `upstream` 本身是 deadline 訊號時，外部超時會被當作普通的上游取消，而不是聲稱本地 timer 已到期。
 
-### 用空闲 watchdog 处理流式传输
+### 用空閒 watchdog 處理流式傳輸
 
 ```ts
 import { idleWatchdog } from '@deepseek-ai/dsh-timeout'
@@ -71,84 +71,84 @@ using watchdog = idleWatchdog(upstream, idleMs, 'LLM_STREAM_IDLE_TIMEOUT')
 const next = await watchdog.next(providerIterator)    // timer runs only while this read is outstanding
 ```
 
-timer 只在某个迭代器 `next()` 尚未完成时启动，并会因不产生值的传输活动通过 `pulse()` 重新启动，因此读取之间的消费方处理时间绝不计入空闲。间隔必须为正有限数，且不得大于 `MAX_TIMER_DELAY_MS`。
+timer 只在某個迭代器 `next()` 尚未完成時啟動，並會因不產生值的傳輸活動透過 `pulse()` 重新啟動，因此讀取之間的消費方處理時間絕不計入空閒。間隔必須為正有限數，且不得大於 `MAX_TIMER_DELAY_MS`。
 
-### 哪些操作不设置超时
+### 哪些操作不設定超時
 
-本地文件 `read`/`write`/`edit` 不接受 `timeoutMs`：文件 IO 不设时限地运行，因为截止时间会中止操作系统仍会完成的工作。
+本地檔案 `read`/`write`/`edit` 不接受 `timeoutMs`：檔案 IO 不設時限地執行，因為截止時間會中止作業系統仍會完成的工作。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本库建立在一个边界之上：共享时序与分类，把强制终止保留在本地。
+本庫建立在一個邊界之上：共享時序與分類，把強制終止保留在本地。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
 | [`src/index.ts`](src/index.ts) | `clampTimeout`、`deadline`、`idleWatchdog`、`timeoutOf`、`TimeoutReason`、`MAX_TIMER_DELAY_MS` |
-| — | 不发布运行时不变式伴生入口；这个纯工具不拥有事件流或可变运行时数据；其值代数约束由单元测试保障。 |
+| — | 不釋出執行時不變式伴生入口；這個純工具不擁有事件流或可變執行時資料；其值代數約束由單元測試保障。 |
 
-### deadline 如何融合来源
+### deadline 如何融合來源
 
-`deadline` 启动一个 timer，并通过 `AbortSignal.any` 把它与上游信号融合；`AbortSignal.any` 采纳最先中止的来源的原因，因此竞争会归结为单一原因。`TimeoutReason` 携带能力自有的 `code` 与已流逝的 `timeoutMs`；只有当超时胜出时 `timeoutOf` 才读取它，上游胜出则保留普通的中止原因。`[Symbol.dispose]` 清除 timer。
+`deadline` 啟動一個 timer，並透過 `AbortSignal.any` 把它與上游訊號融合；`AbortSignal.any` 採納最先中止的來源的原因，因此競爭會歸結為單一原因。`TimeoutReason` 攜帶能力自有的 `code` 與已流逝的 `timeoutMs`；只有當超時勝出時 `timeoutOf` 才讀取它，上游勝出則保留普通的中止原因。`[Symbol.dispose]` 清除 timer。
 
-### 无超时哨兵值
+### 無超時哨兵值
 
-`timeoutMs <= 0` 不启动 timer，只转发上游信号——没有上游时返回永不中止的信号——因此每个调用方都保持同一种调用形态。该哨兵值服务于后端自有后台工作；外部请求提示在到达 `deadline` 之前先被验证为正有限值。
+`timeoutMs <= 0` 不啟動 timer，只轉發上遊訊號——沒有上游時返回永不中止的訊號——因此每個呼叫方都保持同一種呼叫形態。該哨兵值服務於後端自有後臺工作；外部請求提示在到達 `deadline` 之前先被驗證為正有限值。
 
-### 空闲 watchdog 为何重新启动
+### 空閒 watchdog 為何重新啟動
 
-`idleWatchdog` 保持一个稳定的融合信号，只在 `next()` 尚未完成时启动 timer；完成后停止，后续需求或 `pulse()` 重新启动，dispose（资源释放）时清除，并发需求被拒绝。只有传输层观察该信号，因此提供方的真实读取必须监听它——DeepSeek 与 pi-ai 适配器会在中止时关闭响应正文或 SDK 请求。
+`idleWatchdog` 保持一個穩定的融合訊號，只在 `next()` 尚未完成時啟動 timer；完成後停止，後續需求或 `pulse()` 重新啟動，dispose（資源釋放）時清除，並行需求被拒絕。只有傳輸層觀察該訊號，因此提供者的真實讀取必須監聽它——DeepSeek 與 pi-ai 介面卡會在中止時關閉回應正文或 SDK 請求。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当你需要消费方或库背后的边界决策时，阅读以下页面。
+當你需要消費方或庫背後的邊界決策時，閱讀以下頁面。
 
-- [超时 deadline 库 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-06-timeout-deadline-library.zh.md)——共享时序、本地强制终止的边界。
-- [工具调用超时策略](../../guard/timeout-policy/README.zh.md)——强制执行已声明工具超时的消费方。
-- [bash 提供方](../../shell/bash-local/README.zh.md)——杀死进程组的前台 deadline 消费方。
-- [文件系统子系统](../../../docs/subsystems/filesystem.zh.md)——本地文件 IO 为何不设时限。
+- [超時 deadline 庫 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-06-timeout-deadline-library.zh.md)——共享時序、本地強制終止的邊界。
+- [工具呼叫超時策略](../../guard/timeout-policy/README.zh.md)——強制執行已宣告工具超時的消費方。
+- [bash 提供者](../../shell/bash-local/README.zh.md)——殺死程序組的前臺 deadline 消費方。
+- [檔案系統子系統](../../../docs/subsystems/filesystem.zh.md)——本地檔案 IO 為何不設時限。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过渲染超时结果的超时消费方间接影响模型。
+透過渲染超時結果的超時消費方間接影響模型。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接导致失效；请求前缀的任何变更由超时消费方负责。
+不會直接導致失效；請求字首的任何變更由超時消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本库刻意不做什么。它们是当前包约束，不是任务积压。
+這些限制說明本庫刻意不做什麼。它們是目前包約束，不是任務積壓。
 
-- **只发出通知**——deadline 无法停止忽略其信号的工作；每项能力仍需要自己的 socket、进程或任务终止路径。
-- **`timeoutMs <= 0` 是内部词汇**——只有在所属后端已解析策略后，它才会禁用本地 timer；绝不会作为面向模型或插件的公开开关。
-- **第一个中止原因决定分类**——当上游取消早于本地 timer 发生时，即使自己的超时之后也会到期，该层也无法再报告。
-- **空闲 watchdog 不是总 deadline**——它针对每个尚未完成的迭代器需求重新启动，并刻意排除消费方的处理时间。
+- **只發出通知**——deadline 無法停止忽略其訊號的工作；每項能力仍需要自己的 socket、程序或任務終止路徑。
+- **`timeoutMs <= 0` 是內部詞彙**——只有在所屬後端已解析策略後，它才會停用本地 timer；絕不會作為面向模型或外掛的公開開關。
+- **第一個中止原因決定分類**——當上遊取消早於本地 timer 發生時，即使自己的超時之後也會到期，該層也無法再報告。
+- **空閒 watchdog 不是總 deadline**——它針對每個尚未完成的迭代器需求重新啟動，並刻意排除消費方的處理時間。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 skill 引用与专属 skill 工具行：/ 触发的 skill source 与 skill 调用卡片。"
+description: "dsh Web 用戶端的 skill 引用與專屬 skill 工具行：/ 觸發的 skill source 與 skill 呼叫卡片。"
 kind: "package-reference"
 ---
 
@@ -9,108 +9,108 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-ui-skill` 让用户通过 `/` 建议选择或直接键入 `/name` 来调用 skill（技能）。同一条字面命令可以从 Web 编辑器、TUI 和 ACP（Agent Client Protocol）一致地加载 skill；如果名称与宿主命令相同，它仍会解析为该命令。skill 调用在对话中显示为可展开的 `Instructions` 卡片；即使已安装的 skill 目录发生变化，卡片落定后的内容仍保持稳定。
+`dsh-client-ui-skill` 讓使用者透過 `/` 建議選擇或直接鍵入 `/name` 來呼叫 skill（技能）。同一條字面命令可以從 Web 編輯器、TUI 和 ACP（Agent Client Protocol）一致地載入 skill；如果名稱與主機命令相同，它仍會解析為該命令。skill 呼叫在對話中顯示為可展開的 `Instructions` 卡片；即使已安裝的 skill 目錄發生變化，卡片落定後的內容仍保持穩定。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在编辑器中输入 `/` 并从建议中选择 skill，或直接键入 `/name`；发出的消息携带字面文本，宿主对菜单 pick 与手动键入的 token 以同样方式加载 skill。与宿主命令同名的名称仍解析为命令——裁决在客户端把该行认领走，它根本不会成为提示词。
+在編輯器中輸入 `/` 並從建議中選擇 skill，或直接鍵入 `/name`；發出的訊息攜帶字面文字，主機對選單 pick 與手動鍵入的 token 以同樣方式載入 skill。與主機命令同名的名稱仍解析為命令——裁決在用戶端把該行認領走，它根本不會成為提示詞。
 
-### source 提供什么
+### source 提供什麼
 
-普通会话的候选来自 `skills/list` Remote；宿主提供每一个用户可调用的 skill，`modelInvocable: false` 的条目（即 `disable-model-invocation` skill，此路径是其唯一入口）会以当前语言把仅限用户标记作为描述前缀带上。结果经 `/` 菜单共享的名字排序器（ui-primitives 的 `rankByName`）排名：查询作为不区分大小写的有序子序列匹配 skill 名，前缀命中排最前，同分保持宿主顺序（[排名决策](../../../.agents/notes/archived/feature/2026-08-04-web-slash-command-fuzzy-discovery.md)）。`skills/list` 调用失败时会被记录并静默丢弃该菜单组——菜单只显示 pending／ready 状态。
+普通工作階段的候選來自 `skills/list` Remote；主機提供每一個使用者可呼叫的 skill，`modelInvocable: false` 的條目（即 `disable-model-invocation` skill，此路徑是其唯一入口）會以目前語言把僅限使用者標記作為描述字首帶上。結果經 `/` 選單共享的名字排序器（ui-primitives 的 `rankByName`）排名：查詢作為不區分大小寫的有序子序列匹配 skill 名，字首命中排最前，同分保持主機順序（[排名決策](../../../.agents/notes/archived/feature/2026-08-04-web-slash-command-fuzzy-discovery.md)）。`skills/list` 呼叫失敗時會被記錄並靜默丟棄該選單組——選單隻顯示 pending／ready 狀態。
 
 ### skill 工具行
 
-`preparing` 阶段只显示技能图标与标题，不显示请求加载的技能名称，也不能展开。`start` 和 `result` 阶段使用下述记录参数与输出；准备阶段不查询已安装目录。
+`preparing` 階段只顯示技能圖示與標題，不顯示請求載入的技能名稱，也不能展開。`start` 和 `result` 階段使用下述記錄參數與輸出；準備階段不查詢已安裝目錄。
 
-收起的行显示 skill 图标、`Skill` 标题与请求加载的 skill 名称，并与普通工具行使用相同的 secondary 字号轴、行高、行高度和图标缩放。所有生命周期状态都保留普通 skill 图标；运行中的调用带有 transcript（文本记录）的扫光效果，失败时以错误首行替换名称，中断则保留明确状态文本。已结算的行展开为一个尺寸受限的 `Instructions` 卡片，其中原样呈现持久化的工具输出；可用时还会提供标准轨迹的 `Inspect` 入口，展开卡片保留自身排版。该行的名称、生命周期与正文只派生自 ui-tool 提供的冻结调用／结果切片，绝不读取当前目录，因此即使已安装的 skill 或其描述发生变化，回放仍保持稳定。
+收起的行顯示 skill 圖示、`Skill` 標題與請求載入的 skill 名稱，並與普通工具行使用相同的 secondary 字號軸、行高、行高度和圖示縮放。所有生命週期狀態都保留普通 skill 圖示；執行中的呼叫帶有 transcript（文字記錄）的掃光效果，失敗時以錯誤首行替換名稱，中斷則保留明確狀態文字。已結算的行展開為一個尺寸受限的 `Instructions` 卡片，其中原樣呈現持久化的工具輸出；可用時還會提供標準軌跡的 `Inspect` 入口，展開卡片保留自身排版。該行的名稱、生命週期與正文只派生自 ui-tool 提供的凍結呼叫／結果切片，絕不讀取目前目錄，因此即使已安裝的 skill 或其描述發生變化，回放仍保持穩定。
 
-鼠标移入 `/name` 时，背景覆盖整个引用。点击已知 skill 会在右侧栏打开提供方给出的 `SKILL.md` 路径，同时保留文本的可编辑性。缓存未就绪时，点击复用该 Session 的目录请求，在完成后按点击时的 Session 地址打开预览。切换预设、重置连接和插件释放会取消待处理的预览；后续点击重新获取当前目录。没有文件路径的 skill 仍可调用，但没有文件预览。
+滑鼠移入 `/name` 時，背景覆蓋整個引用。點選已知 skill 會在右側欄開啟提供者給出的 `SKILL.md` 路徑，同時保留文字的可編輯性。快取未就緒時，點選複用該 Session 的目錄請求，在完成後按點選時的 Session 地址開啟預覽。切換預設、重置連線和外掛釋放會取消待處理的預覽；後續點選重新取得目前目錄。沒有檔案路徑的 skill 仍可呼叫，但沒有檔案預覽。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-source 不实现任何裁决钩子，也没有引用 codec：pick 落下字面文本，发出的提示词中也是同一段字面文本，因此确定性在宿主侧（[slash 流水线笔记](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)）。
+source 不實作任何裁決掛鉤，也沒有引用 codec：pick 落下字面文字，發出的提示詞中也是同一段字面文字，因此確定性在主機側（[slash 流水線筆記](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)）。
 
-### 候选流程
+### 候選流程
 
-目录按普通会话缓存，拉取走 single-flight；scope 创建时的 `warm` 钩子预热该会话的缓存项，转发的 owner 事件 `agent-preset/selected` 丢弃该会话这一项（目录属于 preset，而空会话可能在预热之后才切换），`connection/reset` 清空全部缓存。由目录寻址的可继续 subagent 在客户端解析为没有 skill 候选，因为现有 skill RPC 要求会话已挂载；查看其持久化历史不得激活它。列表 RPC 使用插件注册时捕获的根上下文连接；草稿 chip 视觉由 `lexicon` 扫描派生。
+目錄按普通工作階段快取，拉取走 single-flight；scope 建立時的 `warm` 掛鉤預熱該工作階段的快取項，轉發的 owner 事件 `agent-preset/selected` 丟棄該工作階段這一項（目錄屬於 preset，而空工作階段可能在預熱之後才切換），`connection/reset` 清空全部快取。由目錄定址的可繼續 subagent 在用戶端解析為沒有 skill 候選，因為現有 skill RPC 要求工作階段已掛載；檢視其持久化歷史不得啟用它。列表 RPC 使用外掛註冊時捕捉的根上下文連線；草稿 chip 視覺由 `lexicon` 掃描派生。
 
-每次目录拉取都要求客户端已持有该会话，并等待首次历史打开成功后才发送 `skills/list`。临时的 `skillCatalog` 引用持续持有会话，直到拉取结束。未被持有的会话或打开失败会直接拒绝，不发送 RPC；预设失效、连接重置和插件释放也会取消正在等待的历史打开。
+每次目錄拉取都要求用戶端已持有該工作階段，並等待首次歷史開啟成功後才傳送 `skills/list`。臨時的 `skillCatalog` 引用持續持有工作階段，直到拉取結束。未被持有的工作階段或開啟失敗會直接拒絕，不傳送 RPC；預設失效、連線重置和外掛釋放也會取消正在等待的歷史開啟。
 
-### 注册
+### 註冊
 
-`/client` 导出接口只有插件主体（`apply`／`inject`）；source 对象是注册 effect 的内部实现。工具行把 `skill` wire 名称注册进 ui-tool 的 keyed `tool.call.toolview` slot。
+`/client` 匯出介面只有外掛主體（`apply`／`inject`）；source 物件是註冊 effect 的內部實作。工具行把 `skill` wire 名稱註冊進 ui-tool 的 keyed `tool.call.toolview` slot。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖输入机制、工具行宿主与宿主侧 skill 工具。
+以下頁面覆蓋輸入機制、工具行主機與主機側 skill 工具。
 
-- [ui-input-trigger](../ui-input-trigger/README.zh.md)——该 source 注册进的行内建议机制。
-- [ui-tool](../ui-tool/README.zh.md)——承载 `tool.call.toolview` slot 的工具调用展示层。
-- [tool-skill](../../skill/tool-skill/README.zh.md)——拥有 pre-step 手势边界的宿主侧 `skill` 工具。
-- [Web 输入机器与 slash 流水线](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)——引用与命令如何共享输入机器。
+- [ui-input-trigger](../ui-input-trigger/README.zh.md)——該 source 註冊進的行內建議機制。
+- [ui-tool](../ui-tool/README.zh.md)——承載 `tool.call.toolview` slot 的工具呼叫展示層。
+- [tool-skill](../../skill/tool-skill/README.zh.md)——擁有 pre-step 手勢邊界的主機側 `skill` 工具。
+- [Web 輸入機器與 slash 流水線](../../../.agents/notes/archived/architecture/2026-07-25-web-input-machine-and-slash-pipeline.md)——引用與命令如何共享輸入機器。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 用户显式 skill 调用
+### 使用者顯式 skill 呼叫
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-用户消息原样到达模型，字面文本 `/name` 也包含在内。随后宿主的 pre-step 边界（`dsh-tool-skill`）把规范的 `<skill_content>` 块——与 `skill` 工具返回的 `renderSkillContent` 输出相同——作为注入的指令上下文追加在该步骤各项注入的末尾，最贴近模型的回答。加载是确定性的：模型无需被要求调用 `skill` 工具就能收到完整正文，目录也会告诉它不要重新加载已内联注入的 skill。
+使用者訊息原樣到達模型，字面文字 `/name` 也包含在內。隨後主機的 pre-step 邊界（`dsh-tool-skill`）把規範的 `<skill_content>` 塊——與 `skill` 工具返回的 `renderSkillContent` 輸出相同——作為注入的指令上下文追加在該步驟各項注入的末尾，最貼近模型的回答。載入是確定性的：模型無需被要求呼叫 `skill` 工具就能收到完整正文，目錄也會告訴它不要重新載入已內聯注入的 skill。
 
-#### Token 影响
+#### Token 影響
 
-一次调用会把渲染后的 skill 正文作为注入上下文加进该轮次——成本与模型经由工具加载该 skill 相同，只是无条件支付，而非由模型自行裁量。浏览菜单和拉取候选不会增加任何模型 token。
+一次呼叫會把渲染後的 skill 正文作為注入上下文加進該輪次——成本與模型經由工具載入該 skill 相同，只是無條件支付，而非由模型自行裁量。瀏覽選單和拉取候選不會增加任何模型 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加：注入的消息落在可复用历史前缀之后。该包绝不改写较早的请求 token。
+僅追加：注入的訊息落在可複用歷史字首之後。該包絕不改寫較早的請求 token。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义引用与工具行何时回退到通用行为；它们是当前包约束。
+這些限制定義引用與工具行何時退回到通用行為；它們是目前包約束。
 
-- **仅含工具结果的 history 页使用通用行**：键控分派要求配对的工具调用位于运行时窗口内；分页将工具调用留在窗口外时，工具结果没有工具身份。这项客户端呈现功能不会为了恢复该身份而扩展 history 协议约定。
-- **文本是唯一依据**：引用是普通的草稿文本；手动键入的相同 token 就是同一个引用，宿主手势边界评判的是发出的文本，而不是菜单交互。chip 视觉由 lexicon 扫描派生；提示词协议上没有 occurrence 身份、位置跟踪或结构化引用载荷。
-- **预热落定之前打开的菜单**：在那次击键下不显示 skill 候选；下一次击键会重新轮询已落定的缓存。
+- **僅含工具結果的 history 頁使用通用行**：鍵控分派要求配對的工具呼叫位於執行時視窗內；分頁將工具呼叫留在視窗外時，工具結果沒有工具身份。這項用戶端呈現功能不會為了恢復該身份而擴充功能 history 協定約定。
+- **文字是唯一依據**：引用是普通的草稿文字；手動鍵入的相同 token 就是同一個引用，主機手勢邊界評判的是發出的文字，而不是選單互動。chip 視覺由 lexicon 掃描派生；提示詞協定上沒有 occurrence 身份、位置跟蹤或結構化引用載荷。
+- **預熱落定之前開啟的選單**：在那次擊鍵下不顯示 skill 候選；下一次擊鍵會重新輪詢已落定的快取。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。slash source、locale dictionary 与 keyed toolview 都是由注册表持有的注册项，其释放行为已由 HMR（热模块替换）安全规范证明；它们不发出 Cordis 事件或持有跨插件可变状态。
+**執行時不變式：** 不釋出伴生入口。slash source、locale dictionary 與 keyed toolview 都是由註冊表持有的註冊項，其釋放行為已由 HMR（熱模組替換）安全規範證明；它們不發出 Cordis 事件或持有跨外掛可變狀態。

@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-11-sandboxed-node-ptc-runtime.md
 /agent-note-sandboxed-node-execution-for-ptc:
   en: 0fb682d787b23a30
-  zh: a7bdbbe987f53dcb
+  zh: 3c2a6567491a3e53
 /agent-note-sandboxed-node-execution-for-ptc/problem:
   en: 66ac3d7ce7eb8e15
-  zh: abb9d41b71900bbf
+  zh: dfe8ae8152756241
 /agent-note-sandboxed-node-execution-for-ptc/decision:
   en: cf072f53de09faca
-  zh: 9edd5c4a2bfaae5a
+  zh: abc33eef8d18cca2
 /agent-note-sandboxed-node-execution-for-ptc/decision/resolved-inputs-and-policy:
   en: e93df995efab569a
-  zh: 850daf02d1207028
+  zh: a162f805a407f0eb
 /agent-note-sandboxed-node-execution-for-ptc/decision/control-and-lifetime:
   en: 2c7a694b04951772
-  zh: 133b95b0477b127f
+  zh: 9a4c33f9270dee7b
 /agent-note-sandboxed-node-execution-for-ptc/decision/resource-limits:
   en: 84c73cf3ff33bc03
-  zh: a228080683d6252c
+  zh: 985512ae74a7002e
 /agent-note-sandboxed-node-execution-for-ptc/alternatives-considered:
   en: 8ffcc2b32a2243d7
-  zh: 81d48d38947abc76
+  zh: 9f65ff38ea39cecf
 /agent-note-sandboxed-node-execution-for-ptc/consequences:
   en: c0aa3a23a03ba234
-  zh: 257c7d35a17abbea
+  zh: 8f3ed96c16a94507
 /agent-note-sandboxed-node-execution-for-ptc/deferred-timeout-design:
   en: 455d66252cd23253
-  zh: bf3839a13dbaaab5
+  zh: b5513ff7b1754c24

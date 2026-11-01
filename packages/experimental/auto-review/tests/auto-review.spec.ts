@@ -810,8 +810,8 @@ describe('native review request', () => {
         ? 'Auto review denied tool "probe"'
         : `Auto review denied tool "probe": ${item.expectedReason}`)
       expect(displayReasons.at(-1)).toEqual(item.expectedReason === undefined
-        ? { en: 'Auto review denied this call.', zh: 'Auto review 拒绝了此调用。' }
-        : { en: `Auto review denied this call: ${item.expectedReason}`, zh: `Auto review 拒绝了此调用：${item.expectedReason}` })
+        ? { en: 'Auto review denied this call.', zh: 'Auto review 拒絕了此呼叫。' }
+        : { en: `Auto review denied this call: ${item.expectedReason}`, zh: `Auto review 拒絕了此呼叫：${item.expectedReason}` })
     }
 
     expect(probe.runs()).toBe(2)

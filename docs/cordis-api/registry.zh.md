@@ -1,11 +1,11 @@
-<!-- 英文源文件由 scripts/gen-cordis-catalog.ts 生成；本中文文件是通过双语配对维护的经评审对侧。
-     更新时先运行 `pnpm run gen-cordis-catalog` 更新英文，再更新本文件并运行 `pnpm run verify-translation-pairing --write docs/cordis-api/registry.md` 重新记录配对。 -->
+<!-- 英文原始檔由 scripts/gen-cordis-catalog.ts 生成；本中文件案是透過雙語配對維護的經評審對側。
+     更新時先執行 `pnpm run gen-cordis-catalog` 更新英文，再更新本檔案並執行 `pnpm run verify-translation-pairing --write docs/cordis-api/registry.md` 重新記錄配對。 -->
 
-# 注册表
+# 註冊表
 
 [English](registry.md) | 中文
 
-插件加载与依赖注入。
+外掛載入與依賴注入。
 
 ### ctx.inject(deps, callback)
 
@@ -23,16 +23,16 @@
 inject(deps: Inject, callback: Plugin.Function<void>): Fiber & PromiseLike<Fiber>
 ```
 
-请求的服务可用后，运行回调。
+請求的服務可用後，執行回呼。
 
-这是 `ctx.plugin({ inject, apply: callback })` 的简写形式：每当某个必需服务发生变化时，系统都会卸载并重新运行该回调。
+這是 `ctx.plugin({ inject, apply: callback })` 的簡寫形式：每當某個必需服務發生變化時，系統都會解除安裝並重新執行該回呼。
 
-- `deps`：必需服务，形式可以是数组，也可以是从名称到配置的映射。
-- `callback`：以 `(ctx, config)` 调用的插件主体。
+- `deps`：必需服務，形式可以是陣列，也可以是從名稱到設定的對映。
+- `callback`：以 `(ctx, config)` 呼叫的外掛主體。
 
-**返回** fiber；对其执行 await 会在加载完成后结束等待。
+**返回** fiber；對其執行 await 會在載入完成後結束等待。
 
-[源码](../../vendor/cordis/src/registry.ts#L176)
+[原始碼](../../vendor/cordis/src/registry.ts#L176)
 
 ### ctx.plugin(plugin, ...args)
 
@@ -48,18 +48,18 @@ inject(deps: Inject, callback: Plugin.Function<void>): Fiber & PromiseLike<Fiber
 plugin<P extends Plugin>(plugin: P, ...args: Spread<GetPluginConfig<P>>): Fiber & PromiseLike<Fiber>
 ```
 
-在当前上下文中加载插件。
+在目前上下文中載入外掛。
 
-- `plugin`：函数、类或 `{ apply }` 对象形式的插件。
-- `args`：插件配置，会根据其 `Config` schema 进行校验。
+- `plugin`：函式、類或 `{ apply }` 物件形式的外掛。
+- `args`：外掛設定，會根據其 `Config` schema 進行驗證。
 
-**返回** fiber；对其执行 await 会在加载完成后结束等待（如果发生配置错误或启动错误，则会被拒绝）。
+**返回** fiber；對其執行 await 會在載入完成後結束等待（如果發生設定錯誤或啟動錯誤，則會被拒絕）。
 
-[源码](../../vendor/cordis/src/registry.ts#L185)
+[原始碼](../../vendor/cordis/src/registry.ts#L185)
 
 ## Plugin
 
-支持的插件入口点形式。
+支援的外掛入口點形式。
 
 ```ts cordis-catalog
 /** Supported plugin entrypoint shapes. */
@@ -120,13 +120,13 @@ namespace Plugin {
 }
 ```
 
-[源码](../../vendor/cordis/src/registry.ts#L92)
+[原始碼](../../vendor/cordis/src/registry.ts#L92)
 
 ## Inject
 
-插件和 `@Inject` 装饰器接受的服务依赖声明。
+外掛和 `@Inject` 裝飾器接受的服務依賴宣告。
 
-数组形式请求不带拦截配置的服务。对象形式将每个服务名称映射到插件上下文中可选的拦截配置。
+陣列形式請求不帶攔截設定的服務。物件形式將每個服務名稱對映到外掛上下文中可選的攔截設定。
 
 ```ts cordis-catalog
 /**
@@ -151,4 +151,4 @@ namespace Inject {
 }
 ```
 
-[源码](../../vendor/cordis/src/registry.ts#L19)
+[原始碼](../../vendor/cordis/src/registry.ts#L19)

@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-22-slot-type-chain-implementation.md
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat:
   en: 43ed5b2dfd8043fc
-  zh: 04b6fdd0435a265a
+  zh: 863a6722143ea47b
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/problem:
   en: 4f8d6891a8ba7061
-  zh: 5a619e562e00458d
+  zh: bd3402c335804623
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision:
   en: a81cddbebc1a97a3
-  zh: aa57738c9f08c07e
+  zh: d1df6c35df732ed9
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/root-is-the-only-a-priori-slot:
   en: 43b856b4a8cf371f
-  zh: cde298ab8b8a3815
+  zh: 4b94b7c5c53663db
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/register-is-the-single-api-children-declaration-authorization-runtime-spec:
   en: ce28268021a38b89
-  zh: 7802540e4ef04752
+  zh: 72fb5592a2d2384e
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/component-props-four-shares-each-from-its-own-source-of-truth:
   en: f3fca569fa0c5168
-  zh: 647a82662f6a887d
+  zh: 45a7e7c7b3ea3de8
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/the-chain-kind-entries-self-nominate-first-match-renders:
   en: 56278be7f3688805
-  zh: 16602ffbf4baef85
+  zh: 60b408bae0bf9749
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/the-store-seat-framework-engine-registrant-schema:
   en: 2645acc9d29c20ec
-  zh: a8a2fd293ef5da04
+  zh: 4d112c6205636fb7
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/inject-the-registrant-s-business-face-on-its-own-ctx:
   en: 66b311fad441400a
-  zh: 34f031e7f04d29e6
+  zh: 40fd7d6394248baf
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/data-boundary-discipline:
   en: 07b919360c8f65be
-  zh: 4c8a9915a2ed20af
+  zh: 189f867099cf6404
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/tree-context-and-the-renderer-contract:
   en: d77ebd3f6b166194
-  zh: 57ba9fe864908d46
+  zh: 7d426e4afa98036b
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/decision/type-chain-implementation-rulings:
   en: 752bc30428dad374
-  zh: 3d729646468ecfde
+  zh: d8fd2cf9a35b83dd
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/consequences:
   en: 07228332f3d3c227
-  zh: 32525e1972acf156
+  zh: b351300496daa285
 /agent-note-the-slot-system-standard-single-register-four-props-shares-and-the-framework-store-seat/alternatives-considered:
   en: 2bd28715f741ac04
-  zh: 8d6a0cb78a006533
+  zh: 7ac0a8f49603daa7

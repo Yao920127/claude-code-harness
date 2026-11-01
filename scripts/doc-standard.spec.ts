@@ -151,7 +151,7 @@ function packageReadmeMetadataErrors(file: string, metadata: Record<string, unkn
 function packageReadmeStructureErrors(file: string, source: string): string[] {
   const chinese = file.endsWith('.zh.md')
   const required = chinese
-    ? [[/^## 概述$/m, '概述'], [/^## 目录$/m, '目录'], [/^#{2,3} 开发备注$/m, '开发备注']] as const
+    ? [[/^## 概述$/m, '概述'], [/^## 目錄$/m, '目錄'], [/^#{2,3} 開發備註$/m, '開發備註']] as const
     : [[/^## Summary$/m, 'Summary'], [/^## Table of Contents$/m, 'Table of Contents'], [/^#{2,3} Dev Note$/m, 'Dev Note']] as const
   return required.flatMap(([pattern, label]) => pattern.test(source) ? [] : [`missing ${label}`])
 }

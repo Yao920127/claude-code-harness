@@ -9,7 +9,7 @@ import { runLifecycle } from './lifecycle.mjs'
 import { runPullRequestCheck, runPullRequestPreflight } from './pull-request.mjs'
 
 function readEvent() {
-  if (!process.env.GITHUB_EVENT_PATH) throw new Error('GITHUB_EVENT_PATH 未设置')
+  if (!process.env.GITHUB_EVENT_PATH) throw new Error('GITHUB_EVENT_PATH 未設定')
   return JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'))
 }
 

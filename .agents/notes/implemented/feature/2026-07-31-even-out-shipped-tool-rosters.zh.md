@@ -1,65 +1,65 @@
-# Agent Note: 拉平交付的工具清单
+# Agent Note: 拉平交付的工具清單
 
 Status: implemented
 
 [English](2026-07-31-even-out-shipped-tool-rosters.md) | 中文
 
-## 问题
+## 問題
 
-两个交付的 `dsh` surface 提供着不同的工具，而没有任何记录说明为什么。会话检查点、工具结果裁剪、goal 工具和 Ralph 在 `tui.cordis.yml`；`tool-todo` 以及后来的 web 搜索在 `web.cordis.yml`。两个 surface 都没有会话搜索、字符串替换编辑器和重复工具守卫，尽管这三者都已成包存在，且没有一个是 surface 专属的。
+兩個交付的 `dsh` surface 提供著不同的工具，而沒有任何記錄說明為什麼。工作階段檢查點、工具結果裁剪、goal 工具和 Ralph 在 `tui.cordis.yml`；`tool-todo` 以及後來的 web 搜尋在 `web.cordis.yml`。兩個 surface 都沒有工作階段搜尋、字串替換編輯器和重複工具守衛，儘管這三者都已成包存在，且沒有一個是 surface 專屬的。
 
-结果是一处没人做过决定的用户可见差异：同一个模型、同一个请求，在终端上能定目标而在浏览器里不能，在浏览器里能搜网页而在终端上不能。
+結果是一處沒人做過決定的使用者可見差異：同一個模型、同一個請求，在終端上能定目標而在瀏覽器裡不能，在瀏覽器裡能搜網頁而在終端上不能。
 
-## 决策
+## 決策
 
-那些并非 surface 专属的行移入 [`base.cordis.yml`](../../../../packages/bundle/base/cordis.patch.yml)，另有三行加入：`tool-session-query`、`tool-str-replace-editor` 和 `repeat-tool-reminder`。Web 搜索也一并移入；其[部署决策](2026-07-31-web-default-search.zh.md)负责安全边界，共享 base 则负责与 surface 无关的挂载。两个 surface 组装同一份清单，其中 `glob` 和 `grep` 是固定成员，因为 `dsh-tool-fs-search` 直接 spawn [打包的 ripgrep 二进制](../../archived/architecture/2026-08-01-packaged-ripgrep-search.md)。后续决策收窄了这份清单：[session-search 决策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)让 `tool-session-query` 保持需显式启用，[单一 editor 决策](../../archived/simplification/2026-08-10-default-presets-single-editor.md)从通用 preset 移除 `tool-str-replace-editor`，[仅持久 shell 决策](../simplification/2026-09-03-minimal-profiles-persistent-shell-only.zh.md)则从极简组合移除它，[ralph 降级决策](../simplification/2026-09-12-ralph-off-in-shipped-defaults.zh.md)让 `ralph` 在这份 base 清单与镜像它的 preset 中默认关闭。
+那些並非 surface 專屬的行移入 [`base.cordis.yml`](../../../../packages/bundle/base/cordis.patch.yml)，另有三行加入：`tool-session-query`、`tool-str-replace-editor` 和 `repeat-tool-reminder`。Web 搜尋也一併移入；其[部署決策](2026-07-31-web-default-search.zh.md)負責安全邊界，共享 base 則負責與 surface 無關的掛載。兩個 surface 組裝同一份清單，其中 `glob` 和 `grep` 是固定成員，因為 `dsh-tool-fs-search` 直接 spawn [打包的 ripgrep 二進位制](../../archived/architecture/2026-08-01-packaged-ripgrep-search.md)。後續決策收窄了這份清單：[session-search 決策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)讓 `tool-session-query` 保持需顯式啟用，[單一 editor 決策](../../archived/simplification/2026-08-10-default-presets-single-editor.md)從通用 preset 移除 `tool-str-replace-editor`，[僅持久 shell 決策](../simplification/2026-09-03-minimal-profiles-persistent-shell-only.zh.md)則從極簡組合移除它，[ralph 降級決策](../simplification/2026-09-12-ralph-off-in-shipped-defaults.zh.md)讓 `ralph` 在這份 base 清單與映像它的 preset 中預設關閉。
 
-有两行仍是 surface 专属。`tmux-context` 只在 TUI，因为浏览器 surface 没有终端复用器可描述。`session-reference` 只在 TUI，因为它以 launcher 的进程本地路径驱动共享的 session-query 索引，而浏览器侧边栏会在自己的首次搜索里重建该索引。
+有兩行仍是 surface 專屬。`tmux-context` 只在 TUI，因為瀏覽器 surface 沒有終端複用器可描述。`session-reference` 只在 TUI，因為它以 launcher 的程序本地路徑驅動共享的 session-query 索引，而瀏覽器側邊欄會在自己的首次搜尋裡重建該索引。
 
-**本次工具清单决策当时只做加法。** 落地时两个 surface 均未移除任何工具行，目录对比只发现了新增，别无其他。后续的 session-search 与单一编辑器决策分别负责对应的默认清单例外。共享执行器、沙箱组合与访问默认值独立归属[workspace-write 默认值决策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)。
+**本次工具清單決策當時只做加法。** 落實時兩個 surface 均未移除任何工具行，目錄對比只發現了新增，別無其他。後續的 session-search 與單一編輯器決策分別負責對應的預設清單例外。共享執行器、沙箱組合與存取預設值獨立歸屬[workspace-write 預設值決策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)。
 
-### 什么保持不挂，以及为什么
+### 什麼保持不掛，以及為什麼
 
-有两项能力基于其自身包所记录的证据保持在外,列在这里是为了让「我们忘了」和「我们决定不要」保持可区分。
+有兩項能力基於其自身包所記錄的證據保持在外,列在這裡是為了讓「我們忘了」和「我們決定不要」保持可區分。
 
-**`dsh-tool-cordis`** 让模型写一段 JavaScript 并挂成临时插件。它的 README 写明了这个界限:「The sandbox is containment for honest code, not a security boundary — host-realm helpers on the sandbox global are reachable, so mount code can reach Node」([Known limitations](../../../../packages/extensions/tool-cordis/README.zh.md))。`node:vm` 的 realm 就在 harness 进程内,而 `dsh-sandbox-local` 只约束它 spawn 出去的 argv,因此在 Web surface 上,沙箱与批准接缝是被绕过而非被执行。
+**`dsh-tool-cordis`** 讓模型寫一段 JavaScript 並掛成臨時外掛。它的 README 寫明瞭這個界限:「The sandbox is containment for honest code, not a security boundary — host-realm helpers on the sandbox global are reachable, so mount code can reach Node」([Known limitations](../../../../packages/extensions/tool-cordis/README.zh.md))。`node:vm` 的 realm 就在 harness 程序內,而 `dsh-sandbox-local` 只約束它 spawn 出去的 argv,因此在 Web surface 上,沙箱與批准接縫是被繞過而非被執行。
 
-**LSP 三件套**留在外面是运维原因而非安全原因:`command` 在插件加载时从 `PATH` 解析,因此缺少语言服务器会让整次启动失败,而不只是失去一个工具。等到「缺失」退化为「跳过注册」之后,它就可以挂了。
+**LSP 三件套**留在外面是運維原因而非安全原因:`command` 在外掛載入時從 `PATH` 解析,因此缺少語言伺服器會讓整次啟動失敗,而不只是失去一個工具。等到「缺失」退化為「跳過註冊」之後,它就可以掛了。
 
-### MCP 是依赖,不是配置行
+### MCP 是依賴,不是設定行
 
-`@deepseek-ai/dsh-mcp-client` 成为本 CLI（命令行界面）的运行时依赖,但在任何交付配置里都没有对应的行。该插件每个实例只挂载一台服务器,且 `command` 是必填,因此一个默认值必须点名一台第三方服务器,并在每次启动时把它作为子进程 spawn——不经 `ctx.shell`,因而也在 Web surface 所组合的沙箱策略之外。
+`@deepseek-ai/dsh-mcp-client` 成為本 CLI（命令列介面）的執行時依賴,但在任何交付設定裡都沒有對應的行。該外掛每個實例只掛載一臺伺服器,且 `command` 是必填,因此一個預設值必須點名一臺第三方伺服器,並在每次啟動時把它作為子程序 spawn——不經 `ctx.shell`,因而也在 Web surface 所組合的沙箱策略之外。
 
-真正能让 MCP 成为默认的那一层,恰恰是本仓库尚未拥有的:一个读取用户服务器清单、按条目逐台挂载客户端的桥接,形态与 [`dsh-hooks-claude-code`](../../../../packages/hooks/hooks-claude-code/README.zh.md) 读取 Claude Code 的 `hooks.json` 完全相同。交付这个依赖意味着已安装的 `dsh` 能从 `$DSH_HOME/config.yaml` 挂载服务器;CLI README 里给了那段 YAML。
+真正能讓 MCP 成為預設的那一層,恰恰是本儲存庫尚未擁有的:一個讀取使用者伺服器清單、按條目逐臺掛載用戶端的橋接,形態與 [`dsh-hooks-claude-code`](../../../../packages/hooks/hooks-claude-code/README.zh.md) 讀取 Claude Code 的 `hooks.json` 完全相同。交付這個依賴意味著已安裝的 `dsh` 能從 `$DSH_HOME/config.yaml` 掛載伺服器;CLI README 裡給了那段 YAML。
 
-## 测试
+## 測試
 
-`apps/cli/tests/shipped-composition.e2e.ts` 曾在伪终端中通过真实 Loader 启动交付树，并从会话日志持久化的 `request/header` 中读出工具名，因此断言的是模型实际收到的目录。它传入的 `--config` overlay `composition-keyless-tail.cordis.yml` 只用于测试隔离：一个无网络适配器，以及落在工作区内的会话产物。
+`apps/cli/tests/shipped-composition.e2e.ts` 曾在偽終端中透過真實 Loader 啟動交付樹，並從工作階段日誌持久化的 `request/header` 中讀出工具名，因此斷言的是模型實際收到的目錄。它傳入的 `--config` overlay `composition-keyless-tail.cordis.yml` 只用於測試隔離：一個無網路介面卡，以及落在工作區內的工作階段產物。
 
-该尾部还曾插入 `composition-settled.ts`，用于在终端字节流上宣告 Loader 激活已 settle。TUI 在自己的 fiber 一启动就渲染，因此在 banner 处敲下的提示词可能在工具行与持久化仍在激活时就抵达循环，从而组装出不完整的目录；把冒烟的首个提示词 gate 在该标记上，正是断言得以确定的原因。
+該尾部還曾插入 `composition-settled.ts`，用於在終端位元組流上宣告 Loader 啟用已 settle。TUI 在自己的 fiber 一啟動就渲染，因此在 banner 處敲下的提示詞可能在工具行與持久化仍在啟用時就抵達迴圈，從而組裝出不完整的目錄；把冒煙的首個提示詞 gate 在該標記上，正是斷言得以確定的原因。
 
-同一份冒烟还根据同一份产物固定 TUI 的执行姿态。那些沙箱 schema 与初始权限断言归[workspace-write 默认值决策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)所有，独立于本工具清单决策。
+同一份冒煙還根據同一份產物固定 TUI 的執行姿態。那些沙箱 schema 與初始權限斷言歸[workspace-write 預設值決策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)所有，獨立於本工具清單決策。
 
-[`apps/web/tests/shipped-composition.e2e.ts`](../../../../apps/web/tests/shipped-composition.e2e.ts) 在构建产物 lane 中覆盖 Web surface,断言它的工具目录、它的访问默认值未被触碰,以及 `workspace-write` 的可写根包含临时目录——一个会让沙箱测试说谎的陷阱,当工作区落在 `/tmp` 下时([`roots.ts`](../../../../packages/sandbox/sandbox/src/roots.ts))。
+[`apps/web/tests/shipped-composition.e2e.ts`](../../../../apps/web/tests/shipped-composition.e2e.ts) 在建置產物 lane 中覆蓋 Web surface,斷言它的工具目錄、它的存取預設值未被觸碰,以及 `workspace-write` 的可寫根包含臨時目錄——一個會讓沙箱測試說謊的陷阱,當工作區落在 `/tmp` 下時([`roots.ts`](../../../../packages/sandbox/sandbox/src/roots.ts))。
 
-`glob` 与 `grep` 被作为固定成员断言，而不是一对宿主依赖：`dsh-tool-fs-search` spawn 打包的 ripgrep 二进制并无条件注册两个工具，因此这一对始终在场。
+`glob` 與 `grep` 被作為固定成員斷言，而不是一對主機依賴：`dsh-tool-fs-search` spawn 打包的 ripgrep 二進位制並無條件註冊兩個工具，因此這一對始終在場。
 
-除入库测试外,两个 surface 都以 plain Node 从构建产物 `apps/cli/lib/bin.js` 出发、用真实密钥驱动过。每一个已挂载的工具都执行成功,包括 `ralph` 与 `web_search`;模型从未触达 `cordis_*` 或 `mcp_*`,被要求做 LSP 跳转时退化到 `grep`,被要求开持久终端时用了后台 `bash` 任务。
+除入庫測試外,兩個 surface 都以 plain Node 從建置產物 `apps/cli/lib/bin.js` 出發、用真實金鑰驅動過。每一個已掛載的工具都執行成功,包括 `ralph` 與 `web_search`;模型從未觸達 `cordis_*` 或 `mcp_*`,被要求做 LSP 跳轉時退化到 `grep`,被要求開持久終端時用了後臺 `bash` 任務。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**把共享的行复制进两份 overlay,而不是提升到 base。** 基于「一处归属」原则否决:新增行里有三行会存在两份,而这些副本没有任何理由发生分歧,下一次改工具清单还得记着改两处。
+**把共享的行複製進兩份 overlay,而不是提升到 base。** 基於「一處歸屬」原則否決:新增行裡有三行會存在兩份,而這些副本沒有任何理由發生分歧,下一次改工具清單還得記著改兩處。
 
-**在同一次改动里给 TUI 加沙箱。** 不予采纳，因为这是一个不属于工具清单改动的独立决定：TUI 挂的是不受限执行器，替换它们会改变一个既有 surface 做什么，而非它提供什么。这个决定需要自己的证据——尤其因为 TUI 没有 `approval/request` 的应答方，升权请求在那里会 fail-closed，而不是弹出提示。
+**在同一次改動裡給 TUI 加沙箱。** 不予採納，因為這是一個不屬於工具清單改動的獨立決定：TUI 掛的是不受限執行器，替換它們會改變一個既有 surface 做什麼，而非它提供什麼。這個決定需要自己的證據——尤其因為 TUI 沒有 `approval/request` 的應答方，升權請求在那裡會 fail-closed，而不是彈出提示。
 
-**开启 PTC mode。** 它的信任立场按设计与 bash 同级,工具调用要过与 bash 相同的 `tools/pre-execute` 闸门,所以它与上面那些模型写码工具不是同一个判断。在这里仍被否决:`both` 会改变两个 surface 上每一个模型可见请求,而 `ptc` 是把线路替换而非加一个——两者都是呈现方式的决定,不是工具清单的决定。
+**開啟 PTC mode。** 它的信任立場按設計與 bash 同級,工具呼叫要過與 bash 相同的 `tools/pre-execute` 閘門,所以它與上面那些模型寫碼工具不是同一個判斷。在這裡仍被否決:`both` 會改變兩個 surface 上每一個模型可見請求,而 `ptc` 是把線路替換而非加一個——兩者都是呈現方式的決定,不是工具清單的決定。
 
-**默认挂一台 MCP 服务器。**否决，因为交付默认值必须点名一台，而任何选择都会在每个用户的机器上、在沙箱之外 spawn 一个第三方子进程。改为交付依赖。
+**預設掛一臺 MCP 伺服器。**否決，因為交付預設值必須點名一臺，而任何選擇都會在每個使用者的機器上、在沙箱之外 spawn 一個第三方子程序。改為交付依賴。
 
-## 后果
+## 後果
 
-同一个模型在两个 surface 上拿到同样的工具,那处没有记录理由的差异消失了。测试会精确断言二十个无条件提供的名称，并把 `glob` 与 `grep` 作为固定成员钉在两侧，因此日后只改一个 surface 都会让检查失败而不是悄悄发出去；[session-search-not-shipped-default 决策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)正是这样一次后来的改动，两个测试也随之移动。
+同一個模型在兩個 surface 上拿到同樣的工具,那處沒有記錄理由的差異消失了。測試會精確斷言二十個無條件提供的名稱，並把 `glob` 與 `grep` 作為固定成員釘在兩側，因此日後只改一個 surface 都會讓檢查失敗而不是悄悄發出去；[session-search-not-shipped-default 決策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)正是這樣一次後來的改動，兩個測試也隨之移動。
 
-`apps/cli` 增加了五个 workspace 依赖:四个是交付树当时挂载的,外加 `dsh-mcp-client`——它并不被挂载,存在的意义是让已安装的 `dsh` 能挂。四个保留了下来——[session-search-not-shipped-default 决策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)把 `@deepseek-ai/dsh-tool-session-query` 连同它的行一起移除了。
+`apps/cli` 增加了五個 workspace 依賴:四個是交付樹當時掛載的,外加 `dsh-mcp-client`——它並不被掛載,存在的意義是讓已安裝的 `dsh` 能掛。四個保留了下來——[session-search-not-shipped-default 決策](../../archived/feature/2026-08-02-session-search-not-shipped-default.md)把 `@deepseek-ai/dsh-tool-session-query` 連同它的行一起移除了。
 
-执行策略独立于工具清单。[共享 workspace-write 决策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)拥有两个 surface 的沙箱执行器与默认权限；更改该策略不会增加或移除工具。
+執行策略獨立於工具清單。[共享 workspace-write 決策](../../archived/feature/2026-07-31-workspace-write-surface-default.md)擁有兩個 surface 的沙箱執行器與預設權限；更改該策略不會增加或移除工具。

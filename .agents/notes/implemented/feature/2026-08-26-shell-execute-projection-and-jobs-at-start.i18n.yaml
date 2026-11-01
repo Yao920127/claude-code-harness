@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-26-shell-execute-projection-and-jobs-at-start.md
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job:
   en: bbc82e3f79a66fcb
-  zh: 6c348491e0db97b0
+  zh: bd6eaeac6beb3661
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job/problem:
   en: e0e1292e5a785322
-  zh: 34ec6572ed6cf406
+  zh: 8c1f6a2ecea395cd
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job/decision:
   en: 332ddaffd22e473f
-  zh: 15c0ff6808316770
+  zh: a8179193ad7f8ad1
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job/alternatives-considered:
   en: d888a561fafa5bb3
-  zh: 719d687f2b3e4c10
+  zh: 7ddeffc4993e6829
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job/testing:
   en: 65f59286de9fa00a
-  zh: 664d7f82a1479153
+  zh: a16ce44a57992ff0
 /agent-note-one-shell-execute-foreground-as-a-projection-timeout-as-a-bounded-wait-on-the-job/consequences:
   en: 5a5278fc96afacc1
-  zh: cc088ea97c6249c9
+  zh: d7a559e7478f4b94

@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/deliverables.md
 /deliverables:
   en: a5ce6d07597594ec
-  zh: 72639c6033d66f41
+  zh: 29312c0fb4a96f4c
 /deliverables/presentedfile-one-declared-delivery:
   en: bf10a8aa233c61d9
-  zh: fdab894f8448c843
+  zh: 816f55f2dec93041
 /deliverables/workspacechangedfile-one-changed-file:
   en: 2e1f9b9658d9a0bd
-  zh: a6df218327729abd
+  zh: 493a1457931289d2
 /deliverables/workspacechangessummary-one-turn-s-change-summary:
   en: 9fc7e9ab3e3a2e18
-  zh: b165a5ebfa1f258d
+  zh: 2d77191887756bd7
 /deliverables/workspacediffhunk-one-unified-diff-hunk:
   en: 460ee1e47584bb6d
-  zh: 459abc474276ae63
+  zh: d194ca9c6a36d589
 /deliverables/workspacefilediff-one-file-s-comparison:
   en: f46c513203b5c4b3
-  zh: 5462c4ab3370d719
+  zh: 770b202c4ace369f
 /deliverables/workspacechanges-the-host-service-serving-summaries-and-comparisons:
   en: d83ba5599b57425a
-  zh: 23fdbccf9173221d
+  zh: 910f5909cc985564
 /deliverables/durable-events-and-the-served-summary:
   en: 138e4540efe09196
-  zh: 3c50c4e650b19194
+  zh: 81fbec3098f22935

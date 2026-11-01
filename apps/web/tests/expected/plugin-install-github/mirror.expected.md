@@ -1,8 +1,8 @@
-- dialog "添加插件":
-  - heading "添加插件" [level=2]
-  - button "关闭"
-  - textbox "插件包名":
+- dialog "新增外掛":
+  - heading "新增外掛" [level=2]
+  - button "關閉"
+  - textbox "外掛包名":
     - /placeholder: 例如 @deepseek-ai/dsh-subagent-codex
-  - button "插件安装引导和示例"
-  - button "安装源 中国大陆镜像源"
-  - button "安装" [disabled]
+  - button "外掛安裝引導和範例"
+  - button "安裝源 中國大陸映像源"
+  - button "安裝" [disabled]

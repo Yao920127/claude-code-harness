@@ -1,35 +1,35 @@
-# Agent Note：后台 job 的一个输出环、一个投影、一条事件流
+# Agent Note：後臺 job 的一個輸出環、一個投影、一條事件流
 
 Status: implemented
 
 [English](2026-09-03-jobs-seam-consolidation.md) | 中文
 
-## 问题
+## 問題
 
-job seam 是逐步堆出来的。生产者要把输出声明两次——模型读取的消耗式 `readOutput` 钩子，以及观察者读取的可选 `record: true` 环——注册表也为同一个 job 保留了两套词汇（模型侧的 `JobSnapshot`、会话控制流上的 `SessionJob`、观测线路上的 `JobWireChunk`）。三个监听器家族（`onJobDone`、`onJobsChanged`、`onOutput`）用不同的拥有者过滤投递彼此重叠的事实，注册表自己还跟踪着只有模型侧工具才解释得了的 `reported` 位。合并后设计的评审把接口层称作最薄弱的部分：读者分不清 `read`、`readRecord`、`JobStart`、`RecordingJob` 与 `updateDetail` 里哪些是约定、哪些是历史遗留。
+job seam 是逐步堆出來的。生產者要把輸出宣告兩次——模型讀取的消耗式 `readOutput` 掛鉤，以及觀察者讀取的可選 `record: true` 環——註冊表也為同一個 job 保留了兩套詞彙（模型側的 `JobSnapshot`、工作階段控制流上的 `SessionJob`、觀測線路上的 `JobWireChunk`）。三個監聽器家族（`onJobDone`、`onJobsChanged`、`onOutput`）用不同的擁有者過濾投遞彼此重疊的事實，註冊表自己還跟蹤著只有模型側工具才解釋得了的 `reported` 位。合併後設計的評審把介面層稱作最薄弱的部分：讀者分不清 `read`、`readRecord`、`JobStart`、`RecordingJob` 與 `updateDetail` 裡哪些是約定、哪些是歷史遺留。
 
-## 决策
+## 決策
 
-- **每个 job 一个环。** `JobSpec` 取代 `JobStart`：spec 声明可选的拉取式 `output` 源（`JobOutputSource`，子进程的 `readFrom` 家族），由注册表按自己的节奏（`dsh-jobs-local` 的 `pumpPollMs`）泵送；每个生产者都收到一个 `JobHandle`，其 `append` 把块推进同一个环。模型的消耗式读取与每个观察者的绝对偏移读取服务同一批字节；`readOutput` 与 `record` 判别字段被移除。shell 生产者把它们的 `observed` 偏移读取器交给注册表，并把沙箱事实折进终态 `detail`；terminal 生产者通过一个计字节的源适配其消耗式发送读取器；subagent 把回答作为 `JobOutcome.result` 返回，结算后的第一次读取携带它一次。
-- **两个游标，一份存储。** `JobRegistry.read(id)` 是有状态的模型游标；`JobRegistry.readAt(id, from)` 是无状态的观察者读取。模型读取排除 `log` 块（给观察者的生产者叙述），并渲染 stdout，再接一段 `[stderr]`，与 shell 工具一贯的做法完全一致。
-- **`updateProgress` 取代 `updateDetail`。** `JobView.progress` 是实时行，结算时清除；`JobView.detail` 是终态原因，合并了模型 `job_kill` 给出的原因。
-- **一个投影。** `JobView`（客户端安全叶子 `@deepseek-ai/dsh-jobs/view`）是模型工具、浏览器名册与观测帧共同消费的形状；`owner` 是会话 id，从不是 `Agent`。
-- **直接传入调用方的操作。** `JobRegistry.list`、`get`、`read`、`readAt`、`kill` 与 `wait` 在每次调用时接收调用方会话。省略调用方时仅允许访问无主 job。输出环与浏览器流不需要独立的调用方操作对象。
-- **一条事件流。** 带 `{ owner }`、`{ owners: 'scope' }` 或 `{ owners: 'all' }` 过滤的 `events.subscribe(filter, listener)` 取代三个监听器家族。`settled` 标出原因（`producer`、`kill`、`teardown`）；`output` 只携带 id 与新的 total。
-- **播报台账移到 `dsh-tool-jobs`。** 注册表不再跟踪 `reported`。工具在等待开始时认领 job（超时或中止则撤回），在 `job_kill` 被接受时也认领；结算事件删除条目，teardown 结算与无主 job 被跳过，投递目标是结算时登记在拥有者会话下的 agent。
-- **名册离开会话控制流。** `dsh-api-job-controller` 在 `job.follow` 旁拥有 `job.list({ sessionId })`——每轮聚合过的生命周期提交之后发一次整集帧，从不按追加发——其客户端安装 `ctx.jobs`（`watchRows`、`observe`、一份快照）。`dsh-api-session-controller` 只承载队列与投影；`ui-jobs` 在挂载期间关注其会话的名册，行在 job 进行中或留有保留输出时可展开。
+- **每個 job 一個環。** `JobSpec` 取代 `JobStart`：spec 宣告可選的拉取式 `output` 源（`JobOutputSource`，子程序的 `readFrom` 家族），由註冊表按自己的節奏（`dsh-jobs-local` 的 `pumpPollMs`）泵送；每個生產者都收到一個 `JobHandle`，其 `append` 把塊推進同一個環。模型的消耗式讀取與每個觀察者的絕對偏移讀取服務同一批位元組；`readOutput` 與 `record` 判別欄位被移除。shell 生產者把它們的 `observed` 偏移讀取器交給註冊表，並把沙箱事實折進終態 `detail`；terminal 生產者透過一個計位元組的源適應其消耗式傳送讀取器；subagent 把回答作為 `JobOutcome.result` 返回，結算後的第一次讀取攜帶它一次。
+- **兩個遊標，一份儲存。** `JobRegistry.read(id)` 是有狀態的模型遊標；`JobRegistry.readAt(id, from)` 是無狀態的觀察者讀取。模型讀取排除 `log` 塊（給觀察者的生產者敘述），並渲染 stdout，再接一段 `[stderr]`，與 shell 工具一貫的做法完全一致。
+- **`updateProgress` 取代 `updateDetail`。** `JobView.progress` 是即時行，結算時清除；`JobView.detail` 是終態原因，合併了模型 `job_kill` 給出的原因。
+- **一個投影。** `JobView`（用戶端安全葉子 `@deepseek-ai/dsh-jobs/view`）是模型工具、瀏覽器名冊與觀測幀共同消費的形狀；`owner` 是工作階段 id，從不是 `Agent`。
+- **直接傳入呼叫方的操作。** `JobRegistry.list`、`get`、`read`、`readAt`、`kill` 與 `wait` 在每次呼叫時接收呼叫方工作階段。省略呼叫方時僅允許存取無主 job。輸出環與瀏覽器流不需要獨立的呼叫方操作物件。
+- **一條事件流。** 帶 `{ owner }`、`{ owners: 'scope' }` 或 `{ owners: 'all' }` 過濾的 `events.subscribe(filter, listener)` 取代三個監聽器家族。`settled` 標出原因（`producer`、`kill`、`teardown`）；`output` 只攜帶 id 與新的 total。
+- **播報臺帳移到 `dsh-tool-jobs`。** 註冊表不再跟蹤 `reported`。工具在等待開始時認領 job（超時或中止則撤回），在 `job_kill` 被接受時也認領；結算事件刪除條目，teardown 結算與無主 job 被跳過，投遞目標是結算時登記在擁有者工作階段下的 agent。
+- **名冊離開工作階段控制流。** `dsh-api-job-controller` 在 `job.follow` 旁擁有 `job.list({ sessionId })`——每輪聚合過的生命週期提交之後發一次整集幀，從不按追加發——其用戶端安裝 `ctx.jobs`（`watchRows`、`observe`、一份快照）。`dsh-api-session-controller` 只承載佇列與投影；`ui-jobs` 在掛載期間關注其工作階段的名冊，行在 job 進行中或留有保留輸出時可展開。
 
-`attachController` 与相对拥有者的 `servesOwner` 门保持原样；没有挂载控制器的生产者是否可以提供 `run_in_background`，因为这个缺口早于本次变更，暂不处理。
+`attachController` 與相對擁有者的 `servesOwner` 門保持原樣；沒有掛載控制器的生產者是否可以提供 `run_in_background`，因為這個缺口早於本次變更，暫不處理。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **保留三个监听器并共享一个拥有者过滤。** 它保住了堆出来的名字，却保不住评审要的性质——一个地方就能学会注册表宣布什么——而且 `onJobDone` 的精确拥有者投递正是迫使注册表在每个投影里保留 `Agent` 的原因。
-- **把 `reported`留在注册表。** 只有工具知道哪些投递到达了模型（等待的工具结果、kill 的确认）；注册表只能近似，而这个近似正是评审列出的重复播报与漏播报 bug 的来源。
-- **把名册留在会话控制流上。** 省了一条 Remote 流，却把会话控制器耦合到 job 注册表，还镜像了一个环的字节数如今直接回答的 `record` 标志（`output.total`）。
-- **也把 `log` 块交给模型。** 生产者叙述是给观察者的；模型已经通过 `progress` 与终态 `detail` 收到同样的事实。
+- **保留三個監聽器並共享一個擁有者過濾。** 它保住了堆出來的名字，卻保不住評審要的性質——一個地方就能學會註冊表宣佈什麼——而且 `onJobDone` 的精確擁有者投遞正是迫使註冊表在每個投影裡保留 `Agent` 的原因。
+- **把 `reported`留在註冊表。** 只有工具知道哪些投遞到達了模型（等待的工具結果、kill 的確認）；註冊表只能近似，而這個近似正是評審列出的重複播報與漏播報 bug 的來源。
+- **把名冊留在工作階段控制流上。** 省了一條 Remote 流，卻把工作階段控制器耦合到 job 註冊表，還映像了一個環的位元組數如今直接回答的 `record` 標誌（`output.total`）。
+- **也把 `log` 塊交給模型。** 生產者敘述是給觀察者的；模型已經透過 `progress` 與終態 `detail` 收到同樣的事實。
 
-## 后果
+## 後果
 
-模型可见文本保持不变：状态行、工具描述与 schema、播报措辞逐字节相同，唯一新增的模型可见事实是 `killed` 状态行现在携带的 kill 原因。需要流式输出的生产者选择拉取源或 `append`，从不格式化消耗式增量。Web 客户端把每个进行中的 job 渲染为可展开，因此从不写输出的 job 显示为空的运行中面板而非静态行。`JobKindMap` 的合并发生在宿主侧，浏览器程序把 `JobView.kind` 视为它认识的 kind 集合，其余当作不透明字符串——名册对它也只做这些。
+模型可見文字保持不變：狀態行、工具描述與 schema、播報措辭逐位元組相同，唯一新增的模型可見事實是 `killed` 狀態行現在攜帶的 kill 原因。需要流式輸出的生產者選擇拉取源或 `append`，從不格式化消耗式增量。Web 用戶端把每個進行中的 job 渲染為可展開，因此從不寫輸出的 job 顯示為空的執行中面板而非靜態行。`JobKindMap` 的合並行生在主機側，瀏覽器程式把 `JobView.kind` 視為它認識的 kind 集合，其餘當作不透明字串——名冊對它也只做這些。
 
-合并 master 之后的评审跟进收紧了其中四条边。job 的第一个事件永远是 `registered`：通告先于泵，而泵的首轮 drain 同步执行且可能通告输出。已结算的环在模型的首次终态读取之前保留模型游标尚未消费的全部字节，因此在首次 `job_output` 之前结束的 job 不会丢失运行期上限保留的任何内容。`dsh-tool-jobs` 为每次等待调用保存一条带 `live` 标记的认领，调用方 abort 时在 abort 事件里同步清掉该标记，因此注册表的拒绝尚未传回工具之前宣布的结算仍会投递通知；超时的等待只丢弃自己的认领，并发的另一个等待仍覆盖该结算。浏览器把先于锚点发生的观察失败记录为带错误的视图，面板显示提示而不是留白。`@deepseek-ai/dsh-jobs/invariant` 伴生插件校验每个 job 的事件协议（先 `registered`、恰一次结算、最后 `removed`）以及每个通告的投影与注册表自身读取的一致性，这正是[伴生插件规则](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)要求的交叉观察；先前只针对单个视图的字段校验已删除。拉取源保留的 spill 文件是 job 元数据（`JobView.output.spillPaths`，每次泵读取都会上报，读取不再点名时即撤回），不是逐块元数据；模型读取对生产者侧缺口与环淘汰都渲染 shell 工具的丢失输出提示并列出这些文件，即使缺口块本身已被淘汰——本次变更曾引入的 `before this read` 变体已删除。观察生成过程若在流中看到其 job 被移除（拥有者 teardown），以被移除 job 的终态投影收尾，而不是一次失败的读取。被拒绝的后台 spawn 不产生任何进程输出，因此 shell provider 现在把 `spawn failed: …` 提示作为 observed stderr 的整条流提供（消耗式读取仍只折入一次），且 `ShellProcess.observed` 及其两个读取器改为必填：这类失败之后模型的首次 `job_output` 读到的正是 master 的消耗式读取所渲染的内容。
+合併 master 之後的評審跟進收緊了其中四條邊。job 的第一個事件永遠是 `registered`：通告先於泵，而泵的首輪 drain 同步執行且可能通告輸出。已結算的環在模型的首次終態讀取之前保留模型遊標尚未消費的全部位元組，因此在首次 `job_output` 之前結束的 job 不會丟失執行期上限保留的任何內容。`dsh-tool-jobs` 為每次等待呼叫儲存一條帶 `live` 標記的認領，呼叫方 abort 時在 abort 事件裡同步清掉該標記，因此註冊表的拒絕尚未傳回工具之前宣佈的結算仍會投遞通知；超時的等待只丟棄自己的認領，並行的另一個等待仍覆蓋該結算。瀏覽器把先於錨點發生的觀察失敗記錄為帶錯誤的檢視，面板顯示提示而不是留白。`@deepseek-ai/dsh-jobs/invariant` 伴生外掛驗證每個 job 的事件協定（先 `registered`、恰一次結算、最後 `removed`）以及每個通告的投影與註冊表自身讀取的一致性，這正是[伴生外掛規則](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)要求的交叉觀察；先前只針對單個檢視的欄位驗證已刪除。拉取源保留的 spill 檔案是 job 中繼資料（`JobView.output.spillPaths`，每次泵讀取都會上報，讀取不再點名時即撤回），不是逐塊中繼資料；模型讀取對生產者側缺口與環淘汰都渲染 shell 工具的丟失輸出提示並列出這些檔案，即使缺口塊本身已被淘汰——本次變更曾引入的 `before this read` 變體已刪除。觀察生成過程若在流中看到其 job 被移除（擁有者 teardown），以被移除 job 的終態投影收尾，而不是一次失敗的讀取。被拒絕的後臺 spawn 不產生任何程序輸出，因此 shell provider 現在把 `spawn failed: …` 提示作為 observed stderr 的整條流提供（消耗式讀取仍只折入一次），且 `ShellProcess.observed` 及其兩個讀取器改為必填：這類失敗之後模型的首次 `job_output` 讀到的正是 master 的消耗式讀取所渲染的內容。

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/computer-use/README.md
 /:
   en: d53a898cc3afb1aa
-  zh: 3ef1fb5638af23f9
+  zh: 8fbf9339720adf5e
 /packages-computer-use:
   en: 77ea90624a004773
   zh: fe6dbf8414a5aff0
 /packages-computer-use/summary:
   en: 3820da56a601d3f1
-  zh: 358e65f8a7cf7446
+  zh: 9da5fcd3c0261d9d
 /packages-computer-use/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-computer-use/packages:
   en: 9aa86e6451f60c3d
-  zh: c5e6816e90f2d74b
+  zh: 7a6a60f043b3902b
 /packages-computer-use/related-documentation:
   en: ad08d3417a0d4630
-  zh: cfe8e03033c2fede
+  zh: f40d444a970c143a
 /packages-computer-use/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

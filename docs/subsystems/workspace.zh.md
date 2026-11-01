@@ -1,12 +1,12 @@
-# 工作区
+# 工作區
 
 [English](workspace.md) | 中文
 
-工作区（workspace）是用户工作目录的持久记录：一个建立在规范路径之上的稳定 id、一个显示标题，以及归属于它的会话的有序账本。该子系统是单个包（package）（[dsh-workspace](../../packages/workspace/workspace)，`ctx.workspaceRegistry`）——一项宿主侧可选能力，不属于 agent loop（智能体循环）主干，并且对模型不可见（没有工具、没有提示词文本、没有会话事件）。它通过[存储领域数据形式](storage.zh.md)存储自己的记录，并对照 [`SessionHeader.cwd`](persistence.zh.md#sessionheader--metadata-beside-the-log) 校验会话成员资格，因此 `storageDomain` 与 `sessionPersistence` 是必需的启动依赖：持久化这一依赖不可用时，插件保持 pending，而不是把这种不可用误当作空历史。设计记录：[领域 KV 存储 Agent Note（agent 决策记录）](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)；引导与 GUI 顺序：[Workspace UI 产品流程 Agent Note](../../.agents/notes/archived/feature/2026-07-25-workspace-ui-product-flow.md)。
+工作區（workspace）是使用者工作目錄的持久記錄：一個建立在規範路徑之上的穩定 id、一個顯示標題，以及歸屬於它的工作階段的有序帳本。該子系統是單個包（package）（[dsh-workspace](../../packages/workspace/workspace)，`ctx.workspaceRegistry`）——一項主機側可選能力，不屬於 agent loop（智慧代理迴圈）主幹，並且對模型不可見（沒有工具、沒有提示詞文字、沒有工作階段事件）。它透過[儲存領域資料形式](storage.zh.md)儲存自己的記錄，並對照 [`SessionHeader.cwd`](persistence.zh.md#sessionheader--metadata-beside-the-log) 驗證工作階段成員資格，因此 `storageDomain` 與 `sessionPersistence` 是必需的啟動依賴：持久化這一依賴不可用時，外掛保持 pending，而不是把這種不可用誤當作空歷史。設計記錄：[領域 KV 儲存 Agent Note（agent 決策記錄）](../../.agents/notes/proposed/architecture/2026-07-24-domain-kv-storage-and-workspace.zh.md)；引導與 GUI 順序：[Workspace UI 產品流程 Agent Note](../../.agents/notes/archived/feature/2026-07-25-workspace-ui-product-flow.md)。
 
-源码：[`packages/workspace/workspace/src/types.ts`](../../packages/workspace/workspace/src/types.ts)
+原始碼：[`packages/workspace/workspace/src/types.ts`](../../packages/workspace/workspace/src/types.ts)
 
-## 标识
+## 標識
 
 ```ts type-equiv
 /**
@@ -16,11 +16,11 @@
 type WorkspaceId = Branded<'WorkspaceId'>
 ```
 
-`WorkspaceId` 是[品牌化 id](core.zh.md#branded-ids)。路径标识与之分离：`realpathNormalize`（`fs.realpath`；尾部斜杠、`..` 与符号链接全部解析）是唯一的一套唯一性规范——工作区路径以规范化形式存储，唯一性即规范路径的字符串相等（指向已被拥有目录的符号链接会与之冲突），attach 时的会话 cwd 检查也走同一套规范。
+`WorkspaceId` 是[品牌化 id](core.zh.md#branded-ids)。路徑標識與之分離：`realpathNormalize`（`fs.realpath`；尾部斜槓、`..` 與符號連結全部解析）是唯一的一套唯一性規範——工作區路徑以規範化形式儲存，唯一性即規範路徑的字串相等（指向已被擁有目錄的符號連結會與之衝突），attach 時的工作階段 cwd 檢查也走同一套規範。
 
-## 工作区实体
+## 工作區實體
 
-消费方只看到 `Workspace` 接口；实现保持包内私有。
+消費方只看到 `Workspace` 介面；實作保持包內私有。
 
 ```ts type-equiv
 /**
@@ -113,25 +113,25 @@ interface Workspace {
 }
 ```
 
-所有权的真源是记录中有序的 `sessionIds`，绝不从会话 cwd 派生——但成员资格要求两者同时成立：账本上有其 id，且 header 的规范 cwd 等于工作区路径，因此一个会话在结构上至多属于一个工作区。失败的写入会拒绝（`insertSessionBefore` 的账本错误以 `WorkspaceMoveInvalidError` 拒绝，存储失败以普通错误拒绝）；每次被接受的变更都盖上 `updatedAt` 时间戳，并持久修剪不再通过成员资格检查的候选项。
+所有權的真源是記錄中有序的 `sessionIds`，絕不從工作階段 cwd 派生——但成員資格要求兩者同時成立：帳本上有其 id，且 header 的規範 cwd 等於工作區路徑，因此一個工作階段在結構上至多屬於一個工作區。失敗的寫入會拒絕（`insertSessionBefore` 的帳本錯誤以 `WorkspaceMoveInvalidError` 拒絕，儲存失敗以普通錯誤拒絕）；每次被接受的變更都蓋上 `updatedAt` 時間戳，並持久修剪不再透過成員資格檢查的候選項。
 
-## 注册表：`ctx.workspaceRegistry`
+## 註冊表：`ctx.workspaceRegistry`
 
-`WorkspaceRegistry`（[签名](#ctxworkspaceregistry--workspaceregistry)）拥有注册与解析。`create(path, title?)` 要求完全限定路径并将其规范化，拒绝不存在的路径（原样传出原始 `ENOENT`）或非目录；当规范路径已被拥有时原样返回既有实体；否则创建一条标题为 `title ?? defaultWorkspaceTitle(path)` 的记录并前插到持久的注册表顺序中（不同规范路径可以共享同一显示标题，没有最终路径段时使用根路径拼写）。`get(id)` 与有序的 `list()` 是同步缓存读取；`resolveByPath(path)` 应用同一套完全限定 realpath 规范但不创建。`delete(id)` 只移除注册记录、顺序条目和会话账本——目录、用户文件、实时会话和已持久化日志一概不动，因此这些会话变为 Ungrouped（[决策](../../.agents/notes/implemented/feature/2026-07-27-workspace-registration-deletion.zh.md)）；未知 id 返回 `false`。create 与 delete 会在其两次写入（记录 + 顺序）可能分叉之前先持久写入一个待定变更标记；启动时恰好解决被标记的那次变更——通过删除被标记的表行：这会补完被中断的 delete，并回滚被中断的 create（注册可以重建，因此回滚是安全方向）——而没有标记的顺序/表不一致则作为损坏大声失败。
+`WorkspaceRegistry`（[簽名](#ctxworkspaceregistry--workspaceregistry)）擁有註冊與解析。`create(path, title?)` 要求完全限定路徑並將其規範化，拒絕不存在的路徑（原樣傳出原始 `ENOENT`）或非目錄；當規範路徑已被擁有時原樣返回既有實體；否則建立一條標題為 `title ?? defaultWorkspaceTitle(path)` 的記錄並前插到持久的註冊表順序中（不同規範路徑可以共享同一顯示標題，沒有最終路徑段時使用根路徑拼寫）。`get(id)` 與有序的 `list()` 是同步快取讀取；`resolveByPath(path)` 應用同一套完全限定 realpath 規範但不建立。`delete(id)` 只移除註冊記錄、順序條目和工作階段帳本——目錄、使用者檔案、即時工作階段和已持久化日誌一概不動，因此這些工作階段變為 Ungrouped（[決策](../../.agents/notes/implemented/feature/2026-07-27-workspace-registration-deletion.zh.md)）；未知 id 返回 `false`。create 與 delete 會在其兩次寫入（記錄 + 順序）可能分叉之前先持久寫入一個待定變更標記；啟動時恰好解決被標記的那次變更——透過刪除被標記的錶行：這會補完被中斷的 delete，並復原被中斷的 create（註冊可以重建，因此復原是安全方向）——而沒有標記的順序/表不一致則作為損壞大聲失敗。
 
-会话的 cwd 在创建时由创建者赋予，而不是由本注册表赋予——API 网关从所选工作区的 `path` 解析新会话的 cwd（回退到显式或默认 cwd），先创建会话使 cwd 落入其不可变的 [`SessionHeader`](persistence.zh.md#sessionheader--metadata-beside-the-log)，再调用 `attachSession`，后者会把已存储的 header cwd 与工作区路径重新校验一遍。首次成功启动时，注册表仅凭已持久化的 header（`id`、`cwd`、`createdAt`——绝不读事件正文）引导历史：把规范 cwd 有效的会话按目录分组为工作区，最新的排在最前；「已初始化」标记最后写入，因此被中断的引导可以安全续跑。引导只发生这一次：没有 cwd 的历史遗留会话保持 Ungrouped，此后创建的会话只能通过 `attachSession` 加入工作区。
+工作階段的 cwd 在建立時由建立者賦予，而不是由本註冊表賦予——API 閘道從所選工作區的 `path` 解析新工作階段的 cwd（退回到顯式或預設 cwd），先建立工作階段使 cwd 落入其不可變的 [`SessionHeader`](persistence.zh.md#sessionheader--metadata-beside-the-log)，再呼叫 `attachSession`，後者會把已儲存的 header cwd 與工作區路徑重新驗證一遍。首次成功啟動時，註冊表僅憑已持久化的 header（`id`、`cwd`、`createdAt`——絕不讀事件正文）引導歷史：把規範 cwd 有效的工作階段按目錄分組為工作區，最新的排在最前；「已初始化」標記最後寫入，因此被中斷的引導可以安全續跑。引導只發生這一次：沒有 cwd 的歷史遺留工作階段保持 Ungrouped，此後建立的工作階段只能透過 `attachSession` 加入工作區。
 
-## 默认工作区初始化
+## 預設工作區初始化
 
-控制器的 `initializeDefault` 不接受请求参数：它拥有固定目录名 `default-workspace`，解析配置的位置，并请求注册表确保默认工作区位于该处，位置改变时将其迁移过去。注册表接收目录解析器，以所请求目录（而非规范路径）的最后一段作为初始标题，并将登记与持久化身份一起提交。语言不会传到 Host——浏览器消费方通过控制器的 `workspaceDisplayTitle` 为仍保留该自动标题的工作区加标签，因此只有屏幕上的名称跟随读者语言。[首次使用行为与配置](../../packages/api/workspace-controller/README.zh.md#first-use-workspace)说明复用和失败处理。
+控制器的 `initializeDefault` 不接受請求參數：它擁有固定目錄名 `default-workspace`，解析設定的位置，並請求註冊表確保預設工作區位於該處，位置改變時將其遷移過去。註冊表接收目錄解析器，以所請求目錄（而非規範路徑）的最後一段作為初始標題，並將登記與持久化身份一起提交。語言不會傳到 Host——瀏覽器消費方透過控制器的 `workspaceDisplayTitle` 為仍保留該自動標題的工作區加標籤，因此只有螢幕上的名稱跟隨讀者語言。[首次使用行為與設定](../../packages/api/workspace-controller/README.zh.md#first-use-workspace)說明覆用和失敗處理。
 
-## 会话置顶
+## 工作階段置頂
 
-控制器的[传输类型](../../packages/api/workspace-controller/src/types.ts)定义了 `WorkspacePinSessionRequest` 和 `WorkspaceUnpinSessionRequest`，两者都携带一个 `sessionId`。两个操作都返回 `WorkspacePinValue`：完整的会话 id 数组 `pinnedSessionIds`，最近置顶的会话排在前面。置顶要求会话已知且未归档；对未置顶的 id 取消置顶会成功，且不改变集合。归档在同一次持久化写入中移除该会话的置顶，取消归档不会恢复置顶。
+控制器的[傳輸型別](../../packages/api/workspace-controller/src/types.ts)定義了 `WorkspacePinSessionRequest` 和 `WorkspaceUnpinSessionRequest`，兩者都攜帶一個 `sessionId`。兩個操作都返回 `WorkspacePinValue`：完整的工作階段 id 陣列 `pinnedSessionIds`，最近置頂的工作階段排在前面。置頂要求工作階段已知且未歸檔；對未置頂的 id 取消置頂會成功，且不改變集合。歸檔在同一次持久化寫入中移除該工作階段的置頂，取消歸檔不會恢復置頂。
 
-## 归档准入
+## 歸檔准入
 
-归档是一个注册表全局的持久化集合，注册表拒绝把正在运行的工作藏在它后面。这条规则是本包声明并派发的两个宿主事件之上的能力接缝（[事件](#workspace-events)）：`workspace/session-activity`（waterfall）向已组合的提供方询问某会话还有什么在跑，`workspace/session-stop`（parallel）请它们停止这些工作。每个提供方像任何监听器一样在根上注册，因此本包不认识 agent、job 或 schedule 的词汇；各族是一个可合并扩展的 map 的键。
+歸檔是一個註冊表全域的持久化集合，註冊表拒絕把正在執行的工作藏在它後面。這條規則是本包宣告並派發的兩個主機事件之上的能力接縫（[事件](#workspace-events)）：`workspace/session-activity`（waterfall）向已組合的提供者詢問某工作階段還有什麼在跑，`workspace/session-stop`（parallel）請它們停止這些工作。每個提供者像任何監聽器一樣在根上註冊，因此本包不認識 agent、job 或 schedule 的詞彙；各族是一個可合併擴充功能的 map 的鍵。
 
 ```ts type-equiv
 /**
@@ -146,7 +146,7 @@ interface Workspace {
 interface SessionActivityKindMap {}
 ```
 
-`SessionActivityKind` 即 `keyof SessionActivityKindMap`，因此一个没有编译任何提供方的程序看不到任何键。随附的键放在各自 client 可导入的类型模块里：`turn` 在 Agent 注册表的 `types.ts`，`job` 在任务注册表接缝的 `view.ts`，`subagent` 在 Subagent runtime 的 `control-types.ts`，`schedule` 在 Schedule 插件的 `types.ts`；渲染各族的消费方为其分支导入这些模块，并为其他任何键保留一条通用文案。提供方通过把自己的 `SessionActivity` 条目前置到 `next()` 的结果来回答 waterfall；注册表最内层的回调返回空列表，因此没有提供方的组合可自由归档。
+`SessionActivityKind` 即 `keyof SessionActivityKindMap`，因此一個沒有編譯任何提供者的程式看不到任何鍵。隨附的鍵放在各自 client 可匯入的型別模組裡：`turn` 在 Agent 註冊表的 `types.ts`，`job` 在任務註冊表接縫的 `view.ts`，`subagent` 在 Subagent runtime 的 `control-types.ts`，`schedule` 在 Schedule 外掛的 `types.ts`；渲染各族的消費方為其分支匯入這些模組，併為其他任何鍵保留一條通用文案。提供者透過把自己的 `SessionActivity` 條目前置到 `next()` 的結果來回答 waterfall；註冊表最內層的回呼返回空列表，因此沒有提供者的組合可自由歸檔。
 
 ```ts type-equiv
 /**
@@ -160,11 +160,11 @@ interface SessionActivity {
 }
 ```
 
-`SessionActivityItem` 携带各族自己的 `id`（会话、任务或提醒 id）和可选的展示 `label`。`archiveSession(sessionId)` 在存在性检查之后只询问 waterfall 一次，对非空答案以 `WorkspaceActiveSessionError`（`sessionId`、`activity`）拒绝且不写入；控制器把它映射为 `workspace/session-active` 错误，其 details 携带同样的两个字段。`archiveSession(sessionId, { stopActivity: true })`——`ArchiveSessionOptions` 的这个字段由传输请求以 `stopActivity` 暴露——跳过检查、先写入归档、再派发 `workspace/session-stop`；提供方抛错只记日志，归档保留，被停止的工作从不等待收敛。已归档的 id 既不询问也不停止。随附的提供方、它们停止什么，以及让已归档会话不跑模型步的 `agent/pre-step` 门禁，记录在[注册表包](../../packages/workspace/workspace/README.zh.md#api-behavior)；决策记录见 [archive-stops-running-work Agent Note](../../.agents/notes/implemented/feature/2026-09-21-archive-stops-running-session-work.zh.md)。
+`SessionActivityItem` 攜帶各族自己的 `id`（工作階段、任務或提醒 id）和可選的展示 `label`。`archiveSession(sessionId)` 在存在性檢查之後只詢問 waterfall 一次，對非空答案以 `WorkspaceActiveSessionError`（`sessionId`、`activity`）拒絕且不寫入；控制器把它對映為 `workspace/session-active` 錯誤，其 details 攜帶同樣的兩個欄位。`archiveSession(sessionId, { stopActivity: true })`——`ArchiveSessionOptions` 的這個欄位由傳輸請求以 `stopActivity` 暴露——跳過檢查、先寫入歸檔、再派發 `workspace/session-stop`；提供者拋錯只記日誌，歸檔保留，被停止的工作從不等待收斂。已歸檔的 id 既不詢問也不停止。隨附的提供者、它們停止什麼，以及讓已歸檔工作階段不跑模型步的 `agent/pre-step` 門禁，記錄在[註冊表包](../../packages/workspace/workspace/README.zh.md#api-behavior)；決策記錄見 [archive-stops-running-work Agent Note](../../.agents/notes/implemented/feature/2026-09-21-archive-stops-running-session-work.zh.md)。
 
-## 消费方
+## 消費方
 
-[`dsh-workspace-controller`](../../packages/api/workspace-controller) 经 `ctx.workspaceRegistry` 向 GUI 客户端提供工作区 CRUD，[`dsh-session-controller`](../../packages/api/session-controller) 执行上文「先建会话再 attach」的流程。[dsh-agent-instructions](../../packages/context/agent-instructions) 尽管名字如此，却**不是**消费方：它在 agent 自己的 cwd 下发现 AGENTS.md 风格的指令文件，从不触碰 `ctx.workspaceRegistry`——两者共用的这个词指的是用户的工作目录，而非本注册表的实体。
+[`dsh-workspace-controller`](../../packages/api/workspace-controller) 經 `ctx.workspaceRegistry` 向 GUI 用戶端提供工作區 CRUD，[`dsh-session-controller`](../../packages/api/session-controller) 執行上文「先建工作階段再 attach」的流程。[dsh-agent-instructions](../../packages/context/agent-instructions) 儘管名字如此，卻**不是**消費方：它在 agent 自己的 cwd 下發現 AGENTS.md 風格的指令檔案，從不觸碰 `ctx.workspaceRegistry`——兩者共用的這個詞指的是使用者的工作目錄，而非本註冊表的實體。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

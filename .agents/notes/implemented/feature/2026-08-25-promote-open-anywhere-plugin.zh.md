@@ -1,61 +1,61 @@
-# Agent Note: 将 open-anywhere 从社区插件转正为第一方包
+# Agent Note: 將 open-anywhere 從社群外掛轉正為第一方包
 
 Status: implemented
 
 [English](2026-08-25-promote-open-anywhere-plugin.md) | 中文
 
-## 问题
+## 問題
 
-社区插件 `@dsh-plugins/open-anywhere`（gitlab.deepseek.com/Ciyou/dsh-open-anywhere）在会话头部增加一个 "Open In..." 分体按钮，可在 Finder、Cursor、VS Code、Xcode、Git GUI 或终端中打开会话的 workspace 目录。它以手写 `lib/` JavaScript 形式经 `dsh plugin add` 安装：无类型、无测试、直接调用 `node:child_process`、手搓下拉菜单和 style 标签、自带针对 rc6–rc8 的浏览器端 DSH 版本门禁，并靠探测 `process.argv` 猜测运行中的 dsh 版本。用户希望该功能成为 Web profile 的内置部分，而 bundle 安装路径给不了这一点——且外部形态几乎违反了仓库的所有约定（locale 拥有文案、逐文件覆盖率、wire 边界校验、主机命令的能力接缝）。
+社群外掛 `@dsh-plugins/open-anywhere`（gitlab.deepseek.com/Ciyou/dsh-open-anywhere）在工作階段頭部增加一個 "Open In..." 分體按鈕，可在 Finder、Cursor、VS Code、Xcode、Git GUI 或終端中開啟工作階段的 workspace 目錄。它以手寫 `lib/` JavaScript 形式經 `dsh plugin add` 安裝：無型別、無測試、直接呼叫 `node:child_process`、手搓下拉選單和 style 標籤、自帶針對 rc6–rc8 的瀏覽器端 DSH 版本門禁，並靠探測 `process.argv` 猜測執行中的 dsh 版本。使用者希望該功能成為 Web profile 的內建部分，而 bundle 安裝路徑給不了這一點——且外部形態幾乎違反了儲存庫的所有約定（locale 擁有文案、逐檔案覆蓋率、wire 邊界驗證、主機命令的能力接縫）。
 
-## 决定
+## 決定
 
-第一方功能命名为 `open-in-app`：它选择在 Harness 主机上打开 workspace 目录的应用，不表示另一台机器或目的位置。
+第一方功能命名為 `open-in-app`：它選擇在 Harness 主機上開啟 workspace 目錄的應用，不表示另一臺機器或目的位置。
 
-[launch-environment](../../../../packages/util/launch-environment/README.zh.md) 中共用的 `launchedThroughSsh()` 只从继承的进程层读取非空 `SSH_CONNECTION` 或 `SSH_TTY`。SSH 启动时会在任何探测开始前返回空应用目录。项目与用户 `.env` 中的值不能作为 SSH 启动的依据；Web 浏览器唤起和自适应目录选择器共用此判断。即使客户端记住了应用选择，也会隐藏操作入口；已有的可用性检查会拒绝图标和启动请求。SSH 端口转发只改变 HTTP 可达性，不改变工作区或应用所属的机器。
+[launch-environment](../../../../packages/util/launch-environment/README.zh.md) 中共用的 `launchedThroughSsh()` 只從繼承的程序層讀取非空 `SSH_CONNECTION` 或 `SSH_TTY`。SSH 啟動時會在任何探測開始前返回空應用目錄。專案與使用者 `.env` 中的值不能作為 SSH 啟動的依據；Web 瀏覽器喚起和自適應目錄選擇器共用此判斷。即使用戶端記住了應用選擇，也會隱藏操作入口；已有的可用性檢查會拒絕圖示和啟動請求。SSH 埠轉發只改變 HTTP 可達性，不改變工作區或應用所屬的機器。
 
-该功能的第一方归属是一对包：`@deepseek-ai/dsh-host-open-in-app` 位于 `packages/host/open-in-app/`（探测、目录与启动路由），`@deepseek-ai/dsh-client-ui-open-in-app` 位于 `packages/client/ui-open-in-app/`（分体按钮），由 `dsh-web-app` bundle 的 `open-in-app` 与 `ui-open-in-app` 两行挂载进 Web profile。转正是重写，不是 vendoring：
+該功能的第一方歸屬是一對包：`@deepseek-ai/dsh-host-open-in-app` 位於 `packages/host/open-in-app/`（探測、目錄與啟動路由），`@deepseek-ai/dsh-client-ui-open-in-app` 位於 `packages/client/ui-open-in-app/`（分體按鈕），由 `dsh-web-app` bundle 的 `open-in-app` 與 `ui-open-in-app` 兩行掛載進 Web profile。轉正是重寫，不是 vendoring：
 
-- **一对 host/client 包，沿用 `directory-picker-browse`/`ui-directory-picker-browse` 的配对结构**：host 包的 `src/index.ts` 在 `ctx.webServer` 上注册三条 HTTP 路由（`GET /open-in-app/apps`、`GET /open-in-app/icon/<id>`、`POST /open-in-app/open`）；ui 包的 `src/client/index.ts` 经标准 slot/inject 通货把分体按钮注册进 `conversation.session.header.utilities`，文案在类型化的 `open-in-app` locale 命名空间中，样式为 `--dsw-*` token 上的 CSS Modules（原插件手工注入的 style 标签与内联下拉被 `Menu` 原语替代），节点半边是让插件出现在主机名册上的空 apply。路由路径与 wire 载荷类型只有一个家：host 包浏览器安全的 `./shared` 子路径（只有常量与类型）；client bundle 经 client tsdown preset 的 `INLINE_SAFE` 条目将其内联，与 `dsh-session` 各 wire 切片同一通道。host 根入口只导出 Loader 所需的插件实体与类型；目录、resolver、launcher 与图标 helper 保持源码内部可见。
-- **一趟解析产出已验证的启动器；点击绝不重新检测。** 主机把整个目录每进程惰性解析一次，产出目录 id 到 `OpenInAppResolvedLaunch` 的映射——本机实际持有的启动器，绝不是裸的安装记录。`GET /apps` 提供映射的 keys，`POST /open` 直接启动其值；启动时发现可执行文件已消失（spawn `ENOENT`）会只作废该条目、重解析一次，无法再证明时把它从列表移除（卸载自愈，新安装等重启）。
-- **解析来源按平台务实且廉价。** macOS 在已知应用目录（`/Applications`、`~/Applications`）查条目的 bundle 拼写，启动 `open -a <解析出的 bundle>`；Xcode 跟随 `xcode-select -p`。Windows 依次读 `App Paths`、只在能证明磁盘可执行文件时采用的 Uninstall 记录、已知路径，以及采用版本化安装目录的应用中最新的目录——每趟每根一条批量 `reg.exe query`。GitHub Desktop 会同时解析版本化可执行文件与随包提供的 `cli.js`，不经命令 shell 调用受支持的 `github open <path>` 行为。CLI 名称经 `ctx.subprocess.resolveExecutable()` 进程内解析（PATH/PATHEXT stat，无 shell、无 `which`/`where.exe` 子进程）；CLI 不在 PATH 上的 Linux GUI 条目回退到其 XDG desktop 条目验证过的 `TryExec`/`Exec`，且只有主机声明了 display server 时才提供 `xdg-open`。其余主机命令（`xcode-select`、`reg.exe`、图标提取）经 `@deepseek-ai/dsh-native-command`（argv，绝不走 shell）执行。
-- **三个独立期限取代单一 `commandTimeoutMs`**：`probeTimeoutMs`（解析命令）、`iconTimeoutMs`（图标提取命令）、`launchWatchMs`（早期失败看护窗口），调整一种操作的超时不再改变其他操作的响应时间——随发行 bundle 保守地保留 10 秒命令期限（超时是失败上界而非延迟预算），看护窗口 1 秒，它才是约束 open 路由与按钮忙碌态挂起一次成功启动时长的量。启动以清理过凭据的环境（`dsh-subprocess` 的 `scrubbedParentEnv`）叠加适配器显式环境后 detached 派生；Windows GUI launcher 默认保持可见，只有负责另行打开 GUI 的 CLI 适配器会显式隐藏自己的进程。看护窗口关闭时仍在运行的启动器计为已启动，绝不会被杀死或等待（kitty 与 JetBrains IDE 在整个窗口生命周期内保持前台）。
-- **有主机来源的平台都提取图标。** macOS 把解析出的 bundle 的 `.icns` 转 128px PNG（`plutil` + `sips`）；Windows 用生成的 PowerShell 脚本以位置式 `-File` 参数（路径不经命令行解析）提取解析出的可执行文件的关联图标为 32px PNG；Linux 沿 spec 的 desktop 条目 `Icon=` 查 hicolor 主题与 pixmaps 目录（PNG 或 SVG，纯文件系统）。任何失败应答 404，浏览器保持通用占位图形。
-- **启动目录是按平台声明条目的数据表**（`OPEN_IN_APP_CATALOG`）：每个应用 id 按平台（`darwin`/`win32`/`linux`）声明一条按序尝试的启动器来源链——`fixed`（随系统内置）、`app`（已知目录的 bundle 拼写）、`xcode`（`xcode-select -p`）、`cli`（进程内 PATH 解析）、`file`（`${VAR}`/`~/` 展开后第一个存在的候选文件）、`scan`（带版本号安装目录取最新）、`app-paths` 与 `install-record`（Windows 注册表两层）、`github-desktop`（版本化可执行文件与随包 CLI）、`desktop`（Linux XDG desktop 条目）——加启动器 argv 模板（`{path}` token 原位携带目录，否则目录追加在末尾）、可选环境与 Windows 可见性策略，以及可选回退启动器（`xed` 之后的 `open -a <bundle>`）。白名单对齐 Codex 的 "Open In" 目标列表：编辑器与 IDE（VS Code、VS Code Insiders、Cursor、Windsurf、Zed、Sublime Text、Xcode、Android Studio、七个 JetBrains IDE）、转正插件原有的 Git GUI、终端（Terminal、iTerm2、Ghostty、Warp、kitty、Windows Terminal、Git Bash、GNOME Terminal、Konsole）与各平台文件管理器。文件管理器与平台终端使用独立 id（`finder`/`explorer`/`filemanager`），而非一个 id 配平台标签，因为标签是静态浏览器词典条目，且每台主机只会探测到其中一个。文件管理器条目直接经 `dsh-native-command` 的路径打开器启动（`shell-open`，把目录交给 OS shell 并携带完整父环境，而非 detached 的清理环境 spawn），因为 detached 且经过凭据清洗的 `explorer.exe <dir>` 派生进程不能可靠地弹出窗口；打开器自身的 `explorer.exe` 交接可以（[Windows 打开解析](../bug-fix/2026-09-22-windows-open-through-shell-resolution.zh.md)）。封闭 union 以 `assertNever` 收尾。
-- **所有路由都运行在组合 connection 服务的信任栅栏之后**（`requestRejection`：挫败 DNS rebinding 与跨站调用的 Host/Origin 栅栏，加上浏览器认证），与 API gateway 施加在其 WebSocket upgrade 上的守卫相同；机制的唯一出处是 `src/index.ts` 的模块注释。在该栅栏之上，open 路由在 wire 边界校验请求体：`application/json` 媒体类型（精确 essence，而非子串匹配）、以排空后 413 的方式把 body 限制在 64 KiB、校验字段类型、只接受探测为可用的目录 id，并要求指向现存目录的绝对路径。
-- **删除了 DSH 版本门禁。** 它存在是因为插件逐版本骑乘一个它不拥有的接口；第一方包与仓库同版本发布，门禁、它的 `sessionStorage`/`localStorage` 信任台账和 argv 遍历版本探测都失去了所指。
-- **上次选择经 `createSnapshotStore(..., { persist })` 持久化**（`dsh.open-in-app.choice`），替代手写 `localStorage` 访问。新存储没有平台特定的初始选择；用户首次选择前，组件使用主机提供的第一个可用条目。
+- **一對 host/client 包，沿用 `directory-picker-browse`/`ui-directory-picker-browse` 的配對結構**：host 包的 `src/index.ts` 在 `ctx.webServer` 上註冊三條 HTTP 路由（`GET /open-in-app/apps`、`GET /open-in-app/icon/<id>`、`POST /open-in-app/open`）；ui 包的 `src/client/index.ts` 經標準 slot/inject 通貨把分體按鈕註冊進 `conversation.session.header.utilities`，文案在型別化的 `open-in-app` locale 名稱空間中，樣式為 `--dsw-*` token 上的 CSS Modules（原外掛手工注入的 style 標籤與內聯下拉被 `Menu` 原語替代），節點半邊是讓外掛出現在主機名冊上的空 apply。路由路徑與 wire 載荷型別只有一個家：host 包瀏覽器安全的 `./shared` 子路徑（只有常數與型別）；client bundle 經 client tsdown preset 的 `INLINE_SAFE` 條目將其內聯，與 `dsh-session` 各 wire 切片同一通道。host 根入口只匯出 Loader 所需的外掛實體與型別；目錄、resolver、launcher 與圖示 helper 保持原始碼內部可見。
+- **一趟解析產出已驗證的啟動器；點選絕不重新檢測。** 主機把整個目錄每程序惰性解析一次，產出目錄 id 到 `OpenInAppResolvedLaunch` 的對映——本機實際持有的啟動器，絕不是裸的安裝記錄。`GET /apps` 提供對映的 keys，`POST /open` 直接啟動其值；啟動時發現可執行檔案已消失（spawn `ENOENT`）會只作廢該條目、重解析一次，無法再證明時把它從列表移除（解除安裝自愈，新安裝等重新啟動）。
+- **解析來源按平臺務實且廉價。** macOS 在已知應用目錄（`/Applications`、`~/Applications`）查條目的 bundle 拼寫，啟動 `open -a <解析出的 bundle>`；Xcode 跟隨 `xcode-select -p`。Windows 依次讀 `App Paths`、只在能證明磁碟可執行檔案時採用的 Uninstall 記錄、已知路徑，以及採用版本化安裝目錄的應用中最新的目錄——每趟每根一條批次 `reg.exe query`。GitHub Desktop 會同時解析版本化可執行檔案與隨包提供的 `cli.js`，不經命令 shell 呼叫受支援的 `github open <path>` 行為。CLI 名稱經 `ctx.subprocess.resolveExecutable()` 程序內解析（PATH/PATHEXT stat，無 shell、無 `which`/`where.exe` 子程序）；CLI 不在 PATH 上的 Linux GUI 條目退回到其 XDG desktop 條目驗證過的 `TryExec`/`Exec`，且只有主機宣告瞭 display server 時才提供 `xdg-open`。其餘主機命令（`xcode-select`、`reg.exe`、圖示提取）經 `@deepseek-ai/dsh-native-command`（argv，絕不走 shell）執行。
+- **三個獨立期限取代單一 `commandTimeoutMs`**：`probeTimeoutMs`（解析命令）、`iconTimeoutMs`（圖示提取命令）、`launchWatchMs`（早期失敗看護視窗），調整一種操作的超時不再改變其他操作的回應時間——隨發行 bundle 保守地保留 10 秒命令期限（超時是失敗上界而非延遲預算），看護視窗 1 秒，它才是約束 open 路由與按鈕忙碌態掛起一次成功啟動時長的量。啟動以清理過憑證的環境（`dsh-subprocess` 的 `scrubbedParentEnv`）疊加介面卡顯式環境後 detached 派生；Windows GUI launcher 預設保持可見，只有負責另行開啟 GUI 的 CLI 介面卡會顯式隱藏自己的程序。看護視窗關閉時仍在執行的啟動器計為已啟動，絕不會被殺死或等待（kitty 與 JetBrains IDE 在整個視窗生命週期內保持前臺）。
+- **有主機來源的平臺都提取圖示。** macOS 把解析出的 bundle 的 `.icns` 轉 128px PNG（`plutil` + `sips`）；Windows 用生成的 PowerShell 腳本以位置式 `-File` 參數（路徑不經命令列解析）提取解析出的可執行檔案的關聯圖示為 32px PNG；Linux 沿 spec 的 desktop 條目 `Icon=` 查 hicolor 主題與 pixmaps 目錄（PNG 或 SVG，純檔案系統）。任何失敗應答 404，瀏覽器保持通用佔點陣圖形。
+- **啟動目錄是按平臺宣告條目的資料表**（`OPEN_IN_APP_CATALOG`）：每個應用 id 按平臺（`darwin`/`win32`/`linux`）宣告一條按序嘗試的啟動器來源鏈——`fixed`（隨系統內建）、`app`（已知目錄的 bundle 拼寫）、`xcode`（`xcode-select -p`）、`cli`（程序內 PATH 解析）、`file`（`${VAR}`/`~/` 展開後第一個存在的候選檔案）、`scan`（帶版本號安裝目錄取最新）、`app-paths` 與 `install-record`（Windows 註冊表兩層）、`github-desktop`（版本化可執行檔案與隨包 CLI）、`desktop`（Linux XDG desktop 條目）——加啟動器 argv 範本（`{path}` token 原位攜帶目錄，否則目錄追加在末尾）、可選環境與 Windows 可見性策略，以及可選退回啟動器（`xed` 之後的 `open -a <bundle>`）。白名單對齊 Codex 的 "Open In" 目標列表：編輯器與 IDE（VS Code、VS Code Insiders、Cursor、Windsurf、Zed、Sublime Text、Xcode、Android Studio、七個 JetBrains IDE）、轉正外掛原有的 Git GUI、終端（Terminal、iTerm2、Ghostty、Warp、kitty、Windows Terminal、Git Bash、GNOME Terminal、Konsole）與各平臺檔案管理器。檔案管理器與平臺終端使用獨立 id（`finder`/`explorer`/`filemanager`），而非一個 id 配平臺標籤，因為標籤是靜態瀏覽器詞典條目，且每臺主機只會探測到其中一個。檔案管理器條目直接經 `dsh-native-command` 的路徑開啟器啟動（`shell-open`，把目錄交給 OS shell 並攜帶完整父環境，而非 detached 的清理環境 spawn），因為 detached 且經過憑證清洗的 `explorer.exe <dir>` 派生程序不能可靠地彈出視窗；開啟器自身的 `explorer.exe` 交接可以（[Windows 開啟解析](../bug-fix/2026-09-22-windows-open-through-shell-resolution.zh.md)）。封閉 union 以 `assertNever` 收尾。
+- **所有路由都執行在組合 connection 服務的信任柵欄之後**（`requestRejection`：挫敗 DNS rebinding 與跨站呼叫的 Host/Origin 柵欄，加上瀏覽器認證），與 API gateway 施加在其 WebSocket upgrade 上的守衛相同；機制的唯一出處是 `src/index.ts` 的模組註解。在該柵欄之上，open 路由在 wire 邊界驗證請求體：`application/json` 媒體型別（精確 essence，而非子串匹配）、以排空後 413 的方式把 body 限制在 64 KiB、驗證欄位型別、只接受探測為可用的目錄 id，並要求指向現存目錄的絕對路徑。
+- **刪除了 DSH 版本門禁。** 它存在是因為外掛逐版本騎乘一個它不擁有的介面；第一方包與儲存庫同版本釋出，門禁、它的 `sessionStorage`/`localStorage` 信任臺帳和 argv 遍歷版本探測都失去了所指。
+- **上次選擇經 `createSnapshotStore(..., { persist })` 持久化**（`dsh.open-in-app.choice`），替代手寫 `localStorage` 存取。新儲存沒有平臺特定的初始選擇；使用者首次選擇前，元件使用主機提供的第一個可用條目。
 
-这对包放在 `packages/host/` 与 `packages/client/`，因为两个半边本来就是这两种东西：探测/启动侧是主机基础设施，与它消费的 webserver 同组；按钮是客户端表面，与其他 `ui-*` 包同组。评审把它从 `packages/workspace/` 的单个双半边包迁到这里（见替代方案）。
+這對包放在 `packages/host/` 與 `packages/client/`，因為兩個半邊本來就是這兩種東西：探測/啟動側是主機基礎設施，與它消費的 webserver 同組；按鈕是用戶端表面，與其他 `ui-*` 包同組。評審把它從 `packages/workspace/` 的單個雙半邊包遷到這裡（見替代方案）。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**在 SSH 会话中提供 VS Code 的远端 CLI。** 已安装的可执行文件不能证明编辑器连接可用：继承的 IPC socket 属于一个仍在运行的 VS Code 连接，Harness 继续运行时它也可能消失。浏览器侧的 SSH 目标配置与本地编辑器唤起不属于这个主机应用功能。
+**在 SSH 工作階段中提供 VS Code 的遠端 CLI。** 已安裝的可執行檔案不能證明編輯器連線可用：繼承的 IPC socket 屬於一個仍在執行的 VS Code 連線，Harness 繼續執行時它也可能消失。瀏覽器側的 SSH 目標設定與本地編輯器喚起不屬於這個主機應用功能。
 
-**将插件的 `lib/` 原样 vendor 进 `packages/`。** 最快，但手写 JavaScript 会整体不过 typecheck、覆盖率、i18n、JSDoc 和 invariant 门禁；为其保留豁免会造出仓库刻意不设的包类别。
+**將外掛的 `lib/` 原樣 vendor 進 `packages/`。** 最快，但手寫 JavaScript 會整體不過 typecheck、覆蓋率、i18n、JSDoc 和 invariant 門禁；為其保留豁免會造出儲存庫刻意不設的包類別。
 
-**用 Typert Remote 而非裸 webServer 路由。** apps/open 调用符合 Remote RPC 形态，但 icon 路由提供二进制 PNG，JSON RPC 词汇承载不了；把 icon 拆去裸路由而 apps/open 走 Remote 会让一个功能有两种传输。裸路由也匹配原插件的客户端，且 `webhook-github` 已确立带校验裸路由的先例。
+**用 Typert Remote 而非裸 webServer 路由。** apps/open 呼叫符合 Remote RPC 形態，但 icon 路由提供二進位制 PNG，JSON RPC 詞彙承載不了；把 icon 拆去裸路由而 apps/open 走 Remote 會讓一個功能有兩種傳輸。裸路由也匹配原外掛的用戶端，且 `webhook-github` 已確立帶驗證裸路由的先例。
 
-**扩展 `host/apiproxy` 的 `openPath` 而非新 open 端点。** `openPath` 用系统默认应用打开一个路径；本功能的主体是*用哪个*应用，带可用性探测和逐应用启动器——是不同的契约。两者共享 `dsh-native-command`。
+**擴充功能 `host/apiproxy` 的 `openPath` 而非新 open 端點。** `openPath` 用系統預設應用開啟一個路徑；本功能的主體是*用哪個*應用，帶可用性探測和逐應用啟動器——是不同的契約。兩者共享 `dsh-native-command`。
 
-**放在 `packages/workspace/` 的单个双半边包（最初交付的形态，沿用 `dsh-session-log-export`）。** 评审期拆成 host/client 对：workspace 组的契约是 host-side only，该功能消费的是 `webServer` 而非 `workspaceRegistry`，且单包整体注册在 Client 编译聚合面迫使主机路由与目录测试伪装成 `.client.spec.ts`。拆分让每个半边的测试落在自己的编译面、依赖落在正确的区段；wire 契约经 host 包的 `./shared` 子路径保持唯一出处。
+**放在 `packages/workspace/` 的單個雙半邊包（最初交付的形態，沿用 `dsh-session-log-export`）。** 評審期拆成 host/client 對：workspace 組的契約是 host-side only，該功能消費的是 `webServer` 而非 `workspaceRegistry`，且單包整體註冊在 Client 編譯聚合面迫使主機路由與目錄測試偽裝成 `.client.spec.ts`。拆分讓每個半邊的測試落在自己的編譯面、依賴落在正確的區段；wire 契約經 host 包的 `./shared` 子路徑保持唯一出處。
 
-**可配置目录（cordis.yml 定义应用）。** 延后：每个条目耦合发现、启动参数、进程策略与图标行为，因此接受任意命令前需要明确的用户设置归属与校验规则。用户提供的 label 属于用户数据，不与 locale 拥有的产品文案冲突。Codex 与 Orca 展示了可能的扩展形态：维护过的内置 preset 加可配置 custom handler。
+**可設定目錄（cordis.yml 定義應用）。** 延後：每個條目耦合發現、啟動參數、程序策略與圖示行為，因此接受任意命令前需要明確的使用者設定歸屬與驗證規則。使用者提供的 label 屬於使用者資料，不與 locale 擁有的產品文案衝突。Codex 與 Orca 展示了可能的擴充功能形態：維護過的內建 preset 加可設定 custom handler。
 
-**通过操作系统 API 枚举所有已安装应用。** 不作为菜单真源：Launch Services、Windows 注册信息与 XDG desktop 条目可以定位应用，但不能证明每个应用都能接收 workspace 目录，也不能给出正确打开目录所需的启动协议。OS 原生标识仍可作为维护过的 preset 的 locator 输入；custom handler 用于覆盖长尾，而不是猜测启动语义。
+**透過作業系統 API 列舉所有已安裝應用。** 不作為選單真源：Launch Services、Windows 註冊資訊與 XDG desktop 條目可以定位應用，但不能證明每個應用都能接收 workspace 目錄，也不能給出正確開啟目錄所需的啟動協定。OS 原生標識仍可作為維護過的 preset 的 locator 輸入；custom handler 用於覆蓋長尾，而不是猜測啟動語義。
 
-**为 Windows/Linux 条目内置静态图标（Codex 为每个目标打包 PNG）。** 拒绝：图标路由在三个平台都提供主机真实图标，为装饰性收益打包第三方产品图形会引入资产管线与商标风险面。
+**為 Windows/Linux 條目內建靜態圖示（Codex 為每個目標打包 PNG）。** 拒絕：圖示路由在三個平臺都提供主機真實圖示，為裝飾性收益打包第三方產品圖形會引入資產管線與商標風險面。
 
-**重子进程检测（最初交付的形态）：macOS 每条目一次 `open -Ra`、CLI 各一次 `which`/`where.exe`、每次启动重新解析。** 评审期替换：一次列表解析在 macOS 上派生约 26 个子进程，按显示名查 Launch Services 的证据弱于磁盘上的 bundle，仓库已有进程内 PATH 解析（`ctx.subprocess.resolveExecutable()`），且点击时重新检测把探测期限放上了交互路径。为挪位 macOS bundle 考虑过批量 `mdfind` 兜底，依评审的 known-paths 指示未采用；漏检记入已知限制。原生 LaunchServices/NSWorkspace 查询需要仓库尚无的 addon——延后，以已知 `.app` 路径为替身。
+**重子程序檢測（最初交付的形態）：macOS 每條目一次 `open -Ra`、CLI 各一次 `which`/`where.exe`、每次啟動重新解析。** 評審期替換：一次列表解析在 macOS 上派生約 26 個子程序，按顯示名查 Launch Services 的證據弱於磁碟上的 bundle，儲存庫已有程序內 PATH 解析（`ctx.subprocess.resolveExecutable()`），且點選時重新檢測把探測期限放上了互動路徑。為挪位 macOS bundle 考慮過批次 `mdfind` 後備，依評審的 known-paths 指示未採用；漏檢記入已知限制。原生 LaunchServices/NSWorkspace 查詢需要儲存庫尚無的 addon——延後，以已知 `.app` 路徑為替身。
 
-**公共的应用发现 Service Definition。** 按单消费者规则延后：在出现第二个 GUI 发现消费者之前，resolver 保持为包内模块。
+**公共的應用發現 Service Definition。** 按單消費者規則延後：在出現第二個 GUI 發現消費者之前，resolver 保持為包內模組。
 
-**经 `SHDefExtractIcon` P/Invoke（`Add-Type`）脚本取 128px Windows 图标。** 延后：`ExtractAssociatedIcon` 是不需编译片段的 .NET 标准面，32px 在按钮 15-18 CSS px 的尺寸上仅在高分屏略微发软；若实际在意，P/Invoke 变体是脚本内局部升级。同理未追用户的 Linux 图标主题——hicolor 是所有主题继承的 freedesktop 兜底——自定义主题桌面会看到原版图标。
+**經 `SHDefExtractIcon` P/Invoke（`Add-Type`）腳本取 128px Windows 圖示。** 延後：`ExtractAssociatedIcon` 是不需編譯片段的 .NET 標準面，32px 在按鈕 15-18 CSS px 的尺寸上僅在高分屏略微發軟；若實際在意，P/Invoke 變體是腳本內區域性升級。同理未追使用者的 Linux 圖示主題——hicolor 是所有主題繼承的 freedesktop 後備——自定義主題桌面會看到原版圖示。
 
-## 后果
+## 後果
 
-- 非 SSH 会话中，只要主机在 macOS、Windows 或 Linux 上探测到至少一个已安装的目录应用，Web profile 就会出现头部按钮；其余情况零渲染（探测目录为空 → 组件返回 null）。
-- 社区插件的安装路径仍然有效但已冗余；其原始路由与浏览器选择键独立于 `open-in-app`，因此使用第一方功能的安装应移除社区插件，避免出现重复的头部控件。
-- 解析与图标每主机进程惰性执行一次，dsh 运行期间安装的应用要重启后才出现——接受；卸载方向经 `ENOENT` 单条目刷新自愈。
-- 目录在编译期固定；扩展它意味着同时编辑 `OPEN_IN_APP_CATALOG` 与两份 locale 词典（README 已知限制）。平台覆盖不均——若干 Git GUI 与终端仅有 macOS 条目；Windows 图标受限于 .NET 标准接口的 32px 提取，Linux 跟随 hicolor 而非当前主题，没有 desktop 记录的纯 CLI 条目则保留通用图标。
-- 解析器、图标、路由、控制器与组件测试覆盖平台探测、启动结果、可用性缓存和 HMR 处置。[SSH Web 快照](../../../../snapshots/web/open-in-app-ssh/snapshot.yml) 在启用两个 Open In 配置项并记住应用选择的条件下渲染共享的录制会话，并仅捕获会话头部；输入框和统计栏由各自的快照负责。继承的 SSH 标记使空应用目录在不同平台上保持确定。普通 Web 快照仍禁用依赖主机的应用探测。
+- 非 SSH 工作階段中，只要主機在 macOS、Windows 或 Linux 上探測到至少一個已安裝的目錄應用，Web profile 就會出現頭部按鈕；其餘情況零渲染（探測目錄為空 → 元件返回 null）。
+- 社群外掛的安裝路徑仍然有效但已冗餘；其原始路由與瀏覽器選擇鍵獨立於 `open-in-app`，因此使用第一方功能的安裝應移除社群外掛，避免出現重複的頭部控制元件。
+- 解析與圖示每主機程序惰性執行一次，dsh 執行期間安裝的應用要重新啟動後才出現——接受；解除安裝方向經 `ENOENT` 單條目重新整理自愈。
+- 目錄在編譯期固定；擴充功能它意味著同時編輯 `OPEN_IN_APP_CATALOG` 與兩份 locale 詞典（README 已知限制）。平臺覆蓋不均——若干 Git GUI 與終端僅有 macOS 條目；Windows 圖示受限於 .NET 標準介面的 32px 提取，Linux 跟隨 hicolor 而非目前主題，沒有 desktop 記錄的純 CLI 條目則保留通用圖示。
+- 解析器、圖示、路由、控制器與元件測試覆蓋平臺探測、啟動結果、可用性快取和 HMR 處置。[SSH Web 快照](../../../../snapshots/web/open-in-app-ssh/snapshot.yml) 在啟用兩個 Open In 設定項並記住應用選擇的條件下渲染共享的錄製工作階段，並僅捕捉工作階段頭部；輸入框和統計欄由各自的快照負責。繼承的 SSH 標記使空應用目錄在不同平臺上保持確定。普通 Web 快照仍停用依賴主機的應用探測。

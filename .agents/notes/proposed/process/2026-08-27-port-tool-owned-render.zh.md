@@ -1,35 +1,35 @@
-# Agent Note: 把 tool-owned render 移植到当前 DSH API
+# Agent Note: 把 tool-owned render 移植到目前 DSH API
 
 Status: proposed
 
 [English](2026-08-27-port-tool-owned-render.md) | 中文
 
-## 问题
+## 問題
 
-`dsh-tool-owned-render` 原型（`Chinesezjc/dsh-tool-owned-render`）带有 `read`、`bash`、`write`/`edit`、`grep`/`glob`、`web_search`/`web_fetch` 的 tool-owned render 注册项，基于旧 API 编写：`ToolCallBlock` 暴露 `callView` / `resultView`，客户端能拿到 host `presentResult` 输出。当前 master 从原始 `block.call` / `block.content` / `block.meta` 推导客户端卡片，`ctx.slots` 也需要 `@deepseek-ai/dsh-client-ui-renderer/client` 模块增强。直接合并原型不能通过类型检查，因此这些注册项不经移植无法发布。
+`dsh-tool-owned-render` 原型（`Chinesezjc/dsh-tool-owned-render`）帶有 `read`、`bash`、`write`/`edit`、`grep`/`glob`、`web_search`/`web_fetch` 的 tool-owned render 註冊項，基於舊 API 編寫：`ToolCallBlock` 暴露 `callView` / `resultView`，用戶端能拿到 host `presentResult` 輸出。目前 master 從原始 `block.call` / `block.content` / `block.meta` 推導用戶端卡片，`ctx.slots` 也需要 `@deepseek-ai/dsh-client-ui-renderer/client` 模組增強。直接合並原型不能透過型別檢查，因此這些註冊項不經移植無法釋出。
 
 ## 提案
 
 - 新增 `packages/client/tool-owned-render` workspace 包。
-- 把 `read`、`bash`、`write`/`edit`、`grep`/`glob`、`web_search`/`web_fetch` 注册项移植到从当前 `ToolCallBlock` 字段推导。
-- 增加 `read_image` 注册项，使用同一套 ToolCard/Segment 原语。
-- 通过 `dsh-client-ui-renderer` 接通 `ctx.slots` 类型增强。
-- 移植单独推进，保持 PR #2828 可合并。
+- 把 `read`、`bash`、`write`/`edit`、`grep`/`glob`、`web_search`/`web_fetch` 註冊項移植到從目前 `ToolCallBlock` 欄位推導。
+- 增加 `read_image` 註冊項，使用同一套 ToolCard/Segment 原語。
+- 透過 `dsh-client-ui-renderer` 接通 `ctx.slots` 型別增強。
+- 移植單獨推進，保持 PR #2828 可合併。
 
-## 已考虑的替代方案
+## 已考慮的替代方案
 
-- **直接合并原型并就地修复类型错误** — 否决：每个注册项反正都要按当前 `ToolCallBlock` 字段重新推导，移植就是同一份工作，只是旧的 `callView` / `resultView` 契约已不存在。
-- **把移植并入 PR #2828** — 否决：image 卡片是一个范围明确的单一功能，再加一个新包和五个注册项会扩大本已很大的 PR 的审查面。
+- **直接合並原型並就地修復型別錯誤** — 否決：每個註冊項反正都要按目前 `ToolCallBlock` 欄位重新推導，移植就是同一份工作，只是舊的 `callView` / `resultView` 契約已不存在。
+- **把移植併入 PR #2828** — 否決：image 卡片是一個範圍明確的單一功能，再加一個新包和五個註冊項會擴大本已很大的 PR 的審查面。
 
-## 验收标准
+## 驗收標準
 
-- `packages/client/tool-owned-render` 作为 workspace 包存在。
-- 移植后的注册项从当前 `ToolCallBlock` 字段推导卡片状态，并在 master 上通过类型检查。
-- `read_image` 注册项与 `read` 使用同一套原语渲染。
-- `ctx.slots` 类型增强通过 `dsh-client-ui-renderer` 解析。
-- PR #2828 独立于本移植合并。
+- `packages/client/tool-owned-render` 作為 workspace 包存在。
+- 移植後的註冊項從目前 `ToolCallBlock` 欄位推導卡片狀態，並在 master 上透過型別檢查。
+- `read_image` 註冊項與 `read` 使用同一套原語渲染。
+- `ctx.slots` 型別增強透過 `dsh-client-ui-renderer` 解析。
+- PR #2828 獨立於本移植合併。
 
-## 风险
+## 風險
 
-- 移植可能无法复现原型的精确视觉输出，因为当前卡片原语与旧的 `callView` / `resultView` 契约不同。
-- 移植推进期间 API 继续漂移会使本提案过时；验收标准在移植时按当时的 master 重新核对。
+- 移植可能無法復現原型的精確視覺輸出，因為目前卡片原語與舊的 `callView` / `resultView` 契約不同。
+- 移植推進期間 API 繼續漂移會使本提案過時；驗收標準在移植時按當時的 master 重新核對。

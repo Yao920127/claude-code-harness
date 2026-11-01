@@ -4,4 +4,4 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/extensions.md
 /extensions:
   en: 59e910050ccf630f
-  zh: fa0f7d54ee45c2b8
+  zh: a66bf7a12de5d0cf

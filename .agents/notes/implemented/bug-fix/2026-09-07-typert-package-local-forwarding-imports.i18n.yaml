@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-07-typert-package-local-forwarding-imports.md
 /agent-note-follow-package-local-forwarding-modules-in-typert-references:
   en: ebacf2fc1c764589
-  zh: c14b1752a01b2775
+  zh: 0cabeb68eda01cab
 /agent-note-follow-package-local-forwarding-modules-in-typert-references/problem:
   en: 0ed0703cdd876132
-  zh: ab759d1a2137bdd8
+  zh: 35cae76107c57eba
 /agent-note-follow-package-local-forwarding-modules-in-typert-references/decision:
   en: e828847b069ef3f8
-  zh: 95e9425c02dd8215
+  zh: 5275f0ab5f0797ba
 /agent-note-follow-package-local-forwarding-modules-in-typert-references/alternatives-considered:
   en: 49a0984c31c2b993
-  zh: fb6d093474130a75
+  zh: 944da676d0a55f7b
 /agent-note-follow-package-local-forwarding-modules-in-typert-references/consequences:
   en: 7e196e1cffcb31e1
-  zh: 7d096507578c1731
+  zh: 367d24a7c2e95e16

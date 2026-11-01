@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write python/README.md
 /deepseek-harness-python-sdk:
   en: aa08432a8887185d
-  zh: 85b40b48790c04db
+  zh: 9bba029245a18900
 /deepseek-harness-python-sdk/packages:
   en: 485e9978ed4f6dee
-  zh: fccda14b1b84cecf
+  zh: d0468dc33ea96a8c
 /deepseek-harness-python-sdk/behavior:
   en: ccb264c8850ae568
-  zh: 2580e6d587193bb0
+  zh: c271425bffb90466
 /deepseek-harness-python-sdk/contributor-workflows:
   en: 292b8aab762f515a
-  zh: 93da3d5c6af97d70
+  zh: 547b3de26efac260

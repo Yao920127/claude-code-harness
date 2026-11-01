@@ -129,7 +129,7 @@ describe('goal command input projection', () => {
       t,
     } as unknown as Parameters<typeof GoalCommandInputView>[0]
     const view = render(<GoalCommandInputView {...props} />)
-    const bubble = view.getByRole('group', { name: '指令输入' })
+    const bubble = view.getByRole('group', { name: '指令輸入' })
 
     expect(bubble.textContent).toBe('/goal ship it')
     expect(within(bubble).queryByRole('button')).toBeNull()
@@ -148,7 +148,7 @@ describe('goal command input projection', () => {
       t,
     } as unknown as Parameters<typeof GoalCommandInputView>[0]
     const view = render(<GoalCommandInputView {...props} />)
-    const bubble = view.getByRole('group', { name: '指令输入' })
+    const bubble = view.getByRole('group', { name: '指令輸入' })
     expect(bubble.textContent).toBe('/goal')
     expect([...bubble.querySelectorAll('[data-ref-chip]')].map(chip => chip.textContent)).toEqual(['/goal'])
   })
@@ -158,13 +158,13 @@ describe('goal command input projection', () => {
     const props = {
       node: {
         key: 'goal-command-input:two',
-        data: { commandId: 'command-goal', text: '/goal 检查 /goal 的语法', time: 1_700_000_000_000 },
+        data: { commandId: 'command-goal', text: '/goal 檢查 /goal 的語法', time: 1_700_000_000_000 },
       },
       t,
     } as unknown as Parameters<typeof GoalCommandInputView>[0]
     const view = render(<GoalCommandInputView {...props} />)
-    const bubble = view.getByRole('group', { name: '指令输入' })
-    expect(bubble.textContent).toBe('/goal 检查 /goal 的语法')
+    const bubble = view.getByRole('group', { name: '指令輸入' })
+    expect(bubble.textContent).toBe('/goal 檢查 /goal 的語法')
     const chips = [...bubble.querySelectorAll('[data-ref-chip]')]
     expect(chips.map(chip => chip.textContent)).toEqual(['/goal'])
   })

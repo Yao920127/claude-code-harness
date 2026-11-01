@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest'
 import { desktopUpdateErrorSummary, presentDesktopUpdate } from '../src/update-presentation.ts'
-import { en, zh } from '../src/locale.ts'
+import { en } from '../src/locale.ts'
+import { zhTW as zh } from '../src/locale-zh-tw.ts'
 import type { DesktopUpdateState, DshDesktopProductApi } from '../src/ipc.ts'
 import type { DesktopUpdateBridge } from '@deepseek-ai/dsh-client-ui-settings-general/types'
 

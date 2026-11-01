@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-08-document-preview-operations.md
 /agent-note-document-preview-and-file-addresses:
   en: fffa621b7586f221
-  zh: d9c7e9bea55fc11f
+  zh: d10d5f26e90b7d3c
 /agent-note-document-preview-and-file-addresses/problem:
   en: a35075e6babe3f7a
-  zh: 3a64ac57761e1009
+  zh: f80d0057c6d9e19e
 /agent-note-document-preview-and-file-addresses/decision:
   en: 254afabf8752d9ab
-  zh: f82e5ee6652b80e5
+  zh: 8c2d50cac061c8ca
 /agent-note-document-preview-and-file-addresses/alternatives-considered:
   en: 8e9616e954df488c
-  zh: 10801341ec53bbe8
+  zh: 4107d16eac0e6d83
 /agent-note-document-preview-and-file-addresses/consequences:
   en: cc810ba19e203ead
-  zh: 9421857a5eb2abe2
+  zh: 8a438c95845fb48b

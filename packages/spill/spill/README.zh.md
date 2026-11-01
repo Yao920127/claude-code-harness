@@ -1,5 +1,5 @@
 ---
-description: "spill 存储服务：保存超大工具文本或已捕获的会话引用，并返回可用于取回内容的定位信息。"
+description: "spill 儲存服務：儲存超大工具文字或已捕捉的工作階段引用，並返回可用於取回內容的定位資訊。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-spill` 让插件和工具通过公开的 `ctx.spillStore` API 保存超大文本，并取得不透明定位信息、精确字节数与取回指引。当完整结果必须保持可取回、同时又不能填满模型上下文时选择它。配置 `dsh-spill-local` 可获得本地持久化；当超大工具结果应变为有界预览时，再添加 `dsh-spill-policy`。该 API 不提供保留、替换、取回或搜索操作。存储故障会使保存操作拒绝，由调用方决定保留内联内容还是让操作失败。
+`dsh-spill` 讓外掛和工具透過公開的 `ctx.spillStore` API 儲存超大文字，並取得不透明定位資訊、精確位元組數與取回指引。當完整結果必須保持可取回、同時又不能填滿模型上下文時選擇它。設定 `dsh-spill-local` 可獲得本地持久化；當超大工具結果應變為有界預覽時，再新增 `dsh-spill-policy`。該 API 不提供保留、替換、取回或搜尋操作。儲存故障會使儲存操作拒絕，由呼叫方決定保留內聯內容還是讓操作失敗。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-保存 spill 产物的组合需要挂载一个后端——仅本包本身不存储任何内容。`dsh-spill-policy` 决定工具结果何时 spill；`dsh-session-reference` 直接保存截断后的会话引用 transcript（文本记录），不需要该策略。调用方使用 `ctx.spillStore.saveText()` 并明确指定归属；可选消费方通过 `ctx.get("spillStore")` 获取后端。
+儲存 spill 產物的組合需要掛載一個後端——僅本包本身不儲存任何內容。`dsh-spill-policy` 決定工具結果何時 spill；`dsh-session-reference` 直接儲存截斷後的工作階段引用 transcript（文字記錄），不需要該策略。呼叫方使用 `ctx.spillStore.saveText()` 並明確指定歸屬；可選消費方透過 `ctx.get("spillStore")` 取得後端。
 
-### 何时选择
+### 何時選擇
 
-当部署需要在模型看到有界预览后仍能取回全文时，选择 spill 存储，例如抓取的页面正文或已捕获的会话引用 transcript。前提是后端的定位信息与取回指引在部署环境中可用；该服务不要求本地文件系统访问。
+當部署需要在模型看到有界預覽後仍能取回全文時，選擇 spill 儲存，例如抓取的頁面正文或已捕捉的工作階段引用 transcript。前提是後端的定位資訊與取回指引在部署環境中可用；該服務不要求本地檔案系統存取。
 
-### 最小可用组合
+### 最小可用組合
 
-把后端与策略一起挂载；设置 `maxInlineTokens` 后，过大的图文工具结果都会自动变成预览加定位信息。
+把後端與策略一起掛載；設定 `maxInlineTokens` 後，過大的圖文工具結果都會自動變成預覽加定位資訊。
 
 ```yaml
 - name: '@deepseek-ai/dsh-spill-local'
@@ -42,9 +42,9 @@ kind: "package-reference"
     maxInlineTokens: 12500
 ```
 
-### 保存文本
+### 儲存文字
 
-挂载后端后，用所属会话、来源描述、建议文件名与完整文本调用 `ctx.spillStore.saveText()`：
+掛載後端後，用所屬工作階段、來源描述、建議檔名與完整文字呼叫 `ctx.spillStore.saveText()`：
 
 ```text
 const ref = await ctx.spillStore.saveText({
@@ -55,101 +55,101 @@ const ref = await ctx.spillStore.saveText({
 })
 ```
 
-返回的 `SpillRef` 携带三个字段：`locator`，后端产生的面向模型的不透明句柄（对 `dsh-spill-local` 是本地文件路径，对其他后端可能是 URI 或键）；`bytes`，写入的精确 UTF-8 字节数；`retrievalHint`，消费方展示给模型的指引——对本地后端而言是读取或搜索该路径。消费方将定位信息与指引一同呈现，绝不自行解析定位信息。
+返回的 `SpillRef` 攜帶三個欄位：`locator`，後端產生的面向模型的不透明控制代碼（對 `dsh-spill-local` 是本地檔案路徑，對其他後端可能是 URI 或鍵）；`bytes`，寫入的精確 UTF-8 位元組數；`retrievalHint`，消費方展示給模型的指引——對本地後端而言是讀取或搜尋該路徑。消費方將定位資訊與指引一同呈現，絕不自行解析定位資訊。
 
-### 归属与边界
+### 歸屬與邊界
 
-存储按所属会话分组：fork 后的会话从种子日志继承既有定位信息，无需复制或更改归属，fork 后新产生的 spill 使用子会话 id。会话引用产物归接收上下文的目标会话所有，而不是被引用的源会话。`suggestedName` 只是提示——后端会把它清理成单个安全路径段，绝不把它当作可信路径。预览与 spill 决策由消费方负责；存储与产物过期由后端负责。
+儲存按所屬工作階段分組：fork 後的工作階段從種子日誌繼承既有定位資訊，無需複製或更改歸屬，fork 後新產生的 spill 使用子工作階段 id。工作階段引用產物歸接收上下文的目標工作階段所有，而不是被引用的源工作階段。`suggestedName` 只是提示——後端會把它清理成單個安全路徑段，絕不把它當作可信路徑。預覽與 spill 決策由消費方負責；儲存與產物過期由後端負責。
 
-### 故障与恢复
+### 故障與恢復
 
-`saveText` 只在真实存储故障时拒绝——权限不足、磁盘已满或后端不可用。由调用方决定如何降级：已交付的策略把拒绝当作尽力而为处理，记录警告并保留原始内联结果，因此 spill 失败绝不会把成功的工具调用变成错误或隐藏内容。如果没有挂载后端，就没有可保存的目标；请在组合中加载 `dsh-spill-local` 或其他后端。
+`saveText` 只在真實儲存故障時拒絕——權限不足、磁碟已滿或後端不可用。由呼叫方決定如何降級：已交付的策略把拒絕當作盡力而為處理，記錄警告並保留原始內聯結果，因此 spill 失敗絕不會把成功的工具呼叫變成錯誤或隱藏內容。如果沒有掛載後端，就沒有可儲存的目標；請在組合中載入 `dsh-spill-local` 或其他後端。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释该服务背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋該服務背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-本包建立在一个分离与刻意的极简之上：
+本包建立在一個分離與刻意的極簡之上：
 
-- **约定、实现与策略保持分离。** 本包定义后端做什么（`saveText`）；`dsh-spill-local` 实现它；`dsh-spill-policy` 决定何时触发。各项关注点独立演进与替换。
-- **只有一个方法，别无其他。** 该 seam 不负责保留策略、结果替换或取回/搜索 API——那些都有各自的归属包。
-- **在 seam 处拒绝，绝不静默降级。** 降级由调用方负责；seam 报告真实存储故障。
+- **約定、實作與策略保持分離。** 本包定義後端做什麼（`saveText`）；`dsh-spill-local` 實作它；`dsh-spill-policy` 決定何時觸發。各項關注點獨立演進與替換。
+- **只有一個方法，別無其他。** 該 seam 不負責保留策略、結果替換或取回/搜尋 API——那些都有各自的歸屬包。
+- **在 seam 處拒絕，絕不靜默降級。** 降級由呼叫方負責；seam 報告真實儲存故障。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：抽象 `SpillStore` 服务及其 `saveText` 约定 |
-| [`src/types.ts`](src/types.ts) | 词汇：`SaveTextSpill`、`SpillRef`、带品牌类型 `SpillLocator`、`SpillOwner`、`SpillSource` |
-| — | 不发布运行时不变式伴生入口；除归属 seam 强制执行的约定外，本包不暴露独立的事件序列或可变数据关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：抽象 `SpillStore` 服務及其 `saveText` 約定 |
+| [`src/types.ts`](src/types.ts) | 詞彙：`SaveTextSpill`、`SpillRef`、帶品牌型別 `SpillLocator`、`SpillOwner`、`SpillSource` |
+| — | 不釋出執行時不變式伴生入口；除歸屬 seam 強制執行的約定外，本包不暴露獨立的事件序列或可變資料關係。 |
 
-### 数据模型
+### 資料模型
 
-`SaveTextSpill` 将存储归属与描述性来源信息分开。`SpillSource` 接受工具来源 `{ kind: "tool", toolName, callId, label }` 或 `{ kind: "session-reference", sessionId, label }`，后者的 id 标识被捕获的源会话。会话引用绝不伪造工具调用 id。来源信息与归属命名空间都不授予读取权限。消费方把返回的定位信息视为不透明值，并与取回指引一同展示。
+`SaveTextSpill` 將儲存歸屬與描述性來源資訊分開。`SpillSource` 接受工具來源 `{ kind: "tool", toolName, callId, label }` 或 `{ kind: "session-reference", sessionId, label }`，後者的 id 標識被捕捉的源工作階段。工作階段引用絕不偽造工具呼叫 id。來源資訊與歸屬名稱空間都不授予讀取權限。消費方把返回的定位資訊視為不透明值，並與取回指引一同展示。
 
-### 生命周期
+### 生命週期
 
-后端继承 `SpillStore` 并以插件方式加载，注册为 `ctx.spillStore`；每个上下文只有一个实现，第二次加载会失败。执行 dispose（资源释放）时会释放该服务。抽象类本身不注册任何内容——本包只提供约定与词汇。
+後端繼承 `SpillStore` 並以外掛方式載入，註冊為 `ctx.spillStore`；每個上下文只有一個實作，第二次載入會失敗。執行 dispose（資源釋放）時會釋放該服務。抽象類本身不註冊任何內容——本包只提供約定與詞彙。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享词汇逐步进入已交付后端、策略与设计依据。
+當包級約定不夠用時閱讀以下頁面。它們從共享詞彙逐步進入已交付後端、策略與設計依據。
 
-- [spill 子系统](../../../docs/subsystems/spill.zh.md)——穷尽式词汇、归属与后端关系。
-- [spill 包映射](../README.zh.md)——三包家族与各自职责。
-- [dsh-spill-local](../spill-local/README.zh.md)——已交付的本地文件系统后端。
-- [dsh-spill-policy](../spill-policy/README.zh.md)——决定最终结果何时过大的策略。
-- [dsh-output-retention](../../util/output-retention/README.zh.md)——策略背后的预览机制。
-- [工具输出 spill 决策](../../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)——能力边界与设计依据。
+- [spill 子系統](../../../docs/subsystems/spill.zh.md)——窮盡式詞彙、歸屬與後端關係。
+- [spill 包對映](../README.zh.md)——三包家族與各自職責。
+- [dsh-spill-local](../spill-local/README.zh.md)——已交付的本地檔案系統後端。
+- [dsh-spill-policy](../spill-policy/README.zh.md)——決定最終結果何時過大的策略。
+- [dsh-output-retention](../../util/output-retention/README.zh.md)——策略背後的預覽機制。
+- [工具輸出 spill 決策](../../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)——能力邊界與設計依據。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-spill 消费方将后端的定位信息与取回指引渲染给模型，从而间接影响模型体验。
+spill 消費方將後端的定位資訊與取回指引渲染給模型，從而間接影響模型體驗。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接导致 KV Cache 失效；请求前缀变更由上述消费方负责。
+不會直接導致 KV Cache 失效；請求字首變更由上述消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明 spill 存储服务单独使用时在哪些方面不完整。它们是当前的包约束。
+這些限制說明 spill 儲存服務單獨使用時在哪些方面不完整。它們是目前的包約束。
 
-- **没有取回或删除 API**——消费方只能渲染后端的定位信息与指引；生命周期与访问语义仍由后端自行决定。
-- **存储不等于访问控制**——所属会话区分写入命名空间，但不会授权通过定位信息读取内容；每个后端与取回消费方都必须自行强制执行访问边界。
+- **沒有取回或刪除 API**——消費方只能渲染後端的定位資訊與指引；生命週期與存取語義仍由後端自行決定。
+- **儲存不等於存取控制**——所屬工作階段區分寫入名稱空間，但不會授權透過定位資訊讀取內容；每個後端與取回消費方都必須自行強制執行存取邊界。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：尚未决定的探索方向与开放问题。它明确不具权威性。
+本開發備註是維護者的工作上下文：尚未決定的探索方向與開放問題。它明確不具權威性。
 
-#### 未来：执行器 spill 文件集成
+#### 未來：執行器 spill 檔案整合
 
-该 seam 只有 `saveText`；为既有执行器 spill 文件提供保存文件或链接/复制路径（例如规范化 bash 临时文件），以及为 subagent 展开提供工具自有 spill，仍然延期，见[工具输出 spill 决策](../../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)。
+該 seam 只有 `saveText`；為既有執行器 spill 檔案提供儲存檔案或連結/複製路徑（例如規範化 bash 臨時檔案），以及為 subagent 展開提供工具自有 spill，仍然延期，見[工具輸出 spill 決策](../../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)。
 
-#### 未来：非本地后端与清理
+#### 未來：非本地後端與清理
 
-远程或数据库后端仍是开放方向。本地后端执行其[启动清理策略](../spill-local/README.zh.md#startup-cleanup)；该服务未定义按会话清理或刷新定位信息的 API。
+遠端或資料庫後端仍是開放方向。本地後端執行其[啟動清理策略](../spill-local/README.zh.md#startup-cleanup)；該服務未定義按工作階段清理或重新整理定位資訊的 API。
 
 </details>

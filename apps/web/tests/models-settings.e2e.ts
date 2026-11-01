@@ -73,19 +73,19 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
   it('opens the add card over the dormant directory vocabulary', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-empty'))
     await openSettings(page, 'zh')
-    const dialog = page.getByRole('dialog', { name: '设置' })
+    const dialog = page.getByRole('dialog', { name: '設定' })
     await dialog.waitFor({ timeout: 10_000 })
     await dialog.getByRole('button', { name: '模型', exact: true }).click()
-    await dialog.getByText('填入各提供商的 API 密钥即可使用其模型。').waitFor({ timeout: 10_000 })
+    await dialog.getByText('填入各提供商的 API 金鑰即可使用其模型。').waitFor({ timeout: 10_000 })
     // The dormant pi-ai adapter contributes its whole installed catalog; no
     // provider is configured yet, so the page is one add button.
-    const add = dialog.getByRole('button', { name: '添加模型提供商' })
+    const add = dialog.getByRole('button', { name: '新增模型提供商' })
     await add.waitFor({ timeout: 10_000 })
     // The button enables once the dormant catalog lands in the join.
     await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
     await add.click()
     // The card opens on the third-party mode, whose panel carries the select.
-    const modes = dialog.getByRole('tablist', { name: '添加方式' })
+    const modes = dialog.getByRole('tablist', { name: '新增方式' })
     await modes.waitFor({ timeout: 10_000 })
     expect(await modes.getByRole('tab', { name: '第三方模型提供商' }).getAttribute('aria-selected')).toBe('true')
     const pick = dialog.getByLabel('提供商', { exact: true })
@@ -95,40 +95,40 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     expect(options).toContain('anthropic')
     expect(options).toContain('minimax-cn')
     await pick.selectOption('minimax-cn')
-    await dialog.getByRole('textbox', { name: 'API 密钥', exact: true }).waitFor({ timeout: 10_000 })
+    await dialog.getByRole('textbox', { name: 'API 金鑰', exact: true }).waitFor({ timeout: 10_000 })
     const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(EMPTY_EXPECTED, snapshot, MODE)
   }, 60_000)
 
   it('refuses a key no HTTP header can carry before anything is written', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-illegal-key'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    const key = dialog.getByLabel('API 密钥')
-    const save = dialog.getByRole('button', { name: '保存', exact: true })
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    const key = dialog.getByLabel('API 金鑰')
+    const save = dialog.getByRole('button', { name: '儲存', exact: true })
 
     // A key no HTTP header can carry would save cleanly and fail the first
     // turn with a ByteString TypeError; the form names the offending field
     // instead.
     await key.fill('sk-\u{1F600}minimax')
-    await dialog.getByText('该 API 密钥格式错误，请检查。').waitFor({ timeout: 10_000 })
+    await dialog.getByText('該 API 金鑰格式錯誤，請檢查。').waitFor({ timeout: 10_000 })
     await expect.poll(async () => save.isEnabled(), { timeout: 10_000 }).toBe(false)
 
     // Clearing it restores submit: an empty field means "keep what is stored",
     // never a refusal, or editing any other setting would demand the key.
     await key.fill('')
     await expect.poll(async () => save.isEnabled(), { timeout: 10_000 }).toBe(true)
-    expect(await dialog.getByText('该 API 密钥格式错误，请检查。').count()).toBe(0)
+    expect(await dialog.getByText('該 API 金鑰格式錯誤，請檢查。').count()).toBe(0)
   }, 60_000)
 
   it('saves a blank key as a reference-free provider-native profile', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-native-auth'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    await dialog.getByRole('button', { name: '保存', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    await dialog.getByRole('button', { name: '儲存', exact: true }).click()
     const row = dialog.getByText('minimax-cn', { exact: true }).first()
     await row.waitFor({ timeout: 10_000 })
-    await dialog.getByText('已保存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
-    expect(await dialog.getByRole('img', { name: 'API 密钥已配置' }).count()).toBe(0)
-    expect(await dialog.getByRole('img', { name: 'API 密钥缺失' }).count()).toBe(0)
+    await dialog.getByText('已儲存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
+    expect(await dialog.getByRole('img', { name: 'API 金鑰已設定' }).count()).toBe(0)
+    expect(await dialog.getByRole('img', { name: 'API 金鑰缺失' }).count()).toBe(0)
     const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
     expect(document).toContain('minimax-cn: {}')
     expect(document).not.toContain('MINIMAX_CN_API_KEY')
@@ -136,13 +136,13 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('describes reference-free deletion without claiming a credential exists', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-native-delete'))
-    const settingsDialog = page.getByRole('dialog', { name: '设置' })
-    await settingsDialog.getByRole('button', { name: '删除 minimax-cn', exact: true }).click()
-    const deleteDialog = page.getByRole('dialog', { name: '删除 minimax-cn？' })
+    const settingsDialog = page.getByRole('dialog', { name: '設定' })
+    await settingsDialog.getByRole('button', { name: '刪除 minimax-cn', exact: true }).click()
+    const deleteDialog = page.getByRole('dialog', { name: '刪除 minimax-cn？' })
     await deleteDialog.waitFor({ timeout: 10_000 })
     const snapshot = await captureStableAria(
       page,
-      '[role="dialog"][aria-label="删除 minimax-cn？"]',
+      '[role="dialog"][aria-label="刪除 minimax-cn？"]',
       scaffold.workspaceCwd,
     )
     await compareOrRefreshGolden(NATIVE_DELETE_EXPECTED, snapshot, MODE)
@@ -151,19 +151,19 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('stores the key under the derived reference and keeps the route live', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-add'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    await dialog.getByRole('button', { name: '编辑 minimax-cn' }).click()
-    await dialog.getByRole('textbox', { name: 'API 密钥', exact: true }).fill('sk-e2e-minimax')
-    await dialog.getByRole('button', { name: '保存', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    await dialog.getByRole('button', { name: '編輯 minimax-cn' }).click()
+    await dialog.getByRole('textbox', { name: 'API 金鑰', exact: true }).fill('sk-e2e-minimax')
+    await dialog.getByRole('button', { name: '儲存', exact: true }).click()
     // The profile lands in cordis.patch.yml with only the derived reference, the
     // key value lands in the harness home's .credentials.yaml, the dormant route
     // registers, and the topology frame invalidates the page into the row.
     await expect.poll(
-      async () => dialog.getByRole('textbox', { name: 'API 密钥', exact: true }).count(),
+      async () => dialog.getByRole('textbox', { name: 'API 金鑰', exact: true }).count(),
       { timeout: 10_000 },
     ).toBe(0)
-    await dialog.getByRole('img', { name: 'API 密钥已配置' }).waitFor({ timeout: 10_000 })
-    await dialog.getByText('已保存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
+    await dialog.getByRole('img', { name: 'API 金鑰已設定' }).waitFor({ timeout: 10_000 })
+    await dialog.getByText('已儲存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
     const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
     expect(document).toContain('minimax-cn:')
     expect(document).toContain('apiKeyEnv: MINIMAX_CN_API_KEY')
@@ -178,17 +178,17 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('applies a customized-settings field as a merge patch', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-customized'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    await dialog.getByRole('button', { name: '编辑 minimax-cn' }).click()
-    await dialog.getByText('自定义设置').click()
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    await dialog.getByRole('button', { name: '編輯 minimax-cn' }).click()
+    await dialog.getByText('自定義設定').click()
     const url = dialog.getByLabel('API 地址')
     await url.waitFor({ timeout: 10_000 })
     await url.fill('https://gateway.minimax.example/v1')
-    await dialog.getByRole('button', { name: '保存', exact: true }).click()
+    await dialog.getByRole('button', { name: '儲存', exact: true }).click()
     // The editor closes back to the row; the fold's write merged into the
     // stored profile beside the reference.
     await expect.poll(async () => dialog.getByLabel('API 地址').count(), { timeout: 10_000 }).toBe(0)
-    await dialog.getByText('已保存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
+    await dialog.getByText('已儲存 minimax-cn。', { exact: true }).waitFor({ timeout: 10_000 })
     const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
     expect(document).toContain('baseURL: https://gateway.minimax.example/v1')
     expect(document).toContain('apiKeyEnv: MINIMAX_CN_API_KEY')
@@ -199,12 +199,12 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('filters the discovered model catalog and clears hidden selections', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-picker'))
-    const settingsDialog = page.getByRole('dialog', { name: '设置' })
-    await settingsDialog.getByRole('button', { name: '编辑 minimax-cn' }).click()
-    await settingsDialog.getByText('自定义设置').click()
-    await settingsDialog.getByRole('button', { name: '获取可用模型' }).click()
+    const settingsDialog = page.getByRole('dialog', { name: '設定' })
+    await settingsDialog.getByRole('button', { name: '編輯 minimax-cn' }).click()
+    await settingsDialog.getByText('自定義設定').click()
+    await settingsDialog.getByRole('button', { name: '取得可用模型' }).click()
 
-    const picker = page.getByRole('dialog', { name: '选择要添加的模型' })
+    const picker = page.getByRole('dialog', { name: '選擇要新增的模型' })
     await picker.waitFor({ timeout: 10_000 })
     const boxes = picker.getByRole('checkbox')
     const count = await boxes.count()
@@ -213,10 +213,10 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
       Array.from({ length: count }, () => true),
     )
 
-    const search = picker.getByRole('searchbox', { name: '搜索模型' })
+    const search = picker.getByRole('searchbox', { name: '搜尋模型' })
     await search.fill('highspeed')
     await expect.poll(async () => boxes.count()).toBe(1)
-    await picker.getByRole('button', { name: '取消全选' }).click()
+    await picker.getByRole('button', { name: '取消全選' }).click()
     expect(await boxes.evaluateAll(nodes => nodes.map(node => (node as HTMLInputElement).checked))).toEqual(
       [false],
     )
@@ -225,11 +225,11 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     await expect.poll(async () => boxes.count()).toBe(count)
     const restored = await boxes.evaluateAll(nodes => nodes.map(node => (node as HTMLInputElement).checked))
     expect(restored).toEqual(Array.from({ length: count }, () => false))
-    await picker.getByRole('button', { name: '全选' }).waitFor()
-    await picker.getByRole('button', { name: '全选' }).click()
+    await picker.getByRole('button', { name: '全選' }).waitFor()
+    await picker.getByRole('button', { name: '全選' }).click()
     const snapshot = await captureStableAria(
       page,
-      '[role="dialog"][aria-label="选择要添加的模型"]',
+      '[role="dialog"][aria-label="選擇要新增的模型"]',
       scaffold.workspaceCwd,
     )
     await compareOrRefreshGolden(MODEL_PICKER_EXPECTED, snapshot, MODE)
@@ -243,30 +243,30 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('declares a route the adapter does not ship', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-declare'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    const add = dialog.getByRole('button', { name: '添加模型提供商' })
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    const add = dialog.getByRole('button', { name: '新增模型提供商' })
     await expect.poll(async () => add.isEnabled(), { timeout: 10_000 }).toBe(true)
     await add.click()
     // The custom-API mode is the second segment of the one add card; its
     // purpose line replaces the catalog one.
-    await dialog.getByRole('tab', { name: '自定义模型 API' }).click()
-    await dialog.getByText('连接中转站、自部署服务或其他兼容 OpenAI / Anthropic 协议的接口，需填写 API 地址、协议和模型。').waitFor({ timeout: 10_000 })
+    await dialog.getByRole('tab', { name: '自定義模型 API' }).click()
+    await dialog.getByText('連線中轉站、自部署服務或其他相容 OpenAI / Anthropic 協定的介面，需填寫 API 地址、協定和模型。').waitFor({ timeout: 10_000 })
     // The third-party panel stays mounted, hidden, beside this one, so the
     // form is addressed through its own panel.
-    const custom = dialog.getByRole('tabpanel', { name: '自定义模型 API' })
+    const custom = dialog.getByRole('tabpanel', { name: '自定義模型 API' })
     await custom.getByLabel('Provider ID').fill('acme-gateway')
-    await custom.getByLabel('显示名称').fill('Acme Gateway')
+    await custom.getByLabel('顯示名稱').fill('Acme Gateway')
     await custom.getByLabel('API 地址').fill('https://gateway.acme.example/v1')
     // No reasoning effort on a provider card at all: effort is a per-model
     // capability, the models under one provider disagree about it, and a
     // switch in the composer already records provider+model+effort together.
-    expect(await dialog.getByLabel('推理强度').count()).toBe(0)
-    await custom.getByRole('button', { name: '添加模型', exact: true }).click()
+    expect(await dialog.getByLabel('推理強度').count()).toBe(0)
+    await custom.getByRole('button', { name: '新增模型', exact: true }).click()
     await custom.getByLabel('模型 ID 1').fill('acme-large')
-    await custom.getByRole('button', { name: '模型选项 1' }).click()
-    expect(await custom.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).isChecked()).toBe(false)
-    await custom.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).check()
-    await custom.getByRole('button', { name: '创建提供商', exact: true }).click()
+    await custom.getByRole('button', { name: '模型選項 1' }).click()
+    expect(await custom.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).isChecked()).toBe(false)
+    await custom.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).check()
+    await custom.getByRole('button', { name: '建立提供商', exact: true }).click()
 
     const row = dialog.getByText('Acme Gateway', { exact: true }).first()
     await row.waitFor({ timeout: 10_000 })
@@ -279,8 +279,8 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     // The tag follows the adapter's installed catalog: this route is in no
     // catalog, while minimax-cn is — even though both now have profiles.
     const rowCard = (name: string) => dialog.locator('li').filter({ hasText: name }).first()
-    await expect.poll(async () => rowCard('Acme Gateway').getByText('自定义').count(), { timeout: 10_000 }).toBe(1)
-    expect(await rowCard('minimax-cn').getByText('自定义').count()).toBe(0)
+    await expect.poll(async () => rowCard('Acme Gateway').getByText('自定義').count(), { timeout: 10_000 }).toBe(1)
+    expect(await rowCard('minimax-cn').getByText('自定義').count()).toBe(0)
 
     const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(DECLARED_EXPECTED, snapshot, MODE)
@@ -289,39 +289,39 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('reopens the name and protocol a declared route was created with', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-declared-identity'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    await dialog.getByRole('button', { name: '编辑 Acme Gateway (acme-gateway)' }).click()
-    await dialog.getByText('自定义设置').click()
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    await dialog.getByRole('button', { name: '編輯 Acme Gateway (acme-gateway)' }).click()
+    await dialog.getByText('自定義設定').click()
     // The create card asked this route for a name and a protocol because
     // nothing can default them; the editor reaches the same two fields rather
     // than sending the user to cordis.patch.yml for what only this route names.
-    const protocol = dialog.getByLabel('API 协议')
+    const protocol = dialog.getByLabel('API 協定')
     await protocol.waitFor({ timeout: 10_000 })
     expect(await protocol.inputValue()).toBe('openai-completions')
-    const name = dialog.getByLabel('显示名称', { exact: true })
+    const name = dialog.getByLabel('顯示名稱', { exact: true })
     expect(await name.inputValue()).toBe('Acme Gateway')
-    await dialog.getByRole('button', { name: '模型选项 1' }).click()
-    expect(await dialog.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).isChecked()).toBe(true)
+    await dialog.getByRole('button', { name: '模型選項 1' }).click()
+    expect(await dialog.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).isChecked()).toBe(true)
     await assertModelInputLayout(page, dialog)
     const snapshot = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)
     await compareOrRefreshGolden(DECLARED_EDIT_EXPECTED, snapshot, MODE)
 
     await protocol.selectOption('anthropic-messages')
-    await name.fill('Acme 网关')
-    await dialog.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).uncheck()
-    await dialog.getByRole('button', { name: '保存', exact: true }).click()
-    await expect.poll(async () => dialog.getByLabel('API 协议').count(), { timeout: 10_000 }).toBe(0)
+    await name.fill('Acme 閘道')
+    await dialog.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).uncheck()
+    await dialog.getByRole('button', { name: '儲存', exact: true }).click()
+    await expect.poll(async () => dialog.getByLabel('API 協定').count(), { timeout: 10_000 }).toBe(0)
     // The adapter re-resolved the route under the new protocol and re-registered
     // it under the new name: an unserviceable profile would have been refused
     // at the write instead, and a rename that did not re-register would leave
     // the old label on the row.
-    await dialog.getByText('Acme 网关', { exact: true }).first().waitFor({ timeout: 10_000 })
+    await dialog.getByText('Acme 閘道', { exact: true }).first().waitFor({ timeout: 10_000 })
     // The status line names the route as the refreshed directory reports it;
     // the target captured when the card opened still carries the old name.
-    await dialog.getByText('已保存 Acme 网关 (acme-gateway)。', { exact: true }).waitFor({ timeout: 10_000 })
+    await dialog.getByText('已儲存 Acme 閘道 (acme-gateway)。', { exact: true }).waitFor({ timeout: 10_000 })
     const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
     expect(document).toContain('api: anthropic-messages')
-    expect(document).toContain('displayName: Acme 网关')
+    expect(document).toContain('displayName: Acme 閘道')
     await expect(scaffold.ctx.llm.resolveModelInfo('acme-gateway', 'acme-large')).resolves.toMatchObject({
       inputModalities: ['text'],
     })
@@ -330,27 +330,27 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
 
   it('saves image-only input and reopens the same selection', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-input-types'))
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    await dialog.getByRole('button', { name: '编辑 Acme 网关 (acme-gateway)' }).click()
-    await dialog.getByText('自定义设置').click()
-    await dialog.getByRole('button', { name: '模型选项 1' }).click()
-    expect(await dialog.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).isChecked()).toBe(false)
-    const inputs = dialog.getByRole('group', { name: '输入类型 1' })
-    expect(await inputs.getByRole('checkbox', { name: '文本' }).isChecked()).toBe(true)
-    expect(await inputs.getByRole('checkbox', { name: '文本' }).isDisabled()).toBe(true)
-    await inputs.getByRole('checkbox', { name: '图片' }).check()
-    await inputs.getByRole('checkbox', { name: '文本' }).uncheck()
-    await dialog.getByRole('button', { name: '保存', exact: true }).click()
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    await dialog.getByRole('button', { name: '編輯 Acme 閘道 (acme-gateway)' }).click()
+    await dialog.getByText('自定義設定').click()
+    await dialog.getByRole('button', { name: '模型選項 1' }).click()
+    expect(await dialog.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).isChecked()).toBe(false)
+    const inputs = dialog.getByRole('group', { name: '輸入型別 1' })
+    expect(await inputs.getByRole('checkbox', { name: '文字' }).isChecked()).toBe(true)
+    expect(await inputs.getByRole('checkbox', { name: '文字' }).isDisabled()).toBe(true)
+    await inputs.getByRole('checkbox', { name: '圖片' }).check()
+    await inputs.getByRole('checkbox', { name: '文字' }).uncheck()
+    await dialog.getByRole('button', { name: '儲存', exact: true }).click()
     await dialog.getByLabel('模型 ID 1').waitFor({ state: 'detached', timeout: 10_000 })
     await expect(scaffold.ctx.llm.resolveModelInfo('acme-gateway', 'acme-large')).resolves.toMatchObject({
       inputModalities: ['image'],
     })
-    await dialog.getByRole('button', { name: '编辑 Acme 网关 (acme-gateway)' }).click()
-    await dialog.getByText('自定义设置').click()
-    await dialog.getByRole('button', { name: '模型选项 1' }).click()
-    expect(await dialog.getByRole('group', { name: '输入类型 1' }).getByRole('checkbox', { name: '图片' }).isChecked()).toBe(true)
-    expect(await inputs.getByRole('checkbox', { name: '文本' }).isChecked()).toBe(false)
-    expect(await inputs.getByRole('checkbox', { name: '图片' }).isDisabled()).toBe(true)
+    await dialog.getByRole('button', { name: '編輯 Acme 閘道 (acme-gateway)' }).click()
+    await dialog.getByText('自定義設定').click()
+    await dialog.getByRole('button', { name: '模型選項 1' }).click()
+    expect(await dialog.getByRole('group', { name: '輸入型別 1' }).getByRole('checkbox', { name: '圖片' }).isChecked()).toBe(true)
+    expect(await inputs.getByRole('checkbox', { name: '文字' }).isChecked()).toBe(false)
+    expect(await inputs.getByRole('checkbox', { name: '圖片' }).isDisabled()).toBe(true)
     await dialog.getByRole('button', { name: '取消', exact: true }).click()
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
@@ -361,53 +361,53 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
       op: 'set', path: ['providers', 'openai'],
       value: { models: [{ id: 'gpt-6-astra', name: 'GPT-6 Astra', contextWindow: 272000, maxTokens: 128000 }] },
     }])
-    const dialog = page.getByRole('dialog', { name: '设置' })
-    const edit = dialog.getByRole('button', { name: '编辑 openai', exact: true })
+    const dialog = page.getByRole('dialog', { name: '設定' })
+    const edit = dialog.getByRole('button', { name: '編輯 openai', exact: true })
     try {
       await edit.click()
-      await dialog.getByText('自定义设置').click()
-      await dialog.getByRole('button', { name: '模型选项 1' }).click()
-      const types = dialog.getByRole('group', { name: '输入类型 1' })
-      const image = types.getByRole('checkbox', { name: '图片', exact: true })
+      await dialog.getByText('自定義設定').click()
+      await dialog.getByRole('button', { name: '模型選項 1' }).click()
+      const types = dialog.getByRole('group', { name: '輸入型別 1' })
+      const image = types.getByRole('checkbox', { name: '圖片', exact: true })
       await expect.poll(() => image.isChecked()).toBe(true)
-      expect(await types.getByRole('checkbox', { name: '文本', exact: true }).isChecked()).toBe(true)
+      expect(await types.getByRole('checkbox', { name: '文字', exact: true }).isChecked()).toBe(true)
       const before = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
       await compareOrRefreshGolden(join(SNAPSHOT_DIR, 'catalog-inputs.expected.md'),
         await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd), MODE)
-      await dialog.getByRole('button', { name: '保存', exact: true }).click()
+      await dialog.getByRole('button', { name: '儲存', exact: true }).click()
       await types.waitFor({ state: 'detached' })
       expect(await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')).toBe(before)
 
       await edit.click()
-      await dialog.getByText('自定义设置').click()
-      await dialog.getByRole('button', { name: '模型选项 1' }).click()
+      await dialog.getByText('自定義設定').click()
+      await dialog.getByRole('button', { name: '模型選項 1' }).click()
       await expect.poll(() => image.isEnabled()).toBe(true)
       await image.uncheck()
-      await dialog.getByRole('button', { name: '保存', exact: true }).click()
+      await dialog.getByRole('button', { name: '儲存', exact: true }).click()
       await types.waitFor({ state: 'detached' })
       await expect(scaffold.ctx.llm.resolveModelInfo('openai', 'gpt-6-astra')).resolves.toMatchObject({ inputModalities: ['text'] })
       await edit.click()
-      await dialog.getByText('自定义设置').click()
-      await dialog.getByRole('button', { name: '模型选项 1' }).click()
+      await dialog.getByText('自定義設定').click()
+      await dialog.getByRole('button', { name: '模型選項 1' }).click()
       await expect.poll(() => image.isEnabled()).toBe(true)
       expect(await image.isChecked()).toBe(false)
 
-      await dialog.getByRole('button', { name: '删除模型 1' }).click()
-      await dialog.getByRole('button', { name: '获取可用模型' }).click()
-      const picker = page.getByRole('dialog', { name: '选择要添加的模型' })
-      await picker.getByRole('button', { name: '取消全选' }).click()
-      await picker.getByRole('searchbox', { name: '搜索模型' }).fill('gpt-6-astra')
+      await dialog.getByRole('button', { name: '刪除模型 1' }).click()
+      await dialog.getByRole('button', { name: '取得可用模型' }).click()
+      const picker = page.getByRole('dialog', { name: '選擇要新增的模型' })
+      await picker.getByRole('button', { name: '取消全選' }).click()
+      await picker.getByRole('searchbox', { name: '搜尋模型' }).fill('gpt-6-astra')
       await picker.getByRole('checkbox', { name: 'gpt-6-astra', exact: true }).check()
-      await picker.getByRole('button', { name: '添加所选' }).click()
-      await dialog.getByRole('button', { name: '模型选项 1' }).click()
+      await picker.getByRole('button', { name: '新增所選' }).click()
+      await dialog.getByRole('button', { name: '模型選項 1' }).click()
       expect(await image.isChecked()).toBe(true)
-      await dialog.getByRole('button', { name: '保存', exact: true }).click()
+      await dialog.getByRole('button', { name: '儲存', exact: true }).click()
       await types.waitFor({ state: 'detached' })
       await expect(scaffold.ctx.llm.resolveModelInfo('openai', 'gpt-6-astra')).resolves.toMatchObject({ inputModalities: ['text', 'image'] })
     } finally {
       await scaffold.ctx.settings.mutate('llm-pi-ai', [{ op: 'unset', path: ['providers', 'openai'] }])
       await edit.waitFor({ state: 'detached' })
-      await page.getByRole('dialog', { name: '选择要添加的模型' }).waitFor({ state: 'detached' })
+      await page.getByRole('dialog', { name: '選擇要新增的模型' }).waitFor({ state: 'detached' })
     }
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
@@ -415,22 +415,22 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
   it('confirms an identified provider deletion before removing its profile and key', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-models-delete'))
     expect(await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')).not.toContain('openai:')
-    const settingsDialog = page.getByRole('dialog', { name: '设置' })
-    await settingsDialog.getByRole('button', { name: '删除 minimax-cn', exact: true }).click()
-    const deleteDialog = page.getByRole('dialog', { name: '删除 minimax-cn？' })
+    const settingsDialog = page.getByRole('dialog', { name: '設定' })
+    await settingsDialog.getByRole('button', { name: '刪除 minimax-cn', exact: true }).click()
+    const deleteDialog = page.getByRole('dialog', { name: '刪除 minimax-cn？' })
     await deleteDialog.waitFor({ timeout: 10_000 })
     const snapshot = await captureStableAria(
       page,
-      '[role="dialog"][aria-label="删除 minimax-cn？"]',
+      '[role="dialog"][aria-label="刪除 minimax-cn？"]',
       scaffold.workspaceCwd,
     )
     await compareOrRefreshGolden(DELETE_EXPECTED, snapshot, MODE)
 
     await deleteDialog.getByRole('button', { name: '取消', exact: true }).click()
     expect(await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')).toContain('minimax-cn:')
-    await settingsDialog.getByRole('button', { name: '删除 minimax-cn', exact: true }).click()
-    await page.getByRole('dialog', { name: '删除 minimax-cn？' })
-      .getByRole('button', { name: '删除 minimax-cn', exact: true }).click()
+    await settingsDialog.getByRole('button', { name: '刪除 minimax-cn', exact: true }).click()
+    await page.getByRole('dialog', { name: '刪除 minimax-cn？' })
+      .getByRole('button', { name: '刪除 minimax-cn', exact: true }).click()
     await expect.poll(
       async () => readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8'),
       { timeout: 10_000 },
@@ -438,7 +438,7 @@ describe('web e2e: Models settings page configures a dormant provider', () => {
     expect(await readFile(join(scaffold.harnessHome, '.credentials.yaml'), 'utf8'))
       .not.toContain('MINIMAX_CN_API_KEY')
     await expect.poll(
-      async () => page.getByRole('dialog', { name: '删除 minimax-cn？' }).count(),
+      async () => page.getByRole('dialog', { name: '刪除 minimax-cn？' }).count(),
       { timeout: 10_000 },
     ).toBe(0)
     await page.keyboard.press('Escape')

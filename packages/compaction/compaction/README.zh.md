@@ -1,5 +1,5 @@
 ---
-description: "面向后端实现者与部署方的共享压缩约定：会话压缩做什么、何时使用，以及如何实现后端。"
+description: "面向後端實作者與部署方的共享壓縮約定：工作階段壓縮做什麼、何時使用，以及如何實作後端。"
 kind: "package-reference"
 ---
 
@@ -9,168 +9,168 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-compaction` 让长时会话把较早历史压缩（compaction）成一条摘要消息、保持近期对话不变，并像摘要一直存在那样继续下去——配合 `dsh-compaction-basic` 之类的后端与可选的 `/compact` 命令即可实现。被遮蔽的内容仍保留在会话日志中，因此回放会话时能确定性地重现同一份压缩后的对话。当你实现压缩后端、构建触发压缩的组件，或需要识别压缩后的消息时，才需要本包——它本身不执行任何压缩。想开箱即用地获得该功能时，请选择随附后端。
+`dsh-compaction` 讓長時工作階段把較早歷史壓縮（compaction）成一條摘要訊息、保持近期對話不變，並像摘要一直存在那樣繼續下去——配合 `dsh-compaction-basic` 之類的後端與可選的 `/compact` 命令即可實作。被遮蔽的內容仍保留在工作階段日誌中，因此回放工作階段時能確定性地重現同一份壓縮後的對話。當你實作壓縮後端、建置觸發壓縮的元件，或需要識別壓縮後的訊息時，才需要本包——它本身不執行任何壓縮。想開箱即用地獲得該功能時，請選擇隨附後端。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-先确定你需要什么。随附后端加 `/compact` 命令即可零代码获得自动与按需压缩；只有在你扩展或重实现该功能时才需要本包。以下各节说明压缩做什么、如何启用，以及如何编写后端。
+先確定你需要什麼。隨附後端加 `/compact` 命令即可零程式碼獲得自動與按需壓縮；只有在你擴充功能或重實作該功能時才需要本包。以下各節說明壓縮做什麼、如何啟用，以及如何編寫後端。
 
-### 何时选择
+### 何時選擇
 
-当模型撰写的摘要符合需求时，选择 `dsh-compaction-basic`：会话增长时自动压缩，并可通过 `dsh-command-compact` 按需压缩。当你需要不同的摘要方式——固定模板或远程服务——或构建以编程方式触发压缩的组件时，选择本包。不要单独挂载它：没有后端就什么都不会压缩。
+當模型撰寫的摘要符合需求時，選擇 `dsh-compaction-basic`：工作階段增長時自動壓縮，並可透過 `dsh-command-compact` 按需壓縮。當你需要不同的摘要方式——固定範本或遠端服務——或建置以程式設計方式觸發壓縮的元件時，選擇本包。不要單獨掛載它：沒有後端就什麼都不會壓縮。
 
-### 压缩后会发生什么
+### 壓縮後會發生什麼
 
-压缩运行时，所选较早范围的对话会被替换为一条摘要消息；近期历史不受影响，对话从摘要继续。压缩可以由 token 压力自动触发、按需触发，或针对显式范围触发；结果会报告压缩了哪些历史以及估算释放的 token 数。
+壓縮執行時，所選較早範圍的對話會被替換為一條摘要訊息；近期歷史不受影響，對話從摘要繼續。壓縮可以由 token 壓力自動觸發、按需觸發，或針對顯式範圍觸發；結果會報告壓縮了哪些歷史以及估算釋放的 token 數。
 
-### 启用压缩
+### 啟用壓縮
 
-挂载随附后端以注册压缩服务，并添加 `dsh-command-compact` 获得按需命令：
+掛載隨附後端以註冊壓縮服務，並新增 `dsh-command-compact` 獲得按需命令：
 
 ```yaml
 - name: '@deepseek-ai/dsh-compaction-basic'
 - name: '@deepseek-ai/dsh-command-compact'
 ```
 
-有了这两行配置，功能即已开启：会话增长时自动压缩，`/compact` 收到请求后立即压缩并报告替换了多少历史项。如果未挂载后端，什么都不会压缩，`/compact` 也会失败；随附后端的完整依赖链见其自身 README。
+有了這兩行設定，功能即已開啟：工作階段增長時自動壓縮，`/compact` 收到請求後立即壓縮並報告替換了多少歷史項。如果未掛載後端，什麼都不會壓縮，`/compact` 也會失敗；隨附後端的完整依賴鏈見其自身 README。
 
-### 实现后端
+### 實作後端
 
-继承提供的基类并实现三个操作：一个针对自动触发决定并执行压缩，一个按需压缩，一个压缩对话的显式范围。把你的类作为插件加载，它就会成为该组合的压缩服务。精确签名、失败规则以及每个后端必须生成的检查点标记，见下方实现章节与[压缩子系统参考](../../../docs/subsystems/compaction.zh.md)。
+繼承提供的基類並實作三個操作：一個針對自動觸發決定並執行壓縮，一個按需壓縮，一個壓縮對話的顯式範圍。把你的類作為外掛載入，它就會成為該組合的壓縮服務。精確簽名、失敗規則以及每個後端必須生成的檢查點標記，見下方實作章節與[壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)。
 
-### 识别压缩后的历史
+### 識別壓縮後的歷史
 
-后端写入的摘要消息带有稳定标记，因此任何消费方都能在持久化或克隆后识别压缩历史，而无需知道是哪个后端生成的。该标记从包根导出，也从一个无 Cordis 依赖的子路径导出，客户端与 wire 程序均可导入。
+後端寫入的摘要訊息帶有穩定標記，因此任何消費方都能在持久化或克隆後識別壓縮歷史，而無需知道是哪個後端生成的。該標記從包根匯出，也從一個無 Cordis 依賴的子路徑匯出，用戶端與 wire 程式均可匯入。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节以 API 术语解释约定及其背后的设计决策；功能层面行为见[使用本包](#use-this-package)。
+本節以 API 術語解釋約定及其背後的設計決策；功能層面行為見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-该 seam 建立在一个拆分与三项承诺之上：
+該 seam 建立在一個拆分與三項承諾之上：
 
-- **抽象约定，具体后端。** 接口规定压缩做什么；提供方拥有策略、保留与摘要，因此各角色可独立演进、独立替换。
-- **会话与 LLM（大语言模型）词汇是约定的一部分。** 操作作用于 `Session`，摘要使用 `ContentBlock`，因此尽管有通用的 Cordis-only 指引，Service Definition 仍依赖 `dsh-session` 与 `dsh-llm`——这是一项有意的偏离，记录在[压缩能力 seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md) 中。
-- **日志记录的标记对就是锁。** `compaction/start` 在摘要让出控制权之前追加，`compaction/end` 释放；每次失败都恰好进行一次闭合尝试，闭合失败会留下未匹配 start 作为有意的 busy 信号。
-- **表层只变更一次。** 摘要承载在标记对内的一条 `user/message` 替换上；所有 `compaction/*` 事件仅写入日志。
+- **抽象約定，具體後端。** 介面規定壓縮做什麼；提供者擁有策略、保留與摘要，因此各角色可獨立演進、獨立替換。
+- **工作階段與 LLM（大語言模型）詞彙是約定的一部分。** 操作作用於 `Session`，摘要使用 `ContentBlock`，因此儘管有通用的 Cordis-only 指引，Service Definition 仍依賴 `dsh-session` 與 `dsh-llm`——這是一項有意的偏離，記錄在[壓縮能力 seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md) 中。
+- **日誌記錄的標記對就是鎖。** `compaction/start` 在摘要讓出控制權之前追加，`compaction/end` 釋放；每次失敗都恰好進行一次閉合嘗試，閉合失敗會留下未匹配 start 作為有意的 busy 訊號。
+- **表層只變更一次。** 摘要承載在標記對內的一條 `user/message` 替換上；所有 `compaction/*` 事件僅寫入日誌。
 
-### 服务 API
+### 服務 API
 
-该约定是后端实现的三个抽象操作：`compactIfNeeded` 针对自动 `pressure` 或 `context-overflow` 触发，`compactNow` 进行一次显式按需缩减，`compactRegion` 针对调用方选择的表层范围。可复用的请求测量是独立服务 `ctx.tokenMeter`。穷尽式逐操作语义见[压缩子系统参考](../../../docs/subsystems/compaction.zh.md)；精确签名见 [`src/index.ts`](src/index.ts)。
+該約定是後端實作的三個抽象操作：`compactIfNeeded` 針對自動 `pressure` 或 `context-overflow` 觸發，`compactNow` 進行一次顯式按需縮減，`compactRegion` 針對呼叫方選擇的表層範圍。可複用的請求測量是獨立服務 `ctx.tokenMeter`。窮盡式逐操作語義見[壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)；精確簽名見 [`src/index.ts`](src/index.ts)。
 
-通过 `ctx.llm.stream()` 摘要的后端必须将 signal 转发到调用的 `GenerateOptions.signal`，因此 abort 或 fiber dispose（资源释放）会停止进行中的摘要。自动和显式范围标记对会从打开的轮次恢复其数字形式归属；手动标记对不要求存在打开的轮次，并标记 `turn: null`。
+透過 `ctx.llm.stream()` 摘要的後端必須將 signal 轉發到呼叫的 `GenerateOptions.signal`，因此 abort 或 fiber dispose（資源釋放）會停止進行中的摘要。自動和顯式範圍標記對會從開啟的輪次恢復其數字形式歸屬；手動標記對不要求存在開啟的輪次，並標記 `turn: null`。
 
-### 手动失败分类
+### 手動失敗分類
 
-同步的 `compaction/summary-error` waterfall 让后端为失败的摘要及明确选区请求持久输入恢复。监听器只有在记录实际进展后才返回 true，否则调用 `next()` 委派后续处理。后端在触发事件前检查取消和选区稳定性，重试前重新派生输入并计价。事件声明说明其载荷；图片策略由 `dsh-compaction-image-offload` 负责。
+同步的 `compaction/summary-error` waterfall 讓後端為失敗的摘要及明確選區請求持久輸入恢復。監聽器只有在記錄實際進展後才返回 true，否則呼叫 `next()` 委派後續處理。後端在觸發事件前檢查取消和選區穩定性，重試前重新派生輸入並計價。事件宣告說明其載荷；圖片策略由 `dsh-compaction-image-offload` 負責。
 
-预期手动失败会抛出 `ManualCompactionError`，携带来自小型封闭集合的稳定 `code`；只有 `compaction/start` 标记之后发生的失败才会被记录——以携带错误的 `compaction/end` 形式——而 `busy` 拒绝或 start 之前的取消不会留下记录。每个错误码的语义见[压缩子系统参考](../../../docs/subsystems/compaction.zh.md)。
+預期手動失敗會丟擲 `ManualCompactionError`，攜帶來自小型封閉集合的穩定 `code`；只有 `compaction/start` 標記之後發生的失敗才會被記錄——以攜帶錯誤的 `compaction/end` 形式——而 `busy` 拒絕或 start 之前的取消不會留下記錄。每個錯誤碼的語義見[壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)。
 
 <a id="tool-pairing-boundaries"></a>
-### 工具配对边界
+### 工具配對邊界
 
-该 Service Definition 导出 `toolPairingBalancedBefore(session, seq)` 与 `toolPairingBalancedAfter(session, seq)`，用于对齐和验证压缩边界。安全边界不会被尚未回答的 assistant 工具调用跨越。每个 helper 都会验证给定事件 seq 位于当前表层，并根据按表层顺序缓存的各切分点配对状态返回结果，因此重复检查不读取事件；replace generation 会重建缓存，缺失 seq 或孤立的 `tool/result` 会被视为表层状态损坏并遭拒绝。
+該 Service Definition 匯出 `toolPairingBalancedBefore(session, seq)` 與 `toolPairingBalancedAfter(session, seq)`，用於對齊和驗證壓縮邊界。安全邊界不會被尚未回答的 assistant 工具呼叫跨越。每個 helper 都會驗證給定事件 seq 位於目前表層，並根據按表層順序快取的各切分點配對狀態返回結果，因此重複檢查不讀取事件；replace generation 會重建快取，缺失 seq 或孤立的 `tool/result` 會被視為表層狀態損壞並遭拒絕。
 
-### 表层约定
+### 表層約定
 
-`SurfaceEventType` 是封闭联合——`user/message`、`assistant/message` 与 `tool/result` 必须携带 `surfaceOp`，其他事件禁止携带该字段，因此 `compaction/*` 事件不能出现在表层上。成功的后端运行改为在日志中包围整个操作：先追加 `compaction/start`（仅日志）获取锁，摘要该范围，追加仅日志的 `compaction/summary` 记录，用一条承载摘要的 `user/message` 替换所选范围——这是唯一的表层变更——最后追加 `compaction/end`（仅日志）释放锁。
+`SurfaceEventType` 是封閉聯合——`user/message`、`assistant/message` 與 `tool/result` 必須攜帶 `surfaceOp`，其他事件禁止攜帶該欄位，因此 `compaction/*` 事件不能出現在表層上。成功的後端執行改為在日誌中包圍整個操作：先追加 `compaction/start`（僅日誌）取得鎖，摘要該範圍，追加僅日誌的 `compaction/summary` 記錄，用一條承載摘要的 `user/message` 替換所選範圍——這是唯一的表層變更——最後追加 `compaction/end`（僅日誌）釋放鎖。
 
-替换位于锁的起止范围**内**，因此 `compaction/start` 与 `compaction/end` 之间崩溃会留下可检测的遗留锁，而不是虚假声称成功的 `compaction/end`。`deriveMessages()` 将摘要渲染为 user 角色消息，后面跟随已保留节点；已遮蔽事件仍保留在原始日志中，因此回放具有确定性。每个事件的具体 payload 见[压缩子系统参考](../../../docs/subsystems/compaction.zh.md)。
+替換位於鎖的起止範圍**內**，因此 `compaction/start` 與 `compaction/end` 之間崩潰會留下可檢測的遺留鎖，而不是虛假聲稱成功的 `compaction/end`。`deriveMessages()` 將摘要渲染為 user 角色訊息，後面跟隨已保留節點；已遮蔽事件仍保留在原始日誌中，因此回放具有確定性。每個事件的具體 payload 見[壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：抽象 `CompactionEngine`、`CompactionTrigger`、`ManualCompactionError`、`ctx.compaction` 合并 |
-| [`src/types.ts`](src/types.ts) | `CompactionResult` 与声明合并的 `compaction/*` 会话事件 |
-| [`src/tool-pairing.ts`](src/tool-pairing.ts) | 两个边界 helper 背后的每会话切分点平衡缓存 |
-| [`src/checkpoint.ts`](src/checkpoint.ts) | 无 Cordis 依赖的检查点来源构造函数与谓词（`./checkpoint` 叶子） |
-| [`src/brand.ts`](src/brand.ts) | `CompactionId` 品牌化标识 |
-| [`src/invariant.ts`](src/invariant.ts) | 不变量配套组件：校验 `compaction/start`→`summary`→`end` 标记对、其属主轮次包裹与检查点关联 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：抽象 `CompactionEngine`、`CompactionTrigger`、`ManualCompactionError`、`ctx.compaction` 合併 |
+| [`src/types.ts`](src/types.ts) | `CompactionResult` 與宣告合併的 `compaction/*` 工作階段事件 |
+| [`src/tool-pairing.ts`](src/tool-pairing.ts) | 兩個邊界 helper 背後的每工作階段切分點平衡快取 |
+| [`src/checkpoint.ts`](src/checkpoint.ts) | 無 Cordis 依賴的檢查點來源建構函式與謂詞（`./checkpoint` 葉子） |
+| [`src/brand.ts`](src/brand.ts) | `CompactionId` 品牌化標識 |
+| [`src/invariant.ts`](src/invariant.ts) | 不變數配套元件：驗證 `compaction/start`→`summary`→`end` 標記對、其屬主輪次包裹與檢查點關聯 |
 
-### 锁与串行化
+### 鎖與序列化
 
-所有入口点共享一个日志记录的锁。尾部检查会分别查找最新的未匹配 `compaction/start` 与最新的 `session/end-seed`；位于该边界之后的未匹配 start 是活动锁并报告 `busy`，更早的则是先前进程生命周期留下的陈旧证据。活动标记对不能跨越 `turn/start` 或 `turn/end`。标记是锁的时间点，而非排他容器：空闲的 `inject()` 可以在手动 start 与 end 之间追加不相关的上下文，因此手动路径重新验证其选中范围，而不要求整个表层相等。
+所有入口點共享一個日誌記錄的鎖。尾部檢查會分別查詢最新的未匹配 `compaction/start` 與最新的 `session/end-seed`；位於該邊界之後的未匹配 start 是活動鎖並報告 `busy`，更早的則是先前程序生命週期留下的陳舊證據。活動標記對不能跨越 `turn/start` 或 `turn/end`。標記是鎖的時間點，而非排他容器：空閒的 `inject()` 可以在手動 start 與 end 之間追加不相關的上下文，因此手動路徑重新驗證其選中範圍，而不要求整個表層相等。
 
 ### 事件
 
-`compaction/*` 事件通过 declaration merging 扩展 `SessionEventMap`（可合并扩展）——它们是会话事件，不是 Cordis `Events`，且都仅写入日志。生成的[持久化日志事件目录](../../../docs/persistence-catalog.zh.md)拥有每个事件的 payload；`compaction/prune` 记录了与工具结果修剪器共享的影子价格协议。
+`compaction/*` 事件透過 declaration merging 擴充功能 `SessionEventMap`（可合併擴充功能）——它們是工作階段事件，不是 Cordis `Events`，且都僅寫入日誌。生成的[持久化日誌事件目錄](../../../docs/persistence-catalog.zh.md)擁有每個事件的 payload；`compaction/prune` 記錄了與工具結果修剪器共享的影子價格協定。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从共享词汇逐步进入随附后端与决策证据。
+當包級約定不夠用時閱讀以下頁面；它們從共享詞彙逐步進入隨附後端與決策證據。
 
-- [压缩子系统参考](../../../docs/subsystems/compaction.zh.md)——压缩词汇、结果与生成的 API。
-- [压缩基础后端](../compaction-basic/README.zh.md)——自动与按需压缩的随附后端。
-- [工具结果修剪器](../compaction-tool-result-pruner/README.zh.md)——先修剪超大工具输出的可选配套工具。
-- [面向用户的 /compact 命令](../command-compact/README.zh.md)——按需触发压缩的入口。
-- [Token meter](../../llm/token-meter/README.zh.md)——决定何时压缩的测量服务。
-- [压缩能力 seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)——拆分及 session/llm 依赖的依据。
+- [壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)——壓縮詞彙、結果與生成的 API。
+- [壓縮基礎後端](../compaction-basic/README.zh.md)——自動與按需壓縮的隨附後端。
+- [工具結果修剪器](../compaction-tool-result-pruner/README.zh.md)——先修剪超大工具輸出的可選配套工具。
+- [面向使用者的 /compact 命令](../command-compact/README.zh.md)——按需觸發壓縮的入口。
+- [Token meter](../../llm/token-meter/README.zh.md)——決定何時壓縮的測量服務。
+- [壓縮能力 seam Agent Note](../../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)——拆分及 session/llm 依賴的依據。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 调用后端时的会话历史
+### 呼叫後端時的工作階段歷史
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-成功的后端会用一条 user 角色摘要检查点替换较早表层范围——一条携带 `surfaceOp: { op: 'replace', startSeq, endSeq }` 的 `user/message`。原始事件仍会记录，但不再出现在派生模型消息中；seam 本身不执行改写。
+成功的後端會用一條 user 角色摘要檢查點替換較早表層範圍——一條攜帶 `surfaceOp: { op: 'replace', startSeq, endSeq }` 的 `user/message`。原始事件仍會記錄，但不再出現在派生模型訊息中；seam 本身不執行改寫。
 
-#### Token 影响
+#### Token 影響
 
-该 Service Definition 不会直接产生 token。后端用一份摘要换取多个原本保留的历史 token，并保持近期尾部不变。
+該 Service Definition 不會直接產生 token。後端用一份摘要換取多個原本保留的歷史 token，並保持近期尾部不變。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-成功的后端替换会使从第一个被遮蔽的历史 token 起的复用失效；seam 本身不会改变请求。
+成功的後端替換會使從第一個被遮蔽的歷史 token 起的複用失效；seam 本身不會改變請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明无论加载哪个后端，压缩都无法做到的事；它们是当前包约束。
+這些限制說明無論載入哪個後端，壓縮都無法做到的事；它們是目前包約束。
 
-- **面向用户的命令，而非模型工具**——压缩由 `/compact` 命令与自动压力触发；不会注册面向模型的压缩工具。
-- **部分单元溢出不在约定内**——平衡摘要压缩无法拆分一个不可分单元。当闭合工具对中可移除的主要部分是承载文本的工具结果时，可选剪枝配套服务仍可修复该工具对；无法压缩大型非工具节点，或不可剪枝剩余部分过大的工具单元。
-- **单独接近窗口大小的 envelope 不属于表层压缩工作**——压缩缩减派生历史，绝不缩减系统提示词、工具或会话前缀。
+- **面向使用者的命令，而非模型工具**——壓縮由 `/compact` 命令與自動壓力觸發；不會註冊面向模型的壓縮工具。
+- **部分單元溢位不在約定內**——平衡摘要壓縮無法拆分一個不可分單元。當閉合工具對中可移除的主要部分是承載文字的工具結果時，可選剪枝配套服務仍可修復該工具對；無法壓縮大型非工具節點，或不可剪枝剩餘部分過大的工具單元。
+- **單獨接近視窗大小的 envelope 不屬於表層壓縮工作**——壓縮縮減派生歷史，絕不縮減系統提示詞、工具或工作階段字首。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性；已交付行为以上文、包代码与所链接的 Agent Note 为准。
+本開發備註是維護者的工作上下文，明確不具權威性；已交付行為以上文、包程式碼與所連結的 Agent Note 為準。
 
-- **面向模型的工具，尚未决定**——压缩目前仅限用户命令。面向模型的压缩工具仍是开放问题；它需要自己的 schema，并与现有命令路径协调。
-- **模板与远程后端，尚未决定**——`SummaryResult` 约定已带有未标记的 `rawOutput` 变体，供不通过 `ctx.llm.stream()` 识别调用的摘要器使用，但此类后端尚未随附。
-- **`/compact` 的范围参数，尚未决定**——无参数形式使各命令适配器的行为保持稳定；显式范围仍由编程接口 `compactRegion()` 处理。
+- **面向模型的工具，尚未決定**——壓縮目前僅限使用者命令。面向模型的壓縮工具仍是開放問題；它需要自己的 schema，並與現有命令路徑協調。
+- **範本與遠端後端，尚未決定**——`SummaryResult` 約定已帶有未標記的 `rawOutput` 變體，供不透過 `ctx.llm.stream()` 識別呼叫的摘要器使用，但此類後端尚未隨附。
+- **`/compact` 的範圍參數，尚未決定**——無參數形式使各命令介面卡的行為保持穩定；顯式範圍仍由程式設計介面 `compactRegion()` 處理。
 
 </details>

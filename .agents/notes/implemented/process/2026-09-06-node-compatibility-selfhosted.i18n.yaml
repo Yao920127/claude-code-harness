@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-06-node-compatibility-selfhosted.md
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux:
   en: 21c12c8bd0c44122
-  zh: b07f0ffc18092f0d
+  zh: 9db29b6b14f8c02b
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux/problem:
   en: 6bcedb8e3f0dce21
-  zh: 83e88ed593259292
+  zh: ef5f7370aa8bc337
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux/decision:
   en: 14f1348f993b9102
-  zh: a94e1b802e6a8c39
+  zh: 15d6b0da58701171
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux/alternatives-considered:
   en: 93217ca46c2cefb8
-  zh: 77a167c69f59111c
+  zh: c02ed7ac004c9e75
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux/consequences:
   en: 116d255b8d1b846c
-  zh: 931754a68e4f75c6
+  zh: 5303dbd065c2b962
 /agent-note-isolated-node-compatibility-jobs-on-self-hosted-linux/verification:
   en: d0b1f1431fae737b
-  zh: 6cf4f4d654a9525d
+  zh: bc62ba66c7f5aab7

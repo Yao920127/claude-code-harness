@@ -17,23 +17,23 @@ const project = (
 
 describe('projectUserText', () => {
   it('keeps decorated text inline and preserves whitespace between references', () => {
-    const host = project('反反复复 /dsh-acp-test @执行几个命令测试', ['执行几个命令测试'], ['dsh-acp-test'])
+    const host = project('反反覆覆 /dsh-acp-test @執行幾個命令測試', ['執行幾個命令測試'], ['dsh-acp-test'])
     expect(host.querySelectorAll('div').length).toBe(0)
-    expect(host.textContent).toBe('反反复复 /dsh-acp-test 执行几个命令测试')
+    expect(host.textContent).toBe('反反覆覆 /dsh-acp-test 執行幾個命令測試')
     const chips = host.querySelectorAll('[data-ref-chip]')
     expect([...chips].map(c => c.getAttribute('data-ref-chip'))).toEqual(['skill', 'session'])
     // The whitespace between tokens survives as its own inline run.
     const runs = [...host.querySelectorAll('span')].filter(s => !s.hasAttribute('data-ref-chip') && s.closest('[data-ref-chip]') === null)
-    expect(runs.map(r => r.textContent)).toEqual(['反反复复 ', ' '])
+    expect(runs.map(r => r.textContent)).toEqual(['反反覆覆 ', ' '])
   })
 
   it('folds the wire session form to its label with the session glyph', () => {
-    const host = project('看看 @[查看并分析图片](dsh-session:InNlc3Npb24tNDM0) 的结论')
+    const host = project('看看 @[檢視並分析圖片](dsh-session:InNlc3Npb24tNDM0) 的結論')
     const chip = host.querySelector('[data-ref-chip="session"]')!
-    expect(chip.textContent).toBe('查看并分析图片')
-    expect(chip.getAttribute('title')).toBe('@[查看并分析图片](dsh-session:InNlc3Npb24tNDM0)')
+    expect(chip.textContent).toBe('檢視並分析圖片')
+    expect(chip.getAttribute('title')).toBe('@[檢視並分析圖片](dsh-session:InNlc3Npb24tNDM0)')
     expect(chip.querySelector('svg')).not.toBeNull()
-    expect(host.textContent).toBe('看看 查看并分析图片 的结论')
+    expect(host.textContent).toBe('看看 檢視並分析圖片 的結論')
   })
 
   it('prefers the wire fold over the bare-token scan on the same range', () => {
@@ -43,11 +43,11 @@ describe('projectUserText', () => {
   })
 
   it('decorates recall-associated labels, files, folders, and quoted paths', () => {
-    const host = project('@会话一 说 @src/deep/file.txt 与 @dir/ 与 @"a b.md"', ['会话一'])
+    const host = project('@工作階段一 說 @src/deep/file.txt 與 @dir/ 與 @"a b.md"', ['工作階段一'])
     const kinds = [...host.querySelectorAll('[data-ref-chip]')].map(c =>
       [c.getAttribute('data-ref-chip'), c.textContent])
     expect(kinds).toEqual([
-      ['session', '会话一'],
+      ['session', '工作階段一'],
       ['file', 'file.txt'],
       ['folder', 'dir'],
       ['file', 'a b.md'],
@@ -62,9 +62,9 @@ describe('projectUserText', () => {
   it('keeps a punctuation-glued slash token plain and skips degenerate tokens', () => {
     // The host skill gesture ends at whitespace or the text end, so `/plan。`
     // never loads a skill; the bubble must not suggest otherwise.
-    const host = project('用 /plan。 试试 @。', [], ['plan'])
+    const host = project('用 /plan。 試試 @。', [], ['plan'])
     expect(host.querySelectorAll('[data-ref-chip]').length).toBe(0)
-    expect(host.textContent).toBe('用 /plan。 试试 @。')
+    expect(host.textContent).toBe('用 /plan。 試試 @。')
   })
 
   it('decorates a slash token only when the host resolved it as a skill in that step', () => {
@@ -86,17 +86,17 @@ describe('projectUserText', () => {
   })
 
   it('leaves slash paths undecorated even for a resolved name: a /name token ends at whitespace', () => {
-    const text = '测试一下ui，不用管我：\n/nfs-hg/xxx/yyy 与 /root-dir/ 和 /plan.md'
+    const text = '測試一下ui，不用管我：\n/nfs-hg/xxx/yyy 與 /root-dir/ 和 /plan.md'
     const host = project(text, [], ['nfs-hg', 'root-dir', 'plan'])
     expect(host.querySelectorAll('[data-ref-chip]').length).toBe(0)
     expect(host.textContent).toBe(text)
   })
 
   it('prefers the longer recall label when one nests inside another', () => {
-    const host = project('@会话一 收尾', ['会话', '会话一'])
+    const host = project('@工作階段一 收尾', ['工作階段', '工作階段一'])
     const chips = [...host.querySelectorAll('[data-ref-chip="session"]')]
-    expect(chips.map(c => c.textContent)).toEqual(['会话一'])
-    expect(host.textContent).toBe('会话一 收尾')
+    expect(chips.map(c => c.textContent)).toEqual(['工作階段一'])
+    expect(host.textContent).toBe('工作階段一 收尾')
   })
 
   it('falls back to the raw quoted label when the path has no basename', () => {
@@ -141,9 +141,9 @@ describe('projectUserText', () => {
   })
 
   it('renders undecorated text as one inline run', () => {
-    const host = project('纯文本，无引用')
+    const host = project('純文字，無引用')
     expect(host.querySelectorAll('div').length).toBe(0)
     expect(host.querySelectorAll('[data-ref-chip]').length).toBe(0)
-    expect(host.textContent).toBe('纯文本，无引用')
+    expect(host.textContent).toBe('純文字，無引用')
   })
 })

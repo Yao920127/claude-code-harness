@@ -1,5 +1,5 @@
 ---
-description: "skill（技能）组地图：由提供方发现并经会话目录与 skill 工具加载的可复用 agent（智能体）指令，供浏览本组的用户与维护者阅读。"
+description: "skill（技能）組地圖：由提供者發現並經工作階段目錄與 skill 工具載入的可複用 agent（智慧代理）指令，供瀏覽本組的使用者與維護者閱讀。"
 kind: "package-group"
 ---
 
@@ -9,46 +9,46 @@ kind: "package-group"
 
 ## 概述
 
-skill 家族让 agent 和用户仅在需要时发现并加载可复用的任务指令。使用 `skill/` 合并目录并为每个名称提供一组指令；需要从项目、自定义或用户目录发现 skill 时选择 `skill-filesystem`，需要可选的官方徽章时选择 `skill-badge`，需要 Word、PowerPoint 和 Excel 工作流时选择 `skill-office`。需要让模型获得排序且持久的会话目录、通过 `skill` 工具加载完整指令，或接受 `/name` 直接调用时，请添加 `tool-skill`。不同来源生成相同的模型可见格式，启用模型访问前必须配置至少一个来源。
+skill 家族讓 agent 和使用者僅在需要時發現並載入可複用的任務指令。使用 `skill/` 合併目錄併為每個名稱提供一組指令；需要從專案、自定義或使用者目錄發現 skill 時選擇 `skill-filesystem`，需要可選的官方徽章時選擇 `skill-badge`，需要 Word、PowerPoint 和 Excel 工作流時選擇 `skill-office`。需要讓模型獲得排序且持久的工作階段目錄、透過 `skill` 工具載入完整指令，或接受 `/name` 直接呼叫時，請新增 `tool-skill`。不同來源生成相同的模型可見格式，啟用模型存取前必須設定至少一個來源。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`skill/`](skill/README.zh.md) | 合并任意提供方的 skill 目录、并按名称解析出胜出 skill 的注册表 | `ctx.skills` |
-| [`skill-filesystem/`](skill-filesystem/README.zh.md) | 从项目、自定义与用户目录发现 skill，并监视其变更 | 注册到 `ctx.skills` |
-| [`skill-badge/`](skill-badge/README.zh.md) | 随包附带官方「powered by dsh」徽章 skill，默认禁用 | 注册到 `ctx.skills` |
-| [`skill-office/`](skill-office/README.zh.md) | 随包提供 Word、PowerPoint 和 Excel 工作流及文件结构检查 | 注册到 `ctx.skills` |
-| [`tool-skill/`](tool-skill/README.zh.md) | 发布会话 skill 目录与面向模型的 `skill` 加载工具 | 注册到 `ctx.tools` |
-| [`tool-workspace-dependencies/`](tool-workspace-dependencies/README.zh.md) | 为 Desktop 与 SDK 载体报告内置 Office 解释器路径和版本 | 注册到 `ctx.tools` |
+| [`skill/`](skill/README.zh.md) | 合併任意提供者的 skill 目錄、並按名稱解析出勝出 skill 的註冊表 | `ctx.skills` |
+| [`skill-filesystem/`](skill-filesystem/README.zh.md) | 從專案、自定義與使用者目錄發現 skill，並監視其變更 | 註冊到 `ctx.skills` |
+| [`skill-badge/`](skill-badge/README.zh.md) | 隨包附帶官方「powered by dsh」徽章 skill，預設停用 | 註冊到 `ctx.skills` |
+| [`skill-office/`](skill-office/README.zh.md) | 隨包提供 Word、PowerPoint 和 Excel 工作流及檔案結構檢查 | 註冊到 `ctx.skills` |
+| [`tool-skill/`](tool-skill/README.zh.md) | 釋出工作階段 skill 目錄與面向模型的 `skill` 載入工具 | 註冊到 `ctx.tools` |
+| [`tool-workspace-dependencies/`](tool-workspace-dependencies/README.zh.md) | 為 Desktop 與 SDK 載體報告內建 Office 直譯器路徑和版本 | 註冊到 `ctx.tools` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解共享词汇，再阅读 Agent Note 了解设计依据。
+先從子系統參考瞭解共享詞彙，再閱讀 Agent Note 瞭解設計依據。
 
-- [skill 子系统参考](../../docs/subsystems/skills.zh.md)——注册表、提供方约定、本地发现优先级，以及目录与工具。
-- [skill 调用策略 Agent Note](../../.agents/notes/implemented/feature/2026-07-28-skill-invocation-policy.zh.md)——模型与用户调用控制。
+- [skill 子系統參考](../../docs/subsystems/skills.zh.md)——註冊表、提供者約定、本地發現優先順序，以及目錄與工具。
+- [skill 呼叫策略 Agent Note](../../.agents/notes/implemented/feature/2026-07-28-skill-invocation-policy.zh.md)——模型與使用者呼叫控制。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

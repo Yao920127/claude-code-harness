@@ -1,28 +1,28 @@
-# Agent Note: 由 dsh-llm 拥有的提供方无关内容块词汇
+# Agent Note: 由 dsh-llm 擁有的提供者無關內容塊詞彙
 
 Status: implemented
 
 [English](2026-06-11-content-block-vocabulary.md) | 中文
 
-## 问题
+## 問題
 
-harness 需要一套统一的内部消息语言，供 agent loop（智能体循环）、会话日志和所有插件共同使用。
+harness 需要一套統一的內部訊息語言，供 agent loop（智慧代理迴圈）、工作階段日誌和所有外掛共同使用。
 
-## 决策
+## 決策
 
-自主拥有词汇：user、assistant 与 system 消息是类型化内容块的数组（`text`、`reasoning`、`tool-call`），其联合类型派生自可合并扩展的 `ContentBlockMap`，插件通过声明合并添加新的块类型。Tool result 是一等 tool-role message，结果块属于该 message 自己的 content；已发布的 Session format v3 仍将历史 `tool-result` content block 保存在 user-role 包装中，邻接的 V3 到 V4 边会将该包装提升为一等角色。同一可合并扩展映射模式为所有「字符串化」字段提供类型（`MessageSource`、`FinishReason`、`TurnTrigger`、`TurnEndReason`）。流式输出采用原始分片协议；`BlockAssembler` 是唯一的共享组装实现。适配器负责转换为提供方的协议格式（wire format）——映射成本留在适配器中，正是它该在的地方。
+自主擁有詞彙：user、assistant 與 system 訊息是型別化內容塊的陣列（`text`、`reasoning`、`tool-call`），其聯合型別派生自可合併擴充功能的 `ContentBlockMap`，外掛透過宣告合併新增新的塊型別。Tool result 是一等 tool-role message，結果塊屬於該 message 自己的 content；已釋出的 Session format v3 仍將歷史 `tool-result` content block 儲存在 user-role 包裝中，鄰接的 V3 到 V4 邊會將該包裝提升為一等角色。同一可合併擴充功能對映模式為所有「字串化」欄位提供型別（`MessageSource`、`FinishReason`、`TurnTrigger`、`TurnEndReason`）。流式輸出採用原始分片協定；`BlockAssembler` 是唯一的共享組裝實作。介面卡負責轉換為提供者的協定格式（wire format）——對映成本留在介面卡中，正是它該在的地方。
 
-会话内上下文注入（`context/message`）和轮次中途 steering（中途引导）最初渲染为带标签的 user-role 信封（system-reminder 模式），而非引入新角色，因此适配器无需承担额外负担。如今两者都投影为无包装的普通用户内容；见[注入内容信封 Agent Note](../simplification/2026-07-20-unwrap-injected-content-envelopes.zh.md)。实际适配器验证已确认此渲染方式符合当前 DeepSeek 的行为；如果未来某提供方出现不兼容，应在该适配器内处理，而非引入新的规范角色。
+工作階段內上下文注入（`context/message`）和輪次中途 steering（中途引導）最初渲染為帶標籤的 user-role 信封（system-reminder 模式），而非引入新角色，因此介面卡無需承擔額外負擔。如今兩者都投影為無包裝的普通使用者內容；見[注入內容信封 Agent Note](../simplification/2026-07-20-unwrap-injected-content-envelopes.zh.md)。實際介面卡驗證已確認此渲染方式符合目前 DeepSeek 的行為；如果未來某提供者出現不相容，應在該介面卡內處理，而非引入新的規範角色。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **镜像 DeepSeek/OpenAI chat-completions 结构**：对第一个提供方零映射成本，但对富内容（推理、结构化块形式的工具结果）处理不便。
-- **原样采用 Anthropic Messages 块结构**：经过实战检验，但规范类型将镜像一个 harness 并非首要对接的第三方 API。
+- **映像 DeepSeek/OpenAI chat-completions 結構**：對第一個提供者零對映成本，但對富內容（推理、結構化塊形式的工具結果）處理不便。
+- **原樣採用 Anthropic Messages 塊結構**：經過實戰檢驗，但規範型別將映像一個 harness 並非首要對接的第三方 API。
 
-## 后果
+## 後果
 
-- 推理（reasoning）在核心层有了归属，无需依赖提供方特有的结构。
-- 多模态块只有在适配器、UI 和上下文压缩（context compaction）三方协同支持后才会回归；见 [drop-image Agent Note](../../archived/simplification/2026-07-04-drop-image-content-block.md)。
-- 缓存提示与 assistant prefill 在有实际适配器能兑现之前保持缺席；见[无生产者的词汇变体](../../archived/simplification/2026-07-04-prune-producerless-vocabulary-variants.md)与[无端到端可用路径的请求旋钮](../../archived/simplification/2026-07-04-drop-inert-request-knobs.md) Agent Note。
-- 每个适配器都需承担翻译成本；首批真实适配器已验证了流式输出协议，新适配器应继续在适配器本地测试中验证其提供方特有的映射。
-- 跨包边界的 ID 使用品牌类型（`ToolCallId`、agent 与会话共享的 `SessionId`）——零运行时开销的名义类型。
+- 推理（reasoning）在核心層有了歸屬，無需依賴提供者特有的結構。
+- 多模態塊只有在介面卡、UI 和上下文壓縮（context compaction）三方協同支援後才會迴歸；見 [drop-image Agent Note](../../archived/simplification/2026-07-04-drop-image-content-block.md)。
+- 快取提示與 assistant prefill 在有實際介面卡能兌現之前保持缺席；見[無生產者的詞彙變體](../../archived/simplification/2026-07-04-prune-producerless-vocabulary-variants.md)與[無端到端可用路徑的請求旋鈕](../../archived/simplification/2026-07-04-drop-inert-request-knobs.md) Agent Note。
+- 每個介面卡都需承擔翻譯成本；首批真實介面卡已驗證了流式輸出協定，新介面卡應繼續在介面卡本地測試中驗證其提供者特有的對映。
+- 跨包邊界的 ID 使用品牌型別（`ToolCallId`、agent 與工作階段共享的 `SessionId`）——零執行時開銷的名義型別。

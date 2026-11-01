@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/api/account-controller/README.md
 /:
   en: 7ba95936e0bd5c50
-  zh: 6ded94fff9da8cbe
+  zh: 13a5a70d42b46cc1
 /deepseek-ai-dsh-api-account-controller:
   en: 8a461bd0ed327ba1
   zh: 456b7cea744b1f3a
 /deepseek-ai-dsh-api-account-controller/summary:
   en: 76e317532dcd45a4
-  zh: 4571ca03d06f04a1
+  zh: 38a288f6ba02eb0c
 /deepseek-ai-dsh-api-account-controller/table-of-contents:
   en: af856ba79fe31b8e
-  zh: 15b7d1a5d1856de2
+  zh: dc56fe3822bfa927
 /deepseek-ai-dsh-api-account-controller/use-this-package:
   en: 5ad12300bbc151ef
-  zh: 3ccfb6046ab423ef
+  zh: 8095d9fcd6d93b38
 /deepseek-ai-dsh-api-account-controller/understand-the-implementation:
   en: 3d899b3480391175
-  zh: 803808ca9691366e
+  zh: 318055e8044af22e
 /deepseek-ai-dsh-api-account-controller/further-exploration:
   en: e5d7405e19fb6d00
-  zh: f92bdfe5247d758b
+  zh: 776508a8b9a12e9b
 /deepseek-ai-dsh-api-account-controller/model-experience:
   en: ee1df7ca3467ee3f
-  zh: 84904a5148da3862
+  zh: 8f68243bef6ed4aa
 /deepseek-ai-dsh-api-account-controller/model-experience/kv-cache-effect:
   en: ca3015e252db0114
-  zh: ebca9253cf15e8e9
+  zh: ab4f97bba7a044eb
 /deepseek-ai-dsh-api-account-controller/known-limitations-and-deferred-work:
   en: ae26f88d13444103
-  zh: d875f0909e03e160
+  zh: 4ec026c35913aff2
 /deepseek-ai-dsh-api-account-controller/known-limitations-and-deferred-work/dev-note:
   en: 68dabcdc229fcb50
-  zh: 85514a7f6087abc3
+  zh: 7c8b69b72199edf9

@@ -186,7 +186,7 @@ async function qualify() {
     await documentReady(mainWindow, `document.querySelector('[class*="frame"]') && window.dshDesktop?.updates`)
     assert.equal(mainWindow.isVisible(), true, 'Workspace qualification requires a visible application window')
     console.log('workspace qualification: workspace document ready')
-    const acknowledgeNotice = `[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '继续')`
+    const acknowledgeNotice = `[...document.querySelectorAll('button')].find(button => button.textContent.trim() === '繼續')`
     await press(mainWindow, acknowledgeNotice)
     await waitFor(async () => !await mainWindow.webContents.executeJavaScript(`!!(${acknowledgeNotice})`), 'first-run notice dismissal')
     console.log('workspace qualification: first-run notice dismissed')
@@ -238,10 +238,10 @@ async function qualify() {
     await clickText(downloadError, messages.updateAcknowledge)
     await documentReady(mainWindow, `document.querySelector('button[data-error="true"]')`)
     await screenshot(mainWindow, 'retry.png')
-    await press(mainWindow, `document.querySelector('button[aria-label="收起侧边栏"]')`)
-    await documentReady(mainWindow, `document.querySelector('button[aria-label="打开侧边栏"] [role="img"][data-error="true"]')`)
+    await press(mainWindow, `document.querySelector('button[aria-label="收起側邊欄"]')`)
+    await documentReady(mainWindow, `document.querySelector('button[aria-label="開啟側邊欄"] [role="img"][data-error="true"]')`)
     await screenshot(mainWindow, 'collapsed-error.png')
-    await press(mainWindow, `document.querySelector('button[aria-label="打开侧边栏"]')`)
+    await press(mainWindow, `document.querySelector('button[aria-label="開啟側邊欄"]')`)
     await documentReady(mainWindow, `document.querySelector('button[data-error="true"]')`)
     cases.push('download-integrity-error-and-persistent-retry')
 
@@ -325,7 +325,7 @@ async function qualify() {
     await control('hold-shutdown')
     await clickText(stop, messages.updateStopTasks)
     await documentReady(mainWindow, `[...document.querySelectorAll('button')].some(button => button.textContent.trim() === ${JSON.stringify(messages.updateInstalling)})`)
-    assert.equal(await mainWindow.webContents.executeJavaScript("document.body.innerText.includes('重新连接中')"), false)
+    assert.equal(await mainWindow.webContents.executeJavaScript("document.body.innerText.includes('重新連線中')"), false)
     await screenshot(mainWindow, 'installing-before-host-exit.png')
     await waitFor(() => fixture.coordinator.state.phase === 'error', 'unclean Host stop rejection')
     assert.equal(fixture.coordinator.state.message, messages.updateStopFailed)

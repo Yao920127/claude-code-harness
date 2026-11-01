@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/session-reference.md
 /session-references:
   en: 93adc903a71245f0
-  zh: 5222fc148480de3e
+  zh: fdb19382e23b8805
 /session-references/file-candidates:
   en: ec03370596bf2322
-  zh: 85cf6439dc6484b3
+  zh: e35deadb21dd7f4b
 /session-references/inputs-and-candidates:
   en: f9b6c0e14246cec7
-  zh: 4d43ed22592ba306
+  zh: 441138a1d7384feb
 /session-references/prepared-messages:
   en: e3e21e0dd9b27a7b
-  zh: 9205aaea5a542517
+  zh: b736c01dd9be4907
 /session-references/errors:
   en: cc26522ead0db644
-  zh: 4feb52922782edbd
+  zh: f5ab6d348fcf5ae8

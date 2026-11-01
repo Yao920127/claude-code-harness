@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/util/crypto/README.md
 /:
   en: c3004d7d489da8f1
-  zh: 8b6af2f3f48d5544
+  zh: 3961f8928238635c
 /dsh-util-crypto:
   en: 6dc993c2420066da
   zh: d9da22117dc5dcd9
 /dsh-util-crypto/summary:
   en: 55f117af7ba9f8fe
-  zh: 2cde7f6b69dc4bf8
+  zh: b6403fe13a1e581b
 /dsh-util-crypto/table-of-contents:
   en: cd2a60a905c978d6
-  zh: cc71d387d0cbd442
+  zh: 4f3dbfce258328f2
 /dsh-util-crypto/use-this-package:
   en: 594d34627be8618a
-  zh: 68723dfafb88ac84
+  zh: 31ee8d16b5b57218
 /dsh-util-crypto/api:
   en: 21d8f33a1c652edb
-  zh: 07a3629d66301d85
+  zh: 6e7057df613006e5
 /dsh-util-crypto/model-experience:
   en: beb00a2635b78870
-  zh: d93b828c08217472
+  zh: d3849101badc7582
 /dsh-util-crypto/model-experience/kv-cache-effect:
   en: 3f396619298fe1ae
-  zh: d46e51c86231d485
+  zh: 9aa80b717c1c50c7
 /dsh-util-crypto/known-limitations-and-deferred-work:
   en: 2c79cf7c12f39ab1
-  zh: c6f2ad3e53a62473
+  zh: 7a5ae2f8da0b15c7
 /dsh-util-crypto/known-limitations-and-deferred-work/dev-note:
   en: 214df5375bd84f76
-  zh: fa3912dd609838fb
+  zh: a9d00b09db2117d2

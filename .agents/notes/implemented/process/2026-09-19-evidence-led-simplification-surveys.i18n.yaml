@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-19-evidence-led-simplification-surveys.md
 /agent-note-evidence-led-simplification-surveys:
   en: f0941223baf75c96
-  zh: b3cc733f7f90509a
+  zh: 95be515083258f9e
 /agent-note-evidence-led-simplification-surveys/problem:
   en: 528a0c462d456493
-  zh: a2af4901a8f498a7
+  zh: 5f9655fb5ea4db4e
 /agent-note-evidence-led-simplification-surveys/decision:
   en: 865cfb210f13b188
-  zh: 777d8155216d98c6
+  zh: b6277032dbf35bdd
 /agent-note-evidence-led-simplification-surveys/historical-evidence:
   en: 53eea2f1d7560461
-  zh: 3c55432d9cd3ebe3
+  zh: fc449894ec3975b0
 /agent-note-evidence-led-simplification-surveys/bounded-survey-evidence:
   en: 3637438d2ed7f606
-  zh: d78b39ae6b67a442
+  zh: 41d8a43e9f90f154
 /agent-note-evidence-led-simplification-surveys/alternatives-considered:
   en: 9e0039e0ff82ba1b
-  zh: fa4b0a52bf3dcbdd
+  zh: 7c58dad03db5455f
 /agent-note-evidence-led-simplification-surveys/consequences:
   en: 395acde9597898c5
-  zh: 45ee94d13427862a
+  zh: b38bca7804435e3d

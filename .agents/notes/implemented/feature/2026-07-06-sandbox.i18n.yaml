@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-06-sandbox.md
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes:
   en: b36f59d0746e94f1
-  zh: 0d0f8e19917a9eae
+  zh: ebb759efb6c20933
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/problem:
   en: 045e61bb682755dc
-  zh: ac95eb64ce892f8d
+  zh: 62f186c93abdb5fa
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision:
   en: f4748553d52935ff
-  zh: 1802a543c6d989ef
+  zh: 96941d7e9875126e
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/how-a-deployment-uses-it:
   en: 956a2c069b1ac0b1
-  zh: ebf91494b8107ced
+  zh: 1b996bcce9744ea1
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail:
   en: a6d7884e4359af3a
-  zh: e72588705942000a
+  zh: 8d703e604c6bb3b3
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/scope-grounding:
   en: 0c09534b59e2063e
-  zh: 5225d6750d13b9d7
+  zh: 7b3fa4f78bf43c6e
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/the-seam-ctx-sandbox:
   en: 2c98e8c0bd8a9ff1
-  zh: 661b58f81f6e05c6
+  zh: f3aa8bd6184124a4
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/local-backends-and-the-shipped-launcher:
   en: 5c6bf38f958b07d0
-  zh: 22bf9fac71eb643d
+  zh: 5d772746dc09c77e
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/asynchronous-preparation:
   en: 7bc0fab85c7c91d0
-  zh: 3eafcde6b1e3249c
+  zh: d3931e16280eb688
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/the-bash-consumer:
   en: f7f359c89a0e8fd6
-  zh: 07d0d551a35716e0
+  zh: 083733b2bece3f1b
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/escalation-one-approved-wider-retry-after-a-denial:
   en: 035640e276225e97
-  zh: 09fd95921529369b
+  zh: 78a0cb14273cbb14
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/per-session-modes-the-session-log-as-the-store:
   en: 6805c807f584961c
-  zh: 687fd4ad687e4dee
+  zh: 4e1a367e9d54c47d
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/design-detail/in-process-tools:
   en: 73cd47df9f2acbd0
-  zh: 877db86c2a36a9ab
+  zh: a90501c76997e81f
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/decision/testing:
   en: c0189d491354eb48
-  zh: ac68b07188402f9c
+  zh: 469eb105ddb4e7a0
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/deferred-phases:
   en: f28b530000b8495e
-  zh: f256b8b32c4ce4ef
+  zh: 63887f43b3c1ec31
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/alternatives-considered:
   en: eabe577b837f3de2
-  zh: 4ef0167c895766a6
+  zh: a5c198e5b4a1e9e8
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/consequences:
   en: c0d8279a677a0ef1
-  zh: 3518fc05f8700c0b
+  zh: af7a205380228e8b
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/faq:
   en: de45c2a398b8abe6
-  zh: 93be112960b40736
+  zh: 857e61f0b39d639f
 /agent-note-the-subprocess-sandbox-confinement-seam-native-runners-escalation-and-per-session-modes/prior-art:
   en: a51744b1cafca339
-  zh: 1d27f49f1aa550af
+  zh: f8ac265184f57523

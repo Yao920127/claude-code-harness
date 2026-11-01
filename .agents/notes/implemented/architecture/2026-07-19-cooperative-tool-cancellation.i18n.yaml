@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-19-cooperative-tool-cancellation.md
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary:
   en: 84c827aa3baa331a
-  zh: 10cad03e58b10e31
+  zh: 81157228f14c9f70
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/problem:
   en: e386b22491b468c1
-  zh: 82015f5145b679cd
+  zh: fe322151043a5681
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/decision:
   en: ca66d3b6af50be10
-  zh: f054b10d0c965e82
+  zh: 680bcce0df9d868b
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/decision/mutability-follows-the-pipeline-stage:
   en: 0e1399cad4151f87
-  zh: 960fa0ccbe0f8fea
+  zh: 151839203ee61bc2
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/decision/cancellation-codes-record-whether-dispatch-occurred:
   en: c787fba8731ac147
-  zh: 21b5968ae6f8cd59
+  zh: b6eaa7fb8259554f
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/decision/pre-aborted-entry-short-circuits-after-materialization:
   en: 53362db6a0c71698
-  zh: 311de45ca26d3fdc
+  zh: 113b43747fbbdeab
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/decision/started-work-still-reaches-quiescence:
   en: 26e4b71366bebd1b
-  zh: 10598e12b28c586e
+  zh: 7be80f772cab0b54
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/verification:
   en: fbd101d4576afa92
-  zh: 35f5d3c2f6cad6a8
+  zh: 5eaae6cef9eae755
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/alternatives-considered:
   en: 1f205f1a78d4fd5b
-  zh: 6c17e35da2909302
+  zh: 448f69a1035ca9f6
 /agent-note-cooperative-tool-cancellation-at-the-registry-boundary/consequences:
   en: 24a9ad2c4c7c86b5
-  zh: debdd29d272e07ea
+  zh: 18adf473703e1d19

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-26-ban-ambiguous-origin-label.md
 /agent-note-ban-an-ambiguous-origin-label:
   en: 98843ceb0ee72c06
-  zh: e4963bfe0e1b1314
+  zh: 22984746b165c09a
 /agent-note-ban-an-ambiguous-origin-label/problem:
   en: e3c5b3a689f7a3cc
-  zh: 676620dfb5303bed
+  zh: 1ee32d2d9d1ddd42
 /agent-note-ban-an-ambiguous-origin-label/decision:
   en: bb8507460f159ad1
-  zh: 357b5e6065cf389c
+  zh: 92f00c0789507c6e
 /agent-note-ban-an-ambiguous-origin-label/alternatives-considered:
   en: 50421d71ea80fef9
-  zh: 512625bd4dac0734
+  zh: 4ead00c16f72366a
 /agent-note-ban-an-ambiguous-origin-label/consequences:
   en: 51a4f9c099f993f1
-  zh: 655bcf2eda1835ff
+  zh: a02d5c8e396d6523

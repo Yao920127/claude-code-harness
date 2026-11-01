@@ -31,7 +31,7 @@ export function syntheticHistory(): string {
       turn, step: 1, message: createSystemMessage(''),
     }, { surfaceOp: 'append' })
     const user = session.append('user/message', createUserMessage({
-      content: [{ type: 'text', text: 'Review synthetic change ' + String(turn) + ': 检查增量渲染。 '.repeat(30) }],
+      content: [{ type: 'text', text: 'Review synthetic change ' + String(turn) + ': 檢查增量渲染。 '.repeat(30) }],
       source: { kind: 'user' },
     }), { surfaceOp: 'append' })
     if (turn === 1) session.append('session/title', { title: TITLE, messageSeqs: [user.seq], source: { kind: 'fallback' } })

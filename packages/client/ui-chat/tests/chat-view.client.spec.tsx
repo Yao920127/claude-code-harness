@@ -190,7 +190,7 @@ const retry = (seq: number): ModelRetryNode => ({
   retryState: 'scheduled',
   provider: 'mock', mode: 'normal', policyKey: 'mock-normal',
   retry: 1, maxRetries: 2, delayMs: 450,
-  failure: { code: 'TRANSPORT', message: '连接被重置' },
+  failure: { code: 'TRANSPORT', message: '連線被重置' },
 })
 const turnError = (seq: number, code?: string): TurnErrorNode => ({
   kind: 'turn-error', seq, time: seq * 1_000, turn: 1, step: 0,
@@ -211,12 +211,12 @@ const runningCall = (callId: string, name = 'bash'): StartedToolCall => ({
 })
 const command = (over: Partial<CommandNode> = {}): CommandNode => ({
   kind: 'command', seq: 5, time: 5_000, commandId: 'cmd-1' as CommandNode['commandId'],
-  name: 'plan', args: '', outcome: { kind: 'success', text: '已进入 plan mode' },
+  name: 'plan', args: '', outcome: { kind: 'success', text: '已進入 plan mode' },
   ...over,
 })
 const compaction = (over: Partial<CompactionSummaryNode> = {}): CompactionSummaryNode => ({
   kind: 'compaction', seq: 8, time: 8_000,
-  summary: '## 压缩摘要\n\n保留的事实。',
+  summary: '## 壓縮摘要\n\n保留的事實。',
   summaryEventSeq: 7,
   shadowedItemCount: 16,
   shadowedTokenCount: 11_309,
@@ -597,7 +597,7 @@ describe('Chat node rendering', () => {
         if (value !== 'report.html') return undefined
         return {
           open: () => { void h.openFile(`for-seq-${String(owner.seq)}/site/report.html`) },
-          label: '打开 site/report.html',
+          label: '開啟 site/report.html',
           title: 'site/report.html',
         }
       },
@@ -607,7 +607,7 @@ describe('Chat node rendering', () => {
     // narration stays inert code, and the unknown file resolves to nothing.
     const mentions = view.container.querySelectorAll('code button')
     expect(mentions).toHaveLength(1)
-    const mention = view.getByRole('button', { name: '打开 site/report.html' })
+    const mention = view.getByRole('button', { name: '開啟 site/report.html' })
     expect(mention.getAttribute('title')).toBe('site/report.html')
     fireEvent.click(mention)
     // The vocabulary was built from the closing message's own owner currency.
@@ -622,9 +622,9 @@ describe('Chat node rendering', () => {
     expect(formatRunDuration(125_000, t)).toBe('2分05秒')
     // The hour rolls at exactly 3600s, never at 60 displayed minutes.
     expect(formatRunDuration(3_599_999, t)).toBe('59分59秒')
-    expect(formatRunDuration(3_600_000, t)).toBe('1小时00分00秒')
-    expect(formatRunDuration(3_903_000, t)).toBe('1小时05分03秒')
-    expect(formatRunDuration(7_261_000, t)).toBe('2小时01分01秒')
+    expect(formatRunDuration(3_600_000, t)).toBe('1小時00分00秒')
+    expect(formatRunDuration(3_903_000, t)).toBe('1小時05分03秒')
+    expect(formatRunDuration(7_261_000, t)).toBe('2小時01分01秒')
   })
 
   it('formatRunDuration uses the English hour template', () => {
@@ -1049,12 +1049,12 @@ describe('ChatView', () => {
     ])
     const h = makeHarness({}, {}, snapshot)
     const view = render(<h.ChatView {...h.props} />)
-    const navigation = view.getByRole('navigation', { name: '轮次导航' })
-    const first = await view.findByRole('button', { name: '跳转到第 1 轮' })
+    const navigation = view.getByRole('navigation', { name: '輪次導航' })
+    const first = await view.findByRole('button', { name: '跳轉到第 1 輪' })
     expect(within(navigation).getAllByRole('button').map(mark => mark.getAttribute('aria-label'))).toEqual([
-      '跳转到第 1 轮', '跳转到第 2 轮',
+      '跳轉到第 1 輪', '跳轉到第 2 輪',
     ])
-    const second = view.getByRole('button', { name: '跳转到第 2 轮' })
+    const second = view.getByRole('button', { name: '跳轉到第 2 輪' })
     expect(second.getAttribute('aria-current')).toBe('true')
     fireEvent.focus(first)
     const preview = view.getByRole('tooltip')
@@ -1069,7 +1069,7 @@ describe('ChatView', () => {
     ]
     const h = makeHarness({ nodes: later }, { hasMore: true })
     const view = render(<h.ChatView {...h.props} />)
-    const second = await view.findByRole('button', { name: '跳转到第 2 轮' })
+    const second = await view.findByRole('button', { name: '跳轉到第 2 輪' })
 
     const scroller = view.container.querySelector('[data-chat-flow]')!.parentElement as HTMLDivElement
     const metrics = installScrollMetrics(scroller, 1_000, 300)
@@ -1087,10 +1087,10 @@ describe('ChatView', () => {
         turnTimings: new Map([[1, { startTime: 1_000 }], [2, { startTime: 4_000 }], [3, { startTime: 7_000 }]]),
       })
     })
-    const movedSecond = view.getByRole('button', { name: '跳转到第 2 轮' })
+    const movedSecond = view.getByRole('button', { name: '跳轉到第 2 輪' })
     expect(movedSecond).toBe(second)
     expect(within(view.getByRole('navigation')).getAllByRole('button').map(mark => mark.getAttribute('aria-label'))).toEqual([
-      '跳转到第 1 轮', '跳转到第 2 轮', '跳转到第 3 轮',
+      '跳轉到第 1 輪', '跳轉到第 2 輪', '跳轉到第 3 輪',
     ])
   })
 
@@ -1103,9 +1103,9 @@ describe('ChatView', () => {
       { turn: 3, seq: 8, prompt: 'third prompt', response: 'third response' },
     ])
     const view = render(<h.ChatView {...h.props} />)
-    const first = await view.findByRole('button', { name: '加载并跳转到第 1 轮' })
-    view.getByRole('button', { name: '加载并跳转到第 2 轮' })
-    const third = view.getByRole('button', { name: '跳转到第 3 轮' })
+    const first = await view.findByRole('button', { name: '載入並跳轉到第 1 輪' })
+    view.getByRole('button', { name: '載入並跳轉到第 2 輪' })
+    const third = view.getByRole('button', { name: '跳轉到第 3 輪' })
     expect(third.getAttribute('aria-current')).toBe('true')
     fireEvent.focus(first)
     // An unloaded turn previews both sides from the outline.
@@ -1120,7 +1120,7 @@ describe('ChatView', () => {
     // unmoved head, then lands on the nearest rendered turn and un-busies.
     await waitFor(() => { expect(first.getAttribute('aria-busy')).toBeNull() })
     expect(h.loadThrough.mock.calls).toEqual([[0], [0]])
-    expect(view.getByRole('button', { name: '跳转到第 3 轮' }).getAttribute('aria-current')).toBe('true')
+    expect(view.getByRole('button', { name: '跳轉到第 3 輪' }).getAttribute('aria-current')).toBe('true')
   })
 
   it('uses a known turn landing without hit testing or consuming rail scroll as transcript input', async () => {
@@ -1133,7 +1133,7 @@ describe('ChatView', () => {
         userInTurn(4, 'second', 2), assistant(5, 'second answer', 2),
       ] })
       const view = render(<h.ChatView {...h.props} />)
-      const first = await view.findByRole('button', { name: '跳转到第 1 轮' })
+      const first = await view.findByRole('button', { name: '跳轉到第 1 輪' })
       const scroller = view.container.querySelector('[data-chat-flow]')!.parentElement as HTMLDivElement
       installScrollMetrics(scroller, 1_500, 300)
       const row = view.container.querySelector('[data-chat-anchor-key="fixture:user:1"]') as HTMLElement
@@ -1173,7 +1173,7 @@ describe('ChatView', () => {
     // Pinned to the tail on open: the back-to-bottom control is absent.
     expect(view.queryByRole('button', { name: '回到底部' })).toBeNull()
 
-    const first = await view.findByRole('button', { name: '加载并跳转到第 1 轮' })
+    const first = await view.findByRole('button', { name: '載入並跳轉到第 1 輪' })
     fireEvent.click(first)
     // The click itself leaves the tail...
     expect(view.getByRole('button', { name: '回到底部' })).toBeTruthy()
@@ -1193,7 +1193,7 @@ describe('ChatView', () => {
       { turn: 3, seq: 8, prompt: 'third prompt', response: '' },
     ])
     const view = render(<h.ChatView {...h.props} />)
-    const first = await view.findByRole('button', { name: '加载并跳转到第 1 轮' })
+    const first = await view.findByRole('button', { name: '載入並跳轉到第 1 輪' })
     fireEvent.click(first)
     // The session-side guard refuses the busy-pager jump instantly, yet the
     // mark stays busy instead of degrading to the nearest loaded turn.
@@ -1219,9 +1219,9 @@ describe('ChatView', () => {
       response: '',
     })))
     const view = render(<h.ChatView {...h.props} />)
-    const nav = view.getByRole('navigation', { name: '轮次导航' })
+    const nav = view.getByRole('navigation', { name: '輪次導航' })
     const scroller = nav.querySelector('[class*="scroller"]') as HTMLElement
-    const latest = await within(nav).findByRole('button', { name: '跳转到第 60 轮' })
+    const latest = await within(nav).findByRole('button', { name: '跳轉到第 60 輪' })
     expect(scroller.scrollTop).toBe(302)
     expect(within(nav).getAllByRole('button').length).toBeLessThan(60)
     expect(latest.getAttribute('aria-current')).toBe('true')
@@ -1234,7 +1234,7 @@ describe('ChatView', () => {
     fireEvent.scroll(scroller)
     expect(scroller.className).toContain('fadeTop')
     expect(scroller.className).toContain('fadeBottom')
-    fireEvent.pointerMove(within(nav).getByRole('button', { name: '加载并跳转到第 25 轮' }))
+    fireEvent.pointerMove(within(nav).getByRole('button', { name: '載入並跳轉到第 25 輪' }))
     expect(view.getByRole('tooltip').textContent).toContain('p25')
   })
 
@@ -1259,7 +1259,7 @@ describe('ChatView', () => {
       return { top: 0, bottom: 300 } as DOMRect
     })
 
-    fireEvent.click(await view.findByRole('button', { name: '加载并跳转到第 1 轮' }))
+    fireEvent.click(await view.findByRole('button', { name: '載入並跳轉到第 1 輪' }))
     expect(h.loadThrough).toHaveBeenCalledWith(0)
 
     // The paged window commits: turn 1's rows and rail item enter the snapshot.
@@ -1269,7 +1269,7 @@ describe('ChatView', () => {
         turnTimings: new Map([[1, { startTime: 1_000 }], [3, { startTime: 8_000 }]]),
       })
     })
-    const first = view.getByRole('button', { name: '跳转到第 1 轮' })
+    const first = view.getByRole('button', { name: '跳轉到第 1 輪' })
     expect(first.getAttribute('aria-current')).toBe('true')
     expect(scroller.scrollTop).toBe(76)
     // The mark stays busy until the jump settles: the loader's completion
@@ -1313,7 +1313,7 @@ describe('ChatView', () => {
     Object.defineProperty(scroller, 'scrollHeight', { value: 800, writable: true })
     Object.defineProperty(scroller, 'clientHeight', { value: 200, writable: true })
     readerScroll(scroller, 50)
-    fireEvent.click(view.getByText('加载更早'))
+    fireEvent.click(view.getByText('載入更早'))
     act(() => { h.set({ loadingOlder: true }) })
     // The reader moves after the request starts; this, not the click-time
     // row, is the intent the arriving page must preserve.
@@ -1369,7 +1369,7 @@ describe('ChatView', () => {
         clientHeight: { get: () => paged ? 200 : 100 },
         scrollHeight: { get: () => paged ? 200 : 100 },
       })
-      fireEvent.click(view.getByText('加载更早'))
+      fireEvent.click(view.getByText('載入更早'))
       expect(pinned.closest('[hidden]')).toBeNull()
       expect(pinned.hasAttribute('data-chat-paging-anchor')).toBe(true)
       expect(controlSeat.hasAttribute('data-chat-paging-anchor')).toBe(false)
@@ -1447,7 +1447,7 @@ describe('ChatView', () => {
     const top = first.getBoundingClientRect().top
     if (hasSteering) expect(visibleRows().indexOf(first)).toBeLessThan(visibleRows().indexOf(control))
     expect(control.hasAttribute('data-chat-paging-anchor')).toBe(false)
-    fireEvent.click(view.getByText('加载更早'))
+    fireEvent.click(view.getByText('載入更早'))
 
     act(() => {
       source = chatSnapshotFixture({ ...initial, nodes: [
@@ -1536,7 +1536,7 @@ describe('ChatView', () => {
     })
     try {
       rowRectCalls = 0
-      fireEvent.click(view.getByText('加载更早'))
+      fireEvent.click(view.getByText('載入更早'))
       expect(hitTest).not.toHaveBeenCalled()
       expect(rowRectCalls).toBe(1)
 
@@ -1616,10 +1616,10 @@ describe('ChatView', () => {
     expect(view.queryByText('later')).toBeNull()
     const pendingBubble = view.getByText('interrupt now').closest('[data-pending-steering]')
     expect(pendingBubble).not.toBeNull()
-    fireEvent.click(within(pendingBubble as HTMLElement).getByRole('button', { name: '复制' }))
+    fireEvent.click(within(pendingBubble as HTMLElement).getByRole('button', { name: '複製' }))
     expect(writeText).toHaveBeenCalledWith('interrupt now')
-    expect(within(pendingBubble as HTMLElement).queryByRole('button', { name: '在新对话中分支' })).toBeNull()
-    expect(turnProcessControl(view.container)?.textContent).toBe('深度求索中，用时2秒')
+    expect(within(pendingBubble as HTMLElement).queryByRole('button', { name: '在新對話中分支' })).toBeNull()
+    expect(turnProcessControl(view.container)?.textContent).toBe('深度求索中，用時2秒')
     expect(view.getByRole('status').compareDocumentPosition(view.getByText('interrupt now'))
       & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
 
@@ -1641,9 +1641,9 @@ describe('ChatView', () => {
     // Only the durable steering bubble: the turn is still running, so its
     // assistant narration owns no footer yet, and a steering bubble never
     // carries a branch action.
-    expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(1)
+    expect(view.getAllByRole('button', { name: '複製' })).toHaveLength(1)
     const durableBubble = view.getByText('interrupt now').closest('[class*="userRow"]') as HTMLElement
-    expect(within(durableBubble).queryByRole('button', { name: '在新对话中分支' })).toBeNull()
+    expect(within(durableBubble).queryByRole('button', { name: '在新對話中分支' })).toBeNull()
 
     act(() => {
       h.setSession({ running: false })
@@ -1651,7 +1651,7 @@ describe('ChatView', () => {
     })
     // The Turn Tail belongs to the closed Turn, independently of a later
     // steering bubble's placement in the Chat list.
-    const branchButtons = view.getAllByRole('button', { name: '在新对话中分支' })
+    const branchButtons = view.getAllByRole('button', { name: '在新對話中分支' })
     expect(branchButtons).toHaveLength(1)
     expect(branchButtons[0]!.getAttribute('aria-disabled')).toBeNull()
     fireEvent.click(branchButtons[0]!)
@@ -1688,21 +1688,21 @@ describe('ChatView', () => {
         pendingSubmissions: [
           {
             requestId: 'req-1' as never, placement: 'transcript',
-            time: 5_000, text: '即发即显', attachments: [],
+            time: 5_000, text: '即發即顯', attachments: [],
           },
         ],
       },
     )
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.getByText('即发即显').closest('[data-submission-echo]')).not.toBeNull()
-    const echo = view.getByText('即发即显').closest('[data-submission-echo]')
+    expect(view.getByText('即發即顯').closest('[data-submission-echo]')).not.toBeNull()
+    const echo = view.getByText('即發即顯').closest('[data-submission-echo]')
     act(() => { h.setSession({ testInbox: { 'next-step': [], 'next-turn': [{
       id: 'idle-occurrence' as never, role: 'user', source: { kind: 'user', rpcId: 'req-1' as never },
-      content: [{ type: 'text', text: '即发即显' }],
+      content: [{ type: 'text', text: '即發即顯' }],
     }] } }) })
-    expect(view.getByText('即发即显').closest('[data-submission-echo]')).toBe(echo)
+    expect(view.getByText('即發即顯').closest('[data-submission-echo]')).toBe(echo)
     act(() => { h.setSession({ testInbox: { 'next-step': [], 'next-turn': [] } }) })
-    expect(view.getByText('即发即显').closest('[data-submission-echo]')).toBe(echo)
+    expect(view.getByText('即發即顯').closest('[data-submission-echo]')).toBe(echo)
 
     // The durable node arrives while the echo is STILL in the session
     // snapshot: the render-time rpcId dedupe keeps exactly one bubble.
@@ -1712,18 +1712,18 @@ describe('ChatView', () => {
           assistant(1, 'working'),
           {
             kind: 'user', seq: 2, time: 2_000,
-            content: [{ type: 'text', text: '即发即显' }] as never,
+            content: [{ type: 'text', text: '即發即顯' }] as never,
             source: { kind: 'user', rpcId: 'req-1' },
           },
         ],
       })
     })
-    expect(view.getAllByText('即发即显')).toHaveLength(1)
+    expect(view.getAllByText('即發即顯')).toHaveLength(1)
     expect(view.container.querySelector('[data-submission-echo]')).toBeNull()
 
     // The delayed snapshot retirement changes nothing visible.
     act(() => { h.setSession({ pendingSubmissions: [] }) })
-    expect(view.getAllByText('即发即显')).toHaveLength(1)
+    expect(view.getAllByText('即發即顯')).toHaveLength(1)
   })
 
   it.each(['compact', 'standard', 'detailed'] as const)(
@@ -1877,7 +1877,7 @@ describe('ChatView', () => {
           requestId: 'req-steer' as never,
           placement: 'steering',
           time: 5_500,
-          text: '带图纠偏',
+          text: '帶圖糾偏',
           attachments: [{
             type: 'image', value: { previewUrl: 'blob:steer-preview', name: 'steer.png' },
           }],
@@ -1885,34 +1885,34 @@ describe('ChatView', () => {
       },
     )
     const view = render(<h.ChatView {...h.props} />)
-    const local = view.getByText('带图纠偏').closest('[data-submission-echo]')
+    const local = view.getByText('帶圖糾偏').closest('[data-submission-echo]')
     expect(local?.hasAttribute('data-pending-steering')).toBe(true)
 
     act(() => {
       h.setSession({
         testInbox: { 'next-turn': [], 'next-step': [{
           id: 'steer-occurrence' as never,
-          content: [{ type: 'text', text: '带图纠偏' }],
+          content: [{ type: 'text', text: '帶圖糾偏' }],
 
           role: 'user', source: { kind: 'user', rpcId: 'req-steer' as never },
         }] },
       })
     })
-    expect(view.getAllByText('带图纠偏')).toHaveLength(1)
+    expect(view.getAllByText('帶圖糾偏')).toHaveLength(1)
     expect(view.container.querySelector('[data-submission-echo]')).toBe(local)
     expect(view.container.querySelectorAll('[data-pending-steering]')).toHaveLength(1)
 
     act(() => { h.setSession({ testInbox: { 'next-turn': [], 'next-step': [] } }) })
     expect(view.container.querySelector('[data-submission-echo]')).toBe(local)
-    expect(view.getAllByText('带图纠偏')).toHaveLength(1)
+    expect(view.getAllByText('帶圖糾偏')).toHaveLength(1)
 
     act(() => { h.setChat({ nodes: [assistant(1, 'working'), {
-      ...steering(2, '带图纠偏', 1), source: { kind: 'user', rpcId: 'req-steer' as never },
+      ...steering(2, '帶圖糾偏', 1), source: { kind: 'user', rpcId: 'req-steer' as never },
     }] }) })
-    expect(view.getAllByText('带图纠偏')).toHaveLength(1)
+    expect(view.getAllByText('帶圖糾偏')).toHaveLength(1)
     expect(view.container.querySelector('[data-submission-echo]')).toBeNull()
     act(() => { h.setSession({ pendingSubmissions: [] }) })
-    expect(view.getAllByText('带图纠偏')).toHaveLength(1)
+    expect(view.getAllByText('帶圖糾偏')).toHaveLength(1)
   })
 
   it('keeps Host Inbox order across local and other-client steering without remounting the local echo', () => {
@@ -1957,18 +1957,18 @@ describe('ChatView', () => {
         pendingSubmissions: [
           {
             requestId: 'req-q' as never, placement: 'queued',
-            time: 6_000, text: '排队中', attachments: [],
+            time: 6_000, text: '排隊中', attachments: [],
           },
         ],
       },
     )
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.queryByText('排队中')).toBeNull()
+    expect(view.queryByText('排隊中')).toBeNull()
     act(() => {
       h.setSession({
         testInbox: { 'next-step': [], 'next-turn': [{
           id: 'q-occurrence' as never,
-          content: [{ type: 'text' as const, text: '排队中' }],
+          content: [{ type: 'text' as const, text: '排隊中' }],
 
           role: 'user', source: { kind: 'user', rpcId: 'req-q' as never },
         }] },
@@ -1976,7 +1976,7 @@ describe('ChatView', () => {
     })
     // The queued occurrence and its local predecessor both belong to the
     // queue dock, never the Chat flow.
-    expect(view.queryByText('排队中')).toBeNull()
+    expect(view.queryByText('排隊中')).toBeNull()
   })
 
   it('an image echo renders its previews through the message-image slot', () => {
@@ -2080,14 +2080,14 @@ describe('ChatView', () => {
     const view = render(<h.ChatView {...h.props} />)
     const disclosure = view.container.querySelector('details') as HTMLDetailsElement
     expect(disclosure.dataset.active).toBe('true')
-    expect(within(disclosure).getByRole('status').textContent).toBe('正在重试模型请求（1/2） · 1s')
+    expect(within(disclosure).getByRole('status').textContent).toBe('正在重試模型請求（1/2） · 1s')
 
     act(() => {
       h.setChat({ nodes: [user(1, 'try'), nextRetry] })
     })
     expect(within(disclosure).getAllByRole('status')).toHaveLength(1)
     expect(view.container.querySelector('details')).toBe(disclosure)
-    expect(within(disclosure).getByRole('status').textContent).toBe('正在重试模型请求（2/2） · 1s')
+    expect(within(disclosure).getByRole('status').textContent).toBe('正在重試模型請求（2/2） · 1s')
 
     act(() => {
       h.setChat({
@@ -2101,7 +2101,7 @@ describe('ChatView', () => {
       h.setSession({ running: false })
     })
     expect(disclosure.dataset.active).toBeUndefined()
-    expect(within(disclosure).getByRole('status').textContent).toBe('已重试模型请求（2/2） · 1s')
+    expect(within(disclosure).getByRole('status').textContent).toBe('已重試模型請求（2/2） · 1s')
 
     act(() => {
       h.setChat({ nodes: [user(1, 'try'), { ...retry(6), retryState: 'cancelled' }] })
@@ -2109,7 +2109,7 @@ describe('ChatView', () => {
     })
     const cancelledDisclosure = view.container.querySelector('details') as HTMLDetailsElement
     expect(cancelledDisclosure.dataset.active).toBeUndefined()
-    expect(within(cancelledDisclosure).getByRole('status').textContent).toContain('重试已取消')
+    expect(within(cancelledDisclosure).getByRole('status').textContent).toContain('重試已取消')
   })
 
   it('renders every terminal failure inline with neutral quota copy and no transient notice', () => {
@@ -2119,10 +2119,10 @@ describe('ChatView', () => {
     const view = render(<h.ChatView {...h.props} />)
     const statuses = view.getAllByRole('status')
     expect(statuses.map(status => status.textContent)).toEqual([
-      '本轮运行失败API 密钥无效AUTH',
-      '本轮运行失败plugin exploded',
-      '本轮运行失败当前请求的额度已用尽QUOTA',
-      '本轮运行失败当前请求的额度已用尽ACCOUNT_QUOTA',
+      '本輪執行失敗API 金鑰無效AUTH',
+      '本輪執行失敗plugin exploded',
+      '本輪執行失敗目前請求的額度已用盡QUOTA',
+      '本輪執行失敗目前請求的額度已用盡ACCOUNT_QUOTA',
     ])
     // The transient notice is the frame-wide host's job; the failure row keeps
     // neither a recharge affordance nor a toast of its own.
@@ -2136,9 +2136,9 @@ describe('ChatView', () => {
     const view = render(<h.ChatView {...h.props} />)
     const statuses = view.getAllByRole('status')
     expect(statuses.map(status => status.textContent)).toEqual([
-      '已达到输出 token 上限回答被截断，已有输出保留在对话中。发送“继续”可让模型接着输出。',
+      '已達到輸出 token 上限回答被截斷，已有輸出保留在對話中。傳送“繼續”可讓模型接著輸出。',
     ])
-    expect(view.queryByText('本轮运行失败')).toBeNull()
+    expect(view.queryByText('本輪執行失敗')).toBeNull()
   })
 
   it('removes Inspect when trajectory is unavailable and restores it with the view', () => {
@@ -2172,8 +2172,8 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     // Branch renders only under assistant answers; user bubbles keep copy alone.
-    expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(4)
-    const branchButtons = view.getAllByRole('button', { name: '在新对话中分支' })
+    expect(view.getAllByRole('button', { name: '複製' })).toHaveLength(4)
+    const branchButtons = view.getAllByRole('button', { name: '在新對話中分支' })
     expect(branchButtons).toHaveLength(2)
     expect(branchButtons.map(button => button.getAttribute('aria-disabled'))).toEqual([null, null])
   })
@@ -2199,7 +2199,7 @@ describe('ChatView', () => {
       turnEnds: new Map([[1, 6]]),
     })
     const view = render(<h.ChatView {...h.props} />)
-    const toggle = view.getByRole('button', { name: '用时 4秒' })
+    const toggle = view.getByRole('button', { name: '用時 4秒' })
     expect(toggle.getAttribute('aria-expanded')).toBe('false')
     expect(toggle.getAttribute('data-turn-process-tool-calls')).toBe('1')
     expect(toggle.getAttribute('data-turn-process-messages')).toBe('1')
@@ -2225,12 +2225,12 @@ describe('ChatView', () => {
     expect(members.map(member => member.getAttribute('hidden'))).toEqual([null, null, null])
 
     act(() => { h.set({ nodes: [user(1, 'question'), first] }) })
-    expect(view.getByRole('button', { name: '用时 4秒' }).getAttribute('aria-expanded')).toBe('false')
+    expect(view.getByRole('button', { name: '用時 4秒' }).getAttribute('aria-expanded')).toBe('false')
     expect(members[0]?.getAttribute('hidden')).toBeNull()
     act(() => { h.set({
       nodes: [user(1, 'question'), first, toolResult(3, 'a'), toolResult(4, 'b', 'subagent'), second],
     }) })
-    const renewedToggle = view.getByRole('button', { name: '用时 4秒' })
+    const renewedToggle = view.getByRole('button', { name: '用時 4秒' })
     expect(renewedToggle.getAttribute('aria-expanded')).toBe('true')
     expect(members[0]?.getAttribute('hidden')).toBeNull()
   })
@@ -2271,7 +2271,7 @@ describe('ChatView', () => {
     const h = makeHarness({ chat: initial }, { running: true })
     const view = render(<h.ChatView {...h.props} />)
     expect(renderedFlowKinds(view.container)).toEqual(['user', 'turn-process'])
-    expect(turnProcessControl(view.container)?.textContent).toBe('深度求索中，用时4秒')
+    expect(turnProcessControl(view.container)?.textContent).toBe('深度求索中，用時4秒')
     expect(view.container.querySelector('[data-chat-flow-kind="system-prompt"]')).toBeNull()
 
     act(() => {
@@ -2453,7 +2453,7 @@ describe('ChatView', () => {
       turnTimings: new Map([[1, { startTime: 0 }]]),
     })
     const view = render(<h.ChatView {...h.props} />)
-    const liveToggle = view.getByRole('button', { name: '深度求索中，用时3秒' }) as HTMLButtonElement
+    const liveToggle = view.getByRole('button', { name: '深度求索中，用時3秒' }) as HTMLButtonElement
     expect(liveToggle.disabled).toBe(true)
     expect(liveToggle.getAttribute('aria-expanded')).toBe('true')
     const processRow = view.getByText('inspect').closest('[data-chat-flow-kind="assistant-step"]') as HTMLElement
@@ -2470,14 +2470,14 @@ describe('ChatView', () => {
     })
     const toggle = turnProcessControl(view.container)!
     expect(toggle).toBe(liveToggle)
-    expect(toggle.textContent).toBe('用时 5秒')
+    expect(toggle.textContent).toBe('用時 5秒')
     expect(toggle.disabled).toBe(false)
     expect(toggle.getAttribute('aria-expanded')).toBe('false')
     expect(processRow.getAttribute('hidden')).toBe('until-found')
     fireEvent.click(toggle)
     act(() => { vi.advanceTimersByTime(1_000) })
     expect(toggle.getAttribute('aria-expanded')).toBe('true')
-    expect(toggle.textContent).toBe('用时 5秒')
+    expect(toggle.textContent).toBe('用時 5秒')
     expect(processRow.getAttribute('hidden')).toBeNull()
   }))
 
@@ -2836,7 +2836,7 @@ describe('ChatView', () => {
     const view = render(<h.ChatView {...h.props} />)
     const toggle = turnProcessControl(view.container)!
     const processRow = view.getByText('working').closest('[data-chat-flow-kind="assistant-step"]')!
-    expect(toggle.textContent).toBe('用时 5秒')
+    expect(toggle.textContent).toBe('用時 5秒')
     expect(toggle.disabled).toBe(true)
     expect(toggle.getAttribute('aria-expanded')).toBeNull()
     expect(processRow.hasAttribute('hidden')).toBe(false)
@@ -2909,14 +2909,14 @@ describe('ChatView', () => {
     // 2 user + the settled turn-1 tail, which keeps its seat while a later
     // turn runs; turn 2's narration stays chrome-free while its tool runs, so
     // the footer never appears and then moves.
-    expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(3)
+    expect(view.getAllByRole('button', { name: '複製' })).toHaveLength(3)
     expect(view.getByText('mid-turn text')).toBeTruthy()
     // turn/end lands: the same node becomes the settled answer and takes the seat.
     act(() => {
       h.setSession({ running: false })
       h.setChat({ runningCalls: [], turnEnds: new Map([[1, 3], [2, 6]]) })
     })
-    expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(4)
+    expect(view.getAllByRole('button', { name: '複製' })).toHaveLength(4)
   })
 
   it('the assistant footer omits turn run time', () => {
@@ -2932,7 +2932,7 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     // The exact turn/end includes trailing tool activity after the final text.
-    expect(view.container.querySelector('[data-turn-tail="1"]')?.textContent).not.toContain('用时 19秒')
+    expect(view.container.querySelector('[data-turn-tail="1"]')?.textContent).not.toContain('用時 19秒')
   })
 
   it('the assistant footer omits hour-scale run time', () => {
@@ -2948,7 +2948,7 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     expect(view.container.querySelector('[data-turn-tail="1"]')?.textContent)
-      .not.toContain('用时 1小时05分03秒')
+      .not.toContain('用時 1小時05分03秒')
   })
 
   it('the settled footer shows usage only in Detailed mode', () => {
@@ -2980,15 +2980,15 @@ describe('ChatView', () => {
     expect(view.queryByRole('dialog')).toBeNull()
     fireEvent.click(trigger)
     const dialog = view.getByRole('dialog')
-    expect(dialog.getAttribute('aria-label')).toBe('本轮用量')
-    expect(dialog.firstChild?.textContent).toBe('本轮用量10,100 tok')
-    expect(dialog.textContent).toContain('缓存命中49.4%')
-    expect(dialog.textContent).toContain('未缓存输入5,060 tok')
+    expect(dialog.getAttribute('aria-label')).toBe('本輪用量')
+    expect(dialog.firstChild?.textContent).toBe('本輪用量10,100 tok')
+    expect(dialog.textContent).toContain('快取命中49.4%')
+    expect(dialog.textContent).toContain('未快取輸入5,060 tok')
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(view.queryByRole('dialog')).toBeNull()
     const footer = view.container.querySelector<HTMLElement>('[data-turn-tail="1"]')!
-    expect(within(footer).queryByRole('button', { name: /用时/ })).toBeNull()
-    expect(turnProcessControl(view.container)?.textContent).toBe('用时 19秒')
+    expect(within(footer).queryByRole('button', { name: /用時/ })).toBeNull()
+    expect(turnProcessControl(view.container)?.textContent).toBe('用時 19秒')
     act(() => { h.setPerformanceUsage('compact') })
     expect(view.queryByRole('button', { name: /用量/ })).toBeNull()
     act(() => { h.setPerformanceUsage('detailed') })
@@ -3008,8 +3008,8 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     const footer = view.container.querySelector<HTMLElement>('[data-turn-tail="1"]')!
-    expect(within(footer).queryByRole('button', { name: /用时/ })).toBeNull()
-    expect(turnProcessControl(view.container)?.textContent).toBe('用时 19秒')
+    expect(within(footer).queryByRole('button', { name: /用時/ })).toBeNull()
+    expect(turnProcessControl(view.container)?.textContent).toBe('用時 19秒')
     expect(view.queryByRole('button', { name: /用量/ })).toBeNull()
   })
 
@@ -3056,7 +3056,7 @@ describe('ChatView', () => {
       turnEnds: new Map([[1, 16]]),
     })
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.queryByText(/用时/)).toBeNull()
+    expect(view.queryByText(/用時/)).toBeNull()
   })
 
   it('enables fork only on the finalized assistant at the completed transcript tail', () => {
@@ -3066,7 +3066,7 @@ describe('ChatView', () => {
     })
     const view = render(<h.ChatView {...h.props} />)
     // The user bubble offers no branch; the settled answer's is live.
-    const buttons = view.getAllByRole('button', { name: '在新对话中分支' })
+    const buttons = view.getAllByRole('button', { name: '在新對話中分支' })
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute('aria-disabled')).toBeNull()
     fireEvent.click(buttons[0]!)
@@ -3090,7 +3090,7 @@ describe('ChatView', () => {
     const view = render(<h.ChatView {...h.props} />)
     expect(view.getByText('change direction')).toBeTruthy()
     expect(chat.locations.getTurn(1)).toContain(later.key)
-    const branch = view.getByRole('button', { name: '在新对话中分支' })
+    const branch = view.getByRole('button', { name: '在新對話中分支' })
     expect(branch.getAttribute('aria-disabled')).toBe('true')
     fireEvent.click(branch)
     expect(h.forkAt).not.toHaveBeenCalled()
@@ -3106,8 +3106,8 @@ describe('ChatView', () => {
       turnEnds: new Map([[1, 5]]),
     })
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.getAllByRole('button', { name: '复制' })).toHaveLength(2)
-    const buttons = view.getAllByRole('button', { name: '在新对话中分支' })
+    expect(view.getAllByRole('button', { name: '複製' })).toHaveLength(2)
+    const buttons = view.getAllByRole('button', { name: '在新對話中分支' })
     expect(buttons).toHaveLength(1)
     expect(buttons[0]!.getAttribute('aria-disabled')).toBe('true')
     fireEvent.click(buttons[0]!)
@@ -3204,7 +3204,7 @@ describe('ChatView', () => {
     expect(view.getByTestId('tool-seat-r1')).toBeTruthy()
     expect(h.toolOwners[0]?.block).toMatchObject({ callId: 'r1', argsRaw: '{"command":"cmd-r1"}' })
     expect(view.getByRole('status').textContent).toBe('深度求索中')
-    const toggle = view.getByRole('button', { name: '深度求索中，用时2秒' }) as HTMLButtonElement
+    const toggle = view.getByRole('button', { name: '深度求索中，用時2秒' }) as HTMLButtonElement
     expect(toggle.disabled).toBe(true)
     expect(toggle.getAttribute('aria-expanded')).toBe('true')
   }))
@@ -3265,7 +3265,7 @@ describe('ChatView', () => {
     )
     const view = render(<h.ChatView {...h.props} />)
     const status = view.getByRole('status')
-    const toggle = view.getByRole('button', { name: '深度求索中，用时2分5秒' }) as HTMLButtonElement
+    const toggle = view.getByRole('button', { name: '深度求索中，用時2分5秒' }) as HTMLButtonElement
     expect(toggle).toBe(turnProcessControl(view.container))
     expect(toggle.disabled).toBe(true)
     expect(status.textContent).toBe('深度求索中')
@@ -3281,9 +3281,9 @@ describe('ChatView', () => {
         role: 'user', source: { kind: 'user' },
       }] } })
     })
-    expect(toggle.textContent).toBe('深度求索中，用时2分5秒')
+    expect(toggle.textContent).toBe('深度求索中，用時2分5秒')
     act(() => { vi.advanceTimersByTime(2_000) })
-    expect(toggle.textContent).toBe('深度求索中，用时2分7秒')
+    expect(toggle.textContent).toBe('深度求索中，用時2分7秒')
     expect(view.getByRole('status')).toBe(status)
     expect(status.textContent).toBe('深度求索中')
     act(() => {
@@ -3291,10 +3291,10 @@ describe('ChatView', () => {
       h.setChat({ nodes: [trigger, { ...steering(2, 'also', 1), time: 128_000 }] })
     })
     expect(turnProcessControl(view.container)).toBe(toggle)
-    expect(toggle.textContent).toBe('深度求索中，用时2分7秒')
+    expect(toggle.textContent).toBe('深度求索中，用時2分7秒')
     expect(view.getByText('also').closest('[data-pending-steering]')).toBeNull()
     act(() => { vi.advanceTimersByTime(1_000) })
-    expect(toggle.textContent).toBe('深度求索中，用时2分8秒')
+    expect(toggle.textContent).toBe('深度求索中，用時2分8秒')
     expect(status.textContent).toBe('深度求索中')
     view.unmount()
     expect(vi.getTimerCount()).toBe(0)
@@ -3308,11 +3308,11 @@ describe('ChatView', () => {
       { running: true },
     )
     const view = render(<h.ChatView {...h.props} />)
-    const toggle = view.getByRole('button', { name: '深度求索中，用时59分59秒' })
+    const toggle = view.getByRole('button', { name: '深度求索中，用時59分59秒' })
     act(() => { vi.advanceTimersByTime(1_000) })
-    expect(toggle.textContent).toBe('深度求索中，用时1小时00分0秒')
+    expect(toggle.textContent).toBe('深度求索中，用時1小時00分0秒')
     act(() => { vi.advanceTimersByTime(303_000) })
-    expect(toggle.textContent).toBe('深度求索中，用时1小时05分3秒')
+    expect(toggle.textContent).toBe('深度求索中，用時1小時05分3秒')
     expect(view.getByRole('status').textContent).toBe('深度求索中')
     view.unmount()
     expect(vi.getTimerCount()).toBe(0)
@@ -3351,10 +3351,10 @@ describe('ChatView', () => {
     render(<h.ChatView {...h.props} />)
     await act(async () => { h.toolOwners[0]!.openFile('src/a.ts') })
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '无法打开文件' })).toBeTruthy()
+      expect(screen.getByRole('dialog', { name: '無法開啟檔案' })).toBeTruthy()
     })
-    expect(screen.getByRole('dialog', { name: '无法打开文件' }).textContent).toContain('xdg-open is not available')
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重试' })) })
+    expect(screen.getByRole('dialog', { name: '無法開啟檔案' }).textContent).toContain('xdg-open is not available')
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重試' })) })
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull()
     })
@@ -3371,7 +3371,7 @@ describe('ChatView', () => {
     render(<h.ChatView {...h.props} />)
     await act(async () => { h.toolOwners[0]!.openFile('notes.md') })
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '无法打开文件' }).textContent).toContain('permission denied')
+      expect(screen.getByRole('dialog', { name: '無法開啟檔案' }).textContent).toContain('permission denied')
     })
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -3386,7 +3386,7 @@ describe('ChatView', () => {
     render(<h.ChatView {...h.props} />)
     await act(async () => { h.toolOwners[0]!.openFile('empty.ts') })
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '无法打开文件' }).textContent).toContain('无法打开此文件')
+      expect(screen.getByRole('dialog', { name: '無法開啟檔案' }).textContent).toContain('無法開啟此檔案')
     })
   })
 
@@ -3402,9 +3402,9 @@ describe('ChatView', () => {
     render(<h.ChatView {...h.props} />)
     await act(async () => { h.toolOwners[0]!.openFile('src/a.ts') })
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '无法打开文件' }).textContent).toContain('first refusal')
+      expect(screen.getByRole('dialog', { name: '無法開啟檔案' }).textContent).toContain('first refusal')
     })
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重试' })) })
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重試' })) })
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     await act(async () => { rejectRetry(new Error('late refusal')) })
@@ -3423,9 +3423,9 @@ describe('ChatView', () => {
     render(<h.ChatView {...h.props} />)
     await act(async () => { h.toolOwners[0]!.openFile('src/a.ts') })
     await waitFor(() => {
-      expect(screen.getByRole('dialog', { name: '无法打开文件' }).textContent).toContain('first refusal')
+      expect(screen.getByRole('dialog', { name: '無法開啟檔案' }).textContent).toContain('first refusal')
     })
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重试' })) })
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '重試' })) })
     fireEvent.click(screen.getByRole('button', { name: '取消' }))
     await act(async () => { resolveRetry() })
     expect(screen.queryByRole('dialog')).toBeNull()
@@ -3448,7 +3448,7 @@ describe('ChatView', () => {
     )
     readerScroll(scroller, 80)
     // Arm the paging anchor, then deliver an older page (head seq decreases).
-    fireEvent.click(view.getByText('加载更早'))
+    fireEvent.click(view.getByText('載入更早'))
     Object.defineProperty(scroller, 'scrollHeight', { value: 1600, writable: true })
     anchoredTop = 700
     act(() => {
@@ -3471,7 +3471,7 @@ describe('ChatView', () => {
     Object.defineProperty(scroller, 'scrollHeight', { value: 800, writable: true })
     Object.defineProperty(scroller, 'clientHeight', { value: 200, writable: true })
     readerScroll(scroller, 50)
-    fireEvent.click(view.getByText('加载更早'))
+    fireEvent.click(view.getByText('載入更早'))
     fireEvent.click(view.getByLabelText('回到底部'))
     Object.defineProperty(scroller, 'scrollHeight', { value: 1_300, writable: true })
     act(() => { h.setChat({ nodes: [assistant(2, 'older'), user(9, 'late')] }) })
@@ -3815,7 +3815,7 @@ describe('ChatView', () => {
       turnEnds: new Map([[1, 3], [2, 6]]),
     })
     const view = render(<h.ChatView {...h.props} />)
-    await view.findByRole('button', { name: '跳转到第 2 轮' })
+    await view.findByRole('button', { name: '跳轉到第 2 輪' })
     const scroller = view.container.querySelector('[data-chat-flow]')!.parentElement as HTMLDivElement
     const metrics = installScrollMetrics(scroller, 1_000, 300)
     scroller.scrollTop = 700
@@ -3835,7 +3835,7 @@ describe('ChatView', () => {
     })
 
     expect(scroller.scrollTop).toBe(900)
-    expect(view.getByRole('button', { name: '跳转到第 2 轮' }).getAttribute('aria-current')).toBe('true')
+    expect(view.getByRole('button', { name: '跳轉到第 2 輪' }).getAttribute('aria-current')).toBe('true')
     expect(rect).not.toHaveBeenCalled()
   })
 
@@ -3972,10 +3972,10 @@ describe('ChatView', () => {
   it('paging button loads older and shows its busy label', () => {
     const h = makeHarness({ nodes: [user(5, 'later')] }, { hasMore: true })
     const view = render(<h.ChatView {...h.props} />)
-    fireEvent.click(view.getByText('加载更早'))
+    fireEvent.click(view.getByText('載入更早'))
     expect(h.loadOlder).toHaveBeenCalledTimes(1)
     act(() => { h.setSession({ loadingOlder: true }) })
-    expect(view.getByText('加载中…')).toBeTruthy()
+    expect(view.getByText('載入中…')).toBeTruthy()
   })
 
   it('shows open error and loading states', () => {
@@ -3984,10 +3984,10 @@ describe('ChatView', () => {
       openError: { code: 'gateway/internal', message: 'boom' } as never,
     })
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.getByText(/历史加载失败：boom/)).toBeTruthy()
+    expect(view.getByText(/歷史載入失敗：boom/)).toBeTruthy()
     const loading = makeHarness({}, { openState: 'loading' })
     const lv = render(<loading.ChatView {...loading.props} />)
-    expect(lv.getByText('载入历史…')).toBeTruthy()
+    expect(lv.getByText('載入歷史…')).toBeTruthy()
   })
 
   it('renders command nodes as durable rows: settled text, error state, executing spinner, run-less soft-fall', () => {
@@ -3999,7 +3999,7 @@ describe('ChatView', () => {
     expect(view.getByText('plan')).toBeTruthy()
     expect(view.queryByText('/plan')).toBeNull()
     expect(view.queryByText('/plan now')).toBeNull()
-    expect(view.getByText('已进入 plan mode')).toBeTruthy()
+    expect(view.getByText('已進入 plan mode')).toBeTruthy()
 
     // Error outcome flips the row state; a text-less error gets the default copy.
     const failed = makeHarness({
@@ -4008,8 +4008,8 @@ describe('ChatView', () => {
     const fv = render(<failed.ChatView {...failed.props} />)
     expect(fv.container.querySelector('[data-state="error"]')).not.toBeNull()
     expect(fv.container.querySelector('[data-state="error"] svg')).not.toBeNull()
-    expect(fv.getByText('指令失败')).toBeTruthy()
-    expect(fv.getByText('失败')).toBeTruthy()
+    expect(fv.getByText('指令失敗')).toBeTruthy()
+    expect(fv.getByText('失敗')).toBeTruthy()
 
     // Still executing: running state with the executing copy.
     const executing = makeHarness({
@@ -4017,8 +4017,8 @@ describe('ChatView', () => {
     })
     const xv = render(<executing.ChatView {...executing.props} />)
     expect(xv.container.querySelector('[data-state="running"]')).not.toBeNull()
-    expect(xv.getByText('执行中…')).toBeTruthy()
-    expect(xv.getByText('运行中')).toBeTruthy()
+    expect(xv.getByText('執行中…')).toBeTruthy()
+    expect(xv.getByText('執行中')).toBeTruthy()
 
     // Cross-window soft-fall (run page truncated): generic title, outcome preserved.
     const orphan = makeHarness({
@@ -4037,7 +4037,7 @@ describe('ChatView', () => {
     })
     const h = makeHarness({ nodes: [running] })
     const view = render(<h.ChatView {...h.props} />)
-    expect(view.getByText('正在压缩…')).toBeTruthy()
+    expect(view.getByText('正在壓縮…')).toBeTruthy()
     expect(view.container.querySelector('[data-state="running"]')).not.toBeNull()
 
     act(() => {
@@ -4053,18 +4053,18 @@ describe('ChatView', () => {
       })
     })
 
-    expect(view.queryByText('正在压缩…')).toBeNull()
-    expect(view.queryByText('上下文已压缩')).toBeNull()
-    expect(view.getByText('已压缩 16 条历史记录（约 11309 tokens）')).toBeTruthy()
+    expect(view.queryByText('正在壓縮…')).toBeNull()
+    expect(view.queryByText('上下文已壓縮')).toBeNull()
+    expect(view.getByText('已壓縮 16 條歷史記錄（約 11309 tokens）')).toBeTruthy()
     const row = view.getByRole('button', { name: /compact/ })
     expect(row.getAttribute('aria-expanded')).toBe('false')
     expect(row.querySelector('[data-compaction-icon="context"]')).not.toBeNull()
     expect(row.querySelector('[data-compaction-disclosure="collapsed"]')).not.toBeNull()
-    expect(view.queryByText('保留的事实。')).toBeNull()
+    expect(view.queryByText('保留的事實。')).toBeNull()
     fireEvent.click(row)
     expect(row.getAttribute('aria-expanded')).toBe('true')
     expect(row.querySelector('[data-compaction-disclosure="expanded"]')).not.toBeNull()
-    expect(view.getByRole('heading', { name: '压缩摘要' })).toBeTruthy()
+    expect(view.getByRole('heading', { name: '壓縮摘要' })).toBeTruthy()
   })
 
   it('keeps /compact no-history and error settlements on the generic command row', () => {

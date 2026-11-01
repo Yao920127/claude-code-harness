@@ -1,11 +1,11 @@
-<!-- 英文源文件由 scripts/gen-doc-graphs.ts 生成；本中文文件是通过双语配对维护的经评审对侧。
-     更新时先运行 `pnpm run gen-doc-graphs` 更新英文，再更新本文件并运行 `pnpm run verify-translation-pairing --write docs/tool-execution-pipeline.md` 重新记录配对。 -->
+<!-- 英文原始檔由 scripts/gen-doc-graphs.ts 生成；本中文件案是透過雙語配對維護的經評審對側。
+     更新時先執行 `pnpm run gen-doc-graphs` 更新英文，再更新本檔案並執行 `pnpm run verify-translation-pairing --write docs/tool-execution-pipeline.md` 重新記錄配對。 -->
 
-# 工具执行流水线
+# 工具執行流水線
 
 [English](tool-execution-pipeline.md) | 中文
 
-此图展示策略、钩子、沙箱、文件系统守卫、结果重写、最终结果观察和 UI 渲染在不改变循环的情况下何时运行。`tools/pre-execute` waterfall（瀑布式事件）首先运行，随后是单调守卫，然后运行 `tools/execute` 和 `tools/post-execute` waterfall；这三个 waterfall 可以改写一次调用。由定义自身控制的 `projectContent` 在执行后策略之前安装已准备内容；`finalizeContent` 和 `tools/result` 在此之后运行。
+此圖展示策略、掛鉤、沙箱、檔案系統守衛、結果重寫、最終結果觀察和 UI 渲染在不改變迴圈的情況下何時執行。`tools/pre-execute` waterfall（瀑布式事件）首先執行，隨後是單調守衛，然後執行 `tools/execute` 和 `tools/post-execute` waterfall；這三個 waterfall 可以改寫一次呼叫。由定義自身控制的 `projectContent` 在執行後策略之前安裝已準備內容；`finalizeContent` 和 `tools/result` 在此之後執行。
 
 ```mermaid
 flowchart TD
@@ -62,6 +62,6 @@ flowchart TD
   allResults --> context
 ```
 
-文件系统的先读后编辑检查位于 `tool-fs` 之下，通过 `fs/*` 事件实现。通用的前置／后置 waterfall 承载钩子与审批策略；`ctx.approval` 在单调守卫之前处理询问，而不得重新排序的所有者策略仍作为已注册的守卫。超时等环绕分发关注点对 `tools/execute` 进行包装。注册表会对候选结果进行无损快照；如果快照失败，则会先将失败规范化，之后再由可见定义中已随快照固定的 `finalizeContent` 回调强制执行其同步且仅限内容的不变式。随后，`tools/result` 会观察不可变、可由 JSON 无损表示的结果。这样一来，钩子便可跨越不同工具系列，而无需让工具与某个策略服务耦合。PTC mode 会将保留的 `run_code` 传输及其序列化子调用都送入流水线；子调用携带父级 token、记录 `tool/ptc-dispatch`、将拒绝呈现为具有约束力的驳回，并省略 `additionalContexts`，以保持调用与结果相邻。
+檔案系統的先讀後編輯檢查位於 `tool-fs` 之下，透過 `fs/*` 事件實作。通用的前置／後置 waterfall 承載掛鉤與審批策略；`ctx.approval` 在單調守衛之前處理詢問，而不得重新排序的所有者策略仍作為已註冊的守衛。超時等環繞分發關注點對 `tools/execute` 進行包裝。註冊表會對候選結果進行無損快照；如果快照失敗，則會先將失敗規範化，之後再由可見定義中已隨快照固定的 `finalizeContent` 回呼強制執行其同步且僅限內容的不變式。隨後，`tools/result` 會觀察不可變、可由 JSON 無損表示的結果。這樣一來，掛鉤便可跨越不同工具系列，而無需讓工具與某個策略服務耦合。PTC mode 會將保留的 `run_code` 傳輸及其序列化子呼叫都送入流水線；子呼叫攜帶父級 token、記錄 `tool/ptc-dispatch`、將拒絕呈現為具有約束力的駁回，並省略 `additionalContexts`，以保持呼叫與結果相鄰。
 
-维护模式：英文源文件包含人工维护的 Mermaid 流程图，并由生成器写出；本中文文件作为经评审对侧通过双语配对维护。确切的工具 schema 与事件签名位于生成的目录中。
+維護模式：英文原始檔包含人工維護的 Mermaid 流程圖，並由生成器寫出；本中文件案作為經評審對側透過雙語配對維護。確切的工具 schema 與事件簽名位於生成的目錄中。

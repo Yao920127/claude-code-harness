@@ -1,14 +1,14 @@
-# LLM 适配器
+# LLM 介面卡
 
 [English](llm-adapter.md) | 中文
 
-本文介绍如何为 Harness 接入新的模型提供方。
+本文介紹如何為 Harness 接入新的模型提供者。
 
 ## 概述
 
-LLM 适配器是一个继承 `LlmAdapter` 并实现 `stream()` 方法的类，它会将 Harness 的提供方无关请求转换为具体提供方的 API 调用，并将响应转换回 Harness 分片。
+LLM 介面卡是一個繼承 `LlmAdapter` 並實作 `stream()` 方法的類，它會將 Harness 的提供者無關請求轉換為具體提供者的 API 呼叫，並將回應轉換回 Harness 分片。
 
-## 最小实现
+## 最小實作
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -49,9 +49,9 @@ export function apply(ctx: Context, config: Config) {
 }
 ```
 
-## StreamChunk 协议
+## StreamChunk 協定
 
-`stream()` 必须按以下协议生成分片：
+`stream()` 必須按以下協定生成分片：
 
 ```ts
 import { brandString } from '@deepseek-ai/dsh-brand'
@@ -101,27 +101,27 @@ async function* exampleChunks(): AsyncIterable<StreamChunk> {
 }
 ```
 
-### 关键规则
+### 關鍵規則
 
-- 每个 `block-start` 都必须有与之对应的 `block-end`。
-- `index` 从 0 开始递增，用于标识内容块的顺序。
-- `tool-call-delta` 的 `argumentsDelta` 是原始 JSON 文本的增量，可以在一个分片中完整生成，也可以分多个分片生成。
-- `finish` 必须是最后一个分片。
-- `usage` 必须在 `finish` 之前生成。
+- 每個 `block-start` 都必須有與之對應的 `block-end`。
+- `index` 從 0 開始遞增，用於標識內容塊的順序。
+- `tool-call-delta` 的 `argumentsDelta` 是原始 JSON 文字的增量，可以在一個分片中完整生成，也可以分多個分片生成。
+- `finish` 必須是最後一個分片。
+- `usage` 必須在 `finish` 之前生成。
 
 ## GenerateOptions
 
-`stream()` 接收仓库导出的 `GenerateOptions`。它包含模型、适配器拥有的推理强度 ID、对话历史、系统提示词、工具 schema、生成参数、停止序列和中止信号；完整字段以 `@deepseek-ai/dsh-llm` 导出的 TypeScript 类型为准。适配器必须将支持的字段映射到具体 API；如果无法支持某个字段，应抛出带稳定 code 的 `LlmError`，不得静默丢弃。
+`stream()` 接收儲存庫匯出的 `GenerateOptions`。它包含模型、介面卡擁有的推理強度 ID、對話歷史、系統提示詞、工具 schema、生成參數、停止序列和中止訊號；完整欄位以 `@deepseek-ai/dsh-llm` 匯出的 TypeScript 型別為準。介面卡必須將支援的欄位對映到具體 API；如果無法支援某個欄位，應丟擲帶穩定 code 的 `LlmError`，不得靜默丟棄。
 
-请覆写 `resolveModel(provider, model, signal?)`，在一次查询中返回确切的提供方／模型身份以及可选的 `context` 和 `reasoning` 元数据。推理元数据包含有序的不透明 ID、展示名称，以及可选的配置默认值；请保留适配器给出的权威可选列表，包括其上游能力 API 返回的 `off`，不要将这些值提升为核心枚举。异步查询必须响应该可选信号，使取消和资源释放过程完全停稳。服务会校验聚合结果，并在调用 `stream()` 前拒绝显式指定但不受支持的推理强度；省略 `reasoning` 表示该模型没有可选的推理强度能力。
+請覆寫 `resolveModel(provider, model, signal?)`，在一次查詢中返回確切的提供者／模型身份以及可選的 `context` 和 `reasoning` 中繼資料。推理中繼資料包含有序的不透明 ID、展示名稱，以及可選的設定預設值；請保留介面卡給出的權威可選列表，包括其上游能力 API 返回的 `off`，不要將這些值提升為核心列舉。非同步查詢必須回應該可選訊號，使取消和資源釋放過程完全停穩。服務會驗證聚合結果，並在呼叫 `stream()` 前拒絕顯式指定但不受支援的推理強度；省略 `reasoning` 表示該模型沒有可選的推理強度能力。
 
-## 注册适配器
+## 註冊介面卡
 
 ```ts ignore-check
 ctx.llm.registerAdapter(['my-provider'], adapter)
 ```
 
-第一个参数是该适配器处理的提供方路由列表。`GenerateOptions.provider` 选择已注册的适配器，`GenerateOptions.model` 则传入由适配器拥有、无需在生命周期启动时注册的模型 id。适配器能够向选择器公布模型选项时，请覆写 `listModels()`。
+第一個參數是該介面卡處理的提供者路由列表。`GenerateOptions.provider` 選擇已註冊的介面卡，`GenerateOptions.model` 則傳入由介面卡擁有、無需在生命週期啟動時註冊的模型 id。介面卡能夠向選擇器公佈模型選項時，請覆寫 `listModels()`。
 
 ## 在 cordis.yml 中使用
 
@@ -142,18 +142,18 @@ ctx.llm.registerAdapter(['my-provider'], adapter)
         model: my-model-v1
 ```
 
-## 实战参考
+## 實戰參考
 
-仓库中包含以下两个完整实现：
+儲存庫中包含以下兩個完整實作：
 
-- `packages/llm/llm-deepseek/` — 使用 Messages API 的 DeepSeek 适配器
-- `packages/llm/llm-pi-ai/` — Pi AI 适配器（不同的 API 格式）
+- `packages/llm/llm-deepseek/` — 使用 Messages API 的 DeepSeek 介面卡
+- `packages/llm/llm-pi-ai/` — Pi AI 介面卡（不同的 API 格式）
 
-对比这两个已交付的适配器，可以看到同一套 harness 契约如何在不同提供方 SDK 之上实现。
+對比這兩個已交付的介面卡，可以看到同一套 harness 契約如何在不同提供者 SDK 之上實作。
 
-## 错误处理
+## 錯誤處理
 
-适配器应通过带稳定 code 的 `LlmError` 抛出传输和协议故障；agent loop（智能体循环）会保留该错误及其 code，用于诊断和策略处理。不要依赖普通 `Error` 被自动转换。每个提供方 HTTP 请求还必须合并 `attributionHeaders()`，并传递 `options.signal`。
+介面卡應透過帶穩定 code 的 `LlmError` 丟擲傳輸和協定故障；agent loop（智慧代理迴圈）會保留該錯誤及其 code，用於診斷和策略處理。不要依賴普通 `Error` 被自動轉換。每個提供者 HTTP 請求還必須合併 `attributionHeaders()`，並傳遞 `options.signal`。
 
 ```ts
 import {

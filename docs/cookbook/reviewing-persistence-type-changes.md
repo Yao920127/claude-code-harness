@@ -58,9 +58,9 @@ Save the input as `.artifacts/persistence-change.prose.json`, creating the ignor
     "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts: 10 tests passed."
   },
   "zh": {
-    "summary": "将持久化的钩子审计决策改为可选。",
-    "compatibility": "已有记录仍然有效。钩子执行消费 HookOutput，不回放此审计字段。写入方仍然记录决策，缺失不代表 pass。",
-    "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts：10 个测试通过。"
+    "summary": "將持久化的掛鉤審計決策改為可選。",
+    "compatibility": "已有記錄仍然有效。掛鉤執行消費 HookOutput，不回放此審計欄位。寫入方仍然記錄決策，缺失不代表 pass。",
+    "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts：10 個測試透過。"
   }
 }
 ```

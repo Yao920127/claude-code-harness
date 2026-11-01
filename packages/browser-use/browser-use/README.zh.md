@@ -1,5 +1,5 @@
 ---
-description: "浏览器操作 提供方 注册服务，供一次启用一个浏览器后端的部署使用。"
+description: "瀏覽器操作 提供者 註冊服務，供一次啟用一個瀏覽器後端的部署使用。"
 kind: "package-reference"
 ---
 
@@ -9,82 +9,82 @@ kind: "package-reference"
 
 ## 概述
 
-部署可以一次启用一个浏览器操作 提供方。加载另一个 提供方 时会报错并指出已注册的 提供方 名称。各 提供方 提供自己的工具并拥有浏览器会话。本包不添加模型可见工具或浏览器操作。
+部署可以一次啟用一個瀏覽器操作 提供者。載入另一個 提供者 時會報錯並指出已註冊的 提供者 名稱。各 提供者 提供自己的工具並擁有瀏覽器工作階段。本包不新增模型可見工具或瀏覽器操作。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [延伸阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [延伸閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 Cordis 组合中，将服务与所选 提供方 一起挂载一次：
+在 Cordis 組合中，將服務與所選 提供者 一起掛載一次：
 
 ```yaml
 - name: '@deepseek-ai/dsh-browser-use'
 ```
 
-服务没有配置。提供方 插件注入 `browserUse` 并调用 `ctx.browserUse.register(BrowserUseProviderName(name))`；品牌类型从 `@deepseek-ai/dsh-browser-use/brand` 导出。返回的 effect 清理器释放该注册。
+服務沒有設定。提供者 外掛注入 `browserUse` 並呼叫 `ctx.browserUse.register(BrowserUseProviderName(name))`；品牌型別從 `@deepseek-ai/dsh-browser-use/brand` 匯出。返回的 effect 清理器釋放該註冊。
 
-提供方 在释放注册前停止接收工具调用、关闭资源并等待自己拥有的工作结束。`ctx.browserUse.providerName` 在释放之前持续报告已注册名称。
+提供者 在釋放註冊前停止接收工具呼叫、關閉資源並等待自己擁有的工作結束。`ctx.browserUse.providerName` 在釋放之前持續報告已註冊名稱。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现内部机制 — 点击展开</summary>
+<summary>實作內部機制 — 點選展開</summary>
 
-一个私有名称拥有该注册位。Cordis effect 在插件卸载时移除贡献；重复调用清理器不能移除后续注册。[源码](src/index.ts) 不包含浏览器对象、操作接口、资源生命周期或 提供方 选择器。
+一個私有名稱擁有該註冊位。Cordis effect 在外掛解除安裝時移除貢獻；重複呼叫清理器不能移除後續註冊。[原始碼](src/index.ts) 不包含瀏覽器物件、操作介面、資源生命週期或 提供者 選擇器。
 
-不发布运行时不变量伴随入口：注册表只有一个权威字段，不暴露可能与之偏离的独立维护观测值。所属测试覆盖重复注册拒绝与插件清理。
+不釋出執行時不變數伴隨入口：註冊表只有一個權威欄位，不暴露可能與之偏離的獨立維護觀測值。所屬測試覆蓋重複註冊拒絕與外掛清理。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 延伸阅读
+## 延伸閱讀
 
-- [浏览器操作](../../../docs/subsystems/browser-use.zh.md) — 提供方 选择与 Session 所有权。
-- [Playwright MCP 提供方](../../experimental/browser-use-playwright-mcp/README.zh.md) — Playwright 浏览器工具。
-- [Chrome DevTools MCP 提供方](../../experimental/browser-use-chrome-devtools-mcp/README.zh.md) — Chromium 检查与控制。
-- [Stagehand 提供方](../../experimental/browser-use-stagehand-native/README.zh.md) — 支持 AI（人工智能）辅助的原生浏览器操作。
+- [瀏覽器操作](../../../docs/subsystems/browser-use.zh.md) — 提供者 選擇與 Session 所有權。
+- [Playwright MCP 提供者](../../experimental/browser-use-playwright-mcp/README.zh.md) — Playwright 瀏覽器工具。
+- [Chrome DevTools MCP 提供者](../../experimental/browser-use-chrome-devtools-mcp/README.zh.md) — Chromium 檢查與控制。
+- [Stagehand 提供者](../../experimental/browser-use-stagehand-native/README.zh.md) — 支援 AI（人工智慧）輔助的原生瀏覽器操作。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为此注册表只记录 提供方 名称。
+無，因為此註冊表只記錄 提供者 名稱。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-注册不改变模型请求。提供方 拥有的工具与指导决定各自对请求前缀的影响。
+註冊不改變模型請求。提供者 擁有的工具與指導決定各自對請求字首的影響。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-服务在其 Cordis 服务实例内限制注册。
+服務在其 Cordis 服務實例內限制註冊。
 
-- **浏览器所有权** — 提供方 拥有浏览器资源并实施 Session 隔离；此服务不保存浏览器状态。
-- **提供方 选择** — 配置选择 提供方；模型不能在运行时切换已注册后端。
+- **瀏覽器所有權** — 提供者 擁有瀏覽器資源並實施 Session 隔離；此服務不儲存瀏覽器狀態。
+- **提供者 選擇** — 設定選擇 提供者；模型不能在執行時切換已註冊後端。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文 — 点击展开</summary>
+<summary>維護者工作上下文 — 點選展開</summary>
 
-无。
+無。
 
 </details>

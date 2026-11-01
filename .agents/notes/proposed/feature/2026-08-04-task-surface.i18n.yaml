@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/feature/2026-08-04-task-surface.md
 /agent-note-task-surface-for-structured-session-interaction:
   en: fd53b5c7554236fc
-  zh: 6ff988716b5624cf
+  zh: 0d5a3015e76cc358
 /agent-note-task-surface-for-structured-session-interaction/problem:
   en: a4c96dae864a027e
-  zh: 432e6de734832966
+  zh: 98227e1543f7a5aa
 /agent-note-task-surface-for-structured-session-interaction/proposal:
   en: 7f8d02649159a3a6
-  zh: f63982864b6ad943
+  zh: 9a9f543599d358af
 /agent-note-task-surface-for-structured-session-interaction/declarative-model:
   en: 9650ef8f65049b7d
-  zh: c0925b701a6b681c
+  zh: 51edf9344bb24bfe
 /agent-note-task-surface-for-structured-session-interaction/tool-and-presentation-contract:
   en: 836a14533a918d95
-  zh: 0522d458992c5355
+  zh: f7ee73935489b007
 /agent-note-task-surface-for-structured-session-interaction/submission-contract:
   en: 480c434bc0825063
-  zh: bbcace61f8d82188
+  zh: e1406cfe298531a3
 /agent-note-task-surface-for-structured-session-interaction/lifecycle-and-recovery:
   en: 26beff219ebb0ce9
-  zh: 664d4c76adf56175
+  zh: 76b78fed0e5b7fd7
 /agent-note-task-surface-for-structured-session-interaction/package-boundaries-and-dependencies:
   en: 02aad87dd24d822f
-  zh: 9d49b5fa588e5e11
+  zh: afd186f6a702462a
 /agent-note-task-surface-for-structured-session-interaction/delivery-stages:
   en: 25d0951356cf412d
-  zh: 994619aaab7c2348
+  zh: af1502c3e60f13a8
 /agent-note-task-surface-for-structured-session-interaction/alternatives-considered:
   en: 121ceb5920763980
-  zh: 7d7c1576faf4f331
+  zh: f7080403090a656f
 /agent-note-task-surface-for-structured-session-interaction/acceptance-criteria:
   en: e5db6c885617dd5d
-  zh: 0a54a00d2a195bfb
+  zh: bba33f9a05b1e66e
 /agent-note-task-surface-for-structured-session-interaction/risks:
   en: 84a297fcdef9aaad
-  zh: a9ce38547d650e55
+  zh: 50d76669f9671c62

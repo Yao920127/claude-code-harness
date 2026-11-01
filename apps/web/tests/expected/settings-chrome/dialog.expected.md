@@ -1,47 +1,47 @@
-- dialog "设置":
+- dialog "設定":
   - navigation:
-    - text: 设置
-    - button "通用设置"
+    - text: 設定
+    - button "通用設定"
     - button "模型"
-    - button "内置插件"
-    - button "Agent 预设"
-  - button "打开配置文件"
-  - button "关闭"
-  - text: 权限 选择新会话的默认权限模式
-  - button "工作区内修改"
-  - text: 语言
+    - button "內建外掛"
+    - button "Agent 預設"
+  - button "開啟設定檔"
+  - button "關閉"
+  - text: 權限 選擇新工作階段的預設權限模式
+  - button "工作區內修改"
+  - text: 語言
   - button "中文"
-  - text: 外观
-  - button "浅色"
+  - text: 外觀
+  - button "淺色"
   - button "深色"
-  - button "跟随系统" [pressed]
-  - text: 字号大小 仅影响会话内容的字号 14
-  - button "增大字号"
-  - button "减小字号"
-  - text: px 工作步骤展示 选择希望看到多少工具调用细节
-  - button "标准"
-  - text: 性能与用量 选择性能与用量信息展示的详细程度
-  - button "详细"
-  - text: 代码工作工具 开启后显示轨迹、本轮代码差异，新对话中的 Agent 预设切换
-  - switch "代码工作工具"
-  - text: 快捷键
-  - paragraph: 查看和编辑当前可用的快捷键和输入操作
-  - button "编辑快捷键"
-  - text: 繁忙时的发送行为 智能体运行时 Enter 键和发送按钮的行为；Cmd/Ctrl+Enter 使用另一行为
-  - button "排队发送"
-  - text: 命令行工具 cch 在 Claude Code Harness 源代码目录的终端中运行下面的命令，就能在任何终端输入 cch 启动。
+  - button "跟隨系統" [pressed]
+  - text: 字號大小 僅影響工作階段內容的字號 14
+  - button "增大字號"
+  - button "減小字號"
+  - text: px 工作步驟展示 選擇希望看到多少工具呼叫細節
+  - button "標準"
+  - text: 效能與用量 選擇效能與用量資訊展示的詳細程度
+  - button "詳細"
+  - text: 程式碼工作工具 開啟後顯示軌跡、本輪程式碼差異，新對話中的 Agent 預設切換
+  - switch "程式碼工作工具"
+  - text: 快捷鍵
+  - paragraph: 檢視和編輯目前可用的快捷鍵和輸入操作
+  - button "編輯快捷鍵"
+  - text: 繁忙時的傳送行為 智慧代理執行時 Enter 鍵和傳送按鈕的行為；Cmd/Ctrl+Enter 使用另一行為
+  - button "排隊傳送"
+  - text: 命令列工具 cch 在 Claude Code Harness 原始碼目錄的終端中執行下面的命令，就能在任何終端輸入 cch 啟動。
   - code: pnpm install && pnpm run build && pnpm --filter @deepseek-ai/dsh link --global
-  - button "复制"
+  - button "複製"
   - term:
     - code: cch
-  - definition: 打开 Claude Code Harness 桌面应用
+  - definition: 開啟 Claude Code Harness 桌面應用
   - term:
     - code: cch web
-  - definition: 在浏览器中打开网页版
+  - definition: 在瀏覽器中開啟網頁版
   - term:
     - code: cch plugin add <package>
-  - definition: 安装插件
+  - definition: 安裝外掛
   - term:
     - code: cch config
-  - definition: 显示当前配置
-  - text: 当前版本：{{version}}
+  - definition: 顯示目前設定
+  - text: 目前版本：{{version}}

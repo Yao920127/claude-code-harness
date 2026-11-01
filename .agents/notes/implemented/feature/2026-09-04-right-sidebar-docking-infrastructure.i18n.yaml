@@ -4,40 +4,40 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-04-right-sidebar-docking-infrastructure.md
 /agent-note-right-sidebar-docking-infrastructure:
   en: 850908fd93d39f7e
-  zh: 371d9b0d946c2cb4
+  zh: 152e01beaa99b964
 /agent-note-right-sidebar-docking-infrastructure/problem:
   en: dae256ae605900f2
-  zh: 11e9c51126ad836c
+  zh: da75762f77c036d3
 /agent-note-right-sidebar-docking-infrastructure/decision:
   en: a30a377c8df0e654
-  zh: f2577e74c6be3e88
+  zh: 59529e6083427568
 /agent-note-right-sidebar-docking-infrastructure/decision/package-topology:
   en: 7dfd8ad3a822b421
-  zh: 338151c69866c7d5
+  zh: c7be6dd4212fd3af
 /agent-note-right-sidebar-docking-infrastructure/decision/layout-engine:
   en: af79bc03cd8e8f72
-  zh: 88145221570301bf
+  zh: 131ea3624edd3a08
 /agent-note-right-sidebar-docking-infrastructure/decision/the-frame-s-right-column:
   en: 78c5b5bf86d0293a
-  zh: 28b8856d88b78d1e
+  zh: 7c90bf72c910f01f
 /agent-note-right-sidebar-docking-infrastructure/decision/state:
   en: ca4979e7536ef544
-  zh: 972dd9336daf1ed5
+  zh: 65a4dcce0a6844cb
 /agent-note-right-sidebar-docking-infrastructure/decision/beyond-the-surface:
   en: 82b5fd9d88c3ea43
-  zh: d8581e996abbe034
+  zh: a02a7b80f5b37c6a
 /agent-note-right-sidebar-docking-infrastructure/decision/entry-points-and-removals:
   en: e9cb121a18afadc2
-  zh: 37ff2e89d5641e11
+  zh: 68f74cc4d8baa614
 /agent-note-right-sidebar-docking-infrastructure/alternatives-considered:
   en: 6569babd25fc0599
-  zh: f9d93c937b2cad60
+  zh: 959296e4a4481091
 /agent-note-right-sidebar-docking-infrastructure/consequences:
   en: deb3f1a934c49958
-  zh: 040de05a3c602858
+  zh: 46b2f81acdb4c60f
 /agent-note-right-sidebar-docking-infrastructure/testing:
   en: c7ca930dede9f819
-  zh: 44c76a4faefe7268
+  zh: 1de0b0522fb84574
 /agent-note-right-sidebar-docking-infrastructure/deferred:
   en: 6c2cd149c6ecf2b0
-  zh: b2673dee64de6bd6
+  zh: 53eb8804a2856bb9

@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/session-projection.md
 /session-projections:
   en: a6ab5134ca1771fd
-  zh: 523039a9d84e3f97
+  zh: 3da5a044fa36779a
 /session-projections/the-unit:
   en: fad897af8b8839ff
-  zh: 3c68c5256973bc39
+  zh: a3a8810e0a45c740
 /session-projections/the-snapshot-and-the-change-feed:
   en: a49a57c600c3cbd0
-  zh: c92f00b8a9d71bad
+  zh: 745edd834f0e52ef
 /session-projections/the-registry-ctx-sessionprojections:
   en: 50e79c1bc16abb63
-  zh: 200ecbf0e4ab19d2
+  zh: e4d70082351d3095

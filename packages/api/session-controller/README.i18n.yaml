@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write packages/api/session-controller/README.md
 /:
   en: 82789442228fc62a
-  zh: f1d511ad838187de
+  zh: 9182fe94449d9b25
 /session-controller:
   en: fb78499ee63f41b9
   zh: 6fff916b1fa26314
 /session-controller/summary:
   en: 4914824c347fdab5
-  zh: 684a7b7fa970c39f
+  zh: fcf44bb36ca77c3e
 /session-controller/table-of-contents:
   en: 1fdf707322fb6996
-  zh: 0204f7e9d4aa3cce
+  zh: c315d1b30335a11f
 /session-controller/use-this-package:
   en: f90b40fed2e75206
-  zh: 0d809d3470c1900e
+  zh: 2731ad258b57f9cb
 /session-controller/client-references:
   en: 41bdda1ac32df558
-  zh: aa5d0e325924066b
+  zh: b46a6bf6267e1419
 /session-controller/session-media-references:
   en: 266ab2b1e2fec542
-  zh: b3450ae28a1e0baf
+  zh: b888eb61759cfa63
 /session-controller/configuration:
   en: 5c4c4224074e38a8
-  zh: e0b0edac65c88ff4
+  zh: acf230aaed4de6bf
 /session-controller/model-experience:
   en: 30b917bf822bb4df
-  zh: b0b023b5b526c317
+  zh: 869a4f11621ccaf4
 /session-controller/model-experience/kv-cache-effect:
   en: 22fc0c9dbedd3bb6
-  zh: fad040ca55fd0e0a
+  zh: dbd463451bde5f2d
 /session-controller/known-limitations-and-deferred-work:
   en: e896bfcaf38b4f6c
-  zh: 55a4eba838f166de
+  zh: 3dfacffef0badffa
 /session-controller/known-limitations-and-deferred-work/dev-note:
   en: 68e0dfe4588c5b88
-  zh: db51b435611bded1
+  zh: 8e280863d77babc2

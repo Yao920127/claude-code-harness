@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-08-17-subagent-message-settlement-ordering.md
 /agent-note-child-agent-messages-precede-their-settlement-notices:
   en: b46c628c107fbdfe
-  zh: 829b71dae5e73e0f
+  zh: 469432a0480243fa
 /agent-note-child-agent-messages-precede-their-settlement-notices/problem:
   en: 82e6c4d5db64a818
-  zh: 3610573f1521409e
+  zh: e5cf699663efae8e
 /agent-note-child-agent-messages-precede-their-settlement-notices/decision:
   en: 94a44265545ff53e
-  zh: 06db7c1bacb6b120
+  zh: 38335202578f4f9a
 /agent-note-child-agent-messages-precede-their-settlement-notices/decision/ordering-across-parent-states:
   en: 2bceedd85283e6ed
-  zh: 6c11a3519fe9b941
+  zh: 16146afd8ec2e0de
 /agent-note-child-agent-messages-precede-their-settlement-notices/decision/verification:
   en: b2d6b562739ea61c
-  zh: 33f56b3220b00953
+  zh: 447bd158cdc13e99
 /agent-note-child-agent-messages-precede-their-settlement-notices/alternatives-considered:
   en: a81f4efd6c32125e
-  zh: d38898c6b3352ad8
+  zh: 2f512fb99ac17118
 /agent-note-child-agent-messages-precede-their-settlement-notices/consequences:
   en: 3b8532d48efb656a
-  zh: 971bced6f6bed59d
+  zh: 05f652aac0ee3483

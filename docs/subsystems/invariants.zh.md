@@ -1,12 +1,12 @@
-# 运行时不变式
+# 執行時不變式
 
 [English](invariants.md) | 中文
 
-[dsh-invariants](../../packages/runtime-diagnostics/invariants) 是面向包自有运行时不变式检查的可配置注册表服务（`ctx.invariants`）。它是一个 support 组的包，不是三包能力 seam，也不属于 agent loop（智能体循环）主干：注册表拥有选择逻辑、名称保留、子 fiber 生命周期和归因到包的失败，而每个工作区包发布一个 `./invariant` 配套插件，以自己确切的 npm 包名注册检查。检查可以断言什么（权威事件流或可变数据，绝不是服务或方法是否存在）是 [AGENTS.md](../../AGENTS.md#conventions) 中的运行时不变式约定。
+[dsh-invariants](../../packages/runtime-diagnostics/invariants) 是面向包自有執行時不變式檢查的可設定註冊表服務（`ctx.invariants`）。它是一個 support 組的包，不是三包能力 seam，也不屬於 agent loop（智慧代理迴圈）主幹：註冊表擁有選擇邏輯、名稱保留、子 fiber 生命週期和歸因到包的失敗，而每個工作區包釋出一個 `./invariant` 配套外掛，以自己確切的 npm 包名註冊檢查。檢查可以斷言什麼（權威事件流或可變資料，絕不是服務或方法是否存在）是 [AGENTS.md](../../AGENTS.md#conventions) 中的執行時不變式約定。
 
-源码：[`packages/runtime-diagnostics/invariants/src/index.ts`](../../packages/runtime-diagnostics/invariants/src/index.ts)
+原始碼：[`packages/runtime-diagnostics/invariants/src/index.ts`](../../packages/runtime-diagnostics/invariants/src/index.ts)
 
-## 选择
+## 選擇
 
 ```ts type-equiv
 /** Runtime invariant selection configured on the service plugin. */
@@ -20,9 +20,9 @@ interface Config {
 }
 ```
 
-一个包被选中的条件是：服务已启用，允许列表为空或至少一个模式匹配其完整 npm 名称，且没有任何阻止列表模式匹配；阻止列表匹配优先于允许列表匹配。条目用 `new RegExp(source)` 编译：除非模式自带 `^` 和 `$`，匹配不锚定；`/pattern/flags` 语法不被解析。校验在服务启动时明确报错：空白、首尾带空白、重复或无效的条目会抛出异常，而不是被跳过。有效模式可以不匹配任何当前已加载的包，因此后续加载与 HMR（热模块替换）保持确定性；过滤器在服务生命周期内固定不变（[README](../../packages/runtime-diagnostics/invariants/README.zh.md)）。
+一個包被選中的條件是：服務已啟用，允許列表為空或至少一個模式匹配其完整 npm 名稱，且沒有任何阻止列表模式匹配；阻止列表匹配優先於允許列表匹配。條目用 `new RegExp(source)` 編譯：除非模式自帶 `^` 和 `$`，匹配不錨定；`/pattern/flags` 語法不被解析。驗證在服務啟動時明確報錯：空白、首尾帶空白、重複或無效的條目會丟擲異常，而不是被跳過。有效模式可以不匹配任何目前已載入的包，因此後續載入與 HMR（熱模組替換）保持確定性；過濾器在服務生命週期內固定不變（[README](../../packages/runtime-diagnostics/invariants/README.zh.md)）。
 
-## 安装器
+## 安裝器
 
 ```ts type-equiv
 /**
@@ -48,15 +48,15 @@ interface InvariantInstaller {
 }
 ```
 
-被启用的安装器在专属的子 Cordis fiber 中运行；`installer.inject` 声明该 fiber 可以访问的服务，注册成功之前会先等待安装器同步或异步地执行完毕。`fail(message)` 抛出 `InvariantError`（`extends Error`，带稳定的 `code: 'INVARIANT'`、所属 `packageName`，以及前缀为 `invariant violated by "<package>": …` 的消息），因此违规可归因，而注册表无需导入任何产品包。
+被啟用的安裝器在專屬的子 Cordis fiber 中執行；`installer.inject` 宣告該 fiber 可以存取的服務，註冊成功之前會先等待安裝器同步或非同步地執行完畢。`fail(message)` 丟擲 `InvariantError`（`extends Error`，帶穩定的 `code: 'INVARIANT'`、所屬 `packageName`，以及字首為 `invariant violated by "<package>": …` 的訊息），因此違規可歸因，而註冊表無需匯入任何產品包。
 
-## 服务
+## 服務
 
-`ctx.invariants.register(packageName, installer)` 为完整 npm 包名保留唯一一个活跃注册，并返回其绑定到 effect 的 disposer。即使过滤器使安装器保持不活跃，保留依然成立，因此两个插件绝不可能静默地认领同一个包名；重复、空白或含空白字符的名称会抛出异常。安装器失败会原子地 dispose（资源释放）子 fiber 并释放保留。服务拥有每个注册 fiber，而返回的 disposer 同时属于配套插件的 fiber：卸载任一侧都会移除监听器、trace 状态和保留项，因此配套插件可以重载并再次注册同一名称，不留残余状态。
+`ctx.invariants.register(packageName, installer)` 為完整 npm 包名保留唯一一個活躍註冊，並返回其繫結到 effect 的 disposer。即使過濾器使安裝器保持不活躍，保留依然成立，因此兩個外掛絕不可能靜默地認領同一個包名；重複、空白或含空白字元的名稱會丟擲異常。安裝器失敗會原子地 dispose（資源釋放）子 fiber 並釋放保留。服務擁有每個註冊 fiber，而返回的 disposer 同時屬於配套外掛的 fiber：解除安裝任一側都會移除監聽器、trace 狀態和保留項，因此配套外掛可以過載並再次註冊同一名稱，不留殘餘狀態。
 
-## 配套插件约定
+## 配套外掛約定
 
-每个工作区包都拥有一个 `./invariant` 配套插件（[包约定](../../packages/AGENTS.md)）；发布与注册是穷尽式的，但刻意不合成断言。只有当包拥有某个可观察事件或某种可变数据关系时，配套插件才安装检查；否则它导出一个空安装器，其起始注释以 `No runtime invariant:` 开头，针对该包具体解释为什么没有可检查项。`pnpm run verify-package-invariants` 机械地拒绝「生成文件」标记、无解释的空安装器、遗漏或忽略报告器的非空安装器、错误的注册名称，以及不完整的导出、发布、依赖或打包接线（[机械规则 Agent Note](../../.agents/notes/implemented/architecture/2026-07-19-package-invariant-runtime-contracts.zh.md)）。可执行配套插件的目录与标准组合方式见[包 README](../../packages/runtime-diagnostics/invariants/README.zh.md)。
+每個工作區包都擁有一個 `./invariant` 配套外掛（[包約定](../../packages/AGENTS.md)）；釋出與註冊是窮盡式的，但刻意不合成斷言。只有當包擁有某個可觀察事件或某種可變資料關係時，配套外掛才安裝檢查；否則它匯出一個空安裝器，其起始註解以 `No runtime invariant:` 開頭，針對該包具體解釋為什麼沒有可檢查項。`pnpm run verify-package-invariants` 機械地拒絕「生成檔案」標記、無解釋的空安裝器、遺漏或忽略報告器的非空安裝器、錯誤的註冊名稱，以及不完整的匯出、釋出、依賴或打包接線（[機械規則 Agent Note](../../.agents/notes/implemented/architecture/2026-07-19-package-invariant-runtime-contracts.zh.md)）。可執行配套外掛的目錄與標準組合方式見[包 README](../../packages/runtime-diagnostics/invariants/README.zh.md)。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

@@ -1,14 +1,14 @@
-# 会话标题
+# 工作階段標題
 
 [English](session-title.md) | 中文
 
-[`@deepseek-ai/dsh-session-title`](../../packages/session/session-title) 所拥有的持久、后写覆盖的标题状态与可选异步提供方词汇。共享 LLM（大语言模型）辅助组件负责精确的辅助请求记录。各包 README 负责时序、回退、失败与 fork 行为；生成的[持久化日志事件目录](../persistence-catalog.zh.md)负责完整的事件声明。
+[`@deepseek-ai/dsh-session-title`](../../packages/session/session-title) 所擁有的持久、後寫覆蓋的標題狀態與可選非同步提供者詞彙。共享 LLM（大語言模型）輔助元件負責精確的輔助請求記錄。各包 README 負責時序、退回、失敗與 fork 行為；生成的[持久化日誌事件目錄](../persistence-catalog.zh.md)負責完整的事件宣告。
 
-源码：[`packages/session/session-title/src/index.ts`](../../packages/session/session-title/src/index.ts)、[`packages/session/session-title-llm/src/index.ts`](../../packages/session/session-title-llm/src/index.ts)
+原始碼：[`packages/session/session-title/src/index.ts`](../../packages/session/session-title/src/index.ts)、[`packages/session/session-title-llm/src/index.ts`](../../packages/session/session-title-llm/src/index.ts)
 
-## 持久标题状态
+## 持久標題狀態
 
-提供方生成修订时会记录 `SessionTitleProviderId`。`SessionTitleEventData` 列出生成标题时使用的精确人类消息 seq，`SessionTitleSnapshot` 则加入 `ctx.sessionTitle.get()` 与 `foldSessionTitle()` 返回的持久事件封装信息。`title` 投影的版本 1 状态与客户端视图都只保留标题字符串或 `null`，因此既有持久化缓存行仍可读取。
+提供者生成修訂時會記錄 `SessionTitleProviderId`。`SessionTitleEventData` 列出生成標題時使用的精確人類訊息 seq，`SessionTitleSnapshot` 則加入 `ctx.sessionTitle.get()` 與 `foldSessionTitle()` 返回的持久事件封裝資訊。`title` 投影的版本 1 狀態與用戶端檢視都只保留標題字串或 `null`，因此既有持久化快取行仍可讀取。
 
 ```ts type-equiv
 /** Identifies one session-title provider registration. */
@@ -62,9 +62,9 @@ interface SessionTitleSnapshot extends SessionTitleEventData {
 }
 ```
 
-## 辅助请求记录
+## 輔助請求記錄
 
-共享 LLM 辅助组件会在调用模型前，记录每一项已经过验证且可分发的标题请求。即使后续生成失败，载荷仍会复现模型可见的系统输入与消息输入、路由、输出上限、提供方归属和源消息归因。
+共享 LLM 輔助元件會在呼叫模型前，記錄每一項已經過驗證且可分發的標題請求。即使後續生成失敗，載荷仍會復現模型可見的系統輸入與訊息輸入、路由、輸出上限、提供者歸屬和源訊息歸因。
 
 ```ts type-equiv
 /** Exact model-visible request recorded before one auxiliary title dispatch. */
@@ -84,9 +84,9 @@ interface SessionTitleLlmRequestEventData {
 }
 ```
 
-## 提供方输入与输出
+## 提供者輸入與輸出
 
-服务会对截至某一修订的合格消息创建快照。提供方返回的 seq 仅可来自该请求；由服务负责的接纳流程会验证顺序、规范化标题、强制执行字节上限，并追加标题及其来源消息 seq 和来源类型。
+服務會對截至某一修訂的合格訊息建立快照。提供者返回的 seq 僅可來自該請求；由服務負責的接納流程會驗證順序、規範化標題、強制執行位元組上限，並追加標題及其來源訊息 seq 和來源型別。
 
 ```ts type-equiv
 /** One eligible human text message exposed to title providers. */

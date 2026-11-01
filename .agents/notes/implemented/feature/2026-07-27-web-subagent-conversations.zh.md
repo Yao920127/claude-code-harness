@@ -1,119 +1,119 @@
-# Agent Note: Web subagent 目录与用户继续交互
+# Agent Note: Web subagent 目錄與使用者繼續互動
 
 Status: implemented
 
 [English](2026-07-27-web-subagent-conversations.md) | 中文
 
-## 问题
+## 問題
 
-由会话支撑的 subagent 具有持久化身份、持久化 transcript（文本记录）与直接 child 目录，但普通会话谱系无法将它们与 fork 区分开，也无法证明其描述符 mode 与继续执行授权。否则，绑定到 agent（智能体）的通用 Host 操作可能在其直接 parent 继续执行 owner 之外恢复或驱动 child。
+由工作階段支撐的 subagent 具有持久化身份、持久化 transcript（文字記錄）與直接 child 目錄，但普通工作階段譜系無法將它們與 fork 區分開，也無法證明其描述符 mode 與繼續執行授權。否則，繫結到 agent（智慧代理）的通用 Host 操作可能在其直接 parent 繼續執行 owner 之外恢復或驅動 child。
 
-浏览器必须遵守[可继续 subagent 约定](../../implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)：一个可继续 child 在进程内最多只能有一项 Activation，只能通过确切的存活直接 parent 接受后续工作，并将 agent inbox 用作唯一的 FIFO。查看历史不得创建 Activation。inbox 消息一经接受，HTTP 调用方既不拥有其执行过程，也不会获得取消句柄。
+瀏覽器必須遵守[可繼續 subagent 約定](../../implemented/feature/2026-07-28-continuable-subagent-conversations.zh.md)：一個可繼續 child 在程序內最多只能有一項 Activation，只能透過確切的存活直接 parent 接受後續工作，並將 agent inbox 用作唯一的 FIFO。檢視歷史不得建立 Activation。inbox 訊息一經接受，HTTP 呼叫方既不擁有其執行過程，也不會獲得取消控制代碼。
 
-UI 还必须保留[持久化目录](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)的成员与 mode。Web 投影会添加确切 child Agent driver 的 `running` 或 `inactive` 状态。这两种活动状态都不是持久化结果，也不承诺继续执行会成功。
+UI 還必須保留[持久化目錄](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)的成員與 mode。Web 投影會新增確切 child Agent driver 的 `running` 或 `inactive` 狀態。這兩種活動狀態都不是持久化結果，也不承諾繼續執行會成功。
 
-## 决策
+## 決策
 
-Web 产品通过页头的当前 title 谱系区域公开选中会话中由会话支撑的直接 subagent。用户可以懒加载展开后代目录，并在现有对话区域中打开任一 mode。one-shot child 永久只读。可继续 child 只有在其确切直接 parent agent 存活时才接受用户后续消息；否则，其持久化 transcript 仍然可读，并附带恢复说明。
+Web 產品透過頁頭的目前 title 譜系區域公開選中工作階段中由工作階段支撐的直接 subagent。使用者可以懶載入展開後代目錄，並在現有對話區域中開啟任一 mode。one-shot child 永久只讀。可繼續 child 只有在其確切直接 parent agent 存活時才接受使用者後續訊息；否則，其持久化 transcript 仍然可讀，並附帶恢復說明。
 
-同一个页头行还可以把 child 作为 `dsh-resource://subagentchat/session/<childSessionId>?parent=<parentSessionId>&mode=<mode>` 在右侧 Sidebar 打开。打开时优先使用独立分栏；无法分栏时回退到当前分栏。Sidebar tab 使用共享 Conversation Component Factory 渲染并省略宽度控制，因此主对话与嵌入式对话共用一套组装，而不共享布局界面。
+同一個頁頭行還可以把 child 作為 `dsh-resource://subagentchat/session/<childSessionId>?parent=<parentSessionId>&mode=<mode>` 在右側 Sidebar 開啟。開啟時優先使用獨立分欄；無法分欄時退回到目前分欄。Sidebar tab 使用共享 Conversation Component Factory 渲染並省略寬度控制，因此主對話與嵌入式對話共用一套組裝，而不共享佈局介面。
 
-每个打开的 child 都携带目录派生地址 `{ parentSessionId, childSessionId, mode }`。选择专用历史与提示词传输的是包含 mode 的地址，而不是谱系或粗粒度 origin 标记。历史操作会从持久化存储读取会话，而不触发激活。可继续提示词通过 `subagent.prompt` 携带 Queue 或 Steer 投递，并在 inbox 接受消息时以 `{ messageId }` 成功返回；它不会公开 Activation、等待完成或返回结果。相邻 Agent 的模型消息使用单独拥有的固定 Steer 操作。
+每個開啟的 child 都攜帶目錄派生地址 `{ parentSessionId, childSessionId, mode }`。選擇專用歷史與提示詞傳輸的是包含 mode 的地址，而不是譜系或粗粒度 origin 標記。歷史操作會從持久化儲存讀取工作階段，而不觸發啟用。可繼續提示詞透過 `subagent.prompt` 攜帶 Queue 或 Steer 投遞，並在 inbox 接受訊息時以 `{ messageId }` 成功返回；它不會公開 Activation、等待完成或返回結果。相鄰 Agent 的模型訊息使用單獨擁有的固定 Steer 操作。
 
-通用 Host 领域遵守同一所有权边界。`session.history` 与 `session.fork` 的源端会读取已附加 Session 或检查持久化存储，而不获取 Agent；history 从所检查的确切前缀归并冷态投影值，fork 则发布一个普通的独立会话。绑定到 Agent 的通用会话、命令与目标路由会对由会话支撑的 subagent 返回 `agent-busy`；显式 id 的 `session.create` 接纳与仅针对已附加会话的队列控件亦然。拒绝分类器接受粗粒度 `origin` 标记、会话自身后缀中的 `subagent/descriptor`，或 parent 对其确切的存活运行时所有权；这些信号只会阻止通用路径取得所有权，绝不取代目录 mode 或直接 parent 授权。
+通用 Host 領域遵守同一所有權邊界。`session.history` 與 `session.fork` 的源端會讀取已附加 Session 或檢查持久化儲存，而不取得 Agent；history 從所檢查的確切字首歸併冷態投影值，fork 則釋出一個普通的獨立工作階段。繫結到 Agent 的通用工作階段、命令與目標路由會對由工作階段支撐的 subagent 返回 `agent-busy`；顯式 id 的 `session.create` 接納與僅針對已附加工作階段的佇列控制元件亦然。拒絕分類器接受粗粒度 `origin` 標記、工作階段自身字尾中的 `subagent/descriptor`，或 parent 對其確切的存活執行時所有權；這些訊號只會阻止通用路徑取得所有權，絕不取代目錄 mode 或直接 parent 授權。
 
-停止一个已寻址 child 绝不回退到 `session.cancel`。浏览器 prompt 投递只负责消息被 inbox 接受前的准入，不授予取消句柄；正在运行的可继续 child 通过专用的 `subagent.interrupt` 路由停止，遵循[当前轮次中断约定](2026-08-06-continuable-subagent-interrupt.zh.md)，该约定会停放并保留待处理工作，而不是将其丢弃。one-shot child 在 Web 端仍不可取消。
+停止一個已定址 child 絕不退回到 `session.cancel`。瀏覽器 prompt 投遞只負責訊息被 inbox 接受前的准入，不授予取消控制代碼；正在執行的可繼續 child 透過專用的 `subagent.interrupt` 路由停止，遵循[目前輪次中斷約定](2026-08-06-continuable-subagent-interrupt.zh.md)，該約定會停放並保留待處理工作，而不是將其丟棄。one-shot child 在 Web 端仍不可取消。
 
-本决策涵盖 Web 端发现、transcript 查看与经 parent 授权的用户继续交互。它不会让 subagent 成为用户独立所有的对象；这类产品仍然属于[交互式 side session](../../proposed/feature/2026-07-08-interactive-side-sessions.zh.md)。
+本決策涵蓋 Web 端發現、transcript 檢視與經 parent 授權的使用者繼續互動。它不會讓 subagent 成為使用者獨立所有的物件；這類產品仍然屬於[互動式 side session](../../proposed/feature/2026-07-08-interactive-side-sessions.zh.md)。
 
-## 设计上下文
+## 設計上下文
 
-Figma 中的 [subagent 列表](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=383-14602&p=f)、[层级展开](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=383-15917&p=f)与 [child 对话](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=388-18584&p=f)画框是非规范性的交互与视觉参考。本记录负责生命周期、协议与失败语义。
+Figma 中的 [subagent 列表](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=383-14602&p=f)、[層級展開](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=383-15917&p=f)與 [child 對話](https://www.figma.com/design/jRBBK7zBgcszdVWQ0Fh5J8/Harness?node-id=388-18584&p=f)畫框是非規範性的互動與視覺參考。本記錄負責生命週期、協定與失敗語義。
 
-| 设计意图 | 已交付约定 |
+| 設計意圖 | 已交付約定 |
 | --- | --- |
-| 会话页头可打开紧凑的 child 列表。 | 触发器统计 parent catalog service 返回的健康直接条目。 |
-| 选择一行会复用对话 UI。 | 已寻址历史绝不激活 child；只有 parent 存活的可继续行才保留普通输入框。 |
-| 嵌套 agent 会逐层展开。 | row 在自身 catalog 成功加载为空前保持可展开；展开时只加载该直接 catalog，并保留 row 的 parent 地址。 |
-| 条目显示 label、状态、token 用量与活跃耗时，同时避免侧边栏条目重复。 | mode 与 `running`／`inactive` 活动状态会同时以文字和视觉呈现；可选 title、持久化 token 用量与活跃轮次耗时来自列表保留的投影值。紧凑耗时从一天起省略更小的单位，而悬停和无障碍名称仍保留精确的整秒数。`SessionHeader.origin` 会移除重复的导航条目，但不授予任何能力。 |
+| 工作階段頁頭可開啟緊湊的 child 列表。 | 觸發器統計 parent catalog service 返回的健康直接條目。 |
+| 選擇一行會複用對話 UI。 | 已定址歷史絕不啟用 child；只有 parent 存活的可繼續行才保留普通輸入框。 |
+| 巢狀 agent 會逐層展開。 | row 在自身 catalog 成功載入為空前保持可展開；展開時只載入該直接 catalog，並保留 row 的 parent 地址。 |
+| 條目顯示 label、狀態、token 用量與活躍耗時，同時避免側邊欄條目重複。 | mode 與 `running`／`inactive` 活動狀態會同時以文字和視覺呈現；可選 title、持久化 token 用量與活躍輪次耗時來自列表保留的投影值。緊湊耗時從一天起省略更小的單位，而懸停和無障礙名稱仍保留精確的整秒數。`SessionHeader.origin` 會移除重複的導航條目，但不授予任何能力。 |
 
-## 产品约定
+## 產品約定
 
-直接 catalog 有子项或读取失败时显示 child 数量控件；空目录缺席、加载中或成功读取为空时均隐藏该控件。普通会话会用斜杠分隔当前 title 和该控件。每一级 subagent 面包屑都将紧凑的 12px title 与固定显示的双向箭头组合成一个控件：当前面包屑使用主标签颜色和 500 字重，祖先则使用三级标签颜色和 400 字重。悬停组合控件 150ms 后会打开其直接 parent 目录；浮层菜单具有短暂的跨越宽限时间，ArrowDown 保留为键盘入口。点击祖先会取消待触发的悬停、关闭已打开的目录，并且只向上导航。每个直接 parent 目录都可切换 sibling，并会加粗其选中行；目录 label 优先于可选的会话摘要 title，缺失的切换器目录在交互时加载。只有当前 subagent 会追加自己的直接 child 数量控件。过长的 title 会在固定箭头之前截断。触发器报告直接 catalog 的总数与运行数。普通侧边栏 row 隐藏 origin 为 subagent 的 Session，并从同一份已加载 catalog map 读取直接运行 child 数；Session summary 提供 activity，但绝不创建 membership。运行中的直接 child 使用共享的三级灰色 ongoing loading。待处理交互优先于 parent 的运行中状态；二者无论哪一项存在都会保持为主要状态，而直接 child activity 则成为悬停与无障碍状态中的第二项。普通 Workspace 行存在待处理的审批、计划审阅或问题时，会用紧凑的「待批准」「计划待审」或「待回答」替换相对时间；悬停与无障碍详情仍保留完整状态和相对时间。两种主要状态均不存在时，直接 child activity 优先于未查看的完成提醒；最后一个运行中的直接 child 停止后，该提醒会恢复。tree row 在 child catalog 缺席、加载中或失败时保持可展开，只有 catalog 成功加载为空后才成为已知叶子。加载时显示通用提示，不会从 summary 生成占位 row。tree 会呈现 continuable 与 one-shot row；one-shot 的可选 label 缺失时，回退到其 Session id。
+直接 catalog 有子項或讀取失敗時顯示 child 數量控制元件；空目錄缺席、載入中或成功讀取為空時均隱藏該控制元件。普通工作階段會用斜槓分隔目前 title 和該控制元件。每一級 subagent 麵包屑都將緊湊的 12px title 與固定顯示的雙向箭頭組合成一個控制元件：目前麵包屑使用主標籤顏色和 500 字重，祖先則使用三級標籤顏色和 400 字重。懸停組合控制元件 150ms 後會開啟其直接 parent 目錄；浮層選單具有短暫的跨越寬限時間，ArrowDown 保留為鍵盤入口。點選祖先會取消待觸發的懸停、關閉已開啟的目錄，並且只向上導航。每個直接 parent 目錄都可切換 sibling，並會加粗其選中行；目錄 label 優先於可選的工作階段摘要 title，缺失的切換器目錄在互動時載入。只有目前 subagent 會追加自己的直接 child 數量控制元件。過長的 title 會在固定箭頭之前截斷。觸發器報告直接 catalog 的總數與執行數。普通側邊欄 row 隱藏 origin 為 subagent 的 Session，並從同一份已載入 catalog map 讀取直接執行 child 數；Session summary 提供 activity，但絕不建立 membership。執行中的直接 child 使用共享的三級灰色 ongoing loading。待處理互動優先於 parent 的執行中狀態；二者無論哪一項存在都會保持為主要狀態，而直接 child activity 則成為懸停與無障礙狀態中的第二項。普通 Workspace 行存在待處理的審批、計劃審閱或問題時，會用緊湊的「待批准」「計劃待審」或「待回答」替換相對時間；懸停與無障礙詳情仍保留完整狀態和相對時間。兩種主要狀態均不存在時，直接 child activity 優先於未檢視的完成提醒；最後一個執行中的直接 child 停止後，該提醒會恢復。tree row 在 child catalog 缺席、載入中或失敗時保持可展開，只有 catalog 成功載入為空後才成為已知葉子。載入時顯示通用提示，不會從 summary 生成佔位 row。tree 會呈現 continuable 與 one-shot row；one-shot 的可選 label 缺失時，退回到其 Session id。
 
-`running` 表示子 Agent driver 正在处理工作；`inactive` 表示该 driver 空闲或不存在。Session 列表基线与状态事件提供活动状态，移除事件将完成的子代理标为 inactive 并保留其展示 projection。共享的父 `subagentCatalog` projection 提供成员关系。初始读取与推送值进入同一个 projection store，较新序号优先。[projection 消费决策](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 说明加载、重连与同步取舍。提示词响应仍是投递时的权威依据。
+`running` 表示子 Agent driver 正在處理工作；`inactive` 表示該 driver 空閒或不存在。Session 列表基線與狀態事件提供活動狀態，移除事件將完成的子代理標為 inactive 並保留其展示 projection。共享的父 `subagentCatalog` projection 提供成員關係。初始讀取與推送值進入同一個 projection store，較新序號優先。[projection 消費決策](../simplification/2026-09-08-web-subagent-catalog-projections.zh.md) 說明載入、重連與同步取捨。提示詞回應仍是投遞時的權威依據。
 
-健康行会复用列表镜像中保留的标准会话投影。token 用量数值会汇总持久化日志中四个互不重叠的 `tokenUsage` 桶。`subagentTiming` 会在每个描述符处重置，使继承的 fork 种子不会计入 child 总量；它会累加已完成的 `turn/start` → `turn/end` 时段，并携带未结束轮次同一切面的 `active.since` 和 `active.through` 边界。该轮次保持未结束期间，现有会话事件会推进 `active.through`；菜单不会增加单独的计时器或日志读取，且仅在有已知后代处于运行状态时才推进其本地时钟。不足一天时，菜单会以整秒格式化时间；达到一天后的视觉值最多保留两个相邻单位，其中月份按近似 30 天计算，年份按近似 365 天计算，而悬停信息与无障碍名称会保留精确的天／小时／分钟／秒耗时。对 inactive 行，菜单以 `active.through` 为被中断未结束轮次的上界，因此陈旧投影绝不会借用更新的会话元数据，且重新打开菜单绝不会让已完成工作重新计时。这两项指标都不蕴含持久化结果语义。
+健康行會複用列表映像中保留的標準工作階段投影。token 用量數值會彙總持久化日誌中四個互不重疊的 `tokenUsage` 桶。`subagentTiming` 會在每個描述符處重置，使繼承的 fork 種子不會計入 child 總量；它會累加已完成的 `turn/start` → `turn/end` 時段，並攜帶未結束輪次同一切面的 `active.since` 和 `active.through` 邊界。該輪次保持未結束期間，現有工作階段事件會推進 `active.through`；選單不會增加單獨的計時器或日誌讀取，且僅在有已知後代處於執行狀態時才推進其本地時鐘。不足一天時，選單會以整秒格式化時間；達到一天後的視覺值最多保留兩個相鄰單位，其中月份按近似 30 天計算，年份按近似 365 天計算，而懸停資訊與無障礙名稱會保留精確的天／小時／分鐘／秒耗時。對 inactive 行，選單以 `active.through` 為被中斷未結束輪次的上界，因此陳舊投影絕不會借用更新的工作階段中繼資料，且重新開啟選單絕不會讓已完成工作重新計時。這兩項指標都不蘊含持久化結果語義。
 
-选择一行后，系统会先记录其确切地址，再打开常驻客户端 `Session`。历史分页、事件 fold、工具渲染意图、title 与实时 mux 归并都会复用普通对话机制。面包屑导航只会沿 `origin: 'subagent'` 行的父链接逐级回溯，包含第一个普通 owner，并让普通 fork 保持单层。每一级 subagent 面包屑都会获得其直接 parent 的 sibling 目录，并在目录可用时采用其中的 label。从已寻址 subagent 创建 fork 时，会生成具有直接源谱系的普通 fork，并将其附加到最近拥有 Workspace 的祖先。目录是一棵 ARIA 树，支持懒加载式 ArrowRight／ArrowLeft 展开与折叠、线性 ArrowUp／ArrowDown 导航、Home／End、Escape 以及焦点恢复。
+選擇一行後，系統會先記錄其確切地址，再開啟常駐用戶端 `Session`。歷史分頁、事件 fold、工具渲染意圖、title 與即時 mux 歸併都會複用普通對話機制。麵包屑導航只會沿 `origin: 'subagent'` 行的父連結逐級回溯，包含第一個普通 owner，並讓普通 fork 保持單層。每一級 subagent 麵包屑都會獲得其直接 parent 的 sibling 目錄，並在目錄可用時採用其中的 label。從已定址 subagent 建立 fork 時，會生成具有直接源譜系的普通 fork，並將其附加到最近擁有 Workspace 的祖先。目錄是一棵 ARIA 樹，支援懶載入式 ArrowRight／ArrowLeft 展開與摺疊、線性 ArrowUp／ArrowDown 導航、Home／End、Escape 以及焦點恢復。
 
-one-shot 行始终会用文案替代输入框，说明执行记录为只读。可继续行仅在 `parentAvailable` 为 false 且 child 未在运行时如此；parent 离线但仍在运行的 child 保留普通输入框，并禁用其输入区和 Send 操作，让独立的 Stop 与在线 QueueDock 控制保持可达，停止后只读替代恢复。parent 在线时，即使 child 正在运行，普通 Enter／Cmd+Enter 偏好也会选择 Queue 或 best-effort Steer。对在线可继续 child，QueueDock Edit、Remove 与 Steer 在 parent 离线时仍可用；独立 Stop 经由 `subagent.interrupt` 路由（[中断约定](2026-08-06-continuable-subagent-interrupt.zh.md)）。提示词失败会通过普通错误行为保留草稿。
+one-shot 行始終會用文案替代輸入框，說明執行記錄為只讀。可繼續行僅在 `parentAvailable` 為 false 且 child 未在執行時如此；parent 離線但仍在執行的 child 保留普通輸入框，並停用其輸入區和 Send 操作，讓獨立的 Stop 與線上 QueueDock 控制保持可達，停止後只讀替代恢復。parent 線上時，即使 child 正在執行，普通 Enter／Cmd+Enter 偏好也會選擇 Queue 或 best-effort Steer。對線上可繼續 child，QueueDock Edit、Remove 與 Steer 在 parent 離線時仍可用；獨立 Stop 經由 `subagent.interrupt` 路由（[中斷約定](2026-08-06-continuable-subagent-interrupt.zh.md)）。提示詞失敗會透過普通錯誤行為保留草稿。
 
-已寻址 child 视图不提供绑定到 agent 的辅助控件。具体而言，模型选择器与 `/model` contribution 不会调用普通 `session.models` 或 `session.selectModel`；Host 也会拒绝任何意外调用，而不是在直接 parent 继续执行路径之外激活持久化 child 历史。
+已定址 child 檢視不提供繫結到 agent 的輔助控制元件。具體而言，模型選擇器與 `/model` contribution 不會呼叫普通 `session.models` 或 `session.selectModel`；Host 也會拒絕任何意外呼叫，而不是在直接 parent 繼續執行路徑之外啟用持久化 child 歷史。
 
-## 宿主适配器与协议约定
+## 主機介面卡與協定約定
 
-Session Controller 负责 catalog 与 history read；`@deepseek-ai/dsh-subagent` 负责 continuation control：
+Session Controller 負責 catalog 與 history read；`@deepseek-ai/dsh-subagent` 負責 continuation control：
 
-- `session.projections` 接受 `sessionId`，返回一次 live-preferred Session observation 的完整 projection 基线，不激活 Agent。Client 将基线写入标准 projection store；subagent 消费者选择 `subagentCatalog`。父 Agent 可用性来自 Session 列表摘要与生命周期事件。
-- `session.page` 与 `session.follow` 接受包含 mode 的完整地址。它们在观察到的 cut 上校验 child header、直接 parent、descriptor identity 与 mode，随后在不发布 Agent 的情况下返回普通 raw event、pagination、live reconciliation 与 Host projection baseline。
-- `subagent.prompt` 只接受 `mode: 'continuable'` 地址、`delivery: 'queue' | 'steer'` 与上传形态的 `PromptContentPart[]`；Host 在投递前把图片部分准入并持久化为持久引用（[图片投递](../../archived/bug-fix/2026-08-27-steer-followup-image-delivery.md)）。它要求确切的存活 parent，重新校验目录地址，使用 continuation manager 共享的人类投递准入，并返回已接受的 `MessageId`。
+- `session.projections` 接受 `sessionId`，返回一次 live-preferred Session observation 的完整 projection 基線，不啟用 Agent。Client 將基線寫入標準 projection store；subagent 消費者選擇 `subagentCatalog`。父 Agent 可用性來自 Session 列表摘要與生命週期事件。
+- `session.page` 與 `session.follow` 接受包含 mode 的完整地址。它們在觀察到的 cut 上驗證 child header、直接 parent、descriptor identity 與 mode，隨後在不釋出 Agent 的情況下返回普通 raw event、pagination、live reconciliation 與 Host projection baseline。
+- `subagent.prompt` 只接受 `mode: 'continuable'` 地址、`delivery: 'queue' | 'steer'` 與上傳形態的 `PromptContentPart[]`；Host 在投遞前把圖片部分准入並持久化為持久引用（[圖片投遞](../../archived/bug-fix/2026-08-27-steer-followup-image-delivery.md)）。它要求確切的存活 parent，重新驗證目錄地址，使用 continuation manager 共享的人類投遞准入，並返回已接受的 `MessageId`。
 
-网关会将 parent 或目录条目缺失、child 不可恢复或未授权、请求取消、图片准入或图片能力拒绝（`subagent/attachment-invalid`）以及继续执行准入暂时不可用等失败映射为类型化 RPC 错误。它不会公开描述符或提供方细节。list／prompt 竞态属于正常情况：权威依据是提示词操作的结果，而不是更早的可用性或活动快照。
+閘道會將 parent 或目錄條目缺失、child 不可恢復或未授權、請求取消、圖片准入或圖片能力拒絕（`subagent/attachment-invalid`）以及繼續執行准入暫時不可用等失敗對映為型別化 RPC 錯誤。它不會公開描述符或提供者細節。list／prompt 競態屬於正常情況：權威依據是提示詞操作的結果，而不是更早的可用性或活動快照。
 
-查看持久化历史本身不会创建 Agent。当后续消息物化冷态 child Activation 时，现有 Host 与 Session journal stream 会发布其生命周期与事件。重新连接时，系统通过 `session.follow` 重建已寻址窗口。
+檢視持久化歷史本身不會建立 Agent。當後續訊息物化冷態 child Activation 時，現有 Host 與 Session journal stream 會發布其生命週期與事件。重新連線時，系統透過 `session.follow` 重建已定址視窗。
 
-普通 `session.page` 与 `session.follow` 地址对于普通会话和 subagent 会话同样只执行观察，但它既不携带目录地址，也不授予继续执行权限。每条需要 Agent 的普通路由都会在恢复冷会话前经过共享所有权栅栏；`session.cancel` 保留该栅栏。`session.updateQueue` 只有一个目标本地例外：目标是在线 child，且其当前 projection identity 为 continuable 并来自自身的非 seed suffix；one-shot、缺失、未知、损坏、仅含 seed identity 或冷 child 仍受栅栏阻挡。
+普通 `session.page` 與 `session.follow` 地址對於普通工作階段和 subagent 工作階段同樣只執行觀察，但它既不攜帶目錄地址，也不授予繼續執行權限。每條需要 Agent 的普通路由都會在恢復冷工作階段前經過共享所有權柵欄；`session.cancel` 保留該柵欄。`session.updateQueue` 只有一個目標本地例外：目標是線上 child，且其目前 projection identity 為 continuable 並來自自身的非 seed suffix；one-shot、缺失、未知、損壞、僅含 seed identity 或冷 child 仍受柵欄阻擋。
 
-适配器仍位于生成的 Remote 命名空间之后；`dsh-host-webserver` 仍作为载体。浏览器代码通过现有连接包导入约定，绝不直接访问宿主 `ctx`，从而保持[已归档的 GUI RPC 分层决策](../../archived/architecture/2026-07-19-gui-layering-and-rpc-protocol.md)。
+介面卡仍位於生成的 Remote 名稱空間之後；`dsh-host-webserver` 仍作為載體。瀏覽器程式碼透過現有連線包匯入約定，絕不直接存取主機 `ctx`，從而保持[已歸檔的 GUI RPC 分層決策](../../archived/architecture/2026-07-19-gui-layering-and-rpc-protocol.md)。
 
-## 客户端对象层与呈现
+## 用戶端物件層與呈現
 
-不依赖 React 的运行时负责目录、单次并发刷新、保留的地址、可用性提示、传输选择，以及每个列表行当前投影值的引用稳定映射。再次选择已知 child 时会保留其地址，避免导航静默切换到普通会话 API。缺失的中间面包屑地址可以从已加载的祖先目录恢复，但在用户选择该面包屑之前不会保留为传输地址，也不会创建 scope。恢复的导航会持久化包含 mode 的完整地址。
+不依賴 React 的執行時負責目錄、單次並行重新整理、保留的地址、可用性提示、傳輸選擇，以及每個列表行目前投影值的引用穩定對映。再次選擇已知 child 時會保留其地址，避免導航靜默切換到普通工作階段 API。缺失的中間麵包屑地址可以從已載入的祖先目錄恢復，但在使用者選擇該麵包屑之前不會保留為傳輸地址，也不會建立 scope。恢復的導航會持久化包含 mode 的完整地址。
 
-目录通过标准 `useSessions` 快照传递。组件局部状态负责菜单可见性、已展开分支、焦点与悬停计时器。`ui-conversation` 为当前普通 title 和每一级 subagent 面包屑声明谱系 slot，传入纯数据形式的面包屑身份与显示文本，并为祖先传入向上导航回调；普通 title 由 render site 保留为回退。`@deepseek-ai/dsh-client-ui-subagent` 以直接 parent 目录导航占用每个谱系 slot，并根据普通 owner props 选择按原因区分的只读编辑器。组件只接收派生 props 与回调，绝不接收 `ctx`。
+目錄透過標準 `useSessions` 快照傳遞。元件區域性狀態負責選單可見性、已展開分支、焦點與懸停計時器。`ui-conversation` 為目前普通 title 和每一級 subagent 麵包屑宣告譜系 slot，傳入純資料形式的麵包屑身份與顯示文字，併為祖先傳入向上導航回呼；普通 title 由 render site 保留為退回。`@deepseek-ai/dsh-client-ui-subagent` 以直接 parent 目錄導航佔用每個譜系 slot，並根據普通 owner props 選擇按原因區分的只讀編輯器。元件只接收派生 props 與回呼，絕不接收 `ctx`。
 
-每个进程内 subagent child 都会在发布前写入 `SessionHeader.origin: 'subagent'`。会话列表摘要与增量 Host 帧会投影该字段，使分组和扁平侧边栏省略重复的 child 行，同时保留普通 fork。parent catalog projection 拥有 membership 与 tree structure 权威；descriptor identity 与精确 parent check 拥有 addressed history 与 continuation validation 权威。
+每個程序內 subagent child 都會在釋出前寫入 `SessionHeader.origin: 'subagent'`。工作階段列表摘要與增量 Host 幀會投影該欄位，使分組和扁平側邊欄省略重複的 child 行，同時保留普通 fork。parent catalog projection 擁有 membership 與 tree structure 權威；descriptor identity 與精確 parent check 擁有 addressed history 與 continuation validation 權威。
 
-该包现有的 `@label` source 仍然是独立的面向模型纯文本输入。它不会将 label 解析为地址，也不会获得继续执行语义。
+該包現有的 `@label` source 仍然是獨立的面向模型純文字輸入。它不會將 label 解析為地址，也不會獲得繼續執行語義。
 
-## 默认 Web 组合
+## 預設 Web 組合
 
-已交付的 Web 组合会在 JSONL 持久化旁挂载 SQLite 会话查询，并将 spawn 与 fork 后台委派配置为可继续模式。它还会挂载面向模型的 `send_message` 与 `list_agents` 适配器，以保持 coordinator 对等性，但 GUI 会通过宿主 RPC 域调用共享的 `SubagentRuntime`，而不是调用模型工具。one-shot child 仍在目录中可见且只读。
+已交付的 Web 組合會在 JSONL 持久化旁掛載 SQLite 工作階段查詢，並將 spawn 與 fork 後臺委派設定為可繼續模式。它還會掛載面向模型的 `send_message` 與 `list_agents` 介面卡，以保持 coordinator 對等性，但 GUI 會透過主機 RPC 域呼叫共享的 `SubagentRuntime`，而不是呼叫模型工具。one-shot child 仍在目錄中可見且只讀。
 
-## 备选方案
+## 備選方案
 
-**对已寻址 child 使用普通会话 API。** 不予采纳，因为通用历史不携带目录 mode 校验，而绑定到 Agent 的通用控件会有意拒绝 subagent，不会授予直接 parent 继续执行授权。
+**對已定址 child 使用普通工作階段 API。** 不予採納，因為通用歷史不攜帶目錄 mode 驗證，而繫結到 Agent 的通用控制元件會有意拒絕 subagent，不會授予直接 parent 繼續執行授權。
 
-**将适配器放入 webserver。** 不予采纳，因为目录与继续执行是通道无关的客户端能力；webserver 只承载已校验的消息。
+**將介面卡放入 webserver。** 不予採納，因為目錄與繼續執行是通道無關的用戶端能力；webserver 只承載已驗證的訊息。
 
-**把由 Host 支撑的文件与会话引用放进本包。** 不予采纳，因为目录与已寻址 child 呈现依赖 subagent 谱系，而组合引用发现是独立的 Host 功能，由 [`ui-reference`](../../../../packages/client/ui-reference/README.zh.md) 消费。
+**把由 Host 支撐的檔案與工作階段引用放進本包。** 不予採納，因為目錄與已定址 child 呈現依賴 subagent 譜系，而組合引用發現是獨立的 Host 功能，由 [`ui-reference`](../../../../packages/client/ui-reference/README.zh.md) 消費。
 
-**自动恢复缺失的 parent。** 不予采纳，因为继续执行要求确切的存活直接 parent。child 导航不得改变 parent 生命周期。
+**自動恢復缺失的 parent。** 不予採納，因為繼續執行要求確切的存活直接 parent。child 導航不得改變 parent 生命週期。
 
-**公开普通取消操作。** 不予采纳，因为已获 inbox 接受的轮次会比其准入请求存续更久，且在本决定当时，继续执行约定未公开具备安全授权的取消句柄。后来的[当前轮次中断约定](2026-08-06-continuable-subagent-interrupt.zh.md)以专用 subagent 路由补上了这项显式授权；回退到 `session.cancel` 仍被拒绝。
+**公開普通取消操作。** 不予採納，因為已獲 inbox 接受的輪次會比其准入請求存續更久，且在本決定當時，繼續執行約定未公開具備安全授權的取消控制代碼。後來的[目前輪次中斷約定](2026-08-06-continuable-subagent-interrupt.zh.md)以專用 subagent 路由補上了這項顯式授權；退回到 `session.cancel` 仍被拒絕。
 
-**只显示可继续 child。** 不予采纳，因为持久化目录有意描述由会话支撑的两种 mode。one-shot transcript 即使绝不接受后续消息，仍然有用。
+**只顯示可繼續 child。** 不予採納，因為持久化目錄有意描述由工作階段支撐的兩種 mode。one-shot transcript 即使絕不接受後續訊息，仍然有用。
 
-**根据谱系推断 mode 或侧边栏过滤。** 不予采纳，因为普通 fork 共享 `parentSession`。由描述符支撑的目录负责提供 mode；单独的 `origin` 标记只是低成本的导航分类器。
+**根據譜系推斷 mode 或側邊欄過濾。** 不予採納，因為普通 fork 共享 `parentSession`。由描述符支撐的目錄負責提供 mode；單獨的 `origin` 標記只是低成本的導航分類器。
 
-**构建预先加载的递归树或专用目录流。** 就当前规模而言不予采纳。展开控件按需加载缺失目录，现有 control 帧传递完整 projection 更新。
+**建置預先載入的遞迴樹或專用目錄流。** 就目前規模而言不予採納。展開控制元件按需載入缺失目錄，現有 control 幀傳遞完整 projection 更新。
 
-**让 child 在 parent 消失后仍能独立交互。** 不予采纳，因为独立生命周期与用户所有权需要 side session 语义。
+**讓 child 在 parent 消失後仍能獨立互動。** 不予採納，因為獨立生命週期與使用者所有權需要 side session 語義。
 
-## 测试
+## 測試
 
-- 宿主协议测试固定健康的直接 catalog schema、id 回显、mode 校验、非激活式历史、确切 parent 强制要求、FIFO 准入回执、取消与脱敏后的失败映射。
-- 通用 Host 测试固定在不发布 Agent 的情况下读取已附加与冷态历史及执行 fork、冷态投影归并、按描述符／origin／运行时 owner 拒绝、拒绝显式 id 接纳，以及直接队列控制栅栏。
-- 客户端对象测试固定已保留与已恢复的地址、one-shot 只读与取消拒绝、历史路由、可继续提示词与中断路由、屏蔽绑定到 agent 的模型控件、来自 Session 摘要与 Agent 销毁的实时活动状态、权威 catalog membership 与成员刷新。
-- jsdom 测试固定普通 title 分隔符、逐级合并的 subagent title 切换热区、嵌套 title 的 12px 字号、当前与祖先样式、选中行字重、目录 label 优先级、悬停延迟、向上点击抑制、保留箭头的截断、catalog 直接计数与 activity、侧边栏直接 child activity、行状态优先级、token 用量总计、精确到秒的运行中耗时与冻结后 inactive 耗时、采用自适应单位的长耗时及其精确无障碍文本、通用加载提示、混合 mode row、ready-empty 叶子判定、descendant 懒加载展开、直接 parent 地址、键盘行为与两种只读原因。
-- 无密钥的组装 Web 快照包含一个具有持久化 token 用量的 inactive 可继续 child、一个具有确定性长耗时的 inactive one-shot sibling 和一个持久化 grandchild；它会固定直接 catalog 数量、token 用量与计时行、自适应长耗时呈现及嵌套懒加载，在不激活的情况下打开持久化历史、准入一条用户 FIFO 后续消息、归并 child mux 事件，并证明 one-shot 历史仍然只读。另一个独立的组装场景会在 LLM seam 处保持一个真实的 child Agent 轮次进行中，同时固定页头和可见空闲 owner row 中的直接运行状态，随后在 teardown 期间取消该轮次。
-- 导航测试固定仅含 subagent 的面包屑导航、从 subagent 创建 fork 时的 Workspace 归属，以及 `origin: 'subagent'` 侧边栏过滤，同时不隐藏普通 fork。
+- 主機協定測試固定健康的直接 catalog schema、id 回顯、mode 驗證、非啟用式歷史、確切 parent 強制要求、FIFO 准入回執、取消與脫敏後的失敗對映。
+- 通用 Host 測試固定在不釋出 Agent 的情況下讀取已附加與冷態歷史及執行 fork、冷態投影歸併、按描述符／origin／執行時 owner 拒絕、拒絕顯式 id 接納，以及直接佇列控制柵欄。
+- 用戶端物件測試固定已保留與已恢復的地址、one-shot 只讀與取消拒絕、歷史路由、可繼續提示詞與中斷路由、遮蔽繫結到 agent 的模型控制元件、來自 Session 摘要與 Agent 銷燬的即時活動狀態、權威 catalog membership 與成員重新整理。
+- jsdom 測試固定普通 title 分隔符、逐級合併的 subagent title 切換熱區、巢狀 title 的 12px 字號、目前與祖先樣式、選中行字重、目錄 label 優先順序、懸停延遲、向上點選抑制、保留箭頭的截斷、catalog 直接計數與 activity、側邊欄直接 child activity、行狀態優先順序、token 用量總計、精確到秒的執行中耗時與凍結後 inactive 耗時、採用自適應單位的長耗時及其精確無障礙文字、通用載入提示、混合 mode row、ready-empty 葉子判定、descendant 懶載入展開、直接 parent 地址、鍵盤行為與兩種只讀原因。
+- 無金鑰的組裝 Web 快照包含一個具有持久化 token 用量的 inactive 可繼續 child、一個具有確定性長耗時的 inactive one-shot sibling 和一個持久化 grandchild；它會固定直接 catalog 數量、token 用量與計時行、自適應長耗時呈現及巢狀懶載入，在不啟用的情況下開啟持久化歷史、准入一條使用者 FIFO 後續訊息、歸併 child mux 事件，並證明 one-shot 歷史仍然只讀。另一個獨立的組裝情境會在 LLM seam 處保持一個真實的 child Agent 輪次進行中，同時固定頁頭和可見空閒 owner row 中的直接執行狀態，隨後在 teardown 期間取消該輪次。
+- 導航測試固定僅含 subagent 的麵包屑導航、從 subagent 建立 fork 時的 Workspace 歸屬，以及 `origin: 'subagent'` 側邊欄過濾，同時不隱藏普通 fork。
 
-## 后果
+## 後果
 
-- catalog read 只 fold 所选 parent 的 catalog projection。Web activity 来自 Session 摘要；token 用量与耗时复用 projection baseline 和 push，无需按 row 读取日志，投影读取保持 single-flight。
-- parent 可用性与 child activity 都是快照。列出之后，发布、dispose（资源释放）、其他发送方或其他进程都可能抢先改变状态；类型化提示词失败仍属预期行为。
-- child 可能在历史获取与 mux 订阅之间发布，因此现有序号归并也涵盖从冷态转为存活的已寻址路径。
-- 持久化 origin 会为 child header 与列表投影添加一个有意保持弱约束的产品分类字段；它不能变成授权捷径。
-- 除对正在运行的可继续 child 的当前轮次 Stop（[中断约定](2026-08-06-continuable-subagent-interrupt.zh.md)）之外，UI 不提供 child 取消、持久化结果、Activation 身份、删除或可独立交互的离线 mode，其文案不得暗示这些能力已经存在。活跃轮次耗时度量的是已记录工作，而非 Activation 驻留时间。
+- catalog read 只 fold 所選 parent 的 catalog projection。Web activity 來自 Session 摘要；token 用量與耗時複用 projection baseline 和 push，無需按 row 讀取日誌，投影讀取保持 single-flight。
+- parent 可用性與 child activity 都是快照。列出之後，釋出、dispose（資源釋放）、其他傳送方或其他程序都可能搶先改變狀態；型別化提示詞失敗仍屬預期行為。
+- child 可能在歷史取得與 mux 訂閱之間釋出，因此現有序號歸併也涵蓋從冷態轉為存活的已定址路徑。
+- 持久化 origin 會為 child header 與列表投影新增一個有意保持弱約束的產品分類欄位；它不能變成授權捷徑。
+- 除對正在執行的可繼續 child 的目前輪次 Stop（[中斷約定](2026-08-06-continuable-subagent-interrupt.zh.md)）之外，UI 不提供 child 取消、持久化結果、Activation 身份、刪除或可獨立互動的離線 mode，其文案不得暗示這些能力已經存在。活躍輪次耗時度量的是已記錄工作，而非 Activation 駐留時間。

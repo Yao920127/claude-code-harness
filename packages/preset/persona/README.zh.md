@@ -1,5 +1,5 @@
 ---
-description: "preset 挂载的可组装人设行，让单个 agent 拥有自己的系统提示词人设，供配置或排查它的用户与维护者阅读。"
+description: "preset 掛載的可組裝人設行，讓單個 agent 擁有自己的系統提示詞人設，供設定或排查它的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,25 +9,25 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-persona` 让单个 agent（智能体）拥有自己的人设：preset 挂载这一可组装的行来注册人设前缀与后缀段落，为该会话遮蔽部署级默认值。它还可以把前缀变成该会话的完整系统提示词、抑制所有其他段落，并可为该会话关闭动态 runtime-context 快照。请把它挂在 preset 组装内部——全局挂载会与提示词注册表自身的人设注册相撞并明确报错。没有这一行，preset 能改变 agent 的工具，却永远改不了它的身份。
+`dsh-persona` 讓單個 agent（智慧代理）擁有自己的人設：preset 掛載這一可組裝的行來註冊人設字首與字尾段落，為該工作階段遮蔽部署級預設值。它還可以把字首變成該工作階段的完整系統提示詞、抑制所有其他段落，並可為該工作階段關閉動態 runtime-context 快照。請把它掛在 preset 組裝內部——全域掛載會與提示詞註冊表自身的人設註冊相撞並明確報錯。沒有這一行，preset 能改變 agent 的工具，卻永遠改不了它的身份。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 preset 组装内部挂载本行，让该 preset 的会话拥有自己的人设。本行需要 agent scope：在 scope 之外挂载会与提示词注册表自身的 `deployment:persona-prefix` 注册相撞并明确报错——部署级人设已经有归属，而本行存在的意义正是为某一个 agent 遮蔽它。
+在 preset 組裝內部掛載本行，讓該 preset 的工作階段擁有自己的人設。本行需要 agent scope：在 scope 之外掛載會與提示詞註冊表自身的 `deployment:persona-prefix` 註冊相撞並明確報錯——部署級人設已經有歸屬，而本行存在的意義正是為某一個 agent 遮蔽它。
 
-### 配置
+### 設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-persona'
@@ -35,94 +35,94 @@ kind: "package-reference"
     prefix: You are a terse systems engineer who answers in short commands.
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `prefix` | 必填 | 作为 `deployment:persona-prefix` 段落渲染的人设文本 |
-| `suffix` | `''` | `deployment:persona-suffix` 模板；省略或空文本会遮蔽掉全局后缀 |
-| `complete` | `false` | 仅将渲染后的前缀用作系统提示词；忽略后缀 |
-| `includeRuntimeContext` | `true` | 是否为此 agent 作用域包含动态 runtime-context 快照；false 会抑制所有上下文贡献，但不禁用拥有它们的服务 |
+| `prefix` | 必填 | 作為 `deployment:persona-prefix` 段落渲染的人設文字 |
+| `suffix` | `''` | `deployment:persona-suffix` 範本；省略或空文字會遮蔽掉全域字尾 |
+| `complete` | `false` | 僅將渲染後的字首用作系統提示詞；忽略字尾 |
+| `includeRuntimeContext` | `true` | 是否為此 agent 作用域包含動態 runtime-context 快照；false 會抑制所有上下文貢獻，但不停用擁有它們的服務 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-persona)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-persona)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 人设行为
+### 人設行為
 
-人设 `prefix` 与 `suffix` 都是模板：完整的 `{{…}}` 组在提示词**渲染**时（而非组装时）严格解析为已注册的提示词变量。每个空模板仍会遮蔽对应的部署级段落，然后在渲染时消失。省略 `suffix` 时默认为空，不继承全局后缀。启用 `complete: true` 时，组装仍会解析上下文、工具、变量与协作式监听器，但提示词注册表会把这确切前缀恢复为唯一段落；身份、后缀、工具引导或监听器都无法追加提示词文本。启用 `includeRuntimeContext: false` 时，此作用域的上下文提供方不会被求值，组装监听器添加的上下文也会被丢弃。
+人設 `prefix` 與 `suffix` 都是範本：完整的 `{{…}}` 組在提示詞**渲染**時（而非組裝時）嚴格解析為已註冊的提示詞變數。每個空範本仍會遮蔽對應的部署級段落，然後在渲染時消失。省略 `suffix` 時預設為空，不繼承全域字尾。啟用 `complete: true` 時，組裝仍會解析上下文、工具、變數與協作式監聽器，但提示詞註冊表會把這確切字首恢復為唯一段落；身份、字尾、工具引導或監聽器都無法追加提示詞文字。啟用 `includeRuntimeContext: false` 時，此作用域的上下文提供者不會被求值，組裝監聽器新增的上下文也會被丟棄。
 
-### 何时使用
+### 何時使用
 
-当 preset 必须改变 agent 的身份、而不只是工具时，使用本行。部署级人设本身配置在 `dsh-system-prompt` 行上，不在这里；本行只用于为某一个 agent 遮蔽或替换它。
+當 preset 必須改變 agent 的身份、而不只是工具時，使用本行。部署級人設本身設定在 `dsh-system-prompt` 行上，不在這裡；本行只用於為某一個 agent 遮蔽或替換它。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 本行如何注册
+### 本行如何註冊
 
-本行使用注册表共享的名称与具名顺序来注册带作用域的人设前缀与后缀段落。两者分别遮蔽对应的部署默认值，而不是出现在其旁边；排序、插值与完整提示词执行归注册表所有。`includeRuntimeContext: false` 会调用 `ctx.systemPrompt.suppressRuntimeContext()`。
+本行使用註冊表共享的名稱與具名順序來註冊帶作用域的人設字首與字尾段落。兩者分別遮蔽對應的部署預設值，而不是出現在其旁邊；排序、插值與完整提示詞執行歸註冊表所有。`includeRuntimeContext: false` 會呼叫 `ctx.systemPrompt.suppressRuntimeContext()`。
 
-### 本行为何仅限 scope 内使用
+### 本行為何僅限 scope 內使用
 
-`dsh-system-prompt` 以自身配置持有全局人设并无条件注册 `deployment:persona-prefix`，因此一个进程只有一份。本行在 agent scope 之外与该项注册相撞，这是刻意的：本行的存在是因为 preset 无法自行挂载提示词注册表。
+`dsh-system-prompt` 以自身設定持有全域人設並無條件註冊 `deployment:persona-prefix`，因此一個程序只有一份。本行在 agent scope 之外與該項註冊相撞，這是刻意的：本行的存在是因為 preset 無法自行掛載提示詞註冊表。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`Config` schema、人设段落注册、runtime-context 抑制 |
-| — | 不发布运行时不变式伴生入口；本行不拥有事件流或可变运行时数据，而是注册提示词段落；身份、完整提示词强制执行、遮蔽与资源释放均归提示词注册表。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`Config` schema、人設段落註冊、runtime-context 抑制 |
+| — | 不釋出執行時不變式伴生入口；本行不擁有事件流或可變執行時資料，而是註冊提示詞段落；身份、完整提示詞強制執行、遮蔽與資源釋放均歸提示詞註冊表。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从 preset 组装逐步进入本行所供给的提示词注册表。
+當包級約定不夠用時閱讀以下頁面；它們從 preset 組裝逐步進入本行所供給的提示詞註冊表。
 
-- [agent-presets 包](../agent-preset-registry/README.zh.md)——本行挂载进的 preset 组装。
-- [系统提示词子系统](../../../docs/subsystems/system-prompt.zh.md)——段落、组装，以及本行所遮蔽的人设槽位。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-persona)——每个受支持配置字段及其源声明。
+- [agent-presets 包](../agent-preset-registry/README.zh.md)——本行掛載進的 preset 組裝。
+- [系統提示詞子系統](../../../docs/subsystems/system-prompt.zh.md)——段落、組裝，以及本行所遮蔽的人設槽位。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-persona)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 人设段落
+### 人設段落
 
-#### 模型看到什么
+#### 模型看到什麼
 
-位于 order `0` 的 `deployment:persona-prefix` 段落携带本行的 `prefix`；位于 order `10200` 的 `deployment:persona-suffix` 在第一方指导之后携带其 `suffix`。两者分别替换对应的部署默认值，并解析提示词变量。在完整模式下，模型只会看到渲染后的前缀段落作为系统提示词。Runtime context 默认保持启用；禁用后，新建 agent 不会收到来自沙箱策略、批准策略、委派或其他 system-prompt 上下文提供方的 runtime-context 快照。
+位於 order `0` 的 `deployment:persona-prefix` 段落攜帶本行的 `prefix`；位於 order `10200` 的 `deployment:persona-suffix` 在第一方指導之後攜帶其 `suffix`。兩者分別替換對應的部署預設值，並解析提示詞變數。在完整模式下，模型只會看到渲染後的字首段落作為系統提示詞。Runtime context 預設保持啟用；停用後，新建 agent 不會收到來自沙箱策略、批准策略、委派或其他 system-prompt 上下文提供者的 runtime-context 快照。
 
-#### Token 影响
+#### Token 影響
 
-对给定 preset 而言是固定的：该 agent 的每次请求都携带人设前缀与后缀的 token，其他 agent 一个都不带。空文本不贡献任何 token。完整模式会移除该 agent 的其他所有系统提示词 token。
+對給定 preset 而言是固定的：該 agent 的每次請求都攜帶人設字首與字尾的 token，其他 agent 一個都不帶。空文字不貢獻任何 token。完整模式會移除該 agent 的其他所有系統提示詞 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-渲染后的模板变量与文本不变时，前缀保持稳定。模型、前缀与工具一致时，后缀变化不改变前置指令。前缀变化会影响靠前的前缀；不保证提供方共享缓存。
+渲染後的範本變數與文字不變時，字首保持穩定。模型、字首與工具一致時，字尾變化不改變前置指令。字首變化會影響靠前的字首；不保證提供者共享快取。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本行何时不合适。它们是当前包约束，不是任务积压。
+這些限制說明本行何時不合適。它們是目前包約束，不是任務積壓。
 
-- **不支持全局挂载**——提示词注册表拥有未加 scope 的人设槽位，因此本行只能从带 scope 的组装中使用。要改变部署级人设，应在 `system-prompt` 行自身的配置中修改。
-- **runtime-context 抑制是全有或全无**——`includeRuntimeContext: false` 会关闭该作用域的所有上下文贡献，包括沙箱策略、批准策略与委派；没有按提供方过滤的选项。
+- **不支援全域掛載**——提示詞註冊表擁有未加 scope 的人設槽位，因此本行只能從帶 scope 的組裝中使用。要改變部署級人設，應在 `system-prompt` 行自身的設定中修改。
+- **runtime-context 抑制是全有或全無**——`includeRuntimeContext: false` 會關閉該作用域的所有上下文貢獻，包括沙箱策略、批准策略與委派；沒有按提供者過濾的選項。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

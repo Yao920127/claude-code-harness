@@ -1,14 +1,14 @@
-# 会话
+# 工作階段
 
 [English](session.md) | 中文
 
-[dsh-session](../../packages/core/session) 的内存事件溯源模型。`Session` 是一份由类型化 `SessionEvent` 组成的**仅追加日志**，是 agent（智能体）完整交互历史的唯一真源。LLM（大语言模型）消息历史从日志*派生*而来，从不单独存储；回放即从同一组事件重新派生。日志如何实现**持久化**（持久化 seam、后端、崩溃恢复）是兄弟文档 [persistence.md](persistence.zh.md) 的关注点。
+[dsh-session](../../packages/core/session) 的記憶體事件溯源模型。`Session` 是一份由型別化 `SessionEvent` 組成的**僅追加日誌**，是 agent（智慧代理）完整互動歷史的唯一真源。LLM（大語言模型）訊息歷史從日誌*派生*而來，從不單獨儲存；回放即從同一組事件重新派生。日誌如何實作**持久化**（持久化 seam、後端、崩潰恢復）是兄弟文件 [persistence.md](persistence.zh.md) 的關注點。
 
-源码：[`packages/core/session/src/types.ts`](../../packages/core/session/src/types.ts)
+原始碼：[`packages/core/session/src/types.ts`](../../packages/core/session/src/types.ts)
 
-## `SessionEventMap`：事件词汇
+## `SessionEventMap`：事件詞彙
 
-仅追加的事件类型。可通过声明合并扩展：插件通过 declaration merging 声明额外的事件类型。例如[压缩（compaction） seam](compaction.zh.md) 添加了 `compaction/start` / `compaction/summary` / `compaction/end`，`@deepseek-ai/dsh-hook-protocol` 为钩子桥接添加了仅记录日志的 `hook/invoked` / `hook/result` 记录。与 `compaction/*` 一样，这些都不是 `SurfaceEventType`（没有 `surfaceOp`）。生成的[持久化日志事件目录](../persistence-catalog.zh.md)列举了所有成员（核心与合并扩展的），包含其 payload、surface 标记与声明位置。
+僅追加的事件型別。可透過宣告合併擴充功能：外掛透過 declaration merging 宣告額外的事件型別。例如[壓縮（compaction） seam](compaction.zh.md) 新增了 `compaction/start` / `compaction/summary` / `compaction/end`，`@deepseek-ai/dsh-hook-protocol` 為掛鉤橋接新增了僅記錄日誌的 `hook/invoked` / `hook/result` 記錄。與 `compaction/*` 一樣，這些都不是 `SurfaceEventType`（沒有 `surfaceOp`）。生成的[持久化日誌事件目錄](../persistence-catalog.zh.md)列舉了所有成員（核心與合併擴充功能的），包含其 payload、surface 標記與宣告位置。
 
 ```ts type-equiv
 /** A user-role specialization of the shared message representation. */
@@ -174,13 +174,13 @@ interface SessionEventMap {
 }
 ```
 
-`UserMessage` 是普通提示词、注入上下文、steering（中途引导）与实时收件箱事件共享的带标识且冻结的 user-role 值。事件包装层只会增加事件本地的位置或结果事实；条目待处理期间，loop 只额外附加驱动器自有的路由状态。
+`UserMessage` 是普通提示詞、注入上下文、steering（中途引導）與即時收件箱事件共享的帶標識且凍結的 user-role 值。事件包裝層只會增加事件本地的位置或結果事實；條目待處理期間，loop 只額外附加驅動器自有的路由狀態。
 
 <a id="the-request-header-event-requestheader"></a>
 
-### 请求头事件：`request/header`
+### 請求頭事件：`request/header`
 
-请求信封（即 `EpochHeader`：调用配置 + 适配器所提供默认值的标记 + 已组装的工具 schema）会作为会话状态写入日志，因此每个对话请求都是日志的纯函数（见可重建性 Agent Note）。渲染后的系统提示词不属于请求头：它是派生历史，即 surface 第 0 号节点上的 `system/message` 事件以及任何后续的历史内系统节点（[决策](../../.agents/notes/implemented/architecture/2026-09-02-system-prompt-as-surface-node.zh.md)），因此提示词变更替换或追加一个系统节点，而请求头保持不变。带有 reason `'initial'` 或 `'resume'` 的完整 `request/header` 快照记录每个 agent loop 实例的边界；请求变化时会追加 reason 为 `'change'` 的快照；未变的信封显式开启消息序列或跟随 surface 替换时，会追加 reason 为 `'series'` 的快照。如果 `'initial'`、`'resume'` 或 `'change'` 快照所属请求同时开启序列，它会携带 `startsSeries: true`；reason `'series'` 已记录这一事实。普通的仅追加后续 Turn，以及同一模型消息序列内的后续 Step 与重试沿用最新快照。`foldRequestHeader(events)` 通过选择最新快照重建请求头。该事件不是 `SurfaceEventType`，不产生 LLM 消息。
+請求信封（即 `EpochHeader`：呼叫設定 + 介面卡所提供預設值的標記 + 已組裝的工具 schema）會作為工作階段狀態寫入日誌，因此每個對話請求都是日誌的純函式（見可重建性 Agent Note）。渲染後的系統提示詞不屬於請求頭：它是派生歷史，即 surface 第 0 號節點上的 `system/message` 事件以及任何後續的歷史內系統節點（[決策](../../.agents/notes/implemented/architecture/2026-09-02-system-prompt-as-surface-node.zh.md)），因此提示詞變更替換或追加一個系統節點，而請求頭保持不變。帶有 reason `'initial'` 或 `'resume'` 的完整 `request/header` 快照記錄每個 agent loop 實例的邊界；請求變化時會追加 reason 為 `'change'` 的快照；未變的信封顯式開啟訊息序列或跟隨 surface 替換時，會追加 reason 為 `'series'` 的快照。如果 `'initial'`、`'resume'` 或 `'change'` 快照所屬請求同時開啟序列，它會攜帶 `startsSeries: true`；reason `'series'` 已記錄這一事實。普通的僅追加後續 Turn，以及同一模型訊息序列內的後續 Step 與重試沿用最新快照。`foldRequestHeader(events)` 透過選擇最新快照重建請求頭。該事件不是 `SurfaceEventType`，不產生 LLM 訊息。
 
 ```ts type-equiv
 /**
@@ -203,11 +203,11 @@ interface EpochHeader {
 }
 ```
 
-当前事件接纳要求 `request/header.header` 为规范形式：禁止任何 `system` 字段，必须省略 `tools: []` 与 `adapterDefaults: {}`。仅含空白的系统消息内容、`config.stop: []` 与嵌套扩展保持不变。seed、append 与当前持久化读取拒绝非规范 header，而不会静默规范化；[V3 信封决策](../../.agents/notes/implemented/architecture/2026-09-06-v3-canonical-session-envelopes.zh.md)负责历史转换。包含旧版 `request/header-delta` 事件或完整快照原因为 `fallback` 的旧版 v0 日志，会被拒绝，而不会以不完整方式回放。
+目前事件接納要求 `request/header.header` 為規範形式：禁止任何 `system` 欄位，必須省略 `tools: []` 與 `adapterDefaults: {}`。僅含空白的系統訊息內容、`config.stop: []` 與巢狀擴充功能保持不變。seed、append 與目前持久化讀取拒絕非規範 header，而不會靜默規範化；[V3 信封決策](../../.agents/notes/implemented/architecture/2026-09-06-v3-canonical-session-envelopes.zh.md)負責歷史轉換。包含舊版 `request/header-delta` 事件或完整快照原因為 `fallback` 的舊版 v0 日誌，會被拒絕，而不會以不完整方式回放。
 
 ### 路由容量事件：`request/context`
 
-请求所解析到的路由的上下文元数据是独立的已记录状态，在同一步骤内紧随 `request/header` 追加，且仅在提供方、模型、容量或 `systemPromptUpdate` 模式与上一条记录不同时追加。它保持在 `EpochHeader` 之外，因为该类型是 `headerEquals` 逐字段比较的重建约定。容量与更新模式描述的是路由，不是请求输入，把它们折叠进去会让一次路由变化被登记为请求信封的 `change`，也会把适配器元数据拉进 loop 的重建不变式。与 `request/header` 一样，它不是 `SurfaceEventType`，也不产生 LLM 消息。`session.requestContext()` 以增量方式归并最新一条记录；agent loop 在决定变化后的系统提示词是替换最新的系统节点还是追加到已缓存历史之后时，读取该记录的 `systemPromptUpdate`（[决策规则](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）。适配器不公布容量的路由会以缺失 `contextWindow` 的形式记录，因此新记录可以清除较早路由的容量；未声明更新模式的路由同样会清除较早路由的 `systemPromptUpdate`。
+請求所解析到的路由的上下文中繼資料是獨立的已記錄狀態，在同一步驟內緊隨 `request/header` 追加，且僅在提供者、模型、容量或 `systemPromptUpdate` 模式與上一條記錄不同時追加。它保持在 `EpochHeader` 之外，因為該型別是 `headerEquals` 逐欄位比較的重建約定。容量與更新模式描述的是路由，不是請求輸入，把它們摺疊進去會讓一次路由變化被登記為請求信封的 `change`，也會把介面卡中繼資料拉進 loop 的重建不變式。與 `request/header` 一樣，它不是 `SurfaceEventType`，也不產生 LLM 訊息。`session.requestContext()` 以增量方式歸併最新一條記錄；agent loop 在決定變化後的系統提示詞是替換最新的系統節點還是追加到已快取歷史之後時，讀取該記錄的 `systemPromptUpdate`（[決策規則](../../packages/core/agent-loop/README.zh.md#understand-the-implementation)）。介面卡不公佈容量的路由會以缺失 `contextWindow` 的形式記錄，因此新記錄可以清除較早路由的容量；未宣告更新模式的路由同樣會清除較早路由的 `systemPromptUpdate`。
 
 ```ts type-equiv
 /** Registration-bound metadata for one resolved model route. */
@@ -223,9 +223,9 @@ interface RequestContext {
 }
 ```
 
-## `SessionEvent<T>`：一条日志条目
+## `SessionEvent<T>`：一條日誌條目
 
-基于 `type` 的真正可辨识联合（而非独立的 `type`/`data` 联合），因此 `switch (event.type)` 能直接收窄 `event.data`，无需类型断言。`seq` 是日志中的单调递增位置（`seq = log.length`）；`time` 为 epoch 毫秒。
+基於 `type` 的真正可辨識聯合（而非獨立的 `type`/`data` 聯合），因此 `switch (event.type)` 能直接收窄 `event.data`，無需型別斷言。`seq` 是日誌中的單調遞增位置（`seq = log.length`）；`time` 為 epoch 毫秒。
 
 ```ts type-equiv
 /** Sequence number of one existing event in a Session log. */
@@ -247,7 +247,7 @@ type SessionSeqCursor = SessionSeq | -1
 type OptionalSessionSeq = SessionSeq | null
 ```
 
-`SessionSeq(value)` 与 `SessionLogOffset(value)` 只接纳非负安全整数，并拒绝负零。它们仅添加编译期品牌，不改变序列化后的数值；算术会返回普通 `number`，调用方必须按结果的预期角色通过对应构造器重新接纳。
+`SessionSeq(value)` 與 `SessionLogOffset(value)` 只接納非負安全整數，並拒絕負零。它們僅新增編譯期品牌，不改變序列化後的數值；算術會返回普通 `number`，呼叫方必須按結果的預期角色透過對應建構器重新接納。
 
 ```ts type-equiv
 /**
@@ -289,17 +289,17 @@ type SessionEvent<T extends SessionEventType = SessionEventType> = {
 }[T]
 ```
 
-`SessionEventType = keyof SessionEventMap`。由于 `SessionEventMap` 可通过合并扩展，对 `SessionEvent` 的 switch 语句禁止使用 `assertNever`：插件添加的变体是合法的未知值；处理已知 case 后在 `default` 中放行。
+`SessionEventType = keyof SessionEventMap`。由於 `SessionEventMap` 可透過合併擴充功能，對 `SessionEvent` 的 switch 語句禁止使用 `assertNever`：外掛新增的變體是合法的未知值；處理已知 case 後在 `default` 中放行。
 
-每个 surface 事件都要求 `surfaceOp`；已知仅日志事件禁止两个 surface 元数据字段。原生未知或已退役的可忽略信封保持不透明。`assistant/message` 嵌入其提供方 stream，并禁止 `sourceEventSeqs`。System、user 与 tool surface 事件可以在来源归属或替换覆盖需要时引用完整、非空且唯一的较早事件集合。`tool/result` 仅在消息带有 `isError: true` 时可以携带 `data.error`；失败结果的失败身份仍可省略。
+每個 surface 事件都要求 `surfaceOp`；已知僅日誌事件禁止兩個 surface 中繼資料欄位。原生未知或已退役的可忽略信封保持不透明。`assistant/message` 嵌入其提供者 stream，並禁止 `sourceEventSeqs`。System、user 與 tool surface 事件可以在來源歸屬或替換覆蓋需要時引用完整、非空且唯一的較早事件集合。`tool/result` 僅在訊息帶有 `isError: true` 時可以攜帶 `data.error`；失敗結果的失敗身份仍可省略。
 
 <a id="surface-types"></a>
 
-## Surface 类型
+## Surface 型別
 
-产生消息的类型（`SurfaceEventType`：`system/message`、`developer/message`、`user/message`、`assistant/message`、`tool/result`）携带 surface 元数据，用来声明它们如何加入有序的派生 surface。`system/message` 承载渲染后的系统提示词：循环把第一条追加为 surface 第 0 号节点，并在提示词变化时恰好替换最新的系统节点，或在历史内路由上追加一条新的；surface 折叠拒绝任何其他覆盖第 0 号节点 `system/message` 的替换，而后续系统节点是普通历史，压缩替换可以遮蔽它。见 [session surface Agent Note](../../.agents/notes/implemented/architecture/2026-06-18-session-surface.zh.md)。
+產生訊息的型別（`SurfaceEventType`：`system/message`、`developer/message`、`user/message`、`assistant/message`、`tool/result`）攜帶 surface 中繼資料，用來宣告它們如何加入有序的派生 surface。`system/message` 承載渲染後的系統提示詞：迴圈把第一條追加為 surface 第 0 號節點，並在提示詞變化時恰好替換最新的系統節點，或在歷史內路由上追加一條新的；surface 摺疊拒絕任何其他覆蓋第 0 號節點 `system/message` 的替換，而後續系統節點是普通曆史，壓縮替換可以遮蔽它。見 [session surface Agent Note](../../.agents/notes/implemented/architecture/2026-06-18-session-surface.zh.md)。
 
-### `SurfaceEventType`：事件类型中产生消息的子集
+### `SurfaceEventType`：事件型別中產生訊息的子集
 
 ```ts type-equiv
 /**
@@ -316,7 +316,7 @@ type SurfaceEventType =
   | 'tool/result'
 ```
 
-### `SurfaceOp`：事件如何进入 surface
+### `SurfaceOp`：事件如何進入 surface
 
 ```ts type-equiv
 /**
@@ -337,9 +337,9 @@ type SurfaceOp =
   | { op: 'replace'; startSeq: SessionSeq; endSeq: SessionSeq }
 ```
 
-`'append'` 是常规的尾部追加路径。`replace` 恰好包含 `op`、`startSeq` 和 `endSeq`，不接受别名或额外键。它遮蔽这两个当前 surface 事件序号之间的闭区间，并在原位置插入新事件；相同端点仅替换一个条目。端点必须早于替换事件，但它们的相对顺序按 surface 顺序而非数值序号顺序确定。
+`'append'` 是常規的尾部追加路徑。`replace` 恰好包含 `op`、`startSeq` 和 `endSeq`，不接受別名或額外來鍵。它遮蔽這兩個目前 surface 事件序號之間的閉區間，並在原位置插入新事件；相同端點僅替換一個條目。端點必須早於替換事件，但它們的相對順序按 surface 順序而非數值序號順序確定。
 
-### `SurfaceIntent`：`session.append()` 的参数
+### `SurfaceIntent`：`session.append()` 的參數
 
 ```ts type-equiv
 /**
@@ -357,14 +357,14 @@ type SurfaceIntent<T extends SurfaceEventType = SurfaceEventType> = {
 })
 ```
 
-对 `SurfaceEventType` 事件必填：每个产生消息的事件都必须声明它如何加入 surface（派生模型历史的唯一来源）。面向人类的 transcript（文本记录）是另一个投影，读取的是日志中追加来源的事件，因为 surface 会有意遮蔽替换所概括的范围（见 [dsh-session](../../packages/core/session/README.zh.md) 的 `isAppendSurfaceEvent`）。非 surface 类型在编译期拒绝此参数。
+對 `SurfaceEventType` 事件必填：每個產生訊息的事件都必須宣告它如何加入 surface（派生模型歷史的唯一來源）。面向人類的 transcript（文字記錄）是另一個投影，讀取的是日誌中追加來源的事件，因為 surface 會有意遮蔽替換所概括的範圍（見 [dsh-session](../../packages/core/session/README.zh.md) 的 `isAppendSurfaceEvent`）。非 surface 型別在編譯期拒絕此參數。
 
-`assistant/message` 不能携带 `sourceEventSeqs`；它的 `stream` 拥有精确 provider 证据。其他 surface event 不引用较早 event 时省略该字段，需要引用时使用完整非空 list。
+`assistant/message` 不能攜帶 `sourceEventSeqs`；它的 `stream` 擁有精確 provider 證據。其他 surface event 不引用較早 event 時省略該欄位，需要引用時使用完整非空 list。
 
 <a id="plugin-owned-message-projections"></a>
-### 插件拥有的消息投影
+### 外掛擁有的訊息投影
 
-修改内容的插件用 `@messageProjection` 标记事件声明，并通过 `ctx.sessions.registerMessageProjection()` 注册纯处理器。Session 在提交前通过处理器校验完整决策，应用其不可变消息更新，并推进 `contentGeneration`。缺少处理器时拒绝操作，包括恢复和独立折叠，卸载已经使用的处理器后也会拒绝读取缓存。独立读取器将处理器显式传给 `foldSurface(events, projections)`，并通过 `deriveEventMessage()` 应用 `projectedMessages`。当前格式目录为离线读取器装配第一方处理器。[图片省略插件](compaction.zh.md#image-offload)拥有图片专用的事件及解释逻辑。
+修改內容的外掛用 `@messageProjection` 標記事件宣告，並透過 `ctx.sessions.registerMessageProjection()` 註冊純處理器。Session 在提交前透過處理器驗證完整決策，應用其不可變訊息更新，並推進 `contentGeneration`。缺少處理器時拒絕操作，包括恢復和獨立摺疊，解除安裝已經使用的處理器後也會拒絕讀取快取。獨立讀取器將處理器顯式傳給 `foldSurface(events, projections)`，並透過 `deriveEventMessage()` 應用 `projectedMessages`。目前格式目錄為離線讀取器裝配第一方處理器。[圖片省略外掛](compaction.zh.md#image-offload)擁有圖片專用的事件及解釋邏輯。
 
 ```ts type-equiv
 /** Readonly history immediately before a message-projection event. */
@@ -397,11 +397,11 @@ interface SessionMessageProjection<T extends SessionEventType = SessionEventType
 }
 ```
 
-### `SessionSurface`：实时只读 surface 投影
+### `SessionSurface`：即時只讀 surface 投影
 
-`Session.surface` 返回会话稳定的 `SessionSurface` 视图。同一个增量管理器在提交前校验追加候选事件，并根据已提交事件推进该投影；调用方可以观察成员关系和替换代次，但不能调用校验。
+`Session.surface` 返回工作階段穩定的 `SessionSurface` 檢視。同一個增量管理器在提交前驗證追加候選事件，並根據已提交事件推進該投影；呼叫方可以觀察成員關係和替換代次，但不能呼叫驗證。
 
-`SurfaceManager(log, baseSeq?, projections?)` 也可以折叠一个连续的已加载窗口，其第一个事件的绝对序号为 `baseSeq`。每个事件在该绝对序号空间中仍保持连续；如果替换跨过窗口头部，由于其声明的范围并不存在，该替换会失败。
+`SurfaceManager(log, baseSeq?, projections?)` 也可以摺疊一個連續的已載入視窗，其第一個事件的絕對序號為 `baseSeq`。每個事件在該絕對序號空間中仍保持連續；如果替換跨過視窗頭部，由於其宣告的範圍並不存在，該替換會失敗。
 
 ```ts type-equiv
 /** Readonly live projection of the message-producing session events. */
@@ -415,9 +415,9 @@ interface SessionSurface {
 }
 ```
 
-### `SurfaceFoldReplacement` 与 `SurfaceFoldResult`：完整的 surface 回放
+### `SurfaceFoldReplacement` 與 `SurfaceFoldResult`：完整的 surface 回放
 
-`foldSurface(events, projections)` 返回一份独立的当前事件 seq 列表，以及每个声明的替换范围实际遮蔽的 seq。实时管理器复用同一套状态转换，但不保留替换历史。每提交一次替换，其 `replaceGeneration` 就递增一次，使增量消费方能够区分纯尾部增长与重写。
+`foldSurface(events, projections)` 返回一份獨立的目前事件 seq 列表，以及每個宣告的替換範圍實際遮蔽的 seq。即時管理器複用同一套狀態轉換，但不保留替換歷史。每提交一次替換，其 `replaceGeneration` 就遞增一次，使增量消費方能夠區分純尾部增長與重寫。
 
 ```ts type-equiv
 /** One replacement operation observed while folding a session surface. */
@@ -447,7 +447,7 @@ interface SurfaceFoldResult {
 
 ## `Session` 公共 API
 
-去除方法体的声明与源码中的普通类保持同步，覆盖其脱离态工厂、状态访问器、append 方法和历史投影。存储操作仍由生成的 [`ctx.sessions` 小节](#ctxsessions--sessionstore)记录。
+去除方法體的宣告與原始碼中的普通類保持同步，覆蓋其脫離態工廠、狀態存取器、append 方法和歷史投影。儲存操作仍由生成的 [`ctx.sessions` 小節](#ctxsessions--sessionstore)記錄。
 
 ```ts public-api
 /**
@@ -665,30 +665,30 @@ declare class Session {
 }
 ```
 
-## 派生历史：`deriveMessages()` 与 `deriveEventMessage()`
+## 派生歷史：`deriveMessages()` 與 `deriveEventMessage()`
 
-`Session.deriveMessages()` 将事件日志投影为模型看到的 `Message[]`。它是缓存的（每个 surface 节点在首次出现时投影一次；surface 重写触发重建）且冻结的（每次调用返回一个新数组，引用共享的深冻结消息，因此通过投影修改已记录的历史在类型上不可表达）。`deriveEventMessage(event)` 是折叠所应用的逐节点纯函数，公开暴露以便外部重建器和开发不变式检查能以完全相同的规则投影日志前缀，不会与缓存产生分歧。投影规则：
+`Session.deriveMessages()` 將事件日誌投影為模型看到的 `Message[]`。它是快取的（每個 surface 節點在首次出現時投影一次；surface 重寫觸發重建）且凍結的（每次呼叫返回一個新陣列，引用共享的深凍結訊息，因此透過投影修改已記錄的歷史在型別上不可表達）。`deriveEventMessage(event)` 是摺疊所應用的逐節點純函式，公開暴露以便外部重建器和開發不變式檢查能以完全相同的規則投影日誌字首，不會與快取產生分歧。投影規則：
 
-- `user/message` → 一条携带确切 `content` 的 user 消息；可选 envelope 仅作为日志中的展示元数据保留。
-- `assistant/message` → 一条 assistant 消息，包含生成它的提供方和模型，以及可选的适配器私有回放状态。其嵌入式紧凑 stream 是回放、usage 与 UI 证据，而不是第二条 message。**内容为空的** `assistant/message` 也会跳过：因 max-tokens 而截断且无内容的步骤仍会记录一条 `assistant/message` 来保存 stream、usage、提供方和模型，但无内容的 assistant 轮次不得进入提供方 transcript（文本记录）。
-- `tool/result` → 一条一等 tool-role 消息，携带结果内容与工具调用标识。
-- `user/message`（注入上下文，即非 `user` 来源）→ 按时间顺序在相应位置生成一条 user-role 消息，并原样承载其 `content`；其类型化 source 标明生产方，并携带所有生产方专用数据。
+- `user/message` → 一條攜帶確切 `content` 的 user 訊息；可選 envelope 僅作為日誌中的展示中繼資料保留。
+- `assistant/message` → 一條 assistant 訊息，包含生成它的提供者和模型，以及可選的介面卡私有回放狀態。其嵌入式緊湊 stream 是回放、usage 與 UI 證據，而不是第二條 message。**內容為空的** `assistant/message` 也會跳過：因 max-tokens 而截斷且無內容的步驟仍會記錄一條 `assistant/message` 來儲存 stream、usage、提供者和模型，但無內容的 assistant 輪次不得進入提供者 transcript（文字記錄）。
+- `tool/result` → 一條一等 tool-role 訊息，攜帶結果內容與工具呼叫標識。
+- `user/message`（注入上下文，即非 `user` 來源）→ 按時間順序在相應位置生成一條 user-role 訊息，並原樣承載其 `content`；其型別化 source 標明生產方，並攜帶所有生產方專用資料。
 
-其余所有事件（`turn/*`、`step/*`、`assistant/attempt`、插件所属的 `llm/retry`）均为结构信息，不会投影为消息。token 记账会展开每个 `assistant/message` 或 `assistant/attempt` 的嵌入式 stream，message 顶层 `usage` 存在时仍是已提交 message 的权威。失败的模型请求 attempt 因此可以保留提供方 usage，而无需虚构 assistant message。当前逻辑校验会拒绝没有提供方／模型的 request header 和 assistant 消息，而不会猜测路由；受支持的历史表示会在当前 Session 存在前，由其相邻格式迁移边归一化并校验。
+其餘所有事件（`turn/*`、`step/*`、`assistant/attempt`、外掛所屬的 `llm/retry`）均為結構資訊，不會投影為訊息。token 記帳會展開每個 `assistant/message` 或 `assistant/attempt` 的嵌入式 stream，message 頂層 `usage` 存在時仍是已提交 message 的權威。失敗的模型請求 attempt 因此可以保留提供者 usage，而無需虛構 assistant message。目前邏輯驗證會拒絕沒有提供者／模型的 request header 和 assistant 訊息，而不會猜測路由；受支援的歷史表示會在目前 Session 存在前，由其相鄰格式遷移邊歸一化並驗證。
 
-## 活跃会话 fork API
+## 活躍工作階段 fork API
 
-`ctx.sessions.create(id, { seed, meta })` 是底层的回放/fork 原语。对于普通的活跃会话 fork，`SessionStore` 暴露一个策略 API：
+`ctx.sessions.create(id, { seed, meta })` 是底層的回放/fork 原語。對於普通的活躍工作階段 fork，`SessionStore` 暴露一個策略 API：
 
-- `fork(source, boundary?, childSessionId?)` 接受一个活跃的 `Session` 对象或活跃的 `SessionId`，选取到 `SessionSeq` boundary（含）为止的源事件（默认为当前最后一个事件），要求所选前缀结束时没有开放轮次，然后创建一个活跃的子会话，包含深克隆的 seed event、`parentSession`、`isSeeded: true`、精确 `inheritedEventCount` 及继承的 `cwd`。
+- `fork(source, boundary?, childSessionId?)` 接受一個活躍的 `Session` 物件或活躍的 `SessionId`，選取到 `SessionSeq` boundary（含）為止的源事件（預設為目前最後一個事件），要求所選字首結束時沒有開放輪次，然後建立一個活躍的子工作階段，包含深克隆的 seed event、`parentSession`、`isSeeded: true`、精確 `inheritedEventCount` 及繼承的 `cwd`。
 
-显式 `boundary` 允许调用者从任意稳定的轮次间位置 fork，包括之前的 `turn/end` 或更晚的独立纯日志事件，即使源会话有更新的事件或正在进行的轮次。API 拒绝结束于开放轮次内的前缀，而不是静默截断。更广泛的执行关系健全性检查留在既有的 `dsh-invariants` 插件和持久化修复路径中，不在 `fork()` 中重复。`dsh-subagent-fork-in-process` 保留其已完成前缀截断逻辑，因为工具调用时的委托通常在父轮次仍然打开时启动；普通的会话分支应显式指定请求的 boundary。
+顯式 `boundary` 允許呼叫者從任意穩定的輪次間位置 fork，包括之前的 `turn/end` 或更晚的獨立純日誌事件，即使源工作階段有更新的事件或正在進行的輪次。API 拒絕結束於開放輪次內的字首，而不是靜默截斷。更廣泛的執行關係健全性檢查留在既有的 `dsh-invariants` 外掛和持久化修復路徑中，不在 `fork()` 中重複。`dsh-subagent-fork-in-process` 保留其已完成字首截斷邏輯，因為工具呼叫時的委託通常在父輪次仍然開啟時啟動；普通的工作階段分支應顯式指定請求的 boundary。
 
 <a id="why-a-turn-ended-turnendreasonmap"></a>
 
-## 轮次的结束原因：`TurnEndReasonMap`
+## 輪次的結束原因：`TurnEndReasonMap`
 
-`turn/start` 没有 trigger 字段。已进入的 `user/message` 批次记录进入每个步骤的内容，`llm/retry` 记录请求恢复，idle 注入则保持待处理，直到唤醒交付抵达后续 pre-step。实时轮次会保留停止驱动器的类型化 [`AgentCancelCause`](core.zh.md#the-agent-handle)；只有在导入受支持的粗粒度取消记录且记录未保存调用方时，持久化才使用额外的 `{ kind: 'legacy' }` 原因。
+`turn/start` 沒有 trigger 欄位。已進入的 `user/message` 批次記錄進入每個步驟的內容，`llm/retry` 記錄請求恢復，idle 注入則保持待處理，直到喚醒交付抵達後續 pre-step。即時輪次會保留停止驅動器的型別化 [`AgentCancelCause`](core.zh.md#the-agent-handle)；只有在匯入受支援的粗粒度取消記錄且記錄未儲存呼叫方時，持久化才使用額外的 `{ kind: 'legacy' }` 原因。
 
 ```ts type-equiv
 /** Durable cancellation cause, including imports whose original coarse record carried no cause. */
@@ -730,45 +730,45 @@ interface TurnEndReasonMap {
 }
 ```
 
-`max-tokens` 与模型调用中同名的 `FinishReason` 对应：只要轮次内有任何步骤以 `max-tokens` 结束，整个轮次就以 `max-tokens` 而不是 `completed` 结束（即使之后继续执行，截断事实仍优先），让消费方能够区分正常停止和截断停止。取消和错误仍是不同的结果。loop 不会实时发出 `interrupted` 或 `forked`：崩溃恢复合成 `interrupted`（见 [persistence.md](persistence.zh.md)），而 fork 种子构造合成 `forked`。该 map 可通过合并扩展。
+`max-tokens` 與模型呼叫中同名的 `FinishReason` 對應：只要輪次內有任何步驟以 `max-tokens` 結束，整個輪次就以 `max-tokens` 而不是 `completed` 結束（即使之後繼續執行，截斷事實仍優先），讓消費方能夠區分正常停止和截斷停止。取消和錯誤仍是不同的結果。loop 不會即時發出 `interrupted` 或 `forked`：崩潰恢復合成 `interrupted`（見 [persistence.md](persistence.zh.md)），而 fork 種子建構合成 `forked`。該 map 可透過合併擴充功能。
 
-## 执行封闭与独立事件
+## 執行封閉與獨立事件
 
-一个轮次包围一次模型循环执行，而不是整个会话日志。AgentLoop 只会在轮次内进入 pre-step 批次时记录注入的 `user/message` 事件；插件所属的纯日志事件仍可出现在 `turn/end` 与下一个 `turn/start` 之间，占用事件 seq 但不递增轮次编号。持久化会将每个连续且已接受的事件纳入有界持久化批次，而崩溃修复只关闭确实仍处于开放状态的尾部轮次。需要即时持久性屏障的生产方会显式等待 `ctx.sessions.flush(session)`。
+一個輪次包圍一次模型迴圈執行，而不是整個工作階段日誌。AgentLoop 只會在輪次內進入 pre-step 批次時記錄注入的 `user/message` 事件；外掛所屬的純日誌事件仍可出現在 `turn/end` 與下一個 `turn/start` 之間，佔用事件 seq 但不遞增輪次編號。持久化會將每個連續且已接受的事件納入有界持久化批次，而崩潰修復只關閉確實仍處於開放狀態的尾部輪次。需要即時永續性屏障的生產方會顯式等待 `ctx.sessions.flush(session)`。
 
-可选的 `dsh-session/invariant` 配套插件会强制核心拥有的关系：轮次与步骤编号、执行事件封闭，以及同一步骤内的工具调用／结果配对。可合并扩展事件的关系由声明它的插件拥有，因此核心不会仅因没有开放轮次就拒绝未知事件。见[独立事件决策](../../.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)。
+可選的 `dsh-session/invariant` 配套外掛會強制核心擁有的關係：輪次與步驟編號、執行事件封閉，以及同一步驟內的工具呼叫／結果配對。可合併擴充功能事件的關係由宣告它的外掛擁有，因此核心不會僅因沒有開放輪次就拒絕未知事件。見[獨立事件決策](../../.agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.zh.md)。
 
-## 种子结束边界：`session/end-seed`
+## 種子結束邊界：`session/end-seed`
 
-`buildForkSeed` 在精确的 inherited-prefix cut 追加 `session/end-seed { inherited: true }`，然后添加合成的 fork 结束事件。`Session` constructor 保留该预先构造的 marker，或在 seed 仅含 inherited prefix 时追加 marker。restore 保留 tagged marker，并且只在完整 stored seed 尚未以 marker 结尾时追加普通 `session/end-seed {}`。两种形式都只进入 log 且不产生 message；只有 constructor 和 `buildForkSeed` 可以创建它们。
+`buildForkSeed` 在精確的 inherited-prefix cut 追加 `session/end-seed { inherited: true }`，然後新增合成的 fork 結束事件。`Session` constructor 保留該預先建構的 marker，或在 seed 僅含 inherited prefix 時追加 marker。restore 保留 tagged marker，並且只在完整 stored seed 尚未以 marker 結尾時追加普通 `session/end-seed {}`。兩種形式都只進入 log 且不產生 message；只有 constructor 和 `buildForkSeed` 可以建立它們。
 
-对于 fork lineage，定位 payload 携带 `inherited: true` 的最后一个 marker；当前格式 decoding 只在 `SessionHeader.isSeeded` 为 true 时要求该 marker，并从其 seq 推导 `inheritedEventCount`。对于 lifecycle ownership，定位任一形式的最后一个 `session/end-seed`。重新打开已经以任一 marker 结尾的 seed 时，不会再追加普通 marker。
+對於 fork lineage，定位 payload 攜帶 `inherited: true` 的最後一個 marker；目前格式 decoding 只在 `SessionHeader.isSeeded` 為 true 時要求該 marker，並從其 seq 推導 `inheritedEventCount`。對於 lifecycle ownership，定位任一形式的最後一個 `session/end-seed`。重新開啟已經以任一 marker 結尾的 seed 時，不會再追加普通 marker。
 
-它之所以必要，是因为种子历史与实时工作在字节层面完全相同，这会让任何拥有独立开／闭括号的插件失效：一个未配对的 `compaction/start`，无论写入方是在压缩中途崩溃、还是此刻正在压缩，读起来都一样。在 `session/end-seed` 之前的开启标记来自构造种子，并且属于一个已结束的生命周期，无论结束原因为何（崩溃、进程接替，或从仍在运行的父会话 fork 出来），因此其所有方可以视之为已死。这只覆盖*本*会话继承的括号：另一个并发存活的会话可能在同一段历史上持有开放括号，而它自己的边界在别处，因此容忍并发写入方还需要日志之外的存活信号。核心写入该边界但不从中读取任何内容——括号的词汇表仍归其所属插件，这也正是崩溃修复只关闭轮次／步骤／工具边界而从不处理 `compaction/*` 的原因。
+它之所以必要，是因為種子歷史與即時工作在位元組層面完全相同，這會讓任何擁有獨立開／閉括號的外掛失效：一個未配對的 `compaction/start`，無論寫入方是在壓縮中途崩潰、還是此刻正在壓縮，讀起來都一樣。在 `session/end-seed` 之前的開啟標記來自建構種子，並且屬於一個已結束的生命週期，無論結束原因為何（崩潰、程序接替，或從仍在執行的父工作階段 fork 出來），因此其所有方可以視之為已死。這隻覆蓋*本*工作階段繼承的括號：另一個並行存活的工作階段可能在同一段歷史上持有開放括號，而它自己的邊界在別處，因此容忍並行寫入方還需要日誌之外的存活訊號。核心寫入該邊界但不從中讀取任何內容——括號的詞彙表仍歸其所屬外掛，這也正是崩潰修復只關閉輪次／步驟／工具邊界而從不處理 `compaction/*` 的原因。
 
-按真人活动排序 Session 的消费方会排除该边界：接手 Session 不算工作，因此按日志尾部排序会把每个打开过的 Session 顶到最前。
+按真人活動排序 Session 的消費方會排除該邊界：接手 Session 不算工作，因此按日誌尾部排序會把每個開啟過的 Session 頂到最前。
 
-## 插件贡献的仅日志事件
+## 外掛貢獻的僅日誌事件
 
-插件可以通过 declaration merging 添加额外的 `SessionEventMap` 类型。这些是**仅日志**事件：不是 `SurfaceEventType`（不携带 `surfaceOp`，不参与派生历史）。事件所有方决定它们属于一个开放的执行轮次，还是可以独立位于轮次之间，并在自己的不变量配套插件中强制所需关系。生成的[持久化日志事件目录](../persistence-catalog.zh.md)会列出每个核心或插件贡献的事件；压缩 seam 的 `compaction/*` 语义在 [compaction.md](compaction.zh.md) 中讨论。
+外掛可以透過 declaration merging 新增額外的 `SessionEventMap` 型別。這些是**僅日誌**事件：不是 `SurfaceEventType`（不攜帶 `surfaceOp`，不參與派生歷史）。事件所有方決定它們屬於一個開放的執行輪次，還是可以獨立位於輪次之間，並在自己的不變數配套外掛中強制所需關係。生成的[持久化日誌事件目錄](../persistence-catalog.zh.md)會列出每個核心或外掛貢獻的事件；壓縮 seam 的 `compaction/*` 語義在 [compaction.md](compaction.zh.md) 中討論。
 
-如果同一个插件事件族中的多条事件要组装成一个 Web Client Conversation Node，该事件族中的每条 start、update、result、resource 或 interruption 事件都必须携带或独立推导出同一个稳定业务 id。此要求只约束需要关联的 Node 事件族，并不要求每条 Session 事件都有业务 id；Client 因此无须根据相邻关系猜测归属，也无须扫描历史。参见 [Conversation 子系统](conversation.zh.md)。
+如果同一個外掛事件族中的多條事件要組裝成一個 Web Client Conversation Node，該事件族中的每條 start、update、result、resource 或 interruption 事件都必須攜帶或獨立推匯出同一個穩定業務 id。此要求只約束需要關聯的 Node 事件族，並不要求每條 Session 事件都有業務 id；Client 因此無須根據相鄰關係猜測歸屬，也無須掃描歷史。參見 [Conversation 子系統](conversation.zh.md)。
 
-钩子桥接层的 `hook/invoked` / `hook/result` 对（来自 `@deepseek-ai/dsh-hook-protocol`）通过 `handlerId` 关联。`UserPromptSubmit`、`PreToolUse`、`PostToolUse` 与 `Stop` 在 loop 已打开的轮次内触发，因此其 `hook/*` 记录天然位于轮次之内。`SessionStart` 不生成 `hook/*` 记录，因为它在轮次 1 之前运行；其上下文会在 inbox 中保持待处理，直到唤醒交付打开一个轮次。
+掛鉤橋接層的 `hook/invoked` / `hook/result` 對（來自 `@deepseek-ai/dsh-hook-protocol`）透過 `handlerId` 關聯。`UserPromptSubmit`、`PreToolUse`、`PostToolUse` 與 `Stop` 在 loop 已開啟的輪次內觸發，因此其 `hook/*` 記錄天然位於輪次之內。`SessionStart` 不生成 `hook/*` 記錄，因為它在輪次 1 之前執行；其上下文會在 inbox 中保持待處理，直到喚醒交付開啟一個輪次。
 
-## 持久性约定
+## 永續性約定
 
-持久化后端依赖的约定如下：持久日志无损保存每个事件，每个 Assistant attempt 都是一个 `assistant/message` 或 `assistant/attempt`，其嵌入式紧凑 stream 会保留原始带时间 chunk。`seq` 在这些 settlement 与所有交错事件之间保持连续。后端可以为事件批次选择自己的存储 framing，只要句柄的 `read()` 返回与追加时完全一致的事件即可；当前 JSONL 每个事件写一行（见 [persistence.md](persistence.zh.md)）。所有 `event.data` 都必须可序列化为 JSON；`Session.append` 会从源头强制这一要求（遇到不可序列化数据时抛出），因此错误事件绝不会进入日志，`session.snapshotEvents()` 始终与后端可持久化的内容一致。新增会携带不可序列化数据、破坏核心执行嵌套或违反事件所有方声明关系的事件类型，都会构成磁盘格式的破坏性变更。
+持久化後端依賴的約定如下：持久日誌無損儲存每個事件，每個 Assistant attempt 都是一個 `assistant/message` 或 `assistant/attempt`，其嵌入式緊湊 stream 會保留原始帶時間 chunk。`seq` 在這些 settlement 與所有交錯事件之間保持連續。後端可以為事件批次選擇自己的儲存 framing，只要控制代碼的 `read()` 返回與追加時完全一致的事件即可；目前 JSONL 每個事件寫一行（見 [persistence.md](persistence.zh.md)）。所有 `event.data` 都必須可序列化為 JSON；`Session.append` 會從源頭強制這一要求（遇到不可序列化資料時丟擲），因此錯誤事件絕不會進入日誌，`session.snapshotEvents()` 始終與後端可持久化的內容一致。新增會攜帶不可序列化資料、破壞核心執行巢狀或違反事件所有方宣告關係的事件型別，都會構成磁碟格式的破壞性變更。
 
-消费此约定的后端见 [persistence.md](persistence.zh.md)。
+消費此約定的後端見 [persistence.md](persistence.zh.md)。
 
-## Remote 目录与 workspace 打开
+## Remote 目錄與 workspace 開啟
 
-`ModelCatalog` 是 `session/modelCatalog` 返回的 Host generation 模型目录：它携带部署默认值、可路由 provider id、成功的 provider 分组与相互隔离的 provider 失败。它不由某个 Session 派生，因此与 Session projection 分开保存。
+`ModelCatalog` 是 `session/modelCatalog` 返回的 Host generation 模型目錄：它攜帶部署預設值、可路由 provider id、成功的 provider 分組與相互隔離的 provider 失敗。它不由某個 Session 派生，因此與 Session projection 分開儲存。
 
-`SessionOpenWorkspacePathRequest` 携带绝对路径或已按 workspace 解析的 `path`。`SessionOpenWorkspacePathValue` 确认 Host 已接受原生交接。Session-aware Client 会在已知当前 Session cwd 时据此解析相对路径；controller 将路径原样交给打开器，并通过 Session Remote 错误词汇表报告无效请求、取消与打开器失败。 可选的 `action: "reveal"` 选择文件管理器导航；省略时使用默认应用打开。
+`SessionOpenWorkspacePathRequest` 攜帶絕對路徑或已按 workspace 解析的 `path`。`SessionOpenWorkspacePathValue` 確認 Host 已接受原生交接。Session-aware Client 會在已知目前 Session cwd 時據此解析相對路徑；controller 將路徑原樣交給開啟器，並透過 Session Remote 錯誤詞彙表報告無效請求、取消與開啟器失敗。 可選的 `action: "reveal"` 選擇檔案管理器導航；省略時使用預設應用開啟。
 
-可选的 `application` 指定文件关联应用，不修改系统默认值；`workspacePathApplications({ path })` 在校验 Host 路径后返回当前关联应用、名称、图标和默认项。
+可選的 `application` 指定檔案關聯應用，不修改系統預設值；`workspacePathApplications({ path })` 在驗證 Host 路徑後返回目前關聯應用、名稱、圖示和預設項。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

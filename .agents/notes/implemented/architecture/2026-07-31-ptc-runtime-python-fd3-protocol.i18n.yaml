@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-31-ptc-runtime-python-fd3-protocol.md
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol:
   en: fc43bcfc72cc4476
-  zh: c81279cb0da1481c
+  zh: 720e403e669258ac
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/problem:
   en: 2c36946bbff637b7
-  zh: f290de0866ba7caa
+  zh: 7cbb1f03cedca07e
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/decision:
   en: 1f93159850fc7f48
-  zh: dcc2a4788e3254f7
+  zh: 8a34df47d094aa50
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/wire-contract:
   en: 913f9465320dc191
-  zh: f8e0338645d6c204
+  zh: e9b0c30450dfdbf1
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/mirror-alignment:
   en: 26128b65f2763920
-  zh: df24359faebcbfed
+  zh: 15a2e330ed8aed96
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/alternatives-considered:
   en: cc42636bd7793305
-  zh: e196f980daec3037
+  zh: 65e61392b8c0eb6f
 /agent-note-the-ptc-runtime-python-fd-3-frame-protocol/consequences:
   en: 16df6efd46d71e85
-  zh: 4062475bec04ab5f
+  zh: 696ee8466ac43836

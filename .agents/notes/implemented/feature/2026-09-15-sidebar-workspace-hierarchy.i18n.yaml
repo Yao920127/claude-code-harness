@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-15-sidebar-workspace-hierarchy.md
 /agent-note-sidebar-workspace-hierarchy:
   en: 6be9fd74b0422158
-  zh: ba6dbc81479b75b5
+  zh: 33e04bb54a4a1a25
 /agent-note-sidebar-workspace-hierarchy/problem:
   en: dc209dd9d8c73af4
-  zh: cc5384ba15ea0be0
+  zh: 88028cccafe1e743
 /agent-note-sidebar-workspace-hierarchy/decision:
   en: 9f34c1e903475d25
-  zh: 6b22b19f6da3d390
+  zh: 7fe1eb3ae6c55d15
 /agent-note-sidebar-workspace-hierarchy/alternatives-considered:
   en: b30322d71fc7c464
-  zh: 36b218a82690cd19
+  zh: 5c060a6b38cb30fc
 /agent-note-sidebar-workspace-hierarchy/consequences:
   en: bf890a80351fa883
-  zh: 05da81c7026a5204
+  zh: 684b22d2452d6faf

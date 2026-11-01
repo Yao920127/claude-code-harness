@@ -80,8 +80,8 @@ This means the current client does not require a mandatory update, not that its 
   "msg": "Client version too low",
   "data": {
     "show_content": {
-      "title": "请更新 DeepSeek Harness",
-      "detail": "当前版本已停止支持，请下载并安装新版本。"
+      "title": "請更新 DeepSeek Harness",
+      "detail": "目前版本已停止支援，請下載並安裝新版本。"
     },
     "desktop_app_link": "https://example.com/harness/download"
   }

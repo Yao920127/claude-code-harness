@@ -89,7 +89,7 @@ SectionEnd
   await execute(compiler.path, ['/V2', payloadSource], { ...childOptions, env: { ...childOptions.env, ...compiler.env } })
   if (sign) await sign({ path: join(payload, `${productName}.exe`), hash: 'sha256', isNest: false })
   const sourceStrings = await readFile(join(appRoot, 'installer', 'strings.nsh'), 'utf8')
-  for (const language of ['en_US', 'zh_CN']) {
+  for (const language of ['en_US', 'zh_TW']) {
     const config = createElectronBuilderConfig()
     if (sign) {
       config.win.forceCodeSigning = true

@@ -1,4 +1,4 @@
-# Agent Note: 永久删除 Session
+# Agent Note: 永久刪除 Session
 
 Status: implemented
 
@@ -6,26 +6,26 @@ Status: implemented
 
 ## Problem
 
-归档只隐藏 Session，仍保留其日志、投影缓存行与 Workspace 归属条目，因此用户不再需要的对话仍占用磁盘且可被恢复。用户需要从侧边栏永久删除对话，包括它启动的子代理的记录。
+歸檔只隱藏 Session，仍保留其日誌、投影快取行與 Workspace 歸屬條目，因此使用者不再需要的對話仍佔用磁碟且可被恢復。使用者需要從側邊欄永久刪除對話，包括它啟動的子代理的記錄。
 
 ## Decision
 
-`SessionPersistence.delete(id)` 属于持久化 Service Definition。[JSONL 后端](../../../../packages/session/session-persistence-jsonl/README.zh.md)在进程内并通过跨进程租约声明写入权后，删除该会话自有的目录及所有保留的格式代；因此有写入者持有或已创建尚未落盘的会话会以 `SessionAlreadyOwnedError` 被拒绝。
+`SessionPersistence.delete(id)` 屬於持久化 Service Definition。[JSONL 後端](../../../../packages/session/session-persistence-jsonl/README.zh.md)在程序內並透過跨程序租約宣告寫入權後，刪除該工作階段自有的目錄及所有保留的格式代；因此有寫入者持有或已建立尚未寫入磁碟的工作階段會以 `SessionAlreadyOwnedError` 被拒絕。
 
-[Session 控制器](../../../../packages/api/session-controller/README.zh.md)提供 `session.delete`。它以 `stopActivity` 归档该 Session，通过现有的归档准入停止运行中的轮次、任务、子代理与提醒，并拦截它们引发的所有唤醒。随后它通过创建或恢复该 Agent 时保留的句柄释放活跃 Agent。它先从最深处删除 subagent 来源的后代，最后删除该 Session；对每一个，它删除已存储日志，通过 `sessionProjectionCache.forget` 删除投影缓存行，通过 `workspaceRegistry.forgetSession` 删除 Workspace 归属、归档与置顶条目，最后发出 `api-session/removed`。subagent 拥有的 Session 不能单独删除。
+[Session 控制器](../../../../packages/api/session-controller/README.zh.md)提供 `session.delete`。它以 `stopActivity` 歸檔該 Session，透過現有的歸檔准入停止執行中的輪次、任務、子代理與提醒，並攔截它們引發的所有喚醒。隨後它透過建立或恢復該 Agent 時保留的控制代碼釋放活躍 Agent。它先從最深處刪除 subagent 來源的後代，最後刪除該 Session；對每一個，它刪除已儲存日誌，透過 `sessionProjectionCache.forget` 刪除投影快取行，透過 `workspaceRegistry.forgetSession` 刪除 Workspace 歸屬、歸檔與置頂條目，最後發出 `api-session/removed`。subagent 擁有的 Session 不能單獨刪除。
 
-Web 侧边栏新增一个破坏性的“删除会话”行，排在所有插件行之后，打开一个写明该 Session 名称的确认对话框。确认时，若该 Session 是当前选中项，会先离开它。
+Web 側邊欄新增一個破壞性的“刪除工作階段”行，排在所有外掛行之後，開啟一個寫明該 Session 名稱的確認對話方塊。確認時，若該 Session 是目前選中項，會先離開它。
 
 ## Alternatives considered
 
-**只删除列表条目并保留文件。** 归档已经能隐藏 Session；再增加一种隐藏状态既不释放磁盘空间，也不会删除用户要求删除的记录。
+**只刪除列表條目並保留檔案。** 歸檔已經能隱藏 Session；再增加一種隱藏狀態既不釋放磁碟空間，也不會刪除使用者要求刪除的記錄。
 
-**连同来源删除 fork。** Fork 的日志保存复制的前缀，是独立的对话；删除它会移除用户没有选中的历史。
+**連同來源刪除 fork。** Fork 的日誌儲存複製的字首，是獨立的對話；刪除它會移除使用者沒有選中的歷史。
 
-**删除溢出输出与附件。** Fork 会继续读取从来源继承的溢出定位符，附件按内容跨 Session 去重且没有引用计数，因此按 Session 删除可能破坏其他 Session。溢出保留期与带外维护仍是它们的清理途径。
+**刪除溢位輸出與附件。** Fork 會繼續讀取從來源繼承的溢位定位符，附件按內容跨 Session 去重且沒有引用計數，因此按 Session 刪除可能破壞其他 Session。溢位保留期與帶外維護仍是它們的清理途徑。
 
-**不停止工作直接删除。** 运行中的轮次、任务或提醒可能在文件删除后继续追加或唤醒该 Session。
+**不停止工作直接刪除。** 執行中的輪次、任務或提醒可能在檔案刪除後繼續追加或喚醒該 Session。
 
 ## Consequences
 
-删除无法撤销。已删除 Session 的溢出输出文件与按内容寻址的附件会保留，直到各自的保留期或维护将其移除；Host 的 Claude 配置目录下 Claude Code 的原生记录也不会被删除。活跃 Agent 由其他所有者创建的 Session 会被拒绝而不会被删除。后端测试覆盖目录删除、所有权拒绝与取消；控制器测试覆盖顺序、后代、冷 Session 与错误映射；客户端测试覆盖确认对话框、列表移除与离开当前 Session。
+刪除無法撤銷。已刪除 Session 的溢位輸出檔案與按內容定址的附件會保留，直到各自的保留期或維護將其移除；Host 的 Claude 設定目錄下 Claude Code 的原生記錄也不會被刪除。活躍 Agent 由其他所有者建立的 Session 會被拒絕而不會被刪除。後端測試覆蓋目錄刪除、所有權拒絕與取消；控制器測試覆蓋順序、後代、冷 Session 與錯誤對映；用戶端測試覆蓋確認對話方塊、列表移除與離開目前 Session。

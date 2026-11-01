@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write docs/agent-lifecycle.md
 /:
   en: 41d772192075e133
-  zh: 305a6826a598b96d
+  zh: 7a7661fe30062b8c
 /agent-turn-and-step-lifecycle:
   en: a1389c8ed7e37324
-  zh: c2944b9192af4ec9
+  zh: d24903089571a118

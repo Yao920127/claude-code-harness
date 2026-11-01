@@ -1,41 +1,41 @@
-# Agent Note: Fork child 保留 parent 请求前缀
+# Agent Note: Fork child 保留 parent 請求字首
 
 Status: implemented
 
 [English](2026-08-10-fork-children-stay-one-shot.md) | 中文
 
-## 问题
+## 問題
 
-fork 与 spawn 的差异在于：fork 会用 parent 已完成轮次的前缀作为 child Session 的种子。该种子会消耗 token，其预期收益是提供方侧的前缀复用：使用相同提供方和模型时，如果 child 请求的开头字节与 parent 相同，共享区段就无需再次预填充。任何位于继承历史之前、仅属于 child 的系统提示词 section 或工具 schema 都会破坏这项收益。
+fork 與 spawn 的差異在於：fork 會用 parent 已完成輪次的字首作為 child Session 的種子。該種子會消耗 token，其預期收益是提供者側的字首複用：使用相同提供者和模型時，如果 child 請求的開頭位元組與 parent 相同，共享區段就無需再次預填充。任何位於繼承歷史之前、僅屬於 child 的系統提示詞 section 或工具 schema 都會破壞這項收益。
 
-先前的随附组合通过把 fork child 保持为 one-shot 来避开这种不匹配。该限制源于原来的 child-only 返回工具，并非可继续 fork 的固有属性。
+先前的隨附組合透過把 fork child 保持為 one-shot 來避開這種不匹配。該限制源於原來的 child-only 返回工具，並非可繼續 fork 的固有屬性。
 
-## 决策
+## 決策
 
-面向模型的 `send_message` 工具在组合中的每个 Agent 上全局注册。因此，可继续 fork child 获得与 parent 相同的工具名称、描述、schema 和顺序。其初始任务追加在继承的 Session 种子之后；当 child 可以看到该工具时，任务还会包含直接 parent id，以及使用 `send_message({ agent_id, message })` 返回结果的指引。
+面向模型的 `send_message` 工具在組合中的每個 Agent 上全域註冊。因此，可繼續 fork child 獲得與 parent 相同的工具名稱、描述、schema 和順序。其初始任務追加在繼承的 Session 種子之後；當 child 可以看到該工具時，任務還會包含直接 parent id，以及使用 `send_message({ agent_id, message })` 返回結果的指引。
 
-base 与 headless 组合保留 one-shot fork 作为其保守生命周期策略。`cordis`、`standard` 和 `ptc` CLI preset 可以把 fork 绑定为可继续生命周期，因为该绑定不再插入 child-only 请求头字段。`ForkInProcessProvider.prepareContinuable()` 与 `ctx.subagents.startContinuable()` 仍是这些 preset 使用的实现 seam。
+base 與 headless 組合保留 one-shot fork 作為其保守生命週期策略。`cordis`、`standard` 和 `ptc` CLI preset 可以把 fork 繫結為可繼續生命週期，因為該繫結不再插入 child-only 請求頭欄位。`ForkInProcessProvider.prepareContinuable()` 與 `ctx.subagents.startContinuable()` 仍是這些 preset 使用的實作 seam。
 
-逐字节相同的前缀复用受显式部署选择约束。配置 child persona 或 `toolFilter` 的 fork 委派仍可能改变请求头。尤其是过滤掉 `send_message` 时，child 会同时失去该 schema 与返回指引；运行时不会绕过显式 allow-list。
+逐位元組相同的字首複用受顯式部署選擇約束。設定 child persona 或 `toolFilter` 的 fork 委派仍可能改變請求頭。尤其是過濾掉 `send_message` 時，child 會同時失去該 schema 與返回指引；執行時不會繞過顯式 allow-list。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**让所有 fork 保持 one-shot。** 这能保留前缀，但 child-only schema 差异消失后，继续放弃持久且多轮的 fork child 已无必要。
+**讓所有 fork 保持 one-shot。** 這能保留字首，但 child-only schema 差異消失後，繼續放棄持久且多輪的 fork child 已無必要。
 
-**安装 child-only 返回别名。** 无需填写接收方的别名可以缩短 child 调用，但会在继承历史之前重新产生工具 schema 与提示词差异，并重复相邻 Agent 操作。
+**安裝 child-only 返回別名。** 無需填寫接收方的別名可以縮短 child 呼叫，但會在繼承歷史之前重新產生工具 schema 與提示詞差異，並重復相鄰 Agent 操作。
 
-**把返回指令放进系统提示词。** 这会在继承消息之前加入 child-only 字节。将其追加到初始用户任务，可以保留继承前缀，并让 parent id 紧邻需要它的任务。
+**把返回指令放進系統提示詞。** 這會在繼承訊息之前加入 child-only 位元組。將其追加到初始使用者任務，可以保留繼承字首，並讓 parent id 緊鄰需要它的任務。
 
-**忽略显式 child `toolFilter`。** 结构性返回工具过去会绕过 child allow-list。否决该方案，因为声明的工具限制必须同时决定 schema 可见性与指引；隐藏权限会让面向模型的工具清单失真。
+**忽略顯式 child `toolFilter`。** 結構性返回工具過去會繞過 child allow-list。否決該方案，因為宣告的工具限制必須同時決定 schema 可見性與指引；隱藏權限會讓面向模型的工具清單失真。
 
-## 后果
+## 後果
 
-- 未请求 persona 或工具过滤时，parent 与可继续 fork child 暴露逐字节相同且顺序一致的工具 schema。
-- 继承的 Session 种子位于 child 初始任务及其返回指引之前。
-- base 与 headless profile 保持 one-shot fork；选定的 CLI preset 会在没有 child-only 请求头增量的前提下使用可继续 fork。
-- child 显式向直接 parent 发送零条或多条消息；最终回答不会被隐式复制。管理器负责的结算通知仍然无条件执行，并且与 Agent 消息分离。
-- keyless snapshot 与包测试固定 schema 相等性、继承历史顺序、parent-id 指引，以及通过同一个 `send_message` 操作完成的 child-to-parent 投递。
+- 未請求 persona 或工具過濾時，parent 與可繼續 fork child 暴露逐位元組相同且順序一致的工具 schema。
+- 繼承的 Session 種子位於 child 初始任務及其返回指引之前。
+- base 與 headless profile 保持 one-shot fork；選定的 CLI preset 會在沒有 child-only 請求頭增量的前提下使用可繼續 fork。
+- child 顯式向直接 parent 傳送零條或多條訊息；最終回答不會被隱式複製。管理器負責的結算通知仍然無條件執行，並且與 Agent 訊息分離。
+- keyless snapshot 與包測試固定 schema 相等性、繼承歷史順序、parent-id 指引，以及透過同一個 `send_message` 操作完成的 child-to-parent 投遞。
 
-### 已接受风险
+### 已接受風險
 
-提供方侧前缀复用仍取决于选定的提供方和模型，以及是否不存在显式 persona 或工具过滤差异。harness 证明的是自己组装出的请求头输入相等，而不是提供方的缓存行为。
+提供者側字首複用仍取決於選定的提供者和模型，以及是否不存在顯式 persona 或工具過濾差異。harness 證明的是自己組裝出的請求頭輸入相等，而不是提供者的快取行為。

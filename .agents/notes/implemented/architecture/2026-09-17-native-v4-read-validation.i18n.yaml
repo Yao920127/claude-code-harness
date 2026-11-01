@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-17-native-v4-read-validation.md
 /agent-note-mandatory-native-v4-relationship-validation:
   en: 67bc5b987df97d21
-  zh: 173eb273e11a24a9
+  zh: 248e141d5439f5c3
 /agent-note-mandatory-native-v4-relationship-validation/problem:
   en: cfb527c1c2ca661a
-  zh: b61a906330cdaf97
+  zh: 5ee98085c7daeb79
 /agent-note-mandatory-native-v4-relationship-validation/decision:
   en: 14feaf74a58d5609
-  zh: 8aea80c89110e638
+  zh: af8dc0d4b41b1db9
 /agent-note-mandatory-native-v4-relationship-validation/alternatives-considered:
   en: d6296e00a6b30d48
-  zh: 9f7074c69fb42e5f
+  zh: 83285f3c71ab014b
 /agent-note-mandatory-native-v4-relationship-validation/consequences:
   en: b76aaca1c35dcc6c
-  zh: b933c2518c64c60c
+  zh: 3ff49f96e057e761

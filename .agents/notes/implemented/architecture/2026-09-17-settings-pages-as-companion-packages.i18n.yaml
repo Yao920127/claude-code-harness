@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-17-settings-pages-as-companion-packages.md
 /agent-note-settings-pages-as-companion-packages:
   en: ada5eadeb6e921e4
-  zh: 1cc804b1720c2c98
+  zh: 6eced70122572a0b
 /agent-note-settings-pages-as-companion-packages/problem:
   en: 8c23fffd3cef6ea8
-  zh: 6072e1e4197afd7c
+  zh: 3a29aa5ec5a3e7f4
 /agent-note-settings-pages-as-companion-packages/decision:
   en: d0610e0445b8fdb7
-  zh: 5e8af1fce960cae5
+  zh: 1d6de059a297a92e
 /agent-note-settings-pages-as-companion-packages/alternatives-considered:
   en: cc29e94d925d84b4
-  zh: bdaec6d6ff2d511a
+  zh: 0ab73b82740804f5
 /agent-note-settings-pages-as-companion-packages/consequences:
   en: ef4733505d43fb1e
-  zh: 320475e4b5a0f5e0
+  zh: 15469c9fe34a0c81
 /agent-note-settings-pages-as-companion-packages/testing:
   en: 92bef8e1c609359b
-  zh: c4f2016243441b1e
+  zh: b3a86f68315b7f23

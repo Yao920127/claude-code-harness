@@ -1,47 +1,47 @@
-# Agent Note: Web 应用自有路由相对文档寻址
+# Agent Note: Web 應用自有路由相對文件定址
 
 Status: implemented
 
 [English](2026-09-14-web-document-relative-app-routes.md) | 中文
 
-## 问题
+## 問題
 
-浏览器对外壳自有路由的每一处引用都以源站根绝对形式书写：`/api/...` RPC、`/plugins/??...` 插件 bundle、Remote 流 mux、HMR 事件流，以及启动入口清理 token 时重定向到的 `/`。当一个监听端口位于剥离前缀的代理之后（例如 `https://host/tools/dsh/` 这样的挂载，把 `/tools/dsh/...` 转发为 `/...`），这些请求会落在源站根，那里没有任何路由应答：外壳、插件 bundle、流全部落空。同一份 bundle 必须同时服务源站根与任一挂载，而不能为此再构建一次。
+瀏覽器對外殼自有路由的每一處引用都以源站根絕對形式書寫：`/api/...` RPC、`/plugins/??...` 外掛 bundle、Remote 流 mux、HMR 事件流，以及啟動入口清理 token 時重定向到的 `/`。當一個監聽埠位於剝離字首的代理之後（例如 `https://host/tools/dsh/` 這樣的掛載，把 `/tools/dsh/...` 轉發為 `/...`），這些請求會落在源站根，那裡沒有任何路由應答：外殼、外掛 bundle、流全部落空。同一份 bundle 必須同時服務源站根與任一掛載，而不能為此再建置一次。
 
-挂载点无法从传输层恢复。配置 base URL 会把它变成部署输入，转发前缀推断会让请求头对路由具有权威性，代理内改写在碎片里重复同一事实。唯一已经知道挂载点的地方，就是所服务的文档自身。
+掛載點無法從傳輸層恢復。設定 base URL 會把它變成部署輸入，轉發字首推斷會讓請求頭對路由具有權威性，代理內改寫在碎片裡重複同一事實。唯一已經知道掛載點的地方，就是所服務的文件自身。
 
-## 决策
+## 決策
 
-所服务的 HTTP 外壳拥有自己的文档 base。其 index 携带唯一的 `<base href="./">`，在原始 index 转换执行后拼接于起始 head 标签之后，因此它先于启动 manifest、每一行插件资源，以及任何转换插入的标记。该 base 冻结入口目录：`/mount/` 与 `/mount/index.html` 是受支持的入口，而文档 URL 之后移动（页面内 `pushState`）不会移动 base。系统不推断任何前缀，因此深层直接加载与重新加载不是入口；裸挂载仍需依赖代理自身的规范化补齐尾部斜杠。
+所服務的 HTTP 外殼擁有自己的文件 base。其 index 攜帶唯一的 `<base href="./">`，在原始 index 轉換執行後拼接於起始 head 標籤之後，因此它先於啟動 manifest、每一行外掛資源，以及任何轉換插入的標記。該 base 凍結入口目錄：`/mount/` 與 `/mount/index.html` 是受支援的入口，而文件 URL 之後移動（頁面內 `pushState`）不會移動 base。系統不推斷任何字首，因此深層直接載入與重新載入不是入口；裸掛載仍需依賴代理自身的規範化補齊尾部斜槓。
 
-浏览器对这些路由的引用相对该文档——`api/x`、`plugins/x`——而服务端路由键保持绝对路径名：RPC channel 键 `/api`、`webServer` 注册路径，以及以 combo 路由 `/plugins/??...&rev=...` 为键的响应表。命名路由键的共享常量（`*_PATH`、`*_ENDPOINT`）在边界处被剥去前导斜杠（`KEY.slice(1)`）后浏览器代码才使用，浏览器形式以 `*_ROUTE` 与之并列。
+瀏覽器對這些路由的引用相對該文件——`api/x`、`plugins/x`——而伺服器端路由鍵保持絕對路徑名：RPC channel 鍵 `/api`、`webServer` 註冊路徑，以及以 combo 路由 `/plugins/??...&rev=...` 為鍵的回應表。命名路由鍵的共享常數（`*_PATH`、`*_ENDPOINT`）在邊界處被剝去前導斜槓（`KEY.slice(1)`）後瀏覽器程式碼才使用，瀏覽器形式以 `*_ROUTE` 與之並列。
 
-宿主在每个生产者里只在一处组合浏览器引用。模块启动图 row 与批次描述符携带文档相对的 combo 引用；source-map trailer 只携带 combo 查询，因为脚本的 source-map 引用相对该脚本自身目录（`.../plugins/`）解析，而非相对文档。响应表仍以绝对路由为键，而请求在代理剥去前缀后到达的也正是该路由。
+主機在每個生產者裡只在一處組合瀏覽器引用。模組啟動圖 row 與批次描述符攜帶文件相對的 combo 引用；source-map trailer 只攜帶 combo 查詢，因為腳本的 source-map 引用相對該腳本自身目錄（`.../plugins/`）解析，而非相對文件。回應表仍以絕對路由為鍵，而請求在代理剝去字首後到達的也正是該路由。
 
-启动入口遵循同一规则。`authenticatedUrl` 把进程 token 加到调用方的 URL 上并保留其 authority 与挂载；token 交换重定向到 `./`，移除 query token 的同时保留请求 URL 的目录。Host/Origin 栅栏与 cookie 规则不变。
+啟動入口遵循同一規則。`authenticatedUrl` 把程序 token 加到呼叫方的 URL 上並保留其 authority 與掛載；token 交換重定向到 `./`，移除 query token 的同時保留請求 URL 的目錄。Host/Origin 柵欄與 cookie 規則不變。
 
-需要绝对 URL 的消费方相对 `document.baseURI` 解析：Gateway 构造 WebSocket URL 并选择 `ws:` 或 `wss:` 时，以及 Inspector 从启动图定位自身 bundle 时。
+需要絕對 URL 的消費方相對 `document.baseURI` 解析：Gateway 建構 WebSocket URL 並選擇 `ws:` 或 `wss:` 時，以及 Inspector 從啟動圖定位自身 bundle 時。
 
-Desktop 是另一个文档所有者。它的窗口加载 `dsh-app://app/`：该来源在根目录提供同一份 dist，并把其他所有应用路径转发给它拥有的 Host，因此它的文档目录本就是根目录，无需为它注入 base 行；它改为通过传输层的 `streamBaseUrl` 为 Gateway 指定该 Host origin。它的资源就位于该根目录，这也是所服务 HTTP 外壳的 `./` 不适用于它的原因。
+Desktop 是另一個文件所有者。它的視窗載入 `dsh-app://app/`：該來源在根目錄提供同一份 dist，並把其他所有應用路徑轉發給它擁有的 Host，因此它的文件目錄本就是根目錄，無需為它注入 base 行；它改為透過傳輸層的 `streamBaseUrl` 為 Gateway 指定該 Host origin。它的資源就位於該根目錄，這也是所服務 HTTP 外殼的 `./` 不適用於它的原因。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**把配置 base URL 当作路由 base（`publicUrl`）。** 否决：文档已经知道自己的 URL，因此这是为页面本可读取的事实引入第二个易漂移来源，而且必须把它接入每个消费方，而不是只做一次外壳决策。对外公告的公开 URL 仍是面向运维的打印／打开输入，不是路由输入。
+**把設定 base URL 當作路由 base（`publicUrl`）。** 否決：文件已經知道自己的 URL，因此這是為頁面本可讀取的事實引入第二個易漂移來源，而且必須把它接入每個消費方，而不是隻做一次外殼決策。對外公告的公開 URL 仍是面向運維的列印／開啟輸入，不是路由輸入。
 
-**从转发前缀请求头推断挂载点。** 否决：这会让请求头对路由具有权威性，任何设置该头的客户端都能挪动应用自有路由，代理约定也会变成服务端可见的配置。
+**從轉發字首請求頭推斷掛載點。** 否決：這會讓請求頭對路由具有權威性，任何設定該頭的用戶端都能挪動應用自有路由，代理約定也會變成伺服器端可見的設定。
 
-**共享 `Connection.resolveUrl` 或 routes base。** HTTP 载体的文档基准与 worker tunnel 的 Host 根路径映射不同。在 Connection 中统一解析所有目标，会把静态 preview 路径加到 worker 本地路由之前，或丢失所服务的挂载。各载体解析自己的目标；UI 资源消费方使用文档基准。
+**共享 `Connection.resolveUrl` 或 routes base。** HTTP 載體的文件基準與 worker tunnel 的 Host 根路徑對映不同。在 Connection 中統一解析所有目標，會把靜態 preview 路徑加到 worker 本地路由之前，或丟失所服務的掛載。各載體解析自己的目標；UI 資源消費方使用文件基準。
 
-**保留绝对 `/` 重定向并让代理改写 `Location`。** 否决：浏览器已经知道请求所在目录，而配置出来的重定向目标无法同时适用于 loopback 入口与代理挂载。
+**保留絕對 `/` 重定向並讓代理改寫 `Location`。** 否決：瀏覽器已經知道請求所在目錄，而設定出來的重定向目標無法同時適用於 loopback 入口與代理掛載。
 
-## 后果
+## 後果
 
-一份 bundle 服务源站根与任一挂载，所服务的文档是挂载点的唯一来源。代价是显式的：受支持的入口只有 dist 根与配置的 index 路径；裸挂载依赖代理的斜杠规范化；页面内深层路径重新加载会在该路径重新进入，而非冻结目录。
+一份 bundle 服務源站根與任一掛載，所服務的文件是掛載點的唯一來源。代價是顯式的：受支援的入口只有 dist 根與設定的 index 路徑；裸掛載依賴代理的斜槓規範化；頁面內深層路徑重新載入會在該路徑重新進入，而非凍結目錄。
 
-功能包自有的路由（open-in-app、deliverables、会话日志导出、上传、markdown 媒体）通过各自的 `*_ROUTE` 常量遵循同一规则；让浏览器源码持续遵守该规则的静态门禁随那些改动一并记录。
+功能包自有的路由（open-in-app、deliverables、工作階段日誌匯出、上傳、markdown 媒體）透過各自的 `*_ROUTE` 常數遵循同一規則；讓瀏覽器原始碼持續遵守該規則的靜態門禁隨那些改動一併記錄。
 
-## 测试
+## 測試
 
-frontend-static 的真实组合测试通过 Loader 提供 index，并断言唯一的 `<base href="./">` 先于注入的插件资源行与转换标记。client-modules node 半侧测试断言启动图 row、批次描述符与 source-map trailer 均为文档相对，而响应表仍按路由提供它们，客户端测试 roster 与 assembled-boot fixture 携带同一相对形式。`browser-auth.host.spec.ts` 覆盖 `./` 重定向与保留 authority 和挂载的 `authenticatedUrl`；`frontend-static.spec.ts` 与 `apps/cli/tests/web-auth.e2e.ts` 分别经真实 Loader 组合与构建后的 CLI 运行该交换。
+frontend-static 的真實組合測試透過 Loader 提供 index，並斷言唯一的 `<base href="./">` 先於注入的外掛資源行與轉換標記。client-modules node 半側測試斷言啟動圖 row、批次描述符與 source-map trailer 均為文件相對，而回應表仍按路由提供它們，用戶端測試 roster 與 assembled-boot fixture 攜帶同一相對形式。`browser-auth.host.spec.ts` 覆蓋 `./` 重定向與保留 authority 和掛載的 `authenticatedUrl`；`frontend-static.spec.ts` 與 `apps/cli/tests/web-auth.e2e.ts` 分別經真實 Loader 組合與建置後的 CLI 執行該交換。
 
-`apps/web/tests/public-mount.e2e.ts` 是浏览器证据：真实 Chromium 经剥离前缀的代理到达同一监听端口，挂载下的 WebSocket 双向成流，`pushState` 到更深路径后 `document.baseURI` 仍停在挂载点，而文档相对的 `fetch('api/session/create')` 在其下依然成功。
+`apps/web/tests/public-mount.e2e.ts` 是瀏覽器證據：真實 Chromium 經剝離字首的代理到達同一監聽埠，掛載下的 WebSocket 雙向成流，`pushState` 到更深路徑後 `document.baseURI` 仍停在掛載點，而文件相對的 `fetch('api/session/create')` 在其下依然成功。

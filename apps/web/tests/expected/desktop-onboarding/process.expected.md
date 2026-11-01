@@ -1,10 +1,10 @@
-- region "你希望看到多少工作过程？":
-  - heading "你希望看到多少工作过程？" [level=1]
-  - paragraph: 这只会影响工作过程的展示方式，不会影响 DeepSeek Harness 的工作能力。
-  - radiogroup "你希望看到多少工作过程？":
-    - radio "聚焦结果 只看结果，保持界面简洁明了"
-    - radio "关键细节 结果优先，仅展示重要步骤和关键操作"
-    - radio "完整过程 查看完整工作过程，方便调试和排查问题" [checked]
-  - button "进入应用"
+- region "你希望看到多少工作過程？":
+  - heading "你希望看到多少工作過程？" [level=1]
+  - paragraph: 這隻會影響工作過程的展示方式，不會影響 DeepSeek Harness 的工作能力。
+  - radiogroup "你希望看到多少工作過程？":
+    - radio "聚焦結果 只看結果，保持介面簡潔明瞭"
+    - radio "關鍵細節 結果優先，僅展示重要步驟和關鍵操作"
+    - radio "完整過程 檢視完整工作過程，方便除錯和排查問題" [checked]
+  - button "進入應用"
   - button "上一步"
-  - button "跳过"
+  - button "跳過"

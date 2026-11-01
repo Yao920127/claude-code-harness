@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-30-event-domain-semantics.md
 /agent-note-event-domain-semantics-session-is-the-fact-log-agent-is-the-live-event-channel:
   en: e7cdaa7a6029c259
-  zh: ed13f8158ee0eaeb
+  zh: add3d8e25d6e7aac
 /agent-note-event-domain-semantics-session-is-the-fact-log-agent-is-the-live-event-channel/problem:
   en: 1222c2b55882b1e5
-  zh: f81f481f5eb9a684
+  zh: 9d439bda1364da66
 /agent-note-event-domain-semantics-session-is-the-fact-log-agent-is-the-live-event-channel/decision:
   en: ccc0fed9b7388112
-  zh: 3cc527b11affd941
+  zh: 0ef4479318201146
 /agent-note-event-domain-semantics-session-is-the-fact-log-agent-is-the-live-event-channel/consequences:
   en: e0c5aa60322e67a1
-  zh: 7495550f0c863eda
+  zh: 42e3ee74c7835d10

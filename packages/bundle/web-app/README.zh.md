@@ -1,5 +1,5 @@
 ---
-description: "dsh 的浏览器 GUI：交互式聊天、模型与设置管理、会话历史，供运行 dsh web 表层的用户使用。"
+description: "dsh 的瀏覽器 GUI：互動式聊天、模型與設定管理、工作階段歷史，供執行 dsh web 表層的使用者使用。"
 kind: "package-bundle"
 ---
 
@@ -9,158 +9,158 @@ kind: "package-bundle"
 
 ## 概述
 
-运行 `dsh --profile web`，打开提供聊天、模型与设置管理以及会话历史的交互式浏览器 GUI。它使用与其他 dsh 表层相同的模型访问、工具与安全默认值。启动时会打印带认证信息的 URL，通常还会在默认浏览器中打开；SSH 会话和 `--no-open` 会保留该 URL，供你手动打开。你可以更改端口并允许额外主机，但不能绑定所有网络接口。需要在浏览器中交互式工作时选择本包；一次性的命令行任务应使用 `dsh-headless`。
+執行 `dsh --profile web`，開啟提供聊天、模型與設定管理以及工作階段歷史的互動式瀏覽器 GUI。它使用與其他 dsh 表層相同的模型存取、工具與安全預設值。啟動時會列印帶認證資訊的 URL，通常還會在預設瀏覽器中開啟；SSH 工作階段和 `--no-open` 會保留該 URL，供你手動開啟。你可以更改埠並允許額外主機，但不能繫結所有網路介面。需要在瀏覽器中互動式工作時選擇本包；一次性的命令列任務應使用 `dsh-headless`。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-启动 GUI、打开浏览器，然后开始与 agent（智能体）对话。flag 用于微调本次调用。
+啟動 GUI、開啟瀏覽器，然後開始與 agent（智慧代理）對話。flag 用於微調本次呼叫。
 
-### 启动 Web GUI
+### 啟動 Web GUI
 
 ```sh
 dsh --profile web
 dsh --profile web --no-open --port 8080
 ```
 
-启动后你会看到 `dsh web:` 行，其根 URL 携带新的进程 token。除非 `--no-open` 或 SSH 会话抑制，否则默认浏览器会打开该 URL、取得签名 cookie，再重定向到不含认证参数的同一目录。页面加载且你可以与 agent 对话，就说明成功了。两种可预期的失败：前端未构建时，启动会以构建提示停止（checkout 中运行 `pnpm run build`）；浏览器无法打开时，stderr 会打印不含凭据的诊断，但服务器会继续运行——请自行打开已打印的启动 URL。
+啟動後你會看到 `dsh web:` 行，其根 URL 攜帶新的程序 token。除非 `--no-open` 或 SSH 工作階段抑制，否則預設瀏覽器會開啟該 URL、取得簽名 cookie，再重定向到不含認證參數的同一目錄。頁面載入且你可以與 agent 對話，就說明成功了。兩種可預期的失敗：前端未建置時，啟動會以建置提示停止（checkout 中執行 `pnpm run build`）；瀏覽器無法開啟時，stderr 會列印不含憑證的診斷，但伺服器會繼續執行——請自行開啟已列印的啟動 URL。
 
-**设置 → 模型**显示 **DeepSeek**，使用 `DEEPSEEK_API_KEY`。默认模型为 `deepseek-official` / `deepseek-flash`（DeepSeek-V41-Flash）。[DeepSeek 插件](../../llm/llm-deepseek/README.zh.md#endpoint-and-wire-format)使用 Messages API。
+**設定 → 模型**顯示 **DeepSeek**，使用 `DEEPSEEK_API_KEY`。預設模型為 `deepseek-official` / `deepseek-flash`（DeepSeek-V41-Flash）。[DeepSeek 外掛](../../llm/llm-deepseek/README.zh.md#endpoint-and-wire-format)使用 Messages API。
 
-已保存的模型选择覆盖组合默认值。设置卡接受兼容 Messages 的 API 地址与凭据引用。
+已儲存的模型選擇覆蓋組合預設值。設定卡接受相容 Messages 的 API 地址與憑證引用。
 
-### 配置
+### 設定
 
-大多数用户不需要设置这些；命令行 flag 会提供给下面四个设置——`--host`、`--port` 与 `--trusted-host` 来自本次调用，`--no-open` 仅对本次调用关闭浏览器交接：
+大多數使用者不需要設定這些；命令列 flag 會提供給下面四個設定——`--host`、`--port` 與 `--trusted-host` 來自本次呼叫，`--no-open` 僅對本次呼叫關閉瀏覽器交接：
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `openBrowser` | `true` | 启动后用默认浏览器打开；SSH 启动会抑制它 |
-| `printUrl` | `true` | 启动时打印 `dsh web:` URL 行 |
-| `surfaceContext` | `true` | 给 agent 提供 GUI 定位上下文，并把 `DSH_WEB_URL` 暴露给其 shell 命令 |
-| `trustedHosts` | `[]` | 允许从网络访问 GUI 的额外主机 |
+| `openBrowser` | `true` | 啟動後用預設瀏覽器開啟；SSH 啟動會抑制它 |
+| `printUrl` | `true` | 啟動時列印 `dsh web:` URL 行 |
+| `surfaceContext` | `true` | 給 agent 提供 GUI 定位上下文，並把 `DSH_WEB_URL` 暴露給其 shell 命令 |
+| `trustedHosts` | `[]` | 允許從網路存取 GUI 的額外主機 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-app)是每个受支持字段及其 JSDoc 的穷尽式真源。 随发行版交付的组合默认禁用 `schedule`、`ui-schedule` 和 `time-context`。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-app)是每個受支援欄位及其 JSDoc 的窮盡式真源。 隨發行版交付的組合預設停用 `schedule`、`ui-schedule` 和 `time-context`。
 
-### LAN 访问与可信主机
+### LAN 存取與可信主機
 
-默认情况下 GUI 只接受本机的连接。绑定所有网络接口的部署也会允许 LAN 内的浏览器访问，此时打印的 URL 会附带一个 LAN 地址；`--trusted-host` 在两种情况下都能添加额外主机。Host 与 Origin 检查控制可达性，token 交换则认证每个 Host API 方法与 WebSocket 流。LAN 地址只在启动时采样一次，因此之后的网络变化不会被感知——重启 GUI 以重新公告。
+預設情況下 GUI 只接受本機的連線。繫結所有網路介面的部署也會允許 LAN 內的瀏覽器存取，此時列印的 URL 會附帶一個 LAN 地址；`--trusted-host` 在兩種情況下都能新增額外主機。Host 與 Origin 檢查控制可達性，token 交換則認證每個 Host API 方法與 WebSocket 流。LAN 地址只在啟動時取樣一次，因此之後的網路變化不會被感知——重新啟動 GUI 以重新公告。
 
-### 通过 SSH 运行
+### 透過 SSH 執行
 
-通过 SSH 启动 `dsh --profile web` 时，URL 行仍会打印，但不会为你打开浏览器：本地转发地址由 SSH 客户端或编辑器持有。请在自己的机器上打开转发后的 URL；打印出的 URL 指向远端宿主机 loopback 端点。
+透過 SSH 啟動 `dsh --profile web` 時，URL 行仍會列印，但不會為你開啟瀏覽器：本地轉發地址由 SSH 用戶端或編輯器持有。請在自己的機器上開啟轉發後的 URL；列印出的 URL 指向遠端主機 loopback 端點。
 
-### 按会话的 agent 设置
+### 按工作階段的 agent 設定
 
-每个浏览器会话选择一个随发行版交付的 preset（默认 `standard`）。Agent 预设设置页可更改默认项并编辑预设的子插件；保存结果持久化到 `$DSH_HOME/profiles/web/cordis.patch.yml`。只有 Host 提供可编辑的 profile 时，Creator 的插件管理工具才会启用。
+每個瀏覽器工作階段選擇一個隨發行版交付的 preset（預設 `standard`）。Agent 預設設定頁可更改預設項並編輯預設的子外掛；儲存結果持久化到 `$DSH_HOME/profiles/web/cordis.patch.yml`。只有 Host 提供可編輯的 profile 時，Creator 的外掛管理工具才會啟用。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-此 bundle 由一层五个文件的补丁和一个运行时胶水插件组成：`cordis.patch.yml` 承载宿主行和 preset 注册表，每个 `presets/<id>.patch.yml` 插入一条随发行版交付的 preset 声明，按 `dsh.bundle.patch` 列出的顺序应用。存储栈与投影缓存来自 `dsh-base`；Web 叠加层的工作区和消息反馈条目消费共享的 `storageDomain` 服务。补丁重述 base 有意省略的界面专用值，插入 Web 专用宿主条目和浏览器插件列表，再将 Agent 层移到预设后面。胶水插件负责 dist 服务、信任采样、提示词段落、bash 变量和就绪通知。`office-to-pdf` 条目为宿主消费者挂载一个延迟创建引擎的 [Office 转换提供方](../../document/office-to-pdf/README.zh.md)，使用此 bundle 的 Desktop 组合也共享该提供方。 转换服务的 Remote 方法负责预览读取授权，Document Preview 负责 Office 查看器和客户端缓存。
+此 bundle 由一層五個檔案的補丁和一個執行時膠水外掛組成：`cordis.patch.yml` 承載主機行和 preset 註冊表，每個 `presets/<id>.patch.yml` 插入一條隨發行版交付的 preset 宣告，按 `dsh.bundle.patch` 列出的順序應用。儲存棧與投影快取來自 `dsh-base`；Web 疊加層的工作區和訊息回饋條目消費共享的 `storageDomain` 服務。補丁重述 base 有意省略的介面專用值，插入 Web 專用主機條目和瀏覽器外掛列表，再將 Agent 層移到預設後面。膠水外掛負責 dist 服務、信任取樣、提示詞段落、bash 變數和就緒通知。`office-to-pdf` 條目為主機消費者掛載一個延遲建立引擎的 [Office 轉換提供者](../../document/office-to-pdf/README.zh.md)，使用此 bundle 的 Desktop 組合也共享該提供者。 轉換服務的 Remote 方法負責預覽讀取授權，Document Preview 負責 Office 檢視器和用戶端快取。
 
-### patch 语义
+### patch 語義
 
-patch 会替换目标行的整个 `config`，因此每个 Web 行都重述自己拥有的每个键：基础行上的 persona 前缀与后缀模板、`DSH_TOOLS_MODE` PTC mode 开关与 `session-query-sqlite` 值，随后 `insert` 添加 Web 宿主行、传输层与浏览器名录。base 以进程级挂载的按 agent 工具行在这里被禁用，由 preset 名录接管；每项宿主层与 preset 层归属决策的理由以行内注释写在 patch 里。
+patch 會替換目標行的整個 `config`，因此每個 Web 行都重述自己擁有的每個鍵：基礎行上的 persona 字首與字尾範本、`DSH_TOOLS_MODE` PTC mode 開關與 `session-query-sqlite` 值，隨後 `insert` 新增 Web 主機行、傳輸層與瀏覽器名錄。base 以程序級掛載的按 agent 工具行在這裡被停用，由 preset 名錄接管；每項主機層與 preset 層歸屬決策的理由以行內註解寫在 patch 裡。
 
-### 就绪宣告
+### 就緒宣告
 
-URL 行与浏览器交接都是就绪信号：监督方一观察到该行就发起 RPC，浏览器一打开就请求页面，因此两者只在 Loader 配置树结算、通过 required 启动检查且 Connection 认证可用后运行——在没有 Loader 的手工构建树中则立即运行。此时 client combo JavaScript 和 source map 仍未物化。可选插件失败不会阻止就绪宣告；required 启动失败或启动中途被释放的树不会宣告任何内容。
+URL 行與瀏覽器交接都是就緒訊號：監督方一觀察到該行就發起 RPC，瀏覽器一開啟就請求頁面，因此兩者只在 Loader 設定樹結算、透過 required 啟動檢查且 Connection 認證可用後執行——在沒有 Loader 的手工建置樹中則立即執行。此時 client combo JavaScript 和 source map 仍未物化。可選外掛失敗不會阻止就緒宣告；required 啟動失敗或啟動中途被釋放的樹不會宣告任何內容。
 
-### LAN 信任采样
+### LAN 信任取樣
 
-`resolveLanTrust` 在启动时只采样一次网络：loopback 绑定（`127.0.0.1`）不派生任何 LAN 地址，绑定所有网卡则会加入每个非 internal IPv4 字面量。派生字面量加上显式的 `--trusted-host` 权威标识组成 `/api` 浏览器信任栅栏，打印的 LAN URL 始终与该栅栏一致。
+`resolveLanTrust` 在啟動時只取樣一次網路：loopback 繫結（`127.0.0.1`）不派生任何 LAN 地址，繫結所有網路卡則會加入每個非 internal IPv4 字面量。派生字面量加上顯式的 `--trusted-host` 權威標識組成 `/api` 瀏覽器信任柵欄，列印的 LAN URL 始終與該柵欄一致。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `web-app` 粘合插件：dist 解析、LAN 信任采样、提示词段落、bash 变量、URL 行、浏览器交接 |
-| [`src/startup.ts`](src/startup.ts) | `web-startup` 提供方：`--host`、`--port`、`--trusted-host`、`--no-open`、`--help` |
-| [`cordis.patch.yml`](cordis.patch.yml) | Web patch：重述的基础值、Web 宿主行、浏览器名录、preset 注册表 |
-| [`presets/`](presets) | 每个随发行版交付的 preset（`standard`、`ptc`、`minimal`、`cordis`）各一条 `@deepseek-ai/dsh-agent-preset` 声明，各自一个补丁文件 |
-| — | 不发布运行时不变式伴生入口；每项贡献（frontend-static 子插件、提示词段落、bashEnv 注册）都会随 fiber 由注册表释放，且每个所属注册表的包负责该关系的不变式；本包不持有需要审计的可变状态。 |
-| [`tests/web-app.spec.ts`](tests/web-app.spec.ts) | dist 解析、回退席位、提示词段落、就绪宣告 |
-| [`tests/startup.spec.ts`](tests/startup.spec.ts) | 在真实 Loader 树上的命令行解析 |
-| [`tests/trusted-hosts.spec.ts`](tests/trusted-hosts.spec.ts) | LAN 信任采样 |
-| [`tests/browser-open.spec.ts`](tests/browser-open.spec.ts) | 页面可达后的默认浏览器交接 |
+| [`src/index.ts`](src/index.ts) | `web-app` 粘合外掛：dist 解析、LAN 信任取樣、提示詞段落、bash 變數、URL 行、瀏覽器交接 |
+| [`src/startup.ts`](src/startup.ts) | `web-startup` 提供者：`--host`、`--port`、`--trusted-host`、`--no-open`、`--help` |
+| [`cordis.patch.yml`](cordis.patch.yml) | Web patch：重述的基礎值、Web 主機行、瀏覽器名錄、preset 註冊表 |
+| [`presets/`](presets) | 每個隨發行版交付的 preset（`standard`、`ptc`、`minimal`、`cordis`）各一條 `@deepseek-ai/dsh-agent-preset` 宣告，各自一個補丁檔案 |
+| — | 不釋出執行時不變式伴生入口；每項貢獻（frontend-static 子外掛、提示詞段落、bashEnv 註冊）都會隨 fiber 由註冊表釋放，且每個所屬註冊表的包負責該關係的不變式；本包不持有需要審計的可變狀態。 |
+| [`tests/web-app.spec.ts`](tests/web-app.spec.ts) | dist 解析、退回席位、提示詞段落、就緒宣告 |
+| [`tests/startup.spec.ts`](tests/startup.spec.ts) | 在真實 Loader 樹上的命令列解析 |
+| [`tests/trusted-hosts.spec.ts`](tests/trusted-hosts.spec.ts) | LAN 信任取樣 |
+| [`tests/browser-open.spec.ts`](tests/browser-open.spec.ts) | 頁面可達後的預設瀏覽器交接 |
 
-### 不变式归属
+### 不變式歸屬
 
-不发布不变式伴生入口，因为每项贡献——frontend-static 子插件、提示词段落与 bash 变量注册——都会随 fiber 由注册表释放，且每个所属注册表的包负责该关系的不变式。
+不釋出不變式伴生入口，因為每項貢獻——frontend-static 子外掛、提示詞段落與 bash 變數註冊——都會隨 fiber 由註冊表釋放，且每個所屬註冊表的包負責該關係的不變式。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当你想深入了解共享核心、浏览器重载流水线或已构建的前端时，阅读以下页面。
+當你想深入瞭解共享核心、瀏覽器過載流水線或已建置的前端時，閱讀以下頁面。
 
-- [组合包索引](../README.zh.md)——基于同一核心构建的表层。
-- [dsh-base](../base/README.zh.md)——GUI 运行其上的共享核心。
-- [dsh-client-hmr](../../client/hmr/README.zh.md)——开发期间客户端插件变更如何重载。
-- [frontend-static](../../host/frontend-static/README.zh.md)——已构建的前端如何被服务。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-app)——每个受支持配置字段及其源声明。
+- [組合包索引](../README.zh.md)——基於同一核心建置的表層。
+- [dsh-base](../base/README.zh.md)——GUI 執行其上的共享核心。
+- [dsh-client-hmr](../../client/hmr/README.zh.md)——開發期間用戶端外掛變更如何過載。
+- [frontend-static](../../host/frontend-static/README.zh.md)——已建置的前端如何被服務。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-web-app)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### Harness 源码与 Web 表层上下文
+### Harness 原始碼與 Web 表層上下文
 
-#### 模型看到什么
+#### 模型看到什麼
 
-当 `surfaceContext` 为 true 时，`harness:source` 段落标明磁盘上的 Harness 实现，但不会声称它就是工作目录；全局段落 `app:web-surface`（first-party 顺序 10100，位于可复用指令之后）则向模型说明 GUI：规范的本地 URL、「this page」指代什么、更新约定（重载接收端始终开启；无刷新重载还需要 `pnpm run dev:web` watcher），以及不要启动替代服务器的指令。`DSH_WEB_URL` 还会连同描述出现在受管 bash 环境中，每次调用时从运行中的服务器解析。当它为 false 时，这两个段落和该变量都不会注册。
+當 `surfaceContext` 為 true 時，`harness:source` 段落標明磁碟上的 Harness 實作，但不會聲稱它就是工作目錄；全域段落 `app:web-surface`（first-party 順序 10100，位於可複用指令之後）則向模型說明 GUI：規範的本地 URL、「this page」指代什麼、更新約定（過載接收端始終開啟；無重新整理過載還需要 `pnpm run dev:web` watcher），以及不要啟動替代伺服器的指令。`DSH_WEB_URL` 還會連同描述出現在受管 bash 環境中，每次呼叫時從執行中的伺服器解析。當它為 false 時，這兩個段落和該變數都不會註冊。
 
-#### Token 影响
+#### Token 影響
 
-每个会话一行源码说明和一段提示词，外加两行受管环境变量；每个进程内保持恒定。
+每個工作階段一行原始碼說明和一段提示詞，外加兩行受管環境變數；每個程序內保持恆定。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-源码与 Web 段落位于第一方可复用指令之后。工具与配置一致时，不同 checkout 路径或本地端口不会改变前置前缀；不保证提供方复用缓存。
+原始碼與 Web 段落位於第一方可複用指令之後。工具與設定一致時，不同 checkout 路徑或本地埠不會改變前置字首；不保證提供者複用快取。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制告诉你在不常见的环境下会遇到什么——源码 checkout、SSH 会话或严格网络。它们是当前包约束，不是通用的浏览器对比或任务积压。
+這些限制告訴你在不常見的環境下會遇到什麼——原始碼 checkout、SSH 工作階段或嚴格網路。它們是目前包約束，不是通用的瀏覽器對比或任務積壓。
 
-- **前端必须已构建**——源码 checkout 需要先运行 `pnpm run build`；dist 缺失时启动会以构建提示停止，且没有从源码直接服务的回退路径。
-- **LAN 地址只在启动时采样一次**——启动后的网卡变化不会重新公告；打印的 LAN URL 始终与采样结果一致。
-- **只能观察到交接的启动**——GUI 只报告浏览器被请求打开，而不是它确实打开了；之后的浏览器退出永远不会上报，打印的 URL 是你的手动回退路径。
-- **SSH 会话保留 URL 但跳过浏览器交接**——打印的 URL 指向远端宿主机 loopback 端点；SSH 客户端或编辑器必须暴露并打开本地转发地址。
-- **`BROWSER` 覆盖只能来自环境**——被发现的 `.env` 不能设置 `BROWSER`；只有继承值能为自动交接选择可执行文件。
-- **不支持绑定所有网络接口**——出于安全考虑，`--host 0.0.0.0` 会在启动时被拒绝；请使用默认 loopback 主机。
+- **前端必須已建置**——原始碼 checkout 需要先執行 `pnpm run build`；dist 缺失時啟動會以建置提示停止，且沒有從原始碼直接服務的退回路徑。
+- **LAN 地址只在啟動時取樣一次**——啟動後的網路卡變化不會重新公告；列印的 LAN URL 始終與取樣結果一致。
+- **只能觀察到交接的啟動**——GUI 只報告瀏覽器被請求開啟，而不是它確實開啟了；之後的瀏覽器退出永遠不會上報，列印的 URL 是你的手動退回路徑。
+- **SSH 工作階段保留 URL 但跳過瀏覽器交接**——列印的 URL 指向遠端主機 loopback 端點；SSH 用戶端或編輯器必須暴露並開啟本地轉發地址。
+- **`BROWSER` 覆蓋只能來自環境**——被發現的 `.env` 不能設定 `BROWSER`；只有繼承值能為自動交接選擇可執行檔案。
+- **不支援繫結所有網路介面**——出於安全考慮，`--host 0.0.0.0` 會在啟動時被拒絕；請使用預設 loopback 主機。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-Web 组合包含账号 Remote 控制器和账号设置页面。
+Web 組合包含帳號 Remote 控制器和帳號設定頁面。

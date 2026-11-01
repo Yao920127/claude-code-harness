@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/workspace.md
 /workspaces:
   en: 183fd2f466e3279c
-  zh: 6e79009b7294c240
+  zh: e6ce1f5a2315827d
 /workspaces/identity:
   en: d61a7e78bbc1fb56
-  zh: 8397869f70cd5b28
+  zh: 39840836e8d33bf1
 /workspaces/the-workspace-entity:
   en: 697698bc46adc477
-  zh: 73d073933ed68c53
+  zh: 8a891b5ed6470dd1
 /workspaces/the-registry-ctx-workspaceregistry:
   en: 7ba5b4e06c162bd6
-  zh: f1dd7eacacd07e0b
+  zh: 666db5c774a64c6b
 /workspaces/default-workspace-initialization:
   en: a7451c7762afc5c3
-  zh: 3977c92e3a7c2232
+  zh: 944f9ac6eb793404
 /workspaces/session-pinning:
   en: 3f5ab940adbfab1e
-  zh: f759cd34e3b06ca1
+  zh: a391a93656ff31cc
 /workspaces/archive-admission:
   en: f4ae8ce5eb2ef329
-  zh: 333106e86263be40
+  zh: f62fe047d0cff3da
 /workspaces/consumers:
   en: 6b592294ff18b4d3
-  zh: a48bec961b8182a9
+  zh: 98614acf7b321fdf

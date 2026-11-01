@@ -1,27 +1,27 @@
-# Agent Note: 构建产物豁免以失败的样式表为准
+# Agent Note: 建置產物豁免以失敗的樣式表為準
 
 Status: implemented
 
 [English](2026-09-10-built-bundle-css-exemption.md) | 中文
 
-## 问题
+## 問題
 
-[Node import sweep](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus-check.ts)因 Node 无法加载 Dockkit bundle 的样式表而豁免该 bundle，并曾以一个精确的样式表路径作为接受证据：`packages/client/ui-dockkit/lib/components/dockkit.module.css`。该已构建 bundle 在导入自身样式表之前先导入 workspace 包 `@deepseek-ai/dsh-client-ui-primitives`，`tsx` 启动器又通过 tsconfig `paths` 把这个说明符解析进依赖的 `src` 树，因此 sweep 报告的是 `packages/client/ui-primitives/src/StateDot.module.css` 的 `ERR_UNKNOWN_FILE_EXTENSION`。固定路径在带有 client 构建输出的树上无法匹配，Windows 完整门禁的清单于是把这个豁免 bundle 报告为意外的基线失败。
+[Node import sweep](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus-check.ts)因 Node 無法載入 Dockkit bundle 的樣式表而豁免該 bundle，並曾以一個精確的樣式表路徑作為接受證據：`packages/client/ui-dockkit/lib/components/dockkit.module.css`。該已建置 bundle 在匯入自身樣式表之前先匯入 workspace 包 `@deepseek-ai/dsh-client-ui-primitives`，`tsx` 啟動器又透過 tsconfig `paths` 把這個說明符解析進依賴的 `src` 樹，因此 sweep 報告的是 `packages/client/ui-primitives/src/StateDot.module.css` 的 `ERR_UNKNOWN_FILE_EXTENSION`。固定路徑在帶有 client 建置輸出的樹上無法匹配，Windows 完整門禁的清單于是把這個豁免 bundle 報告為意外的基線失敗。
 
-## 决策
+## 決策
 
-Dockkit 豁免接受 Node 对任意样式表因未知 `.css` 扩展名而拒绝加载。其他扩展名、其他错误码和无关的错误消息仍计为发现，能顺利完成导入的豁免 bundle 同样计为发现。
+Dockkit 豁免接受 Node 對任意樣式表因未知 `.css` 副檔名而拒絕載入。其他副檔名、其他錯誤碼和無關的錯誤訊息仍計為發現，能順利完成匯入的豁免 bundle 同樣計為發現。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**在固定路径之外同时接受依赖的源样式表。** sweep 报告的正是该文件，但选中它的是 bundle 的导入顺序和启动器的路径映射。固定该路径认定的将是这两处细节，而非 `.css` 豁免。
+**在固定路徑之外同時接受依賴的源樣式表。** sweep 報告的正是該檔案，但選中它的是 bundle 的匯入順序和啟動器的路徑對映。固定該路徑認定的將是這兩處細節，而非 `.css` 豁免。
 
-**用同一规则分类每个 CSS 豁免。** Dockkit 固定路径是本次修改所纠正的已记录证据；另外两个样式表豁免从未被分类，收窄它们会在所报告缺陷之外改变其接受的内容。
+**用同一規則分類每個 CSS 豁免。** Dockkit 固定路徑是本次修改所糾正的已記錄證據；另外兩個樣式表豁免從未被分類，收窄它們會在所報告缺陷之外改變其接受的內容。
 
-**放弃分类，接受任何失败。** 届时因无关原因停止导入的 bundle 会隐藏在豁免总数之内。
+**放棄分類，接受任何失敗。** 屆時因無關原因停止匯入的 bundle 會隱藏在豁免總數之內。
 
-## 后果
+## 後果
 
-只要 Dockkit bundle 因 Node 未知 `.css` 扩展名拒绝之外的任何原因停止导入，sweep 就会报告它，该条目也不再断言失败的是哪个样式表。[限定范围的 resolve/load hook](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus.spec.ts)覆盖被接受的 Dockkit 样式表、依赖的源样式表、其他扩展名、任意消息、其他错误码和陈旧豁免，不修改共享构建产物。
+只要 Dockkit bundle 因 Node 未知 `.css` 副檔名拒絕之外的任何原因停止匯入，sweep 就會報告它，該條目也不再斷言失敗的是哪個樣式表。[限定範圍的 resolve/load hook](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus.spec.ts)覆蓋被接受的 Dockkit 樣式表、依賴的源樣式表、其他副檔名、任意訊息、其他錯誤碼和陳舊豁免，不修改共享建置產物。
 
-[CI 观察决策](../testing/2026-09-08-ci-completion-observations.zh.md)保留其拥有的 fixture 完成与隔离决策；其已构建 Client 导入分类段落保留 sweep 摘要，并就被接受的证据链接到本文。
+[CI 觀察決策](../testing/2026-09-08-ci-completion-observations.zh.md)保留其擁有的 fixture 完成與隔離決策；其已建置 Client 匯入分類段落保留 sweep 摘要，並就被接受的證據連結到本文。

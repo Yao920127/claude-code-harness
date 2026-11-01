@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-05-prompt-variables-and-tool-guidance-ownership.md
 /agent-note-prompt-variables-and-tool-guidance-ownership:
   en: 6f8b4a9d26ab3e50
-  zh: 9741e5718e647f0a
+  zh: 9c9d0e8c9482a228
 /agent-note-prompt-variables-and-tool-guidance-ownership/problem:
   en: 8ccef8fbd9260dfe
-  zh: 106b2bafe969c676
+  zh: 96a251c629119c15
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision:
   en: c551d888282d9c73
-  zh: 889b5ca3cdf25aff
+  zh: 9466c48396e54798
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision/assemble-context:
   en: 46e67248692e333a
-  zh: 51c5f2c6152c94d7
+  zh: 71bc943065854ec8
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision/prompt-variables:
   en: 04b623ed2879fdf1
-  zh: c111be62834fda93
+  zh: 68ef9f9abfb220f6
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision/persona-as-the-order-0-section:
   en: c2d32c0ac5d28759
-  zh: 59cd252ba6da6e59
+  zh: 1f0a15607cfb4ecd
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision/tool-guidance-ownership:
   en: 308c0d2ef4e41f56
-  zh: d38f84a517da20df
+  zh: 724434c9768454c7
 /agent-note-prompt-variables-and-tool-guidance-ownership/decision/the-subagent-conversation-history-descriptor:
   en: 1cb9644f22918749
-  zh: fb9fdee133159ab2
+  zh: f623f433342bab39
 /agent-note-prompt-variables-and-tool-guidance-ownership/alternatives-considered:
   en: 9a114359d2e8988b
-  zh: ce39453408b2af7f
+  zh: dad128732a652dff
 /agent-note-prompt-variables-and-tool-guidance-ownership/out-of-scope:
   en: bbfecc70d0b457fe
-  zh: 7f207a37a86484f4
+  zh: 6d2406d752b9b10e
 /agent-note-prompt-variables-and-tool-guidance-ownership/shipped-invariants:
   en: 31ba63101fca5790
-  zh: af4ceefab2033142
+  zh: 5e06bcd51572b62b
 /agent-note-prompt-variables-and-tool-guidance-ownership/consequences:
   en: 993f17bf35f6a2e0
-  zh: acb429176f0eebcc
+  zh: e5794215fe2a0dd1

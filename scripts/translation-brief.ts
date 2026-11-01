@@ -206,7 +206,7 @@ export function computeMechanicalUpdate(confirmedSource: string, currentSource: 
 export interface TerminologyRow {
   english: string
   chinese: string
-  /** The 首次出现 cell (first-occurrence rendering), possibly empty. */
+  /** The 首次出現 cell (first-occurrence rendering), possibly empty. */
   first: string
   /** The verbatim table row. */
   line: string
@@ -301,7 +301,7 @@ export interface FirstOccurrenceContext {
 
 /**
  * Track document-wide first occurrences of the relevant English terms. The
- * 首次出现 rendering attaches to a term's first occurrence, so when an edit
+ * 首次出現 rendering attaches to a term's first occurrence, so when an edit
  * moves that occurrence across spans, both the old and new spans need
  * counterpart edits even when only one of them changed.
  *
@@ -388,8 +388,8 @@ const ZH_TARGET_DIGEST = [
   '- Code fences byte-identical to the English side, comments included; inline code spans verbatim.',
   '- Repository-relative document links keep the same semantic target and exact query/fragment; targets in the active bilingual corpus use `.zh.md` for Chinese, a missing in-scope counterpart is an error, and targets outside the corpus keep the authored path. The switcher remains the cross-locale exception.',
   '- Structure mirrors the counterpart: heading depths and order, list kinds and item counts, table rows and columns.',
-  '- 首次出现 annotations attach to the document-wide first occurrence only; later occurrences use the bare form, and an empty 首次出现 cell means never gloss.',
-  '- Typography: one half-width space between Chinese and Latin or digits; full-width punctuation in Chinese prose; 顿号 for enumerations; second person is 你.',
+  '- 首次出現 annotations attach to the document-wide first occurrence only; later occurrences use the bare form, and an empty 首次出現 cell means never gloss.',
+  '- Typography: one half-width space between Chinese and Latin or digits; full-width punctuation in Chinese prose; 頓號 for enumerations; second person is 你.',
   '- One physical line per paragraph; exactly one trailing newline.',
 ]
 
@@ -491,7 +491,7 @@ export function renderTranslationBrief(input: TranslationBriefInput): string {
     out.push('')
     out.push('## Binding terminology rows matching this change (docs/i18n/terminology.md)')
     out.push('')
-    out.push('| English | 中文 | 首次出现 | 不要译作 | 备注 |')
+    out.push('| English | 中文 | 首次出現 | 不要譯作 | 備註 |')
     out.push('|---|---|---|---|---|')
     for (const row of input.terminology) out.push(row.line)
     out.push('')

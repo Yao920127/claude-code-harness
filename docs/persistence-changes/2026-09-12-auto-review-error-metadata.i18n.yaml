@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-09-12-auto-review-error-metadata.md
 /:
   en: 3d5a424ae7d7e46b
-  zh: c22a8e4a62d8cc1a
+  zh: 630ac71355b9ea16
 /2026-09-12-auto-review-error-metadata:
   en: 8b0643c4a09d3e45
   zh: 5261e431711664e3
 /2026-09-12-auto-review-error-metadata/summary:
   en: 52d047afc26892fa
-  zh: 392d397daf7c5eab
+  zh: 8bbadddea216d0bf
 /2026-09-12-auto-review-error-metadata/table-of-contents:
   en: 6cf314a069ceb451
-  zh: 9adff678e9ecab3b
+  zh: 378f31ff431be8cb
 /2026-09-12-auto-review-error-metadata/declaration:
   en: 6907136f28e48c90
-  zh: 02f8298485f3d8e7
+  zh: c57270ea21c7a438
 /2026-09-12-auto-review-error-metadata/compatibility:
   en: 0fbc992ed4149fb1
-  zh: fd446f4210964b1e
+  zh: ed28d18b996dd2cd
 /2026-09-12-auto-review-error-metadata/verification:
   en: 59b830b1b9229362
-  zh: d73423fbabe6a8ad
+  zh: 7596bb67c5633312
 /2026-09-12-auto-review-error-metadata/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

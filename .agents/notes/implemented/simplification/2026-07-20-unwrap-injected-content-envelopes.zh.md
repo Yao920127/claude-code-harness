@@ -1,41 +1,41 @@
-# Agent Note: 注入内容逐字投影，去除 XML 封套
+# Agent Note: 注入內容逐字投影，去除 XML 封套
 
 Status: implemented
 
 [English](2026-07-20-unwrap-injected-content-envelopes.md) | 中文
 
-## 问题
+## 問題
 
-两类注入的会话内容在渲染进模型 transcript（文本记录）时被包在 XML 封套里：`steering/message` 包成 `<steering source="…">…</steering>`，`context/message` 包成 `<context source="…">…</context>`（后者有一个 `'raw'` 退出选项可跳过封套）。这些封套意在告诉模型「这是注入内容，不是用户在说话」。
+兩類注入的工作階段內容在渲染進模型 transcript（文字記錄）時被包在 XML 封套裡：`steering/message` 包成 `<steering source="…">…</steering>`，`context/message` 包成 `<context source="…">…</context>`（後者有一個 `'raw'` 退出選項可跳過封套）。這些封套意在告訴模型「這是注入內容，不是使用者在說話」。
 
-两个问题：
+兩個問題：
 
-- **没有模型在这些标签上训练过。** `<steering>` 和 `<context>` 是任何模型都未被教会去读的任意标记，因此这层框架只是徒增 token 而没有可靠效果，还可能起反作用——已录制的 transcript 显示，模型会把 `<steering>` 指令当成第三方元数据而拒绝服从，只回答原始提示词。
-- **会话表层是承载框架的错误层次。** 表层的职责是把持久日志投影为模型 transcript；决定内容如何措辞并不是它的事。想要特定框架的调用方可以在注入前自行格式化内容——唯一的重度生产方（`agent-instructions`）本就这样做，它自带完整的 `<system-reminder>` 框架，并用 `envelope: 'raw'` 退出 `<context>` 封套。剩下的标签机制（`ContextEnvelope` 类型，以及贯穿 `InjectOptions`、`HookContext`、`context/message` 事件和 agent loop（智能体循环）的 `envelope` 字段）所服务的区分，本应归属调用方。
+- **沒有模型在這些標籤上訓練過。** `<steering>` 和 `<context>` 是任何模型都未被教會去讀的任意標記，因此這層框架只是徒增 token 而沒有可靠效果，還可能起反作用——已錄製的 transcript 顯示，模型會把 `<steering>` 指令當成第三方中繼資料而拒絕服從，只回答原始提示詞。
+- **工作階段表層是承載框架的錯誤層次。** 表層的職責是把持久日誌投影為模型 transcript；決定內容如何措辭並不是它的事。想要特定框架的呼叫方可以在注入前自行格式化內容——唯一的重度生產方（`agent-instructions`）本就這樣做，它自帶完整的 `<system-reminder>` 框架，並用 `envelope: 'raw'` 退出 `<context>` 封套。剩下的標籤機制（`ContextEnvelope` 型別，以及貫穿 `InjectOptions`、`HookContext`、`context/message` 事件和 agent loop（智慧代理迴圈）的 `envelope` 欄位）所服務的區分，本應歸屬呼叫方。
 
-## 决策
+## 決策
 
-注入的会话内容逐字投影，框架由调用方自行负责。`deriveEventMessage` 把 `user/message` 的内容块原样送达模型；`source` 保留在持久事件日志中，但不渲染。
+注入的工作階段內容逐字投影，框架由呼叫方自行負責。`deriveEventMessage` 把 `user/message` 的內容塊原樣送達模型；`source` 保留在持久事件日誌中，但不渲染。
 
-`ContextEnvelope` 类型和所有 `envelope` 字段都被移除——包括 `SessionEventMap` 中的 `context/message`、`InjectOptions`、`HookContext`，以及 `dsh-agent-loop` 中 `inject()`/`additionalContexts` 的相关管线。`agent-instructions` 不再请求 `'raw'`；它自带框架的内容渲染方式不变。`renderTagged`/`renderContextEnvelope` 辅助函数被删除。`context/message.meta` 仍携带持久的、对模型隐藏的 JSON 状态。
+`ContextEnvelope` 型別和所有 `envelope` 欄位都被移除——包括 `SessionEventMap` 中的 `context/message`、`InjectOptions`、`HookContext`，以及 `dsh-agent-loop` 中 `inject()`/`additionalContexts` 的相關管線。`agent-instructions` 不再請求 `'raw'`；它自帶框架的內容渲染方式不變。`renderTagged`/`renderContextEnvelope` 輔助函式被刪除。`context/message.meta` 仍攜帶持久的、對模型隱藏的 JSON 狀態。
 
-`source` 来源信息保留在持久事件上，不渲染进 transcript。
+`source` 來源資訊保留在持久事件上，不渲染進 transcript。
 
-## 权衡的替代方案
+## 權衡的替代方案
 
-- **保留 `<context>` 封套，只对 steering（中途引导）去封套** —— 会为一个没有模型会读的框架位保留 `ContextEnvelope`/`envelope` 机制，并保留主要生产方本就退出的那种不一致。
-- **仅对插件来源的内容保留 envelope 字段** —— 会按 `source.kind` 把一条投影拆成两条，却没有观察到任何收益；插件引导 agent 时（钩子桥接器的轮次续行原因）同样希望指令被遵从，而不是被贴标签。
-- **把去封套的逻辑移入适配器** —— 规范投影就是模型可见约定（「模型可见 ⟺ 已记录」）；让各适配器在框架上各行其是，会使派生的 transcript 依赖于适配器。调用方确实想要的框架应放进调用方自己的内容里，而不是适配器。
+- **保留 `<context>` 封套，只對 steering（中途引導）去封套** —— 會為一個沒有模型會讀的框架位保留 `ContextEnvelope`/`envelope` 機制，並保留主要生產方本就退出的那種不一致。
+- **僅對外掛來源的內容保留 envelope 欄位** —— 會按 `source.kind` 把一條投影拆成兩條，卻沒有觀察到任何收益；外掛引導 agent 時（掛鉤橋接器的輪次續行原因）同樣希望指令被遵從，而不是被貼標籤。
+- **把去封套的邏輯移入介面卡** —— 規範投影就是模型可見約定（「模型可見 ⟺ 已記錄」）；讓各介面卡在框架上各行其是，會使派生的 transcript 依賴於介面卡。呼叫方確實想要的框架應放進呼叫方自己的內容裡，而不是介面卡。
 
-## 结果
+## 結果
 
-- 中途引导与注入的上下文以与普通用户提示词相同的权重到达模型。
-- transcript 不再区分注入内容与用户消息；需要这一区分的消费方读取持久事件日志，其中事件类型、`source` 和 `meta` 完整保留。
-- `hook-{cc,codex}-stop-continue` ACP（Agent Client Protocol）快照已重新录制：旧录制捕获的是模型把 steering 当作第三方元数据而拒绝服从，正是本次修复针对的失败模式。
-- [内容块词汇表 Agent Note](../architecture/2026-06-11-content-block-vocabulary.zh.md) 中关于带标签封套的条款已修订为指向本文。
+- 中途引導與注入的上下文以與普通使用者提示詞相同的權重到達模型。
+- transcript 不再區分注入內容與使用者訊息；需要這一區分的消費方讀取持久事件日誌，其中事件型別、`source` 和 `meta` 完整保留。
+- `hook-{cc,codex}-stop-continue` ACP（Agent Client Protocol）快照已重新錄製：舊錄製捕捉的是模型把 steering 當作第三方中繼資料而拒絕服從，正是本次修復針對的失敗模式。
+- [內容塊詞彙表 Agent Note](../architecture/2026-06-11-content-block-vocabulary.zh.md) 中關於帶標籤封套的條款已修訂為指向本文。
 
-## 推迟事项
+## 推遲事項
 
-`agent-instructions` 已经自行为内容加框架：它把一个完整的 `<system-reminder>…</system-reminder>` 块作为消息内容发出，而不依赖表层封套。这种调用方自有的模式才是应保留的——表层逐字透传内容，任何框架都住在生产方自己的内容里。
+`agent-instructions` 已經自行為內容加框架：它把一個完整的 `<system-reminder>…</system-reminder>` 塊作為訊息內容發出，而不依賴表層封套。這種呼叫方自有的模式才是應保留的——表層逐字直接傳遞內容，任何框架都住在生產方自己的內容裡。
 
-曾经存在两条框架路径——调用方自行加框架（`agent-instructions` 的 `<system-reminder>`），以及表层封套（`deriveEventMessage` 加上的 `<context>`/`<steering>`）。本次变更移除了后者，只留下调用方自有的框架。如果未来又需要带标签的框架，应由事件的 `meta` map（生产方附加、对模型隐藏的元数据字段）来统一它，交给专门的渲染器或适配器消费，而不是在 `deriveEventMessage` 中重新硬编码标签。生产方在 `meta` 中声明所需的框架，由一个渲染器统一施加；会话表层的投影始终保持逐字透传。
+曾經存在兩條框架路徑——呼叫方自行加框架（`agent-instructions` 的 `<system-reminder>`），以及表層封套（`deriveEventMessage` 加上的 `<context>`/`<steering>`）。本次變更移除了後者，只留下呼叫方自有的框架。如果未來又需要帶標籤的框架，應由事件的 `meta` map（生產方附加、對模型隱藏的中繼資料欄位）來統一它，交給專門的渲染器或介面卡消費，而不是在 `deriveEventMessage` 中重新硬編碼標籤。生產方在 `meta` 中宣告所需的框架，由一個渲染器統一施加；工作階段表層的投影始終保持逐字直接傳遞。

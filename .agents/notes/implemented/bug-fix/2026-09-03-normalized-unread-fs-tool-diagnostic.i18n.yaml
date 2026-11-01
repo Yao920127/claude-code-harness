@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-03-normalized-unread-fs-tool-diagnostic.md
 /agent-note-normalized-unread-filesystem-tool-diagnostic:
   en: 103e786a598d2ee3
-  zh: 13d637140685f63a
+  zh: 4255516857c0bd7a
 /agent-note-normalized-unread-filesystem-tool-diagnostic/problem:
   en: 89cfcff2f9895623
-  zh: dd1cd21d431e5161
+  zh: e8384fd53e8378c2
 /agent-note-normalized-unread-filesystem-tool-diagnostic/decision:
   en: 0c59c5193131ca44
-  zh: da48f204aef62c99
+  zh: 429e0ee487f735b5
 /agent-note-normalized-unread-filesystem-tool-diagnostic/alternatives-considered:
   en: dbb9cbdafd0f2764
-  zh: ed8bef943f12b21d
+  zh: 7311f2415dc93b7a
 /agent-note-normalized-unread-filesystem-tool-diagnostic/consequences:
   en: 20abbdbfa3aa4edc
-  zh: d0555aac68cb7a1f
+  zh: 1756658f44638e1c

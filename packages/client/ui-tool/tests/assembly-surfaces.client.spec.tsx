@@ -45,8 +45,8 @@ beforeEach(() => {
 })
 const TODOS: TodoItem[] = [
   { content: '梳理需求', status: 'completed' },
-  { content: '实现 fixture 样本', status: 'in_progress' },
-  { content: '浏览器验收', status: 'pending' },
+  { content: '實作 fixture 樣本', status: 'in_progress' },
+  { content: '瀏覽器驗收', status: 'pending' },
 ]
 
 const todoResult = (seq: number): ToolResultNode => ({
@@ -127,7 +127,7 @@ describe('todo_write assembly (product registrations, no outlet twins)', () => {
     // (default-collapsed: the header summary shows; rows appear on expand).
     const panel = view.container.querySelector('[data-testid="todo-panel"]')
     expect(panel).not.toBeNull()
-    expect(panel!.textContent).toContain('1 已完成\u2002·\u20021 进行中\u2002·\u20021 待处理')
+    expect(panel!.textContent).toContain('1 已完成\u2002·\u20021 進行中\u2002·\u20021 待處理')
     fireEvent.click(panel!.querySelector('button')!)
     expect([...panel!.querySelectorAll('li')].map(li => li.getAttribute('data-status')))
       .toEqual(['completed', 'in_progress', 'pending'])

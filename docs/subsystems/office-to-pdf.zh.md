@@ -1,45 +1,45 @@
-# Office 转 PDF
+# Office 轉 PDF
 
 [English](office-to-pdf.md) | 中文
 
-[document 包族](../../packages/document/README.zh.md) 在 Node 宿主上将 Office 文件转换为 PDF。消费者负责源文件读取授权与展示；共享提供方负责转换、有界准入和临时 PDF 复用。此子系统不创建面向模型的工具或 Session 事件。
+[document 包族](../../packages/document/README.zh.md) 在 Node 主機上將 Office 檔案轉換為 PDF。消費者負責原始檔讀取授權與展示；共享提供者負責轉換、有界准入和臨時 PDF 複用。此子系統不建立面向模型的工具或 Session 事件。
 
-## 所有权
+## 所有權
 
-| 所有者 | 职责 |
+| 所有者 | 職責 |
 |---|---|
-| [office-to-pdf](../../packages/document/office-to-pdf/README.zh.md) | `ctx.officeToPdf`：共享 LibreOffice 转换、有界准入和 PDF 缓存 |
-| [Web bundle](../../packages/bundle/web-app/README.zh.md) | 由宿主消费者共享的单个可配置转换提供方 |
-| [Office 预览 Client](../../packages/client/ui-sidebar-documentpreview/README.zh.md#office-preview) | Office 扩展名选择、PDF 复用和缺失字体提示 |
+| [office-to-pdf](../../packages/document/office-to-pdf/README.zh.md) | `ctx.officeToPdf`：共享 LibreOffice 轉換、有界准入和 PDF 快取 |
+| [Web bundle](../../packages/bundle/web-app/README.zh.md) | 由主機消費者共享的單個可設定轉換提供者 |
+| [Office 預覽 Client](../../packages/client/ui-sidebar-documentpreview/README.zh.md#office-preview) | Office 副檔名選擇、PDF 複用和缺失字型提示 |
 
-## 请求和结果
+## 請求和結果
 
-[`OfficeToPdfRequest`](../../packages/document/office-to-pdf/src/types.ts)包含已授权的源键与版本、可选 stat 大小、延迟的 `read(signal, maxBytes)` 回调、前台或后台优先级以及 `OfficeExtension`：`doc`、`docx`、`xls`、`xlsx`、`ppt` 或 `pptx`。`OfficeToPdf.convert(request, signal?)` 返回一个完整 PDF 结果。取消遵循调用方和提供方生命周期；校验、输出和引擎失败以分类的 `OfficeToPdfError` 拒绝。
+[`OfficeToPdfRequest`](../../packages/document/office-to-pdf/src/types.ts)包含已授權的源鍵與版本、可選 stat 大小、延遲的 `read(signal, maxBytes)` 回呼、前臺或後臺優先順序以及 `OfficeExtension`：`doc`、`docx`、`xls`、`xlsx`、`ppt` 或 `pptx`。`OfficeToPdf.convert(request, signal?)` 返回一個完整 PDF 結果。取消遵循呼叫方和提供者生命週期；驗證、輸出和引擎失敗以分類的 `OfficeToPdfError` 拒絕。
 
-`OfficeToPdfPriority` 对请求的预览或 QA 使用 `foreground`，对推测工作使用 `background`。`OfficeSourceKey` 为调用方拥有的已授权源定位符增加品牌类型。`OfficeToPdfGeneration` 表示提供方生命周期，`OfficeToPdfKey` 表示其内容身份；消费者不解析这两种不透明值。
+`OfficeToPdfPriority` 對請求的預覽或 QA 使用 `foreground`，對推測工作使用 `background`。`OfficeSourceKey` 為呼叫方擁有的已授權源定位符增加品牌型別。`OfficeToPdfGeneration` 表示提供者生命週期，`OfficeToPdfKey` 表示其內容身份；消費者不解析這兩種不透明值。
 
-| 结果字段 | 含义 |
+| 結果欄位 | 含義 |
 |---|---|
-| `pdf` | 调用方拥有的 `Uint8Array`，包含完整 PDF |
-| `missingFonts` | 本次转换无法使用的文档请求字体名称 |
-| `cacheKey` | 不透明的转换 generation 加扩展名与源内容身份 |
-| `generation` | 提供方生命周期；替换后缓存 PDF 不再可复用 |
+| `pdf` | 呼叫方擁有的 `Uint8Array`，包含完整 PDF |
+| `missingFonts` | 本次轉換無法使用的文件請求字型名稱 |
+| `cacheKey` | 不透明的轉換 generation 加副檔名與源內容身份 |
+| `generation` | 提供者生命週期；替換後快取 PDF 不再可複用 |
 
-提供方先准入延迟读取，再分配源文件字节；按内容身份共享转换，并在返回前删除私有临时目录。返回的 PDF 字节在提供方释放后仍有效。源文件和 PDF 字节不会进入 Session 存储。消费者可通过[工作区文件](../../packages/api/workspace-files/README.zh.md)执行已授权的有界读取。
+提供者先准入延遲讀取，再分配原始檔位元組；按內容身份共享轉換，並在返回前刪除私有臨時目錄。返回的 PDF 位元組在提供者釋放後仍有效。原始檔和 PDF 位元組不會進入 Session 儲存。消費者可透過[工作區檔案](../../packages/api/workspace-files/README.zh.md)執行已授權的有界讀取。
 
-## 预览读取
+## 預覽讀取
 
-`RenderedDocumentBytes` 携带工作区文件元数据、原生 PDF `data`、`missingFonts` 和 `generation`；转换后的 PDF 附带原始源文件身份。
+`RenderedDocumentBytes` 攜帶工作區檔案中繼資料、原生 PDF `data`、`missingFonts` 和 `generation`；轉換後的 PDF 附帶原始原始檔身份。
 
-`officeToPdf.render` Remote 方法通过 Session 的[工作区文件](../../packages/api/workspace-files/README.zh.md)服务检查源文件授权与版本。取得转换容量后，`fs.readBytes` 在预留字节容量内提供原始输入；该读取受 Office 输入上限约束。二进制 Remote 将 PDF 投影为 multipart 附件，并在 Client 恢复为由 `ArrayBuffer` 支撑的 `Uint8Array`。源访问失败直接传递；大小和引擎失败只暴露分类原因，不含诊断信息。转换不激活 Agent 或追加事件。
+`officeToPdf.render` Remote 方法透過 Session 的[工作區檔案](../../packages/api/workspace-files/README.zh.md)服務檢查原始檔授權與版本。取得轉換容量後，`fs.readBytes` 在預留位元組容量內提供原始輸入；該讀取受 Office 輸入上限約束。二進位制 Remote 將 PDF 投影為 multipart 附件，並在 Client 恢復為由 `ArrayBuffer` 支撐的 `Uint8Array`。源存取失敗直接傳遞；大小和引擎失敗只暴露分類原因，不含診斷資訊。轉換不啟用 Agent 或追加事件。
 
-`api/remotes` 挂载转换服务生成的 Remote 描述符。共享文档预览包使用完整字节加载和现有 PDF.js Worker 注册 Office 格式。每次预览读取都会重新检查渲染 generation、源文件授权和版本，再共享进行中的转换或缓存 PDF。连接重置和插件卸载会取消请求并清空缓存字节。缺少服务时显示本地化配置引导。
+`api/remotes` 掛載轉換服務生成的 Remote 描述符。共享文件預覽包使用完整位元組載入和現有 PDF.js Worker 註冊 Office 格式。每次預覽讀取都會重新檢查渲染 generation、原始檔授權和版本，再共享進行中的轉換或快取 PDF。連線重置和外掛解除安裝會取消請求並清空快取位元組。缺少服務時顯示在地化設定引導。
 
-## 引擎选择和限制
+## 引擎選擇和限制
 
-外部 [`@deepseek-ai/libreoffice-kit`](https://github.com/deepseek-harness/libreoffice-kit) Node API 选择其预编译引擎。kit 独立维护版本和发布流程，具体归属由[发布归属决策](../../.agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.zh.md)定义。应用构建时安装已发布的 npm 包。应用打包要求目标已声明的原生引擎；kit 未为该目标声明原生引擎时使用 Node WASM。[平台引擎决策](../../.agents/notes/implemented/architecture/2026-09-15-platform-office-engines.zh.md)定义安装和打包规则。元数据无效、必需资源缺失和转换错误都会拒绝请求，不切换引擎。转换在 Host 使用磁盘输入输出路径，不使用浏览器转换引擎或字体 RPC。
+外部 [`@deepseek-ai/libreoffice-kit`](https://github.com/deepseek-harness/libreoffice-kit) Node API 選擇其預編譯引擎。kit 獨立維護版本和釋出流程，具體歸屬由[釋出歸屬決策](../../.agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.zh.md)定義。應用建置時安裝已釋出的 npm 包。應用打包要求目標已宣告的原生引擎；kit 未為該目標宣告原生引擎時使用 Node WASM。[平臺引擎決策](../../.agents/notes/implemented/architecture/2026-09-15-platform-office-engines.zh.md)定義安裝和打包規則。中繼資料無效、必需資源缺失和轉換錯誤都會拒絕請求，不切換引擎。轉換在 Host 使用磁碟輸入輸出路徑，不使用瀏覽器轉換引擎或字型 RPC。
 
-[Host 提供方配置](../../packages/document/office-to-pdf/README.zh.md#use-this-package)负责并发、期限、输入输出上限、归档上限、图像分辨率和字体访问。原生/WASM 实现和资产分发属于 kit 工作区。系统 LibreOffice 探测、运行时引擎下载、持久 PDF 缓存和面向模型的渲染不属于此提供方。
+[Host 提供者設定](../../packages/document/office-to-pdf/README.zh.md#use-this-package)負責並行、期限、輸入輸出上限、歸檔上限、影象解析度和字型存取。原生/WASM 實作和資產分發屬於 kit 工作區。系統 LibreOffice 探測、執行時引擎下載、持久 PDF 快取和麵向模型的渲染不屬於此提供者。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

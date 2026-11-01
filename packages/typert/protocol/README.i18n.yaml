@@ -4,61 +4,61 @@
 #   pnpm run verify-translation-pairing --write packages/typert/protocol/README.md
 /:
   en: f05430dc6311d1e1
-  zh: ad9779e051bc21f8
+  zh: 1b6251f898c1d4c4
 /deepseek-ai-dsh-typert-protocol:
   en: c0a0d129924ee1ed
   zh: b0edfa8b75f8de41
 /deepseek-ai-dsh-typert-protocol/summary:
   en: 2eaad6529802274f
-  zh: 6a8aa3cbc2ea6aad
+  zh: 5f0f22aa4051825d
 /deepseek-ai-dsh-typert-protocol/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-typert-protocol/use-this-package:
   en: c479b5b665822198
-  zh: 1ffb789c18043baf
+  zh: f243411a0601b2e5
 /deepseek-ai-dsh-typert-protocol/use-this-package/exposing-a-host-method:
   en: fae902875c18ef33
-  zh: ed4332cabe0e3a45
+  zh: fe6c065e0e125624
 /deepseek-ai-dsh-typert-protocol/use-this-package/associating-host-objects-and-contexts-with-wire-identities:
   en: 3db384ae6f215632
-  zh: 56207184b09d4018
+  zh: a370fe5b605d2b92
 /deepseek-ai-dsh-typert-protocol/use-this-package/reporting-and-reading-a-remote-failure:
   en: 4ba5266ddb014029
-  zh: e31ae6438b9b4aa5
+  zh: d950fde949be89e4
 /deepseek-ai-dsh-typert-protocol/use-this-package/receiving-forwarded-host-events-on-the-client:
   en: 1101bd1d1419618c
-  zh: 6ff036538d237e0a
+  zh: d0b55922bf94fc13
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation:
   en: f1a51c9826244574
-  zh: bd3ebd8831c6bf84
+  zh: 847878ac740db2c3
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation/design-concept:
   en: 4f45bb46a1920984
-  zh: 70408d3b59d2735a
+  zh: b0315621a306e34d
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation/remote-markers:
   en: 93b83a9441a5a3c2
-  zh: c4eb143ddd167a27
+  zh: be3f6ca5208d81ea
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation/protocol-maps-and-descriptors:
   en: 164b30b3fa543936
-  zh: 0831edd3e04a3d3a
+  zh: 7a2d3e82dfc95a9c
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation/wire-identity-grammar:
   en: aac79a7b4682371e
-  zh: bc9cc513c1ced3e6
+  zh: 54e24573ba1dfff1
 /deepseek-ai-dsh-typert-protocol/understand-the-implementation/source-map:
   en: c8834e55e3e3db73
-  zh: d820bc330814b240
+  zh: 854e583cf1da982f
 /deepseek-ai-dsh-typert-protocol/further-exploration:
   en: 84191d1b07fb8bb6
-  zh: 9a5212732ed38ab6
+  zh: e34b17390c573944
 /deepseek-ai-dsh-typert-protocol/model-experience:
   en: dc0c83c97e195e97
-  zh: 1f11dd080898d6c0
+  zh: 213c115b8b5de8c6
 /deepseek-ai-dsh-typert-protocol/model-experience/kv-cache-effect:
   en: b1c49d5e440d9d41
-  zh: 87ead78472415189
+  zh: 1430425b50fb7eb1
 /deepseek-ai-dsh-typert-protocol/known-limitations-and-deferred-work:
   en: 0be59e6d97923487
-  zh: 70523fb0dc567ed6
+  zh: e862bb975140fba9
 /deepseek-ai-dsh-typert-protocol/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

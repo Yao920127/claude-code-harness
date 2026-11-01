@@ -55,7 +55,7 @@ describe('render branch tails', () => {
         useProjection={() => undefined}
       />,
     )
-    expect(view.container.textContent).toBe('2 轮 3 步')
+    expect(view.container.textContent).toBe('2 輪 3 步')
     // Window-fold counts carry no timed figure, so the pill is a static reading.
     expect(view.queryAllByRole('button')).toHaveLength(0)
   })

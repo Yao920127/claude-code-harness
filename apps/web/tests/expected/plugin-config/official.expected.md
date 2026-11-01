@@ -1,40 +1,40 @@
-- heading "插件" [level=1]
-- paragraph: 添加和管理插件
-- button "刷新"
-- button "添加插件"
+- heading "外掛" [level=1]
+- paragraph: 新增和管理外掛
+- button "重新整理"
+- button "新增外掛"
 - heading "官方" [level=3]
 - text: "7"
 - list:
   - listitem:
-    - button "查看 智能体团队": 智能体团队
-    - text: 实验性 启用团队协作、团队工具、成员列表和共享任务看板。
-    - switch "启用 智能体团队"
+    - button "檢視 智慧代理團隊": 智慧代理團隊
+    - text: 實驗性 啟用團隊協作、團隊工具、成員列表和共享任務看板。
+    - switch "啟用 智慧代理團隊"
   - listitem:
-    - button "查看 自动授权审查": 自动授权审查
-    - text: 实验性 提供自动审查权限模式，由模型在每次工具调用前判断是否授权。
-    - switch "启用 自动授权审查"
+    - button "檢視 自動授權審查": 自動授權審查
+    - text: 實驗性 提供自動審查權限模式，由模型在每次工具呼叫前判斷是否授權。
+    - switch "啟用 自動授權審查"
   - listitem:
-    - button "查看 语音输入": 语音输入
-    - text: 实验性 在本机使用 SenseVoice 转写录音；首次使用需安装依赖
-    - switch "启用 语音输入"
+    - button "檢視 語音輸入": 語音輸入
+    - text: 實驗性 在本機使用 SenseVoice 轉寫錄音；首次使用需安裝依賴
+    - switch "啟用 語音輸入"
   - listitem:
-    - button "查看 终端": 终端
-    - text: 限制每条命令最多能跑多久、最多输出多少内容。
+    - button "檢視 終端": 終端
+    - text: 限制每條命令最多能跑多久、最多輸出多少內容。
   - listitem:
-    - button "查看 Agent 循环": Agent 循环
-    - text: 控制 Agent 派发工具调用的方式。
+    - button "檢視 Agent 迴圈": Agent 迴圈
+    - text: 控制 Agent 派發工具呼叫的方式。
   - listitem:
-    - button "查看 子智能体": 子智能体
-    - text: 设置子智能体的递归层级、数量和模型。
+    - button "檢視 子智慧代理": 子智慧代理
+    - text: 設定子智慧代理的遞迴層級、數量和模型。
   - listitem:
-    - button "查看 搜索来源": 搜索来源
-    - text: 选择由哪个服务回答网页搜索。
-- heading "已安装" [level=3]
+    - button "檢視 搜尋來源": 搜尋來源
+    - text: 選擇由哪個服務回答網頁搜尋。
+- heading "已安裝" [level=3]
 - text: "2"
 - list:
   - listitem:
-    - button "查看 @fixture/live-client": "@fixture/live-client"
-    - switch "启用 @fixture/live-client"
+    - button "檢視 @fixture/live-client": "@fixture/live-client"
+    - switch "啟用 @fixture/live-client"
   - listitem:
-    - button "查看 dsh-web-scaffold-defaults": dsh-web-scaffold-defaults
-    - switch "启用 dsh-web-scaffold-defaults" [checked]
+    - button "檢視 dsh-web-scaffold-defaults": dsh-web-scaffold-defaults
+    - switch "啟用 dsh-web-scaffold-defaults" [checked]

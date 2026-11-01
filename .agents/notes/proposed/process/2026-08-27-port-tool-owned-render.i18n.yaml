@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/process/2026-08-27-port-tool-owned-render.md
 /agent-note-port-tool-owned-render-into-current-dsh-apis:
   en: a13180eec1968793
-  zh: e47a83ddb329de88
+  zh: c4c10b51a0d0e72e
 /agent-note-port-tool-owned-render-into-current-dsh-apis/problem:
   en: 3a3ceea534efabd1
-  zh: f13f8531d1819b8a
+  zh: daed36fa6dc31ec3
 /agent-note-port-tool-owned-render-into-current-dsh-apis/proposal:
   en: a51c0e6f23d8d4d4
-  zh: 1eecd0ed06685c40
+  zh: f3ae572138918d96
 /agent-note-port-tool-owned-render-into-current-dsh-apis/alternatives-considered:
   en: a2364e3fca0a06e5
-  zh: a76370082e218154
+  zh: a7444b642e10afb0
 /agent-note-port-tool-owned-render-into-current-dsh-apis/acceptance-criteria:
   en: 5e2815d18df000f9
-  zh: 97845472646b1881
+  zh: 58434cb16e55d9ef
 /agent-note-port-tool-owned-render-into-current-dsh-apis/risks:
   en: 4fa51a62af0a3fc5
-  zh: d6f555a8a5d9120c
+  zh: 972b9959a05b9e7a

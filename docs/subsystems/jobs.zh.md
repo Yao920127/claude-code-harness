@@ -1,12 +1,12 @@
-# 后台任务运行时
+# 後臺任務執行時
 
 [English](jobs.md) | 中文
 
-长时间运行的生产方、`ctx.jobs` 与任务控制命令共用的类型。[seam 收敛 Agent Note](../../.agents/notes/implemented/architecture/2026-09-03-jobs-seam-consolidation.zh.md) 负责当前设计，[运行时 Agent Note](../../.agents/notes/implemented/architecture/2026-06-20-generic-long-running-tool-runtime.zh.md) 记录其起源；本页记录 [`packages/jobs/jobs/src/types.ts`](../../packages/jobs/jobs/src/types.ts) 与客户端安全叶子 [`view.ts`](../../packages/jobs/jobs/src/view.ts) 中的确切字段与变体。
+長時間執行的生產方、`ctx.jobs` 與任務控制命令共用的型別。[seam 收斂 Agent Note](../../.agents/notes/implemented/architecture/2026-09-03-jobs-seam-consolidation.zh.md) 負責目前設計，[執行時 Agent Note](../../.agents/notes/implemented/architecture/2026-06-20-generic-long-running-tool-runtime.zh.md) 記錄其起源；本頁記錄 [`packages/jobs/jobs/src/types.ts`](../../packages/jobs/jobs/src/types.ts) 與用戶端安全葉子 [`view.ts`](../../packages/jobs/jobs/src/view.ts) 中的確切欄位與變體。
 
-## ID 与状态
+## ID 與狀態
 
-`JobId` 是按 `<kind>-N` 生成的[品牌化 id](core.zh.md#branded-ids)。访问控制依赖拥有者授权，而非 id 的保密性。`JobKind` 派生自可合并扩展的 map；注册表将各个 kind 视为不透明的 id 命名空间。
+`JobId` 是按 `<kind>-N` 生成的[品牌化 id](core.zh.md#branded-ids)。存取控制依賴擁有者授權，而非 id 的保密性。`JobKind` 派生自可合併擴充功能的 map；註冊表將各個 kind 視為不透明的 id 名稱空間。
 
 ```ts type-equiv
 /**
@@ -19,11 +19,11 @@ interface JobKindMap {
 }
 ```
 
-`JobStatus` 为 `'running' | 'stopping' | 'completed' | 'killed' | 'failed'`；生产方特有的事实在运行期间归入 `JobView.progress`，结算后归入 `JobView.detail`。
+`JobStatus` 為 `'running' | 'stopping' | 'completed' | 'killed' | 'failed'`；生產方特有的事實在執行期間歸入 `JobView.progress`，結算後歸入 `JobView.detail`。
 
-## 生产方约定
+## 生產方約定
 
-`JobSpec` 声明身份、拥有者会话、可选的拉取式 `output` 源与启动器。运行时会在完成预检后携带该 job 的 `JobHandle` 调用 `run()`，随后提交注册，不再执行可能失败的步骤。生产方拥有执行资源；运行时拥有身份、访问、生命周期状态与输出环。
+`JobSpec` 宣告身份、擁有者工作階段、可選的拉取式 `output` 源與啟動器。執行時會在完成預檢後攜帶該 job 的 `JobHandle` 呼叫 `run()`，隨後提交註冊，不再執行可能失敗的步驟。生產方擁有執行資源；執行時擁有身份、存取、生命週期狀態與輸出環。
 
 ```ts type-equiv
 /**
@@ -95,7 +95,7 @@ interface JobHandle {
 }
 ```
 
-`JobHooks.done` 会在生产方释放其资源后 resolve，而不是仅在工作完成时 resolve。结果是一个值而非流的 job——subagent 的报告、workflow 渲染出的结果——把它作为 `JobOutcome.result` 返回；模型在结算后的第一次读取携带它一次。
+`JobHooks.done` 會在生產方釋放其資源後 resolve，而不是僅在工作完成時 resolve。結果是一個值而非流的 job——subagent 的報告、workflow 渲染出的結果——把它作為 `JobOutcome.result` 返回；模型在結算後的第一次讀取攜帶它一次。
 
 ```ts type-equiv
 /** Hooks through which the runtime controls and observes producer work. */
@@ -135,7 +135,7 @@ interface JobOutcome {
 }
 ```
 
-拉取源把一个非消耗的偏移读取器——子进程的 `readFrom` 家族——交给注册表。注册表按自己的节奏（`dsh-jobs-local` 的 `pumpPollMs`）泵送每个源，并在结算封环之前再排干一次，因此生产方不需要把任何东西折进 `done`。
+拉取源把一個非消耗的偏移讀取器——子程序的 `readFrom` 家族——交給註冊表。註冊表按自己的節奏（`dsh-jobs-local` 的 `pumpPollMs`）泵送每個源，並在結算封環之前再排幹一次，因此生產方不需要把任何東西折進 `done`。
 
 ```ts type-equiv
 /**
@@ -174,9 +174,9 @@ interface JobSourceRead {
 }
 ```
 
-## 输出环
+## 輸出環
 
-每个 job 拥有一个有界的环。拉取源被泵入其中，`JobHandle.append` 的推送整块落地；模型通过注册表保管的游标（`JobRegistry.read`）消耗该环，任意数量的观察者按绝对字节偏移读取它（`JobRegistry.readAt`），二者互不干扰。`JobChannel` 标记 `stdout`、`stderr` 与 `log`；`log` 是只到达观察者、从不进入模型消耗式读取的生产方叙述。结算即封流并把保留量裁剪到结算上限——环没有独立的生命周期。拉取源保留的 spill 文件是 job 元数据（`JobView.output.spillPaths`，每次泵读取都会刷新），不是逐块元数据，所以环淘汰了字节之后、甚至缺口 chunk 本身也被淘汰之后，模型的丢失输出提示仍能点名该文件。浏览器通过 [`dsh-api-job-controller`](../../packages/api/job-controller/README.zh.md) 的 Remote 流 `job.list` 与 `job.follow` 触达名册与环，其帧列于下文的 Cordis API 一节。
+每個 job 擁有一個有界的環。拉取源被泵入其中，`JobHandle.append` 的推送整塊落實；模型透過註冊表保管的遊標（`JobRegistry.read`）消耗該環，任意數量的觀察者按絕對位元組偏移讀取它（`JobRegistry.readAt`），二者互不干擾。`JobChannel` 標記 `stdout`、`stderr` 與 `log`；`log` 是隻到達觀察者、從不進入模型消耗式讀取的生產方敘述。結算即封流並把保留量裁剪到結算上限——環沒有獨立的生命週期。拉取源保留的 spill 檔案是 job 中繼資料（`JobView.output.spillPaths`，每次泵讀取都會重新整理），不是逐塊中繼資料，所以環淘汰了位元組之後、甚至缺口 chunk 本身也被淘汰之後，模型的丟失輸出提示仍能點名該檔案。瀏覽器透過 [`dsh-api-job-controller`](../../packages/api/job-controller/README.zh.md) 的 Remote 流 `job.list` 與 `job.follow` 觸達名冊與環，其幀列於下文的 Cordis API 一節。
 
 ```ts type-equiv
 /** One chunk of a job's output ring: absolute offset, text, channel, and loss marker. */
@@ -209,9 +209,9 @@ interface JobOutputRead {
 }
 ```
 
-## 消费方视图
+## 消費方檢視
 
-`JobView` 是每个读者都消费的唯一投影：模型工具、浏览器名册与观测流。`owner` 携带划定访问边界的会话 id；注册表为生命周期清理解析其背后的活体 `Agent`，从不把该对象交出去。`progress` 是生产方的实时行，结算时清除；`detail` 是终态原因，合并了记录下来的 kill 原因。
+`JobView` 是每個讀者都消費的唯一投影：模型工具、瀏覽器名冊與觀測流。`owner` 攜帶劃定存取邊界的工作階段 id；註冊表為生命週期清理解析其背後的活體 `Agent`，從不把該物件交出去。`progress` 是生產方的即時行，結算時清除；`detail` 是終態原因，合併了記錄下來的 kill 原因。
 
 ```ts type-equiv
 /**
@@ -257,7 +257,7 @@ interface JobView {
 }
 ```
 
-`JobRegistry` 的 `list`、`get`、`read`、`readAt`、`kill` 和 `wait` 各自接收调用方的 `SessionId`；省略调用方时仅可访问无主 job，传入会话时还可访问该会话拥有的 job。
+`JobRegistry` 的 `list`、`get`、`read`、`readAt`、`kill` 和 `wait` 各自接收呼叫方的 `SessionId`；省略呼叫方時僅可存取無主 job，傳入工作階段時還可存取該工作階段擁有的 job。
 
 ```ts type-equiv
 /** Output and post-read state returned by the consuming {@link JobRegistry.read}. */
@@ -275,7 +275,7 @@ interface JobRead {
 
 ## 事件
 
-注册表通过一条带过滤的流宣布每次提交。生命周期事件携带其所宣布的提交之后的投影；`settled` 标出原因，完成播报方据此跳过 teardown；`output` 只携带 id 与新的 total，观察者从自己的游标读取，注册表从不推送负载。
+註冊表透過一條帶過濾的流宣佈每次提交。生命週期事件攜帶其所宣佈的提交之後的投影；`settled` 標出原因，完成播報方據此跳過 teardown；`output` 只攜帶 id 與新的 total，觀察者從自己的遊標讀取，註冊表從不推送負載。
 
 ```ts type-equiv
 /**
@@ -326,9 +326,9 @@ type JobEventFilter =
   | { readonly owners: 'all' | 'scope' }
 ```
 
-## 服务行为
+## 服務行為
 
-抽象的 [`JobRegistry`](../../packages/jobs/jobs/src/index.ts) Service Definition 规定了原子化的 `start`、各自接收调用方的 `list`、`get`、消耗式 `read`、非消耗的 `readAt`、`kill` 与有界的 `wait`、带过滤的 `events` 流，以及 `attachController`；[`LocalJobRegistry`](../../packages/jobs/jobs-local/src/index.ts) 是进程本地的 Service Provider。授权比较拥有者会话；拥有者清理与准入使用 job 启动时登记在该拥有者会话下的活体 `Agent`。本地提供方的正安全整数配置 `maxConcurrentJobsPerOwner` 默认为 `10`，按精确拥有者统计 `running` 加 `stopping` 记录，无主任务共享一个桶；生产方的终态结算释放容量；`retainBytes`（默认 262144）与 `settledRetainBytes`（默认 16384）约束每个环的运行期与结算后保留量，`pumpPollMs`（默认 150）是拉取节奏。参见 [`dsh-jobs`](../../packages/jobs/jobs/README.zh.md) 了解 Service Definition 约定，[`dsh-jobs-local`](../../packages/jobs/jobs-local/README.zh.md) 了解注册表生命周期与准入策略，[`dsh-tool-jobs`](../../packages/jobs/tool-jobs/README.zh.md) 了解面向模型的 Consumer。
+抽象的 [`JobRegistry`](../../packages/jobs/jobs/src/index.ts) Service Definition 規定了原子化的 `start`、各自接收呼叫方的 `list`、`get`、消耗式 `read`、非消耗的 `readAt`、`kill` 與有界的 `wait`、帶過濾的 `events` 流，以及 `attachController`；[`LocalJobRegistry`](../../packages/jobs/jobs-local/src/index.ts) 是程序本地的 Service Provider。授權比較擁有者工作階段；擁有者清理與准入使用 job 啟動時登記在該擁有者工作階段下的活體 `Agent`。本地提供者的正安全整數設定 `maxConcurrentJobsPerOwner` 預設為 `10`，按精確擁有者統計 `running` 加 `stopping` 記錄，無主任務共享一個桶；生產方的終態結算釋放容量；`retainBytes`（預設 262144）與 `settledRetainBytes`（預設 16384）約束每個環的執行期與結算後保留量，`pumpPollMs`（預設 150）是拉取節奏。參見 [`dsh-jobs`](../../packages/jobs/jobs/README.zh.md) 瞭解 Service Definition 約定，[`dsh-jobs-local`](../../packages/jobs/jobs-local/README.zh.md) 瞭解註冊表生命週期與准入策略，[`dsh-tool-jobs`](../../packages/jobs/tool-jobs/README.zh.md) 瞭解面向模型的 Consumer。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

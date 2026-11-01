@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/guard/README.md
 /:
   en: 686a2d1a60d83d95
-  zh: a83604e78920e5f8
+  zh: cc27d48d094b442a
 /guard-loop-hygiene-guard-family:
   en: 7ec1ea7779315a9c
-  zh: 0786cd17a5bc5980
+  zh: 19fbd4a918de4665
 /guard-loop-hygiene-guard-family/summary:
   en: 8569a7ad49a968c9
-  zh: 911e6327d70294a8
+  zh: 167731de4ab3b140
 /guard-loop-hygiene-guard-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /guard-loop-hygiene-guard-family/packages:
   en: 94709a168b24fa55
-  zh: 3eb300975fdc440c
+  zh: 0a061d8ff95b6400
 /guard-loop-hygiene-guard-family/related-documentation:
   en: 9289eddb3e91bbb3
-  zh: 5b2ae5b3986fab82
+  zh: df11918d9fd1a2ad
 /guard-loop-hygiene-guard-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

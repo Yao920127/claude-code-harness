@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-10-desktop-web-wrapper.md
 /agent-note-run-desktop-through-the-shared-web-application:
   en: 1803d1966797a555
-  zh: 6ab64a673a217d34
+  zh: 8aa3193938015281
 /agent-note-run-desktop-through-the-shared-web-application/problem:
   en: 085b445846af76c1
-  zh: fdddf72401292bbd
+  zh: a22098d18bb44b45
 /agent-note-run-desktop-through-the-shared-web-application/decision:
   en: 7767ab2839440970
-  zh: 9a998e72b728fd17
+  zh: 22e7c8c516cdaea9
 /agent-note-run-desktop-through-the-shared-web-application/alternatives-considered:
   en: 9c5dfbf9cc788040
-  zh: 631f851909dd7234
+  zh: 0f6cd056368005cc
 /agent-note-run-desktop-through-the-shared-web-application/consequences:
   en: 43a80c01a8a95170
-  zh: 0d7a2d1d1c676a61
+  zh: 1a0b6fb7959b9edf

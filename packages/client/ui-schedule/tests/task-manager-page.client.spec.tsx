@@ -217,8 +217,8 @@ function detailViewLabels(dictionary: typeof en | typeof zh) {
       empty: 'No delivery record available',
     }
     : {
-      tablist: '任务详情视图', rules: '规则', records: '任务运行记录',
-      empty: '暂无任务运行记录',
+      tablist: '任務詳情檢視', rules: '規則', records: '任務執行記錄',
+      empty: '暫無任務執行記錄',
     }
 }
 
@@ -549,11 +549,11 @@ function remoteCatalog() {
 
 describe.each([['English', en], ['Chinese', zh]] as const)('original Session availability in %s', (_name, dictionary) => {
   it.each([
-    ['Session list pending', { ...sessions, phase: 'pending' as const }, workspaces, 'Loading original session information.', '正在加载原会话信息'],
-    ['Workspace list pending', sessions, { ...workspaces, phase: 'pending' as const }, 'Loading original session information.', '正在加载原会话信息'],
-    ['archived', sessions, { ...workspaces, archivedSessionIds: [at.sessionId] }, 'The original session is archived.', '原会话已归档'],
-    ['missing', { ...sessions, ids: [], byId: {} }, workspaces, 'The original session is unavailable.', '原会话当前不可用'],
-    ['archive read failed', sessions, { ...workspaces, state: 'error' as const, error: new RemoteError('gateway/internal', 'Archive unavailable', {}) }, 'The original session is unavailable.', '原会话当前不可用'],
+    ['Session list pending', { ...sessions, phase: 'pending' as const }, workspaces, 'Loading original session information.', '正在載入原工作階段資訊'],
+    ['Workspace list pending', sessions, { ...workspaces, phase: 'pending' as const }, 'Loading original session information.', '正在載入原工作階段資訊'],
+    ['archived', sessions, { ...workspaces, archivedSessionIds: [at.sessionId] }, 'The original session is archived.', '原工作階段已歸檔'],
+    ['missing', { ...sessions, ids: [], byId: {} }, workspaces, 'The original session is unavailable.', '原工作階段目前不可用'],
+    ['archive read failed', sessions, { ...workspaces, state: 'error' as const, error: new RemoteError('gateway/internal', 'Archive unavailable', {}) }, 'The original session is unavailable.', '原工作階段目前不可用'],
   ] satisfies [string, SessionListState, WorkspaceSnapshot, string, string][])('disables navigation while %s without hiding the task', (_reason, sessionState, workspaceState, english, chinese) => {
     const { props } = mount({ records: [ended] }, dictionary, {
       useSessions: select => select(sessionState), useWorkspaces: select => select(workspaceState),
@@ -720,7 +720,7 @@ describe('Task manager catalog', () => {
     expect(document.activeElement).toBe(row)
     h.view.rerender(<TaskManagerPage {...h.props} t={makeTranslate(zh)} />)
     expect(screen.getByRole('button', {
-      name: 'Check metrics', description: /^每 301 秒.*下次计划时间：/,
+      name: 'Check metrics', description: /^每 301 秒.*下次計劃時間：/,
     })).toBe(row)
     expect(time.textContent).toBe(absoluteNextRun(every.scheduledAt, zh))
     expect(relativeText(metadata)).toBe(relativeNextRun(every.scheduledAt, zh))
@@ -758,7 +758,7 @@ describe('Task manager catalog', () => {
   })
 
   it('states the time remaining until the next run in each locale', () => {
-    // The row and the detail state a duration, not a date: zh reads `2小时后`
+    // The row and the detail state a duration, not a date: zh reads `2小時後`
     // and en reads `in 2 hours`, and neither renders a clock time for it. The
     // fixture is two hours out, where a few milliseconds of clock drift cannot
     // change the rendered unit.
@@ -768,7 +768,7 @@ describe('Task manager catalog', () => {
     }
     for (const dictionary of [en, zh]) {
       const h = mount({ records: [soon] }, dictionary)
-      const expected = dictionary === en ? 'in 2 hours' : '2小时后'
+      const expected = dictionary === en ? 'in 2 hours' : '2小時後'
       const row = screen.getByRole('button', { name: 'Two hours out' })
       const summary = row.querySelector<HTMLElement>(`.${css.rowSummary!}`)?.textContent ?? ''
       expect(summary).toContain(expected)
@@ -1275,7 +1275,7 @@ describe('Task manager details', () => {
     expect(visibleText(detail, dictionary['detail.nextRun'])).toHaveLength(0)
     expect(nextRunTime(detail)).toBeNull()
     expect(row.textContent).not.toContain(dictionary['list.nextPrefix'])
-    expect(detail.textContent).not.toMatch(/execution completed|completed successfully|execution succeeded|执行已完成|执行成功/i)
+    expect(detail.textContent).not.toMatch(/execution completed|completed successfully|execution succeeded|執行已完成|執行成功/i)
     // The linked-Session strip belongs to Rules, so open it before switching views.
     const context = detailContext(detail)!
     const link = within(context).getByRole('button', { name: dictionary['detail.openSession'] })
@@ -1293,7 +1293,7 @@ describe('Task manager details', () => {
     expect(receipt.querySelector('details')).toBeNull()
     expect(within(receipt).queryByRole('button')).toBeNull()
     expect(receipt.querySelectorAll('time')).toHaveLength(1)
-    expect(within(detail).queryByRole('region', { name: /history|历史/i })).toBeNull()
+    expect(within(detail).queryByRole('region', { name: /history|歷史/i })).toBeNull()
     expect(detail.querySelector('footer')).toBeNull()
     expect(h.props.onDelete).not.toHaveBeenCalled()
   })
@@ -1530,19 +1530,19 @@ describe('Task manager details', () => {
 
   it('renders Chinese labels and local time without translating stored user data', () => {
     mount({}, zh)
-    expect(screen.getByRole('heading', { level: 1, name: '自动化任务' })).toBeDefined()
-    expect(screen.getByRole('searchbox', { name: '搜索任务' })).toBeDefined()
-    const statuses = screen.getByRole('group', { name: '任务状态' })
+    expect(screen.getByRole('heading', { level: 1, name: '自動化任務' })).toBeDefined()
+    expect(screen.getByRole('searchbox', { name: '搜尋任務' })).toBeDefined()
+    const statuses = screen.getByRole('group', { name: '任務狀態' })
     expect(within(statuses).getAllByRole('button')[0]?.textContent).toBe('全部')
     fireEvent.click(screen.getByRole('button', { name: 'Check metrics' }))
-    const detail = screen.getByRole('complementary', { name: '任务详情' })
+    const detail = screen.getByRole('complementary', { name: '任務詳情' })
     expect(within(detail).getByText(zh['rule.everySeconds'])).toBeDefined()
     expect(nextRunTime(detail)?.textContent).toBe(absoluteNextRun(every.scheduledAt, zh))
     expect(relativeText(detail)).toBe(relativeNextRun(every.scheduledAt, zh))
     chooseDelete(zh)
-    expect(screen.getByRole('dialog', { name: '删除此任务？' })).toBeDefined()
-    expect(screen.getByRole('button', { name: '确认删除' })).toBeDefined()
-    fireEvent.click(screen.getByRole('button', { name: '关闭删除确认' }))
+    expect(screen.getByRole('dialog', { name: '刪除此任務？' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '確認刪除' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: '關閉刪除確認' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.getByRole('button', { name: zh['detail.openSession'] })).toBeDefined()
   })
@@ -1559,7 +1559,7 @@ describe('Task manager details', () => {
     h.view.rerender(<TaskManagerPage {...h.props} t={makeTranslate(zh)} />)
     expect(time?.textContent).toBe(absoluteNextRun(at.scheduledAt, zh))
     expect(relativeText(row)).toBe(relativeNextRun(at.scheduledAt, zh))
-    expect(screen.getByRole('heading', { level: 1, name: '自动化任务' })).toBeDefined()
+    expect(screen.getByRole('heading', { level: 1, name: '自動化任務' })).toBeDefined()
   })
 
   it('states the next run in the device zone even when the rule stores another one', () => {
@@ -2947,7 +2947,7 @@ describe('Task detail rule header and run-time card', () => {
     expect(cronFrequencyButton(dictionary).textContent).toContain(dictionary['cronForm.weekly'])
     expect(weekdayPressed(weekdayGroup(dictionary))).toEqual(['true', 'true', 'true', 'true', 'true', 'false', 'false'])
     expect(timeButton(dictionary).textContent).toBe('09:00')
-    expect(within(card).getByText(dictionary === en ? 'Mon–Fri at 09:00' : '周一至周五 09:00')).toBeDefined()
+    expect(within(card).getByText(dictionary === en ? 'Mon–Fri at 09:00' : '週一至週五 09:00')).toBeDefined()
     expect(zoneButton(dictionary).textContent).toContain(displayedZone('Asia/Shanghai', dictionary))
     const detail = screen.getByRole('complementary', { name: dictionary['detail.label'] })
     expect(nextRunTime(detail)?.textContent).toBe(absoluteNextRun(cron.scheduledAt, dictionary))

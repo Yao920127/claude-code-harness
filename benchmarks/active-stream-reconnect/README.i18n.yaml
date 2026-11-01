@@ -4,4 +4,4 @@
 #   pnpm run verify-translation-pairing --write benchmarks/active-stream-reconnect/README.md
 /active-assistant-reconnect-benchmark:
   en: 74be7a07bbc676b8
-  zh: e6aeac1f27343c24
+  zh: d7f0a1bdcbe5b13f

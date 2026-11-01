@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-22-desktop-main-bundle-after-workspace-tsdown.md
 /agent-note-bundle-the-desktop-main-process-after-the-workspace-tsdown-pass:
   en: 47f6a531ef05a7be
-  zh: 18dc33bcd916e2b5
+  zh: bf4e64c994ed3b1b
 /agent-note-bundle-the-desktop-main-process-after-the-workspace-tsdown-pass/problem:
   en: dc5156548e545037
-  zh: 72010884a2a27877
+  zh: d8b012ad47410e12
 /agent-note-bundle-the-desktop-main-process-after-the-workspace-tsdown-pass/decision:
   en: 9b3c9c696207b13e
-  zh: 4996ad87dd07d839
+  zh: d4c38181480c02d1
 /agent-note-bundle-the-desktop-main-process-after-the-workspace-tsdown-pass/alternatives-considered:
   en: a15cfe689823ae57
-  zh: 1d691cd335bdcb87
+  zh: aa3ee2adcee9da72
 /agent-note-bundle-the-desktop-main-process-after-the-workspace-tsdown-pass/consequences:
   en: e46c28e2ba972cfb
-  zh: 70d4076a89e0b2ec
+  zh: eb3f1c25ab5473d9

@@ -1,4 +1,4 @@
-# Agent Note: 工作区文件统一为 API 双面包
+# Agent Note: 工作區檔案統一為 API 雙面包
 
 Status: implemented
 
@@ -6,31 +6,31 @@ Status: implemented
 
 ## Problem
 
-工作区文件服务与浏览器资源提供者共同演进，但其编译图包含指向 Remote 装配和 Sidebar UI 的反向依赖。拆包避开了这些环，却分离了线路协议与其 Client 模型的归属。只有 Host 实现、Client 编译入口仅含类型的包，也缺少 Client 目录分析用于区分运行时导出的 `dsh.client` 与 `./client` 声明。
+工作區檔案服務與瀏覽器資源提供者共同演進，但其編譯圖包含指向 Remote 裝配和 Sidebar UI 的反向依賴。拆包避開了這些環，卻分離了線路協定與其 Client 模型的歸屬。只有 Host 實作、Client 編譯入口僅含型別的包，也缺少 Client 目錄分析用於區分執行時匯出的 `dsh.client` 與 `./client` 宣告。
 
 ## Decision
 
-`packages/api/workspace-files` 拥有两面的实现。Host 与 Client 叶配置仍由各自的根聚合直接引用，solution 根配置引用两片叶子。Host 导出文件服务，`./client` 导出实际的资源提供者插件，`dsh.client` 声明浏览器插件。web-app 的一个条目加载两面。这只取代[工作区文件服务记录](2026-09-05-workspace-files-service.zh.md)中的拆包决定，其授权、分页与流语义保持不变。
+`packages/api/workspace-files` 擁有兩面的實作。Host 與 Client 葉設定仍由各自的根聚合直接引用，solution 根設定引用兩片葉子。Host 匯出檔案服務，`./client` 匯出實際的資源提供者外掛，`dsh.client` 宣告瀏覽器外掛。web-app 的一個條目載入兩面。這隻取代[工作區檔案服務記錄](2026-09-05-workspace-files-service.zh.md)中的拆包決定，其授權、分頁與流語義保持不變。
 
-两条依赖方向使编译图保持无环：
+兩條依賴方向使編譯圖保持無環：
 
-- `client/resources` 从定义 `RemoteResult` 与 `RemoteFailure` 的 `typert/protocol` 包导入它们，不依赖 `api/remotes`；后者负责装配消费资源模型的提供者。
-- 文本预览使用文件包导出的参数类型声明 `SidebarRightResourceParamsMap.file`。文件提供者声明其资源值，但不导入 Sidebar UI。调用方需要该导航声明时，导入查看器的类型入口。
+- `client/resources` 從定義 `RemoteResult` 與 `RemoteFailure` 的 `typert/protocol` 包匯入它們，不依賴 `api/remotes`；後者負責裝配消費資源模型的提供者。
+- 文字預覽使用檔案包匯出的參數型別宣告 `SidebarRightResourceParamsMap.file`。檔案提供者宣告其資源值，但不匯入 Sidebar UI。呼叫方需要該導航宣告時，匯入檢視器的型別入口。
 
-这消除了 `remotes → workspace-files → resources → remotes` 和 `remotes → workspace-files → sidebar-right → ui-conversation → remotes`。Cordis 运行时服务注入仍独立于 TypeScript 工程引用。
+這消除了 `remotes → workspace-files → resources → remotes` 和 `remotes → workspace-files → sidebar-right → ui-conversation → remotes`。Cordis 執行時服務注入仍獨立於 TypeScript 工程引用。
 
 ## Alternatives considered
 
-**保留两个包。** 这隔离了编译环，却拆开同一文件能力的 Host 与 Client 归属。删除反向类型依赖后，可以采用与其它 API Controller 相同的双面组织。
+**保留兩個包。** 這隔離了編譯環，卻拆開同一檔案能力的 Host 與 Client 歸屬。刪除反向型別依賴後，可以採用與其它 API Controller 相同的雙面組織。
 
-**删除根 Client 引用。** 传递引用仍会编译该叶子，但两个根聚合必须显式命名本包对应的编译面。
+**刪除根 Client 引用。** 傳遞引用仍會編譯該葉子，但兩個根聚合必須顯式命名本包對應的編譯面。
 
-**修改目录分析或增加空 Client 插件。** 两者都不能提供要求的浏览器实现。实际的 `./client` 导出和 `dsh.client` 使用分析器已有的双面支持路径。
+**修改目錄分析或增加空 Client 外掛。** 兩者都不能提供要求的瀏覽器實作。實際的 `./client` 匯出和 `dsh.client` 使用分析器已有的雙面支援路徑。
 
 ## Consequences
 
-Host 线路方法和浏览器资源行为不变。浏览器实现、测试与文档归同一个包所有；Client 类型依赖止于协议和资源模型层，不反向触及 UI 或 Remote 装配。
+Host 線路方法和瀏覽器資源行為不變。瀏覽器實作、測試與文件歸同一個包所有；Client 型別依賴止於協定和資源模型層，不反向觸及 UI 或 Remote 裝配。
 
 ## Verification
 
-Cordis inspect 目录检查分析声明的 Client 导出，两个编译聚合保留其叶引用，Host 与 Client 文件服务测试覆盖相同的实现。现有依赖与工程引用检查约束这些编译关系。
+Cordis inspect 目錄檢查分析宣告的 Client 匯出，兩個編譯聚合保留其葉引用，Host 與 Client 檔案服務測試覆蓋相同的實作。現有依賴與工程引用檢查約束這些編譯關係。

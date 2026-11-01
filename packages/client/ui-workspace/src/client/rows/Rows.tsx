@@ -133,7 +133,7 @@ function useTitleMarquee(title: RefObject<HTMLSpanElement | null>): { enter: () 
   }), [title])
 }
 
-/** Localized compact relative time ("刚刚"/"5分钟" in zh, "now"/"5min" in en). */
+/** Localized compact relative time ("剛剛"/"5分鐘" in zh, "now"/"5min" in en). */
 function timeLabel(updatedAt: number, now: number, t: RowTranslate): string {
   const { unit, n } = relativeTime(updatedAt, now)
   return unit === 'now' ? t('time.now') : t(`time.${unit}`, { n })

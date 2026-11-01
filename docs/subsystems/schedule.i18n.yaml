@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/schedule.md
 /host-wide-schedule:
   en: 71c4686e65a7c7f9
-  zh: dfba124c28db2f63
+  zh: f4019f3daa093709
 /host-wide-schedule/durable-records:
   en: 41cd197b5c74bfa3
-  zh: 18ed11259036d726
+  zh: 4a4d9b1ecfffca52
 /host-wide-schedule/absolute-time-input:
   en: e730fda52ba2854f
-  zh: 01a6c682e327a133
+  zh: 2e021c2087e49ae1
 /host-wide-schedule/daily-wall-clock-input:
   en: 2d249edc3dfccb8a
-  zh: 33fecda132b03b84
+  zh: 855861c2f2af3dbe
 /host-wide-schedule/fixed-rate-input-and-catch-up:
   en: d2b5997cce3806dc
-  zh: 2483ba9e38ad3cf3
+  zh: 20e314b561acd376
 /host-wide-schedule/cron-wall-clock-input:
   en: 1ba9ae84f05d8919
-  zh: 5b4abfdcddbbcae0
+  zh: c4b88e2e845456cd
 /host-wide-schedule/historical-session-changes:
   en: 9cd7f65e0699aa91
-  zh: 42f2a6fda33d2ff0
+  zh: 10c73be286615fde
 /host-wide-schedule/active-views-and-management:
   en: 0656173de50ee132
-  zh: 54176540371d0f28
+  zh: d38ff360109a7f3f
 /host-wide-schedule/web-catalog:
   en: 39f24636dd788034
-  zh: ba3ff541fee5854a
+  zh: 0f8369467cce0331
 /host-wide-schedule/timing-edits:
   en: ce5d2095a3ad2e82
-  zh: 167b3715f8eaffc1
+  zh: 16faad103fa3f8f7
 /host-wide-schedule/saved-delivery-records:
   en: 077aa6573d9ede1a
-  zh: 0acea592a6e3630a
+  zh: 0506a570e683678b
 /host-wide-schedule/host-delivery:
   en: b6d522d24b9b97ba
-  zh: 84df8ea09bedf51c
+  zh: 432c1100c754e3f2

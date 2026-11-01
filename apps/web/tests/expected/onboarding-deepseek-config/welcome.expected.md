@@ -1,5 +1,5 @@
-- dialog "内测声明":
-  - heading "内测声明" [level=2]
-  - paragraph: DeepSeek Harness 目前的 0.1 版本仍处在面向 Harness 开发者进行测试的阶段，还有许多地方需要持续改进和打磨，希望听取广大开发者的反馈建议。预计 DeepSeek Harness 的核心插件以及基础 API 都会在接下来的一段时间内快速迭代、持续演化。
-  - paragraph: 我们期待与全球开发者一起，在开源、开放、可复用、可组合的基础设施之上，共同探索智能上限。欢迎全球 Harness 开发者加入 DSH 插件生态。
-  - button "继续"
+- dialog "內測宣告":
+  - heading "內測宣告" [level=2]
+  - paragraph: DeepSeek Harness 目前的 0.1 版本仍處在面向 Harness 開發者進行測試的階段，還有許多地方需要持續改進和打磨，希望聽取廣大開發者的回饋建議。預計 DeepSeek Harness 的核心外掛以及基礎 API 都會在接下來的一段時間內快速迭代、持續演化。
+  - paragraph: 我們期待與全球開發者一起，在開源、開放、可複用、可組合的基礎設施之上，共同探索智慧上限。歡迎全球 Harness 開發者加入 DSH 外掛生態。
+  - button "繼續"

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/ssh/sandbox-ssh/README.md
 /:
   en: 222090dbd09cc030
-  zh: 24e479b8ff87e6d4
+  zh: 5713112cad97c342
 /deepseek-ai-dsh-sandbox-ssh:
   en: ae397f91d266146f
   zh: 1b6bf9730ed10edb
 /deepseek-ai-dsh-sandbox-ssh/summary:
   en: 8af877de577db380
-  zh: e65585c91fd874b1
+  zh: cf8a64529b53abe9
 /deepseek-ai-dsh-sandbox-ssh/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 725b47765ee8f30b
+  zh: d6460a652726fe53
 /deepseek-ai-dsh-sandbox-ssh/use-this-package:
   en: 1a44e3c4d22d8bfe
-  zh: b53825c3da5e002c
+  zh: 0c85f45173f42819
 /deepseek-ai-dsh-sandbox-ssh/understand-the-implementation:
   en: b4c1c32707dc9f7e
-  zh: 33a0b69e312aa80d
+  zh: 756d44abf0440ee9
 /deepseek-ai-dsh-sandbox-ssh/further-exploration:
   en: 56145c4fead194d7
-  zh: 4e65796fc22b3031
+  zh: e98ff4dbb54f68e3
 /deepseek-ai-dsh-sandbox-ssh/model-experience:
   en: 586c0afcf6a3097d
-  zh: 4723c59f600a3b04
+  zh: b6702e7d58daba3d
 /deepseek-ai-dsh-sandbox-ssh/model-experience/kv-cache-effect:
   en: 21f304c66e5ba98b
-  zh: 18185d5b164f8216
+  zh: f5d729b673090bec
 /deepseek-ai-dsh-sandbox-ssh/known-limitations-and-deferred-work:
   en: 916d7c0e971765bb
-  zh: 56d347094c07bc5d
+  zh: 50aecd22a9859ee6
 /deepseek-ai-dsh-sandbox-ssh/known-limitations-and-deferred-work/dev-note:
   en: 6ca4f1d4b4810fff
-  zh: e42f580ca971972b
+  zh: 8acb938f7b6b4a66

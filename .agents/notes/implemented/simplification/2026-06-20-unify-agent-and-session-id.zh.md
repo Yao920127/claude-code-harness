@@ -1,39 +1,39 @@
-# Agent Note: 统一 agent id 与会话 id
+# Agent Note: 統一 agent id 與工作階段 id
 
 Status: implemented
 
 [English](2026-06-20-unify-agent-and-session-id.md) | 中文
 
-## 问题
+## 問題
 
-一个存活的 agent（智能体）/会话对需要使用同一 identity 完成注册表路由、事件溯源和持久化。让 factory 接受相互独立的 `agentId` 和 `sessionId` 输入，会允许任何生产路径都无法使用的配对，同时迫使每个消费方为同一生命周期在两个名称之间选择或转换。
+一個存活的 agent（智慧代理）/工作階段對需要使用同一 identity 完成註冊表路由、事件溯源和持久化。讓 factory 接受相互獨立的 `agentId` 和 `sessionId` 輸入，會允許任何生產路徑都無法使用的配對，同時迫使每個消費方為同一生命週期在兩個名稱之間選擇或轉換。
 
-ACP（Agent Client Protocol）对两种 identity 使用相同值。Stdio 和钩子也在会话事件流上工作，并且直接需要对应的存活 agent；没有生产路径会把一个存活 agent 对象重新附着到多个会话，或通过多个 agent id 驱动一个会话。
+ACP（Agent Client Protocol）對兩種 identity 使用相同值。Stdio 和掛鉤也在工作階段事件流上工作，並且直接需要對應的存活 agent；沒有生產路徑會把一個存活 agent 物件重新附著到多個工作階段，或透過多個 agent id 驅動一個工作階段。
 
-[agent 范围运行时](../architecture/2026-07-12-agent-scope-runtime-design.zh.md)使用同一个 `AgentCreationTransaction` 执行创建和恢复，agent/会话条目共享相同的最终条目冲突规则。第二个 identity 并不代表单独的存活性、回滚或完全停稳；它只会围绕同一事务增加 API 与转换状态。
+[agent 範圍執行時](../architecture/2026-07-12-agent-scope-runtime-design.zh.md)使用同一個 `AgentCreationTransaction` 執行建立和恢復，agent/工作階段條目共享相同的最終條目衝突規則。第二個 identity 並不代表單獨的存活性、復原或完全停穩；它只會圍繞同一事務增加 API 與轉換狀態。
 
-会话 identity 同样只有一个归属，即 `Session.header.id`；`Session.id` 是派生访问器，而非需要重复验证的独立状态。
+工作階段 identity 同樣只有一個歸屬，即 `Session.header.id`；`Session.id` 是派生存取器，而非需要重複驗證的獨立狀態。
 
-## 决策
+## 決策
 
-agent 的注册表 id 等于其会话 id。`CreateAgentOptions` 接受一个 `sessionId`，同时用于两个最终注册表条目；恢复时以 `resumeSessionId` 注册 agent；进程内 subagent 创建使用子会话 id；`Session.id` 则派生自 `header.id`。远程 ACP 运行没有本地 agent/会话对：它保留一个由父项铸造的生命周期 id，而子服务器协议本地的会话 id 仍仅供 ACP 调用内部使用。现有创建事务、最终条目冲突检查和精确条目分离语义保持不变；唯一职责是在本地 id 之间转换的 map 与字段已经消失。
+agent 的註冊表 id 等於其工作階段 id。`CreateAgentOptions` 接受一個 `sessionId`，同時用於兩個最終註冊表條目；恢復時以 `resumeSessionId` 註冊 agent；程序內 subagent 建立使用子工作階段 id；`Session.id` 則派生自 `header.id`。遠端 ACP 執行沒有本地 agent/工作階段對：它保留一個由父項鑄造的生命週期 id，而子伺服器協定本地的工作階段 id 仍僅供 ACP 呼叫內部使用。現有建立事務、最終條目衝突檢查和精確條目分離語義保持不變；唯一職責是在本地 id 之間轉換的 map 與欄位已經消失。
 
-配置驱动路径保留 `agents[].id` 作为稳定配置标签，而非存活态路由 identity。普通的全新启动会铸造组合 id `${label}-session-${randomUUID()}`，使持久重启不会冲突。耦合应用可以预先铸造并传入精确的 `sessionId`：首次使用时创建它，而当持久化服务已经存在时，AgentLoop 重新挂载会在同一 identity 下恢复已物化历史。`resumeSessionId` 则要求已有的持久化 identity。两个精确 id 输入互斥。Stdio 使用「恢复或创建」形式，使配置创建的 agent 和 UI 在循环重载之间共享一个不透明 identity，而不是根据前缀猜测。日志可以使用稳定标签，而所有存活态与持久化查找都使用同一个 `SessionId`。
+設定驅動路徑保留 `agents[].id` 作為穩定設定標籤，而非存活態路由 identity。普通的全新啟動會鑄造組合 id `${label}-session-${randomUUID()}`，使持久重新啟動不會衝突。耦合應用可以預先鑄造並傳入精確的 `sessionId`：首次使用時建立它，而當持久化服務已經存在時，AgentLoop 重新掛載會在同一 identity 下恢復已物化歷史。`resumeSessionId` 則要求已有的持久化 identity。兩個精確 id 輸入互斥。Stdio 使用「恢復或建立」形式，使設定建立的 agent 和 UI 在迴圈過載之間共享一個不透明 identity，而不是根據字首猜測。日誌可以使用穩定標籤，而所有存活態與持久化查詢都使用同一個 `SessionId`。
 
-`agent/created` 和 `agent/disposed` 保留。它们是成对的发布生命周期事件，而非 identity 别名；以后若发现没有消费方并要移除，必须先重新搜索，再提出独立提案。
+`agent/created` 和 `agent/disposed` 保留。它們是成對的釋出生命週期事件，而非 identity 別名；以後若發現沒有消費方並要移除，必須先重新搜尋，再提出獨立提案。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**保持路由与日志 identity 分离。** 稳定的配置标签加全新的持久对话确实有用，但不需要两个存活 identity：标签可以继续作为配置/显示元数据，而每次运行的组合 `SessionId` 负责路由和持久化。保留两个 id 会让转换 map 持续存在，允许不可能的配对，却不会增加生命周期能力。
+**保持路由與日誌 identity 分離。** 穩定的設定標籤加全新的持久對話確實有用，但不需要兩個存活 identity：標籤可以繼續作為設定/顯示中繼資料，而每次執行的組合 `SessionId` 負責路由和持久化。保留兩個 id 會讓轉換 map 持續存在，允許不可能的配對，卻不會增加生命週期能力。
 
-## 验证
+## 驗證
 
-- agent 创建/恢复和 subagent 创建只携带一个 identity，`Session` 也只在一个位置存储它。
-- 创建事务继续覆盖最终条目冲突、精确条目分离、回滚和完全停稳，无需 identity 特有的生命周期状态。
-- ACP、stdio、钩子、bash 归属、持久化和 lineage 直接使用共享 `SessionId`。ACP subagent 后端在父命名空间中铸造其生命周期 id，因为子服务器返回的会话 id 仅在服务器本地有效；ACP bridge 根据正向会话 map 验证精确的 `Agent` 归属；JSON-RPC 只转发生命周期事件中由服务快照保存的 `local` 标记为 true 的事件，从带范围的事件 carrier 取得委托父项，并且不保留子 identity 或 lineage cache。
-- 配置驱动的恢复或创建策略是显式的，并在持久化重启场景下得到覆盖。
-- 生产监听器搜索确认保留 `agent/created`/`agent/disposed` 及其发布语义。
+- agent 建立/恢復和 subagent 建立只攜帶一個 identity，`Session` 也只在一個位置儲存它。
+- 建立事務繼續覆蓋最終條目衝突、精確條目分離、復原和完全停穩，無需 identity 特有的生命週期狀態。
+- ACP、stdio、掛鉤、bash 歸屬、持久化和 lineage 直接使用共享 `SessionId`。ACP subagent 後端在父名稱空間中鑄造其生命週期 id，因為子伺服器返回的工作階段 id 僅在伺服器本地有效；ACP bridge 根據正向工作階段 map 驗證精確的 `Agent` 歸屬；JSON-RPC 只轉發生命週期事件中由服務快照儲存的 `local` 標記為 true 的事件，從帶範圍的事件 carrier 取得委託父項，並且不保留子 identity 或 lineage cache。
+- 設定驅動的恢復或建立策略是顯式的，並在持久化重新啟動情境下得到覆蓋。
+- 生產監聽器搜尋確認保留 `agent/created`/`agent/disposed` 及其釋出語義。
 
-## 后果
+## 後果
 
-这排除了潜在的多会话 actor 和会话交接设计，并使由客户端选择、已持久化的会话 identity 成为注册表 identity。如果独立路由 identity 成为真实需求，就需要显式的生命周期设计，而不是由调用方提供一对不受约束的值。
+這排除了潛在的多工作階段 actor 和工作階段交接設計，並使由用戶端選擇、已持久化的工作階段 identity 成為註冊表 identity。如果獨立路由 identity 成為真實需求，就需要顯式的生命週期設計，而不是由呼叫方提供一對不受約束的值。

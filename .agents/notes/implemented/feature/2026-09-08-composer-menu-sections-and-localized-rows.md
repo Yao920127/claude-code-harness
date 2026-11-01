@@ -14,7 +14,7 @@ The composer's `+` button and a typed `/` listed every command in Host registrat
 
 The six built-in Host commands get their localized title, description, glyph, and claim token from the client. Stable identity selection and input resolution follow the [command identity decision](../architecture/2026-09-10-command-identities-and-composer-file-action.md). Contributions carry `label()`, `description()`, and `icon`, read on every candidate pass, so the `/model` row localizes without re-registration.
 
-A menu pick fills the locale's claim token: under Chinese, picking Plan fills `/计划 ` and the submission executes `/plan `. A typed token keeps its typed spelling as the claim, because the composer reads the arguments after the token it holds. The effective Session catalog resolves Chinese and English aliases through the same input path in every locale.
+A menu pick fills the locale's claim token: under Chinese, picking Plan fills `/計劃 ` and the submission executes `/plan `. A typed token keeps its typed spelling as the claim, because the composer reads the arguments after the token it holds. The effective Session catalog resolves Chinese and English aliases through the same input path in every locale.
 
 The File row is an `action` contribution: a bare invocation consumes the trigger token and runs a client callback without submitting a message. Conversation owns that registration, its live availability, and the hidden file input. The menu replaces the separate paperclip button; the `+` button's accessible name and tooltip read "Add files or run commands".
 

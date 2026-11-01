@@ -1,5 +1,5 @@
 ---
-description: "deliverables 组导览：记录轮次交给用户的内容的 Host 插件，即显式文件交付与观察到的工作区改动，供浏览本组的用户与维护者阅读。"
+description: "deliverables 組導覽：記錄輪次交給使用者的內容的 Host 外掛，即顯式檔案交付與觀察到的工作區改動，供瀏覽本組的使用者與維護者閱讀。"
 kind: "package-group"
 ---
 
@@ -9,13 +9,13 @@ kind: "package-group"
 
 ## 概述
 
-deliverables 系列把一轮交给用户的内容记录为只有客户端读取的持久 Session 事件：`present` 工具声明模型交付的最终文件，workspace-changes 记录器用 git 快照和整文件捕获记录一轮改动的文件及其行数，并提供每个文件的对比。Web 的[交付插件](../client/ui-deliverables/README.zh.md)在轮次末尾渲染两者。需要展示交付文件和每轮改动的产品选择本系列；`present` 需要 `ctx.tools` 与 `ctx.fs`，记录器需要 `ctx.subprocess` 和 git 可执行文件。
+deliverables 系列把一輪交給使用者的內容記錄為只有用戶端讀取的持久 Session 事件：`present` 工具宣告模型交付的最終檔案，workspace-changes 記錄器用 git 快照和整檔案捕捉記錄一輪改動的檔案及其行數，並提供每個檔案的對比。Web 的[交付外掛](../client/ui-deliverables/README.zh.md)在輪次末尾渲染兩者。需要展示交付檔案和每輪改動的產品選擇本系列；`present` 需要 `ctx.tools` 與 `ctx.fs`，記錄器需要 `ctx.subprocess` 和 git 可執行檔案。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
@@ -24,27 +24,27 @@ deliverables 系列把一轮交给用户的内容记录为只有客户端读取�
 
 | 包 | 角色 | ctx key |
 |---|---|---|
-| [`tool-present`](tool-present/README.zh.md) | 通过 `present` 工具把已有文件声明为最终交付物 | 注册到 `ctx.tools` |
-| [`workspace-changes`](workspace-changes/README.zh.md) | 用 git 工作树快照和整文件捕获汇总每个顶层轮次改动的文件，并提供其对比 | 提供 `ctx.workspaceChanges`；监听 `session/event`，追加 `workspace/changes` |
+| [`tool-present`](tool-present/README.zh.md) | 透過 `present` 工具把已有檔案宣告為最終交付物 | 註冊到 `ctx.tools` |
+| [`workspace-changes`](workspace-changes/README.zh.md) | 用 git 工作樹快照和整檔案捕捉彙總每個頂層輪次改動的檔案，並提供其對比 | 提供 `ctx.workspaceChanges`；監聽 `session/event`，追加 `workspace/changes` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [产出物子系统](../../docs/subsystems/deliverables.zh.md)——`PresentedFile` 与 `WorkspaceChangesSummary` 的词汇、两个持久事件和摘要服务。
-- [Web 产出物](../client/ui-deliverables/README.zh.md)——渲染这些事件的轮尾卡片与文件提及。
-- [present 声明工作区源文件](../../.agents/notes/implemented/feature/2026-09-08-present-workspace-source-files.zh.md)——交付决策。
-- [本轮改动文件卡片](../../.agents/notes/implemented/feature/2026-09-11-turn-changed-files-card.zh.md)——快照设计与覆盖规则。
+- [產出物子系統](../../docs/subsystems/deliverables.zh.md)——`PresentedFile` 與 `WorkspaceChangesSummary` 的詞彙、兩個持久事件和摘要服務。
+- [Web 產出物](../client/ui-deliverables/README.zh.md)——渲染這些事件的輪尾卡片與檔案提及。
+- [present 宣告工作區原始檔](../../.agents/notes/implemented/feature/2026-09-08-present-workspace-source-files.zh.md)——交付決策。
+- [本輪改動檔案卡片](../../.agents/notes/implemented/feature/2026-09-11-turn-changed-files-card.zh.md)——快照設計與覆蓋規則。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/host/product-telemetry-otel/README.md
 /:
   en: 19af08decd02015b
-  zh: 0aa0ad75105e4e3c
+  zh: 9c9bd12241e71004
 /deepseek-ai-dsh-host-product-telemetry-otel:
   en: 18d7a8c944938416
   zh: 4249a421e3d5f09a
 /deepseek-ai-dsh-host-product-telemetry-otel/summary:
   en: a969cf533f6649b5
-  zh: 8401a4263f70a8e0
+  zh: d3262c15fa944784
 /deepseek-ai-dsh-host-product-telemetry-otel/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 9aa34fb1dc95d8cf
+  zh: 2928a74c7ef629ac
 /deepseek-ai-dsh-host-product-telemetry-otel/use-this-package:
   en: 08e0bcbc259d131b
-  zh: 1d7cbde2688a903f
+  zh: 1dd8d0997a91f7d4
 /deepseek-ai-dsh-host-product-telemetry-otel/understand-the-implementation:
   en: 5d2c06a357a1c06a
-  zh: 9a1a17535889f5e3
+  zh: 44e296de5b0fd4c3
 /deepseek-ai-dsh-host-product-telemetry-otel/further-exploration:
   en: 6bfb5e8a723ff0a9
-  zh: fffc6b02e2c1a3cb
+  zh: 923a29746fd8c2e4
 /deepseek-ai-dsh-host-product-telemetry-otel/model-experience:
   en: 3bb64ed6517622aa
-  zh: 46aa16e88d40bb88
+  zh: 9630347e71760d6c
 /deepseek-ai-dsh-host-product-telemetry-otel/model-experience/kv-cache-effect:
   en: b287f8e34f3634d1
-  zh: cd441f253ec0124b
+  zh: d97dacce81e64327
 /deepseek-ai-dsh-host-product-telemetry-otel/known-limitations-and-deferred-work:
   en: 20b9ab75cb7e66a1
-  zh: a7dc4f4656eaf839
+  zh: b07887d6f015e3bb
 /deepseek-ai-dsh-host-product-telemetry-otel/known-limitations-and-deferred-work/dev-note:
   en: 0a1253c6f7b5e8b9
-  zh: 9f56528562c7c914
+  zh: d1485f976bab1c52

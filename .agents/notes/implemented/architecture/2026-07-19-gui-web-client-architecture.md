@@ -17,14 +17,14 @@ Both ends run cordis. The host is a cordis plugin tree; the browser runs a secon
 ```
 ┌─ Host ─────────────────────────┐   ┌─ Browser ─────────────────────────────────────────┐
 │ sessions/agents/SessionLog     │   │ client cordis root ctx                             │
-│ Connection + Gateway: RPC/events│◀─▶│  ├ vendored Loader + ctx.modules（内核，壳静态持有）│
+│ Connection + Gateway: RPC/events│◀─▶│  ├ vendored Loader + ctx.modules（核心，殼靜態持有）│
 │ webserver:                     │   │  ├ immediately entries: connection/runtime/        │
-│  ├ GET /plugins/<id>/client.js │   │  │   ui-theme/i18n（fetch bundle，boot 预拉）       │
-│  └ GET / 注入 __DSH_BOOT__ 图  │   │  ├ lazy entries: layout/sidebar/                   │
+│  ├ GET /plugins/<id>/client.js │   │  │   ui-theme/i18n（fetch bundle，boot 預拉）       │
+│  └ GET / 注入 __DSH_BOOT__ 圖  │   │  ├ lazy entries: layout/sidebar/                   │
 │                                │   │  │   conversation/trajectory（fetch bundle，按需） │
 └────────────────────────────────┘   │  ├ ui-renderer（fetch bundle，React 根）       │
-                                     │  └ session scope ×N（观看驱动，惰性建）            │
-                                     │ DOM loading 页 → settled → React UI 一次成型       │
+                                     │  └ session scope ×N（觀看驅動，惰性建）            │
+                                     │ DOM loading 頁 → settled → React UI 一次成型       │
                                      └────────────────────────────────────────────────────┘
 ```
 
@@ -65,7 +65,7 @@ Session.handleMuxEnvelope ──► contiguous Event window
         │                ConversationNodeAssembler
         │                  Definitions -> Contexts -> view builders
         ▼
-Notifier 微任务合批 ──► ConversationSnapshot 缓存 ──uSES──► 组件
+Notifier 微任務合批 ──► ConversationSnapshot 快取 ──uSES──► 元件
 ```
 
 - **Session** (session.ts): lazily built, resident — once created it keeps eating frames in the background, so switching away and back renders instantly. Operations: `prompt`/`cancel` (RPC passthrough; failures land in the snapshot's `promptError`), `open` (pull the tail history page, idempotent), `loadOlder` (upward paging, reentry-guarded), `resync` (reconnect = clear the window and rerun open). Subscription: `subscribe`/`getSnapshot` (always the cached reference) — `implements ObservableSnapshot<ConversationSnapshot>`, with `useSelector = bindSnapshotSelector(this)` attached at construction, so a Session is directly a uSES source. Frame dispatch is one switch: `session/event` frames dedup by seq (the only dedup key), buffer while open is in flight, otherwise append + incremental projection; open/stitch merges the live buffer by seq and backfills once if `subscribed.lastSeq` outruns the window tail.

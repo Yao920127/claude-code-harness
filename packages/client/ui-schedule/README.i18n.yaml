@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-schedule/README.md
 /:
   en: 265778d19fe0dd76
-  zh: 78b0a191a4bd4e4e
+  zh: fb1e70dc2abb24b3
 /deepseek-ai-dsh-client-ui-schedule:
   en: 862120984d5392eb
   zh: eb3e5d5a802da592
 /deepseek-ai-dsh-client-ui-schedule/summary:
   en: 8dfc371c14bb4415
-  zh: 9b3545c1a7468a7a
+  zh: fe38a3a5ed779446
 /deepseek-ai-dsh-client-ui-schedule/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 405b30feaf48c087
+  zh: f922b4fb64600ded
 /deepseek-ai-dsh-client-ui-schedule/use-this-package:
   en: 3594ab6704cbd7b9
-  zh: 99a965f43187501b
+  zh: 948b5a7668f35c2a
 /deepseek-ai-dsh-client-ui-schedule/use-this-package/time-zone-data-source:
   en: 6bd6882dbbbefcb0
-  zh: 03aa15f1a65d13dc
+  zh: d8d060ecc35041da
 /deepseek-ai-dsh-client-ui-schedule/understand-the-implementation:
   en: f863859edc1cb0f7
-  zh: 2bf04cdd1f17bb18
+  zh: 7b7a7c5033b446cc
 /deepseek-ai-dsh-client-ui-schedule/further-exploration:
   en: 06e265120b05dbf5
-  zh: 08ab1ef979b8ea40
+  zh: 7723cf36602050a8
 /deepseek-ai-dsh-client-ui-schedule/model-experience:
   en: a8838aba5fd29fd8
-  zh: b9f67d82c81dd030
+  zh: cdde783dad809a7f
 /deepseek-ai-dsh-client-ui-schedule/model-experience/kv-cache-effect:
   en: 4b81350950285d47
-  zh: 6dc3d5cf7ca8a622
+  zh: 5b48b30f8d58c79c
 /deepseek-ai-dsh-client-ui-schedule/known-limitations-and-deferred-work:
   en: ce8cd6e03f4763ae
-  zh: 65ad26aad74d83ca
+  zh: 348bf03bb0d640cc
 /deepseek-ai-dsh-client-ui-schedule/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: a4b126f9a4eaca6f
+  zh: 21b7e5756ea649d5

@@ -1,18 +1,18 @@
-# 实操手册：扩展插件形态
+# 實操手冊：擴充功能外掛形態
 
 [English](extension-cookbook.md) | 中文
 
-harness 扩展的参考模式。代码片段省略了 import 和辅助实现，无法直接复制运行。具体编写路径见[包检查清单](adding-a-package.zh.md)、[第一个工具教程](../user/develop/basic/tool.zh.md)、[工具参考](adding-a-tool.zh.md)、[LLM（大语言模型）适配器指南](adding-an-llm-adapter.zh.md)和 [Session 格式版本教程](adding-a-session-format-version.zh.md)；系统与扩展点映射由[架构文档](../architecture.zh.md)负责。
+harness 擴充功能的參考模式。程式碼片段省略了 import 和輔助實作，無法直接複製執行。具體編寫路徑見[包檢查清單](adding-a-package.zh.md)、[第一個工具教學](../user/develop/basic/tool.zh.md)、[工具參考](adding-a-tool.zh.md)、[LLM（大語言模型）介面卡指南](adding-an-llm-adapter.zh.md)和 [Session 格式版本教學](adding-a-session-format-version.zh.md)；系統與擴充功能點對映由[架構文件](../architecture.zh.md)負責。
 
-## 工具插件
+## 工具外掛
 
-工具在 `ctx.tools` 上注册。带注解的 `defineTool` 示例（类型化的 `execute` 参数、结果构造、`run_in_background` 模式）见 [adding-a-tool.md](adding-a-tool.zh.md)——该指南是工具定义的真源。`ctx.tools.register()` 也直接接受原始 JSON Schema `ToolDefinition`（MCP 来源的工具就是这样到达的）；`defineTool` 是第一方工具使用的类型化辅助函数。
+工具在 `ctx.tools` 上註冊。帶註解的 `defineTool` 範例（型別化的 `execute` 參數、結果建構、`run_in_background` 模式）見 [adding-a-tool.md](adding-a-tool.zh.md)——該指南是工具定義的真源。`ctx.tools.register()` 也直接接受原始 JSON Schema `ToolDefinition`（MCP 來源的工具就是這樣到達的）；`defineTool` 是第一方工具使用的型別化輔助函式。
 
 <a id="a-hook-plugin-permission-gate-example"></a>
 
-## 钩子插件（以权限门禁为例）
+## 掛鉤外掛（以權限門禁為例）
 
-这个权限门禁是钩子插件的一个示例。它从 `tools/pre-execute` 门禁返回一个类型化的决策，用于允许或拒绝一次调用；沙箱、权限和 plan-mode 插件都可以使用该扩展点。钩子插件也可以拦截其他扩展点，本身并不等同于权限门禁。「原生钩子」是在拦截点上运行的普通 Cordis 插件，不需要外部协议。
+這個權限門禁是掛鉤外掛的一個範例。它從 `tools/pre-execute` 門禁返回一個型別化的決策，用於允許或拒絕一次呼叫；沙箱、權限和 plan-mode 外掛都可以使用該擴充功能點。掛鉤外掛也可以攔截其他擴充功能點，本身並不等同於權限門禁。「原生掛鉤」是在攔截點上執行的普通 Cordis 外掛，不需要外部協定。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -32,11 +32,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-这个 waterfall（瀑布式事件）是可重排的策略层。当不变式需要单调的最终拒绝时使用 `ctx.tools.guard()`；当插件需要包裹分发生命周期时（超时/重试/指标；仅 `exec.signal` 可替换）使用 `tools/execute`；显式结果变换使用 `tools/post-execute`；对不可变最终结果的受限观察使用 `tools/result`。选择规则见[添加工具指南](adding-a-tool.zh.md#execution-policy-and-observation)。
+這個 waterfall（瀑布式事件）是可重排的策略層。當不變式需要單調的最終拒絕時使用 `ctx.tools.guard()`；當外掛需要包裹分發生命週期時（超時/重試/指標；僅 `exec.signal` 可替換）使用 `tools/execute`；顯式結果變換使用 `tools/post-execute`；對不可變最終結果的受限觀察使用 `tools/result`。選擇規則見[新增工具指南](adding-a-tool.zh.md#execution-policy-and-observation)。
 
-## UI 插件
+## UI 外掛
 
-UI 插件把持久 `session/event` record（Assistant settlement、轮次/步骤边界与工具活动）和用于实时 token 呈现的瞬态 `agent/assistant-stream` frame 组合起来，并通过 `agent.followup()` / `agent.steer()` 将输入驱动回去。如果浏览器插件要向内建 Web Client 贡献业务行，则应注册 `ConversationNodeDefinition` 与 keyed Chat renderer；具体约定见 [Conversation 子系统参考](../subsystems/conversation.zh.md)。
+UI 外掛把持久 `session/event` record（Assistant settlement、輪次/步驟邊界與工具活動）和用於即時 token 呈現的瞬態 `agent/assistant-stream` frame 組合起來，並透過 `agent.followup()` / `agent.steer()` 將輸入驅動回去。如果瀏覽器外掛要向內建 Web Client 貢獻業務行，則應註冊 `ConversationNodeDefinition` 與 keyed Chat renderer；具體約定見 [Conversation 子系統參考](../subsystems/conversation.zh.md)。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -63,11 +63,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-## 外部协议驱动
+## 外部協定驅動
 
-*协议驱动*将协议对端接入 `ctx.agents`；它可以服务于 UI 或自动化客户端。stdio 驱动拥有 stdout，通过工厂创建或恢复 agent（智能体），并将协议请求映射为 `followup()` 或 `cancel()`。底层提示词请求返回其持久入队回执；它不会通过关联 `MessageId` 与 `turn/end` 获得结果。整个 agent 的状态应单独发布。自动化方法可以从回执等待到下一次 idle，并概括这一显式拥有的区间；UI 通常则会持续观察开放式事件流。通过 `AgentHandle.dispose()` 拆除 agent，以使 dispose（资源释放）达到完全停稳。
+*協定驅動*將協定對端接入 `ctx.agents`；它可以服務於 UI 或自動化用戶端。stdio 驅動擁有 stdout，透過工廠建立或恢復 agent（智慧代理），並將協定請求對映為 `followup()` 或 `cancel()`。底層提示詞請求返回其持久入隊回執；它不會透過關聯 `MessageId` 與 `turn/end` 獲得結果。整個 agent 的狀態應單獨釋出。自動化方法可以從回執等待到下一次 idle，並概括這一顯式擁有的區間；UI 通常則會持續觀察開放式事件流。透過 `AgentHandle.dispose()` 拆除 agent，以使 dispose（資源釋放）達到完全停穩。
 
-[`packages/acp/acp`](../../packages/acp/acp) 是仅面向自动化的完整示例：它通过 ACP（Agent Client Protocol）JSON-RPC stdio 提供全新文本会话，发出已提交的助手文本，并为其拥有的 agent 注册一次性机器权限应答器。其 [README](../../packages/acp/acp/README.zh.md) 定义确切的方法、事件顺序和生命周期约定。
+[`packages/acp/acp`](../../packages/acp/acp) 是僅面向自動化的完整範例：它透過 ACP（Agent Client Protocol）JSON-RPC stdio 提供全新文字工作階段，發出已提交的助手文字，併為其擁有的 agent 註冊一次性機器權限應答器。其 [README](../../packages/acp/acp/README.zh.md) 定義確切的方法、事件順序和生命週期約定。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -93,44 +93,44 @@ export function apply(ctx: Context) {
 }
 ```
 
-## 可运行的组装示例
+## 可執行的組裝範例
 
-交付应用通过 `packages/bundle/*/cordis.patch.yml` 提供 profile 层，产品 `dsh` 启动器通过具名 profile 负责 Web、ACP、SDK 与一次性 headless 执行。可选的用户 overlay 位于 `apps/cli/config/examples/`；profile 集成测试位于 `apps/cli/tests/profiles/`，包专属 Loader 组合则留在对应包的测试目录中。
+交付應用透過 `packages/bundle/*/cordis.patch.yml` 提供 profile 層，產品 `dsh` 啟動器透過具名 profile 負責 Web、ACP、SDK 與一次性 headless 執行。可選的使用者 overlay 位於 `apps/cli/config/examples/`；profile 整合測試位於 `apps/cli/tests/profiles/`，包專屬 Loader 組合則留在對應包的測試目錄中。
 
 <a id="the-feature--mechanism-map"></a>
 
-## 功能→机制映射
+## 功能→機制對映
 
-每个产品功能都映射到一个文档化扩展点上的监听器——微内核声明由此可验证（[微内核 Agent Note](../../.agents/notes/implemented/architecture/2026-06-11-microkernel-event-taxonomy.zh.md)）。没有任何一行修改循环本身。
+每個產品功能都對映到一個文件化擴充功能點上的監聽器——微核心宣告由此可驗證（[微核心 Agent Note](../../.agents/notes/implemented/architecture/2026-06-11-microkernel-event-taxonomy.zh.md)）。沒有任何一行修改迴圈本身。
 
-`system-prompt/assemble` 是一个专家协作式的整体装配变换：其返回的装配结果具有权威性，因此监听器作者有责任保留活跃的 PTC mode 和结构化输出协议的贡献。对于需要在展示、查找和执行之间保持对齐的工具过滤，优先使用 `ctx.tools.restrict()`。
+`system-prompt/assemble` 是一個專家協作式的整體裝配變換：其返回的裝配結果具有權威性，因此監聽器作者有責任保留活躍的 PTC mode 和結構化輸出協定的貢獻。對於需要在展示、查詢和執行之間保持對齊的工具過濾，優先使用 `ctx.tools.restrict()`。
 
-| 产品功能 | 插件机制 |
+| 產品功能 | 外掛機制 |
 |---|---|
-| 钩子系统（用户级 + 项目级） | `agent/created`、`agent/pre-step`、`agent/request`、`tools/pre-execute`、`tools/post-execute` 和 `agent/turn-stopping` 上的监听器；waterfall 返回类型化决策，`agent/turn-stopping` 则可通过 steering（中途引导）触发下一步；`dsh-hooks-claude-code` / `dsh-hooks-codex` 桥接器将钩子配置文件映射到这些扩展点上 |
-| `/goal` | `ctx.goals` 管理持久状态，`dsh-goal-round-driver` 通过公共 `Agent` 调度同会话 Round，独立的命令/工具生产方分别提供人类/模型控制 |
-| `/loop` | 在 `turn/end` 会话事件上 `followup()` 下一次迭代；或强制继续 |
-| 动态工作流 | `ctx.workflowEngine` + PTC 工作流引擎 + `workflow` 工具；结构化的进程内子任务通过作用域化的提示词/工具注册、单调工具守卫、最终 `tools/result` 提交（包括外层 `run_code`）和结构化输出执行的单调 `concludeTurn()` 标记来强制输出 |
-| 排队消息 + steering | 核心 `Agent.followup()` / `Agent.steer()` |
-| 上下文压缩（context compaction）（自动 + 手动） | `ctx.compaction` seam + `dsh-compaction-basic`；自动压力检查运行在串行 `agent/pre-step`，标准的溢出恢复机制运行在 `agent/request-error`，手动调用方使用同一个压缩服务（[压缩 Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)） |
-| 系统提示词可配置性 | `ctx.systemPrompt.section()`，支持排序与作用域局部覆盖 |
-| AGENTS.md（根目录） | 一个读取该文件的 section 提供方 |
-| AGENTS.md（子目录，按需触发）+ 文件变更通知 | 从 watcher / 工具结果监听器调用 `agent.inject()` |
-| 内置工具 | `ctx.tools.register()`；schema 自动流入装配——`dsh-tool-*` 系列（bash、fs、web、subagent、todo）是已交付的示例 |
-| ToolSearch / 渐进式披露 | 当可见集变化时替换一个作用域化的 `ctx.tools.restrict()` 注册；注册表保持展示、查找和执行三者对齐 |
-| 工具截止时间 / 重试 / 指标 | 用 `tools/execute` 包裹核心分发；包装层可替换 `exec.signal`、委托执行，并在同一词法生命周期内检视规范化结果 |
-| 最终工具结果指标 / 审计 / 捕获 | 用 `tools/result` 观察不可变的权威结果；仅当插件需要变换结果或附加上下文时才使用 `tools/post-execute` |
-| 单调终端轮次策略 | 从成功的终端工具调用 `ToolExecution.concludeTurn()`；同一响应中后续工具调用仍可由守卫阻止，循环在该步骤后停止 |
-| 子进程沙箱（landlock / sandbox-exec） | 通过 `dsh-bash-sandbox` 使用 `ctx.sandbox` 后端；能力级别的拒绝使用 `tools/pre-execute` |
-| 权限系统 / AskUserQuestion | 从 `tools/pre-execute` 返回 `ask` 并通过 `ctx.approval` 应答；为普通用户提问注册一个独立的面向模型的 ask 工具 |
-| Plan mode | [`@deepseek-ai/dsh-plan-mode`](../../packages/plan/plan-mode/README.zh.md)：落日志的 `plan/mode` 状态、`plan:policy` 引导段、`/plan [message]` 入口、`/plan off` 直接退出，以及经用户评审的 `exit_plan_mode` 出口；强制约束留在独立的沙箱/审批轴上 |
-| subagent 委派 | `ctx.subagents` 提供方注册表（`dsh-subagent-spawn-in-process`/`dsh-subagent-fork-in-process`/`dsh-subagent-acp`/`dsh-subagent-codex`/`dsh-subagent-claude-code`/`dsh-subagent-dsh-sdk`）+ `dsh-tool-subagent` 向模型暴露一个已配置的提供方 |
-| MCP | 每个服务器一个插件：发现工具 → `ctx.tools.register()` |
-| skill（技能） | section + 工具注册；调用时通过 `inject()` 注入 skill 内容 |
-| 记忆 | section 提供方 + 工具 |
-| 定时任务（cron） | 插件注册面向模型的调度工具；定时器触发 → 空闲时 `followup(…, {source: {kind: 'plugin', plugin: 'schedule'}})`／忙碌时 `inject()` 通知 |
-| UI（GUI；CLI（命令行界面）输出 JSONL） | 监听 `agent/assistant-stream` 的实时 chunk，并监听 `session/event` 的持久 settlement、边界与工具活动；输入 → `followup()` |
-| Web Client Chat 业务节点 | 注册 `ConversationNodeDefinition` 与 `conversation.chat.node` keyed renderer |
-| 遥测 / 可回放 trace | `session/event` → JSONL；回放 = `sessions.create(id, { seed })` |
-| 模型适配器 | 通过 `registerAdapter` 注册 `LlmAdapter` 子类（`dsh-llm-deepseek`、`dsh-llm-pi-ai`） |
-| 插件热重载 | 每个注册都是一个 `ctx.effect` → 随仓库提供的 HMR（热模块替换）直接生效 |
+| 掛鉤系統（使用者級 + 專案級） | `agent/created`、`agent/pre-step`、`agent/request`、`tools/pre-execute`、`tools/post-execute` 和 `agent/turn-stopping` 上的監聽器；waterfall 返回型別化決策，`agent/turn-stopping` 則可透過 steering（中途引導）觸發下一步；`dsh-hooks-claude-code` / `dsh-hooks-codex` 橋接器將掛鉤設定檔對映到這些擴充功能點上 |
+| `/goal` | `ctx.goals` 管理持久狀態，`dsh-goal-round-driver` 透過公共 `Agent` 排程同工作階段 Round，獨立的命令/工具生產方分別提供人類/模型控制 |
+| `/loop` | 在 `turn/end` 工作階段事件上 `followup()` 下一次迭代；或強制繼續 |
+| 動態工作流 | `ctx.workflowEngine` + PTC 工作流引擎 + `workflow` 工具；結構化的程序內子任務透過作用域化的提示詞/工具註冊、單調工具守衛、最終 `tools/result` 提交（包括外層 `run_code`）和結構化輸出執行的單調 `concludeTurn()` 標記來強制輸出 |
+| 排隊訊息 + steering | 核心 `Agent.followup()` / `Agent.steer()` |
+| 上下文壓縮（context compaction）（自動 + 手動） | `ctx.compaction` seam + `dsh-compaction-basic`；自動壓力檢查執行在序列 `agent/pre-step`，標準的溢位恢復機制執行在 `agent/request-error`，手動呼叫方使用同一個壓縮服務（[壓縮 Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)） |
+| 系統提示詞可設定性 | `ctx.systemPrompt.section()`，支援排序與作用域區域性覆蓋 |
+| AGENTS.md（根目錄） | 一個讀取該檔案的 section 提供者 |
+| AGENTS.md（子目錄，按需觸發）+ 檔案變更通知 | 從 watcher / 工具結果監聽器呼叫 `agent.inject()` |
+| 內建工具 | `ctx.tools.register()`；schema 自動流入裝配——`dsh-tool-*` 系列（bash、fs、web、subagent、todo）是已交付的範例 |
+| ToolSearch / 漸進式披露 | 當可見集變化時替換一個作用域化的 `ctx.tools.restrict()` 註冊；註冊表保持展示、查詢和執行三者對齊 |
+| 工具截止時間 / 重試 / 指標 | 用 `tools/execute` 包裹核心分發；包裝層可替換 `exec.signal`、委託執行，並在同一詞法生命週期內檢視規範化結果 |
+| 最終工具結果指標 / 審計 / 捕捉 | 用 `tools/result` 觀察不可變的權威結果；僅當外掛需要變換結果或附加上下文時才使用 `tools/post-execute` |
+| 單調終端輪次策略 | 從成功的終端工具呼叫 `ToolExecution.concludeTurn()`；同一回應中後續工具呼叫仍可由守衛阻止，迴圈在該步驟後停止 |
+| 子程序沙箱（landlock / sandbox-exec） | 透過 `dsh-bash-sandbox` 使用 `ctx.sandbox` 後端；能力級別的拒絕使用 `tools/pre-execute` |
+| 權限系統 / AskUserQuestion | 從 `tools/pre-execute` 返回 `ask` 並透過 `ctx.approval` 應答；為普通使用者提問註冊一個獨立的面向模型的 ask 工具 |
+| Plan mode | [`@deepseek-ai/dsh-plan-mode`](../../packages/plan/plan-mode/README.zh.md)：落日誌的 `plan/mode` 狀態、`plan:policy` 引導段、`/plan [message]` 入口、`/plan off` 直接退出，以及經使用者評審的 `exit_plan_mode` 出口；強制約束留在獨立的沙箱/審批軸上 |
+| subagent 委派 | `ctx.subagents` 提供者註冊表（`dsh-subagent-spawn-in-process`/`dsh-subagent-fork-in-process`/`dsh-subagent-acp`/`dsh-subagent-codex`/`dsh-subagent-claude-code`/`dsh-subagent-dsh-sdk`）+ `dsh-tool-subagent` 向模型暴露一個已設定的提供者 |
+| MCP | 每個伺服器一個外掛：發現工具 → `ctx.tools.register()` |
+| skill（技能） | section + 工具註冊；呼叫時透過 `inject()` 注入 skill 內容 |
+| 記憶 | section 提供者 + 工具 |
+| 排程任務（cron） | 外掛註冊面向模型的排程工具；定時器觸發 → 空閒時 `followup(…, {source: {kind: 'plugin', plugin: 'schedule'}})`／忙碌時 `inject()` 通知 |
+| UI（GUI；CLI（命令列介面）輸出 JSONL） | 監聽 `agent/assistant-stream` 的即時 chunk，並監聽 `session/event` 的持久 settlement、邊界與工具活動；輸入 → `followup()` |
+| Web Client Chat 業務節點 | 註冊 `ConversationNodeDefinition` 與 `conversation.chat.node` keyed renderer |
+| 遙測 / 可回放 trace | `session/event` → JSONL；回放 = `sessions.create(id, { seed })` |
+| 模型介面卡 | 透過 `registerAdapter` 註冊 `LlmAdapter` 子類（`dsh-llm-deepseek`、`dsh-llm-pi-ai`） |
+| 外掛熱過載 | 每個註冊都是一個 `ctx.effect` → 隨儲存庫提供的 HMR（熱模組替換）直接生效 |

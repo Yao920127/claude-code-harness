@@ -1,31 +1,31 @@
-# 压缩（compaction）
+# 壓縮（compaction）
 
 [English](compaction.md) | 中文
 
-压缩 seam 是一个[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)，与 bash 一样分为 Service Definition（[dsh-compaction](../../packages/compaction/compaction)，`ctx.compaction`）、Service Provider（例如 [dsh-compaction-basic](../../packages/compaction/compaction-basic) 后端）和面向用户的 Consumer（[dsh-command-compact](../../packages/compaction/command-compact)）。压缩是**一项可选能力**，不属于 agent loop（智能体循环）主干，因此其词汇定义在此而非 [core.md](core.zh.md) 中。基于 tokenizer 或模板的后端是实现同一接口的兄弟包。与 bash 不同，该接口必然依赖 `dsh-session` 和 `dsh-llm`：其动词作用于 agent 所有的 `Session`，而其持久摘要事件使用 `ContentBlock` 词汇（见[压缩能力 seam Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)）。
+壓縮 seam 是一個[能力 seam](../../.agents/notes/implemented/architecture/2026-06-13-capability-seams.zh.md)，與 bash 一樣分為 Service Definition（[dsh-compaction](../../packages/compaction/compaction)，`ctx.compaction`）、Service Provider（例如 [dsh-compaction-basic](../../packages/compaction/compaction-basic) 後端）和麵向使用者的 Consumer（[dsh-command-compact](../../packages/compaction/command-compact)）。壓縮是**一項可選能力**，不屬於 agent loop（智慧代理迴圈）主幹，因此其詞彙定義在此而非 [core.md](core.zh.md) 中。基於 tokenizer 或範本的後端是實作同一介面的兄弟包。與 bash 不同，該介面必然依賴 `dsh-session` 和 `dsh-llm`：其動詞作用於 agent 所有的 `Session`，而其持久摘要事件使用 `ContentBlock` 詞彙（見[壓縮能力 seam Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md)）。
 
-源码：[`packages/compaction/compaction/src/types.ts`](../../packages/compaction/compaction/src/types.ts)
+原始碼：[`packages/compaction/compaction/src/types.ts`](../../packages/compaction/compaction/src/types.ts)
 
-## `compaction/*` 会话事件
+## `compaction/*` 工作階段事件
 
-压缩通过声明合并为 [`SessionEventMap`](session.zh.md) 扩展三种事件类型。三者都**仅写入日志**——它们记录锁、摘要、选中范围、被遮蔽事件 seq、token 数以及模型调用，绝不进入 surface。这里有意不扩展 `SurfaceEventType`（只有产生消息的事件才到达模型），因此摘要本身承载在另一条带有 `surfaceOp: { op: 'replace', startSeq, endSeq }` 的 `user/message` 上——这是摘要压缩执行的唯一 surface 变更。[Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md) 负责复用 `user/message` 的决策依据。
+壓縮透過宣告合併為 [`SessionEventMap`](session.zh.md) 擴充功能三種事件型別。三者都**僅寫入日誌**——它們記錄鎖、摘要、選中範圍、被遮蔽事件 seq、token 數以及模型呼叫，絕不進入 surface。這裡有意不擴充功能 `SurfaceEventType`（只有產生訊息的事件才到達模型），因此摘要本身承載在另一條帶有 `surfaceOp: { op: 'replace', startSeq, endSeq }` 的 `user/message` 上——這是摘要壓縮執行的唯一 surface 變更。[Agent Note](../../.agents/notes/implemented/feature/2026-06-18-compaction-capability-seam.zh.md) 負責複用 `user/message` 的決策依據。
 
-| 事件 | 载荷 | 作用 |
+| 事件 | 載荷 | 作用 |
 |---|---|---|
-| `compaction/start` | `{ turn }` | 获取日志记录的锁；数字标识尚未结束的自动轮次，`null` 标识独立手动尝试 |
-| `compaction/summary` | `{ summary, rawOutput?, llmStreamCall?, shadowedRange, shadowedSeqs, shadowedTokenCount, provider, model, maxTokens?, usage? }` | 安全摘要投影、可选的完整提供方输出与 usage、生成结果时恰好通过此上下文的 `ctx.llm.stream()` 发起一次调用所带的 `llmStreamCall: true` 标记（此时必须提供完整的 `rawOutput`）、被遮蔽的 surface 边界对（`start`/`end` seq——位置跨度，而非数值区间）、按 surface 顺序排列的被遮蔽 seq、估算 token 数，以及摘要调用的 envelope（`provider`、`model`，若有生成上限则还包括该上限）——写入日志后，该一次性请求可由日志 + 代码重建（见可重建性 Agent Note）；未带标记的 `rawOutput` 并不能判定调用路径 |
-| `compaction/end` | `{ turn, error? }` | 使用相同的数字或 `null` 归属值释放锁（`error` 记录失败尝试） |
+| `compaction/start` | `{ turn }` | 取得日誌記錄的鎖；數字標識尚未結束的自動輪次，`null` 標識獨立手動嘗試 |
+| `compaction/summary` | `{ summary, rawOutput?, llmStreamCall?, shadowedRange, shadowedSeqs, shadowedTokenCount, provider, model, maxTokens?, usage? }` | 安全摘要投影、可選的完整提供者輸出與 usage、生成結果時恰好透過此上下文的 `ctx.llm.stream()` 發起一次呼叫所帶的 `llmStreamCall: true` 標記（此時必須提供完整的 `rawOutput`）、被遮蔽的 surface 邊界對（`start`/`end` seq——位置跨度，而非數值區間）、按 surface 順序排列的被遮蔽 seq、估算 token 數，以及摘要呼叫的 envelope（`provider`、`model`，若有生成上限則還包括該上限）——寫入日誌後，該一次性請求可由日誌 + 程式碼重建（見可重建性 Agent Note）；未帶標記的 `rawOutput` 並不能判定呼叫路徑 |
+| `compaction/end` | `{ turn, error? }` | 使用相同的數字或 `null` 歸屬值釋放鎖（`error` 記錄失敗嘗試） |
 
-锁括住**整个**操作：先追加 `compaction/start`，然后执行摘要生成、写入 `compaction/summary` 记录与 `user/message` 替换，最后才追加 `compaction/end`。最后释放锁意味着操作中途崩溃会表现为可检测的遗留锁（有 `compaction/start` 而无匹配的 `compaction/end`），而非一个虚假声称压缩已完成的 `compaction/end`。
+鎖括住**整個**操作：先追加 `compaction/start`，然後執行摘要生成、寫入 `compaction/summary` 記錄與 `user/message` 替換，最後才追加 `compaction/end`。最後釋放鎖意味著操作中途崩潰會表現為可檢測的遺留鎖（有 `compaction/start` 而無匹配的 `compaction/end`），而非一個虛假聲稱壓縮已完成的 `compaction/end`。
 
-这些标记表示锁的时间点，而不是排他的容器。摘要等待期间，不相关的空闲注入可以出现在独立的手动 start 与 end 之间。手动路径只重新验证所选位置 span，因此替换检查点之后仍保留该注入上下文。活动的未匹配 start 会阻塞所有入口点；较新 `session/end-seed` 之前的未匹配 start 是先前生命周期留下的陈旧证据，会被忽略。
+這些標記表示鎖的時間點，而不是排他的容器。摘要等待期間，不相關的空閒注入可以出現在獨立的手動 start 與 end 之間。手動路徑只重新驗證所選位置 span，因此替換檢查點之後仍保留該注入上下文。活動的未匹配 start 會阻塞所有入口點；較新 `session/end-seed` 之前的未匹配 start 是先前生命週期留下的陳舊證據，會被忽略。
 
-这些变体在 `declare module '@deepseek-ai/dsh-session/types'` 块内合并，因此——与其他子系统页面上的顶层类型不同——它们不以漂移检查的 ` ```ts type-equiv ` 块粘贴（`verify-type-equiv` 提取器只按名称匹配顶层声明）。上方的载荷表即为目录条目；权威字段请循源码链接查看。
+這些變體在 `declare module '@deepseek-ai/dsh-session/types'` 塊內合併，因此——與其他子系統頁面上的頂層型別不同——它們不以漂移檢查的 ` ```ts type-equiv ` 塊貼上（`verify-type-equiv` 提取器只按名稱匹配頂層宣告）。上方的載荷表即為目錄條目；權威欄位請循原始碼連結檢視。
 
 <a id="image-offload"></a>
-## 图片省略
+## 圖片省略
 
-`compaction-image-offload` 拥有 `image/offload` 声明及其纯消息投影。每个目标指定当前输入节点和按深度优先计数的确切图片位置。事件保留节点和消息身份，不携带 `surfaceOp`。[包 README](../../packages/compaction/compaction-image-offload/README.zh.md)负责恢复策略、注册和独立回放说明。
+`compaction-image-offload` 擁有 `image/offload` 宣告及其純訊息投影。每個目標指定目前輸入節點和按深度優先計數的確切圖片位置。事件保留節點和訊息身份，不攜帶 `surfaceOp`。[包 README](../../packages/compaction/compaction-image-offload/README.zh.md)負責恢復策略、註冊和獨立回放說明。
 
 ```ts type-equiv
 /** Exact input-image occurrences selected by one durable offload decision. */
@@ -39,7 +39,7 @@ interface ImageOffloadTarget {
 
 ## `CompactionResult`
 
-成功压缩向调用方返回：记账事件 seq、安全摘要投影、被遮蔽的范围与 seq，以及估算 token 数。
+成功壓縮向呼叫方返回：記帳事件 seq、安全摘要投影、被遮蔽的範圍與 seq，以及估算 token 數。
 
 ```ts type-equiv
 /** Result of a successful compaction operation. */
@@ -72,18 +72,18 @@ interface CompactionResult {
 }
 ```
 
-## 服务
+## 服務
 
-自动调用方会说明策略为何运行；实现可以比普通压力更激进地处理已确认的溢出。
+自動呼叫方會說明策略為何執行；實作可以比普通壓力更激進地處理已確認的溢位。
 
 ```ts type-equiv
 /** Why automatic policy is asking a backend to consider compaction. */
 type CompactionTrigger = 'pressure' | 'context-overflow'
 ```
 
-`CompactionEngine` 暴露 `compactIfNeeded(agent, trigger, signal)` 以执行自动 `pressure` 或 `context-overflow` 策略，暴露 `compactNow(agent, signal)` 以便即使未达到压力也对空闲会话进行一次有效缩减，还针对显式、两端均包含的 surface 范围暴露 `compactRegion(...)`。`compactNow()` 作为轮次之间的 agent maintenance 运行；没有有效范围时返回 `null` 且不写入；在摘要前记录独立的 `turn: null` 标记对，并在后续排队提示词能够从新表层派生前 flush 已闭合尝试。每个后端都使用 `compactCheckpointSource(compactionId, sourceCommandId?)` 创建替换用 `user/message` 的源；client 与 wire 消费方从无 Cordis 的 `@deepseek-ai/dsh-compaction/checkpoint` 子路径导入该构造函数、`CompactionCheckpointSource` 和 `isCompactCheckpointSource()`，包根则为 host 消费方重新导出它们。必填的事务身份会关联替换检查点，而该判定函数使检查点识别不依赖任一特定后端。实现必须把传入的 signal 转发给摘要流程。该 seam 不拥有计价 API：单例 [`ctx.tokenMeter`](token-meter.zh.md) 直接拥有估算与回放，而 `dsh-compaction-basic` 拥有保留策略、事件排序、按路由执行的摘要调用及其配置。
+`CompactionEngine` 暴露 `compactIfNeeded(agent, trigger, signal)` 以執行自動 `pressure` 或 `context-overflow` 策略，暴露 `compactNow(agent, signal)` 以便即使未達到壓力也對空閒工作階段進行一次有效縮減，還針對顯式、兩端均包含的 surface 範圍暴露 `compactRegion(...)`。`compactNow()` 作為輪次之間的 agent maintenance 執行；沒有有效範圍時返回 `null` 且不寫入；在摘要前記錄獨立的 `turn: null` 標記對，並在後續排隊提示詞能夠從新表層派生前 flush 已閉合嘗試。每個後端都使用 `compactCheckpointSource(compactionId, sourceCommandId?)` 建立替換用 `user/message` 的源；client 與 wire 消費方從無 Cordis 的 `@deepseek-ai/dsh-compaction/checkpoint` 子路徑匯入該建構函式、`CompactionCheckpointSource` 和 `isCompactCheckpointSource()`，包根則為 host 消費方重新匯出它們。必填的事務身份會關聯替換檢查點，而該判定函式使檢查點識別不依賴任一特定後端。實作必須把傳入的 signal 轉發給摘要流程。該 seam 不擁有計價 API：單例 [`ctx.tokenMeter`](token-meter.zh.md) 直接擁有估算與回放，而 `dsh-compaction-basic` 擁有保留策略、事件排序、按路由執行的摘要呼叫及其設定。
 
-预期的手动失败使用 `ManualCompactionErrorCode`：
+預期的手動失敗使用 `ManualCompactionErrorCode`：
 
 ```ts type-equiv
 /** Expected failure classes for an explicit idle-session compaction request. */
@@ -96,15 +96,15 @@ type ManualCompactionErrorCode =
   | 'persistence'
 ```
 
-`changed` 和 `summary` 闭合失败尝试并将其持久化到日志，不写入摘要替换；恢复过程中记录的图片省略仍然有效。`commit` 可能发生在部分变更之后；`persistence` 表示内存中的标记对已闭合，但 flush 失败。取消独立于这些失败，并在完成必要清理后抛出原始 abort 原因。
+`changed` 和 `summary` 閉合失敗嘗試並將其持久化到日誌，不寫入摘要替換；恢復過程中記錄的圖片省略仍然有效。`commit` 可能發生在部分變更之後；`persistence` 表示記憶體中的標記對已閉合，但 flush 失敗。取消獨立於這些失敗，並在完成必要清理後丟擲原始 abort 原因。
 
-压力压缩在 `agent/pre-step` waterfall（瀑布式事件）中运行，先于请求推导。一旦压力或规范化溢出满足条件，compaction-basic 会在选择范围前调用可选的 [`ctx.toolResultPruner`](../../packages/compaction/compaction-tool-result-pruner/README.zh.md)，再通过 `ctx.tokenMeter` 重新测量，并且可以在不生成摘要的情况下推进 surface。失败请求的恢复在失败的步骤关闭后通过 `agent/request-error` 运行；仅当 surface replacement generation 前进时才返回重试动作，即便后续摘要工作在剪枝后抛异常亦如此；取消仍然优先。区域边界保持工具调用/结果配对，但不保持整个轮次，因此一个过大轮次中较早关闭的步骤可以被压缩。`dsh-compaction-basic` 拥有阈值、保留尾部策略、溢出上限与失败处理。
+壓力壓縮在 `agent/pre-step` waterfall（瀑布式事件）中執行，先於請求推導。一旦壓力或規範化溢位滿足條件，compaction-basic 會在選擇範圍前呼叫可選的 [`ctx.toolResultPruner`](../../packages/compaction/compaction-tool-result-pruner/README.zh.md)，再透過 `ctx.tokenMeter` 重新測量，並且可以在不生成摘要的情況下推進 surface。失敗請求的恢復在失敗的步驟關閉後透過 `agent/request-error` 執行；僅當 surface replacement generation 前進時才返回重試動作，即便後續摘要工作在剪枝後拋異常亦如此；取消仍然優先。區域邊界保持工具呼叫/結果配對，但不保持整個輪次，因此一個過大輪次中較早關閉的步驟可以被壓縮。`dsh-compaction-basic` 擁有閾值、保留尾部策略、溢位上限與失敗處理。
 
-该 Service Definition 导出 `toolPairingBalancedBefore(session, seq)` 与 `toolPairingBalancedAfter(session, seq)`，用于检查 seq 之前与之后的工具调用/结果配对。两者都会验证当前 surface 成员关系，并拒绝缺失的 seq 与遗留结果；[包约定](../../packages/compaction/compaction/README.zh.md#tool-pairing-boundaries)定义其缓存行为。
+該 Service Definition 匯出 `toolPairingBalancedBefore(session, seq)` 與 `toolPairingBalancedAfter(session, seq)`，用於檢查 seq 之前與之後的工具呼叫/結果配對。兩者都會驗證目前 surface 成員關係，並拒絕缺失的 seq 與遺留結果；[包約定](../../packages/compaction/compaction/README.zh.md#tool-pairing-boundaries)定義其快取行為。
 
-## 工具结果剪枝产出
+## 工具結果剪枝產出
 
-可选的工具结果剪枝服务会报告每次持久内容替换以及 Unicode code point 的总减少量。其公开结果类型位于 [`compaction-tool-result-pruner/src/types.ts`](../../packages/compaction/compaction-tool-result-pruner/src/types.ts)。
+可選的工具結果剪枝服務會報告每次持久內容替換以及 Unicode code point 的總減少量。其公開結果型別位於 [`compaction-tool-result-pruner/src/types.ts`](../../packages/compaction/compaction-tool-result-pruner/src/types.ts)。
 
 ```ts type-equiv
 /** Cited source event and size accounting for one landed surface replacement. */

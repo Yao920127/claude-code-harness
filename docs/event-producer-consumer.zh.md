@@ -1,11 +1,11 @@
-<!-- 英文源文件由 scripts/gen-doc-graphs.ts 生成；本中文文件是通过双语配对维护的经评审对侧。
-     更新时先运行 `pnpm run gen-doc-graphs` 更新英文，再更新本文件并运行 `pnpm run verify-translation-pairing --write docs/event-producer-consumer.md` 重新记录配对。 -->
+<!-- 英文原始檔由 scripts/gen-doc-graphs.ts 生成；本中文件案是透過雙語配對維護的經評審對側。
+     更新時先執行 `pnpm run gen-doc-graphs` 更新英文，再更新本檔案並執行 `pnpm run verify-translation-pairing --write docs/event-producer-consumer.md` 重新記錄配對。 -->
 
-# 事件生产方与消费方矩阵
+# 事件生產方與消費方矩陣
 
 [English](event-producer-consumer.md) | 中文
 
-本矩阵展示哪些包会派发各个 harness 自有事件，以及哪些包会监听这些事件。事件之间存在多对多关系，因此密集的关系数据以表格而非一张大型关系图呈现。接收方和事件名称类型还涵盖有意绕过 `ctx.emit` 的内含派发位置，例如 subagent 生命周期封装。
+本矩陣展示哪些包會派發各個 harness 自有事件，以及哪些包會監聽這些事件。事件之間存在多對多關係，因此密集的關係資料以表格而非一張大型關係圖呈現。接收方和事件名稱型別還涵蓋有意繞過 `ctx.emit` 的內含派發位置，例如 subagent 生命週期封裝。
 
 <!-- BEGIN GENERATED event-producer-consumer:events -->
 | Event | Mode | Declared in | Dispatchers | Listeners |

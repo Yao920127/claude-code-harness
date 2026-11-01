@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/terminal.md
 /persistent-pty-sessions:
   en: 5debd6ec3dc43d0b
-  zh: 716307c837310aaa
+  zh: c3fbe865a0ec74ec
 /persistent-pty-sessions/identity-and-readiness:
   en: d2b0f4a2ea428e95
-  zh: 732e30b50b24a1cd
+  zh: 3668363906149370
 /persistent-pty-sessions/backend-and-live-session:
   en: 327d7a0e306ceb35
-  zh: 3ad5ef2c23413cdd
+  zh: ee1216e274a63fd0
 /persistent-pty-sessions/send-and-retained-output:
   en: c895ec190cf3e5d8
-  zh: 6fc443e08946e17d
+  zh: c0a8b8e3b6660035
 /persistent-pty-sessions/ownership-and-durability:
   en: 5604e1d1c450882a
-  zh: b97d925978aad7e2
+  zh: 9a6de1d858b47a3e

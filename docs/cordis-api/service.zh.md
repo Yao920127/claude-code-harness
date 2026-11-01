@@ -1,17 +1,17 @@
-<!-- 英文源文件由 scripts/gen-cordis-catalog.ts 生成；本中文文件是通过双语配对维护的经评审对侧。
-     更新时先运行 `pnpm run gen-cordis-catalog` 更新英文，再更新本文件并运行 `pnpm run verify-translation-pairing --write docs/cordis-api/service.md` 重新记录配对。 -->
+<!-- 英文原始檔由 scripts/gen-cordis-catalog.ts 生成；本中文件案是透過雙語配對維護的經評審對側。
+     更新時先執行 `pnpm run gen-cordis-catalog` 更新英文，再更新本檔案並執行 `pnpm run verify-translation-pairing --write docs/cordis-api/service.md` 重新記錄配對。 -->
 
 # Service
 
 [English](service.md) | 中文
 
-上下文服务的基类。以插件形式加载的子类会将自身注册为 `ctx.<name>`。
+上下文服務的基類。以外掛形式載入的子類會將自身註冊為 `ctx.<name>`。
 
-用于在 `ctx` 上公开具名 API 的服务基类。
+用於在 `ctx` 上公開具名 API 的服務基類。
 
-子类在构造函数中调用 `super(ctx, name)`。服务会立即注册，并随所属 fiber 自动移除。
+子類在建構函式中呼叫 `super(ctx, name)`。服務會立即註冊，並隨所屬 fiber 自動移除。
 
-[源码](../../vendor/cordis/src/service.ts#L11)
+[原始碼](../../vendor/cordis/src/service.ts#L11)
 
 ### service.name
 
@@ -20,11 +20,11 @@
 public name!: string
 ```
 
-此实例注册时使用的服务名称。
+此實例註冊時使用的服務名稱。
 
-[源码](../../vendor/cordis/src/service.ts#L30)
+[原始碼](../../vendor/cordis/src/service.ts#L30)
 
-## 静态成员
+## 靜態成員
 
 ### Service.init
 
@@ -33,9 +33,9 @@ public name!: string
 static readonly init: unique symbol
 ```
 
-构造完成后运行的实例方法所使用的符号键（类插件）。
+建構完成後執行的實例方法所使用的符號鍵（類外掛）。
 
-[源码](../../vendor/cordis/src/service.ts#L13)
+[原始碼](../../vendor/cordis/src/service.ts#L13)
 
 ### Service.check
 
@@ -44,9 +44,9 @@ static readonly init: unique symbol
 static readonly check: unique symbol
 ```
 
-传给 `ctx.provide()` 的可用性谓词所使用的符号键。
+傳給 `ctx.provide()` 的可用性謂詞所使用的符號鍵。
 
-[源码](../../vendor/cordis/src/service.ts#L15)
+[原始碼](../../vendor/cordis/src/service.ts#L15)
 
 ### Service.config
 
@@ -55,9 +55,9 @@ static readonly check: unique symbol
 static readonly config: unique symbol
 ```
 
-虚设拦截配置类型参数所使用的符号键。
+虛設攔截設定型別參數所使用的符號鍵。
 
-[源码](../../vendor/cordis/src/service.ts#L17)
+[原始碼](../../vendor/cordis/src/service.ts#L17)
 
 ### Service.invoke
 
@@ -66,9 +66,9 @@ static readonly config: unique symbol
 static readonly invoke: unique symbol
 ```
 
-使服务可被调用的调用体所使用的符号键（例如 `ctx.logger()`）。
+使服務可被呼叫的呼叫體所使用的符號鍵（例如 `ctx.logger()`）。
 
-[源码](../../vendor/cordis/src/service.ts#L19)
+[原始碼](../../vendor/cordis/src/service.ts#L19)
 
 ### Service.extend
 
@@ -77,9 +77,9 @@ static readonly invoke: unique symbol
 static readonly extend: unique symbol
 ```
 
-用于派生扩展服务实例的辅助方法所使用的符号键。
+用於派生擴充功能服務實例的輔助方法所使用的符號鍵。
 
-[源码](../../vendor/cordis/src/service.ts#L21)
+[原始碼](../../vendor/cordis/src/service.ts#L21)
 
 ### Service.tracker
 
@@ -88,9 +88,9 @@ static readonly extend: unique symbol
 static readonly tracker: unique symbol
 ```
 
-上下文追踪所用跟踪器元数据的符号键。
+上下文追蹤所用跟蹤器中繼資料的符號鍵。
 
-[源码](../../vendor/cordis/src/service.ts#L23)
+[原始碼](../../vendor/cordis/src/service.ts#L23)
 
 ### Service.resolveConfig
 
@@ -99,6 +99,6 @@ static readonly tracker: unique symbol
 static readonly resolveConfig: unique symbol
 ```
 
-下述拦截配置解析辅助方法所使用的符号键。
+下述攔截設定解析輔助方法所使用的符號鍵。
 
-[源码](../../vendor/cordis/src/service.ts#L25)
+[原始碼](../../vendor/cordis/src/service.ts#L25)

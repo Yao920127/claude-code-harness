@@ -3,7 +3,7 @@ import { labelButton, type MediaViewer, viewerButton } from './media-viewer.ts'
 
 const messages = {
   en: 'View image fullscreen: {alt}',
-  zh: '全屏查看图片：{alt}',
+  zh: '全螢幕檢視圖片：{alt}',
 }
 
 interface ImageEntry {

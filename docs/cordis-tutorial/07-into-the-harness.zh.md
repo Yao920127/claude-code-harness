@@ -1,12 +1,12 @@
-# 7. 进入 harness
+# 7. 進入 harness
 
 [English](07-into-the-harness.md) | 中文
 
-本章会向 harness 的 `tools` 服务注册一个可由模型调用的工具，通过 harness 工具流水线执行它，并观察结果事件。整个示例无需密钥，也不会调用模型。
+本章會向 harness 的 `tools` 服務註冊一個可由模型呼叫的工具，透過 harness 工具流水線執行它，並觀察結果事件。整個範例無需金鑰，也不會呼叫模型。
 
-## 工具插件
+## 工具外掛
 
-创建 `greet-tool.ts`，将它放在 `tmp/cordis-tutorial` 中：
+建立 `greet-tool.ts`，將它放在 `tmp/cordis-tutorial` 中：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -47,11 +47,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-这里的每个模式都来自前几章：`inject: ['tools']`（[第 3 章](03-services.zh.md)）会让插件等待工具注册表就绪；`ctx.tools.register(...)` 会把注册 disposer 附着到插件（[第 2 章](02-lifecycle-and-effects.zh.md)），因此卸载时会注销工具。`defineTool` 将 `parameters` 规约转换为向模型展示的 JSON Schema，推导 `args` 的类型，并在 `execute` 运行前校验模型提供的参数。工具返回由 `output.schema` 声明的规范值；`output.render` 则作为 Native renderer（原生渲染器），另行生成可持久化的结果内容。
+這裡的每個模式都來自前幾章：`inject: ['tools']`（[第 3 章](03-services.zh.md)）會讓外掛等待工具註冊表就緒；`ctx.tools.register(...)` 會把註冊 disposer 附著到外掛（[第 2 章](02-lifecycle-and-effects.zh.md)），因此解除安裝時會登出工具。`defineTool` 將 `parameters` 規約轉換為向模型展示的 JSON Schema，推導 `args` 的型別，並在 `execute` 執行前驗證模型提供的參數。工具返回由 `output.schema` 宣告的規範值；`output.render` 則作為 Native renderer（原生渲染器），另行生成可持久化的結果內容。
 
-## 观察插件
+## 觀察外掛
 
-创建 `tool-logger.ts`。这是一个独立插件，通过 harness 的 `tools/result` 事件观察应用中的每次工具调用：
+建立 `tool-logger.ts`。這是一個獨立外掛，透過 harness 的 `tools/result` 事件觀察應用中的每次工具呼叫：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -70,9 +70,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-`import type {} from '@deepseek-ai/dsh-tools'` 行会引入该包的声明合并，使 `'tools/result'` 及其 payload 具有类型。这与第 4 章导入 `stats.ts` 的做法相同，只是扩展到了包级别。
+`import type {} from '@deepseek-ai/dsh-tools'` 行會引入該包的宣告合併，使 `'tools/result'` 及其 payload 具有型別。這與第 4 章匯入 `stats.ts` 的做法相同，只是擴充功能到了包級別。
 
-## 组合并运行
+## 組合並執行
 
 ```yaml
 - name: '@deepseek-ai/dsh-system-prompt'
@@ -81,7 +81,7 @@ export function apply(ctx: Context) {
 - name: './greet-tool.ts'
 ```
 
-`@deepseek-ai/dsh-tools` 会注入 `systemPrompt` 服务，因为工具需要向系统提示词贡献 schema，所以组合中也要列出该服务的提供方。缺少提供方时，工具插件会像[第 6 章](06-composition-and-hmr.zh.md)所述那样保持 PENDING。
+`@deepseek-ai/dsh-tools` 會注入 `systemPrompt` 服務，因為工具需要向系統提示詞貢獻 schema，所以組合中也要列出該服務的提供者。缺少提供者時，工具外掛會像[第 6 章](06-composition-and-hmr.zh.md)所述那樣保持 PENDING。
 
 ```sh
 node --import tsx ../../vendor/cordis/bin.js
@@ -92,17 +92,17 @@ node --import tsx ../../vendor/cordis/bin.js
 tool replied: [{"type":"text","text":"Hello, Cordis!"}]
 ```
 
-logger 会先触发：`tools/result` 在结果物化过程中发出，发生在 `execute` 向调用方返回的 promise 兑现之前。两个插件都不知道另一个插件存在，它们由注册表服务和事件连接。
+logger 會先觸發：`tools/result` 在結果物化過程中發出，發生在 `execute` 向呼叫方返回的 promise 兌現之前。兩個外掛都不知道另一個外掛存在，它們由註冊表服務和事件連線。
 
-## 从这里走向完整 agent（智能体）
+## 從這裡走向完整 agent（智慧代理）
 
-真实 agent 就是这套组合再加上更多插件：LLM（大语言模型）适配器、agent loop（智能体循环）、持久化和应用入口。对照 [base profile 层](../../packages/bundle/base/cordis.patch.yml)与 [headless 层](../../packages/bundle/headless/cordis.patch.yml)，你现在已经可以读懂其中各项。通过一个小型 `--patch` overlay 加入 `greet-tool.ts` 即可。
+真實 agent 就是這套組合再加上更多外掛：LLM（大語言模型）介面卡、agent loop（智慧代理迴圈）、持久化和應用入口。對照 [base profile 層](../../packages/bundle/base/cordis.patch.yml)與 [headless 層](../../packages/bundle/headless/cordis.patch.yml)，你現在已經可以讀懂其中各項。透過一個小型 `--patch` overlay 加入 `greet-tool.ts` 即可。
 
-后续可以阅读：
+後續可以閱讀：
 
-- [构建工具](../user/develop/basic/tool.zh.md)：深入了解 `defineTool`，包括呈现和更丰富的 schema。
-- [三层能力设计](../user/develop/practice/index.zh.md)：harness 如何组织可替换能力。
-- [子系统页面](../subsystems/core.zh.md)上生成的 `cordis-surface` 区块：可以注入和监听的所有内容，各在其所属页面上。
-- [架构](../architecture.zh.md)：这些插件所处的系统地图。
+- [建置工具](../user/develop/basic/tool.zh.md)：深入瞭解 `defineTool`，包括呈現和更豐富的 schema。
+- [三層能力設計](../user/develop/practice/index.zh.md)：harness 如何組織可替換能力。
+- [子系統頁面](../subsystems/core.zh.md)上生成的 `cordis-surface` 區塊：可以注入和監聽的所有內容，各在其所屬頁面上。
+- [架構](../architecture.zh.md)：這些外掛所處的系統地圖。
 
 [![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

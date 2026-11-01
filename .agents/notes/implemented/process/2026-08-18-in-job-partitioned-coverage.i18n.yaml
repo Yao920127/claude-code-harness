@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-18-in-job-partitioned-coverage.md
 /agent-note-in-job-partitioned-coverage:
   en: eb25ff049a1ecc31
-  zh: d7430b14ccea5707
+  zh: 54fa9102dcb33d79
 /agent-note-in-job-partitioned-coverage/problem:
   en: ab6dcac4ca2bbfb3
-  zh: c754cc8077671b25
+  zh: 64694b62249f8832
 /agent-note-in-job-partitioned-coverage/decision:
   en: ae23ea86587c23e8
-  zh: b9868c5c76238d9a
+  zh: 64d918f169b2ae71
 /agent-note-in-job-partitioned-coverage/failure-and-output-semantics:
   en: c73ddbc65107e34e
-  zh: dbc7649637f8d1c0
+  zh: 1d01958f5e3bca49
 /agent-note-in-job-partitioned-coverage/verification:
   en: 81dcaebd4b96229c
-  zh: 76b3332b183f6c44
+  zh: 664f626bda4494cf
 /agent-note-in-job-partitioned-coverage/alternatives-considered:
   en: 82f314bd434b0059
-  zh: 7b64e90b74f428e5
+  zh: f2cff7523ced3959
 /agent-note-in-job-partitioned-coverage/consequences:
   en: 146e997017ee6e47
-  zh: cd5e5d2d9b0b47b9
+  zh: b6d9ca9293399ee1

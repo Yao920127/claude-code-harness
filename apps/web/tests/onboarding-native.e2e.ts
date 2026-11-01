@@ -55,7 +55,7 @@ describe.skipIf(MODE === 'record').each([false, true])('web e2e: native credenti
         await page.reload({ waitUntil: 'load' })
         acknowledgeReloadConnectionLoss(tripwire, warningsBefore)
       }
-      const accountMenu = page.getByRole('button', { name: '账号菜单', exact: true })
+      const accountMenu = page.getByRole('button', { name: '帳號選單', exact: true })
       if (desktop) {
         await accountMenu.waitFor()
         expect(await accountMenu.textContent()).toBe('更多')
@@ -64,7 +64,7 @@ describe.skipIf(MODE === 'record').each([false, true])('web e2e: native credenti
         await accountMenu.click()
         const menu = page.getByRole('menu')
         await menu.waitFor()
-        expect(await menu.getByRole('menuitem').allTextContents()).toEqual(['设置', '联系我们', '登录'])
+        expect(await menu.getByRole('menuitem').allTextContents()).toEqual(['設定', '聯絡我們', '登入'])
         const menuBox = (await menu.boundingBox())!
         expect(Math.abs(menuBox.width - 124)).toBeLessThan(1)
         expect(Math.abs(menuBox.height - 128)).toBeLessThan(1)
@@ -82,15 +82,15 @@ describe.skipIf(MODE === 'record').each([false, true])('web e2e: native credenti
         await page.keyboard.press('Escape')
         await menu.waitFor({ state: 'detached' })
       } else {
-        await page.getByRole('button', { name: '设置', exact: true }).waitFor()
+        await page.getByRole('button', { name: '設定', exact: true }).waitFor()
         expect(await accountMenu.count()).toBe(0)
-        expect(await page.getByRole('dialog', { name: '开始你的创作' }).count()).toBe(0)
+        expect(await page.getByRole('dialog', { name: '開始你的創作' }).count()).toBe(0)
       }
       await openSettings(page, 'zh')
-      const settings = page.getByRole('dialog', { name: '设置', exact: true })
+      const settings = page.getByRole('dialog', { name: '設定', exact: true })
       await settings.getByRole('button', { name: '模型', exact: true }).click()
-      await settings.getByLabel('API 密钥', { exact: true }).waitFor()
-      expect(await page.getByRole('dialog', { name: '添加一个 API Key 开始使用' }).count()).toBe(0)
+      await settings.getByLabel('API 金鑰', { exact: true }).waitFor()
+      expect(await page.getByRole('dialog', { name: '新增一個 API Key 開始使用' }).count()).toBe(0)
       expect(await welcome.count()).toBe(0)
       expect(await readFile(credentialPath, 'utf8')).toBe(credentials)
       const aria = await captureStableAria(page, '[role="dialog"]', scaffold.workspaceCwd)

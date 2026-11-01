@@ -1,35 +1,35 @@
-# Agent Note：已记录的 user-source 归属兼容性
+# Agent Note：已記錄的 user-source 歸屬相容性
 
 Status: implemented
 
 [English](2026-09-17-persistence-attribution-policy.md) | 中文
 
-## 问题
+## 問題
 
-生产者拥有的消息 source 会传递性地出现在多个持久化事件类型中。即使已有读取方无需该生产者也能保留字段，新增归属 kind 仍会改变这些联合类型的指纹。仅供请求使用的提示不需要持久身份，但将其构造成 Session 消息会为联合类型增加不必要的 source 分支。
+生產者擁有的訊息 source 會傳遞性地出現在多個持久化事件型別中。即使已有讀取方無需該生產者也能保留欄位，新增歸屬 kind 仍會改變這些聯合型別的指紋。僅供請求使用的提示不需要持久身份，但將其建構成 Session 訊息會為聯合型別增加不必要的 source 分支。
 
-## 决策
+## 決策
 
-核心拥有的 user-message source 属性绑定[已记录的兼容性策略](../process/2026-09-17-persistence-schema-review.zh.md)。生产者另行将其 wire 字面量 kind 声明为仅用于归属。双方保存的 schema 必须具有兼容的策略状态，符合条件的添加才能获得同版本分类。已有分支继续接受结构比较；缺失策略、未标记的添加、删除以及已有语义分组的变更继续采用严格分类。固定的 system、model 和 tool source 字段不参与。
+核心擁有的 user-message source 屬性繫結[已記錄的相容性策略](../process/2026-09-17-persistence-schema-review.zh.md)。生產者另行將其 wire 字面量 kind 宣告為僅用於歸屬。雙方儲存的 schema 必須具有相容的策略狀態，符合條件的新增才能獲得同版本分類。已有分支繼續接受結構比較；缺失策略、未標記的新增、刪除以及已有語義分組的變更繼續採用嚴格分類。固定的 system、model 和 tool source 欄位不參與。
 
-tmux-context 生产者将位置归属标记为符合条件。其自身投影使用 kind 避免重复注入，而未安装该生产者的读取方保留已记录内容及 source 的每个 JSON 属性。该标记承诺读取方不依赖生产者，并不禁止生产者内部的去重。
+tmux-context 生產者將位置歸屬標記為符合條件。其自身投影使用 kind 避免重複注入，而未安裝該生產者的讀取方保留已記錄內容及 source 的每個 JSON 屬性。該標記承諾讀取方不依賴生產者，並不禁止生產者內部的去重。
 
-`RequestMessage` 接受持久化 `Message`，或仅含 content、没有 `id` 和 `source` 的 user 专用 `RequestUserInput`。LLM 服务和 provider 序列化器接受两者；Session 写入、Agent 交付及持久化标题请求输入要求持久化消息。Auto Review 的外层提示和压缩摘要器的最终指令使用仅供请求使用的输入，并保留内容与冻结行为。调用方不会获得隐式持久化转换。Assistant 回放元数据和工具结果关联保持原有要求。
+`RequestMessage` 接受持久化 `Message`，或僅含 content、沒有 `id` 和 `source` 的 user 專用 `RequestUserInput`。LLM 服務和 provider 序列化器接受兩者；Session 寫入、Agent 交付及持久化標題請求輸入要求持久化訊息。Auto Review 的外層提示和壓縮摘要器的最終指令使用僅供請求使用的輸入，並保留內容與凍結行為。呼叫方不會獲得隱式持久化轉換。Assistant 回放中繼資料和工具結果關聯保持原有要求。
 
-已定稿的 V4 确认记录保存 user-source 策略，并移除两个仅供请求使用的 source 注册。原有前驱和 header 迁移保持不变。这不构成删除已接受分支的通用例外：[producer-source 迁移](2026-09-09-producer-owned-message-sources.zh.md)独立于活动 source 声明保留生产者映射与扩展命名空间，包括历史的仅供请求使用的 kind。目录生成和比较仍由[持久化参考](../../../../docs/persistence-changes/README.zh.md#compatibility-rules)负责。
+已定稿的 V4 確認記錄儲存 user-source 策略，並移除兩個僅供請求使用的 source 註冊。原有前驅和 header 遷移保持不變。這不構成刪除已接受分支的通案例外：[producer-source 遷移](2026-09-09-producer-owned-message-sources.zh.md)獨立於活動 source 宣告保留生產者對映與擴充功能名稱空間，包括歷史的僅供請求使用的 kind。目錄生成和比較仍由[持久化參考](../../../../docs/persistence-changes/README.zh.md#compatibility-rules)負責。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**将所有 source 添加视为破坏性变更。** 这会要求为读取方已能安全保留的归属信息提升 Session 格式版本，无法区分它与语义变更。
+**將所有 source 新增視為破壞性變更。** 這會要求為讀取方已能安全保留的歸屬資訊提升 Session 格式版本，無法區分它與語義變更。
 
-**放宽所有可辨识联合或从当前名称推断兼容性。** 通用例外会接纳语义分支。当前声明不能确定旧快照作出的承诺，结构相等也不能确定 source 属性的归属。
+**放寬所有可辨識聯合或從目前名稱推斷相容性。** 通案例外會接納語義分支。目前宣告不能確定舊快照作出的承諾，結構相等也不能確定 source 屬性的歸屬。
 
-**为每个请求使用持久化消息。** 独立提示会保留人为制造的身份和不必要的 source 声明。显式的 user 专用分支允许移除它们，同时让带类型的 Session 接口继续要求持久身份。
+**為每個請求使用持久化訊息。** 獨立提示會保留人為製造的身份和不必要的 source 宣告。顯式的 user 專用分支允許移除它們，同時讓帶型別的 Session 介面繼續要求持久身份。
 
-**将历史 context 形式收窄到当前写入方示例。** 写入方示例不能确定已发布读取方接纳的全部值。这些面向读取的分支继续保留。
+**將歷史 context 形式收窄到目前寫入方範例。** 寫入方範例不能確定已釋出讀取方接納的全部值。這些面向讀取的分支繼續保留。
 
-## 影响
+## 影響
 
-符合条件的添加仍会改变相关事件指纹，并要求确认记录。Review 者必须验证生产者的归属承诺；类型分析不能确定回放语义，也不能发现不透明值中隐藏的行为。
+符合條件的新增仍會改變相關事件指紋，並要求確認記錄。Review 者必須驗證生產者的歸屬承諾；型別分析不能確定回放語義，也不能發現不透明值中隱藏的行為。
 
-Codec 到 Session 的测试在未安装生产者时保留未知 user 归属和额外 JSON 字段。Provider 等价测试比较仅供请求使用的输入与持久化输入，类型断言则拒绝在持久化写入处使用仅供请求使用的输入。已记录的 Session 世代及 V3→V4 转换不依赖目录策略和渲染。
+Codec 到 Session 的測試在未安裝生產者時保留未知 user 歸屬和額外 JSON 欄位。Provider 等價測試比較僅供請求使用的輸入與持久化輸入，型別斷言則拒絕在持久化寫入處使用僅供請求使用的輸入。已記錄的 Session 世代及 V3→V4 轉換不依賴目錄策略和渲染。

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/lsp/README.md
 /:
   en: de26a0afcbda2fda
-  zh: a4f20046396ddfd7
+  zh: 8ea9ee04d936192e
 /lsp-language-server-code-navigation:
   en: b3663a479c6987c1
-  zh: 0a77728178955b55
+  zh: 17160d3d601996eb
 /lsp-language-server-code-navigation/summary:
   en: c519cb73d4fb82c8
-  zh: cae489e30b74c832
+  zh: 7f8a3286d8407ab2
 /lsp-language-server-code-navigation/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /lsp-language-server-code-navigation/packages:
   en: cbf9c6ede451bdc5
-  zh: e2bd760703c05834
+  zh: f8e2303dfc37b80b
 /lsp-language-server-code-navigation/related-documentation:
   en: 4f3ff4a06e810f77
-  zh: 89c0bdf89cdf4dbc
+  zh: 4ce902c9d023813b
 /lsp-language-server-code-navigation/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

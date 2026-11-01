@@ -1,4 +1,4 @@
-- menu "模型与推理等级":
+- menu "模型與推理等級":
   - group "DeepSeek":
     - text: DeepSeek
     - menuitemradio "DeepSeek-V4-Flash"

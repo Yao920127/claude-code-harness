@@ -1,4 +1,4 @@
-# Agent Note: 编译器无关的 Typert 类型模型
+# Agent Note: 編譯器無關的 Typert 型別模型
 
 Status: implemented
 
@@ -6,48 +6,48 @@ Status: implemented
 
 ## Problem
 
-直接从 TypeScript AST 拼接 Zod 和反射文本，会把类型分析、业务语义识别与单个生成目标绑在一起。这样的生成器只能回答“这段语法能否生成”，无法提供包、face、公开导出、service、event、对象及其类型关系的标准表示，也无法供静态检查和后续生成目标复用。
+直接從 TypeScript AST 拼接 Zod 和反射文字，會把型別分析、業務語義識別與單個生成目標綁在一起。這樣的生成器只能回答“這段語法能否生成”，無法提供包、face、公開匯出、service、event、物件及其型別關係的標準表示，也無法供靜態檢查和後續生成目標複用。
 
-host 与 client 属于独立 TypeScript project；把两者放进同一个 `ts.Program` 会合并冲突的 Cordis `Context` 与 `Events` 声明。与此同时，client 类型仍需显式引用 host 类型，因此完全隔离或在两边复制类型都不能表达真实依赖。
+host 與 client 屬於獨立 TypeScript project；把兩者放進同一個 `ts.Program` 會合並衝突的 Cordis `Context` 與 `Events` 宣告。與此同時，client 型別仍需顯式引用 host 型別，因此完全隔離或在兩邊複製型別都不能表達真實依賴。
 
 ## Decision
 
-[`dsh-typert-generator`](../../../../packages/typert/generator/README.zh.md) 分别从 host 和 client project 建立 `ts.Program`，只把 compiler node、symbol 和 checker 当作提取工具。分析结束后，所有生成器和扫描器只消费 Typert 自有的 `WorkspaceModel`、`FaceModel` 与 `TypeGraph`，模型中不保留 AST 或 checker 对象。生成器不依赖 `@deepseek-ai/dsh-typert-registry`。
+[`dsh-typert-generator`](../../../../packages/typert/generator/README.zh.md) 分別從 host 和 client project 建立 `ts.Program`，只把 compiler node、symbol 和 checker 當作提取工具。分析結束後，所有生成器和掃描器只消費 Typert 自有的 `WorkspaceModel`、`FaceModel` 與 `TypeGraph`，模型中不保留 AST 或 checker 物件。生成器不依賴 `@deepseek-ai/dsh-typert-registry`。
 
-TypeGraph 保存开发者写下的计算前类型结构，包括泛型参数与应用、显式继承、conditional、mapped、递归引用和 JSDoc。无法无损表示的可达类型使分析失败；某个 emitter 无法处理已经建模的节点时由该 emitter 失败，而不是把类型展平或降级为 `unknown`。
+TypeGraph 儲存開發者寫下的計算前型別結構，包括泛型參數與應用、顯式繼承、conditional、mapped、遞迴引用和 JSDoc。無法無損表示的可達型別使分析失敗；某個 emitter 無法處理已經建模的節點時由該 emitter 失敗，而不是把型別展平或降級為 `unknown`。
 
-每个 face 独立拥有 PackageModel 和 TypeGraph。`tsconfig.host.json` 与 `tsconfig.client.json` 的直接 project references 决定 package 的 face 归属，`package.json#exports` 决定公开边界。跨 face 关系只来自源码中的显式 import 或 re-export，并作为独立 link 保留；外部 npm 类型记录为 External，不读取或复制其声明。
+每個 face 獨立擁有 PackageModel 和 TypeGraph。`tsconfig.host.json` 與 `tsconfig.client.json` 的直接 project references 決定 package 的 face 歸屬，`package.json#exports` 決定公開邊界。跨 face 關係只來自原始碼中的顯式 import 或 re-export，並作為獨立 link 保留；外部 npm 型別記錄為 External，不讀取或複製其宣告。
 
-PackageModel 识别 Cordis service、event、`@typert object` 引用对象和 `@typert schema` 数据根。service 与 object 只暴露 public instance member，排除 constructor、static、private 和 protected；继承边保留在 TypeGraph 中，不复制为扁平成员。缺少 public property、parameter 或 return 类型标注时，`check` 模式报错，`write` 模式写入 checker 推断结果后重建 project 并再次以严格模式分析。
+PackageModel 識別 Cordis service、event、`@typert object` 引用物件和 `@typert schema` 資料根。service 與 object 只暴露 public instance member，排除 constructor、static、private 和 protected；繼承邊保留在 TypeGraph 中，不復製為扁平成員。缺少 public property、parameter 或 return 型別標註時，`check` 模式報錯，`write` 模式寫入 checker 推斷結果後重建 project 並再次以嚴格模式分析。
 
-[`dsh-typert-registry`](../../../../packages/typert/registry/README.zh.md) 提供 `ctx.typert`，且只负责运行时注册：一个 contribution 原子携带 package-face reflection 与可选 Zod schema factory，并随 Cordis effect 撤销。注册表校验 factory 时不会调用它；首次 `get()`、`resolve()`、`list()` 或 JSON Schema 投影才会物化并缓存各 schema。注册表不分析 TypeScript，也不合并两个 face。
+[`dsh-typert-registry`](../../../../packages/typert/registry/README.zh.md) 提供 `ctx.typert`，且只負責執行時註冊：一個 contribution 原子攜帶 package-face reflection 與可選 Zod schema factory，並隨 Cordis effect 撤銷。註冊表驗證 factory 時不會呼叫它；首次 `get()`、`resolve()`、`list()` 或 JSON Schema 投影才會物化並快取各 schema。註冊表不分析 TypeScript，也不合並兩個 face。
 
-包产物发布仍通过 package exports 采用显式 opt-in。`WorkspaceTypertGenerator` 仅在被调用时校验所请求 face 的根目录产物协议：host face 必须通过面向用户的 subpath `package/typert` 暴露 `package/lib/typert.host.{js,d.ts}`，client face 必须通过 `package/client/typert` 暴露 `package/lib/typert.client.{js,d.ts}`；它不会修改这些 exports。后续的 [Typert Remote 设计](2026-08-02-typert-remote-method-calls.zh.md) 为根目录 build、typecheck、lint 与文档类型检查增加了全仓 Host 约定 pass。对于已 opt-in 的 Host 包，该 pass 会在消费方解析两者之前生成本地反射产物与严格的 Host-for-Client `/remote` 约定。生成的本地声明将 `TYPERT` 类型保持为 `unknown`，因此业务包不依赖注册表。
+包產物釋出仍透過 package exports 採用顯式 opt-in。`WorkspaceTypertGenerator` 僅在被呼叫時驗證所請求 face 的根目錄產物協定：host face 必須透過面向使用者的 subpath `package/typert` 暴露 `package/lib/typert.host.{js,d.ts}`，client face 必須透過 `package/client/typert` 暴露 `package/lib/typert.client.{js,d.ts}`；它不會修改這些 exports。後續的 [Typert Remote 設計](2026-08-02-typert-remote-method-calls.zh.md) 為根目錄 build、typecheck、lint 與文件型別檢查增加了全倉 Host 約定 pass。對於已 opt-in 的 Host 包，該 pass 會在消費方解析兩者之前生成本地反射產物與嚴格的 Host-for-Client `/remote` 約定。生成的本地宣告將 `TYPERT` 型別保持為 `unknown`，因此業務包不依賴註冊表。
 
-构建期的 `CordisCatalogProjector` 一次消费分析后的 `FaceModel` 与 `TypeGraph`，生成 `docs/cordis-catalog/events.md`、`docs/cordis-catalog/services.md`，以及为 `tool-cordis` 提交的静态 `SERVICE_API`、`EVENT_API` 和 `TYPE_API` catalog。`tool-cordis` 读取该静态 catalog，运行时不依赖 `ctx.typert`。[`dsh-typert-loader`](../../../../packages/typert/loader/README.zh.md) 与注册表仍是独立的运行时路径：loader 监听 Cordis Loader 配置项生命周期事件，导入显式发布的 `./typert` host 产物，并通过 `ctx.typert` 注册；两者都不是当前 `cordis_inspect` catalog 的数据源。
+建置期的 `CordisCatalogProjector` 一次消費分析後的 `FaceModel` 與 `TypeGraph`，生成 `docs/cordis-catalog/events.md`、`docs/cordis-catalog/services.md`，以及為 `tool-cordis` 提交的靜態 `SERVICE_API`、`EVENT_API` 和 `TYPE_API` catalog。`tool-cordis` 讀取該靜態 catalog，執行時不依賴 `ctx.typert`。[`dsh-typert-loader`](../../../../packages/typert/loader/README.zh.md) 與註冊表仍是獨立的執行時路徑：loader 監聽 Cordis Loader 設定項生命週期事件，匯入顯式釋出的 `./typert` host 產物，並透過 `ctx.typert` 註冊；兩者都不是目前 `cordis_inspect` catalog 的資料來源。
 
 ## Verification contract
 
-提交内的小型双 face project 对完整类型模型及其源码声明索引做 snapshot。全仓分批分析与直接聚焦分析必须为相同 face 生成模型等价的 `FaceModel` 与 `TypeGraph`。类型级全集和运行时集合比较保证每种 node、target、declaration 与 member discriminant 都来自真实 TypeScript syntax；字段语义矩阵覆盖所有 keyword、type operator、literal value 类目，以及泛型、参数、tuple、mapped modifier、import attributes、abstract、predicate 和 enum initializer 的各个状态。
+提交內的小型雙 face project 對完整型別模型及其原始碼宣告索引做 snapshot。全倉分批分析與直接聚焦分析必須為相同 face 生成模型等價的 `FaceModel` 與 `TypeGraph`。型別級全集和執行時集合比較保證每種 node、target、declaration 與 member discriminant 都來自真實 TypeScript syntax；欄位語義矩陣覆蓋所有 keyword、type operator、literal value 類目，以及泛型、參數、tuple、mapped modifier、import attributes、abstract、predicate 和 enum initializer 的各個狀態。
 
-`SyntaxZoo` 中每个 property 的源码类型经 TypeScript printer 标准化后，必须与 TypeGraph 渲染结果逐项相等，随后所有渲染 declaration 再交给 TypeScript 编译。这一层检查节点内部信息是否无损，包括无插值 template literal、带 type argument 的 type query 和受约束 `infer`，不以 discriminant 覆盖或代码覆盖率代替结构等价。
+`SyntaxZoo` 中每個 property 的原始碼型別經 TypeScript printer 標準化後，必須與 TypeGraph 渲染結果逐項相等，隨後所有渲染 declaration 再交給 TypeScript 編譯。這一層檢查節點內部資訊是否無損，包括無插值 template literal、帶 type argument 的 type query 和受約束 `infer`，不以 discriminant 覆蓋或程式碼覆蓋率代替結構等價。
 
-边界用例固定同 face 与跨 face 的显式包导入、跨 face 命名 re-export、精确 export alias、qualified `import()` link 和全局 `@types` External 归属，并拒绝 package 自有 TypeScript 诊断、相对路径越界、`package.json#exports` 之外的引用，以及尚无模型 target 的跨 face namespace re-export。interface declaration merging 显式保留每个 authored part，无法无损表示的其他 merge 失败。
+邊界案例固定同 face 與跨 face 的顯式包匯入、跨 face 命名 re-export、精確 export alias、qualified `import()` link 和全域 `@types` External 歸屬，並拒絕 package 自有 TypeScript 診斷、相對路徑越界、`package.json#exports` 之外的引用，以及尚無模型 target 的跨 face namespace re-export。interface declaration merging 顯式保留每個 authored part，無法無損表示的其他 merge 失敗。
 
-Zod emitter 对支持的节点和各类 literal 逐类执行成功与失败 parse，对不支持的节点逐类断言明确的 `TypertEmitError`。Emitter fixture 对生成的 Zod JavaScript 与 `.d.ts` 文本做快照，执行每个 schema factory，并对声明做类型检查。`dsh-typert-registry` 测试固定原子注册、首次使用物化、成功结果缓存、factory 失败后重试、查询、JSON Schema 和 effect 撤销，`dsh-typert-loader` 测试还证明延迟挂载、卸载及未完成 dynamic import 的释放行为。真实 `dsh-tools` 纵切从模型生成 contribution，经运行时注册表加载后，将其服务、事件与关联类型记录同已提交的静态 `SERVICE_API`、`EVENT_API` 和 `TYPE_API` 对照。全仓 projector 测试重新生成两份 Cordis catalog 文档与 `tool-cordis` API catalog，并要求三份文本同已提交产物逐字节一致。
+Zod emitter 對支援的節點和各類 literal 逐類執行成功與失敗 parse，對不支援的節點逐類斷言明確的 `TypertEmitError`。Emitter fixture 對生成的 Zod JavaScript 與 `.d.ts` 文字做快照，執行每個 schema factory，並對宣告做型別檢查。`dsh-typert-registry` 測試固定原子註冊、首次使用物化、成功結果快取、factory 失敗後重試、查詢、JSON Schema 和 effect 撤銷，`dsh-typert-loader` 測試還證明延遲掛載、解除安裝及未完成 dynamic import 的釋放行為。真實 `dsh-tools` 縱切從模型生成 contribution，經執行時註冊表載入後，將其服務、事件與關聯型別記錄同已提交的靜態 `SERVICE_API`、`EVENT_API` 和 `TYPE_API` 對照。全倉 projector 測試重新生成兩份 Cordis catalog 文件與 `tool-cordis` API catalog，並要求三份文字同已提交產物逐位元組一致。
 
 ## Alternatives considered
 
-**直接保存 TypeScript AST。** AST 能保留源码写法，但会让每个消费者依赖 compiler 生命周期、node identity 和 checker 上下文，无法形成稳定的架构边界，因此只在提取阶段使用。
+**直接儲存 TypeScript AST。** AST 能保留原始碼寫法，但會讓每個消費者依賴 compiler 生命週期、node identity 和 checker 上下文，無法形成穩定的架構邊界，因此只在提取階段使用。
 
-**基于 checker 的最终类型生成。** 展平后的 `ts.Type` 便于直接遍历，却丢失泛型、conditional、mapped 和 alias application 的开发者表达，无法满足反射与后续生成需要。
+**基於 checker 的最終型別生成。** 展平後的 `ts.Type` 便於直接遍歷，卻丟失泛型、conditional、mapped 和 alias application 的開發者表達，無法滿足反射與後續生成需要。
 
-**合并 host/client project 或复制 host 类型。** 合并会污染 Cordis declaration merging；复制会产生第二份类型事实源。独立 face 加显式 cross-face link 保留了 project 隔离与真实引用关系。
+**合併 host/client project 或複製 host 型別。** 合併會汙染 Cordis declaration merging；複製會產生第二份型別事實源。獨立 face 加顯式 cross-face link 保留了 project 隔離與真實引用關係。
 
-**让 `dsh-typert-registry` 承担类型解析和跨包合成。** 这会把 TypeScript compiler、Cordis 生命周期和具体 schema 策略重新耦合。注册表保持为生成 artifact 的生命周期容器，复杂分析留在构建期模型。
+**讓 `dsh-typert-registry` 承擔型別解析和跨包合成。** 這會把 TypeScript compiler、Cordis 生命週期和具體 schema 策略重新耦合。註冊表保持為生成 artifact 的生命週期容器，複雜分析留在建置期模型。
 
 ## Consequences
 
-新增生成目标或静态检查可复用同一 TypeGraph，业务类目也可在 PackageModel 上扩展，而无需再次解析 AST。保留计算前类型和独立 face 的代价是模型比打平后的 schema 更复杂，emitter 必须显式声明支持范围并对缺失能力失败。
+新增生成目標或靜態檢查可複用同一 TypeGraph，業務類目也可在 PackageModel 上擴充功能，而無需再次解析 AST。保留計算前型別和獨立 face 的代價是模型比打平後的 schema 更復雜，emitter 必須顯式宣告支援範圍並對缺失能力失敗。
 
-包级显式 opt-in 使产物发布与 exports 由各包自行管理。仓库编排仍可为每个已 opt-in 的包运行全仓 Host 约定 pass；该 pass 仍由后续 Remote Gateway Agent Note 负责说明。静态 Cordis catalog 可从标准模型复现，同时不把 `tool-cordis` 与运行时注册表状态耦合。`ctx.typert` 只反映当前运行时中已挂载的产物；对于消费方物化后仍持有的 Zod 实例，卸载流程无法控制。
+包級顯式 opt-in 使產物釋出與 exports 由各包自行管理。儲存庫編排仍可為每個已 opt-in 的包執行全倉 Host 約定 pass；該 pass 仍由後續 Remote Gateway Agent Note 負責說明。靜態 Cordis catalog 可從標準模型復現，同時不把 `tool-cordis` 與執行時註冊表狀態耦合。`ctx.typert` 只反映目前執行時中已掛載的產物；對於消費方物化後仍持有的 Zod 實例，解除安裝流程無法控制。

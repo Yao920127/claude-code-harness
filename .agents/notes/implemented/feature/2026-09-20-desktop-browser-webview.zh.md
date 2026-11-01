@@ -1,4 +1,4 @@
-# Agent Note: 保持页面实例的 Desktop 浏览器 webview
+# Agent Note: 保持頁面實例的 Desktop 瀏覽器 webview
 
 Status: implemented
 
@@ -6,54 +6,54 @@ Status: implemented
 
 ## Problem
 
-iframe 无法提供跨域导航状态, 也无法显示拒绝嵌入的站点. 如果 Tab Body 因选中项或容器变化而卸载, Electron guest 就会丢失表单、滚动位置与原生 history. 页面生命周期因此必须独立于可见性和布局变化.
+iframe 無法提供跨域導航狀態, 也無法顯示拒絕嵌入的站點. 如果 Tab Body 因選中項或容器變化而解除安裝, Electron guest 就會丟失表單、滾動位置與原生 history. 頁面生命週期因此必須獨立於可見性和佈局變化.
 
-独立的 per-tab 存储也会阻止同一 Workspace 内相关页面共享站点登录态。页面生命周期与存储需要不同的所有者。
+獨立的 per-tab 儲存也會阻止同一 Workspace 內相關頁面共享站點登入態。頁面生命週期與儲存需要不同的所有者。
 
 ## Decision
 
-Desktop 通过 `ElectronWebViewImpl` 使用 `<webview>`; Web 保留显式启用的 iframe 载体. [Sidebar Browser 决策](2026-09-16-sidebar-browser.zh.md)负责共享 Tab 行为与 iframe 限制; 本文负责 Desktop 载体.
+Desktop 透過 `ElectronWebViewImpl` 使用 `<webview>`; Web 保留顯式啟用的 iframe 載體. [Sidebar Browser 決策](2026-09-16-sidebar-browser.zh.md)負責共享 Tab 行為與 iframe 限制; 本文負責 Desktop 載體.
 
-[Sidebar 稳定挂载决策](../architecture/2026-09-20-sidebar-retained-tab-layout.zh.md)负责真实 CSS 布局中的保活会话与 Tab 容器。guest 基础安全配置仍由本文负责。
+[Sidebar 穩定掛載決策](../architecture/2026-09-20-sidebar-retained-tab-layout.zh.md)負責真實 CSS 佈局中的保活工作階段與 Tab 容器。guest 基礎安全設定仍由本文負責。
 
-- `BrowserController` 负责地址命令与可恢复的展示状态。原生 history 留在 guest 内；真实 URL 与标题观察更新持久化地址。
-- 控制器注册表按 DSH Session 索引，不依赖呈现绑定的存活期。重新绑定只替换存储写入方，不重建页面。
-- `electron/pages.ts` 组装 Electron 导航提供方和呈现对象. `ElectronWebViewImpl` 负责 guest 租约与原生导航; `ElectronWebviewPresentation` 创建标签并挂载到 Sidebar 持有的内容容器内.
-- Desktop Browser 类型声明 `keepMounted`。Sidebar 在隐藏和停靠切换时保留其 DOM 祖先，CSS 负责布局与裁剪。停靠手势期间禁用 guest 指针输入，Body 内的放置提示使用普通层叠。物理卸载会取消未完成的挂载并释放 guest，之后重新挂载时从已知地址重建。
-- tab occurrence 取消、插件卸载与窗口销毁会释放 guest。guest 崩溃留下可重试的失败状态；刷新创建新 guest。应用重启展示保存的标题与 URL，等待显式恢复；用户恢复或提交地址之前不创建 guest。不恢复页面内存或原生 history。
+- `BrowserController` 負責地址命令與可恢復的展示狀態。原生 history 留在 guest 內；真實 URL 與標題觀察更新持久化地址。
+- 控制器註冊表按 DSH Session 索引，不依賴呈現繫結的存活期。重新繫結只替換儲存寫入方，不重建頁面。
+- `electron/pages.ts` 組裝 Electron 導航提供者和呈現物件. `ElectronWebViewImpl` 負責 guest 租約與原生導航; `ElectronWebviewPresentation` 建立標籤並掛載到 Sidebar 持有的內容容器內.
+- Desktop Browser 型別宣告 `keepMounted`。Sidebar 在隱藏和停靠切換時保留其 DOM 祖先，CSS 負責佈局與裁剪。停靠手勢期間停用 guest 指標輸入，Body 內的放置提示使用普通層疊。物理解除安裝會取消未完成的掛載並釋放 guest，之後重新掛載時從已知地址重建。
+- tab occurrence 取消、外掛解除安裝與視窗銷燬會釋放 guest。guest 崩潰留下可重試的失敗狀態；重新整理建立新 guest。應用重新啟動展示儲存的標題與 URL，等待顯式恢復；使用者恢復或提交地址之前不建立 guest。不恢復頁面記憶體或原生 history。
 
-标准 `./types` 子路径通过仅指向声明文件的 `types` 条件导出共享的租约、申请结果、打开请求与桥接声明，Desktop 消费方使用 `import type`。这些声明没有运行时 default、额外 JavaScript 产物或提前进行的 Host 打包。preload 只暴露限定范围的操作与回调，不暴露原始 IPC 或 Electron 对象。
+標準 `./types` 子路徑透過僅指向宣告檔案的 `types` 條件匯出共享的租約、申請結果、開啟請求與橋接宣告，Desktop 消費方使用 `import type`。這些宣告沒有執行時 default、額外 JavaScript 產物或提前進行的 Host 打包。preload 只暴露限定範圍的操作與回呼，不暴露原始 IPC 或 Electron 物件。
 
-Browser 分别拥有 Host 与 Client 编译程序。Desktop 和 Host 聚合配置只引用 `tsconfig.host.json`，编译包根与共享桥接声明；Client 聚合配置通过 `tsconfig.client.json` 编译浏览器实现。包根 tsconfig 只作为 solution。这样，依赖生成 `/remote` 声明的 Client 消费方不会进入 Typert 生成之前的 Host 编译阶段。
+Browser 分別擁有 Host 與 Client 編譯程式。Desktop 和 Host 聚合設定只引用 `tsconfig.host.json`，編譯包根與共享橋接宣告；Client 聚合設定透過 `tsconfig.client.json` 編譯瀏覽器實作。包根 tsconfig 只作為 solution。這樣，依賴生成 `/remote` 宣告的 Client 消費方不會進入 Typert 生成之前的 Host 編譯階段。
 
 ### Storage ownership
 
-[共享持久登录决策](2026-10-07-desktop-browser-shared-sign-in.zh.md)取代了本节按 Workspace 划分的分区：现在每个 guest 都使用一个由所有 Workspace 与 Session 共享的持久分区，Client 不再解析 Workspace 存储账号。本文记录当初为何选择按 Workspace 共享而非按 tab 隔离。
+[共享持久登入決策](2026-10-07-desktop-browser-shared-sign-in.zh.md)取代了本節按 Workspace 劃分的分割槽：現在每個 guest 都使用一個由所有 Workspace 與 Session 共享的持久分割槽，Client 不再解析 Workspace 儲存帳號。本文記錄當初為何選擇按 Workspace 共享而非按 tab 隔離。
 
-关闭 tab 只释放它的 guest，不清空分区的 Cookie 或存储。Cookie、localStorage、IndexedDB、Service Worker 与缓存由 partition 持有，并继续遵循普通 origin 规则。DOM、原生 history 与 sessionStorage 仍由页面持有。
+關閉 tab 只釋放它的 guest，不清空分割槽的 Cookie 或儲存。Cookie、localStorage、IndexedDB、Service Worker 與快取由 partition 持有，並繼續遵循普通 origin 規則。DOM、原生 history 與 sessionStorage 仍由頁面持有。
 
 ### Initial guest policy
 
-只有主应用窗口启用 `webviewTag`。主进程只接受该窗口应用顶层 frame 发起的 guest 申请，并在放行前校验一次性租约、partition 与无活动内容的初始 `about:blank` 文档。主进程替换 renderer 提供的偏好：不启用 Node integration、guest preload、嵌套 webview、plugin、不安全内容、模态对话框或拖放导航；sandbox、context isolation 与 Web security 保持开启。
+只有主應用視窗啟用 `webviewTag`。主程序只接受該視窗應用頂層 frame 發起的 guest 申請，並在放行前驗證一次性租約、partition 與無活動內容的初始 `about:blank` 文件。主程序替換 renderer 提供的偏好：不啟用 Node integration、guest preload、巢狀 webview、plugin、不安全內容、模態對話方塊或拖放導航；sandbox、context isolation 與 Web security 保持開啟。
 
-guest Session 不注册应用协议，也不继承应用的认证请求转发。权限请求与检查、设备访问、屏幕捕获、下载、原生弹窗与 HTTP 认证提示全部拒绝。通过检查且不带 POST body 的直接 HTTP(S) 弹窗请求，通过活动租约路由为新 Sidebar Tab；脚本操作空白窗口和 POST 弹窗流程仍不支持。导航接受不带内嵌凭据的 HTTP(S)；请求过滤拒绝本地文件、特权协议与已知 DSH Host 地址，包括常见 loopback 别名。这不是通用的私有网络或 DNS rebinding 防火墙。
+guest Session 不註冊應用協定，也不繼承應用的認證請求轉發。權限請求與檢查、裝置存取、螢幕捕捉、下載、原生彈出視窗與 HTTP 認證提示全部拒絕。透過檢查且不帶 POST body 的直接 HTTP(S) 彈出視窗請求，透過活動租約路由為新 Sidebar Tab；腳本操作空白視窗和 POST 彈出視窗流程仍不支援。導航接受不帶內嵌憑證的 HTTP(S)；請求過濾拒絕本地檔案、特權協定與已知 DSH Host 地址，包括常見 loopback 別名。這不是通用的私有網路或 DNS rebinding 防火牆。
 
-Desktop toolbar 没有关闭 sandbox 的开关。实现不增加远程调试端口或 browser-use 集成。未来的自动化提供方需要经过认证、限定 target 的 broker，而不是访问全部应用 target。把 target/生命周期句柄与导航命令分开的方式，与 Playwright 的 Android WebView 和 Page 对象区分相同；设备级输入属于另一项职责。
+Desktop toolbar 沒有關閉 sandbox 的開關。實作不增加遠端除錯埠或 browser-use 整合。未來的自動化提供者需要經過認證、限定 target 的 broker，而不是存取全部應用 target。把 target/生命週期控制代碼與導航命令分開的方式，與 Playwright 的 Android WebView 和 Page 物件區分相同；裝置級輸入屬於另一項職責。
 
 ## Alternatives considered
 
-**在按可见性挂载的 tab body 内渲染 guest。** 卸载会断开 guest；直接挂载需要 Sidebar 提供 Body 保活与稳定祖先机制。
+**在按可見性掛載的 tab body 內渲染 guest。** 解除安裝會斷開 guest；直接掛載需要 Sidebar 提供 Body 保活與穩定祖先機制。
 
-**在可见与隐藏 DOM 容器之间搬移 guest。** Electron 44 的 `WebViewElement.disconnectedCallback` 会 detach guest 并重置内部实例。保留元素引用或 React key 不能保留该实例，因此父节点保持固定。
+**在可見與隱藏 DOM 容器之間搬移 guest。** Electron 44 的 `WebViewElement.disconnectedCallback` 會 detach guest 並重置內部實例。保留元素引用或 React key 不能保留該實例，因此父節點保持固定。
 
-**每个 tab 使用独立 partition。** 这会隔离相关页面的站点账号。Workspace 所有权提供所需的共享，同时不共享应用 Session；每个 tab 仍拥有独立 guest。
+**每個 tab 使用獨立 partition。** 這會隔離相關頁面的站點帳號。Workspace 所有權提供所需的共享，同時不共享應用 Session；每個 tab 仍擁有獨立 guest。
 
-**修改活动 webview 的 partition。** Electron 在首次导航前确定 partition。选择其他隔离粒度需要替换 guest，并明确已有站点数据的处置策略，而不是实时切换属性。
+**修改活動 webview 的 partition。** Electron 在首次導航前確定 partition。選擇其他隔離粒度需要替換 guest，並明確已有站點資料的處置策略，而不是即時切換屬性。
 
 ## Consequences
 
-Sidebar 持有的稳定祖先保留页面，无需 Browser 自行处理几何或遮挡。隐藏 guest 保留页面内存，也可能继续联网；当前没有空闲回收策略。可选择的隔离级别与权限授权 UI 留作独立工作。
+Sidebar 持有的穩定祖先保留頁面，無需 Browser 自行處理幾何或遮擋。隱藏 guest 保留頁面記憶體，也可能繼續聯網；目前沒有空閒回收策略。可選擇的隔離級別與權限授權 UI 留作獨立工作。
 
-定向测试覆盖原生导航错误恢复、preload 监听范围和已迁移的 iframe 行为。这些测试不能确认真实 Electron 的挂载时序、遮挡、焦点、平台样式或存储隔离；这些仍是运行时验证缺口。本次变更不附带 GUI 录像。此实现不构成完整浏览器安全策略已经可以发布的证据。
+定向測試覆蓋原生導航錯誤恢復、preload 監聽範圍和已遷移的 iframe 行為。這些測試不能確認真實 Electron 的掛載時序、遮擋、焦點、平臺樣式或儲存隔離；這些仍是執行時驗證缺口。本次變更不附帶 GUI 錄影。此實作不構成完整瀏覽器安全策略已經可以釋出的證據。
 
-包内的 Electron 提供方、呈现适配器与页面工厂集中在 `src/client/electron/`. 在原生 Electron 测试环境覆盖 guest 行为之前, 该目录暂时不参与逐文件覆盖率门禁; 其单元测试仍然运行. 共享 Browser 控制器、恢复 UI、iframe 代码和 Sidebar 保活仍遵循现有覆盖率要求.
+包內的 Electron 提供者、呈現介面卡與頁面工廠集中在 `src/client/electron/`. 在原生 Electron 測試環境覆蓋 guest 行為之前, 該目錄暫時不參與逐檔案覆蓋率門禁; 其單元測試仍然執行. 共享 Browser 控制器、恢復 UI、iframe 程式碼和 Sidebar 保活仍遵循現有覆蓋率要求.

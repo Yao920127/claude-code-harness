@@ -1,5 +1,5 @@
 ---
-description: "在 Web 右侧栏提交、拉取与推送，无需 Git 命令；登录 GitHub 后可复制与发布仓库。"
+description: "在 Web 右側欄提交、拉取與推送，無需 Git 命令；登入 GitHub 後可複製與釋出儲存庫。"
 kind: "package-reference"
 ---
 
@@ -9,82 +9,82 @@ kind: "package-reference"
 
 ## 概述
 
-无需记住 Git 命令即可保存与分享工作。右侧栏的**源代码管理**页面显示会话文件夹中的已更改文件，用一条信息暂存并提交它们，并与 GitHub 拉取、推送或同步。在**设置 → GitHub** 登录 GitHub 后，可以把自己的仓库复制为工作区，再从源代码管理页面发布新仓库。命令通过 Host 上安装的 `git` 与 GitHub CLI（`gh`）以你的系统用户身份运行。
+無需記住 Git 命令即可儲存與分享工作。右側欄的**原始碼管理**頁面顯示工作階段資料夾中的已更改檔案，用一條資訊暫存並提交它們，並與 GitHub 拉取、推送或同步。在**設定 → GitHub** 登入 GitHub 後，可以把自己的儲存庫複製為工作區，再從原始碼管理頁面釋出新儲存庫。命令透過 Host 上安裝的 `git` 與 GitHub CLI（`gh`）以你的系統使用者身份執行。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [了解实现](#understand-the-implementation)
-- [延伸阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [瞭解實作](#understand-the-implementation)
+- [延伸閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-从右侧栏「开始」页打开**源代码管理**；其标签页显示分支图示。页面打开时、窗口重新获得焦点时以及按下刷新时，会读取包含会话文件夹的仓库。不在任何仓库内的文件夹会提供**初始化仓库**。
+從右側欄「開始」頁開啟**原始碼管理**；其標籤頁顯示分支圖示。頁面開啟時、視窗重新獲得焦點時以及按下重新整理時，會讀取包含工作階段資料夾的儲存庫。不在任何儲存庫內的資料夾會提供**初始化儲存庫**。
 
-分支行显示当前分支（或分离的 HEAD），以及领先与落后上游的提交数。输入提交信息后选择**提交**；命令按钮平分所在行的宽度。也可以按 Command+Enter（Windows 与 Linux 为 Control+Enter）。没有暂存任何文件时，提交会包含全部更改；否则只提交已暂存的文件。**提交并推送**会在提交后推送。**拉取**快进到上游，**推送**推送分支并在第一次推送时把 `origin` 设为上游，**同步**会先拉取再推送。更改列表区分已暂存与未暂存的文件；`+` 与 `−` 暂存或取消暂存单个文件，列表标题可一次暂存或取消暂存全部。每个仓库同一时间只运行一个命令；失败时显示 Git 自己的信息，并且页面会重新读取仓库，因为推送失败前可能已经提交成功。
+分支行顯示目前分支（或分離的 HEAD），以及領先與落後上游的提交數。輸入提交資訊後選擇**提交**；命令按鈕平分所在行的寬度。也可以按 Command+Enter（Windows 與 Linux 為 Control+Enter）。沒有暫存任何檔案時，提交會包含全部更改；否則只提交已暫存的檔案。**提交併推送**會在提交後推送。**拉取**快進到上游，**推送**推送分支並在第一次推送時把 `origin` 設為上游，**同步**會先拉取再推送。更改列表區分已暫存與未暫存的檔案；`+` 與 `−` 暫存或取消暫存單個檔案，列表標題可一次暫存或取消暫存全部。每個儲存庫同一時間只執行一個命令；失敗時顯示 Git 自己的資訊，並且頁面會重新讀取儲存庫，因為推送失敗前可能已經提交成功。
 
-GitHub 登录位于设置的 **GitHub** 页面，使用 Host 的 GitHub CLI。**登录 GitHub** 会启动 CLI 的设备登录，打开 GitHub 的验证码页面并显示一次性验证码（CLI 也会把它复制到剪贴板）；页面每隔几秒检查一次，直到你完成授权。登录完成后还会让 Git 用同一凭据推送到 GitHub。在源代码管理页面，没有 `origin` 远程的仓库会在你登录后提供**发布到 GitHub**，以文件夹名称建立私有或公开仓库；未登录时则提示前往设置。设置页面在**我的 GitHub 项目**下列出你的仓库；**复制到本机**会把仓库复制到复制目录并加入工作区，已经复制到该处的仓库显示为已在本机。未安装 `gh` 时，设置页面会说明安装方法。
+GitHub 登入位於設定的 **GitHub** 頁面，使用 Host 的 GitHub CLI。**登入 GitHub** 會啟動 CLI 的裝置登入，開啟 GitHub 的驗證碼頁面並顯示一次性驗證碼（CLI 也會把它複製到剪貼簿）；頁面每隔幾秒檢查一次，直到你完成授權。登入完成後還會讓 Git 用同一憑證推送到 GitHub。在原始碼管理頁面，沒有 `origin` 遠端的儲存庫會在你登入後提供**釋出到 GitHub**，以資料夾名稱建立私有或公開儲存庫；未登入時則提示前往設定。設定頁面在**我的 GitHub 專案**下列出你的儲存庫；**複製到本機**會把儲存庫複製到複製目錄並加入工作區，已經複製到該處的儲存庫顯示為已在本機。未安裝 `gh` 時，設定頁面會說明安裝方法。
 
-| 配置 | 默认值 | 用途 |
+| 設定 | 預設值 | 用途 |
 | --- | --- | --- |
-| `git` | `git` | `git` 可执行文件名称或绝对路径 |
-| `gh` | `gh` | GitHub CLI 可执行文件名称或绝对路径 |
-| `searchPath` | `['/opt/homebrew/bin', '/usr/local/bin']` | 在 `PATH` 之后搜索的目录；从 Dock 启动的 Desktop 应用继承的 `PATH` 较短 |
-| `cloneDirectory` | `~/github` | 仓库复制到的目录，每个仓库名称一个子目录 |
-| `repositoryLimit` | `100` | 一次列出返回的最多仓库数 |
-| `commandTimeoutMs` | `300000` | 单个命令被终止前可运行的毫秒数 |
-| `loginTimeoutMs` | `900000` | GitHub 登录等待输入验证码的毫秒数 |
-| `graceMs` | `3000` | 停止命令时各终止阶段之间的宽限时间 |
-| `maxOutputBytes` | `4194304` | 单个命令输出流保留在内存中的最多字节数 |
+| `git` | `git` | `git` 可執行檔名稱或絕對路徑 |
+| `gh` | `gh` | GitHub CLI 可執行檔名稱或絕對路徑 |
+| `searchPath` | `['/opt/homebrew/bin', '/usr/local/bin']` | 在 `PATH` 之後搜尋的目錄；從 Dock 啟動的 Desktop 應用繼承的 `PATH` 較短 |
+| `cloneDirectory` | `~/github` | 儲存庫複製到的目錄，每個儲存庫名稱一個子目錄 |
+| `repositoryLimit` | `100` | 一次列出返回的最多儲存庫數 |
+| `commandTimeoutMs` | `300000` | 單個命令被終止前可執行的毫秒數 |
+| `loginTimeoutMs` | `900000` | GitHub 登入等待輸入驗證碼的毫秒數 |
+| `graceMs` | `3000` | 停止命令時各終止階段之間的寬限時間 |
+| `maxOutputBytes` | `4194304` | 單個命令輸出流保留在記憶體中的最多位元組數 |
 
 <a id="understand-the-implementation"></a>
-## 了解实现
+## 瞭解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-Host 部分 `GitController` 提供 `git` Remote 命名空间。它从会话的实时或已保存标头解析文件夹，并通过 `ctx.subprocess` 以显式参数向量运行 `git` 与 `gh`，因此不会有用户文本被 shell 解释；凭据提示已关闭，因为没有人能回答它们。`git status --porcelain=v2 --branch -z` 提供分支与更改列表。复制的仓库通过可选的 `ctx.workspaceRegistry` 登记。同一时间只运行一个设备登录；其提示从 CLI 输出中解析，并在后台完成。
+Host 部分 `GitController` 提供 `git` Remote 名稱空間。它從工作階段的即時或已儲存標頭解析資料夾，並透過 `ctx.subprocess` 以顯式參數向量執行 `git` 與 `gh`，因此不會有使用者文字被 shell 解釋；憑證提示已關閉，因為沒有人能回答它們。`git status --porcelain=v2 --branch -z` 提供分支與更改列表。複製的儲存庫透過可選的 `ctx.workspaceRegistry` 登記。同一時間只執行一個裝置登入；其提示從 CLI 輸出中解析，並在後臺完成。
 
-浏览器部分向 [ui-sidebar-right](../ui-sidebar-right/README.zh.md) 注册 `source-control` 页面类型、其标签页标题与「开始」页入口，并在 [ui-settings](../ui-settings/README.zh.md) 的 `settings.section` 座注册 `github` 页面。`SourceControl` 拥有每个会话的仓库状态与草稿信息，以及所有会话共享的一个 GitHub 状态。
+瀏覽器部分向 [ui-sidebar-right](../ui-sidebar-right/README.zh.md) 註冊 `source-control` 頁面型別、其標籤頁標題與「開始」頁入口，並在 [ui-settings](../ui-settings/README.zh.md) 的 `settings.section` 座註冊 `github` 頁面。`SourceControl` 擁有每個工作階段的儲存庫狀態與草稿資訊，以及所有工作階段共享的一個 GitHub 狀態。
 
 </details>
 
 <a id="further-exploration"></a>
-## 延伸阅读
+## 延伸閱讀
 
-- [右侧栏](../ui-sidebar-right/README.zh.md)
-- [Workspace 注册表](../../workspace/workspace/README.zh.md)
+- [右側欄](../ui-sidebar-right/README.zh.md)
+- [Workspace 註冊表](../../workspace/workspace/README.zh.md)
 - [Subprocess](../../subprocess/subprocess/README.zh.md)
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，本包运行由用户发起的 Git 与 GitHub 命令，不增加模型输入。
+無，本包執行由使用者發起的 Git 與 GitHub 命令，不增加模型輸入。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-无；命令输出只到达浏览器。
+無；命令輸出只到達瀏覽器。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 页面没有差异视图、分支切换、合并冲突处理或放弃更改操作；这些请使用终端。
-- 拉取只支持快进；分叉的分支会显示 Git 的错误。
-- GitHub 功能需要 Host 上的 GitHub CLI；通过 SSH 使用 Git 依赖 Host 的 SSH agent。
+- 頁面沒有差異檢視、分支切換、合併衝突處理或放棄更改操作；這些請使用終端。
+- 拉取只支援快進；分叉的分支會顯示 Git 的錯誤。
+- GitHub 功能需要 Host 上的 GitHub CLI；透過 SSH 使用 Git 依賴 Host 的 SSH agent。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-不发布运行时不变量伴生。每个回答都从 Git 或 GitHub CLI 读取；插件不保留可供比较的第二个观测。
+不釋出執行時不變數伴生。每個回答都從 Git 或 GitHub CLI 讀取；外掛不保留可供比較的第二個觀測。
 
 </details>

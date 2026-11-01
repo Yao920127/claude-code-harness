@@ -124,7 +124,7 @@ it('encodes Windows query and invocation data separately from native adapter sou
     scripts.push(await readFile(args.at(-1)!, 'utf8'))
     return { stdout: JSON.stringify([application]), stderr: '' }
   })
-  const path = "C:\\测试\\a'; write-host nope.mp3"
+  const path = "C:\\測試\\a'; write-host nope.mp3"
   expect(await nativeFileApplications(path, signal, { platform: 'win32', run })).toEqual([application])
   expect(scripts[0]!).toContain(Buffer.from(path).toString('base64'))
   expect(scripts[0]!).not.toContain(path)
@@ -141,8 +141,8 @@ it('keeps the complete Windows command line below the CreateProcess limit for lo
   const run = vi.fn<runner.NativeCommandRunner>(async () => ({ stdout: '[]', stderr: '' }))
   const paths = [
     // 222 characters; this path measured 32883 characters of command line while the script travelled there.
-    `C:\\work\\${'测'.repeat(210)}.txt`,
-    `C:\\work\\${'测'.repeat(3000)}.txt`,
+    `C:\\work\\${'測'.repeat(210)}.txt`,
+    `C:\\work\\${'測'.repeat(3000)}.txt`,
   ]
   for (const path of paths) await nativeFileApplications(path, signal, { platform: 'win32', run })
   const commandLines = run.mock.calls.map(call => [call[0], ...call[1]].join(' '))
@@ -162,12 +162,12 @@ it('keeps the complete Windows command line below the CreateProcess limit for lo
 
 it('uses the Windows desktop for WSL paths and rejects an empty translation', async () => {
   const run = vi.fn<runner.NativeCommandRunner>(async command => ({
-    stdout: command === 'wslpath' ? 'C:\\音频.mp3\n' : JSON.stringify([application]), stderr: '',
+    stdout: command === 'wslpath' ? 'C:\\音訊.mp3\n' : JSON.stringify([application]), stderr: '',
   }))
   const facts = { platform: 'linux' as const, osRelease: 'microsoft', env: {}, run }
-  expect(await nativeFileApplications('/mnt/c/音频.mp3', signal, facts)).toEqual([application])
-  await openNativeFileApplication('/mnt/c/音频.mp3', application.id, signal, facts)
-  expect(run).toHaveBeenCalledWith('wslpath', ['-w', '/mnt/c/音频.mp3'], signal)
+  expect(await nativeFileApplications('/mnt/c/音訊.mp3', signal, facts)).toEqual([application])
+  await openNativeFileApplication('/mnt/c/音訊.mp3', application.id, signal, facts)
+  expect(run).toHaveBeenCalledWith('wslpath', ['-w', '/mnt/c/音訊.mp3'], signal)
   const empty = async () => ({ stdout: '', stderr: '' })
   await expect(nativeFileApplications('/a', signal, { ...facts, run: empty })).rejects.toThrow('no Windows path')
 })

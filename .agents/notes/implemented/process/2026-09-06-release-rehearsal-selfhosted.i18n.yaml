@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-06-release-rehearsal-selfhosted.md
 /agent-note-trusted-release-rehearsals-on-persistent-linux-runners:
   en: 1bccf6bdafd4cc76
-  zh: 28ce63be303697f1
+  zh: e5c7f09db18f9098
 /agent-note-trusted-release-rehearsals-on-persistent-linux-runners/problem:
   en: c458bf4244320194
-  zh: fbd5f64cf8875725
+  zh: 21ab629297749358
 /agent-note-trusted-release-rehearsals-on-persistent-linux-runners/decision:
   en: d51d35350d91f19b
-  zh: 65297576aff64e8a
+  zh: 0caecb955ab96e20
 /agent-note-trusted-release-rehearsals-on-persistent-linux-runners/alternatives-considered:
   en: cd04297045b93d7b
-  zh: 9eacc1d9c6c10726
+  zh: 77e48f60daf44eef
 /agent-note-trusted-release-rehearsals-on-persistent-linux-runners/consequences:
   en: 90c50dda81822e7c
-  zh: 9c3ff4df4d2d9533
+  zh: 2e435692a4bc4ccf

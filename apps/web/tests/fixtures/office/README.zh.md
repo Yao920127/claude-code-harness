@@ -1,7 +1,7 @@
-# 二进制 Office 测试文件
+# 二進位制 Office 測試檔案
 
 [English](README.md) | 中文
 
-`preview.doc`、`preview.xls` 和 `preview.ppt` 包含 `Office preview 中文文档`。它们来自 [LibreOffice Kit](https://github.com/deepseek-harness/libreoffice-kit/tree/main/test/fixtures) 的 `one-page.doc`、`one-sheet.xls` 和 `one-slide.ppt`，由 Harness 编写的 OOXML 通过 LibreOffice 26.8.0.3 的 Word、Excel 和 PowerPoint 97 过滤器导出。源文档保留 Harness 的 MIT 许可证。
+`preview.doc`、`preview.xls` 和 `preview.ppt` 包含 `Office preview 中文文件`。它們來自 [LibreOffice Kit](https://github.com/deepseek-harness/libreoffice-kit/tree/main/test/fixtures) 的 `one-page.doc`、`one-sheet.xls` 和 `one-slide.ppt`，由 Harness 編寫的 OOXML 透過 LibreOffice 26.8.0.3 的 Word、Excel 和 PowerPoint 97 過濾器匯出。源文件保留 Harness 的 MIT 許可證。
 
-浏览器回归读取这些检入的 OLE 文件，验证真实转换和可选取的 PDF 文字。文件不含用户文档，测试期间不需要 Office 应用或文件生成器。它们覆盖简单的旧格式导入，不代表复杂文档的保真度。
+瀏覽器迴歸讀取這些檢入的 OLE 檔案，驗證真實轉換和可選取的 PDF 文字。檔案不含使用者文件，測試期間不需要 Office 應用或檔案生成器。它們覆蓋簡單的舊格式匯入，不代表複雜文件的保真度。

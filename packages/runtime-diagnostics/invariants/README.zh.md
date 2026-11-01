@@ -1,5 +1,5 @@
 ---
-description: "用于实时组合的运行时不变量检查：运行包自有检查的注册表服务，供用户和维护者选择、配置或排查。"
+description: "用於即時組合的執行時不變數檢查：執行包自有檢查的註冊表服務，供使用者和維護者選擇、設定或排查。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-invariants` 在 DeepSeek Harness 组合中运行包自有的运行时检查——不变量：任何包都可以发布一个 `./invariant` 配套入口，在组合运行期间验证其自身的持久关系（权威事件流与可变快照）。检查自动运行，失败的检查会报告归因到拥有被违反关系的包的 `InvariantError`。需要带全局开关与包名过滤器的自检诊断时选择它；标准 agent（智能体）组合已挂载它及四个核心配套入口，而单独加载服务不会安装任何检查。
+`dsh-invariants` 在 DeepSeek Harness 組合中執行包自有的執行時檢查——不變數：任何包都可以釋出一個 `./invariant` 配套入口，在組合執行期間驗證其自身的持久關係（權威事件流與可變快照）。檢查自動執行，失敗的檢查會報告歸因到擁有被違反關係的包的 `InvariantError`。需要帶全域開關與包名過濾器的自檢診斷時選擇它；標準 agent（智慧代理）組合已掛載它及四個核心配套入口，而單獨載入服務不會安裝任何檢查。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合需要验证自身运行时约定时挂载注册表，然后决定运行哪些包的检查。服务暴露 `ctx.invariants`；配套入口以其包的精确 npm 名称注册检查，每次失败都会携带所属包名。
+當組合需要驗證自身執行時約定時掛載註冊表，然後決定執行哪些包的檢查。服務暴露 `ctx.invariants`；配套入口以其包的精確 npm 名稱註冊檢查，每次失敗都會攜帶所屬包名。
 
-### 何时使用
+### 何時使用
 
-需要实时诊断的组合请使用注册表。[`dsh-sdk-minimal`](../../bundle/sdk-minimal/README.zh.md) 挂载它及四个核心有状态配套入口——`dsh-session`、`dsh-agent`、`dsh-scope` 与 `dsh-agent-loop`；`dsh-base` 刻意省略运行时诊断。自定义组合挂载注册表，并为任何其他已加载、且希望检查其约定的包添加配套入口。单独加载注册表不会安装任何检查：它自身不携带任何产品检查，因此从不挂载配套入口的组合不会观察到任何诊断行为。
+需要即時診斷的組合請使用註冊表。[`dsh-sdk-minimal`](../../bundle/sdk-minimal/README.zh.md) 掛載它及四個核心有狀態配套入口——`dsh-session`、`dsh-agent`、`dsh-scope` 與 `dsh-agent-loop`；`dsh-base` 刻意省略執行時診斷。自定義組合掛載註冊表，併為任何其他已載入、且希望檢查其約定的包新增配套入口。單獨載入註冊表不會安裝任何檢查：它自身不攜帶任何產品檢查，因此從不掛載配套入口的組合不會觀察到任何診斷行為。
 
-### 启用检查与选择包
+### 啟用檢查與選擇包
 
-注册表默认启用，并在没有过滤器的情况下检查每个已注册的包。用 `enabled` 作全局开关，用 `package_allowlist` 只接纳指定包，用 `package_blocklist` 在 allowlist 匹配之后排除包——blocklist 匹配优先于 allowlist 匹配。模式是区分大小写的 JavaScript 正则表达式源（除非自带 `^` 与 `$`，否则不锚定）；无效、空白或重复的条目会使服务启动失败，而不是被跳过。
+註冊表預設啟用，並在沒有過濾器的情況下檢查每個已註冊的包。用 `enabled` 作全域開關，用 `package_allowlist` 只接納指定包，用 `package_blocklist` 在 allowlist 匹配之後排除包——blocklist 匹配優先於 allowlist 匹配。模式是區分大小寫的 JavaScript 正規表示式源（除非自帶 `^` 與 `$`，否則不錨定）；無效、空白或重複的條目會使服務啟動失敗，而不是被跳過。
 
 ```yaml
 - name: '@deepseek-ai/dsh-invariants'
@@ -43,36 +43,36 @@ kind: "package-reference"
       - '^@deepseek-ai/dsh-'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `enabled` | `true` | 所有已注册检查的全局开关 |
-| `package_allowlist` | `[]` | 接纳包名的正则源；为空则全部接纳 |
-| `package_blocklist` | `[]` | 在 allowlist 匹配之后排除包名的正则源 |
+| `enabled` | `true` | 所有已註冊檢查的全域開關 |
+| `package_allowlist` | `[]` | 接納包名的正則源；為空則全部接納 |
+| `package_blocklist` | `[]` | 在 allowlist 匹配之後排除包名的正則源 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-invariants)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-invariants)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 运行哪些检查
+### 執行哪些檢查
 
-每个配套入口保护其包拥有的关系，且只为可观察的事件或可变数据关系安装检查——绝不针对服务或方法是否存在。已发布的可执行配套入口覆盖：
+每個配套入口保護其包擁有的關係，且只為可觀察的事件或可變資料關係安裝檢查——絕不針對服務或方法是否存在。已釋出的可執行配套入口覆蓋：
 
-| 配套入口 | 检查 |
+| 配套入口 | 檢查 |
 |---|---|
-| `dsh-session`、`dsh-agent`、`dsh-scope`、`dsh-agent-loop` | 会话日志包含关系与调用/结果跟踪、agent 状态转换、经过作用域过滤的分发主体、loop 所构建请求的重建 |
-| `dsh-llm`、`dsh-llm-retry`、`dsh-tools`、`dsh-system-prompt` | LLM（大语言模型）流语法、重试失败形状、工具流水线阶段配对与冻结结果、提示词组装章节名 |
-| `dsh-compaction`、`dsh-hook-protocol`、`dsh-sandbox-policy` | 压缩（compaction）流配对、钩子调用/结果配对、沙箱 mode 值 |
-| `dsh-fs`、`dsh-subagent`、`dsh-workflow`、`dsh-tool-workflow` | 文件系统事件身份、subagent 提供方与开始/结束配对、工作流生命周期身份、工作流记录形状 |
-| `dsh-goal`、`dsh-goal-round-driver` | 持久 goal 流折叠与重建的继续提示词 |
-| `dsh-permission-presets`、`dsh-user-approval`、`dsh-commands` | preset 引用指向活动 preset、审批询问/决定配对、命令运行/完成配对 |
-| `dsh-jobs`、`dsh-tool-todo`、`dsh-time-context` | 任务快照字段关系、整表 todo 形状、持久时钟读数 |
-| `dsh-credentials`、`dsh-settings`、`dsh-storage-domain`、`dsh-workspace` | 提交事件对照活动服务或内存状态、实体缓存镜像 |
-| `dsh-agent-preset-registry`、`dsh-session-title`、`dsh-plan-mode`、`dsh-schedule` | preset 挂载位置、标题来源引用、plan-mode 载荷、schedule 流 |
-| `dsh-client-hmr`、`dsh-client-modules`、`dsh-client-runtime` | 浏览器/node 侧 stat-watcher 生命周期、启动入口图、slot 变更版本化 |
+| `dsh-session`、`dsh-agent`、`dsh-scope`、`dsh-agent-loop` | 工作階段日誌包含關係與呼叫/結果跟蹤、agent 狀態轉換、經過作用域過濾的分發主體、loop 所建置請求的重建 |
+| `dsh-llm`、`dsh-llm-retry`、`dsh-tools`、`dsh-system-prompt` | LLM（大語言模型）流語法、重試失敗形狀、工具流水線階段配對與凍結結果、提示片語裝章節名 |
+| `dsh-compaction`、`dsh-hook-protocol`、`dsh-sandbox-policy` | 壓縮（compaction）流配對、掛鉤呼叫/結果配對、沙箱 mode 值 |
+| `dsh-fs`、`dsh-subagent`、`dsh-workflow`、`dsh-tool-workflow` | 檔案系統事件身份、subagent 提供者與開始/結束配對、工作流生命週期身份、工作流記錄形狀 |
+| `dsh-goal`、`dsh-goal-round-driver` | 持久 goal 流摺疊與重建的繼續提示詞 |
+| `dsh-permission-presets`、`dsh-user-approval`、`dsh-commands` | preset 引用指向活動 preset、審批詢問/決定配對、命令執行/完成配對 |
+| `dsh-jobs`、`dsh-tool-todo`、`dsh-time-context` | 任務快照欄位關係、整表 todo 形狀、持久時鐘讀數 |
+| `dsh-credentials`、`dsh-settings`、`dsh-storage-domain`、`dsh-workspace` | 提交事件對照活動服務或記憶體狀態、實體快取映像 |
+| `dsh-agent-preset-registry`、`dsh-session-title`、`dsh-plan-mode`、`dsh-schedule` | preset 掛載位置、標題來源引用、plan-mode 載荷、schedule 流 |
+| `dsh-client-hmr`、`dsh-client-modules`、`dsh-client-runtime` | 瀏覽器/node 側 stat-watcher 生命週期、啟動入口圖、slot 變更版本化 |
 
-其余工作区包省略配套入口，并在各自 README 中说明包级原因。
+其餘工作區包省略配套入口，並在各自 README 中說明包級原因。
 
-### 向自定义组合添加配套入口
+### 向自定義組合新增配套入口
 
-配套入口就是挂载在注册表旁的普通插件。它声明所需的服务，并以其包的精确 npm 名称注册；注册表会先完成其设置再完成注册。
+配套入口就是掛載在註冊表旁的普通外掛。它宣告所需的服務，並以其包的精確 npm 名稱註冊；註冊表會先完成其設定再完成註冊。
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -85,81 +85,81 @@ ctx.plugin(InvariantRegistry, { enabled: true })
 ctx.plugin(SessionInvariant)
 ```
 
-### 检查失败时
+### 檢查失敗時
 
-违规会从报告它的上下文抛出 `InvariantError`：它携带稳定的 `INVARIANT` 代码、所属包的完整 npm `packageName`，以及以 `invariant violated by "<package>": …` 开头的消息。失败因此可以归因到某个包，而注册表无需导入任何产品代码。installer 本身失败的配套入口会被释放，其注册会回滚，因此损坏的检查不会遗留部分监听器。
+違規會從報告它的上下文丟擲 `InvariantError`：它攜帶穩定的 `INVARIANT` 程式碼、所屬包的完整 npm `packageName`，以及以 `invariant violated by "<package>": …` 開頭的訊息。失敗因此可以歸因到某個包，而註冊表無需匯入任何產品程式碼。installer 本身失敗的配套入口會被釋放，其註冊會復原，因此損壞的檢查不會遺留部分監聽器。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释注册表背后的设计；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋註冊表背後的設計；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-- **与产品无关的注册表。** 服务不导入任何 session、agent、scope 或 agent-loop 包，也不包含它们的检查；配套入口把检查放在其归属者旁边。
-- **真实关系，而非人为断言。** 配套入口只检查其包拥有的事件流或可变数据关系；确认方法、插件名、注入或固定纯函数结果是类型、加载或单元测试关注点，绝不是运行时不变量。
-- **注册保留归属。** 即使过滤器让 installer 保持非活动，包名也会被保留，因此两个插件永远不会静默认领同一个名字。
-- **配套入口接线由机械规则强制。** `pnpm run verify-package-invariants` 拒绝空 installer、省略或忽略 reporter 的 installer、错误注册名、不完整的发布接线，以及省略配套入口后残留的接线（[省略配套入口笔记](../../../.agents/notes/implemented/simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)）。
+- **與產品無關的註冊表。** 服務不匯入任何 session、agent、scope 或 agent-loop 包，也不包含它們的檢查；配套入口把檢查放在其歸屬者旁邊。
+- **真實關係，而非人為斷言。** 配套入口只檢查其包擁有的事件流或可變資料關係；確認方法、外掛名、注入或固定純函式結果是型別、載入或單元測試關注點，絕不是執行時不變數。
+- **註冊保留歸屬。** 即使過濾器讓 installer 保持非活動，包名也會被保留，因此兩個外掛永遠不會靜預設領同一個名字。
+- **配套入口接線由機械規則強制。** `pnpm run verify-package-invariants` 拒絕空 installer、省略或忽略 reporter 的 installer、錯誤註冊名、不完整的釋出接線，以及省略配套入口後殘留的接線（[省略配套入口筆記](../../../.agents/notes/implemented/simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)）。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`Config` schema、`InvariantRegistry` 服务、选择、注册、`InvariantError` |
-| — | 不发布运行时不变量配套入口；注册归属与子级生命周期本身就是服务的变更边界；由同一注册表观察它们只会重复其实现。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`Config` schema、`InvariantRegistry` 服務、選擇、註冊、`InvariantError` |
+| — | 不釋出執行時不變數配套入口；註冊歸屬與子級生命週期本身就是服務的變更邊界；由同一註冊表觀察它們只會重複其實作。 |
 
-### 选择与注册生命周期
+### 選擇與註冊生命週期
 
-`register(packageName, installer)` 保留完整 npm 名称并返回作用域化 disposer。启用的 installer 在专用子 fiber 中运行；`installer.inject` 声明该 fiber 可访问的服务，同步或异步完成都会在注册成功前被 join。失败会释放子级并原子地收回保留。服务拥有每个注册 fiber，返回的 disposer 同时属于配套 fiber，因此卸载任一侧都会移除监听器、跟踪状态与保留——配套入口可以重新加载并再次注册同一名称而不保留旧状态。由会话支撑的配套入口从持久事件重建 baseline；仅实时配套入口观察重新加载后开始的操作。
+`register(packageName, installer)` 保留完整 npm 名稱並返回作用域化 disposer。啟用的 installer 在專用子 fiber 中執行；`installer.inject` 宣告該 fiber 可存取的服務，同步或非同步完成都會在註冊成功前被 join。失敗會釋放子級並原子地收回保留。服務擁有每個註冊 fiber，返回的 disposer 同時屬於配套 fiber，因此解除安裝任一側都會移除監聽器、跟蹤狀態與保留——配套入口可以重新載入並再次註冊同一名稱而不保留舊狀態。由工作階段支撐的配套入口從持久事件重建 baseline；僅即時配套入口觀察重新載入後開始的操作。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从生成的服务参考逐步进入决策证据与组地图。
+當包級約定不夠用時閱讀以下頁面。它們從生成的服務參考逐步進入決策證據與組地圖。
 
-- [运行时不变量子系统](../../../docs/subsystems/invariants.zh.md)——`Config`、installer、服务与配套入口约定的生成参考。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-invariants)——每个受支持配置字段及其源声明。
-- [运行时不变量约定 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-19-package-invariant-runtime-contracts.zh.md)——运行时不变量可以断言什么，以及强制配套入口接线的机械门禁。
-- [runtime-diagnostics 组地图](../../README.zh.md)——相邻的诊断包。
+- [執行時不變數子系統](../../../docs/subsystems/invariants.zh.md)——`Config`、installer、服務與配套入口約定的生成參考。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-invariants)——每個受支援設定欄位及其源宣告。
+- [執行時不變數約定 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-19-package-invariant-runtime-contracts.zh.md)——執行時不變數可以斷言什麼，以及強制配套入口接線的機械門禁。
+- [runtime-diagnostics 組地圖](../../README.zh.md)——相鄰的診斷包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。作为观察者，本包验证请求但从不改写其上下文。
+無。作為觀察者，本包驗證請求但從不改寫其上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-检查只观察已组装的请求与持久状态，不修改请求内容，因此提供方缓存复用与底层组合产生的结果完全一致。
+檢查只觀察已組裝的請求與持久狀態，不修改請求內容，因此提供者快取複用與底層組合產生的結果完全一致。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明注册表何时不合适或需要特别运维。它们是当前包约束，不是任务积压。
+這些限制說明註冊表何時不合適或需要特別運維。它們是目前包約束，不是任務積壓。
 
-- **过滤器在服务生命周期内固定**——`enabled`、`package_allowlist` 与 `package_blocklist` 在启动时编译一次；更改它们需要执行 Cordis 插件重新加载。
-- **仅实时配套入口会遗漏重载前的操作**——只观察实时操作的配套入口无法重建自身重新加载前开始的操作；由会话支撑的配套入口从持久事件重建 baseline。
-- **请求重建只覆盖 loop 构建的请求**——`dsh-agent-loop` 配套入口只重建 loop 显式构建的请求；直接一次性 LLM 调用即使由调用方冻结或附加会话 id，仍不在此约定内。
-- **没有配套入口就没有检查**——注册表自身不携带产品检查；只挂载服务的组合观察不到任何行为。
+- **過濾器在服務生命週期內固定**——`enabled`、`package_allowlist` 與 `package_blocklist` 在啟動時編譯一次；更改它們需要執行 Cordis 外掛重新載入。
+- **僅即時配套入口會遺漏過載前的操作**——只觀察即時操作的配套入口無法重建自身重新載入前開始的操作；由工作階段支撐的配套入口從持久事件重建 baseline。
+- **請求重建只覆蓋 loop 建置的請求**——`dsh-agent-loop` 配套入口只重建 loop 顯式建置的請求；直接一次性 LLM 呼叫即使由呼叫方凍結或附加工作階段 id，仍不在此約定內。
+- **沒有配套入口就沒有檢查**——註冊表自身不攜帶產品檢查；只掛載服務的組合觀察不到任何行為。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

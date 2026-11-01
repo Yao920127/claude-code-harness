@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/README.md
 /:
   en: 10d173d8956e12a0
-  zh: 3c32dcdb66727fed
+  zh: bb4143d35a2ce7f4
 /persistence-type-change-records:
   en: 9054f01380aa9207
-  zh: 10e27fb51600cd08
+  zh: 7c98ee4c7957104f
 /persistence-type-change-records/summary:
   en: 272d85bc8ddda7b6
-  zh: 01614508fc8f332e
+  zh: 5a31114d0bb105d1
 /persistence-type-change-records/table-of-contents:
   en: 1ba6efaa0b5d6e47
-  zh: 6e216391ad24c541
+  zh: f7960052fcdb3f4d
 /persistence-type-change-records/files-and-ownership:
   en: 6cd0f79a9455bdf2
-  zh: a5978b7834c0802b
+  zh: 8ef72fba500964cf
 /persistence-type-change-records/compatibility-rules:
   en: 7d5ce8c14e387922
-  zh: 9106c78283ad932c
+  zh: 34aefa90472ecbc4
 /persistence-type-change-records/history-and-limitations:
   en: 10a426d36c41548b
-  zh: ef03b693d9d9be26
+  zh: a4091dfa55acfd2a
 /persistence-type-change-records/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

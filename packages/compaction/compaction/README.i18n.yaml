@@ -4,82 +4,82 @@
 #   pnpm run verify-translation-pairing --write packages/compaction/compaction/README.md
 /:
   en: 5c47c9629036f119
-  zh: 7730d7468a38b38d
+  zh: a8eb2ed7122cc301
 /deepseek-ai-dsh-compaction:
   en: bc4cc254f61e84cb
   zh: d08be13940dd3779
 /deepseek-ai-dsh-compaction/summary:
   en: 8cde722f68374b24
-  zh: 11f5aff0d0ecd573
+  zh: e37d311ee96484ed
 /deepseek-ai-dsh-compaction/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-compaction/use-this-package:
   en: 7d1dad97626dbd2e
-  zh: 075fef4e1844ad12
+  zh: c565ca0d2f767847
 /deepseek-ai-dsh-compaction/use-this-package/when-to-choose-it:
   en: 19c39a458294769b
-  zh: fd7534068f49e2af
+  zh: 89ba139ff700535b
 /deepseek-ai-dsh-compaction/use-this-package/what-condensation-looks-like:
   en: 0abbee3a3b929a90
-  zh: 334736dffe93488d
+  zh: 47de45f54e21a0a3
 /deepseek-ai-dsh-compaction/use-this-package/turning-condensation-on:
   en: 8213b79c776f1a75
-  zh: 481c0dffd342426a
+  zh: ecde4b4364c43d1a
 /deepseek-ai-dsh-compaction/use-this-package/implementing-a-backend:
   en: 280b5fda4c9b9c8b
-  zh: 764ca79fccf98279
+  zh: 14a83ab18f8c1486
 /deepseek-ai-dsh-compaction/use-this-package/recognizing-condensed-history:
   en: 35502487f2850f05
-  zh: 333d2b86cc1d6eb0
+  zh: cf8ee424c9a4a85d
 /deepseek-ai-dsh-compaction/understand-the-implementation:
   en: 321c3dc665ea03ff
-  zh: f0fa408cde7b0454
+  zh: cb78abe8f40bcae6
 /deepseek-ai-dsh-compaction/understand-the-implementation/design-philosophy:
   en: 83b841c2263c3661
-  zh: 2d75dba71717f681
+  zh: 742a34cc628eed51
 /deepseek-ai-dsh-compaction/understand-the-implementation/service-api:
   en: d742d41c7eb5d406
-  zh: 6ff26c23eba5dd59
+  zh: 5140fb4c555ecab1
 /deepseek-ai-dsh-compaction/understand-the-implementation/manual-failure-taxonomy:
   en: 81449c88ba52f445
-  zh: 2cdcce236bfbf284
+  zh: 628b09f5796e8331
 /deepseek-ai-dsh-compaction/understand-the-implementation/tool-pairing-boundaries:
   en: 15dad68a04d6c86b
-  zh: 3b95acf1b7e503bf
+  zh: 2172cc133cf50ae2
 /deepseek-ai-dsh-compaction/understand-the-implementation/the-surface-contract:
   en: 28980d8259e59700
-  zh: c452e0bb4b778824
+  zh: b5e1a4db95dad4c2
 /deepseek-ai-dsh-compaction/understand-the-implementation/source-map:
   en: 121139cf1878d7cf
-  zh: f8f9d8d3eb9866b5
+  zh: 28ee0267f2c00e21
 /deepseek-ai-dsh-compaction/understand-the-implementation/locking-and-serialization:
   en: 68caa51bed28bada
-  zh: 3f8261f9dcba95ed
+  zh: e21e0e3b7b5d6027
 /deepseek-ai-dsh-compaction/understand-the-implementation/events:
   en: dc5faf71b27cc340
-  zh: 065f8339009c1a3a
+  zh: 81e78424fc1632cd
 /deepseek-ai-dsh-compaction/further-exploration:
   en: fc5c182bc45e45cf
-  zh: eb1ac9900b6e8fe2
+  zh: 46dabfb2dfd47dbe
 /deepseek-ai-dsh-compaction/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-compaction/model-experience/conversation-history-when-a-backend-is-invoked:
   en: 94de97ed1e85db85
-  zh: c8e37d8050609e63
+  zh: 93119e475b008828
 /deepseek-ai-dsh-compaction/model-experience/conversation-history-when-a-backend-is-invoked/what-the-model-sees:
   en: 3c4875a13da17814
-  zh: 9b257950a9e2c7c1
+  zh: 973ef05f876fd97f
 /deepseek-ai-dsh-compaction/model-experience/conversation-history-when-a-backend-is-invoked/token-effect:
   en: be91f4a4bbb9338b
-  zh: 2b5de31d4d7caff1
+  zh: 8e6f337bcc26e15e
 /deepseek-ai-dsh-compaction/model-experience/conversation-history-when-a-backend-is-invoked/kv-cache-effect:
   en: 40ba838a2309c44a
-  zh: c609fc1587a0d666
+  zh: 7f58d83784c01db3
 /deepseek-ai-dsh-compaction/known-limitations-and-deferred-work:
   en: fee9ba06d3e5f35c
-  zh: 2bb5241e2447d15d
+  zh: 81641ca0f6d61c44
 /deepseek-ai-dsh-compaction/known-limitations-and-deferred-work/dev-note:
   en: 270e23ae6414aff0
-  zh: c6d219b8a547dbca
+  zh: a1b561ccc861bf98

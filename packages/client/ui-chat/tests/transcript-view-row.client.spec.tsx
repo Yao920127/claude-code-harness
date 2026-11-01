@@ -80,18 +80,18 @@ describe('TranscriptViewRow', () => {
 
   it('shows all four work-detail values in Chinese', () => {
     const b = mount('compact', zh)
-    expect(screen.getByText('工作步骤展示')).toBeDefined()
-    expect(screen.getByText('选择希望看到多少工具调用细节')).toBeDefined()
-    fireEvent.click(screen.getByRole('button', { name: '简洁' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: '标准' }))
+    expect(screen.getByText('工作步驟展示')).toBeDefined()
+    expect(screen.getByText('選擇希望看到多少工具呼叫細節')).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: '簡潔' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '標準' }))
     expect(b.setTranscriptView).toHaveBeenLastCalledWith('standard')
-    fireEvent.click(screen.getByRole('button', { name: '标准' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: '详细' }))
+    fireEvent.click(screen.getByRole('button', { name: '標準' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '詳細' }))
     expect(b.setTranscriptView).toHaveBeenLastCalledWith('detailed')
-    fireEvent.click(screen.getByRole('button', { name: '详细' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: '完全展开' }))
+    fireEvent.click(screen.getByRole('button', { name: '詳細' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: '完全展開' }))
     expect(b.setTranscriptView).toHaveBeenLastCalledWith('verbose')
-    expect(screen.getByRole('button', { name: '完全展开' })).toBeDefined()
+    expect(screen.getByRole('button', { name: '完全展開' })).toBeDefined()
   })
 
   it('returns focus before publishing a mode change without refocusing after the menu closes', async () => {
@@ -141,7 +141,7 @@ describe('LinkOpeningRow', () => {
 
   it.each([
     [en, 'Open chat links in', 'Choose where to open web links', 'In-App Sidebar', 'Default Browser'],
-    [zh, '网页链接默认打开方式', '对话中网页链接的打开位置', '应用内侧边栏', '默认浏览器'],
+    [zh, '網頁連結預設開啟方式', '對話中網頁連結的開啟位置', '應用內側邊欄', '預設瀏覽器'],
   ] as const)('selects either destination using localized labels (%s)', (dictionary, title, description, sidebar, newTab) => {
     const b = mount('compact', dictionary)
     const source = createSnapshotStore<LinkOpening>('sidebar')

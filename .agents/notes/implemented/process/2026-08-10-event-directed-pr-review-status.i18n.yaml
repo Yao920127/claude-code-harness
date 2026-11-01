@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-10-event-directed-pr-review-status.md
 /agent-note-event-directed-pr-review-status-commands:
   en: 936b85c184551acf
-  zh: faf32b3209539114
+  zh: 72aad98ae8bc4b53
 /agent-note-event-directed-pr-review-status-commands/problem:
   en: 3e00a9cb6c0e53ec
-  zh: 1bd27ceea8a424ce
+  zh: ef949f0b80f3935a
 /agent-note-event-directed-pr-review-status-commands/decision:
   en: 3b661de4e6fbf401
-  zh: 2fb7f7adb4f846e4
+  zh: a033a4bd432a9932
 /agent-note-event-directed-pr-review-status-commands/verification:
   en: 46301d11d2f1c8df
-  zh: daa44a617912c315
+  zh: 4cf5721fa441d0cf
 /agent-note-event-directed-pr-review-status-commands/alternatives-considered:
   en: 8b5ec4d7fc09a9ab
-  zh: d72ebe462bb2e9d2
+  zh: 0772cabc382cee19
 /agent-note-event-directed-pr-review-status-commands/consequences:
   en: e3d39dca9122531b
-  zh: 262098573f196b93
+  zh: f686d88ca60af14a

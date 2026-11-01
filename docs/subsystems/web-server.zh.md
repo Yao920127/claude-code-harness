@@ -1,10 +1,10 @@
-# HTTP 服务器
+# HTTP 伺服器
 
 [English](web-server.md) | 中文
 
-[dsh-host-webserver](../../packages/host/webserver) 是 GUI Host 的浏览器 HTTP 载体：它是一个提供 `ctx.webServer` 的 `node:http` 插件，包含具名路由注册表、可选的 gzip 响应压缩、index.html 转换回调，以及一个可由插件认领的回退处理器。它不属于 agent loop（智能体循环），也不是能力 seam；它不了解任何 harness 概念。其他插件负责注册所有功能路由，包括 `/api` 桥接、插件 bundle 和 HMR（热模块替换）事件流（[分层说明](../../.agents/notes/implemented/architecture/2026-07-24-web-config-tree-boot-and-transport-layering.zh.md)）。该服务器只服务浏览器：Electron 通过 `file://` 加载已构建文件，并经 IPC 桥接发送 fetch 请求，不使用本服务器。
+[dsh-host-webserver](../../packages/host/webserver) 是 GUI Host 的瀏覽器 HTTP 載體：它是一個提供 `ctx.webServer` 的 `node:http` 外掛，包含具名路由註冊表、可選的 gzip 回應壓縮、index.html 轉換回呼，以及一個可由外掛認領的退回處理器。它不屬於 agent loop（智慧代理迴圈），也不是能力 seam；它不瞭解任何 harness 概念。其他外掛負責註冊所有功能路由，包括 `/api` 橋接、外掛 bundle 和 HMR（熱模組替換）事件流（[分層說明](../../.agents/notes/implemented/architecture/2026-07-24-web-config-tree-boot-and-transport-layering.zh.md)）。該伺服器只服務瀏覽器：Electron 透過 `file://` 載入已建置檔案，並經 IPC 橋接傳送 fetch 請求，不使用本伺服器。
 
-源码：[`packages/host/webserver/src/index.ts`](../../packages/host/webserver/src/index.ts)
+原始碼：[`packages/host/webserver/src/index.ts`](../../packages/host/webserver/src/index.ts)
 
 ## 路由
 
@@ -24,9 +24,9 @@ interface WebRoute {
 }
 ```
 
-匹配顺序固定：先查 exact 表，再取最长匹配前缀，最后落到已注册的回退。注册顺序不携带任何面向请求的语义：具名路由在组合上互不相交，任何未被具名路由认领的请求都由回退席位应答；席位只有一个所有者，第二次注册会抛出异常。发布的 Web 组合用 [`dsh-host-frontend-static`](../../packages/host/frontend-static/src/index.ts) 认领席位，即遵循固定语义的 SPA dist 服务器：Connection 在读取 dist 根目录和配置 index 的 HTML 前完成认证；非 index 资产保持公开；非 GET/HEAD 返回 405，越出 dist 根目录的遍历返回 403，现有文件直接提供，缺失或不是文件的目标返回空的 404，未知扩展名按 octet-stream 发送。
+匹配順序固定：先查 exact 表，再取最長匹配字首，最後落到已註冊的退回。註冊順序不攜帶任何面向請求的語義：具名路由在組合上互不相交，任何未被具名路由認領的請求都由退回席位應答；席位只有一個所有者，第二次註冊會丟擲異常。釋出的 Web 組合用 [`dsh-host-frontend-static`](../../packages/host/frontend-static/src/index.ts) 認領席位，即遵循固定語義的 SPA dist 伺服器：Connection 在讀取 dist 根目錄和設定 index 的 HTML 前完成認證；非 index 資產保持公開；非 GET/HEAD 返回 405，越出 dist 根目錄的遍歷返回 403，現有檔案直接提供，缺失或不是檔案的目標返回空的 404，未知副檔名按 octet-stream 傳送。
 
-## 配置
+## 設定
 
 ```ts type-equiv
 /** Web server listen and response-compression config. */
@@ -44,13 +44,13 @@ interface Config {
 }
 ```
 
-`host` 只接受 `127.0.0.1`（默认姿态）和 `0.0.0.0`（刻意的网络暴露）。载体本身不拥有 TLS、认证或 Origin 策略，因此绑定到非回环地址会暴露服务器，除非组合层提供这些控制。`compression` 默认为 `none`；随附的 Web 组合选择 gzip level 1 和 1024 字节阈值。随附的 `dsh web` 命令选择 loopback 并拒绝 `--host 0.0.0.0`；其 Connection 插件为每个 Host API route 与 stream 提供 Host/Origin 校验和浏览器会话认证。其他组合自行拥有绑定与路由认证策略。dist 位置是认领席位的前端插件的组装事实。
+`host` 只接受 `127.0.0.1`（預設姿態）和 `0.0.0.0`（刻意的網路暴露）。載體本身不擁有 TLS、認證或 Origin 策略，因此繫結到非迴環地址會暴露伺服器，除非組合層提供這些控制。`compression` 預設為 `none`；隨附的 Web 組合選擇 gzip level 1 和 1024 位元組閾值。隨附的 `dsh web` 命令選擇 loopback 並拒絕 `--host 0.0.0.0`；其 Connection 外掛為每個 Host API route 與 stream 提供 Host/Origin 總和檢查碼瀏覽器工作階段認證。其他組合自行擁有繫結與路由認證策略。dist 位置是認領席位的前端外掛的組裝事實。
 
-## 服务
+## 服務
 
-`WebServer`（`ctx.webServer`）在激活时立即监听；监听失败（EADDRINUSE 等）会使初始化被拒绝，启动进程会报告失败的 fiber。`register(route)` 添加一条具名路由并返回其 disposer；重复的 `(kind, path)` 抛出异常，因为路由模式是组合层约定，冲突即配置错误。Gzip 在服务器内部包装符合条件且基于 socket 的响应，因此 route handler 继续直接持有 `ServerResponse`，服务也不新增响应写出 API。已有内容编码、`Cache-Control: no-transform`、范围响应、SSE、ZIP 与打包后的 `.gz` Worker 镜像均保持 identity 响应。`collectIndexInjections()` 经一次 `webserver/index-inject` emit 收集结构化 `IndexInjection` 行，`renderIndex(html)` 把它们渲染进成功的根路径和配置 index 响应，随后再按注册顺序应用原始的 `tapIndex(transform)` 逃生口转换；[dsh-client-modules](../../packages/client/modules) 以启动 manifest（元数据清单）行回应该事件。`port` 读取监听端口，包括 `config.port` 为 0 时操作系统分配的端口。
+`WebServer`（`ctx.webServer`）在啟用時立即監聽；監聽失敗（EADDRINUSE 等）會使初始化被拒絕，啟動程序會報告失敗的 fiber。`register(route)` 新增一條具名路由並返回其 disposer；重複的 `(kind, path)` 丟擲異常，因為路由模式是組合層約定，衝突即設定錯誤。Gzip 在伺服器內部包裝符合條件且基於 socket 的回應，因此 route handler 繼續直接持有 `ServerResponse`，服務也不新增回應寫出 API。已有內容編碼、`Cache-Control: no-transform`、範圍回應、SSE、ZIP 與打包後的 `.gz` Worker 映像均保持 identity 回應。`collectIndexInjections()` 經一次 `webserver/index-inject` emit 收集結構化 `IndexInjection` 行，`renderIndex(html)` 把它們渲染進成功的根路徑和設定 index 回應，隨後再按註冊順序應用原始的 `tapIndex(transform)` 逃生口轉換；[dsh-client-modules](../../packages/client/modules) 以啟動 manifest（中繼資料清單）行回應該事件。`port` 讀取監聽埠，包括 `config.port` 為 0 時作業系統分配的埠。
 
-处理过程中抛出异常的请求（畸形的 % 转义撞上 `decodeURIComponent`、客户端在请求体中途断开）会记录为警告并应答 400（响应头已发出时则销毁 socket），绝不导致进程退出。dispose（资源释放）把 `close()` 与 `closeAllConnections()` 配对使用，因为处理器可能像 SSE（Server-Sent Events）那样保持响应打开，而这类连接永远不会自行结束；没有强制关闭，拆卸就会挂起。该包从不打印输出：URL 行归 shell 所有。逐包运维细节（含开发模式的 bundle 监视流水线）留在 [README](../../packages/host/webserver/README.zh.md) 中。
+處理過程中丟擲異常的請求（畸形的 % 轉義撞上 `decodeURIComponent`、用戶端在請求體中途斷開）會記錄為警告並應答 400（回應頭已發出時則銷燬 socket），絕不導致程序退出。dispose（資源釋放）把 `close()` 與 `closeAllConnections()` 配對使用，因為處理器可能像 SSE（Server-Sent Events）那樣保持回應開啟，而這類連線永遠不會自行結束；沒有強制關閉，拆卸就會掛起。該包從不列印輸出：URL 行歸 shell 所有。逐包運維細節（含開發模式的 bundle 監視流水線）留在 [README](../../packages/host/webserver/README.zh.md) 中。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

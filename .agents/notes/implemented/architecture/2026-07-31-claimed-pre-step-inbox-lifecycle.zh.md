@@ -1,43 +1,43 @@
-# Agent Note: 在单一 pre-step 决策前领取 inbox 输入
+# Agent Note: 在單一 pre-step 決策前領取 inbox 輸入
 
 Status: implemented
 
 [English](2026-07-31-claimed-pre-step-inbox-lifecycle.md) | 中文
 
-## 问题
+## 問題
 
-循环此前把一个步骤边界拆成提示词准备、提示词准入与串行步骤钩子。准入结果可以保留或丢弃已领取输入，实时队列事件还携带了与持久 inbox 状态重复的数据结构。插件不得不在修改 inbox、改写已提交批次与直接追加会话历史之间选择，而观察方无法依赖一套明确顺序。
+迴圈此前把一個步驟邊界拆成提示詞準備、提示詞准入與序列步驟掛鉤。准入結果可以保留或丟棄已領取輸入，即時佇列事件還攜帶了與持久 inbox 狀態重複的資料結構。外掛不得不在修改 inbox、改寫已提交批次與直接追加工作階段歷史之間選擇，而觀察方無法依賴一套明確順序。
 
-单次出现专属的 inbox 包装层也重复了每个 `UserMessage` 已有的标识。它把插入、编辑、领取、取消、重连投影与步骤进入合并成一套协议，但仅追加会话本就拥有持久队列投影。
+單次出現專屬的 inbox 包裝層也重複了每個 `UserMessage` 已有的標識。它把插入、編輯、領取、取消、重連投影與步驟進入合併成一套協定，但僅追加工作階段本就擁有持久佇列投影。
 
-## 决策
+## 決策
 
-每个拟议步骤之前，循环包内部的 `ReactLoopInbox` 会原子领取完整批次：全部 `next-step` 消息，以及轮次边界上的一条 `next-turn` 消息。在首次边界，循环会先提交 `turn/start`，使领取及其唯一一次 `agent/pre-step` 决策拥有持久轮次归属。领取会记录规范化、不带 outcome 的纯删除 `agent/inbox/spliced`，针对每条已领取消息发出一次 `agent/inbox/claimed { message, turn }`，并把独占批次返回给循环，由后者用 `{ turn, step, signal }` 等待 waterfall（瀑布式事件）。
+每個擬議步驟之前，迴圈包內部的 `ReactLoopInbox` 會原子領取完整批次：全部 `next-step` 訊息，以及輪次邊界上的一條 `next-turn` 訊息。在首次邊界，迴圈會先提交 `turn/start`，使領取及其唯一一次 `agent/pre-step` 決策擁有持久輪次歸屬。領取會記錄規範化、不帶 outcome 的純刪除 `agent/inbox/spliced`，針對每條已領取訊息發出一次 `agent/inbox/claimed { message, turn }`，並把獨佔批次返回給迴圈，由後者用 `{ turn, step, signal }` 等待 waterfall（瀑布式事件）。
 
-`PreStepDecision` 为 `{ kind: 'reject' } | { kind: 'enter'; messages: UserMessage[] }`。reject 不会打开步骤，会让已领取批次保持已删除，并将轮次关闭为 blocked，且不产生任何步骤事件。空的 enter、取消以及 `step/start` 前的失败同样会关闭一个边界平衡的无步骤轮次。enter 提供在 `step/start` 后以 `user/message` 追加的完整批次。包装 `next()` 的监听器会保留下游变更，除非有意替换，因此全部消息改写只在最终返回值中一次性结算。系统不再存在 `agent/prompt-prepare`、`agent/prompt-submit` 或 `agent/step` 扩展点。
+`PreStepDecision` 為 `{ kind: 'reject' } | { kind: 'enter'; messages: UserMessage[] }`。reject 不會開啟步驟，會讓已領取批次保持已刪除，並將輪次關閉為 blocked，且不產生任何步驟事件。空的 enter、取消以及 `step/start` 前的失敗同樣會關閉一個邊界平衡的無步驟輪次。enter 提供在 `step/start` 後以 `user/message` 追加的完整批次。包裝 `next()` 的監聽器會保留下游變更，除非有意替換，因此全部訊息改寫只在最終回傳值中一次性結算。系統不再存在 `agent/prompt-prepare`、`agent/prompt-submit` 或 `agent/step` 擴充功能點。
 
-持久 inbox 仍是两份通过 `MessageId` 寻址的 `UserMessage[]` 列表。`append`、`prepend` 与 `splice` 接受 target；`replace(messageId, newMessage)` 与 `remove(messageId)` 则在提交规范化 splice 前，通过 `MessageId` 跨两份列表定位待处理消息。替换可以改变标识，并先将旧消息作为 discarded 发布，再将新消息作为 inserted 发布。每次插入发出 `agent/inbox/inserted { message }`；普通删除记录 `outcome: 'canceled'` 并发出 `agent/inbox/discarded { message }`。领取记录不带 outcome 的纯删除，并由 `ReactLoopInbox` 发出 claimed 事件。这些实时事件不增加 placement、outcome 或批次字段。
+持久 inbox 仍是兩份透過 `MessageId` 定址的 `UserMessage[]` 列表。`append`、`prepend` 與 `splice` 接受 target；`replace(messageId, newMessage)` 與 `remove(messageId)` 則在提交規範化 splice 前，透過 `MessageId` 跨兩份列表定位待處理訊息。替換可以改變標識，並先將舊訊息作為 discarded 釋出，再將新訊息作為 inserted 釋出。每次插入發出 `agent/inbox/inserted { message }`；普通刪除記錄 `outcome: 'canceled'` 並行出 `agent/inbox/discarded { message }`。領取記錄不帶 outcome 的純刪除，並由 `ReactLoopInbox` 發出 claimed 事件。這些即時事件不增加 placement、outcome 或批次欄位。
 
-`Agent.inbox` 只暴露用于读取和变更待处理工作的结构化 `Inbox` 接口；仅供循环使用的 `hasPending` 与领取操作不在该公开接口上。dsh-agent-loop 只构造一个 `ReactLoopInbox`，同时用于结构化命令与驱动器操作。具体构造函数直接接收 `SessionProjectionRegistry`，而不是更宽泛的 Cordis `Context`。`AgentLoop` 在服务生命周期内持有标准投影注册，让没有 live Agent 时的冷 Inbox 读取仍然可用；`ReactLoopInbox` 只读取和变更该共享状态。
+`Agent.inbox` 只暴露用於讀取和變更待處理工作的結構化 `Inbox` 介面；僅供迴圈使用的 `hasPending` 與領取操作不在該公開介面上。dsh-agent-loop 只建構一個 `ReactLoopInbox`，同時用於結構化命令與驅動器操作。具體建構函式直接接收 `SessionProjectionRegistry`，而不是更寬泛的 Cordis `Context`。`AgentLoop` 在服務生命週期內持有標準投影註冊，讓沒有 live Agent 時的冷 Inbox 讀取仍然可用；`ReactLoopInbox` 只讀取和變更該共享狀態。
 
-两类事件接口服务不同消费方。跟踪单条消息的观察方使用 `agent/inbox/inserted`、`claimed` 与 `discarded`。`AgentLoop` 在持久 `agent/inbox/spliced` 流上贡献标准 `inbox` 投影；UI 编辑与移除通过 Inbox 变更方法处理，从而让同一投影记录所有变化。该投影重建持久历史时，会拒绝不安全或越界的坐标，以及跨两份列表重复的 `MessageId`，并报告出错事件的 seq。整体队列的 control 消费方使用通用投影变更流，直接读取完整的 Inbox 值。
+兩類事件介面服務不同消費方。跟蹤單條訊息的觀察方使用 `agent/inbox/inserted`、`claimed` 與 `discarded`。`AgentLoop` 在持久 `agent/inbox/spliced` 流上貢獻標準 `inbox` 投影；UI 編輯與移除透過 Inbox 變更方法處理，從而讓同一投影記錄所有變化。該投影重建持久歷史時，會拒絕不安全或越界的座標，以及跨兩份列表重複的 `MessageId`，並報告出錯事件的 seq。整體佇列的 control 消費方使用通用投影變更流，直接讀取完整的 Inbox 值。
 
-必须对当前步骤进行原子改写的插件从 `agent/pre-step` 返回消息。只需要稍后上下文的插件可以直接修改 `agent.inbox`。Workspace context 同时使用两条路径：异步文件系统投影会暂存一条可替换的 `next-step` 消息，而下一次进入步骤的 pre-step 会把该消息或新组合的基线折入最终批次，并移除仍待处理的副本。reject 会让该条目继续排队。
+必須對目前步驟進行原子改寫的外掛從 `agent/pre-step` 返回訊息。只需要稍後上下文的外掛可以直接修改 `agent.inbox`。Workspace context 同時使用兩條路徑：非同步檔案系統投影會暫存一條可替換的 `next-step` 訊息，而下一次進入步驟的 pre-step 會把該訊息或新組合的基線折入最終批次，並移除仍待處理的副本。reject 會讓該條目繼續排隊。
 
-已归档的[可寻址队列项决策](../../archived/feature/2026-07-29-addressable-queue-operations.md)描述了已被取代的单次出现包装层设计。`MessageId` 负责寻址，而 `AgentLoop` 把 `inbox` 作为持久 splice 上的标准会话投影贡献给投影注册表。通用投影传输层会将该折叠结果用于实时更新、历史尾页的重连基线和冷进程重启恢复，无需 live Agent 镜像。
+已歸檔的[可定址佇列項決策](../../archived/feature/2026-07-29-addressable-queue-operations.md)描述了已被取代的單次出現包裝層設計。`MessageId` 負責定址，而 `AgentLoop` 把 `inbox` 作為持久 splice 上的標準工作階段投影貢獻給投影註冊表。通用投影傳輸層會將該摺疊結果用於即時更新、歷史尾頁的重連基線和冷程序重新啟動恢復，無需 live Agent 映像。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**保留分离的 prepare 与 admit 钩子。** 这样准备阶段可以在领取前修改 inbox，准入阶段可以在领取后改写，但同一边界会出现两个顺序表面，取消归属也会变得模糊。
+**保留分離的 prepare 與 admit 掛鉤。** 這樣準備階段可以在領取前修改 inbox，准入階段可以在領取後改寫，但同一邊界會出現兩個順序表面，取消歸屬也會變得模糊。
 
-**reject 时把已领取批次重新入队。** 这看似保留重试行为，却会让否决隐式修改队列；若不为每个竞态加围栏，还会复制后续工作，并使 claim 无法成为原子所有权转移。
+**reject 時把已領取批次重新入隊。** 這看似保留重試行為，卻會讓否決隱式修改佇列；若不為每個競態加圍欄，還會複製後續工作，並使 claim 無法成為原子所有權轉移。
 
-**在每个实时事件上携带 placement 与 outcome。** 持久 splice 已经拥有这些事实。实时通知重复它们会建立可能漂移的第二份约定，而持有确切消息标识的消费方并不需要这些字段。
+**在每個即時事件上攜帶 placement 與 outcome。** 持久 splice 已經擁有這些事實。即時通知重複它們會建立可能漂移的第二份約定，而持有確切訊息標識的消費方並不需要這些欄位。
 
-## 验证
+## 驗證
 
-agent loop（智能体循环）覆盖固定先 `turn/start`、再领取、后 pre-step 的顺序、实时事件的确切载荷、边界平衡的无步骤 reject、最终批次改写、领取后插入的输入、监听器失败、取消，以及Agent 卸载后 Inbox 仍可读取，以及 AgentLoop 卸载时移除投影。Inbox 和消费方测试固定纯领取删除、普通删除的 canceled 结果、agent-instructions 的暂存、替换与同一步骤进入、plan/goal/钩子行为、UI 清理、压缩（compaction）、检查点、恢复后的持久投影、对非法持久坐标或跨列表重复标识的拒绝，以及 controller 早于投影注册表注册时仍使用折叠后队列值。只有当持久性不属于测试对象时，消费方领域测试才使用进程内 Inbox 桩；领取、持久投影、恢复、校验与实时通知测试通过生产 AgentLoop 测试 harness 创建 Agent，因此测试支持代码不会重新实现该投影。生成的事件与类型目录只公开新的 waterfall 与载荷。
+agent loop（智慧代理迴圈）覆蓋固定先 `turn/start`、再領取、後 pre-step 的順序、即時事件的確切載荷、邊界平衡的無步驟 reject、最終批次改寫、領取後插入的輸入、監聽器失敗、取消，以及Agent 解除安裝後 Inbox 仍可讀取，以及 AgentLoop 解除安裝時移除投影。Inbox 和消費方測試固定純領取刪除、普通刪除的 canceled 結果、agent-instructions 的暫存、替換與同一步驟進入、plan/goal/掛鉤行為、UI 清理、壓縮（compaction）、檢查點、恢復後的持久投影、對非法持久座標或跨列表重複標識的拒絕，以及 controller 早於投影註冊表註冊時仍使用摺疊後佇列值。只有當永續性不屬於測試物件時，消費方領域測試才使用程序內 Inbox 樁；領取、持久投影、恢復、驗證與即時通知測試透過生產 AgentLoop 測試 harness 建立 Agent，因此測試支援程式碼不會重新實作該投影。生成的事件與型別目錄只公開新的 waterfall 與載荷。
 
-## 后果
+## 後果
 
-循环在每个步骤前只有一个需等待的决策，对输入也只有一次所有权转移。已领取消息不会隐式返回 inbox；后续插入保持独立。实时事件与其他 inbox 通知保持对称，但不镜像持久元数据；插件可以显式选择精确的当前步骤改写，或普通的后续 inbox 投递。
+迴圈在每個步驟前只有一個需等待的決策，對輸入也只有一次所有權轉移。已領取訊息不會隱式返回 inbox；後續插入保持獨立。即時事件與其他 inbox 通知保持對稱，但不映像持久中繼資料；外掛可以顯式選擇精確的目前步驟改寫，或普通的後續 inbox 投遞。

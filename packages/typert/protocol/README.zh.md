@@ -1,5 +1,5 @@
 ---
-description: "共享的 Typert Remote 协议：业务包、生成产物、Host Gateway 与 Client API 使用的装饰器、wire 描述符、编解码器与提供方约定。"
+description: "共享的 Typert Remote 協定：業務包、生成產物、Host Gateway 與 Client API 使用的裝飾器、wire 描述符、編解碼器與提供者約定。"
 kind: "package-library"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-library"
 
 ## 概述
 
-借助 `dsh-typert-protocol`，业务包可以向 Remote 客户端暴露 Host 方法：用 `@Remote`（作用域接收者用 `@RemoteScope`）标记方法，把服务绑定到 wire 命名空间，并通过可合并扩展的协议映射把 Host 对象与作用域 Context 关联到 wire identity。生成产物、Host Gateway 与 Client API 消费同一套调用描述符、编解码器与提供方约定。调用持有的值把清理责任交给 Gateway，不另增引用计数。本包不注册任何 Cordis 服务，也不运行 TypeScript 分析。
+藉助 `dsh-typert-protocol`，業務包可以向 Remote 用戶端暴露 Host 方法：用 `@Remote`（作用域接收者用 `@RemoteScope`）標記方法，把服務繫結到 wire 名稱空間，並透過可合併擴充功能的協定對映把 Host 物件與作用域 Context 關聯到 wire identity。生成產物、Host Gateway 與 Client API 消費同一套呼叫描述符、編解碼器與提供者約定。呼叫持有的值把清理責任交給 Gateway，不另增引用計數。本包不註冊任何 Cordis 服務，也不執行 TypeScript 分析。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-本包供向 Remote 客户端暴露 Host 能力的业务包与装配维护者使用。它是一个声明库：标记方法、绑定服务，其余交给生成的流水线与 Gateway。
+本包供向 Remote 用戶端暴露 Host 能力的業務包與裝配維護者使用。它是一個宣告庫：標記方法、繫結服務，其餘交給生成的流水線與 Gateway。
 
 ### 暴露 Host 方法
 
-业务包用 `@Remote`（当接收者来自作用域 Context 时用 `@RemoteScope(key)`）标记一个公开实例方法，所属服务要么继承 `TypertRemoteService`，要么通过 `bindTypertRemote()` 声明 `typertRemote` 绑定：
+業務包用 `@Remote`（當接收者來自作用域 Context 時用 `@RemoteScope(key)`）標記一個公開實例方法，所屬服務要麼繼承 `TypertRemoteService`，要麼透過 `bindTypertRemote()` 宣告 `typertRemote` 繫結：
 
 ```text
 import { Remote, TypertRemoteService } from '@deepseek-ai/dsh-typert-protocol'
@@ -42,21 +42,21 @@ export class GoalService extends TypertRemoteService {
 }
 ```
 
-生成会把方法变为服务命名空间下的 wire 端点；Client 通过 `ctx.remote` 以类型化方法调用它（见 [API Gateway 参考](../../../docs/api-gateway.zh.md)）。方法把 `signal: AbortSignal` 声明为最后一个参数即可选择协作式取消——该信号是注入的，绝不会成为 JSON 参数或查找字段。
+生成會把方法變為服務名稱空間下的 wire 端點；Client 透過 `ctx.remote` 以型別化方法呼叫它（見 [API Gateway 參考](../../../docs/api-gateway.zh.md)）。方法把 `signal: AbortSignal` 宣告為最後一個參數即可選擇協作式取消——該訊號是注入的，絕不會成為 JSON 參數或查詢欄位。
 
-一元方法可以直接返回 `Uint8Array`，也可以将其放在嵌套对象、数组、元组、可选字段、联合类型和递归类型中。生成器提供可选的结果 codec `encode()` 和 `decode()`：编码仅访问类型可能包含字节的子树，解码则校验还原后的值；Client 声明在每个字节位置使用 `Uint8Array<ArrayBuffer>`，同时保留其他字段类型。纯 JSON 结果不经 Host 字节识别或 Client 解析直接传递。参数、事件与流条目仍仅支持 JSON；不支持运行时对象循环。
+一元方法可以直接返回 `Uint8Array`，也可以將其放在巢狀物件、陣列、元組、可選欄位、聯合型別和遞迴型別中。生成器提供可選的結果 codec `encode()` 和 `decode()`：編碼僅存取型別可能包含位元組的子樹，解碼則驗證還原後的值；Client 宣告在每個位元組位置使用 `Uint8Array<ArrayBuffer>`，同時保留其他欄位型別。純 JSON 結果不經 Host 位元組識別或 Client 解析直接傳遞。參數、事件與流條目仍僅支援 JSON；不支援執行時物件迴圈。
 
-流方法（`@Remote({ mode: 'stream' })`）返回 `Iterable`、`AsyncIterable` 或 `RemoteStream<Out, In>`。`In` 声明 Client 可以在同一条逻辑流上回送的项；方法通过 `this.ctx.invocation.uplink<In>()` 读取它们，描述符携带其 codec。`RemoteInvocation` 还给出接收服务 `service`、发起调用的 `peer`（连接层接纳的一个 `PeerScope`）与载体 `signal`；非 Remote 调用派生的 Context 上 `ctx.invocation` 为 `undefined`：树中第一个 `bindTypertRemote()` 绑定（每个 `TypertRemoteService` 构造函数都会建立一个）在根上注册该 accessor。生成的 Client 流方法返回 `RemoteStreamHandle<Out, In>`：在下行迭代之外提供 `send`、`end` 与 `dispose` 的句柄。上行项在 Host 逐项校验，因为它们来自浏览器；下行项是 Host 方法产出的值，原样透传。
+流方法（`@Remote({ mode: 'stream' })`）返回 `Iterable`、`AsyncIterable` 或 `RemoteStream<Out, In>`。`In` 宣告 Client 可以在同一條邏輯流上回送的項；方法透過 `this.ctx.invocation.uplink<In>()` 讀取它們，描述符攜帶其 codec。`RemoteInvocation` 還給出接收服務 `service`、發起呼叫的 `peer`（連線層接納的一個 `PeerScope`）與載體 `signal`；非 Remote 呼叫派生的 Context 上 `ctx.invocation` 為 `undefined`：樹中第一個 `bindTypertRemote()` 繫結（每個 `TypertRemoteService` 建構函式都會建立一個）在根上註冊該 accessor。生成的 Client 流方法返回 `RemoteStreamHandle<Out, In>`：在下行迭代之外提供 `send`、`end` 與 `dispose` 的控制代碼。上行項在 Host 逐項驗證，因為它們來自瀏覽器；下行項是 Host 方法產出的值，原樣直接傳遞。
 
-### 把 Host 对象与 Context 关联到 wire identity
+### 把 Host 物件與 Context 關聯到 wire identity
 
-复杂的 Host 对象不能直接跨 wire 传输。业务包通过可合并扩展的 `TypertLookupMap` 与 `TypertContextMap` 声明关联。Host Context 适配器拥有稳定 wire 声明，并把 wire identity 解析为活跃 Context。Client Context 适配器需要双向映射，因为作用域调用从 Client Context 发起，而转发的 Host 事件要在 Client 侧解析其显式 wire identity。Host 组合可以覆盖其同步或异步解析器。因策略原因拒绝解析的解析器会抛出带有自身错误码的 `RemoteError`，该码原样到达调用方。
+複雜的 Host 物件不能直接跨 wire 傳輸。業務包透過可合併擴充功能的 `TypertLookupMap` 與 `TypertContextMap` 宣告關聯。Host Context 介面卡擁有穩定 wire 宣告，並把 wire identity 解析為活躍 Context。Client Context 介面卡需要雙向對映，因為作用域呼叫從 Client Context 發起，而轉發的 Host 事件要在 Client 側解析其顯式 wire identity。Host 組合可以覆蓋其同步或非同步解析器。因策略原因拒絕解析的解析器會丟擲帶有自身錯誤碼的 `RemoteError`，該碼原樣到達呼叫方。
 
-Client Context 解析保持同步。`typertOwnedValue(value, release)` 把不抛异常、幂等的清理交给调用 owner；Gateway 在处理器和回复均结束后调用它。借用的 Context 不需要清理包装层。共享的 `TYPERT_OWNED_VALUE` symbol 与 `isTypertOwnedValue` 识别函数可跨独立打包的提供方与 Gateway 使用；包装层自身不会 retain 资源。
+Client Context 解析保持同步。`typertOwnedValue(value, release)` 把不拋異常、冪等的清理交給呼叫 owner；Gateway 在處理器和回覆均結束後呼叫它。借用的 Context 不需要清理包裝層。共享的 `TYPERT_OWNED_VALUE` symbol 與 `isTypertOwnedValue` 識別函式可跨獨立打包的提供者與 Gateway 使用；包裝層自身不會 retain 資源。
 
-### 报告与读取 Remote 失败
+### 報告與讀取 Remote 失敗
 
-所有 Remote 失败都由一个类承载：`RemoteError`，携带稳定的 `<domain>/<reason>` 码，以及按该码定型的 details。本包声明通用载体码（`gateway/bad-request`、`gateway/cancelled`、`gateway/internal`），并拥有 `RemoteErrorDetailsMap`——可合并扩展的码表，其他每个包都在自己的抛出点旁扩展它：
+所有 Remote 失敗都由一個類承載：`RemoteError`，攜帶穩定的 `<domain>/<reason>` 碼，以及按該碼定型的 details。本包宣告通用載體碼（`gateway/bad-request`、`gateway/cancelled`、`gateway/internal`），並擁有 `RemoteErrorDetailsMap`——可合併擴充功能的碼錶，其他每個包都在自己的丟擲點旁擴充功能它：
 
 ```text
 declare module '@deepseek-ai/dsh-typert-protocol' {
@@ -67,90 +67,90 @@ declare module '@deepseek-ai/dsh-typert-protocol' {
 throw new RemoteError('goal/not-found', `goal "${id}" does not exist`, { goalId: id })
 ```
 
-拥有方在失败点直接抛出；没有任何包再写错误类家族或出口映射函数。调用方按 `code` 判别——绝不用 `instanceof`——且 `code` 分支无需 cast 即收窄 `details`，因为 `RemoteFailure` 就是 `RemoteError` 实例按码判别的 union。需要识别跨模块或跨 realm 类副本传来的失败时，基础设施调用 `remoteErrorOf(value)`，它读结构标记而不是原型链。
+擁有方在失敗點直接丟擲；沒有任何包再寫錯誤類家族或出口對映函式。呼叫方按 `code` 判別——絕不用 `instanceof`——且 `code` 分支無需 cast 即收窄 `details`，因為 `RemoteFailure` 就是 `RemoteError` 實例按碼判別的 union。需要識別跨模組或跨 realm 類副本傳來的失敗時，基礎設施呼叫 `remoteErrorOf(value)`，它讀結構標記而不是原型鏈。
 
-### 在 Client 侧接收转发的 Host 事件
+### 在 Client 側接收轉發的 Host 事件
 
-Host 装配以转发给消费方的 Cordis 事件扩展 `TypertRemoteEventSelection`，从而收窄 `ctx.remote.$on` 的键集。`TypertForwardableEvent` 接受无作用域且返回 `void` 的通知，以及最后一个 `next()` 回调返回事件结果类型的异步作用域 waterfall（瀑布式事件）。`TypertClientEventListener` 从同一条 `Events` 成员派生 Client listener，并保留 signal、可选和只读字段、数组、回调与结果类型。`TypertClientRemote` 只公开 `$mount()` 与 `$on()`；事件传输仍由 Gateway 私有持有。
+Host 裝配以轉發給消費方的 Cordis 事件擴充功能 `TypertRemoteEventSelection`，從而收窄 `ctx.remote.$on` 的鍵集。`TypertForwardableEvent` 接受無作用域且返回 `void` 的通知，以及最後一個 `next()` 回呼返回事件結果型別的非同步作用域 waterfall（瀑布式事件）。`TypertClientEventListener` 從同一條 `Events` 成員派生 Client listener，並保留 signal、可選和只讀欄位、陣列、回呼與結果型別。`TypertClientRemote` 只公開 `$mount()` 與 `$on()`；事件傳輸仍由 Gateway 私有持有。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释声明如何保持与编译器无关，以及每个约定在哪里执行；编程模型已在[使用本包](#use-this-package)中说明。
+本節解釋宣告如何保持與編譯器無關，以及每個約定在哪裡執行；程式設計模型已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-本包把严格反射留在编译器中：装饰器初始化器把最小标记保存在 Service 原型上的带版本描述符中。描述符使用稳定的字符串属性名，因此协议包的另一个已安装副本也能读取同一组标记。完整的参数、结果、查找与 schema 反射是 Typert 构建流水线的职责，通过 `InvocationDescriptor` 交付。
+本包把嚴格反射留在編譯器中：裝飾器初始化器把最小標記儲存在 Service 原型上的帶版本描述符中。描述符使用穩定的字串屬性名，因此協定包的另一個已安裝副本也能讀取同一組標記。完整的參數、結果、查詢與 schema 反射是 Typert 建置流水線的職責，透過 `InvocationDescriptor` 交付。
 
-### Remote 标记
+### Remote 標記
 
-`@Remote` 与 `@RemoteScope` 调度一个初始化器，把方法名、可选导出名与调用模式追加到原型描述符；`remoteMethods(service)` 校验其版本，并返回与已存描述符分离、按声明顺序排列的快照，供 Gateway 的源码模式回退读取。标记要求名称为字符串的公开、非静态实例方法，同一方法上的冲突标记会被拒绝。
+`@Remote` 與 `@RemoteScope` 排程一個初始化器，把方法名、可選匯出名與呼叫模式追加到原型描述符；`remoteMethods(service)` 驗證其版本，並返回與已存描述符分離、按宣告順序排列的快照，供 Gateway 的原始碼模式退回讀取。標記要求名稱為字串的公開、非靜態實例方法，同一方法上的衝突標記會被拒絕。
 
-### 协议映射与描述符
+### 協定對映與描述符
 
-可合并扩展的协议映射在类型系统中保留静态关联，运行时提供方则向 `ctx.typert` 注册解析；映射的名称与形状见 [`src/types.ts`](src/types.ts)。`InvocationDescriptor` 是注册表、Gateway 与 Client Remote 共同消费的共享运行时形式，涵盖直接与 Context 接收者、JSON 与查找参数、作用域投影、上行编解码器、取消与结果编解码器。
+可合併擴充功能的協定對映在型別系統中保留靜態關聯，執行時提供者則向 `ctx.typert` 註冊解析；對映的名稱與形狀見 [`src/types.ts`](src/types.ts)。`InvocationDescriptor` 是註冊表、Gateway 與 Client Remote 共同消費的共享執行時形式，涵蓋直接與 Context 接收者、JSON 與查詢參數、作用域投影、上行編解碼器、取消與結果編解碼器。
 
-### Wire 标识文法
+### Wire 標識文法
 
-每个命名空间、方法、查找与 Context 段都必须满足 `isTypertRemoteSegment()`，生成的名字才能原样跨共享 RPC 载体传输。严格编解码器携带生成的 schema factory；`src-json` 编解码器标识约束更弱的源码启动路径。
+每個名稱空間、方法、查詢與 Context 段都必須滿足 `isTypertRemoteSegment()`，生成的名字才能原樣跨共享 RPC 載體傳輸。嚴格編解碼器攜帶生成的 schema factory；`src-json` 編解碼器標識約束更弱的原始碼啟動路徑。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 装饰器、Gateway 绑定、`remoteMethods`、段校验 |
-| [`src/json-value.ts`](src/json-value.ts) | 各载体共享的无损 JSON 校验 `isRemoteJsonValue` 与 `isRemoteUplinkItem` |
-| [`src/remote-error.ts`](src/remote-error.ts) | `RemoteError` 与结构式识别函数 `remoteErrorOf` |
-| [`src/types.ts`](src/types.ts) | 协议映射、`RemoteErrorDetailsMap`、`RemoteResult`、`RemoteStream`、`RemoteStreamHandle`、`PeerScope`、`RemoteInvocation`、`InvocationDescriptor`、编解码器、提供方约定、注册表接口、`TypertClientRemote` |
-| — | 不发布运行时不变量伴生入口；decorator 只保留私有不可变声明，binding 也是冻结值，没有可供交叉核对的独立事件流。 |
+| [`src/index.ts`](src/index.ts) | 裝飾器、Gateway 繫結、`remoteMethods`、段驗證 |
+| [`src/json-value.ts`](src/json-value.ts) | 各載體共享的無損 JSON 驗證 `isRemoteJsonValue` 與 `isRemoteUplinkItem` |
+| [`src/remote-error.ts`](src/remote-error.ts) | `RemoteError` 與結構式識別函式 `remoteErrorOf` |
+| [`src/types.ts`](src/types.ts) | 協定對映、`RemoteErrorDetailsMap`、`RemoteResult`、`RemoteStream`、`RemoteStreamHandle`、`PeerScope`、`RemoteInvocation`、`InvocationDescriptor`、編解碼器、提供者約定、註冊表介面、`TypertClientRemote` |
+| — | 不釋出執行時不變數伴生入口；decorator 只保留私有不可變宣告，binding 也是凍結值，沒有可供交叉核對的獨立事件流。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从声明逐步进入运行时与调用路径。
+當包級約定不夠用時閱讀以下頁面；它們從宣告逐步進入執行時與呼叫路徑。
 
-- [API Gateway 参考](../../../docs/api-gateway.zh.md)——声明如何成为实际的 Host 到 Client 调用。
-- [Typert 子系统参考](../../../docs/subsystems/typert.zh.md)——从协议与 Gateway 类型记录的字面公共约定。
-- [Typert 注册表](../registry/README.zh.md)——描述符与提供方在运行时存放的位置。
-- [Typert 生成器](../generator/README.zh.md)——生成消费方声明与描述符的包。
-- [Remote 调用 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md)——Remote 调用背后的架构与传输决策。
+- [API Gateway 參考](../../../docs/api-gateway.zh.md)——宣告如何成為實際的 Host 到 Client 呼叫。
+- [Typert 子系統參考](../../../docs/subsystems/typert.zh.md)——從協定與 Gateway 型別記錄的字面公共約定。
+- [Typert 註冊表](../registry/README.zh.md)——描述符與提供者在執行時存放的位置。
+- [Typert 生成器](../generator/README.zh.md)——生成消費方宣告與描述符的包。
+- [Remote 呼叫 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md)——Remote 呼叫背後的架構與傳輸決策。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为与编译器无关的 Remote 协议声明不注册任何面向模型的内容。
+無，因為與編譯器無關的 Remote 協定宣告不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；声明的约定只有在装配将其放入请求时才会触及请求。
+無直接影響；宣告的約定只有在裝配將其放入請求時才會觸及請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明声明能表示什么；它们是当前包约束，不是任务积压。
+這些限制說明宣告能表示什麼；它們是目前包約束，不是任務積壓。
 
-- **装饰器标记是最小化的**——标记只包含方法名与直接调用或 Context 调用模式；参数、结果、查找与 schema 反射需要 Typert 构建流水线。
-- **Remote 签名受限**——装饰器只接受具有字符串名称的公开、非静态实例方法，源码模式执行无法表示重载、解构、默认参数或剩余参数签名。
+- **裝飾器標記是最小化的**——標記只包含方法名與直接呼叫或 Context 呼叫模式；參數、結果、查詢與 schema 反射需要 Typert 建置流水線。
+- **Remote 簽名受限**——裝飾器只接受具有字串名稱的公開、非靜態實例方法，原始碼模式執行無法表示過載、解構、預設參數或剩餘參數簽名。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

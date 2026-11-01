@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/settings/README.md
 /:
   en: a7df4a73b5bc97a3
-  zh: d9e966126b2ae6e0
+  zh: 2fe1ca79240d8939
 /settings-plugin-configuration-forms:
   en: 95c64f8cd2c3c6fd
-  zh: 980d612b82a8fad5
+  zh: a536c113e49bfcbc
 /settings-plugin-configuration-forms/summary:
   en: 069010e8669a54df
-  zh: d165c5c8b236d5ed
+  zh: 2a0d1196c372df50
 /settings-plugin-configuration-forms/table-of-contents:
   en: 09848f4d056e4fc1
-  zh: 8df6139cff0288f6
+  zh: 3ab179e03f688394
 /settings-plugin-configuration-forms/packages:
   en: c7f90f860be67ecd
-  zh: ddb24168e20ba599
+  zh: 05e070a14876749f
 /settings-plugin-configuration-forms/related-documentation:
   en: 398e01c5f85b9e00
-  zh: cb3f5f6d8ce20dbf
+  zh: 8d76107449385b1f
 /settings-plugin-configuration-forms/dev-note:
   en: 5de1d6304e00c58f
-  zh: 3fee785f424f1018
+  zh: f51c695a65d48318

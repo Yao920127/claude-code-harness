@@ -94,7 +94,7 @@ describe('tool argument prefix Hook', () => {
   })
 
   it.each([
-    ['write', en, 'Preparing content'], ['edit', zh, '正在准备内容'],
+    ['write', en, 'Preparing content'], ['edit', zh, '正在準備內容'],
   ] as const)('%s subscribes only during preparation and rounds raw length upward', (toolName, dictionary, label) => {
     const assistant = source(data(''))
     const usePartial = bindToolCallArgumentsPartial(standard, { assistant, callId: 'first' })

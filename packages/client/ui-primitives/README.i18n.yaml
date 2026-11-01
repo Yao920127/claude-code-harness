@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-primitives/README.md
 /:
   en: 6da33cc935e210c4
-  zh: 752948e68a6e2c32
+  zh: c77bb86e80f35d32
 /deepseek-ai-dsh-client-ui-primitives:
   en: e39769cae26393b8
   zh: 8743c8cf561fec35
 /deepseek-ai-dsh-client-ui-primitives/summary:
   en: a05472dce901d64f
-  zh: 6747ad81824a5c0d
+  zh: 79c05d254e20d646
 /deepseek-ai-dsh-client-ui-primitives/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-primitives/use-this-package:
   en: ddec1f6f9b018747
-  zh: 9555f132daf8901c
+  zh: 0f38e1a167c1e361
 /deepseek-ai-dsh-client-ui-primitives/use-this-package/component-catalog:
   en: d88424289044477b
-  zh: 41e0397d5d9b76f9
+  zh: f48bad9ce9f8d5f1
 /deepseek-ai-dsh-client-ui-primitives/use-this-package/controls-and-icons:
   en: 83052e14c3fb34cf
-  zh: 0adb09885723296a
+  zh: 35fc2dc1f6154af7
 /deepseek-ai-dsh-client-ui-primitives/use-this-package/rendering-agent-output:
   en: d79e20306593c4bf
-  zh: 5c0f1100e2cd6fcc
+  zh: 88b20af4e68d5b9b
 /deepseek-ai-dsh-client-ui-primitives/use-this-package/localizing-copy:
   en: 4aef65dea11de083
-  zh: abc22cd7c65cdf38
+  zh: b6c0c2202bb8d9d1
 /deepseek-ai-dsh-client-ui-primitives/understand-the-implementation:
   en: 464527753be6a4f6
-  zh: d9df7442503bd58f
+  zh: f05fd7221a05541d
 /deepseek-ai-dsh-client-ui-primitives/understand-the-implementation/source-map:
   en: 44eb32370cbeafe8
-  zh: 728009c66375c6bb
+  zh: 0eb07b871bc1fc7e
 /deepseek-ai-dsh-client-ui-primitives/understand-the-implementation/input-modality:
   en: cb61e1a37d6c27e5
-  zh: 1f3fa79dd5ab2e45
+  zh: a24d6677c591d98b
 /deepseek-ai-dsh-client-ui-primitives/understand-the-implementation/streaming-markdown:
   en: 8bbfa14c27f3bfd7
-  zh: 88f7548ac3a114e1
+  zh: a3c6bfaf7ad14458
 /deepseek-ai-dsh-client-ui-primitives/understand-the-implementation/geometry-and-overflow:
   en: 49f6341d81ded00e
-  zh: cab87dc54a42ba69
+  zh: b8a78050a0960d8c
 /deepseek-ai-dsh-client-ui-primitives/further-exploration:
   en: e82b713cdb2f954b
-  zh: a877f34b148f433f
+  zh: 4c7d63527683c427
 /deepseek-ai-dsh-client-ui-primitives/model-experience:
   en: 3120df665299c634
-  zh: 1d9f365d091d0d2a
+  zh: ab6bd618c4ccfa68
 /deepseek-ai-dsh-client-ui-primitives/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-ui-primitives/known-limitations-and-deferred-work:
   en: 2f14f1e9d3239316
-  zh: c3fdaafc4c591dff
+  zh: 7ea2ec187f336719
 /deepseek-ai-dsh-client-ui-primitives/known-limitations-and-deferred-work/dev-note:
   en: ae1d5d1bcc80c932
-  zh: 15709ccdbfcdf26c
+  zh: 46af81ec27fc671d

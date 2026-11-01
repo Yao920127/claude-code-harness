@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/context/README.md
 /:
   en: f080d3d805b5c2d2
-  zh: c59f6324c66ddcf9
+  zh: 81315f66c0979837
 /context-request-context-plugins:
   en: 05a169f23a64b7e4
-  zh: cf57e471b7f13509
+  zh: e7e49264ba3536c3
 /context-request-context-plugins/summary:
   en: 4a48e859cbeca00f
-  zh: 312b8621ba74a3ec
+  zh: 58f45f39da285b6e
 /context-request-context-plugins/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /context-request-context-plugins/packages:
   en: e2fccdf2ec112e9c
-  zh: 3f6ff79970796bcc
+  zh: 8982060e751fb41b
 /context-request-context-plugins/related-documentation:
   en: 1d8d028a1ca69991
-  zh: 32f261bb380e0812
+  zh: 4d4cdc32cd6970ea
 /context-request-context-plugins/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

@@ -1,14 +1,14 @@
-# 会话引用
+# 工作階段引用
 
 [English](session-reference.md) | 中文
 
-由 Host 支撑的文件发现，以及结构化的跨会话引用请求与准备后的消息上下文。[文件引用约定](../../packages/context/file-reference)负责仅含路径的补全记录与语法；[会话引用约定](../../packages/context/session-reference)定义规范 URI、当前表层投影、标签安全的 JSON 与字节保留、稳定错误和不可信的模型提示词。宿主适配器使用这些类型，而不会把各自 UI 的提及语法传入 agent（智能体）核心。
+由 Host 支撐的檔案發現，以及結構化的跨工作階段引用請求與準備後的訊息上下文。[檔案引用約定](../../packages/context/file-reference)負責僅含路徑的補全記錄與語法；[工作階段引用約定](../../packages/context/session-reference)定義規範 URI、目前表層投影、標籤安全的 JSON 與位元組保留、穩定錯誤和不可信的模型提示詞。主機介面卡使用這些型別，而不會把各自 UI 的提及語法傳入 agent（智慧代理）核心。
 
-来源：[`packages/context/file-reference/src/types.ts`](../../packages/context/file-reference/src/types.ts) · [`packages/context/session-reference/src/types.ts`](../../packages/context/session-reference/src/types.ts)
+來源：[`packages/context/file-reference/src/types.ts`](../../packages/context/file-reference/src/types.ts) · [`packages/context/session-reference/src/types.ts`](../../packages/context/session-reference/src/types.ts)
 
-## 文件候选项
+## 檔案候選項
 
-`FileReferenceCandidate` 是仅含路径的发现结果。被寻址的 agent 提供工作目录范围；提供方负责排序和命名空间访问，但不会读取文件内容。
+`FileReferenceCandidate` 是僅含路徑的發現結果。被定址的 agent 提供工作目錄範圍；提供者負責排序和名稱空間存取，但不會讀取檔案內容。
 
 ```ts type-equiv
 /** One path-only completion candidate inside the target session cwd. */
@@ -20,9 +20,9 @@ interface FileReferenceCandidate {
 }
 ```
 
-## 输入与候选项
+## 輸入與候選項
 
-`SessionReferenceInput` 是与宿主无关的选择。id 具有权威性；label 是随快照携带的显示元数据。
+`SessionReferenceInput` 是與主機無關的選擇。id 具有權威性；label 是隨快照攜帶的顯示中繼資料。
 
 ```ts type-equiv
 /** One source session selected by a host. */
@@ -34,7 +34,7 @@ interface SessionReferenceInput {
 }
 ```
 
-`SessionReferenceCandidate` 是面向宿主的发现输出。存在最新 Session 标题时，它的 `label` 使用该标题；可选显示文本则优先使用 subagent 的持久创建 label。筛选会同时搜索两者、Session id 与 cwd，绝不搜索 transcript（文本记录）。Remote 候选在 `displayTitle` 存在时用它标记规范 mention。
+`SessionReferenceCandidate` 是面向主機的發現輸出。存在最新 Session 標題時，它的 `label` 使用該標題；可選顯示文字則優先使用 subagent 的持久建立 label。篩選會同時搜尋兩者、Session id 與 cwd，絕不搜尋 transcript（文字記錄）。Remote 候選在 `displayTitle` 存在時用它標記規範 mention。
 
 ```ts type-equiv
 /** One host-facing candidate from exact session metadata. */
@@ -58,7 +58,7 @@ interface SessionReferenceCandidate {
 }
 ```
 
-`sessionReferenceResolver/candidates` Remote 方法向浏览器消费方提供同一发现能力，并为每个候选附上规范提示词 mention。
+`sessionReferenceResolver/candidates` Remote 方法向瀏覽器消費方提供同一發現能力，併為每個候選附上規範提示詞 mention。
 
 ```ts type-equiv
 /** One discovery candidate carrying its canonical prompt mention. */
@@ -68,9 +68,9 @@ interface SessionReferenceMentionCandidate extends SessionReferenceCandidate {
 }
 ```
 
-## 准备后的消息
+## 準備後的訊息
 
-准备过程保留可读的当前消息内容，并最多返回一个聚合上下文。其持久 source 记录会把 `capturedThroughSeq` 保留为被引用 Session 原始 generation 中的坐标，绝不会把它重新解释为所在 Session 的 seq。`capturedFormatVersion` 记录该 generation；缺失表示已发布格式 v0。
+準備過程保留可讀的目前訊息內容，並最多返回一個聚合上下文。其持久 source 記錄會把 `capturedThroughSeq` 保留為被引用 Session 原始 generation 中的座標，絕不會把它重新解釋為所在 Session 的 seq。`capturedFormatVersion` 記錄該 generation；缺失表示已釋出格式 v0。
 
 ```ts type-equiv
 /** Durable source session, cited event seqs, and snapshot facts for prepared cross-session context. */
@@ -106,9 +106,9 @@ interface PreparedReferencedMessage {
 }
 ```
 
-## 错误
+## 錯誤
 
-`SessionReferenceError.code` 区分无效配置或输入、自引用、数量限制、源读取失败、预算失败和取消。宿主协议会把这些 code 映射到各自的错误封装，无需检查提示词字节。
+`SessionReferenceError.code` 區分無效設定或輸入、自引用、數量限制、源讀取失敗、預算失敗和取消。主機協定會把這些 code 對映到各自的錯誤封裝，無需檢查提示詞位元組。
 
 ```ts type-equiv
 /** Stable failure codes exposed to host adapters. */

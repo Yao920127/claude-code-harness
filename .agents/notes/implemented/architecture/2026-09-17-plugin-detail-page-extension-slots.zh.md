@@ -1,35 +1,35 @@
-# Agent Note：插件详情页作为扩展点
+# Agent Note：外掛詳情頁作為擴充功能點
 
-状态：已实现
+狀態：已實作
 
 [English](2026-09-17-plugin-detail-page-extension-slots.md) | 中文
 
-## 问题
+## 問題
 
-插件页的详情页——组合包页、行页、官方插件页——只承载页面自绘的内容和对象自己的配置（[插件配置放在插件页](2026-09-16-plugin-configuration-on-the-plugins-page.zh.md)）。对不属于自己的组合包有话要说的插件——诊断插件的健康检查、市场插件的更新标签、文档插件的 README 区块——在那个组合包的页面上无处安放，而通过 import 页面来扩展它被客户端包纯净性规则禁止。
+外掛頁的詳情頁——組合包頁、行頁、官方外掛頁——只承載頁面自繪的內容和物件自己的設定（[外掛設定放在外掛頁](2026-09-16-plugin-configuration-on-the-plugins-page.zh.md)）。對不屬於自己的組合包有話要說的外掛——診斷外掛的健康檢查、市場外掛的更新標籤、文件外掛的 README 區塊——在那個組合包的頁面上無處安放，而透過 import 頁面來擴充功能它被用戶端包純淨性規則禁止。
 
-## 决策
+## 決策
 
-**页面按区域而不是按对象声明三个 list slot。** `plugins.detail.actions` 渲染在页头，位于页面自己的开关和卸载之前；`plugins.detail.badge` 在标题旁，位于版本、Beta 和异常标签之后；`plugins.detail.section` 在页面自身内容之下——组合包页在组件列表之后，行页与官方插件页在配置之后。每个条目都以页面的 `subject` 渲染：`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`。条目根据 subject 决定是否渲染，否则返回 null；页面按 `order` 排列条目。
+**頁面按區域而不是按物件宣告三個 list slot。** `plugins.detail.actions` 渲染在頁頭，位於頁面自己的開關和解除安裝之前；`plugins.detail.badge` 在標題旁，位於版本、Beta 和異常標籤之後；`plugins.detail.section` 在頁面自身內容之下——組合包頁在元件列表之後，行頁與官方外掛頁在設定之後。每個條目都以頁面的 `subject` 渲染：`{ kind: 'bundle', pkg }`、`{ kind: 'row', pkg, row }` 或 `{ kind: 'item', id }`。條目根據 subject 決定是否渲染，否則返回 null；頁面按 `order` 排列條目。
 
-**subject 是投影，不是 store。** `PluginPackageRef` 与 `PluginRowRef` 携带包名、版本、是否已安装、是否启用以及行列表——贡献者据以判断的事实——不带页面自己的任何状态，因此页面的 store 保持私有，契约保持精简。
+**subject 是投影，不是 store。** `PluginPackageRef` 與 `PluginRowRef` 攜帶包名、版本、是否已安裝、是否啟用以及行列表——貢獻者據以判斷的事實——不帶頁面自己的任何狀態，因此頁面的 store 保持私有，契約保持精簡。
 
-**行页仍然只为已配置的行存在。** list 条目无法预先说明它对哪些行有话要说，而一个空空如也的行页没有值得打开的内容，所以配置控件保留原规则：有 `plugins.row.config` 条目点名这一行时才可打开，对该行的贡献渲染在那个页面上。
+**行頁仍然只為已設定的行存在。** list 條目無法預先說明它對哪些行有話要說，而一個空空如也的行頁沒有值得開啟的內容，所以設定控制元件保留原規則：有 `plugins.row.config` 條目點名這一行時才可開啟，對該行的貢獻渲染在那個頁面上。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**按对象和区域各开一个 slot（`plugins.bundle.section`、`plugins.row.section` 等）。** 否决：三个区域要九个 slot，而跨对象的贡献要注册三次。subject 判别式在三个 slot 里承载同样的信息。
+**按物件和區域各開一個 slot（`plugins.bundle.section`、`plugins.row.section` 等）。** 否決：三個區域要九個 slot，而跨物件的貢獻要註冊三次。subject 判別式在三個 slot 裡承載同樣的資訊。
 
-**把页面的 `PackageView` 与 `PackageRow` 直接作为 subject。** 否决：这些类型携带 Host 的只读原因、错误、条目 id 与 fiber 阶段，这些是页面自己的事；暴露它们会让 store 内部成为公共契约。
+**把頁面的 `PackageView` 與 `PackageRow` 直接作為 subject。** 否決：這些型別攜帶 Host 的只讀原因、錯誤、條目 id 與 fiber 階段，這些是頁面自己的事；暴露它們會讓 store 內部成為公共契約。
 
-**每一行都有页面，让行级贡献总有落脚处。** 推迟：没有配置的行，页面除了模块名和状态之外无可展示；等有贡献需要时再放宽这条规则。
+**每一行都有頁面，讓行級貢獻總有落腳處。** 推遲：沒有設定的行，頁面除了模組名和狀態之外無可展示；等有貢獻需要時再放寬這條規則。
 
-## 后果
+## 後果
 
-- 一个贡献就是一次 slot 注册，只需 `import type` `ui-plugin-manager` 的声明；页面从不点名任何贡献插件。
-- e2e 夹具组合包（`@fixture/live-client`）通过三个 slot 向它自己的组合包页和行页贡献内容；它的浏览器半侧与其余注册一起完成，也一起离开。
-- slot 目录与 slots 子系统层级树在 `main` 下列出这三个 slot。
+- 一個貢獻就是一次 slot 註冊，只需 `import type` `ui-plugin-manager` 的宣告；頁面從不點名任何貢獻外掛。
+- e2e 夾具組合包（`@fixture/live-client`）透過三個 slot 向它自己的組合包頁和行頁貢獻內容；它的瀏覽器半側與其餘註冊一起完成，也一起離開。
+- slot 目錄與 slots 子系統層級樹在 `main` 下列出這三個 slot。
 
-## 测试
+## 測試
 
-`packages/client/ui-plugin-manager/tests/components.client.spec.tsx` 在组合包页、行页和官方插件页上渲染贡献并核对各自的 subject，钉住投影；`browser-plugin.client.spec.tsx` 钉住声明。`apps/web/tests/plugin-config.e2e.ts` 打开夹具组合包，断言组合包页与行页上的操作、标签和区块、官方插件页上没有它们，并保留组合包页的 golden。
+`packages/client/ui-plugin-manager/tests/components.client.spec.tsx` 在組合包頁、行頁和官方外掛頁上渲染貢獻並核對各自的 subject，釘住投影；`browser-plugin.client.spec.tsx` 釘住宣告。`apps/web/tests/plugin-config.e2e.ts` 開啟夾具組合包，斷言組合包頁與行頁上的操作、標籤和區塊、官方外掛頁上沒有它們，並保留組合包頁的 golden。

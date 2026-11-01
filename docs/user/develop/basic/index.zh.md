@@ -1,20 +1,20 @@
-# 第一个插件
+# 第一個外掛
 
 [English](index.md) | 中文
 
-本教程会创建一个最小的 Harness 插件，并将其加载到 Web UI 中。请从已完成[从源码运行路径](../../../../README.zh.md#run-from-source)的仓库检出开始。
+本教學會建立一個最小的 Harness 外掛，並將其載入到 Web UI 中。請從已完成[從原始碼執行路徑](../../../../README.zh.md#run-from-source)的儲存庫檢出開始。
 
-## 创建本地项目
+## 建立本地專案
 
-在仓库根目录创建本教程使用的临时项目：
+在儲存庫根目錄建立本教學使用的臨時專案：
 
 ```sh
 mkdir -p scratch-plugin/src
 ```
 
-## 插件是什么
+## 外掛是什麼
 
-在 Harness 中，插件是一个导出 `apply` 函数的 TypeScript 模块。框架在加载时调用 `apply`，传入一个 `ctx`（上下文对象），你通过 `ctx` 注册能力：
+在 Harness 中，外掛是一個匯出 `apply` 函式的 TypeScript 模組。框架在載入時呼叫 `apply`，傳入一個 `ctx`（上下文物件），你透過 `ctx` 註冊能力：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -26,11 +26,11 @@ export function apply(ctx: Context) {
 }
 ```
 
-这就是完整配置。
+這就是完整設定。
 
-## 创建插件文件
+## 建立外掛檔案
 
-创建 `scratch-plugin/src/my-plugin.ts`：
+建立 `scratch-plugin/src/my-plugin.ts`：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -43,9 +43,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-## 注册到 cordis.yml
+## 註冊到 cordis.yml
 
-在仓库根目录运行 `pwd`，然后创建 `scratch-plugin/cordis.yml`，作为插入本地插件的 Web 覆盖层。请将下文的 `/absolute/path/to/deepseek-harness` 替换为命令打印的路径：
+在儲存庫根目錄執行 `pwd`，然後建立 `scratch-plugin/cordis.yml`，作為插入本地外掛的 Web 覆蓋層。請將下文的 `/absolute/path/to/deepseek-harness` 替換為命令列印的路徑：
 
 ```yaml
 - insert:
@@ -53,21 +53,21 @@ export function apply(ctx: Context) {
       name: '/absolute/path/to/deepseek-harness/scratch-plugin/src/my-plugin.ts'
 ```
 
-插件路径必须是绝对路径。patch 文件只贡献配置，不会改变 loader 解析模块路径时使用的 profile 目录。
+外掛路徑必須是絕對路徑。patch 檔案只貢獻設定，不會改變 loader 解析模組路徑時使用的 profile 目錄。
 
-使用该覆盖层启动 Web UI：
+使用該覆蓋層啟動 Web UI：
 
 ```sh
 pnpm dsh web --patch ./scratch-plugin/cordis.yml
 ```
 
-打开 `http://127.0.0.1:3080`。启动期间，终端会打印 `[hello-plugin] plugin loaded!`。
+開啟 `http://127.0.0.1:3080`。啟動期間，終端會列印 `[hello-plugin] plugin loaded!`。
 
-## 自动清理
+## 自動清理
 
-通过 `ctx` 注册的任何东西——事件监听、工具、定时器——在插件卸载时都会被自动清理。你不需要手动 removeListener 或 clearInterval。
+透過 `ctx` 註冊的任何東西——事件監聽、工具、定時器——在外掛解除安裝時都會被自動清理。你不需要手動 removeListener 或 clearInterval。
 
-如果你有需要手动清理的资源（比如一个网络连接），用 `ctx.effect()` 告诉框架怎么清理：
+如果你有需要手動清理的資源（比如一個網路連線），用 `ctx.effect()` 告訴框架怎麼清理：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -84,9 +84,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-## 声明依赖
+## 宣告依賴
 
-如果你的插件需要使用其他服务（如 `tools`、`llm`），需要声明 `inject`：
+如果你的外掛需要使用其他服務（如 `tools`、`llm`），需要宣告 `inject`：
 
 ```ts ignore-check
 import type { Context } from '@deepseek-ai/cordis'
@@ -100,13 +100,13 @@ export function apply(ctx: Context) {
 }
 ```
 
-框架会确保依赖的服务就绪后才加载你的插件。
+框架會確保依賴的服務就緒後才載入你的外掛。
 
-## 插件的三种形态
+## 外掛的三種形態
 
-除了函数形式，插件还支持对象形式和类形式：
+除了函式形式，外掛還支援物件形式和類形式：
 
-### 对象形式
+### 物件形式
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -120,7 +120,7 @@ export default {
 }
 ```
 
-### 类形式
+### 類形式
 
 ```ts
 import { Service, type Context } from '@deepseek-ai/cordis'
@@ -135,10 +135,10 @@ export default class MyService extends Service {
 }
 ```
 
-大多数情况下，函数形式足够了。当插件需要向其他插件提供服务时，可使用类形式（见 [服务与依赖](../framework/service.zh.md)）。
+大多數情況下，函式形式足夠了。當外掛需要向其他外掛提供服務時，可使用類形式（見 [服務與依賴](../framework/service.zh.md)）。
 
 ## 下一步
 
-- [开发一个工具](./tool.zh.md) — 了解工具定义 DSL
-- [插件配置](./config.zh.md) — 让插件接受用户配置
-- [Cordis 框架教程](../../../cordis-tutorial/index.zh.md) — 底层的插件框架，在临时目录中动手构建，无需 API 密钥
+- [開發一個工具](./tool.zh.md) — 瞭解工具定義 DSL
+- [外掛設定](./config.zh.md) — 讓外掛接受使用者設定
+- [Cordis 框架教學](../../../cordis-tutorial/index.zh.md) — 底層的外掛框架，在臨時目錄中動手建置，無需 API 金鑰

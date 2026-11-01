@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-08-28-omit-unneeded-invariant-companions.md
 /agent-note-omit-invariant-companions-without-independent-observations:
   en: 1aaf29f8d757fcc8
-  zh: 76d99dd71bfabbaa
+  zh: d5d46b18fb690a1f
 /agent-note-omit-invariant-companions-without-independent-observations/problem:
   en: 53d9687bdef70d91
-  zh: 61d225b1cd374c28
+  zh: 3c7194c9e01dfdf2
 /agent-note-omit-invariant-companions-without-independent-observations/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-omit-invariant-companions-without-independent-observations/decision/independent-observations-justify-publication:
   en: ee3e2ff2f0565d94
-  zh: 232ddf075bf3b353
+  zh: 920cb2cd525f6e08
 /agent-note-omit-invariant-companions-without-independent-observations/decision/omission-is-explicit-in-the-package-readme:
   en: 465c523c29fd7836
-  zh: 9967d7e5b17f1adf
+  zh: 08d34449f17e6442
 /agent-note-omit-invariant-companions-without-independent-observations/decision/audit-result:
   en: b19c08cd1f7df630
-  zh: 30e872df9ee3ff0a
+  zh: d63e185e870deebb
 /agent-note-omit-invariant-companions-without-independent-observations/alternatives-considered:
   en: 5908a05a2aeb3f82
-  zh: 9a01748e8d8b86f4
+  zh: 9f31db3f2a7e20ce
 /agent-note-omit-invariant-companions-without-independent-observations/consequences:
   en: c648b67008e676f1
-  zh: c89400eae3fef89c
+  zh: b7607c1a8c4243b7

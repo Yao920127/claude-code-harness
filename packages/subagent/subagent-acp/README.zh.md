@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的进程外 ACP（Agent Client Protocol）subagent 后端，用于选择委派提供方、配置子 ACP agent（智能体）命令或排查远程子 agent 运行问题。"
+description: "面向使用者與維護者的程序外 ACP（Agent Client Protocol）subagent 後端，用於選擇委派提供者、設定子 ACP agent（智慧代理）命令或排查遠端子 agent 執行問題。"
 kind: "package-reference"
 ---
 
@@ -9,44 +9,44 @@ kind: "package-reference"
 
 ## 概述
 
-使用本包可将任务委派给运行在全新子进程中的 ACP 兼容 agent；子 agent 拥有独立的运行时、会话、模型和工具。每次运行只共享选定的工作目录，通过 ACP 发送任务，并返回子 agent 的最终答案或安全错误；中间消息和工具流量不会进入父级对话。权限提示由配置的策略自动应答，无需人工介入。当委派需要进程隔离或需要使用非 Harness ACP agent 时选择本包；当子 agent 必须共享父级能力时，选择进程内后端。
+使用本包可將任務委派給執行在全新子程序中的 ACP 相容 agent；子 agent 擁有獨立的執行時、工作階段、模型和工具。每次執行只共享選定的工作目錄，透過 ACP 傳送任務，並返回子 agent 的最終答案或安全錯誤；中間訊息和工具流量不會進入父級對話。權限提示由設定的策略自動應答，無需人工介入。當委派需要程序隔離或需要使用非 Harness ACP agent 時選擇本包；當子 agent 必須共享父級能力時，選擇程序內後端。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合需要一个支持 Agent Client Protocol、完全隔离且在进程外运行的子 agent 时，挂载本提供方。常用路径是显式的：挂载 seam、挂载本提供方，并给出一个启动 ACP agent 的命令。
+當組合需要一個支援 Agent Client Protocol、完全隔離且在程序外執行的子 agent 時，掛載本提供者。常用路徑是顯式的：掛載 seam、掛載本提供者，並給出一個啟動 ACP agent 的命令。
 
-### 何时选择
+### 何時選擇
 
-当子 agent 必须在独立进程中运行、拥有自己的运行时、模型和工具时选择此后端——例如来自其他项目的 ACP agent——或者你希望委派完全无法触及父 harness 时。当子 agent 必须共享父级组合或遵守父级强制执行的能力约束时，请选择进程内后端：本提供方不声明任何可选启动时能力，因此 seam 会拒绝要求 `agentOptions`、结构化输出、深度上限、工具过滤或 persona 的请求，而不是静默省略。
+當子 agent 必須在獨立程序中執行、擁有自己的執行時、模型和工具時選擇此後端——例如來自其他專案的 ACP agent——或者你希望委派完全無法觸及父 harness 時。當子 agent 必須共享父級組合或遵守父級強制執行的能力約束時，請選擇程序內後端：本提供者不宣告任何可選啟動時能力，因此 seam 會拒絕要求 `agentOptions`、結構化輸出、深度上限、工具過濾或 persona 的請求，而不是靜默省略。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `providerName` | `acp` | `ctx.subagents` 上的注册表名称 |
-| `command` | 必填 | 每次运行时 spawn 的可执行文件（子 ACP agent） |
-| `args` | `[]` | 命令参数 |
-| `cwd` | 父会话 cwd | 子进程及其 ACP 会话的工作目录覆盖值 |
-| `permission` | `reject` | 自动应答权限请求：拒绝，或选择第一个 `allow_once` 或 `allow_always` 选项（`allow`） |
-| `env` | `{}` | 叠加在已清理凭据的父环境之上的显式子环境 |
-| `disposeEofGraceMs` | `6000` | stdin EOF 之后、平台终止之前的宽限 |
-| `disposeGraceMs` | `3000` | 失败后观察结构化进程事实的时限；在 POSIX 上也是 SIGTERM 到 SIGKILL 的宽限 |
+| `providerName` | `acp` | `ctx.subagents` 上的註冊表名稱 |
+| `command` | 必填 | 每次執行時 spawn 的可執行檔案（子 ACP agent） |
+| `args` | `[]` | 命令參數 |
+| `cwd` | 父工作階段 cwd | 子程序及其 ACP 工作階段的工作目錄覆蓋值 |
+| `permission` | `reject` | 自動應答權限請求：拒絕，或選擇第一個 `allow_once` 或 `allow_always` 選項（`allow`） |
+| `env` | `{}` | 疊加在已清理憑證的父環境之上的顯式子環境 |
+| `disposeEofGraceMs` | `6000` | stdin EOF 之後、平臺終止之前的寬限 |
+| `disposeGraceMs` | `3000` | 失敗後觀察結構化程序事實的時限；在 POSIX 上也是 SIGTERM 到 SIGKILL 的寬限 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-acp)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-acp)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-DeepSeek Harness 子进程使用产品启动器和一个显式的绝对路径 `DSH_HOME`。隔离的 home 可防止嵌套运行时发现启动者个人的 profile 或凭据；通用 ACP 提供方不会把这一要求强加给非 DSH agent。
+DeepSeek Harness 子程序使用產品啟動器和一個顯式的絕對路徑 `DSH_HOME`。隔離的 home 可防止巢狀執行時發現啟動者個人的 profile 或憑證；通用 ACP 提供者不會把這一要求強加給非 DSH agent。
 
 ```yaml
 - id: subagent-acp
@@ -61,119 +61,119 @@ DeepSeek Harness 子进程使用产品启动器和一个显式的绝对路径 `D
       DEEPSEEK_API_KEY: !!js process.env.DEEPSEEK_API_KEY
 ```
 
-### 你会得到什么
+### 你會得到什麼
 
-成功的运行会把子 agent 最终的流式 assistant 文本作为结果输出返回。子 agent 的会话、模型与工具来自子进程自身——父级只提供任务与工作目录。停止原因把 `end_turn` 映射为 `completed`、`max_tokens` 映射为 `max-tokens`、`refusal` 映射为 `refusal`、`cancelled` 映射为 `aborted`，其余值映射为 `error`。已发布运行失败时，部分 assistant 文本保留在 `output`，安全的结构化详情则单独放在 `diagnostic`。
+成功的執行會把子 agent 最終的流式 assistant 文字作為結果輸出返回。子 agent 的工作階段、模型與工具來自子程序自身——父級只提供任務與工作目錄。停止原因把 `end_turn` 對映為 `completed`、`max_tokens` 對映為 `max-tokens`、`refusal` 對映為 `refusal`、`cancelled` 對映為 `aborted`，其餘值對映為 `error`。已釋出執行失敗時，部分 assistant 文字保留在 `output`，安全的結構化詳情則單獨放在 `diagnostic`。
 
-### 失败与恢复
+### 失敗與恢復
 
-spawn、初始化或新建会话失败会在发布前拒绝，通常先证明 managed range 已经完全停稳。如果清理也失败，拒绝会保留有序、安全的启动与拆卸事实，但不会声称整个 range 已经停稳。非取消错误只暴露固定的提供方、阶段与类别事实；原始失败保留在内部 cause 链与 Host 诊断中。发布后，提示词、传输或进程提前退出会以携带安全诊断的 `error` 结算；本地取消则以不带失败详情的 `aborted` 结算。
+spawn、初始化或新建工作階段失敗會在釋出前拒絕，通常先證明 managed range 已經完全停穩。如果清理也失敗，拒絕會保留有序、安全的啟動與拆卸事實，但不會聲稱整個 range 已經停穩。非取消錯誤只暴露固定的提供者、階段與類別事實；原始失敗保留在內部 cause 鏈與 Host 診斷中。釋出後，提示詞、傳輸或程序提前退出會以攜帶安全診斷的 `error` 結算；本地取消則以不帶失敗詳情的 `aborted` 結算。
 
-### 安全诊断
+### 安全診斷
 
-通用诊断使用固定的一行：`Subagent failure (provider: ACP; stage: <stage>; category: <category>; ...)`。可选的停止原因、退出码与信号只来自封闭协议或受管进程事实。stderr、异常文本、任务内容、工具输入、路径、环境值、凭据与协议载荷绝不会进入诊断；共享结果边界把诊断限制在 4096 个 UTF-8 字节内。请求过权限且未完成的运行可以增加一行固定的策略、工具种类与决定。成功运行和本地取消不包含该行。
+通用診斷使用固定的一行：`Subagent failure (provider: ACP; stage: <stage>; category: <category>; ...)`。可選的停止原因、結束代碼與訊號只來自封閉協定或受管程序事實。stderr、異常文字、任務內容、工具輸入、路徑、環境值、憑證與協定載荷絕不會進入診斷；共享結果邊界把診斷限制在 4096 個 UTF-8 位元組內。請求過權限且未完成的執行可以增加一行固定的策略、工具種類與決定。成功執行和本地取消不包含該行。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释后端如何经 ACP 驱动子 agent，以及可观察行为从何而来；完整约定见[使用本包](#use-this-package)。
+本節解釋後端如何經 ACP 驅動子 agent，以及可觀察行為從何而來；完整約定見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-- **完全进程隔离。** 每个子 agent 在全新子进程中运行，拥有自己的会话、模型与工具；只有解析后的工作目录来自父级。
-- **每次运行一个进程。** 每次运行都 spawn 新进程；没有进程池。
-- **ACP 协议格式（wire format）是序列化边界。** 同进程 subagent 值不会为防御目的克隆；协议才是校验不可信输入的地方。
+- **完全程序隔離。** 每個子 agent 在全新子程序中執行，擁有自己的工作階段、模型與工具；只有解析後的工作目錄來自父級。
+- **每次執行一個程序。** 每次執行都 spawn 新程序；沒有程序池。
+- **ACP 協定格式（wire format）是序列化邊界。** 同程序 subagent 值不會為防禦目的克隆；協定才是驗證不可信輸入的地方。
 
-### 启动与所有权流程
+### 啟動與所有權流程
 
-一次启动先解析子 agent 的工作目录（配置的 `cwd` 覆盖值，否则取父会话 cwd），经子进程 seam spawn 命令，完成 ACP `initialize` 与 `newSession` 握手，然后才发布运行。兑现意味着远程会话已就绪、所有权已转移给调用方。dispose（资源释放）是幂等的：先关闭 stdin 并按配置的宽限等待协作式完全停稳，再经 SIGTERM 升级到 SIGKILL，并等待整个 managed range 退出。清理失败会作为有序的安全事实保持可观察，且绝不声称已经完全停稳。
+一次啟動先解析子 agent 的工作目錄（設定的 `cwd` 覆蓋值，否則取父工作階段 cwd），經子程序 seam spawn 命令，完成 ACP `initialize` 與 `newSession` 握手，然後才釋出執行。兌現意味著遠端工作階段已就緒、所有權已轉移給呼叫方。dispose（資源釋放）是冪等的：先關閉 stdin 並按設定的寬限等待協作式完全停穩，再經 SIGTERM 升級到 SIGKILL，並等待整個 managed range 退出。清理失敗會作為有序的安全事實保持可觀察，且絕不聲稱已經完全停穩。
 
-### 停止原因映射
+### 停止原因對映
 
-运行结果会把 ACP 终态映射进共享的停止原因词汇（`completed`、`max-tokens`、`refusal`、`aborted` 或 `error`），实现见 [`src/run.ts`](src/run.ts)。
+執行結果會把 ACP 終態對映進共享的停止原因詞彙（`completed`、`max-tokens`、`refusal`、`aborted` 或 `error`），實作見 [`src/run.ts`](src/run.ts)。
 
-### 进程边界
+### 程序邊界
 
-子进程经子进程 seam spawn：先清除疑似凭据的环境变量，再合并显式 `config.env` 值。stderr 继承到父级流，dispose 先应用本提供方的 EOF 窗口，再执行共享的逐级终止。
+子程序經子程序 seam spawn：先清除疑似憑證的環境變數，再合併顯式 `config.env` 值。stderr 繼承到父級流，dispose 先應用本提供者的 EOF 視窗，再執行共享的逐級終止。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从本后端逐步进入它接入的 seam 与它驱动的协议。
+當包級約定不夠用時閱讀以下頁面。它們從本後端逐步進入它接入的 seam 與它驅動的協定。
 
-- [Subagent 子系统](../../../docs/subsystems/subagent.zh.md)——服务约定、提供方约定与终态结果语义。
-- [dsh-subagent seam](../subagent/README.zh.md)——本提供方注册于其上的注册表与启动 API。
-- [Agent Client Protocol 自动化服务器](../../acp/acp/README.zh.md)——本提供方作为客户端驱动的仅自动化服务器。
-- [dsh-subprocess seam](../../subprocess/subprocess/README.zh.md)——每次运行背后的进程 spawn 与清理机制。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-acp)——每个受支持配置字段及其源声明。
+- [Subagent 子系統](../../../docs/subsystems/subagent.zh.md)——服務約定、提供者約定與終態結果語義。
+- [dsh-subagent seam](../subagent/README.zh.md)——本提供者註冊於其上的註冊表與啟動 API。
+- [Agent Client Protocol 自動化伺服器](../../acp/acp/README.zh.md)——本提供者作為用戶端驅動的僅自動化伺服器。
+- [dsh-subprocess seam](../../subprocess/subprocess/README.zh.md)——每次執行背後的程序 spawn 與清理機制。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-acp)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 子 agent 请求
+### 子 agent 請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-远程子 agent 通过 ACP 接收独立任务内容，并使用其自身进程配置的系统提示词、工具和全新会话。它不接收父级对话。本提供方不声明可选启动时能力，因此本地服务会拒绝要求 `agentOptions`、persona、工具过滤、深度强制或结构化输出的请求，而不是静默省略。
+遠端子 agent 透過 ACP 接收獨立任務內容，並使用其自身程序設定的系統提示詞、工具和全新工作階段。它不接收父級對話。本提供者不宣告可選啟動時能力，因此本地服務會拒絕要求 `agentOptions`、persona、工具過濾、深度強制或結構化輸出的請求，而不是靜默省略。
 
-#### Token 影响
+#### Token 影響
 
-子 agent 为独立的完整上下文及其多步骤历史支付 token 成本。这些 token 绝不会进入父级上下文。
+子 agent 為獨立的完整上下文及其多步驟歷史支付 token 成本。這些 token 絕不會進入父級上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与父级请求缓存相互独立。每个 ACP 子 agent 只能在其自身提供方、模型、组合和历史均相同时复用前缀；其余情况下，子 agent 步骤仅追加增长。
+與父級請求快取相互獨立。每個 ACP 子 agent 只能在其自身提供者、模型、組合和歷史均相同時複用字首；其餘情況下，子 agent 步驟僅追加增長。
 
-### 父级工具结果（间接）
+### 父級工具結果（間接）
 
-#### 模型看到什么
+#### 模型看到什麼
 
-通过 `dsh-tool-subagent`，父级只接收子 agent 最终的流式 assistant 文本或该消费方给出的精确停止原因错误，不接收中间消息或工具流量。未完成的结果会先呈现安全诊断，再单独保留部分 assistant 输出。发布前已经取消的请求会精确变为 `Error: subagent request was aborted before the ACP child started`；其他启动失败只包含固定的 `Subagent failure (...)` 行。
+透過 `dsh-tool-subagent`，父級只接收子 agent 最終的流式 assistant 文字或該消費方給出的精確停止原因錯誤，不接收中間訊息或工具流量。未完成的結果會先呈現安全診斷，再單獨保留部分 assistant 輸出。釋出前已經取消的請求會精確變為 `Error: subagent request was aborted before the ACP child started`；其他啟動失敗只包含固定的 `Subagent failure (...)` 行。
 
-#### Token 影响
+#### Token 影響
 
-父级输入只增加最终结果或错误，其内容依赖数据，并保留到压缩（compaction）为止。本提供方自身不会添加父级 schema。
+父級輸入只增加最終結果或錯誤，其內容依賴資料，並保留到壓縮（compaction）為止。本提供者自身不會新增父級 schema。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新增可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新增可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本后端何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用 ACP 对比或任务积压。
+這些限制說明本後端何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用 ACP 對比或任務積壓。
 
-- **每次运行使用全新进程**——没有进程池；每次委派都要付出完整的 spawn 与 ACP 握手成本。
-- **仅支持本地工作区**——解析后的工作目录是交给同一台机器上子进程的本地路径；远程工作区映射尚未设计。
-- **不支持可选启动时能力**——本提供方无法在远程进程内应用 `agentOptions`、`outputSchema`、深度上限、工具过滤器或 persona，因此 seam 会拒绝需要它们的请求。
-- **只收集已提交的 `agent_message_chunk` 文本**——自动化服务器把推理（reasoning）、工具活动、计划和其他 trace 数据保留在子 agent 会话日志中，不通过 ACP 发出。
-- **权限提示自动应答**（`permission: allow | reject`）——不会把子 agent 的 `session/request_permission` 呈现给人。
+- **每次執行使用全新程序**——沒有程序池；每次委派都要付出完整的 spawn 與 ACP 握手成本。
+- **僅支援本地工作區**——解析後的工作目錄是交給同一臺機器上子程序的本地路徑；遠端工作區對映尚未設計。
+- **不支援可選啟動時能力**——本提供者無法在遠端程序內應用 `agentOptions`、`outputSchema`、深度上限、工具過濾器或 persona，因此 seam 會拒絕需要它們的請求。
+- **只收集已提交的 `agent_message_chunk` 文字**——自動化伺服器把推理（reasoning）、工具活動、計劃和其他 trace 資料保留在子 agent 工作階段日誌中，不透過 ACP 發出。
+- **權限提示自動應答**（`permission: allow | reject`）——不會把子 agent 的 `session/request_permission` 呈現給人。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为与限制以上文和包代码为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為與限制以上文和包程式碼為準。
 
-- **进程池**——持久进程复用是可能的未来优化，但会改变每次运行的隔离模型。
-- **远程工作区**——映射远程 ACP agent 的工作区需要独立的后端能力。
-- **可继续执行的 ACP 子 agent**——需要持久化远程会话 id，并为每个子 agent 声明继续执行能力。
+- **程序池**——持久程序複用是可能的未來最佳化，但會改變每次執行的隔離模型。
+- **遠端工作區**——對映遠端 ACP agent 的工作區需要獨立的後端能力。
+- **可繼續執行的 ACP 子 agent**——需要持久化遠端工作階段 id，併為每個子 agent 宣告繼續執行能力。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包没有独立事件序列或可变数据关系，相关约定在所属 seam 强制执行。
+**執行時不變式：** 不釋出伴生入口。本包沒有獨立事件序列或可變資料關係，相關約定在所屬 seam 強制執行。

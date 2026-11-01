@@ -1,39 +1,39 @@
-# Agent Note: minimal profile 使用裸运行时
+# Agent Note: minimal profile 使用裸執行時
 
 Status: implemented
 
 [English](2026-08-11-minimal-profiles-bare-two-tool-runtime.md) | 中文
 
-## 问题
+## 問題
 
-Web `minimal` preset 与独立 JSON-RPC minimal 组合对外提供持久 `bash` 和 `str_replace_editor`，但支撑服务与目标训练运行时不一致。两者都挂载上下文压缩，而 Web preset 继承宿主的沙箱文件系统，JSON-RPC 组合则挂载 `fs-sandbox` 和文件系统策略。因此，长会话可能替换历史记录，编辑器也会宣告并实施裸本地参考运行时并不具备的文件系统策略。
+Web `minimal` preset 與獨立 JSON-RPC minimal 組合對外提供持久 `bash` 和 `str_replace_editor`，但支撐服務與目標訓練執行時不一致。兩者都掛載上下文壓縮，而 Web preset 繼承主機的沙箱檔案系統，JSON-RPC 組合則掛載 `fs-sandbox` 和檔案系統策略。因此，長工作階段可能替換歷史記錄，編輯器也會宣告並實施裸本地參考執行時並不具備的檔案系統策略。
 
-两条启动路径的配置所有者也不同。Web 在已运行的宿主上挂载逐 agent preset，Python SDK 则初始化一个完整的 stdio JSON-RPC 子进程。将二者视为可互换的同一个 Cordis leaf 会掩盖生命周期差异，而且 SDK 示例没有通过环境选择模型或系统提示词的入口。
+兩條啟動路徑的設定所有者也不同。Web 在已執行的主機上掛載逐 agent preset，Python SDK 則初始化一個完整的 stdio JSON-RPC 子程序。將二者視為可互換的同一個 Cordis leaf 會掩蓋生命週期差異，而且 SDK 範例沒有透過環境選擇模型或系統提示詞的入口。
 
-## 决策
+## 決策
 
-随附 Web minimal preset 对外提供持久 `bash`；独立 profile 在 Linux／macOS 上提供持久 `bash`，在 Windows 上提供 `pwsh`。两者都不挂载上下文压缩或文件系统提供方，并为新建会话抑制每个 `dsh-system-prompt` runtime-context 贡献。[仅持久 shell 决策](../simplification/2026-09-03-minimal-profiles-persistent-shell-only.zh.md)从两份组合中移除了编辑器及其原本除此之外无人使用的 `fs-local` 提供方。Web preset 的 persona 继续采用较早的 [minimal preset 组合决策](../../archived/bug-fix/2026-08-10-minimal-preset-owns-rl-composition.md)所拥有的固定 complete 提示词，并仅为该 agent 作用域实施 runtime-context 抑制。独立 spine 将同一设置转发给其进程拥有的 system-prompt 服务。Web 宿主保留沙箱与批准服务；独立 profile 挂载 danger-full-access 沙箱策略，不挂载批准服务。两者都不贡献面向模型的策略上下文。
+隨附 Web minimal preset 對外提供持久 `bash`；獨立 profile 在 Linux／macOS 上提供持久 `bash`，在 Windows 上提供 `pwsh`。兩者都不掛載上下文壓縮或檔案系統提供者，併為新建工作階段抑制每個 `dsh-system-prompt` runtime-context 貢獻。[僅持久 shell 決策](../simplification/2026-09-03-minimal-profiles-persistent-shell-only.zh.md)從兩份組合中移除了編輯器及其原本除此之外無人使用的 `fs-local` 提供者。Web preset 的 persona 繼續採用較早的 [minimal preset 組合決策](../../archived/bug-fix/2026-08-10-minimal-preset-owns-rl-composition.md)所擁有的固定 complete 提示詞，並僅為該 agent 作用域實施 runtime-context 抑制。獨立 spine 將同一設定轉發給其程序擁有的 system-prompt 服務。Web 主機保留沙箱與批准服務；獨立 profile 掛載 danger-full-access 沙箱策略，不掛載批准服務。兩者都不貢獻面向模型的策略上下文。
 
-独立的 [`@deepseek-ai/dsh-sdk-minimal` 组合包](../../../../packages/bundle/sdk-minimal/README.zh.md)仍是 `dsh --profile sdk-minimal` 后面的完整 JSON-RPC 进程组合。它挂载 SDK 启动与 JSON-RPC 服务、按平台选择的持久 shell 所需的本地 PTY 和子进程服务、该 shell 的工具消费方，以及位于 `$DSH_HOME/sessions` 的未压缩 JSONL 持久化。它不挂载 `token-meter`、`compaction-basic`、`fs-local`、`fs-sandbox`、`fs-observation-policy` 或文件系统工具。持久 shell 消费该 profile 的 danger-full-access 沙箱策略。[docs/architecture.md](../../../../docs/architecture.zh.md) 负责该组合包的位置及其与 `dsh-base` 的分离。
+獨立的 [`@deepseek-ai/dsh-sdk-minimal` 組合包](../../../../packages/bundle/sdk-minimal/README.zh.md)仍是 `dsh --profile sdk-minimal` 後面的完整 JSON-RPC 程序組合。它掛載 SDK 啟動與 JSON-RPC 服務、按平臺選擇的持久 shell 所需的本地 PTY 和子程序服務、該 shell 的工具消費方，以及位於 `$DSH_HOME/sessions` 的未壓縮 JSONL 持久化。它不掛載 `token-meter`、`compaction-basic`、`fs-local`、`fs-sandbox`、`fs-observation-policy` 或檔案系統工具。持久 shell 消費該 profile 的 danger-full-access 沙箱策略。[docs/architecture.md](../../../../docs/architecture.zh.md) 負責該組合包的位置及其與 `dsh-base` 的分離。
 
-`DSH_SYSTEM_PROMPT` 选择独立组合的 persona，`DSH_CONTEXT_WINDOW` 为没有确切目录元数据的模型提供后备容量。SDK 客户端的 JSON-RPC `initialize` 请求是唯一运行时模型选择。[`minimal.py`](../../../../python/sdk/examples/minimal.py)可以只把 `DSH_MODEL` 读作命令的默认 `model` 参数；显式 `--model` 不需要匹配的子进程环境值。端点与凭据变量继续由 DeepSeek 适配器现有的环境解析路径持有。
+`DSH_SYSTEM_PROMPT` 選擇獨立組合的 persona，`DSH_CONTEXT_WINDOW` 為沒有確切目錄中繼資料的模型提供後備容量。SDK 用戶端的 JSON-RPC `initialize` 請求是唯一執行時模型選擇。[`minimal.py`](../../../../python/sdk/examples/minimal.py)可以只把 `DSH_MODEL` 讀作命令的預設 `model` 參數；顯式 `--model` 不需要匹配的子程序環境值。端點與憑證變數繼續由 DeepSeek 介面卡現有的環境解析路徑持有。
 
-## 验证
+## 驗證
 
-Web 回放会启动完整 Web 宿主，通过 preset 服务创建 agent，并断言不存在作用域文件系统或压缩服务、没有追加 system-prompt 拥有的 runtime-context 消息，而且组装请求只包含固定提示词与持久 Bash。随后，它通过真实作用域服务执行持久 Bash。
+Web 回放會啟動完整 Web 主機，透過 preset 服務建立 agent，並斷言不存在作用域檔案系統或壓縮服務、沒有追加 system-prompt 擁有的 runtime-context 訊息，而且組裝請求只包含固定提示詞與持久 Bash。隨後，它透過真實作用域服務執行持久 Bash。
 
-SDK keyless 源码测试启动真实 `dsh --profile sdk-minimal`，使用环境选择的提示词完成一个回合，并断言生成的单组合包 manifest。Python SDK 打包运行时快照固定组装提示词、精确单工具目录，并固定不存在任何 system-prompt 所拥有的 runtime-context 消息。打包运行时覆盖会通过每种可用载体，使用环境选择的模型、模型容量和提示词值初始化独立 profile，然后执行所选持久 shell。Cordis 校验会检查两份配置能否解析声明的插件和配置字段。
+SDK keyless 原始碼測試啟動真實 `dsh --profile sdk-minimal`，使用環境選擇的提示詞完成一個回合，並斷言生成的單組合包 manifest。Python SDK 打包執行時快照固定組裝提示詞、精確單工具目錄，並固定不存在任何 system-prompt 所擁有的 runtime-context 訊息。打包執行時覆蓋會透過每種可用載體，使用環境選擇的模型、模型容量和提示詞值初始化獨立 profile，然後執行所選持久 shell。Cordis 驗證會檢查兩份設定能否解析宣告的外掛和設定欄位。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**以较高阈值保留 `compaction-basic`。** 不予采用，因为即便提供方在短测试中未触发，较长会话仍允许替换历史记录，而且 minimal 组合仍会依赖模型容量元数据与 token meter。
+**以較高閾值保留 `compaction-basic`。** 不予採用，因為即便提供者在短測試中未觸發，較長工作階段仍允許替換歷史記錄，而且 minimal 組合仍會依賴模型容量中繼資料與 token meter。
 
-**移除编辑器后保留 `fs-local`。** 不予采用，因为两份 minimal 组合都没有其他文件系统消费方。保留该提供方只会扩大运行时清单，不会新增模型可见能力。
+**移除編輯器後保留 `fs-local`。** 不予採用，因為兩份 minimal 組合都沒有其他檔案系統消費方。保留該提供者只會擴大執行時清單，不會新增模型可見能力。
 
-**为 Web 与 Python SDK 启动使用同一个 Cordis leaf。** 不予采用，因为 Web preset 向现有多会话宿主贡献 agent 作用域服务，而 Python SDK 必须启动包含 JSON-RPC 服务器及其进程级依赖的完整进程。
+**為 Web 與 Python SDK 啟動使用同一個 Cordis leaf。** 不予採用，因為 Web preset 向現有多工作階段主機貢獻 agent 作用域服務，而 Python SDK 必須啟動包含 JSON-RPC 伺服器及其程序級依賴的完整程序。
 
-**把请求模型镜像到 `DSH_MODEL`。** 不予采用，因为直接适配器接受不在建议目录中的模型 id，并为它们解析后备上下文元数据。镜像会为同一项选择制造两个输入；SDK 初始化请求具有权威，`DSH_MODEL` 只保留为 `minimal.py` 的便捷默认值。
+**把請求模型映像到 `DSH_MODEL`。** 不予採用，因為直接介面卡接受不在建議目錄中的模型 id，併為它們解析後備上下文中繼資料。映像會為同一項選擇製造兩個輸入；SDK 初始化請求具有權威，`DSH_MODEL` 只保留為 `minimal.py` 的便捷預設值。
 
-## 后果
+## 後果
 
-Minimal 会话不会摘要或替换较早历史，也不会添加 runtime-context 快照；调用方必须让会话轮次保持在所选模型的上下文容量内，且不得依赖模型可见的常驻沙箱或批准策略说明。两条启动路径共享单工具、无文件系统、无上下文与无压缩保证，同时保留适合各自所有者的不同提示词和模型配置。Python SDK 路径只通过内置 `dsh` stdio JSON-RPC profile 通信。
+Minimal 工作階段不會摘要或替換較早歷史，也不會新增 runtime-context 快照；呼叫方必須讓工作階段輪次保持在所選模型的上下文容量內，且不得依賴模型可見的常駐沙箱或批准策略說明。兩條啟動路徑共享單工具、無檔案系統、無上下文與無壓縮保證，同時保留適合各自所有者的不同提示詞和模型設定。Python SDK 路徑只透過內建 `dsh` stdio JSON-RPC profile 通訊。

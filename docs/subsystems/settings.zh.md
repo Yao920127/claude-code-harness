@@ -1,18 +1,18 @@
-# 插件配置表单
+# 外掛設定表單
 
 [English](settings.md) | 中文
 
-[设置服务](../../packages/settings/settings/README.zh.md) 从活动 profile 条目投影 volatile Config 字段。[配置编辑器](../../packages/boot/config-editor/README.zh.md) 通过 Cordis patch 持久化编辑。业务消费者对自己的 Config 引用调用 `.get()`。
+[設定服務](../../packages/settings/settings/README.zh.md) 從活動 profile 條目投影 volatile Config 欄位。[設定編輯器](../../packages/boot/config-editor/README.zh.md) 透過 Cordis patch 持久化編輯。業務消費者對自己的 Config 引用呼叫 `.get()`。
 
-## 标识与值
+## 標識與值
 
-表单命名空间是当前 profile 中可唯一定位条目的本地 id。多个插件实例在条目 id 不同时拥有独立表单。普通字段被排除。描述符包含实际值、继承值、显式 profile 覆盖值和乐观修订号。
+表單名稱空間是目前 profile 中可唯一定位條目的本地 id。多個外掛實例在條目 id 不同時擁有獨立表單。普通欄位被排除。描述符包含實際值、繼承值、顯式 profile 覆蓋值和樂觀修訂號。
 
-## 编辑
+## 編輯
 
-`update` 合并提交的字段。`replace` 先将即时字段重置为继承配置，再应用提交的字段。`mutate` 操作独立路径，保留客户端响应中未包含的秘密值。每次写入都会验证完整 Config，并在持久化前拒绝过期修订号。
+`update` 合併提交的欄位。`replace` 先將即時欄位重置為繼承設定，再應用提交的欄位。`mutate` 操作獨立路徑，保留使用者端回應中未包含的秘密值。每次寫入都會驗證完整 Config，並在持久化前拒絕過期修訂號。
 
-`settings/document-updated` 在 Loader 配置变化后使表单描述符失效。这是 UI 通知；消费者仅在需要刷新注册信息时使用 `loader/volatile-update`。
+`settings/document-updated` 在 Loader 設定變化後使表單描述符失效。這是 UI 通知；消費者僅在需要重新整理註冊資訊時使用 `loader/volatile-update`。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

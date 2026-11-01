@@ -1,4 +1,4 @@
-/** Typed English, Simplified Chinese, and Traditional Chinese copy owned by the Electron shell. */
+/** Typed English and Traditional Chinese (Taiwan) copy owned by the Electron shell. */
 
 import { zhTW } from './locale-zh-tw.ts'
 
@@ -166,182 +166,16 @@ export const en = {
 /** Every Desktop locale supplies the complete English key set. */
 export type DesktopMessages = { readonly [Key in keyof typeof en]: string }
 
-export const zh = {
-  application: '应用',
-  fileMenu: '文件',
-  closePage: '关闭页面或窗口',
-  aboutMenu: '关于 Claude Code Harness',
-  aboutProduct: 'Claude Code Harness',
-  aboutVersion: '版本 V{version}',
-  hideApplication: '隐藏 Claude Code Harness',
-  hideOtherApplications: '隐藏其他',
-  showAllApplications: '显示全部',
-  quitApplication: '退出 Claude Code Harness',
-  openApplication: '打开 Claude Code Harness',
-  quit: '退出',
-  cancel: '取消',
-  quitTitle: '退出 Claude Code Harness？',
-  quitActiveTasks: '当前正在运行的任务将会中断',
-  quitScheduledTasks: '应用关闭期间，定时任务不会运行',
-  quitActiveAndScheduledTasks: '当前正在运行的任务将会中断，且应用关闭期间，定时任务不会运行',
-  backgroundNoticeBody: '正在运行的任务不会中断，可在系统托盘中重新打开窗口',
-  backgroundNoticeConfirm: '确认',
-  edit: '编辑',
-  menuBar: '应用菜单',
-  delete: '删除',
-  undo: '撤销',
-  redo: '重做',
-  cut: '剪切',
-  copy: '复制',
-  paste: '粘贴',
-  selectAll: '全选',
-  startupFailed: 'Claude Code Harness 无法使用',
-  fatalSummary: '应用无法启动或已意外停止。',
-  startupAddressInUse: '有其他正在运行的 DSH（如其他 dsh web、桌面端），无法同时启动，请退出其他正在运行的 DSH 后重启。',
-  diagnosticTruncated: '… 错误详情已截短。',
-  reportWrittenTo: '诊断报告：{path}',
-  startupReinstallAdvice: '如果应用文件缺失或损坏，请关闭应用并重新安装。任务数据存储在独立位置。',
-  exitApplication: '退出',
-  restartApplication: '重启',
-  recoveryOperationFailed: '恢复操作失败',
-  disableThirdPartyPlugins: '禁用第三方插件、备份 profile patch 并重启',
-  welcomeTitle: 'Claude Code Harness',
-  welcomeBrand: 'Claude Code Harness',
-  welcomeTaglineBefore: '欢迎使用 ',
-  welcomeTaglineBrand: 'Claude Code Harness',
-  welcomeTaglineAfter: '',
-  welcomeDescription: '组装无限可能，共探智能上限',
-  welcomeAuthStarting: '正在打开登录…',
-  welcomeAuthWaiting: '没有自动打开浏览器？',
-  welcomeAuthWaitingDescription: '复制登录链接，用浏览器手动打开完成登录',
-  welcomeAuthExchanging: '正在完成登录…',
-  welcomeAuthExpired: '登录已超时',
-  welcomeAuthExpiredDescription: '请重新登录后继续操作',
-  welcomeAuthFailed: '登录未完成，请重试。',
-  welcomeAuthCopyLink: '复制登录链接',
-  welcomeAuthCopied: '已复制',
-  welcomeAuthCopyFailed: '复制失败，请重试',
-  welcomeAuthCancel: '取消',
-  welcomeAuthRetry: '重新登录',
-  welcomeSignIn: '登录',
-  welcomeApiKey: '添加 API Key',
-  welcomeKeyTitle: '添加一个 API Key 开始使用',
-  welcomeKeyDescription: '配置 DeepSeek 官方模型，即可开始使用',
-  welcomeKeyPlaceholder: '输入 API 密钥',
-  welcomeKeySave: '保存并继续',
-  welcomeKeyLater: '稍后配置',
-  welcomeKeyBack: '返回登录',
-  welcomeSessionExpired: '登录信息已失效，请重新登录',
-  welcomeKeyBlank: '请输入 API 密钥。',
-  welcomeKeyInvalid: '请仅输入 API 密钥，不要包含引号、空格或环境变量赋值。',
-  welcomeKeyFailed: '无法保存 API 密钥，请重试。',
-  welcomeContinueFailed: '无法打开工作区，请重试。',
-  cliChooseTitle: '登录编程 CLI',
-  cliChooseDescription: '可登录任意一个 CLI，也可以稍后设置。每个 CLI 使用各自已安装的程序与账号。',
-  cliStatusChecking: '正在检查…',
-  cliStatusSignedIn: '已登录',
-  cliStatusSignedInAs: '已登录：{email}',
-  cliStatusSignedOut: '未登录',
-  cliStatusUnavailable: '未安装',
-  cliSignIn: '登录',
-  cliRecheck: '重新检查',
-  cliLater: '稍后设置',
-  cliContinue: '继续',
-  cliBack: '返回',
-  cliWaitingTitle: '完成 {name} 登录',
-  cliWaitingBrowser: '请在浏览器中完成登录。',
-  cliWaitingCode: '如果浏览器显示授权码，请粘贴到下方。',
-  cliTerminalTitle: '请在终端中完成 {name} 登录',
-  cliTerminalDescription: '已打开运行 {name} 登录的终端窗口。完成后回到这里重新检查。',
-  cliCodePlaceholder: '粘贴授权码',
-  cliSubmitCode: '提交授权码',
-  cliFailed: '{name} 登录未完成，请重试。',
-  checkUpdatesMenu: '检查更新…',
-  reloadPageMenu: '刷新页面',
-  restartAppHostMenu: '重启应用与 Host',
-  updateCheckFailedTitle: '更新检查失败',
-  updateCheckFailed: '检查更新失败，请稍后重试。',
-  updateDownloadFailed: '下载更新失败，请重试。',
-  updateInstallFailed: '安装更新失败，请稍后重试。',
-  updateCheckNetworkFailed: '检查更新失败，请稍后重试。网络连接异常，请检查网络后重试。',
-  updateDownloadNetworkFailed: '下载更新失败，请重试。网络连接异常，请检查网络后重试。',
-  updateInstallNetworkFailed: '安装更新失败，请稍后重试。网络连接异常，请检查网络后重试。',
-  unknownError: '未知错误',
-  updateCheckTitle: '检查更新',
-  updateCurrent: '当前暂无可用更新。当前版本：V{version}',
-  updateChecking: '正在检查更新…',
-  updateDownload: '下载更新',
-  updateDownloadedTitle: 'Claude Code Harness v{version} 下载完成',
-  updateDownloadedDetail: '安装包已下载完毕，点击“安装并重启”，即刻重启客户端，开始部署。',
-  updateDownloadedTitleWindows: '新版本 v{version} 已准备就绪',
-  updateDownloadedDetailWindows: '更新期间应用将暂时关闭，完成后会自动打开。\n\n更新可能需要一些时间，请耐心等待，期间请勿重复启动应用。',
-  updateClose: '关闭',
-  updateAcknowledge: '确定',
-  updateLater: '稍后更新',
-  updateDownloading: '正在下载 {percent}%…',
-  updateVerifying: '正在校验更新文件…',
-  updateInstalling: '正在准备重启…',
-  updateRetry: '重试更新',
-  updateActiveTasks: '仍有进行中的任务',
-  updateActiveTasksDetail: '重启更新可能中断这些任务，是否要继续更新？',
-  updateStopTasks: '停止任务并更新',
-  updateTasksChanged: '有新任务开始，请重新确认更新。',
-  updateTasksUnavailable: '无法确认任务状态，请在工作区就绪后重试更新。',
-  updateStopFailed: '未能安全停止任务，更新未安装。请稍后重试。',
-  updateTechnicalDetails: '查看技术详情',
-  updateTitle: 'Claude Code Harness 更新',
-  updateAvailable: '发现可用更新',
-  updateDetail: 'Claude Code Harness {version}\n\nCCH 将重启以完成更新。',
-  installAndRestart: '安装并重启',
-  later: '稍后',
-  updateFailedTitle: '更新失败',
-  mandatoryTitle: '需要更新',
-  mandatoryDetail: '当前版本已停止支持，请更新后继续使用。在您确认重启之前，现有任务可以继续运行。',
-  mandatoryUnavailable: '暂时无法检查更新要求，请在网络恢复后重试。',
-  policyLoginTitle: '登录测试环境',
-  policyLoginRequired: '这是测试版应用，检查更新要求需要先通过飞书登录。登录不会下载或安装更新。',
-  policyLogin: '通过飞书登录',
-  policyLoginFailed: '测试环境登录未完成，请检查网络后重试。',
-  policyLoginLoading: '正在加载登录页面…',
-  mandatoryNoRelease: '暂时没有可用的更新，请重新检查或联系支持人员。',
-  mandatoryRefresh: '重新检查',
-  mandatoryPage: '前往官网下载',
-  mandatoryCopy: '复制下载链接',
-  mandatoryPageFailed: '无法打开浏览器，请复制下载链接后手动打开。',
-  mandatoryActionFailed: '更新操作失败，请重试；应用仍需更新后才能继续使用。',
-  mandatoryReady: '更新已准备就绪',
-  mandatoryVersion: 'V{version}',
-  mandatoryReadyDetail: '安装后将重新启动应用。',
-  mandatoryDeferred: '现有任务可以继续运行。完成更新后才能继续操作应用。',
-  mandatoryContinue: '继续安装更新',
-  mandatoryInspecting: '正在检查任务状态…',
-  mandatoryStopping: '正在安全结束应用中的任务。',
-  mandatoryRestarting: '应用即将重启，请稍候。',
-  mandatoryDownloadFailed: '更新文件下载或准备失败，请重试。',
-  mandatoryInstallFailed: '更新尚未安装，请重新检查任务后重试。',
-  mandatoryOpenHelp: '若页面未打开，可',
-  mandatoryReopen: '重新打开官网',
-  mandatoryCopied: '已复制链接',
-  mandatoryCopyFailed: '复制失败，请手动选择下方地址复制。',
-  mandatoryAddress: '下载地址',
-  mandatoryNotification: '返回应用确认安装并重启。',
-} as const satisfies DesktopMessages
-
 /** Locale payload exposed to the Desktop-owned renderer. */
 export interface DesktopLocale {
-  readonly id: 'en' | 'zh-CN' | 'zh-TW'
+  readonly id: 'en' | 'zh-TW'
   readonly messages: DesktopMessages
 }
 
-/** Chinese tags written in Traditional characters: the Hant script and the regions that use it. */
-const TRADITIONAL_CHINESE = /^zh-(?:hant|tw|hk|mo)(?:-|$)/u
-
-/** Resolve Electron's locale or a language tag to one shipped Desktop dictionary. */
+/** Resolve Electron's locale or a language tag to one shipped Desktop dictionary; every Chinese tag selects Traditional Chinese. */
 export function resolveDesktopLocale(locale: string): DesktopLocale {
-  const tag = locale.toLowerCase()
-  if (TRADITIONAL_CHINESE.test(tag)) return { id: 'zh-TW', messages: zhTW }
-  return tag.startsWith('zh')
-    ? { id: 'zh-CN', messages: zh }
+  return locale.toLowerCase().split('-')[0] === 'zh'
+    ? { id: 'zh-TW', messages: zhTW }
     : { id: 'en', messages: en }
 }
 
@@ -352,10 +186,8 @@ export function resolveDesktopLocale(locale: string): DesktopLocale {
  * @returns the supported dictionary, falling back to English.
  */
 export function resolveDesktopStartupLocale(preference: string | null, languages: readonly string[]): DesktopLocale {
-  const selected = preference?.toLowerCase()
-  if (selected === 'zh' || selected === 'en' || (selected !== undefined && TRADITIONAL_CHINESE.test(selected))) {
-    return resolveDesktopLocale(selected)
-  }
+  const selected = preference?.toLowerCase().split('-')[0]
+  if (preference !== null && (selected === 'zh' || selected === 'en')) return resolveDesktopLocale(preference)
   for (const language of languages) {
     const primary = language.toLowerCase().split('-')[0]
     if (primary === 'zh' || primary === 'en') return resolveDesktopLocale(language)

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-14-deepseek-account-login.md
 /agent-note-deepseek-account-browser-login:
   en: 8328647bcdf8a666
-  zh: 445a07c7ec4bcca4
+  zh: 7cea265582f6da5f
 /agent-note-deepseek-account-browser-login/problem:
   en: 67c00444d9dcf06d
-  zh: ef294910952ba052
+  zh: 42a66d8df97e5706
 /agent-note-deepseek-account-browser-login/decision:
   en: 3b6c781b5374a8af
-  zh: 2a3fb7c63dfdaf83
+  zh: daec6cbe0efbfc80
 /agent-note-deepseek-account-browser-login/alternatives-considered:
   en: 3c2dd2c948ffb51b
-  zh: d019197df0ee3dcf
+  zh: 7ed419e16b85b5f8
 /agent-note-deepseek-account-browser-login/consequences:
   en: a6eff4a0350e9018
-  zh: 2e3200ca089023ab
+  zh: 97716ef26757f6c9
 /agent-note-deepseek-account-browser-login/verification:
   en: 881edcb454b941a6
-  zh: 7dc5a9b7a066f623
+  zh: 7b7eda1262f67368
 /agent-note-deepseek-account-browser-login/related:
   en: 3efeda0686194f07
-  zh: 9c3ddc3b8baf9381
+  zh: 681c2981a8c17595

@@ -1,6 +1,6 @@
-- dialog "无法访问 GitHub":
-  - heading "无法访问 GitHub" [level=2]
-  - button "关闭"
-  - paragraph: 请尝试其他安装来源。
+- dialog "無法存取 GitHub":
+  - heading "無法存取 GitHub" [level=2]
+  - button "關閉"
+  - paragraph: 請嘗試其他安裝來源。
   - button "取消"
-  - button "试试其他方式"
+  - button "試試其他方式"

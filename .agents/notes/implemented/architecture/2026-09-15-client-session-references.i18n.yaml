@@ -4,46 +4,46 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-15-client-session-references.md
 /agent-note-client-session-references-reference-sources-and-ui-status:
   en: 720fca3e1f085f8f
-  zh: 3480eb43eb5f0e44
+  zh: af6b8134fc5f8b34
 /agent-note-client-session-references-reference-sources-and-ui-status/problem:
   en: 0f4d2b6e8b0393dc
-  zh: fe20aca8b4fd0701
+  zh: af98ea06e0d8249f
 /agent-note-client-session-references-reference-sources-and-ui-status/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/scope-and-ownership:
   en: d9d52caab1468205
-  zh: 1b7665610bb025c6
+  zh: 174ba9f4fe3e5835
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/addresses-bindings-and-references:
   en: 3743abc8bca00348
-  zh: d79e6a9311f0a2fe
+  zh: d2d3c68cbbcb7093
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/acquisition-failure-and-release:
   en: 84e9528d4f995460
-  zh: f79f197d3dfbe8e9
+  zh: 706116c57531a61c
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/reference-sources-and-session-list-records:
   en: e2de83d10542f93b
-  zh: 3855b38fc8c48ea3
+  zh: fa993e725c53bd8c
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/unified-ui-session-status:
   en: 2d75aef5cf5f1fc8
-  zh: 87a7051f24f9871a
+  zh: 661d01c3a9fc98b9
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/explicit-providers-and-consumer-lifetimes:
   en: 04802baa0147fec1
-  zh: b86037bf2e4bc936
+  zh: 60c9caa5571d1ca9
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/main-area-navigation-and-presentation:
   en: c46c9ca54ea9eaad
-  zh: 918dc8eebff5edf3
+  zh: 88f4c747035394c6
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/presets-and-creation-flows:
   en: 70ef26a3cd399b14
-  zh: 5c81515ff896f91a
+  zh: 3d39cf6d379165c4
 /agent-note-client-session-references-reference-sources-and-ui-status/decision/host-event-context-ownership-and-typert:
   en: eb3be89cf9431c44
-  zh: bfc26899286b37ad
+  zh: b5fe30b2b3babd2d
 /agent-note-client-session-references-reference-sources-and-ui-status/alternatives-considered:
   en: 658731de6bc235f3
-  zh: be16e5067f450b6e
+  zh: 4451fb6956a11cfe
 /agent-note-client-session-references-reference-sources-and-ui-status/verification:
   en: b7a7bb90877fedc3
-  zh: 8b39d7a9624d6b43
+  zh: 48c91f830298301d
 /agent-note-client-session-references-reference-sources-and-ui-status/consequences:
   en: aa1b46303452c3e8
-  zh: 01571143251dfc61
+  zh: a5694407925cbbaa

@@ -1,59 +1,59 @@
 ---
-description: "应用 Remote 层的包映射：类型化的 Client 到 Host 能力调用、结果与转发事件，供用户与维护者浏览该组。"
+description: "應用 Remote 層的包對映：型別化的 Client 到 Host 能力呼叫、結果與轉發事件，供使用者與維護者瀏覽該組。"
 kind: "package-group"
 ---
 
-# api/ — Remote API 层
+# api/ — Remote API 層
 
 [English](README.md) | 中文
 
 ## 概述
 
-`api/` 组提供应用的 Remote 层：Client 环境可以调用运行在 Host 上的业务能力——管理目标、运行命令、查看插件清单、发现文件与会话引用——调用方式是类型化方法，可接收结果或流、在已打开的流上发送上行项，并观察转发的 Host 事件。`remotes` 决定暴露哪些能力、以及每次调用如何到达正确会话的 agent；`gateway` 在 Client 与 Host 之间承载调用及其结果。技术栈运行在应用共享的 Connection 之上；流式会话数据刻意不在其中。
+`api/` 組提供應用的 Remote 層：Client 環境可以呼叫執行在 Host 上的業務能力——管理目標、執行命令、檢視外掛清單、發現檔案與工作階段引用——呼叫方式是型別化方法，可接收結果或流、在已開啟的流上傳送上行項，並觀察轉發的 Host 事件。`remotes` 決定暴露哪些能力、以及每次呼叫如何到達正確工作階段的 agent；`gateway` 在 Client 與 Host 之間承載呼叫及其結果。技術棧執行在應用共享的 Connection 之上；流式工作階段資料刻意不在其中。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-下面这些包共同提供 Remote 层；完整约定以各包 README 为准。
+下面這些包共同提供 Remote 層；完整約定以各包 README 為準。
 
-| 包 | 职责 | ctx key |
+| 包 | 職責 | ctx key |
 |---|---|---|
-| [`remotes/`](remotes/README.zh.md) | 决定 Client 可以消费哪些 Host 能力与事件。 | — |
-| [`gateway/`](gateway/README.zh.md) | 承载类型化一元调用、带 Client 上行的多路复用流，以及转发的 Host 事件。 | `ctx.typertGateway` / `ctx.remote` |
-| [`job-controller/`](job-controller/README.zh.md) | 把一个后台任务的观测 record 流式送到 Client。 | `ctx.jobController` / `ctx.remote.job` |
-| [`session-controller/`](session-controller/README.zh.md) | 拥有会话命令、历史记录流、实时控制状态与 Agent/Session 身份策略。 | `ctx.sessionController` / `ctx.remote.session` |
-| [`settings-controller/`](settings-controller/README.zh.md) | 拥有 settings 域各 seam 之上的配置界面读写。 | `ctx.settingsController`、`ctx.credentialsController` / `ctx.remote.settings`、`ctx.remote.credentials` |
-| [`workspace-controller/`](workspace-controller/README.zh.md) | 拥有 Workspace 变更与完整 Client Workspace 投影。 | `ctx.workspaceController` / `ctx.remote.workspace` |
-| [`terminal-controller/`](terminal-controller/README.zh.md) | Session 拥有的交互式 shell、屏幕恢复和浏览器终端控制。 | `ctx.terminalController` / `ctx.remote.terminal` |
-| [`workspace-files/`](workspace-files/README.zh.md) | 拥有有界的工作区文件访问——`stat`、分页 `read`、`list` 与已埋点操作的 `changes` 流——以及其上的 Client `file` 资源提供方。 | `ctx.workspaceFiles` / `ctx.remote.workspaceFiles` |
+| [`remotes/`](remotes/README.zh.md) | 決定 Client 可以消費哪些 Host 能力與事件。 | — |
+| [`gateway/`](gateway/README.zh.md) | 承載型別化一元呼叫、帶 Client 上行的多路複用流，以及轉發的 Host 事件。 | `ctx.typertGateway` / `ctx.remote` |
+| [`job-controller/`](job-controller/README.zh.md) | 把一個後臺任務的觀測 record 流式送到 Client。 | `ctx.jobController` / `ctx.remote.job` |
+| [`session-controller/`](session-controller/README.zh.md) | 擁有工作階段命令、歷史記錄流、即時控制狀態與 Agent/Session 身份策略。 | `ctx.sessionController` / `ctx.remote.session` |
+| [`settings-controller/`](settings-controller/README.zh.md) | 擁有 settings 域各 seam 之上的設定介面讀寫。 | `ctx.settingsController`、`ctx.credentialsController` / `ctx.remote.settings`、`ctx.remote.credentials` |
+| [`workspace-controller/`](workspace-controller/README.zh.md) | 擁有 Workspace 變更與完整 Client Workspace 投影。 | `ctx.workspaceController` / `ctx.remote.workspace` |
+| [`terminal-controller/`](terminal-controller/README.zh.md) | Session 擁有的互動式 shell、螢幕恢復和瀏覽器終端控制。 | `ctx.terminalController` / `ctx.remote.terminal` |
+| [`workspace-files/`](workspace-files/README.zh.md) | 擁有有界的工作區檔案存取——`stat`、分頁 `read`、`list` 與已追蹤點操作的 `changes` 流——以及其上的 Client `file` 資源提供者。 | `ctx.workspaceFiles` / `ctx.remote.workspaceFiles` |
 
-Remote 调用沿 Client → Host 方向运行在应用共享的 Connection 之上；流项沿 Host → Client 方向经 Gateway mux 传输，流的上行项则沿 Client → Host 方向走同一条逻辑流。API Gateway 拥有 Remote 传输，各控制器包分别拥有 Session、配置界面与 Workspace 行为。流式下载等不适合 Remote 调用的响应由功能包注册精确的 Connection Fetch 路由。
+Remote 呼叫沿 Client → Host 方向執行在應用共享的 Connection 之上；流項沿 Host → Client 方向經 Gateway mux 傳輸，流的上行項則沿 Client → Host 方向走同一條邏輯流。API Gateway 擁有 Remote 傳輸，各控制器包分別擁有 Session、設定介面與 Workspace 行為。流式下載等不適合 Remote 呼叫的回應由功能包註冊精確的 Connection Fetch 路由。
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先读 API Gateway 参考以端到端了解 Remote 模型，再读 Typert 子系统页了解共享定义，并通过 Connection 了解物理载体。
+先讀 API Gateway 參考以端到端了解 Remote 模型，再讀 Typert 子系統頁瞭解共享定義，並透過 Connection 瞭解物理載體。
 
-- [API Gateway 参考](../../docs/api-gateway.zh.md)——Typert API Gateway 的现状参考：编程模型、生成流水线与运行时调用。
-- [Typert 子系统参考](../../docs/subsystems/typert.zh.md)——protocol、Gateway 与消费方装配共享的公共约定。
-- [Connection](../client/connection/README.zh.md)——每次 Remote 调用背后的 RPC 载体、`/api` 信任围栏与响应封装。
+- [API Gateway 參考](../../docs/api-gateway.zh.md)——Typert API Gateway 的現狀參考：程式設計模型、生成流水線與執行時呼叫。
+- [Typert 子系統參考](../../docs/subsystems/typert.zh.md)——protocol、Gateway 與消費方裝配共享的公共約定。
+- [Connection](../client/connection/README.zh.md)——每次 Remote 呼叫背後的 RPC 載體、`/api` 信任圍欄與回應封裝。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

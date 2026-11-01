@@ -1,12 +1,12 @@
-# Typert 远程调用
+# Typert 遠端呼叫
 
 [English](typert.md) | 中文
 
-以下类型由生成的 Remote 产物、Host Gateway 与消费方 API assembly 共用。[Typert Gateway Agent Note](../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md) 负责架构与传输决策；本页记录 [`dsh-typert-protocol`](../../packages/typert/protocol/src/types.ts) 和 [`dsh-api-gateway`](../../packages/api/gateway/src/types.ts) 中公共约定的字面定义。
+以下型別由生成的 Remote 產物、Host Gateway 與消費方 API assembly 共用。[Typert Gateway Agent Note](../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md) 負責架構與傳輸決策；本頁記錄 [`dsh-typert-protocol`](../../packages/typert/protocol/src/types.ts) 和 [`dsh-api-gateway`](../../packages/api/gateway/src/types.ts) 中公共約定的字面定義。
 
-## Lookup 与上下文声明
+## Lookup 與上下文宣告
 
-业务对象包通过声明合并扩展两个空 map。lookup 将一种 Host 对象类型与其 wire identity 关联；上下文声明将一种作用域上下文类别与其 wire identity 关联。生成的 descriptor 引用这些 key，运行时提供方则提供活对象解析行为。
+業務物件包透過宣告合併擴充功能兩個空 map。lookup 將一種 Host 物件型別與其 wire identity 關聯；上下文宣告將一種作用域上下文類別與其 wire identity 關聯。生成的 descriptor 引用這些 key，執行時提供者則提供活物件解析行為。
 
 ```ts type-equiv
 /** Merge-extensible Host object lookup declarations. */
@@ -18,7 +18,7 @@ interface TypertLookupMap {}
 interface TypertContextMap {}
 ```
 
-lookup 的 resolver 卸载后，注册表仍会保留其 wire 声明。因此 SRC 发现过程会继续把该参数归类为 lookup，并因不可用而失败，而不会把 wire 值当作普通业务对象接受。
+lookup 的 resolver 解除安裝後，註冊表仍會保留其 wire 宣告。因此 SRC 發現過程會繼續把該參數歸類為 lookup，並因不可用而失敗，而不會把 wire 值當作普通業務物件接受。
 
 ```ts type-equiv
 /** Stable wire declaration retained after a lookup provider unloads. */
@@ -36,9 +36,9 @@ interface TypertLookupDefinition {
 }
 ```
 
-## 调用 descriptor
+## 呼叫 descriptor
 
-`InvocationDescriptor` 是本地反射信息，不是 wire message。Host 与消费方构建会生成彼此对应的 descriptor；请求只发送 endpoint 与具名 `args`。strict codec 携带生成的 schema factory，SRC codec 则在不恢复结构类型的前提下强制要求输入为 JSON 安全值。一元结果 codec 可提供 `encode()` 处理含字节的子树，并通过 `decode()` 递归校验原生字节；Client 声明将每个 `Uint8Array` 限定为以 `ArrayBuffer` 为底层缓冲区。纯 JSON 结果无需字节识别或 Client 解码。取消通过带外 carrier signal 表达：它在业务参数之后注入，绝不进入 `args`。
+`InvocationDescriptor` 是本地反射資訊，不是 wire message。Host 與消費方建置會生成彼此對應的 descriptor；請求只傳送 endpoint 與具名 `args`。strict codec 攜帶生成的 schema factory，SRC codec 則在不恢復結構型別的前提下強制要求輸入為 JSON 安全值。一元結果 codec 可提供 `encode()` 處理含位元組的子樹，並透過 `decode()` 遞迴驗證原生位元組；Client 宣告將每個 `Uint8Array` 限定為以 `ArrayBuffer` 為底層緩衝區。純 JSON 結果無需位元組識別或 Client 解碼。取消透過帶外 carrier signal 表達：它在業務參數之後注入，絕不進入 `args`。
 
 ```ts type-equiv
 /** Codec attached to one invocation parameter or result. */
@@ -140,7 +140,7 @@ interface InvocationDescriptor {
 }
 ```
 
-Host 别名 `RemoteStream<Out, In>` 同时命名一条流的两个方向，接收方法通过 `this.ctx.invocation` 读取本次调用的上下文：
+Host 別名 `RemoteStream<Out, In>` 同時命名一條流的兩個方向，接收方法透過 `this.ctx.invocation` 讀取本次呼叫的上下文：
 
 ```ts type-equiv
 /**
@@ -240,9 +240,9 @@ interface RemoteInvocation {
 }
 ```
 
-## Typert 注册表
+## Typert 註冊表
 
-`ctx.typert` 分开保存当前环境的 descriptor、显式选择的 Remote contribution、lookup 提供方与作用域上下文提供方。lookup 提供方拥有稳定 wire 声明和默认 resolver；Host 组合可以为同一个 key 配置 effect-scoped 同步或异步 resolver，配置卸载后恢复默认策略。各项注册都是由 Cordis 持有的 effect，并返回可等待的 disposer。
+`ctx.typert` 分開儲存目前環境的 descriptor、顯式選擇的 Remote contribution、lookup 提供者與作用域上下文提供者。lookup 提供者擁有穩定 wire 宣告和預設 resolver；Host 組合可以為同一個 key 設定 effect-scoped 同步或非同步 resolver，設定解除安裝後恢復預設策略。各項註冊都是由 Cordis 持有的 effect，並返回可等待的 disposer。
 
 ```ts type-equiv
 /** Minimal Typert runtime consumed through dependency inversion. */
@@ -254,7 +254,7 @@ interface TypertRegistryContract {
 }
 ```
 
-生成的消费方声明会把 direct namespace 合并到 `TypertClientRemote` 继承的 map 中。
+生成的消費方宣告會把 direct namespace 合併到 `TypertClientRemote` 繼承的 map 中。
 
 ```ts type-equiv
 /** Merge-extensible direct namespace surface generated for Client Remote services. */
@@ -263,7 +263,7 @@ interface TypertRemoteNamespaceMap {}
 
 ## Host Gateway
 
-Connection 会先解码 carrier envelope，再调用 `ctx.typertGateway`。请求将精确的具名 wire 字段与 carrier 的取消 signal 分开携带；基础设施与边界失败由 `TypertGatewayError` 承载，其 `gateway/*` 码就是普通的 `RemoteError` 码，因此 RPC 适配器会把每个经结构识别的 `RemoteError` 连同其 code 与 details 原样放行，只把无法识别的异常归并为 `gateway/internal`。
+Connection 會先解碼 carrier envelope，再呼叫 `ctx.typertGateway`。請求將精確的具名 wire 欄位與 carrier 的取消 signal 分開攜帶；基礎設施與邊界失敗由 `TypertGatewayError` 承載，其 `gateway/*` 碼就是普通的 `RemoteError` 碼，因此 RPC 介面卡會把每個經結構識別的 `RemoteError` 連同其 code 與 details 原樣放行，只把無法識別的異常歸併為 `gateway/internal`。
 
 ```ts type-equiv
 /** One Remote method request after a carrier has decoded its envelope. */
@@ -341,9 +341,9 @@ interface TypertGateway {
 }
 ```
 
-## 消费方 Remote
+## 消費方 Remote
 
-`ctx.remote` 只暴露由已导入 `/remote` 产物贡献的 namespace。`$mount()` 会把生成的 descriptor 与具体方法作为一项由 fiber 持有的操作统一注册。每个 namespace 都是可追踪的 `remote.<namespace>` Cordis 子服务，其生命周期覆盖已挂载的方法；JavaScript Proxy 与 Host 业务服务类型都不会进入消费方。
+`ctx.remote` 只暴露由已匯入 `/remote` 產物貢獻的 namespace。`$mount()` 會把生成的 descriptor 與具體方法作為一項由 fiber 持有的操作統一註冊。每個 namespace 都是可追蹤的 `remote.<namespace>` Cordis 子服務，其生命週期覆蓋已掛載的方法；JavaScript Proxy 與 Host 業務服務型別都不會進入消費方。
 
 ```ts type-equiv
 /** Client Remote capability implemented by the Gateway and consumed by Remote assemblies. */

@@ -14,10 +14,10 @@ How to translate between the two sides of a documentation pair in this repo. Bot
 
 - The register is calibrated by [style-samples.md](style-samples.md) — human-approved gold pairs, one per document genre. The counterpart MUST match the target-language side of the nearest sample; where its voice and a prose voice rule disagree, the sample wins. Chinese targets use institutional technical Chinese; English targets use concise professional developer prose.
 - Write as a native technical author restating the content, not as a translator transposing sentences, while preserving every source clause: nothing added, nothing dropped — fluency never justifies losing a clause.
-- Give sentences an explicit actor when the target language would otherwise obscure it; for Chinese, replace vague passives or abstract subjects with the actual actor (系统、门禁、评审人).
-- Prefer established target-language engineering idiom over calques (误报／漏检 for false positive/negative, 执行红线 for enforcement frontier); localize metaphors instead of transplanting them, and unpack noun chains where the target language requires it.
+- Give sentences an explicit actor when the target language would otherwise obscure it; for Chinese, replace vague passives or abstract subjects with the actual actor (系統、門禁、評審人).
+- Prefer established target-language engineering idiom over calques (誤報／漏檢 for false positive/negative, 執行紅線 for enforcement frontier); localize metaphors instead of transplanting them, and unpack noun chains where the target language requires it.
 - Split long paragraphs by semantic unit — one idea per paragraph. Paragraph boundaries MAY differ from the source; the structural signature does not count paragraphs.
-- When translating into Chinese, category nouns use Chinese with a first-mention English annotation (实操手册（cookbook）); when translating into English, use the conventional English category name. Literal directory or file references stay code-formatted English.
+- When translating into Chinese, category nouns use Chinese with a first-mention English annotation (實操手冊（cookbook）); when translating into English, use the conventional English category name. Literal directory or file references stay code-formatted English.
 
 ## Structure preservation
 
@@ -34,18 +34,18 @@ The repo's Markdown conventions apply to `.zh.md` files unchanged: one physical 
 
 ## Terminology
 
-- [terminology.md](terminology.md) is the source of truth in both directions. Before translating, load it; every listed term MUST follow its row and its "不要译作" prohibitions. A Chinese target uses the "中文" column and its "首次出现" annotation; an English target uses the "English" column without adding a Chinese gloss.
-- For a Chinese target, an unlisted technical term MAY use an established rendering from a major Chinese-language OSS or vendor source (K8s/Vue/MDN Chinese docs, 微软简中风格指南, big-tech project docs), cited in the PR. Without such precedent it MUST stay in English and be listed under 「待定术语」(pending terms) with a suggested rendering.
+- [terminology.md](terminology.md) is the source of truth in both directions. Before translating, load it; every listed term MUST follow its row and its "不要譯作" prohibitions. A Chinese target uses the "中文" column and its "首次出現" annotation; an English target uses the "English" column without adding a Chinese gloss.
+- For a Chinese target, an unlisted technical term MAY use an established rendering from a major Chinese-language OSS or vendor source (K8s/Vue/MDN Chinese docs, 微軟簡中風格指南, big-tech project docs), cited in the PR. Without such precedent it MUST stay in English and be listed under 「待定術語」(pending terms) with a suggested rendering.
 - For an English target, use the established English technical term. If the source term has no unambiguous established equivalent, preserve it with a short explanatory gloss and list it under pending terms. Neither direction may invent a rendering inline; a decided term enters [terminology.md](terminology.md) in the same PR or a follow-up.
 
 ## Typography
 
 These rules govern the Chinese side; the English side follows the repo's normal Markdown conventions (root `AGENTS.md`). The mixed-script rules below follow the cross-project consensus of the [MDN Simplified Chinese translation guide](https://github.com/mdn/translated-content/blob/main/docs/zh-cn/translation-guide.md), the [Kubernetes zh-cn localization guide](https://kubernetes.io/zh-cn/docs/contribute/localization_zh/), the [Vue.js Chinese translation conventions](https://github.com/vuejs-translations/docs-zh-cn/wiki/%E7%BF%BB%E8%AF%91%E9%A1%BB%E7%9F%A5), and [中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines), which in turn ground in [W3C clreq](https://www.w3.org/TR/clreq/) and GB/T 15834—2011:
 
-- MUST put one half-width space between Chinese text and Latin words, and between Chinese text and numerals: `每个 plugin 注册 3 个 tool`。No space between a full-width punctuation mark and anything.
+- MUST put one half-width space between Chinese text and Latin words, and between Chinese text and numerals: `每個 plugin 註冊 3 個 tool`。No space between a full-width punctuation mark and anything.
 - MUST use full-width (Chinese) punctuation in Chinese prose: `，。：；？！（）「」`. Half-width punctuation stays inside code spans, inside complete English sentences quoted as-is, and in numbers (`3.5`, `1,024`).
 - Chinese prose *SHOULD* prefer colons, periods, commas, or parentheses over em dashes. Keep an em dash only when no other punctuation preserves the sentence naturally.
-- Enumeration commas: a Chinese list of parallel items uses 顿号（、）, not commas.
+- Enumeration commas: a Chinese list of parallel items uses 頓號（、）, not commas.
 - MUST NOT use full-width digits or full-width Latin letters — `１２３` never, `123` always.
 - Proper nouns keep their canonical casing: GitHub, TypeScript, DeepSeek — never `github`/`Github` unless quoting code.
 - Second person is 你, not 您 (matches the Vue and Kubernetes Chinese conventions and this repo's direct voice).
@@ -63,7 +63,7 @@ Authorities cited by these rules, for humans and agents who want the underlying 
 - [中文文案排版指北](https://github.com/sparanoid/chinese-copywriting-guidelines) — the de-facto community standard for mixed CJK/Latin spacing and punctuation.
 - [MDN zh-CN translation guide](https://github.com/mdn/translated-content/blob/main/docs/zh-cn/translation-guide.md) — an in-repo translation-rules file of the same shape as this one; spacing, punctuation, and glossary practice.
 - [Kubernetes zh-cn localization guide](https://kubernetes.io/zh-cn/docs/contribute/localization_zh/) — terminology-first-occurrence and punctuation practice from the largest zh localization team.
-- [Vue.js docs-zh-cn 翻译须知](https://github.com/vuejs-translations/docs-zh-cn/wiki/%E7%BF%BB%E8%AF%91%E9%A1%BB%E7%9F%A5) — per-term translate/keep decisions and tone.
+- [Vue.js docs-zh-cn 翻譯須知](https://github.com/vuejs-translations/docs-zh-cn/wiki/%E7%BF%BB%E8%AF%91%E9%A1%BB%E7%9F%A5) — per-term translate/keep decisions and tone.
 - [zh-style-guide](https://zh-style-guide.readthedocs.io) — a community Chinese technical-writing style guide whose rule-level taxonomy (and RFC 2119 keyword levels) this file borrows; aggregates GB/T 15834/15835, clreq, and vendor guides.
 - [W3C clreq](https://www.w3.org/TR/clreq/) and the [Microsoft Simplified Chinese style guide](https://learn.microsoft.com/en-us/globalization/reference/microsoft-style-guides) — the formal typographic and vendor-localization baselines.
-- GB/T 19682-2005《翻译服务译文质量要求》 — the national standard whose three base requirements (忠实原文、术语统一、行文通顺) this file's Faithfulness and Terminology sections operationalize.
+- GB/T 19682-2005《翻譯服務譯文品質要求》 — the national standard whose three base requirements (忠實原文、術語統一、行文通順) this file's Faithfulness and Terminology sections operationalize.

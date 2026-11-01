@@ -12,7 +12,7 @@ afterEach(cleanup)
 
 describe.each([
   { locale: 'en', t: makeTranslate(en, commonEn), title: 'Tools updated', summary: '2 added, 1 removed', added: 'Added: search, read_file', removed: 'Removed: old_search' },
-  { locale: 'zh', t: makeTranslate(zh, commonZh), title: '工具已更新', summary: '新增 2 个，移除 1 个', added: '新增：search, read_file', removed: '移除：old_search' },
+  { locale: 'zh', t: makeTranslate(zh, commonZh), title: '工具已更新', summary: '新增 2 個，移除 1 個', added: '新增：search, read_file', removed: '移除：old_search' },
 ])('tool update disclosure ($locale)', ({ t, title, summary, added, removed }) => {
   it('shows counts collapsed and compact name lists when expanded', () => {
     render(<ContextInjectionRow

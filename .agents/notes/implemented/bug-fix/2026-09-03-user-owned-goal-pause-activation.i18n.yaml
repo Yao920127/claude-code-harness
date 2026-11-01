@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-03-user-owned-goal-pause-activation.md
 /agent-note-user-owned-goal-pause-exposes-live-activation:
   en: 07749eb6ac180964
-  zh: b9c1165739fc45bf
+  zh: a9168f52c600beac
 /agent-note-user-owned-goal-pause-exposes-live-activation/problem:
   en: 9f044f22e6782773
-  zh: 6c17c53aa75280fd
+  zh: 342f5928ec14f3b6
 /agent-note-user-owned-goal-pause-exposes-live-activation/decision:
   en: 2cc4ab097350a88f
-  zh: db10825a6285f3c5
+  zh: 978089b7bf18372c
 /agent-note-user-owned-goal-pause-exposes-live-activation/alternatives-considered:
   en: 640afdb17164b06b
-  zh: 92d33c139c40b2a1
+  zh: 002d5f70368d2ccf
 /agent-note-user-owned-goal-pause-exposes-live-activation/consequences:
   en: d73e412f853612ee
-  zh: 96630d28e3c431e1
+  zh: b9c9d79b6531c809
 /agent-note-user-owned-goal-pause-exposes-live-activation/testing:
   en: 9d103a90036f5d06
-  zh: df5440c8a4640e93
+  zh: 639e18cfcacb6495

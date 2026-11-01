@@ -1,5 +1,5 @@
 ---
-description: "查找从 V0 到工作区写入器版本的每个 Session 格式的完整持久化类型声明。"
+description: "查詢從 V0 到工作區寫入器版本的每個 Session 格式的完整持久化型別宣告。"
 ---
 
 # Session 持久化格式
@@ -8,58 +8,58 @@ description: "查找从 V0 到工作区写入器版本的每个 Session 格式�
 
 ## 概述
 
-本参考用于查阅已存储 Session 代际的 header、事件信封与载荷类型。低于工作区写入器版本的每个格式都有双语文档与完整 schema 快照。当前格式使用生成的持久化目录。[版本真源](../../session-format-status.zh.md)负责写入器常量与发布状态。
+本參考用於查閱已儲存 Session 代際的 header、事件信封與載荷型別。低於工作區寫入器版本的每個格式都有雙語文件與完整 schema 快照。目前格式使用生成的持久化目錄。[版本真源](../../session-format-status.zh.md)負責寫入器常數與釋出狀態。
 
-## 目录
+## 目錄
 
-- [格式参考](#formats)
-- [范围与证据](#scope)
-- [维护覆盖](#maintenance)
-- [开发备注](#dev-note)
+- [格式參考](#formats)
+- [範圍與證據](#scope)
+- [維護覆蓋](#maintenance)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="formats"></a>
-## 格式参考
+## 格式參考
 
-索引由已验证的快照与当前写入器常量生成。每个历史参考标明其来源检查点；Session 格式编号不能标识该格式内的每次事件载荷修订。
+索引由已驗證的快照與目前寫入器常數生成。每個歷史參考標明其來源檢查點；Session 格式編號不能標識該格式內的每次事件載荷修訂。
 
 <!-- persistence-format-index:start -->
 
-| 格式 | 来源 | 参考文档 | 机器 schema | 根类型 / 类型 |
+| 格式 | 來源 | 參考文件 | 機器 schema | 根型別 / 型別 |
 |---|---|---|---|---|
 | 0 | `dsh-v0.1.2-rc.1` | [V0](v0.zh.md) | [JSON](v0.schema.json) | 54 / 415 |
 | 1 | PR #3349 | [V1](v1.zh.md) | [JSON](v1.schema.json) | 54 / 415 |
 | 2 | `dsh-v0.1.3-alpha.2` | [V2](v2.zh.md) | [JSON](v2.schema.json) | 56 / 435 |
 | 3 | PR #4320 | [V3](v3.zh.md) | [JSON](v3.schema.json) | 60 / 467 |
-| 4 | 当前工作树 | [当前目录](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json) | 62 / 587 |
+| 4 | 目前工作樹 | [目前目錄](../../persistence-catalog.zh.md) | [JSON](../../persistence-schema.json) | 62 / 587 |
 
 <!-- persistence-format-index:end -->
 
 <a id="scope"></a>
-## 范围与证据
+## 範圍與證據
 
-每组 `vN.md` / `vN.zh.md` 文档包含 `kind: persistence-format`、将每个根类型键绑定到已记录摘要的相同 `yaml persistence-format` 声明、配对记录及完整的 `vN.schema.json`。[模板](../../../.agents/skills/dsh-doc/templates/persistence-format.md)定义这些记录。根类型覆盖所选检查点的逻辑 Session header、物理 JSONL header、事件信封与所有第一方事件；每个根包含所有可达的声明类型。打包的物理 body 记录由每页链接的独立 codec 负责。
+每組 `vN.md` / `vN.zh.md` 文件包含 `kind: persistence-format`、將每個根型別鍵繫結到已記錄摘要的相同 `yaml persistence-format` 宣告、配對記錄及完整的 `vN.schema.json`。[範本](../../../.agents/skills/dsh-doc/templates/persistence-format.md)定義這些記錄。根型別覆蓋所選檢查點的邏輯 Session header、物理 JSONL header、事件信封與所有第一方事件；每個根包含所有可達的宣告型別。打包的物理 body 記錄由每頁連結的獨立 codec 負責。
 
-V0 与 V2 使用[已收录预发布归档](../releases/README.zh.md)中最后一个对应 tag。由于收录的 tag 没有 V1 写入器，V1 使用其参考文档中标识的中间源码树。V3 捕获 PR #4320 中 V4 写入器变更前已验证的目录。历史来源保留文件路径，不包含行号。快照保留历史可选字段与不透明值，不会将当前类型替换到旧格式中。历史标识符仅在 schema JSON 与已验证的生成 schema 区间中原样保留；人工说明遵循当前术语规则。
+V0 與 V2 使用[已收錄預釋出歸檔](../releases/README.zh.md)中最後一個對應 tag。由於收錄的 tag 沒有 V1 寫入器，V1 使用其參考文件中標識的中間原始碼樹。V3 捕捉 PR #4320 中 V4 寫入器變更前已驗證的目錄。歷史來源保留檔案路徑，不包含行號。快照保留歷史可選欄位與不透明值，不會將目前型別替換到舊格式中。歷史識別符號僅在 schema JSON 與已驗證的生成 schema 區間中原樣保留；人工說明遵循目前術語規則。
 
-这些参考描述选定的 schema，不表示历史应用回放结果或迁移安全性。同版本内新增事件与可选载荷变更可以产生其他有效目录。预发布归档保留逐 tag 差异；[变更记录](../README.zh.md)保留当前兼容性确认。这些格式快照不替代任何一种历史。
+這些參考描述選定的 schema，不表示歷史應用回放結果或遷移安全性。同版本內新增事件與可選載荷變更可以產生其他有效目錄。預釋出歸檔保留逐 tag 差異；[變更記錄](../README.zh.md)保留目前相容性確認。這些格式快照不替代任何一種歷史。
 
 <a id="maintenance"></a>
-## 维护覆盖
+## 維護覆蓋
 
-`verify-persistence-formats` 从 `SESSION_FORMAT_VERSION` 推导所需的整数范围。每个更早的整数都需要独立的完整记录。当前目录与 schema 必须存在且匹配写入器版本。检查会拒绝缺失、多余、编号错误、不完整或不一致的记录及过期生成区间，无需获取 Git 历史或查询服务。
+`verify-persistence-formats` 從 `SESSION_FORMAT_VERSION` 推導所需的整數範圍。每個更早的整數都需要獨立的完整記錄。目前目錄與 schema 必須存在且匹配寫入器版本。檢查會拒絕缺失、多餘、編號錯誤、不完整或不一致的記錄及過期生成區間，無需取得 Git 歷史或查詢服務。
 
-推进写入器之前，验证当前目录并归档原格式。对于 V3 到 V4 的变更，在写入器与当前 schema 仍描述 V3 时运行以下命令：
+推進寫入器之前，驗證目前目錄並歸檔原格式。對於 V3 到 V4 的變更，在寫入器與目前 schema 仍描述 V3 時執行以下命令：
 
 ```sh
 pnpm run verify-persistence-catalog
 pnpm run verify-persistence-formats --archive 3
 ```
 
-对于其他转换，将 `3` 替换为原写入器版本。`--archive N` 从当前目录创建 `vN.schema.json`，只保留从根类型可达的类型，并移除源码行号。它拒绝已存在的目标、与当前写入器不同的版本、无效或不完整的 schema，以及与 `--write` 的组合。使用[模板](../../../.agents/skills/dsh-doc/templates/persistence-format.md)添加该快照的双语记录与来源证据。保留所有更早的记录。后继格式使用当前目录；复制新的当前目录不能满足归档前驱的要求。运行时变更遵循[格式版本实操手册](../../cookbook/adding-a-session-format-version.zh.md)。
+對於其他轉換，將 `3` 替換為原寫入器版本。`--archive N` 從目前目錄建立 `vN.schema.json`，只保留從根型別可達的型別，並移除原始碼行號。它拒絕已存在的目標、與目前寫入器不同的版本、無效或不完整的 schema，以及與 `--write` 的組合。使用[範本](../../../.agents/skills/dsh-doc/templates/persistence-format.md)新增該快照的雙語記錄與來源證據。保留所有更早的記錄。後繼格式使用目前目錄；複製新的目前目錄不能滿足歸檔前驅的要求。執行時變更遵循[格式版本實操手冊](../../cookbook/adding-a-session-format-version.zh.md)。
 
-注释标记内的 schema 定义与索引由工具生成。推进写入器并完成机器数据与人工证据后，刷新其表格和配对记录，再执行验证：
+註解標記內的 schema 定義與索引由工具生成。推進寫入器並完成機器資料與人工證據後，重新整理其表格和配對記錄，再執行驗證：
 
 ```sh
 pnpm run verify-persistence-formats --write
@@ -67,9 +67,9 @@ pnpm run verify-persistence-formats
 pnpm run doc-sync
 ```
 
-`--write` 先验证机器数据，再更新生成的 Markdown 与配对记录。它保留人工说明、机器声明和 schema。默认验证也会拒绝过期的配对记录；标准文档检查验证翻译与本地链接。当前目录的新鲜度仍由 `verify-persistence-catalog` 负责。
+`--write` 先驗證機器資料，再更新生成的 Markdown 與配對記錄。它保留人工說明、機器宣告和 schema。預設驗證也會拒絕過期的配對記錄；標準文件檢查驗證翻譯與本地連結。目前目錄的新鮮度仍由 `verify-persistence-catalog` 負責。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

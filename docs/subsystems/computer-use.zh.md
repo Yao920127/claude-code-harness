@@ -1,31 +1,31 @@
-# 计算机操作
+# 計算機操作
 
 [English](computer-use.md) | 中文
 
-计算机操作让模型通过配置的提供方观察并操作本地桌面。DSH 的共享能力称为 **computer use（计算机操作）**；**Cua Driver** 是上游实现的名称。
+計算機操作讓模型透過設定的提供者觀察並操作本地桌面。DSH 的共享能力稱為 **computer use（計算機操作）**；**Cua Driver** 是上游實作的名稱。
 
-## 选择提供方
+## 選擇提供者
 
-在同一组合中挂载 [`dsh-computer-use`](../../packages/computer-use/computer-use/README.zh.md) 和一个提供方。两个 Cua Driver 提供方都是公开发布到 npm 的实验性包，均需显式启用。
+在同一組閤中掛載 [`dsh-computer-use`](../../packages/computer-use/computer-use/README.zh.md) 和一個提供者。兩個 Cua Driver 提供者都是公開發布到 npm 的實驗性包，均需顯式啟用。
 
-| 提供方 | 运行时 |
+| 提供者 | 執行時 |
 |---|---|
-| [Cua Driver MCP](../../packages/experimental/computer-use-cua-driver-mcp/README.zh.md) | 通过 MCP 连接已安装的 `cua-driver` 可执行文件 |
-| [Cua Driver 原生](../../packages/experimental/computer-use-cua-driver-native/README.zh.md) | 随 npm 依赖安装的平台原生运行时 |
+| [Cua Driver MCP](../../packages/experimental/computer-use-cua-driver-mcp/README.zh.md) | 透過 MCP 連線已安裝的 `cua-driver` 可執行檔案 |
+| [Cua Driver 原生](../../packages/experimental/computer-use-cua-driver-native/README.zh.md) | 隨 npm 依賴安裝的平臺原生執行時 |
 
-各提供方提供上游工具目录。共享服务只注册名称，并拒绝任何第二个提供方，包括使用相同名称的另一个实例。服务不包含通用桌面操作方法或模型控制的选择器。
+各提供者提供上游工具目錄。共享服務只註冊名稱，並拒絕任何第二個提供者，包括使用相同名稱的另一個實例。服務不包含通用桌面操作方法或模型控制的選擇器。
 
-## 生命周期和桌面共享
+## 生命週期和桌面共享
 
-提供方在关闭工具和自有资源期间保留注册。启动失败会释放此次尝试的注册。MCP 提供方在重连期间保留注册。
+提供者在關閉工具和自有資源期間保留註冊。啟動失敗會釋放此次嘗試的註冊。MCP 提供者在重連期間保留註冊。
 
-一个已注册的提供方不会为某个 Session 预留桌面。调用方负责协调跨 Session 和独立 DSH 进程的完整观察、操作和验证流程。取消调用无法撤销桌面已收到的输入。
+一個已註冊的提供者不會為某個 Session 預留桌面。呼叫方負責協調跨 Session 和獨立 DSH 程序的完整觀察、操作和驗證流程。取消呼叫無法撤銷桌面已收到的輸入。
 
-## 结果和平台要求
+## 結果和平臺要求
 
-工具使用常规执行流程和 Session 日志。支持图像的模型路由在挂载附件存储时接收持久化截图；不支持图像的路由接收现有 MCP 图像诊断。提供方 README 负责说明安装、权限和平台限制。
+工具使用常規執行流程和 Session 日誌。支援影象的模型路由在掛載附件儲存時接收持久化截圖；不支援影象的路由接收現有 MCP 影象診斷。提供者 README 負責說明安裝、權限和平臺限制。
 
-[决策记录](../../.agents/notes/implemented/architecture/2026-09-12-computer-use-provider-registration.zh.md)解释只负责注册的服务和两个 Cua Driver 集成。
+[決策記錄](../../.agents/notes/implemented/architecture/2026-09-12-computer-use-provider-registration.zh.md)解釋只負責註冊的服務和兩個 Cua Driver 整合。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

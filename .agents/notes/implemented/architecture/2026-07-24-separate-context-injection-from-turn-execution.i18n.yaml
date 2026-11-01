@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-24-separate-context-injection-from-turn-execution.md
 /agent-note-separate-context-injection-from-turn-execution:
   en: f0090d5d271cbd9d
-  zh: 7ff28e03f1273093
+  zh: 007fa4dca220bff9
 /agent-note-separate-context-injection-from-turn-execution/problem:
   en: 2eefc25e17f62a90
-  zh: 81bc7ff2649b2704
+  zh: 6dd60fa0faaf3cad
 /agent-note-separate-context-injection-from-turn-execution/decision:
   en: 83dba9117127cbb4
-  zh: 2b6b428a1c97d3b1
+  zh: d9c00480994eca2b
 /agent-note-separate-context-injection-from-turn-execution/injection-lifecycle:
   en: 16005492be54cb4f
-  zh: db460e0ebf838d54
+  zh: 2aff136adc17b7dc
 /agent-note-separate-context-injection-from-turn-execution/extension-and-caller-semantics:
   en: e184d8cd9676e24f
-  zh: 22465b570ae35f59
+  zh: d8465d59caf464f5
 /agent-note-separate-context-injection-from-turn-execution/alternatives-considered:
   en: 0efad389c38dfe95
-  zh: 13dd73de20226540
+  zh: d89f88ecfca66965
 /agent-note-separate-context-injection-from-turn-execution/verification:
   en: 3f3db450a3fc5848
-  zh: b2027393d570339d
+  zh: cfba0594d15f96b3
 /agent-note-separate-context-injection-from-turn-execution/consequences:
   en: 71079e4dede5e12f
-  zh: deb46b5a4f151678
+  zh: febb6186186c575b

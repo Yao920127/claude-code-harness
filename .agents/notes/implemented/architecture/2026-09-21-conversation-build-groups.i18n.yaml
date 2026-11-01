@@ -4,40 +4,40 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-21-conversation-build-groups.md
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly:
   en: 011f264e0aea8d0c
-  zh: d0ad8b4334af619e
+  zh: 31a216c4edec0bae
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/problem:
   en: 83dd98f48ee30a1a
-  zh: 66dec35b4b54f291
+  zh: 89f6287a095d8ca4
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/decision:
   en: d4216ce4d80382e8
-  zh: 9ee608af410e81e0
+  zh: 5a92253131365bf6
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/decision/responsibilities:
   en: d7cf1bd544f163ee
-  zh: 2433f3faa5f5abcb
+  zh: 5659e3ddeaa8ab82
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/decision/related-decisions:
   en: d8307dcaf2a9ac72
-  zh: 4852b1e2a4d09af0
+  zh: bec399c836679888
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/definition-input-state-and-registration:
   en: 9fb89bddbfd75627
-  zh: 950c319db123c637
+  zh: 6fad920049c9907e
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/node-group-references-and-updates:
   en: 13034cf7eb143055
-  zh: 4ff0c0be55028258
+  zh: 971802217d32ad2c
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/assembly-order-and-lifecycle:
   en: 52a1bbfe6e9bcac7
-  zh: dabbcd108f68bd14
+  zh: e3861168f0966349
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/concrete-implementation-locations:
   en: 85715eb77bf73713
-  zh: 7e6c90830b65281b
+  zh: 6cc2c55ae7e08522
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/react-reading-and-presentation:
   en: 7636207f33e971a4
-  zh: ace1f5bbaf5a01b5
+  zh: 444138f3b3c74f1f
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/alternatives-considered:
   en: 21a74f9031f86a92
-  zh: c6abd0a5dfbf56a8
+  zh: 76312552bf1ce61d
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/verification:
   en: b42409d029fc0fde
-  zh: 0f8ab7d206cab772
+  zh: d2dc3a2c4fc0ed69
 /agent-note-definition-owned-grouping-with-generic-node-group-assembly/consequences:
   en: 96f1d81b28534661
-  zh: 8cb1c7a0f000c335
+  zh: e0663f169b06360a

@@ -4,10 +4,10 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/token-meter.md
 /token-meter:
   en: 7b81394f8688ad71
-  zh: e38852d59e9793fd
+  zh: c173a425d3bd9612
 /token-meter/tokenmeasurement:
   en: 34853869e90adf31
-  zh: 285010a2f695ca01
+  zh: c9c40cd80214d472
 /token-meter/tokensurfacenode:
   en: e445d12b10f651d0
-  zh: e93be5fb9da1da15
+  zh: 4b8c9d3e5a593e3d

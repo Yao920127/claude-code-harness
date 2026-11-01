@@ -1,5 +1,5 @@
 ---
-description: "持久终端能力家族的包映射：限定所有者范围的 ctx.terminals 服务、启动交互式 bash 或 pwsh 的 shell 后端，以及 6 个面向模型的工具。"
+description: "持久終端能力家族的包對映：限定所有者範圍的 ctx.terminals 服務、啟動互動式 bash 或 pwsh 的 shell 後端，以及 6 個面向模型的工具。"
 kind: "package-group"
 ---
 
@@ -9,44 +9,44 @@ kind: "package-group"
 
 ## 概述
 
-`terminal/` 家族让 agent（智能体）的交互式 shell 和 REPL 会话跨工具调用持续存在，包括工作目录、环境变量和运行中的子进程。使用 `terminal/` 管理所有者隔离的会话，使用 `terminal-bash/` 启动受沙箱约束的交互式 bash 或 pwsh 会话，使用 `tool-terminal/` 获得 6 个结果有界的面向模型终端操作。任务需要交互式输入或需要保留单次 bash 命令无法保存的状态时，选择这个家族。会话仅存在于一个 harness 进程中，重启后不会恢复。
+`terminal/` 家族讓 agent（智慧代理）的互動式 shell 和 REPL 工作階段跨工具呼叫持續存在，包括工作目錄、環境變數和執行中的子程序。使用 `terminal/` 管理所有者隔離的工作階段，使用 `terminal-bash/` 啟動受沙箱約束的互動式 bash 或 pwsh 工作階段，使用 `tool-terminal/` 獲得 6 個結果有界的面向模型終端操作。任務需要互動式輸入或需要保留單次 bash 命令無法儲存的狀態時，選擇這個家族。工作階段僅存在於一個 harness 程序中，重新啟動後不會恢復。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-该家族包含一个会话服务、一个 shell 后端与一组面向模型的工具。完整约定由各子级 README 负责；共享词汇与生成的服务接口面由子系统参考负责。
+該家族包含一個工作階段服務、一個 shell 後端與一組面向模型的工具。完整約定由各子級 README 負責；共享詞彙與生成的服務介面面由子系統參考負責。
 
-| 包 | 角色 | ctx 键 |
+| 包 | 角色 | ctx 鍵 |
 |---|---|---|
-| [`terminal/`](terminal/README.zh.md) | 会话服务：限定所有者范围的会话、不透明 id、精确到所有者的限制与等待完成的清理 | `ctx.terminals` |
-| [`terminal-bash/`](terminal-bash/README.zh.md) | shell 后端：在共享沙箱策略下启动交互式 bash 或 pwsh，带就绪检测与有界输出 | 注册后端到 `ctx.terminals` |
-| [`tool-terminal/`](tool-terminal/README.zh.md) | 6 个面向模型的工具，带所有者隔离与可选后台发送 | 注册到 `ctx.tools` |
+| [`terminal/`](terminal/README.zh.md) | 工作階段服務：限定所有者範圍的工作階段、不透明 id、精確到所有者的限制與等待完成的清理 | `ctx.terminals` |
+| [`terminal-bash/`](terminal-bash/README.zh.md) | shell 後端：在共享沙箱策略下啟動互動式 bash 或 pwsh，帶就緒檢測與有界輸出 | 註冊後端到 `ctx.terminals` |
+| [`tool-terminal/`](tool-terminal/README.zh.md) | 6 個面向模型的工具，帶所有者隔離與可選後臺傳送 | 註冊到 `ctx.tools` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-先从子系统参考了解共享类型与服务接口面，再从 Agent Note 了解设计理由与暂缓边界。
+先從子系統參考瞭解共享型別與服務介面面，再從 Agent Note 瞭解設計理由與暫緩邊界。
 
-- [终端子系统参考](../../docs/subsystems/terminal.zh.md)——id、后端与会话约定、发送就绪、有界读取，以及生成的 `ctx.terminals` API。
-- [持久 PTY Agent Note](../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——设计决策、备选方案与延期工作。
+- [終端子系統參考](../../docs/subsystems/terminal.zh.md)——id、後端與工作階段約定、傳送就緒、有界讀取，以及生成的 `ctx.terminals` API。
+- [持久 PTY Agent Note](../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——設計決策、備選方案與延期工作。
 - [能力 seam](../../docs/capability-seams.zh.md)——本家族遵循的 Service Definition / Service Provider / Consumer 拆分。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -55,11 +55,11 @@ it('opens a sandboxed window on explicit action and coalesces logins without aut
   const pending = auth.login()
   expect(auth.login()).toBe(pending)
   expect(native.create).toHaveBeenCalledTimes(1)
-  expect(native.create.mock.calls[0]![0]).toMatchObject({ title: '登录测试环境', webPreferences: {
+  expect(native.create.mock.calls[0]![0]).toMatchObject({ title: '登入測試環境', webPreferences: {
     session: browserSession, nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true,
     webviewTag: false, devTools: true } })
   expect(native.create.mock.calls[0]![0].webPreferences?.preload).toBeUndefined()
-  expect(window.loadFile).toHaveBeenCalledWith('renderer/policy-login-loading.html', { query: { label: '正在加载登录页面…' } })
+  expect(window.loadFile).toHaveBeenCalledWith('renderer/policy-login-loading.html', { query: { label: '正在載入登入頁面…' } })
   // The placeholder is the first document: the remote page waits for it.
   expect(window.loadURL).not.toHaveBeenCalled()
   await vi.waitFor(() => { expect(window.loadURL).toHaveBeenCalledWith('https://policy.example.com/') })

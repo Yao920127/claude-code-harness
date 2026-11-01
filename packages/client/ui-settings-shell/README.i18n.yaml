@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-settings-shell/README.md
 /:
   en: f6377310e46f34e5
-  zh: 55f00c64a61fb235
+  zh: 03b1d8889bb63ecf
 /deepseek-ai-dsh-client-ui-settings-shell:
   en: d38072750be19799
   zh: 8e2a7f9aacf2d61d
 /deepseek-ai-dsh-client-ui-settings-shell/summary:
   en: 4a6764083793412e
-  zh: f177136090ceee7e
+  zh: 7f33206fe8770c79
 /deepseek-ai-dsh-client-ui-settings-shell/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-settings-shell/use-this-package:
   en: caaab79a5e1a76f6
-  zh: 31dbcaaef71d4a0e
+  zh: 4bd5fa9c6cc1d2f9
 /deepseek-ai-dsh-client-ui-settings-shell/understand-the-implementation:
   en: 2c58855d6b1dfaa6
-  zh: 6e5546f2edb07687
+  zh: c59b7d44b6cb21f3
 /deepseek-ai-dsh-client-ui-settings-shell/further-exploration:
   en: 89337b623b8bf2f5
-  zh: c73362e199061864
+  zh: 9df0adaba5c9b93d
 /deepseek-ai-dsh-client-ui-settings-shell/model-experience:
   en: 6b7c6f82ab6c8435
-  zh: 4517689c899abcbe
+  zh: 02b2b5f9a8964c34
 /deepseek-ai-dsh-client-ui-settings-shell/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: 6e1c9a8fdde89577
+  zh: bed48d27e12306af
 /deepseek-ai-dsh-client-ui-settings-shell/known-limitations-and-deferred-work:
   en: 51c2778fb17f8d1d
-  zh: 6425a598ba93833e
+  zh: b1894e4c044ec1a8
 /deepseek-ai-dsh-client-ui-settings-shell/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: e88aeb617ffb74ea
+  zh: bb8387ee0e2ab0bd

@@ -60,7 +60,7 @@ export interface TranslationResponse {
 }
 
 const PLACEHOLDER = /{{([a-z_]+)}}/g
-const TEMPLATE_OPEN = '## 模板正文\n\n````text\n'
+const TEMPLATE_OPEN = '## 範本正文\n\n````text\n'
 const TEMPLATE_CLOSE = '\n````'
 const RESPONSE_SECTIONS = ['translation', 'review', 'final'] as const
 const RESPONSE_DELIMITERS = new Set(RESPONSE_SECTIONS.flatMap(section => [`<${section}>`, `</${section}>`]))
@@ -95,7 +95,7 @@ function translationFiles(input: Pick<TranslationPromptInput, 'sourceFilename' |
 /** Extract the machine-consumed text fence from `translation-prompt.md`. */
 function extractTranslationPrompt(document: string): string {
   const start = document.indexOf(TEMPLATE_OPEN)
-  if (start === -1) throw new Error('translation prompt: missing `## 模板正文` text fence')
+  if (start === -1) throw new Error('translation prompt: missing `## 範本正文` text fence')
   const contentStart = start + TEMPLATE_OPEN.length
   const end = document.indexOf(TEMPLATE_CLOSE, contentStart)
   if (end === -1) throw new Error('translation prompt: missing closing four-backtick fence')

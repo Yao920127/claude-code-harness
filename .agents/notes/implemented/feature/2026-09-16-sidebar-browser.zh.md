@@ -1,4 +1,4 @@
-# Agent Note: 沙箱化 Sidebar 浏览器
+# Agent Note: 沙箱化 Sidebar 瀏覽器
 
 Status: implemented
 
@@ -6,69 +6,69 @@ Status: implemented
 
 ## Problem
 
-右侧 Sidebar 可以预览已寻址的工作区文件，但没有用于访问网页的独立界面。在应用外打开会丢失 Sidebar 的分栏、浮动与 tab 生命周期。把任意网页当成 Document Preview 内容，也会混淆两种不同的信任模型：网页控制一个活跃浏览上下文，而文档 renderer 只接收为一次预览选定的字节。
+右側 Sidebar 可以預覽已定址的工作區檔案，但沒有用於存取網頁的獨立介面。在應用外開啟會丟失 Sidebar 的分欄、浮動與 tab 生命週期。把任意網頁當成 Document Preview 內容，也會混淆兩種不同的信任模型：網頁控制一個活躍瀏覽上下文，而文件 renderer 只接收為一次預覽選定的位元組。
 
-父页面不能检查或驱动跨域 iframe 的内部 history。支持的行为不能暗示具备这种能力。
+父頁面不能檢查或驅動跨域 iframe 的內部 history。支援的行為不能暗示具備這種能力。
 
 ## Decision
 
-`@deepseek-ai/dsh-client-ui-sidebar-browser` 注册可多开的右侧 Sidebar `browser` tab 类型。`SidebarRightTabParamsMap.browser` 接受可选初始 URL，使其他 Client 插件无须导入本包运行时值即可打开 Browser。
+`@deepseek-ai/dsh-client-ui-sidebar-browser` 註冊可多開的右側 Sidebar `browser` tab 型別。`SidebarRightTabParamsMap.browser` 接受可選初始 URL，使其他 Client 外掛無須匯入本包執行時值即可開啟 Browser。
 
-`MarkdownDelegateProvider` 为嵌套的 Markdown anchor 提供可选 owner callback，用于委托普通 HTTP(S) 点击，同时保留带修饰键点击的原生行为。Chat 在 node list 外放置一个 Provider；已注册该类型时，它以 URL 作为 typed navigation 参数打开新的 `browser` tab，否则使用系统浏览器；Markdown renderer 不导入 Browser feature。
+`MarkdownDelegateProvider` 為巢狀的 Markdown anchor 提供可選 owner callback，用於委託普通 HTTP(S) 點選，同時保留帶修飾鍵點選的原生行為。Chat 在 node list 外放置一個 Provider；已註冊該型別時，它以 URL 作為 typed navigation 參數開啟新的 `browser` tab，否則使用系統瀏覽器；Markdown renderer 不匯入 Browser feature。
 
-地址解析器接受 `http:` 与 `https:`，包括 loopback 目标；不带 scheme 的主机名补为 HTTPS。它拒绝内嵌凭据、应用自身 origin、畸形地址、`file:` URL，以及所有其他 scheme。本地文件继续由 Document Preview 负责。
+地址解析器接受 `http:` 與 `https:`，包括 loopback 目標；不帶 scheme 的主機名補為 HTTPS。它拒絕內嵌憑證、應用自身 origin、畸形地址、`file:` URL，以及所有其他 scheme。本地檔案繼續由 Document Preview 負責。
 
-Web 使用 iframe 载体；Desktop 使用[保持页面实例的 webview 载体](2026-09-20-desktop-browser-webview.zh.md)。它的默认 Web 策略是 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`；frame 没有直接的下载或顶层导航 flag。popup 会脱离 sandbox，Web popup 会保留 opener，并可以通过该链导航顶层应用。same-origin 允许被访问的 origin 使用自己的 Cookie 与 Web storage；它不会让跨域目标与 DSH 变成同源。iframe 不发送 referrer，也不添加包自有的 Permissions Policy，因此浏览器默认策略与用户授权生效。最右侧 toolbar 开关会为当前 tab occurrence 移除 sandbox attribute；该模式不持久化，启用期间持续显示警告。未受 sandbox 约束的页面可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。本包不执行 Host 侧 URL probe 或代理。
+Web 使用 iframe 載體；Desktop 使用[保持頁面實例的 webview 載體](2026-09-20-desktop-browser-webview.zh.md)。它的預設 Web 策略是 `sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox"`；frame 沒有直接的下載或頂層導航 flag。popup 會脫離 sandbox，Web popup 會保留 opener，並可以透過該鏈導航頂層應用。same-origin 允許被存取的 origin 使用自己的 Cookie 與 Web storage；它不會讓跨域目標與 DSH 變成同源。iframe 不傳送 referrer，也不新增包自有的 Permissions Policy，因此瀏覽器預設策略與使用者授權生效。最右側 toolbar 開關會為目前 tab occurrence 移除 sandbox attribute；該模式不持久化，啟用期間持續顯示警告。未受 sandbox 約束的頁面可以按瀏覽器 activation 規則導航頂層應用，並使用下載、模態對話方塊和輸入鎖定。本包不執行 Host 側 URL probe 或代理。
 
-每个 tab 获得一个 `BrowserController`，负责地址校验与载体无关的命令。`BrowserFrame` 提供导航、可观察的地址/加载/history/错误状态和可选 sandbox 控制，`BrowserPresentation` 负责 DOM 挂载。`pages.ts` 把两个对象组装成 `BrowserPage`。`IframeImpl` 持有应用已知的 `BrowserNavigation`，`ElectronWebViewImpl` 则观察原生 history。Slot injection 通过 `useBrowserState` 提供按 key 索引的控制器状态和普通回调；React body 只持有草稿与内容容器，没有载体分支、控制器实例或可观察源。
+每個 tab 獲得一個 `BrowserController`，負責地址驗證與載體無關的命令。`BrowserFrame` 提供導航、可觀察的地址/載入/history/錯誤狀態和可選 sandbox 控制，`BrowserPresentation` 負責 DOM 掛載。`pages.ts` 把兩個物件組裝成 `BrowserPage`。`IframeImpl` 持有應用已知的 `BrowserNavigation`，`ElectronWebViewImpl` 則觀察原生 history。Slot injection 透過 `useBrowserState` 提供按 key 索引的控制器狀態和普通回呼；React body 只持有草稿與內容容器，沒有載體分支、控制器實例或可觀察源。
 
-对于 iframe 载体，`BrowserNavigation` 保存 canonical 当前 URL、受控加载 revision、导航状态，以及有上限的序列与当前位置。新地址丢弃 forward 分支；后退和前进移动 index；刷新重建应用最后已知的 URL 且不增加 history。在仍存活的控制器内，body 重挂载会重新加载最后请求的 URL。Session-scoped store 持久化不可变检查点，供 Tab 标题与冷启动恢复使用，不序列化活页面。
+對於 iframe 載體，`BrowserNavigation` 儲存 canonical 目前 URL、受控載入 revision、導航狀態，以及有上限的序列與目前位置。新地址丟棄 forward 分支；後退和前進移動 index；重新整理重建應用最後已知的 URL 且不增加 history。在仍存活的控制器內，body 重掛載會重新載入最後請求的 URL。Session-scoped store 持久化不可變檢查點，供 Tab 標題與冷啟動恢復使用，不序列化活頁面。
 
-从已保存检查点创建的控制器展示上次标题、URL 和“恢复页面”按钮。提供方初始为空闲状态：挂载恢复的 Tab 既不创建浏览 guest，也不请求保存的站点。恢复、工具栏刷新或提交地址才启动导航；新打开 Tab 时显式传入的 URL 仍是主动导航请求，会直接加载。页面尚未请求时，后退和前进仍禁用，刷新则通过与“恢复页面”相同的控制器操作加载保存的地址。切换空闲 iframe 的沙箱也不会恢复页面。恢复提示属于 `BrowserControllerState`，不进入活页面的 `BrowserFrame` 接口或持久化导航状态。
+從已儲存檢查點建立的控制器展示上次標題、URL 和“恢復頁面”按鈕。提供者初始為空閒狀態：掛載恢復的 Tab 既不建立瀏覽 guest，也不請求儲存的站點。恢復、工具欄重新整理或提交地址才啟動導航；新開啟 Tab 時顯式傳入的 URL 仍是主動導航請求，會直接載入。頁面尚未請求時，後退和前進仍停用，重新整理則透過與“恢復頁面”相同的控制器操作載入儲存的地址。切換空閒 iframe 的沙箱也不會恢復頁面。恢復提示屬於 `BrowserControllerState`，不進入活頁面的 `BrowserFrame` 介面或持久化導航狀態。
 
-occurrence 取消会释放控制器。只有 Sidebar 的权威 `openTabs` 清单已不再包含该 Tab 时，才删除保存的检查点。清单先发布布局中的 Tab 移除，再由 `TabDomain` abort 对应 occurrence；插件卸载也会 abort occurrence，但仍保留已保存的 Tab 成员信息。因此清理不会把插件卸载当成删除恢复数据的请求。
+occurrence 取消會釋放控制器。只有 Sidebar 的權威 `openTabs` 清單已不再包含該 Tab 時，才刪除儲存的檢查點。清單先發布布局中的 Tab 移除，再由 `TabDomain` abort 對應 occurrence；外掛解除安裝也會 abort occurrence，但仍保留已儲存的 Tab 成員資訊。因此清理不會把外掛解除安裝當成刪除恢復資料的請求。
 
-Browser 状态只属于呈现层，不进入 Session log、模型请求、resource model 或 DockKit layout operation。现有的[右侧 Sidebar 基础设施](2026-09-04-right-sidebar-docking-infrastructure.zh.md)、[tab 类型契约](../architecture/2026-09-05-sidebar-tab-types-and-navigation.zh.md)、[resource model](../architecture/2026-09-05-client-resource-model.zh.md)和[文档预览操作](../architecture/2026-09-08-document-preview-operations.zh.md)继续负责各自现有职责。
+Browser 狀態只屬於呈現層，不進入 Session log、模型請求、resource model 或 DockKit layout operation。現有的[右側 Sidebar 基礎設施](2026-09-04-right-sidebar-docking-infrastructure.zh.md)、[tab 型別契約](../architecture/2026-09-05-sidebar-tab-types-and-navigation.zh.md)、[resource model](../architecture/2026-09-05-client-resource-model.zh.md)和[文件預覽操作](../architecture/2026-09-08-document-preview-operations.zh.md)繼續負責各自現有職責。
 
-## Web 导航状态
+## Web 導航狀態
 
-对于一个受控 revision，Web 载体只把 iframe 的第一次 `load` 当作应用已知 URL 的确认。同一 revision 后续发生 `load`，只能证明文档已经变化，无法给出新的跨域 URL。携带旧 revision 的事件会被忽略。这些状态描述活动导航；尚未请求的已保存检查点仍是独立的恢复提示。
+對於一個受控 revision，Web 載體只把 iframe 的第一次 `load` 當作應用已知 URL 的確認。同一 revision 後續發生 `load`，只能證明文件已經變化，無法給出新的跨域 URL。攜帶舊 revision 的事件會被忽略。這些狀態描述活動導航；尚未請求的已儲存檢查點仍是獨立的恢復提示。
 
-| 状态 | 进入条件 | 地址与控件 |
+| 狀態 | 進入條件 | 地址與控制元件 |
 |---|---|---|
-| `empty` | tab 没有受控目标。 | 地址为空；后退、前进、刷新与外部打开均禁用。 |
-| `loading` | 地址提交、应用 history 移动或刷新启动新的 revision。 | 请求 URL 仍是权威地址；后退和前进遵循应用 history 范围；刷新保持可用；外部打开遵循已知目标的协议。 |
-| `known` | 当前 revision 收到 iframe 的第一次 `load`。 | 即使第一次加载包含 HTTP redirect，请求 URL 仍是权威地址。控件规则与 `loading` 的已知目标规则相同。 |
-| `unknown` | 当前 revision 收到 iframe 的第二次或后续 `load`。 | 最后一个受控 URL 变灰，并标记 `URL 已变化`。iframe 不提供跨域 `canGoBack` 或 `canGoForward`，因此后退和前进禁用；外部打开禁用。刷新以最后一个受控 URL 启动新的 revision。 |
+| `empty` | tab 沒有受控目標。 | 地址為空；後退、前進、重新整理與外部開啟均停用。 |
+| `loading` | 地址提交、應用 history 移動或重新整理啟動新的 revision。 | 請求 URL 仍是權威地址；後退和前進遵循應用 history 範圍；重新整理保持可用；外部開啟遵循已知目標的協定。 |
+| `known` | 目前 revision 收到 iframe 的第一次 `load`。 | 即使第一次載入包含 HTTP redirect，請求 URL 仍是權威地址。控制元件規則與 `loading` 的已知目標規則相同。 |
+| `unknown` | 目前 revision 收到 iframe 的第二次或後續 `load`。 | 最後一個受控 URL 變灰，並標記 `URL 已變化`。iframe 不提供跨域 `canGoBack` 或 `canGoForward`，因此後退和前進停用；外部開啟停用。重新整理以最後一個受控 URL 啟動新的 revision。 |
 
-每个状态都允许编辑地址。无效草稿只报告地址错误，不改变当前导航状态。聚焦 unknown 地址会隐藏标记并显示前往按钮；回车与前往都会启动受控加载。对于已经请求的页面，切换 sandbox 模式会使用新的 revision 重新加载最后一个受控 Web 目标。iframe `error` event 只会为当前 `BrowserFrame` revision 标记临时加载失败 notice；它不改变 URL history，下一个受控 document 会清除它。浏览器不会为 DNS、TLS、mixed-content、CSP 或 `X-Frame-Options` 失败可靠触发该 event。不产生 iframe `load` 的 `pushState`、`replaceState` 与 fragment 变化仍不可观察。
+每個狀態都允許編輯地址。無效草稿只報告地址錯誤，不改變目前導航狀態。聚焦 unknown 地址會隱藏標記並顯示前往按鈕；回車與前往都會啟動受控載入。對於已經請求的頁面，切換 sandbox 模式會使用新的 revision 重新載入最後一個受控 Web 目標。iframe `error` event 只會為目前 `BrowserFrame` revision 標記臨時載入失敗 notice；它不改變 URL history，下一個受控 document 會清除它。瀏覽器不會為 DNS、TLS、mixed-content、CSP 或 `X-Frame-Options` 失敗可靠觸發該 event。不產生 iframe `load` 的 `pushState`、`replaceState` 與 fragment 變化仍不可觀察。
 
 ## Electron carrier
 
-[Desktop webview 决策](2026-09-20-desktop-browser-webview.zh.md)负责原生页面生命周期、Workspace 存储共享、guest 策略与运行时验证缺口。本文的 iframe 行为仍具有独立价值；其跨域限制不描述 Desktop 载体。
+[Desktop webview 決策](2026-09-20-desktop-browser-webview.zh.md)負責原生頁面生命週期、Workspace 儲存共享、guest 策略與執行時驗證缺口。本文的 iframe 行為仍具有獨立價值；其跨域限制不描述 Desktop 載體。
 
 ## Alternatives considered
 
-**Tab 挂载时自动重新加载已保存页面。** 这会仅因恢复布局就恢复第三方请求与脚本执行。显式恢复操作保留已保存地址，但不会自行打开站点。
+**Tab 掛載時自動重新載入已儲存頁面。** 這會僅因恢復佈局就恢復第三方請求與腳本執行。顯式恢復操作保留已儲存地址，但不會自行開啟站點。
 
-**增加 Host embeddability probe 并持久化 sandbox 偏好。** 不采用，因为由 Host 请求任意目标会新增 SSRF 路径，probe 可能与后续重定向结果不一致，而持久化的全局逃生开关会让后续 tab 继承不安全选择。Browser 改为提供显式、按 tab、非持久化的 sandbox 开关，并持续显示警告。
+**增加 Host embeddability probe 並持久化 sandbox 偏好。** 不採用，因為由 Host 請求任意目標會新增 SSRF 路徑，probe 可能與後續重定向結果不一致，而持久化的全域逃生開關會讓後續 tab 繼承不安全選擇。Browser 改為提供顯式、按 tab、非持久化的 sandbox 開關，並持續顯示警告。
 
-**把 parent-owned history 当成完整 Web 模型。** 不采用，因为 iframe 内导航后，地址会悄然陈旧，而相关操作仍显示可用。当前受控 URL 已知时，有上限的 parent history 仍然有用；显式 `unknown` 状态会移除 iframe API 无法支持的能力声明。
+**把 parent-owned history 當成完整 Web 模型。** 不採用，因為 iframe 內導航後，地址會悄然陳舊，而相關操作仍顯示可用。目前受控 URL 已知時，有上限的 parent history 仍然有用；顯式 `unknown` 狀態會移除 iframe API 無法支援的能力宣告。
 
-**在 Browser 中支持 `file:` URL。** 不采用，因为本地文件已由 Document Preview 负责，而 browser 导航使用不同的信任模型。Browser 直接拒绝该协议，不获取文件系统或 Workspace Files 能力。
+**在 Browser 中支援 `file:` URL。** 不採用，因為本地檔案已由 Document Preview 負責，而 browser 導航使用不同的信任模型。Browser 直接拒絕該協定，不取得檔案系統或 Workspace Files 能力。
 
-**通过 Host 代理网页。** 不采用，因为兼容代理必须重写 URL、CSP、Cookie、module、stream、form 与 download，同时会把 Host 变成通用出站请求器。
+**透過 Host 代理網頁。** 不採用，因為相容代理必須重寫 URL、CSP、Cookie、module、stream、form 與 download，同時會把 Host 變成通用出站請求器。
 
-**在首个 Browser 变更中实现 Electron 载体。** 延期处理，避免在没有打包应用证据覆盖 overlay stacking、target lifetime、Cookie 隔离与全部 permission 拒绝路径时启用新的 Electron guest surface。
+**在首個 Browser 變更中實作 Electron 載體。** 延期處理，避免在沒有打包應用證據覆蓋 overlay stacking、target lifetime、Cookie 隔離與全部 permission 拒絕路徑時啟用新的 Electron guest surface。
 
 ## Verification
 
-单元测试覆盖协议解析、Markdown 链接委托、controller 命令与生命周期、确定性导航状态转换、有界 history、best-effort iframe error 和插件 disposal。Keyless Web 场景启动随附 composition，并覆盖消息链接路由、HTTP(S)、后退、前进、sandbox 控制、unknown 导航和协议拒绝。
+單元測試覆蓋協定解析、Markdown 連結委託、controller 命令與生命週期、確定性導航狀態轉換、有界 history、best-effort iframe error 和外掛 disposal。Keyless Web 情境啟動隨附 composition，並覆蓋訊息連結路由、HTTP(S)、後退、前進、sandbox 控制、unknown 導航和協定拒絕。
 
-手动冷启动恢复和跨插件卸载保留检查点尚无运行时验证。
+手動冷啟動恢復和跨外掛解除安裝保留檢查點尚無執行時驗證。
 
 ## Consequences
 
-iframe 载体不暴露 Electron 或 Node API。很多站点拒绝 iframe 嵌入，或者依赖默认 sandbox 不向 frame 提供的下载或顶层导航。HTTPS 应用可能按 mixed-content 策略阻止公共 HTTP 页面，或限制 private-network 请求；关闭 sandbox 也无法绕过这些浏览器策略。关闭 sandbox 在其他方面会用自身保护换取兼容性：frame 可以按浏览器 activation 规则导航顶层应用，并使用下载、模态对话框和输入锁定。逃逸出 sandbox 的 Web popup 会保留 opener，并可以通过该链导航顶层应用。这两条路径都不会增加 Electron 或 Node API。URL 检查无法阻止 iframe 内页面自行选择目标。后续 iframe load 能表明已经发生导航，但无法给出跨域 URL；History API 与 fragment 变化可能完全不可见。
+iframe 載體不暴露 Electron 或 Node API。很多站點拒絕 iframe 嵌入，或者依賴預設 sandbox 不向 frame 提供的下載或頂層導航。HTTPS 應用可能按 mixed-content 策略阻止公共 HTTP 頁面，或限制 private-network 請求；關閉 sandbox 也無法繞過這些瀏覽器策略。關閉 sandbox 在其他方面會用自身保護換取相容性：frame 可以按瀏覽器 activation 規則導航頂層應用，並使用下載、模態對話方塊和輸入鎖定。逃逸出 sandbox 的 Web popup 會保留 opener，並可以透過該鏈導航頂層應用。這兩條路徑都不會增加 Electron 或 Node API。URL 檢查無法阻止 iframe 內頁面自行選擇目標。後續 iframe load 能表明已經發生導航，但無法給出跨域 URL；History API 與 fragment 變化可能完全不可見。
 
-Web 站点 Cookie 行为遵循用户浏览器，并不按 Browser tab 隔离。本地文件会被拒绝，并继续由 Document Preview 负责。持久化 URL 可能含敏感 query 或 fragment，因此用户不应在地址栏输入不希望保留在应用本地浏览器存储中的凭据。
+Web 站點 Cookie 行為遵循使用者瀏覽器，並不按 Browser tab 隔離。本地檔案會被拒絕，並繼續由 Document Preview 負責。持久化 URL 可能含敏感 query 或 fragment，因此使用者不應在位址列輸入不希望保留在應用本地瀏覽器儲存中的憑證。

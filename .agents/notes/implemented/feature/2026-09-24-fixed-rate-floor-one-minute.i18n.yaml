@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-24-fixed-rate-floor-one-minute.md
 /agent-note-one-minute-fixed-rate-floor:
   en: d74434992e0ca252
-  zh: cae88d61368d5555
+  zh: d6384cef26a33c33
 /agent-note-one-minute-fixed-rate-floor/problem:
   en: a16373df16ee9126
-  zh: 10e86f4cfe0e9a11
+  zh: 97093a85c247d764
 /agent-note-one-minute-fixed-rate-floor/decision:
   en: fb49d104c6539934
-  zh: 04655695ccbb58c6
+  zh: e5602d8d92fa0edf
 /agent-note-one-minute-fixed-rate-floor/alternatives-considered:
   en: 080ae22387dd35b7
-  zh: 8247747dc444d7a4
+  zh: 02e65b76dac533cb
 /agent-note-one-minute-fixed-rate-floor/consequences:
   en: c11eac4968a2a707
-  zh: c4a02ddeef3a5dff
+  zh: e0404ba9f711fc51

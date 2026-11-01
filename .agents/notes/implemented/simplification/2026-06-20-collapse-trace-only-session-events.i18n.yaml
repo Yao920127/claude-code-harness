@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-06-20-collapse-trace-only-session-events.md
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events:
   en: e7ada88fff270fa2
-  zh: 501f2d2ab2122718
+  zh: c738b7f3a88831b0
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/problem:
   en: 909f9925807d0e0a
-  zh: eba8fb3aba92caa8
+  zh: f7c42f6aadfe875b
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/decision:
   en: d07841a539028e7a
-  zh: 5ebaef62105a0da8
+  zh: 4e2e4891d9df0425
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/alternatives-considered:
   en: f99cc05ab13c85c3
-  zh: 93c92b3894cee7b1
+  zh: 8af14f022f714482
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/verification:
   en: 67e74bfc51b0a1ed
-  zh: dfdc9364ec831b9f
+  zh: bfb5b4b3a472f323
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/consequences:
   en: 1c0e59938ce8408f
-  zh: 8c891d273da28f27
+  zh: bf1dd831df47e7af
 /agent-note-fold-trace-only-session-facts-into-load-bearing-events/implementation-note:
   en: 40e0c79252a438bc
-  zh: 27332c259b4bdf95
+  zh: d4f11a9266fb7cf5

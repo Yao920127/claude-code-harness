@@ -13,16 +13,16 @@ export const NS = 'reference'
  * bucketing they name is the one shared {@link relativeTime} in ui-primitives.
  */
 export const zh = {
-  'section.files': '文件与文件夹',
-  'section.subagents': '子智能体',
-  'section.sessions': '对话',
-  'candidate.noCwd': '（无工作目录）',
-  'crumb.root': '工作区',
-  'time.now': '刚刚',
-  'time.minutes': '{n}分钟',
-  'time.hours': '{n}小时',
+  'section.files': '檔案與資料夾',
+  'section.subagents': '子智慧代理',
+  'section.sessions': '對話',
+  'candidate.noCwd': '（無工作目錄）',
+  'crumb.root': '工作區',
+  'time.now': '剛剛',
+  'time.minutes': '{n}分鐘',
+  'time.hours': '{n}小時',
   'time.days': '{n}天',
-  'time.months': '{n}个月',
+  'time.months': '{n}個月',
   'time.years': '{n}年',
 } satisfies Record<string, string>
 

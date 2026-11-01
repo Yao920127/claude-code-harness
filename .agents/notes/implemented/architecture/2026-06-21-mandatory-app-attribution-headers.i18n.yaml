@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-21-mandatory-app-attribution-headers.md
 /agent-note-mandatory-user-agent-attribution-for-provider-requests:
   en: 3f804e0236d13aba
-  zh: ef8b1b7b9c3d8376
+  zh: 0db3f6ba5a18d83a
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/problem:
   en: f65797760084b93a
-  zh: d1fb36ef61a93003
+  zh: 78f74bb4d60d430c
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/investigation:
   en: 5ea11f54f507ba64
-  zh: 22a83a0714a2fda3
+  zh: c350d55a690a264b
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/decision:
   en: b3e29e609e3f0966
-  zh: e3df0cb13df1cd5d
+  zh: b3e718c5e830c73f
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/verification:
   en: 567737dbccdb3a2a
-  zh: be92a5303247b889
+  zh: 2dee38f2f062ad6b
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/alternatives-considered:
   en: 016678c52ef64e51
-  zh: a113b57b9e9ddeb5
+  zh: ca72a24ddb806c5c
 /agent-note-mandatory-user-agent-attribution-for-provider-requests/consequences:
   en: a9010e68445a0008
-  zh: 1ec6104ab2865919
+  zh: 79a65f8a780e2262

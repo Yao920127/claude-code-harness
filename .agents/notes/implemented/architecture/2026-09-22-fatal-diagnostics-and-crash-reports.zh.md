@@ -1,4 +1,4 @@
-# Agent Note: 致命诊断与 Desktop 崩溃报告
+# Agent Note: 致命診斷與 Desktop 崩潰報告
 
 Status: implemented
 
@@ -6,56 +6,56 @@ Status: implemented
 
 ## Problem
 
-Desktop 应用的两起用户侧故障都是靠致命恢复对话框的截图定位的。该对话框只显示错误的最后八行，并且当时声称完整诊断已写入 Electron 控制台，而打包安装的应用从不暴露那个控制台。
+Desktop 應用的兩起使用者側故障都是靠致命恢復對話方塊的截圖定位的。該對話方塊只顯示錯誤的最後八行，並且當時聲稱完整診斷已寫入 Electron 控制檯，而打包安裝的應用從不暴露那個控制檯。
 
-Windows 上，`dsh-subprocess-local` 的 `OutputCollector.spillAll` 在子进程 stdout 的 `'data'` 监听器内打开 spill 文件。带 `'wx'` 的 `openSync` 抛出 `ENOENT`，对该标志而言这意味着每进程私有 spill 目录已不存在（它只创建一次、从不重建；是什么删除了它没有被观测到），由于没有任何进程级 handler，Desktop Host 以 Node 默认的未捕获异常输出退出。`path:` 属性恰好落在可见的八行里；此外关于该故障的信息一无所获。
+Windows 上，`dsh-subprocess-local` 的 `OutputCollector.spillAll` 在子程序 stdout 的 `'data'` 監聽器內開啟 spill 檔案。帶 `'wx'` 的 `openSync` 丟擲 `ENOENT`，對該標誌而言這意味著每程序私有 spill 目錄已不存在（它只建立一次、從不重建；是什麼刪除了它沒有被觀測到），由於沒有任何程序級 handler，Desktop Host 以 Node 預設的未捕捉異常輸出退出。`path:` 屬性恰好落在可見的八行裡；此外關於該故障的資訊一無所獲。
 
-macOS 上，启动审计把一组 Web 客户端行列为 `import failed (see console for the import error)`，而真正的 import 错误只留在渲染进程 console 中。可见的八个名字与依赖同一个 application batch 的行完全吻合，因此该 batch 脚本的一次加载失败可以解释截图；失败是传输错误、过期 URL 的 404 还是响应截断，无法判定。batch 只请求一次，因此任何瞬态失败都是最终结果。
+macOS 上，啟動審計把一組 Web 用戶端行列為 `import failed (see console for the import error)`，而真正的 import 錯誤只留在渲染程序 console 中。可見的八個名字與依賴同一個 application batch 的行完全吻合，因此該 batch 腳本的一次載入失敗可以解釋截圖；失敗是傳輸錯誤、過期 URL 的 404 還是回應截斷，無法判定。batch 只請求一次，因此任何瞬態失敗都是最終結果。
 
-两起事故共享三个缺口：致命诊断没有持久化、Host 没有 `uncaughtException` 策略、一个可失败步骤被允许拖垮整个功能。
+兩起事故共享三個缺口：致命診斷沒有持久化、Host 沒有 `uncaughtException` 策略、一個可失敗步驟被允許拖垮整個功能。
 
 ## Decision
 
-四条决定一并交付。
+四條決定一併交付。
 
-**未捕获异常是致命的并会被报告；失败的操作绝不恢复。** `dsh-app-boot` 的 `installFailLoud` 为 `'uncaughtException'` 注册与 `'unhandledRejection'` 相同的 handler：向 stderr 写一条带标签的 `util.inspect` 诊断，在既有超时内等待界面的 release 钩子，以 1 退出。控制流不会回到失败的操作，事件循环只运行到 release 结束或超时，因为只有抛出点知道哪些状态仍然完整；在更新过程中抛出的 `'data'` 监听器已经丢掉了一块数据并只设置了一半自己的字段，恢复运行会把可见的崩溃变成静默错误的输出。用 `util.inspect` 替代 `err.stack`，因为 `node:fs` 错误的 `code`、`syscall`、`path` 以及 `cause` 链都是堆栈行省略的可枚举属性。rejection 的标签 `fatal load failure` 保持不变，因为 Web profile 的 expected-output e2e 测试匹配它；异常使用 `fatal uncaught exception`。
+**未捕捉異常是致命的並會被報告；失敗的操作絕不恢復。** `dsh-app-boot` 的 `installFailLoud` 為 `'uncaughtException'` 註冊與 `'unhandledRejection'` 相同的 handler：向 stderr 寫一條帶標籤的 `util.inspect` 診斷，在既有超時內等待介面的 release 掛鉤，以 1 退出。控制流不會回到失敗的操作，事件迴圈只執行到 release 結束或超時，因為只有丟擲點知道哪些狀態仍然完整；在更新過程中丟擲的 `'data'` 監聽器已經丟掉了一塊資料並只設定了一半自己的欄位，恢復執行會把可見的崩潰變成靜默錯誤的輸出。用 `util.inspect` 替代 `err.stack`，因為 `node:fs` 錯誤的 `code`、`syscall`、`path` 以及 `cause` 鏈都是堆疊行省略的可列舉屬性。rejection 的標籤 `fatal load failure` 保持不變，因為 Web profile 的 expected-output e2e 測試匹配它；異常使用 `fatal uncaught exception`。
 
-**spill 文件在每一步都是尽力而为。** `spillPath` 本来就是可选的，最终关闭失败时已经会撤回它。`spillAll` 现在包住打开或追加过程中的每一种文件系统失败：丢弃该 spill，通过所有者的 logger 报告一次（`SpillOptions.onFailure`，由运行时和 SSH helper 接到 `ctx.logger.error`），并让内存尾部继续收集。被删除的目录不会重建：该设计的安全性依赖于由本进程一次性创建的随机名称，重建一个已知名称就放弃了这一点。在 `ENOENT` 时新建随机目录是待办工作。
+**spill 檔案在每一步都是盡力而為。** `spillPath` 本來就是可選的，最終關閉失敗時已經會撤回它。`spillAll` 現在包住開啟或追加過程中的每一種檔案系統失敗：丟棄該 spill，透過所有者的 logger 報告一次（`SpillOptions.onFailure`，由執行時和 SSH helper 接到 `ctx.logger.error`），並讓記憶體尾部繼續收集。被刪除的目錄不會重建：該設計的安全性依賴於由本程序一次性建立的隨機名稱，重建一個已知名稱就放棄了這一點。在 `ENOENT` 時新建隨機目錄是待辦工作。
 
-**Desktop 致命失败在弹窗前写入崩溃报告。** 每个 `reportFatal` 调用方都标明来源（`host`、`web-boot`、`renderer`、`main`）。`DesktopFatalRecovery.report` 最多等待 `writeCrashReport` 一秒，然后弹出对话框并把文件路径单独占一行——与错误是否被截短无关，端口占用变体同样如此。报告包含来源、后端是否已就绪、应用与运行时版本、完整的 inspect 错误（backend 状态携带原始错误对象；Host 启动失败通过 fatal IPC 事件携带 Host 自己的 inspect 错误，因为 Host 的 stderr 与该消息存在竞争，而壳只报告它看到的第一个失败），以及从 `webContents` 的 `'console-message'` 捕获的主窗口最近 error 级 console 输出（64 KiB 尾部）。报告位于 `app.getPath('logs')` 下，平台允许时仅所有者可读，启动时保留最新十份。关闭过程中的致命失败只写报告、不弹窗。按钮与恢复操作不变。
+**Desktop 致命失敗在彈出視窗前寫入崩潰報告。** 每個 `reportFatal` 呼叫方都標明來源（`host`、`web-boot`、`renderer`、`main`）。`DesktopFatalRecovery.report` 最多等待 `writeCrashReport` 一秒，然後彈出對話方塊並把檔案路徑單獨佔一行——與錯誤是否被截短無關，埠佔用變體同樣如此。報告包含來源、後端是否已就緒、應用與執行時版本、完整的 inspect 錯誤（backend 狀態攜帶原始錯誤物件；Host 啟動失敗透過 fatal IPC 事件攜帶 Host 自己的 inspect 錯誤，因為 Host 的 stderr 與該訊息存在競爭，而殼只報告它看到的第一個失敗），以及從 `webContents` 的 `'console-message'` 捕捉的主視窗最近 error 級 console 輸出（64 KiB 尾部）。報告位於 `app.getPath('logs')` 下，平臺允許時僅所有者可讀，啟動時保留最新十份。關閉過程中的致命失敗只寫報告、不彈出視窗。按鈕與恢復操作不變。
 
-**batch 脚本失败是按行的问题，不是启动失败。** 在 `ClientModuleSystem.arrive` 中，传输失败（脚本 `error` 事件；什么都没执行）在同一 URL 上重试一次，等待该 batch 的所有行共享这次重试。加载成功但没有注册某行的脚本绝不重新执行：batch 按顺序注册各包，`register()` 拒绝重复，重放会在原次运行已注册的第一个包处停止。每个已执行的 batch URL 都会被记住，因此即使首个从该 batch 导入的是它已注册的行、之后另一行发现自己缺失，这一点仍然成立。两种情况下每条仍缺失的行随后加载自己的单资源 combo URL，Host 为每个包都提供该 URL；失败的 batch URL 会被记住，后续行直接走回退，而单资源 URL 跨 import 保持可重试（一次启动内 Loader 对每个条目只 import 一次，因此缺失行只有一次回退尝试）。依赖失败用消费者与依赖的名字包装。模块系统在最外层操作按行记录最后一次 `import()` 或 `prefetch()` 失败，因此 factory 执行错误与到达错误一样被捕获，`assertEntriesActive` 按无 fiber 的条目报告该文本。
+**batch 腳本失敗是按行的問題，不是啟動失敗。** 在 `ClientModuleSystem.arrive` 中，傳輸失敗（腳本 `error` 事件；什麼都沒執行）在同一 URL 上重試一次，等待該 batch 的所有行共享這次重試。載入成功但沒有註冊某行的腳本絕不重新執行：batch 按順序註冊各包，`register()` 拒絕重複，重放會在原次執行已註冊的第一個包處停止。每個已執行的 batch URL 都會被記住，因此即使首個從該 batch 匯入的是它已註冊的行、之後另一行發現自己缺失，這一點仍然成立。兩種情況下每條仍缺失的行隨後載入自己的單資源 combo URL，Host 為每個包都提供該 URL；失敗的 batch URL 會被記住，後續行直接走退回，而單資源 URL 跨 import 保持可重試（一次啟動內 Loader 對每個條目只 import 一次，因此缺失行只有一次退回嘗試）。依賴失敗用消費者與依賴的名字包裝。模組系統在最外層操作按行記錄最後一次 `import()` 或 `prefetch()` 失敗，因此 factory 執行錯誤與到達錯誤一樣被捕捉，`assertEntriesActive` 按無 fiber 的條目報告該文字。
 
-## 与既有决定的关系
+## 與既有決定的關係
 
-本 note 部分取代 [Desktop 原生致命恢复](2026-09-15-desktop-native-fatal-recovery.zh.md)：对话框指向的记录现在是崩溃报告文件而非 Electron 控制台，对话框详情多出报告路径一行；该 note 对对话框归属、按钮集合与 profile 恢复的决定仍然有效。`uncaughtException` 的处理把 [fail-loud release](../bug-fix/2026-07-31-fail-loud-releases-the-terminal.zh.md) note 的 release 机制扩展到同步抛出。
+本 note 部分取代 [Desktop 原生致命恢復](2026-09-15-desktop-native-fatal-recovery.zh.md)：對話方塊指向的記錄現在是崩潰報告檔案而非 Electron 控制檯，對話方塊詳情多出報告路徑一行；該 note 對對話方塊歸屬、按鈕集合與 profile 恢復的決定仍然有效。`uncaughtException` 的處理把 [fail-loud release](../bug-fix/2026-07-31-fail-loud-releases-the-terminal.zh.md) note 的 release 機制擴充功能到同步丟擲。
 
-## 与 Desktop 日志体系设计的关系
+## 與 Desktop 日誌體系設計的關係
 
-Desktop 本地日志设计（Worker 独占写入的滚动 JSONL 日志、封闭事件词汇、脱敏与限流）是持续日志设计，仍是未来工作。它规定 Host stderr 与渲染进程 console 输出永不持久化、错误只以固定分类进入日志。本决定划出一个例外：致命失败的一次性崩溃报告保留原始错误以及保留的 stderr 与 console 尾部，因为两次现场定位需要的正是这些原始内容，而报告有界（error 段截至 256 KiB、Host 诊断 64 KiB、渲染进程 console 尾部 64 KiB）、本地、仅所有者可读，且只在应用已经弹出致命对话框时写入。对话框标明文件名，用户知道自己会分享什么。任何非崩溃报告的内容仍遵循持续日志的隐私姿态。
+Desktop 本地日誌設計（Worker 獨佔寫入的滾動 JSONL 日誌、封閉事件詞彙、脫敏與速率限制）是持續日誌設計，仍是未來工作。它規定 Host stderr 與渲染程序 console 輸出永不持久化、錯誤只以固定分類進入日誌。本決定劃出一個例外：致命失敗的一次性崩潰報告保留原始錯誤以及保留的 stderr 與 console 尾部，因為兩次現場定位需要的正是這些原始內容，而報告有界（error 段截至 256 KiB、Host 診斷 64 KiB、渲染程序 console 尾部 64 KiB）、本地、僅所有者可讀，且只在應用已經彈出致命對話方塊時寫入。對話方塊標明檔名，使用者知道自己會分享什麼。任何非崩潰報告的內容仍遵循持續日誌的隱私姿態。
 
 ## Testing
 
-- `dsh-app-boot`：未捕获异常产生带可枚举属性与 cause 链的带标签诊断，与 rejection 共享退出闩锁和 release 超时，两个 handler 都能卸载。
-- `dsh-subprocess-local`：打开时 `ENOENT`（目录被删）、打开时 `ENOTDIR`、文件已存在后追加时 `ENOSPC`，三者都保持尾部逐字节一致、撤回 spill 文件、报告一次且不抛出。
-- `dsh-client-modules`：传输失败重试一次并共享重试；持续失败按缺失行回退且不重复请求 batch；零注册或部分注册的 batch 不重新执行；单资源 URL 保持可重试；最终错误列出每次尝试；传输、factory 与依赖失败都被记录，成功和失效会清除记录。
-- `dsh-client-web`：提供模块系统时启动审计写出记录的 import 错误。
-- Desktop：`crash-report` 单测覆盖渲染、仅所有者可读的写入、写入失败、不触碰其他文件的清理以及 console 尾部；`fatal-recovery` 测试在两种语言下钉住带与不带报告路径的对话框文本、一秒上限以及每次致命失败只写一次；启动夹具断言运行阶段 Host 退出的报告输入，包括捕获的渲染进程 console。
+- `dsh-app-boot`：未捕捉異常產生帶可列舉屬性與 cause 鏈的帶標籤診斷，與 rejection 共享退出閂鎖和 release 超時，兩個 handler 都能解除安裝。
+- `dsh-subprocess-local`：開啟時 `ENOENT`（目錄被刪）、開啟時 `ENOTDIR`、檔案已存在後追加時 `ENOSPC`，三者都保持尾部逐位元組一致、撤回 spill 檔案、報告一次且不丟擲。
+- `dsh-client-modules`：傳輸失敗重試一次並共享重試；持續失敗按缺失行退回且不重複請求 batch；零註冊或部分註冊的 batch 不重新執行；單資源 URL 保持可重試；最終錯誤列出每次嘗試；傳輸、factory 與依賴失敗都被記錄，成功和失效會清除記錄。
+- `dsh-client-web`：提供模組系統時啟動審計寫出記錄的 import 錯誤。
+- Desktop：`crash-report` 單測覆蓋渲染、僅所有者可讀的寫入、寫入失敗、不觸碰其他檔案的清理以及 console 尾部；`fatal-recovery` 測試在兩種語言下釘住帶與不帶報告路徑的對話方塊文字、一秒上限以及每次致命失敗只寫一次；啟動夾具斷言執行階段 Host 退出的報告輸入，包括捕捉的渲染程序 console。
 
 ## Consequences
 
-Host 现在对两种失败走同一条退出路径，比 Node 立即退出的默认行为最多晚 release 超时的时间，因此致命对话框可能在失败后最多两秒才出现，且 release 窗口内插件写到 stderr 的内容可能把 fail-loud 那一行挤出对话框的八行摘录（报告文件保留 64 KiB 尾部）。spill 失败对用户不再可见，只剩一个带截断标记且没有路径的结果；插件 logger 那一行是唯一痕迹，Host 侧持续日志设计将来会持久化它。崩溃报告持久化原始 stderr 与 console 尾部，理由如上。batch 加载失败现在对每条缺失行最多花费三次请求，且绝不让已注册的行失败；共享的 batch 记忆意味着页面生命周期内，失败 batch 中某行的后续 import 会直接走其单资源 URL。
+Host 現在對兩種失敗走同一條退出路徑，比 Node 立即退出的預設行為最多晚 release 超時的時間，因此致命對話方塊可能在失敗後最多兩秒才出現，且 release 視窗內外掛寫到 stderr 的內容可能把 fail-loud 那一行擠出對話方塊的八行摘錄（報告檔案保留 64 KiB 尾部）。spill 失敗對使用者不再可見，只剩一個帶截斷標記且沒有路徑的結果；外掛 logger 那一行是唯一痕跡，Host 側持續日誌設計將來會持久化它。崩潰報告持久化原始 stderr 與 console 尾部，理由如上。batch 載入失敗現在對每條缺失行最多花費三次請求，且絕不讓已註冊的行失敗；共享的 batch 記憶意味著頁面生命週期內，失敗 batch 中某行的後續 import 會直接走其單資源 URL。
 
 ## Alternatives considered
 
-**捕获未捕获异常并让 Host 继续运行。** 否决：监听器抛出后的状态除抛出点外无人知晓。在 Windows 案例中，继续运行会丢掉该块数据、向模型宣告一个不存在文件的 spill 路径，并在之后每一块上再次抛出。
+**捕捉未捕捉異常並讓 Host 繼續執行。** 否決：監聽器丟擲後的狀態除丟擲點外無人知曉。在 Windows 案例中，繼續執行會丟掉該塊資料、向模型宣告一個不存在檔案的 spill 路徑，並在之後每一塊上再次丟擲。
 
-**在 `ENOENT` 时重建 spill 目录。** 本次否决：重建已知名称放弃了该设计赖以存在的随机目录属性。失败时新建 `mkdtemp` 需要收集器持有目录提供函数而非字符串，作为待办。
+**在 `ENOENT` 時重建 spill 目錄。** 本次否決：重建已知名稱放棄了該設計賴以存在的隨機目錄屬性。失敗時新建 `mkdtemp` 需要收集器持有目錄提供函式而非字串，作為待辦。
 
-**同步写崩溃报告以保持对话框同步。** 否决：在缓慢或网络挂载的 profile 目录上，一次挂起的写入会让壳冻结且完全没有对话框。带一秒上限的异步写入无论如何都会弹出对话框。
+**同步寫崩潰報告以保持對話方塊同步。** 否決：在緩慢或網路掛載的 profile 目錄上，一次掛起的寫入會讓殼凍結且完全沒有對話方塊。帶一秒上限的非同步寫入無論如何都會彈出對話方塊。
 
-**按持续日志设计的规定，崩溃报告只持久化分类后的错误类别。** 对崩溃报告否决：`path:` 属性和渲染进程的 `bundle script … failed to load` 那一行是两次定位的关键证据，按该规则会被抹成 `UNCLASSIFIED`。
+**按持續日誌設計的規定，崩潰報告只持久化分類後的錯誤類別。** 對崩潰報告否決：`path:` 屬性和渲染程序的 `bundle script … failed to load` 那一行是兩次定位的關鍵證據，按該規則會被抹成 `UNCLASSIFIED`。
 
-**对每种失败都重试 batch URL。** 否决：重新执行一个已注册部分包的 batch 会在脚本内抛出 `duplicate factory registration`，`load` 事件照常触发，调用方看到的还是最初那个「loaded without registering」，无法分辨是重试造成的。
+**對每種失敗都重試 batch URL。** 否決：重新執行一個已註冊部分包的 batch 會在腳本內丟擲 `duplicate factory registration`，`load` 事件照常觸發，呼叫方看到的還是最初那個「loaded without registering」，無法分辨是重試造成的。
 
-**保留更多代 Host batch URL，使重组的 graph 不会让进行中的启动收到 404。** 推迟而非交付：没有找到 ready 之后改动 graph 的生产触发者，`lazyBody` 缓存响应 Buffer 使保留有实际内存成本，代数与时限是需要 `Config` 字段的部署可调项。
+**保留更多代 Host batch URL，使重組的 graph 不會讓進行中的啟動收到 404。** 推遲而非交付：沒有找到 ready 之後改動 graph 的生產觸發者，`lazyBody` 快取回應 Buffer 使保留有實際記憶體成本，代數與時限是需要 `Config` 欄位的部署可調項。

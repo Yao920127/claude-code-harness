@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的一次性 Codex subagent 提供方，用于选择产品后端、安装 Profile bundle 或配置无人值守的 Codex 委派。"
+description: "面向使用者與維護者的一次性 Codex subagent 提供者，用於選擇產品後端、安裝 Profile bundle 或設定無人值守的 Codex 委派。"
 kind: "package-bundle"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-bundle"
 
 ## 概述
 
-当委派工作需要在父会话工作区中的真实无人值守 Codex 会话内运行时，把 `@deepseek-ai/dsh-subagent-codex` 安装进 Profile。每次委派都会为一个自包含文本任务使用全新且隔离的 Codex 线程，并且只返回其最终答案或安全失败诊断。原生 Codex 配置和身份验证继续作为权威来源，而 `permissionMode` 选择非交互式审批和沙箱行为。Bundle 会提供兼容的原生 Codex 载荷，但只有配置委派工具后才会向模型公开相应能力。
+當委派工作需要在父工作階段工作區中的真實無人值守 Codex 工作階段內執行時，把 `@deepseek-ai/dsh-subagent-codex` 安裝進 Profile。每次委派都會為一個自包含文字任務使用全新且隔離的 Codex 執行緒，並且只返回其最終答案或安全失敗診斷。原生 Codex 設定和身份驗證繼續作為權威來源，而 `permissionMode` 選擇非互動式審批和沙箱行為。Bundle 會提供相容的原生 Codex 載荷，但只有設定委派工具後才會向模型公開相應能力。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当委派应以父级工作区中的真实 Codex 会话运行时，挂载本提供方。常用路径是显式的：把 Bundle 安装进 Profile，可选地配置提供方行，并通过委派工具行把它暴露给模型。
+當委派應以父級工作區中的真實 Codex 工作階段執行時，掛載本提供者。常用路徑是顯式的：把 Bundle 安裝進 Profile，可選地設定提供者行，並透過委派工具行把它暴露給模型。
 
-### 安装 Bundle
+### 安裝 Bundle
 
-把包安装进目标 Profile，然后重启该 Profile。安装会把官方 wrapper 与一个兼容的原生平台载荷带入 Profile；声明的 patch 层只注册休眠的提供方，不启动任何 Codex 进程。
+把包安裝進目標 Profile，然後重新啟動該 Profile。安裝會把官方 wrapper 與一個相容的原生平臺載荷帶入 Profile；宣告的 patch 層只註冊休眠的提供者，不啟動任何 Codex 程序。
 
 ```sh
 dsh plugin --profile <name> add @deepseek-ai/dsh-subagent-codex
@@ -37,29 +37,29 @@ dsh plugin --profile <name> remove @deepseek-ai/dsh-subagent-codex
 dsh --profile <name>
 ```
 
-移除包后，下一次 Profile 启动会撤回提供方及其私有运行时闭包。安装决定 Host 可用性，而不是模型权限：模型只能通过你组合的委派工具行触达提供方。
+移除包後，下一次 Profile 啟動會撤回提供者及其私有執行時閉包。安裝決定 Host 可用性，而不是模型權限：模型只能透過你組合的委派工具行觸達提供者。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `providerName` | `codex` | `ctx.subagents` 上的非空注册名称；每个已挂载实例都需要唯一值 |
-| `model` | Codex 原生设置 | 为本提供方实例的每个线程固定的可选非空模型名称；省略时不发送 app-server 覆盖 |
-| `env` | `{}` | 叠加在已清理凭据的父环境之上的显式子进程环境 |
-| `permissionMode` | `never` | 为本提供方实例的每个线程固定的原生非交互审批与沙箱模式 |
-| `disposeGraceMs` | `3000` | 共享 managed-range owner 各终止层级之间的宽限 |
+| `providerName` | `codex` | `ctx.subagents` 上的非空註冊名稱；每個已掛載實例都需要唯一值 |
+| `model` | Codex 原生設定 | 為本提供者實例的每個執行緒固定的可選非空模型名稱；省略時不傳送 app-server 覆蓋 |
+| `env` | `{}` | 疊加在已清理憑證的父環境之上的顯式子程序環境 |
+| `permissionMode` | `never` | 為本提供者實例的每個執行緒固定的原生非互動審批與沙箱模式 |
+| `disposeGraceMs` | `3000` | 共享 managed-range owner 各終止層級之間的寬限 |
 
-| `permissionMode` 值 | `thread/start` 字段 | 原生行为 |
+| `permissionMode` 值 | `thread/start` 欄位 | 原生行為 |
 |---|---|---|
-| `never` | `approvalPolicy: never`；省略 sandbox | 永不请求审批；在原生 sandbox 下发生的执行失败会返回给模型 |
-| `approve-for-me` | `approvalPolicy: on-request`、`approvalsReviewer: auto_review`、`sandbox: workspace-write` | 由 Codex 自动评审权限请求，不等待人工 |
-| `dangerously-bypass-approvals-and-sandbox` | `approvalPolicy: never`、`sandbox: danger-full-access` | 跳过审批与 sandbox；必须显式选择该值 |
+| `never` | `approvalPolicy: never`；省略 sandbox | 永不請求審批；在原生 sandbox 下發生的執行失敗會返回給模型 |
+| `approve-for-me` | `approvalPolicy: on-request`、`approvalsReviewer: auto_review`、`sandbox: workspace-write` | 由 Codex 自動評審權限請求，不等待人工 |
+| `dangerously-bypass-approvals-and-sandbox` | `approvalPolicy: never`、`sandbox: danger-full-access` | 跳過審批與 sandbox；必須顯式選擇該值 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-codex)是每个受支持字段及其 JSDoc 的穷尽式真源。已配置的 `model` 会原样传给每个临时 `thread/start`；省略时保留原生模型选择。提供方不会发现模型、改写别名、选择 `modelProvider` 或 `serviceTier`，也不会设置 fallback。具有凭证特征的环境变量会在显式 `env` 覆盖生效前被移除，因此供子进程使用的 API 密钥必须在该配置中显式提供。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-codex)是每個受支援欄位及其 JSDoc 的窮盡式真源。已設定的 `model` 會原樣傳給每個臨時 `thread/start`；省略時保留原生模型選擇。提供者不會發現模型、改寫別名、選擇 `modelProvider` 或 `serviceTier`，也不會設定 fallback。具有憑證特徵的環境變數會在顯式 `env` 覆蓋生效前被移除，因此供子程序使用的 API 金鑰必須在該設定中顯式提供。
 
 ### 暴露工具
 
-每个委派工具行指名一个提供方，并需要独立的 `toolName`，因此模型看到的是静态工具，而不是动态提供方选择器。完整 Agent Preset 携带对应的默认工具行并设置 `disabled: true`；复制一个 preset 后删除该字段，即可只向由该副本组装的 agent 暴露 `subagent_codex`。
+每個委派工具行指名一個提供者，並需要獨立的 `toolName`，因此模型看到的是靜態工具，而不是動態提供者選擇器。完整 Agent Preset 攜帶對應的預設工具行並設定 `disabled: true`；複製一個 preset 後刪除該欄位，即可只向由該副本組裝的 agent 暴露 `subagent_codex`。
 
 ```yaml
 - id: jobs
@@ -75,121 +75,121 @@ dsh --profile <name>
     maxDepth: provider-managed
 ```
 
-`one-shot` 策略会让省略 `run_in_background` 或传入 `false` 的调用继续在前台等待，而显式传入 `true` 会返回由父 agent 拥有的 Job id，供 `job_output` 或 `job_kill` 使用；base host（基础宿主）与完整 preset 已提供通用作业注册表和控制工具。
+`one-shot` 策略會讓省略 `run_in_background` 或傳入 `false` 的呼叫繼續在前臺等待，而顯式傳入 `true` 會返回由父 agent 擁有的 Job id，供 `job_output` 或 `job_kill` 使用；base host（基礎主機）與完整 preset 已提供通用作業註冊表和控制工具。
 
-### 你会得到什么
+### 你會得到什麼
 
-前台调用会把选定的最终 Codex 答案交给模型；运行失败时则返回带停止原因与可选安全诊断的错误。后台调用先返回 Job id；随后通用作业控制面会送达完成通知，并通过 `job_output` 公开同一最终答案或失败状态。Codex 的过程说明、推理、工具活动、原始 stderr 与工作区差异绝不会进入父级会话。
+前臺呼叫會把選定的最終 Codex 答案交給模型；執行失敗時則返回帶停止原因與可選安全診斷的錯誤。後臺呼叫先返回 Job id；隨後通用作業控制面會送達完成通知，並透過 `job_output` 公開同一最終答案或失敗狀態。Codex 的過程說明、推理、工具活動、原始 stderr 與工作區差異絕不會進入父級工作階段。
 
-### 失败与恢复
+### 失敗與恢復
 
-省略 optional dependencies、当前平台不受支持或所选载荷缺失的安装会让提供方保持休眠，并在第一次委派时于 `initialize` 阶段以安全 `unknown` 类别和任何已观测进程结果失败；不存在宿主 CLI 回退。原始 wrapper 文本只保留在 Host stderr。被取消的运行以 `aborted` 结算。
+省略 optional dependencies、目前平臺不受支援或所選載荷缺失的安裝會讓提供者保持休眠，並在第一次委派時於 `initialize` 階段以安全 `unknown` 類別和任何已觀測程序結果失敗；不存在主機 CLI 退回。原始 wrapper 文字只保留在 Host stderr。被取消的執行以 `aborted` 結算。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方如何驱动真实 Codex app-server，以及可观察行为从何而来；完整约定见[使用本包](#use-this-package)。
+本節解釋提供者如何驅動真實 Codex app-server，以及可觀察行為從何而來；完整約定見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-- **每次运行一个全新进程、线程与轮次。** 每次运行都会 spawn 全新 app-server、创建一个临时线程并恰好执行一个轮次；没有续接、恢复或池化。
-- **原生配置是权威。** Codex 配置与身份验证经父级 cwd、`HOME` 与 `CODEX_HOME` 保持原生；提供方只覆盖可选模型以及线程的 approval、reviewer 与 sandbox 字段。
-- **刻意无人值守。** 审批、用户输入与 MCP 请求都会在无人参与的情况下被应答或拒绝；未知服务器请求会使运行失败。
+- **每次執行一個全新程序、執行緒與輪次。** 每次執行都會 spawn 全新 app-server、建立一個臨時執行緒並恰好執行一個輪次；沒有續接、恢復或池化。
+- **原生設定是權威。** Codex 設定與身份驗證經父級 cwd、`HOME` 與 `CODEX_HOME` 保持原生；提供者只覆蓋可選模型以及執行緒的 approval、reviewer 與 sandbox 欄位。
+- **刻意無人值守。** 審批、使用者輸入與 MCP 請求都會在無人參與的情況下被應答或拒絕；未知伺服器請求會使執行失敗。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：config schema、提供方注册 |
-| [`src/run.ts`](src/run.ts) | 运行生命周期、轮次执行、结果选择与诊断 |
-| [`src/wire.ts`](src/wire.ts) | 最小的 app-server JSON-RPC 协议实现 |
-| [`cordis.patch.yml`](cordis.patch.yml) | 注册休眠提供方的 Profile patch 层 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：config schema、提供者註冊 |
+| [`src/run.ts`](src/run.ts) | 執行生命週期、輪次執行、結果選擇與診斷 |
+| [`src/wire.ts`](src/wire.ts) | 最小的 app-server JSON-RPC 協定實作 |
+| [`cordis.patch.yml`](cordis.patch.yml) | 註冊休眠提供者的 Profile patch 層 |
 
-### 运行流程
+### 執行流程
 
-一次启动只接受非空的文本块序列，并根据父会话确定子级 cwd。它经子进程 seam spawn 固定命令，完成 `initialize` → `initialized` 握手，把 Profile 选择的模式与可选模型映射为官方 `thread/start` 字段并与 `{ cwd, ephemeral: true }` 一起发送，且仅在 Codex 返回有效的临时线程后发布运行。已发布的结果恰好启动一个轮次，只接受与此次运行的线程和轮次匹配的通知，并等待权威的 `turn/completed` 终态。以最后一条 `phase: "final_answer"` 的 `agentMessage` 为准；若 Codex 没有发出明确的最终阶段，则以最后一条 `phase: null` 的消息作为兼容性回退。成功完成的轮次若没有非空白答案，结果也会判为错误。失败轮次使用粗粒度类别 `limit`、`access-policy`、`service`、`transport`、`product-error`、`invalid-result` 或 `unknown`；app-server 提前退出使用 `process`，适用的连接与 stream 失败保留数值 `httpStatusCode`。
+一次啟動只接受非空的文字塊序列，並根據父工作階段確定子級 cwd。它經子程序 seam spawn 固定命令，完成 `initialize` → `initialized` 握手，把 Profile 選擇的模式與可選模型對映為官方 `thread/start` 欄位並與 `{ cwd, ephemeral: true }` 一起傳送，且僅在 Codex 返回有效的臨時執行緒後釋出執行。已釋出的結果恰好啟動一個輪次，只接受與此次執行的執行緒和輪次匹配的通知，並等待權威的 `turn/completed` 終態。以最後一條 `phase: "final_answer"` 的 `agentMessage` 為準；若 Codex 沒有發出明確的最終階段，則以最後一條 `phase: null` 的訊息作為相容性退回。成功完成的輪次若沒有非空白答案，結果也會判為錯誤。失敗輪次使用粗粒度類別 `limit`、`access-policy`、`service`、`transport`、`product-error`、`invalid-result` 或 `unknown`；app-server 提前退出使用 `process`，適用的連線與 stream 失敗保留數值 `httpStatusCode`。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从本提供方逐步进入它接入的 seam 与兄弟产品提供方。
+當包級約定不夠用時閱讀以下頁面。它們從本提供者逐步進入它接入的 seam 與兄弟產品提供者。
 
-- [Subagent 子系统](../../../docs/subsystems/subagent.zh.md)——服务约定、提供方约定与终态结果语义。
-- [dsh-subagent seam](../subagent/README.zh.md)——本提供方注册于其上的注册表与启动 API。
-- [Claude Code subagent 提供方](../subagent-claude-code/README.zh.md)——经官方 Agent SDK 的兄弟产品后端。
-- [Claude Code 与 Codex 后端](../../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)——产品提供方的设计记录。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-codex)——每个受支持配置字段及其源声明。
+- [Subagent 子系統](../../../docs/subsystems/subagent.zh.md)——服務約定、提供者約定與終態結果語義。
+- [dsh-subagent seam](../subagent/README.zh.md)——本提供者註冊於其上的註冊表與啟動 API。
+- [Claude Code subagent 提供者](../subagent-claude-code/README.zh.md)——經官方 Agent SDK 的兄弟產品後端。
+- [Claude Code 與 Codex 後端](../../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)——產品提供者的設計記錄。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-codex)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 子级请求
+### 子級請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-Codex 子级会在一个全新的临时线程中，以单个轮次接收这些独立文本块。它的工作区是父会话 cwd；所选提供方实例会固定已配置的模型、环境、非交互审批策略与沙箱模式，而省略的模型及其余产品设置来自 Codex 原生配置。可执行版本来自 Bundle 锁定的平台载荷。
+Codex 子級會在一個全新的臨時執行緒中，以單個輪次接收這些獨立文字塊。它的工作區是父工作階段 cwd；所選提供者實例會固定已設定的模型、環境、非互動審批策略與沙箱模式，而省略的模型及其餘產品設定來自 Codex 原生設定。可執行版本來自 Bundle 鎖定的平臺載荷。
 
-#### Token 影响
+#### Token 影響
 
-子级需为独立的 Codex 上下文和轮次承担 token 成本。子级 token 不会进入父级上下文。
+子級需為獨立的 Codex 上下文和輪次承擔 token 成本。子級 token 不會進入父級上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与父级请求缓存相互独立。能否复用只取决于 Codex 自身的提供方、模型、指令、工具和临时线程请求。
+與父級請求快取相互獨立。能否複用只取決於 Codex 自身的提供者、模型、指令、工具和臨時執行緒請求。
 
-### 父级调度与结果（间接）
+### 父級排程與結果（間接）
 
-#### 模型看到什么
+#### 模型看到什麼
 
-通过 `dsh-tool-subagent`，前台调用会让父级模型看到选定的 Codex 最终答案；若结果未完成，错误中会包含终止原因和可选的安全诊断。该诊断可以区分粗粒度行动类别、协议阶段、适用的数值 HTTP status 和已观测的进程结果，而不复制产品正文或 stderr。后台调用会先返回 Job id；随后通用作业控制面会送达完成通知，通过 `job_output` 公开同一最终答案或失败状态详情，并允许 `job_kill` 请求取消。Codex 的过程说明、推理（reasoning）、工具活动、原始 stderr、工作区差异、用量信息、产品标识符、命令、路径和协议载荷均不会复制到父会话。
+透過 `dsh-tool-subagent`，前臺呼叫會讓父級模型看到選定的 Codex 最終答案；若結果未完成，錯誤中會包含終止原因和可選的安全診斷。該診斷可以區分粗粒度行動類別、協定階段、適用的數值 HTTP status 和已觀測的程序結果，而不複製產品正文或 stderr。後臺呼叫會先返回 Job id；隨後通用作業控制面會送達完成通知，透過 `job_output` 公開同一最終答案或失敗狀態詳情，並允許 `job_kill` 請求取消。Codex 的過程說明、推理（reasoning）、工具活動、原始 stderr、工作區差異、用量資訊、產品識別符號、命令、路徑和協定載荷均不會複製到父工作階段。
 
-#### Token 影响
+#### Token 影響
 
-前台输入会增加工具结果中保留的最终答案或错误内容。后台输入还会包含启动确认、完成通知，以及 `job_output`、`job_kill` 或后续状态结果；子任务 token 仍不会进入父级上下文。本提供方自身不添加父级工具 schema。
+前臺輸入會增加工具結果中保留的最終答案或錯誤內容。後臺輸入還會包含啟動確認、完成通知，以及 `job_output`、`job_kill` 或後續狀態結果；子任務 token 仍不會進入父級上下文。本提供者自身不新增父級工具 schema。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加：前台会在可复用的父请求前缀后增加一个结果，后台则会继续追加 Job 启动确认、通知以及后续控制或收集结果。后台调度可能增加一个由通知唤醒的轮次，但这些消息都不会改写更早的前缀。
+僅追加：前臺會在可複用的父請求字首後增加一個結果，後臺則會繼續追加 Job 啟動確認、通知以及後續控制或收集結果。後臺排程可能增加一個由通知喚醒的輪次，但這些訊息都不會改寫更早的字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本提供方何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用 Codex 对比或任务积压。
+這些限制說明本提供者何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用 Codex 對比或任務積壓。
 
-- **每次运行均新建一个进程、一个线程和一个轮次**——不支持续接、恢复、池化、进度流或产品会话持久化。
-- **静态选择实例**——Profile 配置项固定提供方名称、可选模型与工具绑定；调用无法动态选择或修改提供方与模型，而且每个公开工具都需要唯一的 `toolName`。
-- **身份验证与账户状态仍由原生机制管理**——Bundle 会提供 CLI，但不会创建账户、登录、信任项目或改写 Codex 设置；配置与身份验证失败会公开其生命周期阶段与安全的 `unknown` 回退，而不会增加单独的公开分类体系。
-- **委派时必须存在原生平台载荷**——省略 optional dependencies 的安装、不受支持的平台以及缺失或损坏的载荷都会在第一次运行时失败；不会回退到宿主 CLI。
-- **兼容性由开发证据锁定**——若要从已验证的 0.153.4 协议基线升级，必须重新生成上游 schema 证据，并重新运行握手、答案选择、审批、取消、无密钥真实产品以及带密钥的 DeepSeek 随机数测试。
-- **没有人工审批路径**——已知的无人值守审批请求会被拒绝，未知服务器请求会以默认拒绝方式使运行失败；三种 Profile 模式都不会创建 DSH 交互通道或逐次调用 allow 策略。
-- **assistant 载荷仅包含最终文本**——失败运行可以额外公开独立的安全诊断；推理、过程说明、中间消息、工具通信、用量信息、原始 stderr 和工作区差异不会进入父会话，通用 Job id、通知与状态来自共享作业运行时。
-- **没有可选的共享能力**——对于本提供方，共享服务会拒绝 `agentOptions`、输出 schema、子任务角色设定、工具筛选和 harness 深度强制约束。
-- **没有按实际经过时间触发的超时或副作用回滚**——长时间运行的工作由调用方取消，且取消前已更改的文件或外部系统不会恢复原状。
+- **每次執行均新建一個程序、一個執行緒和一個輪次**——不支援續接、恢復、池化、進度流或產品工作階段持久化。
+- **靜態選擇實例**——Profile 設定項固定提供者名稱、可選模型與工具繫結；呼叫無法動態選擇或修改提供者與模型，而且每個公開工具都需要唯一的 `toolName`。
+- **身份驗證與帳戶狀態仍由原生機制管理**——Bundle 會提供 CLI，但不會建立帳戶、登入、信任專案或改寫 Codex 設定；設定與身份驗證失敗會公開其生命週期階段與安全的 `unknown` 退回，而不會增加單獨的公開分類體系。
+- **委派時必須存在原生平臺載荷**——省略 optional dependencies 的安裝、不受支援的平臺以及缺失或損壞的載荷都會在第一次執行時失敗；不會退回到主機 CLI。
+- **相容性由開發證據鎖定**——若要從已驗證的 0.153.4 協定基線升級，必須重新生成上游 schema 證據，並重新執行握手、答案選擇、審批、取消、無金鑰真實產品以及帶金鑰的 DeepSeek 隨機數測試。
+- **沒有人工審批路徑**——已知的無人值守審批請求會被拒絕，未知伺服器請求會以預設拒絕方式使執行失敗；三種 Profile 模式都不會建立 DSH 互動通道或逐次呼叫 allow 策略。
+- **assistant 載荷僅包含最終文字**——失敗執行可以額外公開獨立的安全診斷；推理、過程說明、中間訊息、工具通訊、用量資訊、原始 stderr 和工作區差異不會進入父工作階段，通用 Job id、通知與狀態來自共享作業執行時。
+- **沒有可選的共享能力**——對於本提供者，共享服務會拒絕 `agentOptions`、輸出 schema、子任務角色設定、工具篩選和 harness 深度強制約束。
+- **沒有按實際經過時間觸發的超時或副作用復原**——長時間執行的工作由呼叫方取消，且取消前已更改的檔案或外部系統不會恢復原狀。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为与限制以上文和包代码为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為與限制以上文和包程式碼為準。
 
-- **载荷体积披露**——当前 darwin-arm64 平台载荷压缩后约 114 MB、解包后约 282 MB；这些是披露数字，不是安装阈值。
-- **版本锁定的协议**——运行时依赖锁定为 `@openai/codex@0.153.4`；升级需要重新生成上游 schema 证据并重新运行带凭证的随机数测试。
+- **載荷體積披露**——目前 darwin-arm64 平臺載荷壓縮後約 114 MB、解包後約 282 MB；這些是披露數字，不是安裝閾值。
+- **版本鎖定的協定**——執行時依賴鎖定為 `@openai/codex@0.153.4`；升級需要重新生成上游 schema 證據並重新執行帶憑證的隨機數測試。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。生命周期配对属于共享 subagent service，受管范围的所有权属于 subprocess service。
+**執行時不變式：** 不釋出伴生入口。生命週期配對屬於共享 subagent service，受管範圍的所有權屬於 subprocess service。

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-27-compiler-independent-typert-model.md
 /agent-note-compiler-independent-typert-type-model:
   en: 6943b47c9de69922
-  zh: 2fb08c1de4e6ea63
+  zh: ba8342d062036025
 /agent-note-compiler-independent-typert-type-model/problem:
   en: 77713a6c0d15207e
-  zh: 2dc30d4c0182d8ba
+  zh: cc886329f1e69559
 /agent-note-compiler-independent-typert-type-model/decision:
   en: 9ecb064f733f9f1b
-  zh: 471aee71053174cd
+  zh: 50c58493847a0f38
 /agent-note-compiler-independent-typert-type-model/verification-contract:
   en: c02d3f09e54f9a32
-  zh: c14c15ffb7316b07
+  zh: 8cc7eebcd9412399
 /agent-note-compiler-independent-typert-type-model/alternatives-considered:
   en: fa503dcfaa6f438f
-  zh: 26052212a124e133
+  zh: e1d98e2a6bf36b53
 /agent-note-compiler-independent-typert-type-model/consequences:
   en: 4a472acf377f8361
-  zh: cb83602b123a4aae
+  zh: 8da06592683e075c

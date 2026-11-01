@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-27-outbound-proxy-policy.md
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request:
   en: b19652a0e1cc1826
-  zh: 4d3511e4f0db5b9d
+  zh: 91fb577532774a11
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request/problem:
   en: 70e5f3ed33010c98
-  zh: 5437d943953f5a40
+  zh: 7c1800f8286dd419
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request/decision:
   en: efe23161a54f70c5
-  zh: e24ee097918b2724
+  zh: eb0335e5c91b323a
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request/alternatives-considered:
   en: df44eb15557b95fe
-  zh: b757e53da4c0a99f
+  zh: adf0cb6f2638e787
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request/consequences:
   en: 6a4acbab915f1bd1
-  zh: 2c8ffd62ba74ff96
+  zh: 921c3df742a0f74d
 /agent-note-one-outbound-proxy-policy-installed-before-anything-can-request/testing:
   en: 0d7eaa666c94a5cd
-  zh: 210fa098f154d137
+  zh: c921e1d4f4d91efb

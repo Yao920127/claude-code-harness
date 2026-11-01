@@ -1,27 +1,27 @@
-# Agent Note：归档准入读取已存储的任务
+# Agent Note：歸檔准入讀取已儲存的任務
 
-状态：implemented
+狀態：implemented
 
 [English](2026-09-22-archive-admission-reads-stored-tasks.md) | 中文
 
-## 问题
+## 問題
 
-归档准入在写入归档前询问每个提供方：该 Session 还有什么在跑；随后「停止并归档」再要求它们结束这些工作（[归档仍有工作在跑的 Session](2026-09-21-archive-stops-running-session-work.zh.md)）。Schedule 提供方原先回答的是其归属 runtime 对活会话日志的 fold，因此只有带活 Agent 的 Session 才报告 `schedule` 族，停止也走管理 `delete` 路径。
+歸檔准入在寫入歸檔前詢問每個提供者：該 Session 還有什麼在跑；隨後「停止並歸檔」再要求它們結束這些工作（[歸檔仍有工作在跑的 Session](2026-09-21-archive-stops-running-session-work.zh.md)）。Schedule 提供者原先回答的是其歸屬 runtime 對活工作階段日誌的 fold，因此只有帶活 Agent 的 Session 才報告 `schedule` 族，停止也走管理 `delete` 路徑。
 
-宿主任务存储在 Schedule 领域文档中，且比其 Session 的 Agent 活得更久（[存储决策](../architecture/2026-09-16-host-schedule-storage.zh.md)），因此那个 fold 已不存在：`ScheduleRuntime.activeRecords()` 已经移除，已存储的任务表是到期提醒唯一能被看见的地方。存储行仍被武装的冷 Session 因此什么也不报告，归档时不会弹出运行态才会弹出的确认对话框，也没有人被告知宿主会继续保留哪条提醒。
+主機任務儲存在 Schedule 領域文件中，且比其 Session 的 Agent 活得更久（[儲存決策](../architecture/2026-09-16-host-schedule-storage.zh.md)），因此那個 fold 已不存在：`ScheduleRuntime.activeRecords()` 已經移除，已儲存的任務表是到期提醒唯一能被看見的地方。儲存行仍被武裝的冷 Session 因此什麼也不報告，歸檔時不會彈出執行態才會彈出的確認對話方塊，也沒有人被告知主機會繼續保留哪條提醒。
 
-## 决策
+## 決策
 
-Schedule 提供方从已存储的宿主任务行回答归档准入，并由停止删除这些行。`workspace/session-activity` 读取 `list({ sessionId })`——绑定到该 Session 且状态为活动的已存储行——把它们作为 `schedule` 族报告，每条任务一项、携带其已存储 id 与 title，并把该族前插到 `next()` 的结果之前，使其他提供方保留各自条目。`workspace/session-stop` 在与工具相同的串行队列的一个槽位里直接删除这些行，因此停止会排在写入尚未完成的创建之后，不会漏掉那个创建即将提交的行；它会尝试每一行，因为留下的行仍会触发；对已经落地的行先通知观察者，再把首个失败交给调用方。是否存活从不参与判断：存储行仍被武装的空闲或冷 Session 会拒绝归档，确认对话框会准确列出这些提醒。两个监听器注册在同一个名为 `schedule.archiveAdmission()` 的 effect 中，卸载插件即一并撤回。
+Schedule 提供者從已儲存的主機任務行回答歸檔准入，並由停止刪除這些行。`workspace/session-activity` 讀取 `list({ sessionId })`——繫結到該 Session 且狀態為活動的已儲存行——把它們作為 `schedule` 族報告，每條任務一項、攜帶其已儲存 id 與 title，並把該族前插到 `next()` 的結果之前，使其他提供者保留各自條目。`workspace/session-stop` 在與工具相同的序列佇列的一個槽位裡直接刪除這些行，因此停止會排在寫入尚未完成的建立之後，不會漏掉那個建立即將提交的行；它會嘗試每一行，因為留下的行仍會觸發；對已經落實的行先通知觀察者，再把首個失敗交給呼叫方。是否存活從不參與判斷：儲存行仍被武裝的空閒或冷 Session 會拒絕歸檔，確認對話方塊會準確列出這些提醒。兩個監聽器註冊在同一個名為 `schedule.archiveAdmission()` 的 effect 中，解除安裝外掛即一併撤回。
 
-## 已考虑的备选
+## 已考慮的備選
 
-**只由活着的 Session 报告 `schedule` 族。** 已存储的任务才是权威，且比其 Session 的 Agent 活得更久，因此以存活为条件会让存储行被武装的冷 Session 静默归档，其到期行随后投递进一个被门禁以 `blocked` 收口的回合，在没有模型步的情况下消耗掉这次触发。两种做法在准入上都只需一次读表。
+**只由活著的 Session 報告 `schedule` 族。** 已儲存的任務才是權威，且比其 Session 的 Agent 活得更久，因此以存活為條件會讓儲存行被武裝的冷 Session 靜默歸檔，其到期行隨後投遞進一個被門禁以 `blocked` 收口的回合，在沒有模型步的情況下消耗掉這次觸發。兩種做法在准入上都只需一次讀表。
 
-**每行都走公开的管理 `delete` 路径删除。** 在已经持有该槽位的串行队列内部再次进入队列会自锁，因此停止自己删行：同样的持久化变更，每次停止一次通知、一次计时器重算，而不是每行各一次。
+**每行都走公開的管理 `delete` 路徑刪除。** 在已經持有該槽位的序列佇列內部再次進入佇列會自鎖，因此停止自己刪行：同樣的持久化變更，每次停止一次通知、一次計時器重算，而不是每行各一次。
 
-**在 runtime 侧保留该 Session 活动任务的镜像。** 镜像会重复权威文档、在重启后漂移、并随 Agent 一起消失——而这正是准入必须仍能回答的情形。
+**在 runtime 側保留該 Session 活動任務的映像。** 映像會重複權威文件、在重新啟動後漂移、並隨 Agent 一起消失——而這正是准入必須仍能回答的情形。
 
-## 后果
+## 後果
 
-准入的代价是一次读已存储的表，而没有活 Agent 的 Session 也能拒绝归档：看起来安静的 Session 现在可能因为其已存储提醒仍被武装而要求确认。停止逐行删除——领域表不提供批量删除——因此删到一半失败时，先前删除已提交；观察者会被告知这些，每一行都已被尝试，首个失败仍交给调用方。由此剩下一处残余：在归档写入与停止之间崩溃，会在已归档的 Session 里留下仍被武装的已存储行；取消归档时它们再次出现；当这类行的目标时刻过去，Schedule runtime 会按自己的定时器选中它并自行 resolve 该 Session 的 Agent——这一步没有门禁，只有 `agent/pre-step` 拒绝模型步——一次性提醒于是把 follow-up 投递进一个被门禁以 `blocked` 收口的回合，该次触发在没有模型步的情况下被消耗。接缝本身未变：workspace 包仍然不认识 Schedule 词汇，而这个提供方只拥有提醒。
+准入的代價是一次讀已儲存的表，而沒有活 Agent 的 Session 也能拒絕歸檔：看起來安靜的 Session 現在可能因為其已儲存提醒仍被武裝而要求確認。停止逐行刪除——領域表不提供批次刪除——因此刪到一半失敗時，先前刪除已提交；觀察者會被告知這些，每一行都已被嘗試，首個失敗仍交給呼叫方。由此剩下一處殘餘：在歸檔寫入與停止之間崩潰，會在已歸檔的 Session 裡留下仍被武裝的已儲存行；取消歸檔時它們再次出現；當這類行的目標時刻過去，Schedule runtime 會按自己的定時器選中它並自行 resolve 該 Session 的 Agent——這一步沒有門禁，只有 `agent/pre-step` 拒絕模型步——一次性提醒於是把 follow-up 投遞進一個被門禁以 `blocked` 收口的回合，該次觸發在沒有模型步的情況下被消耗。接縫本身未變：workspace 包仍然不認識 Schedule 詞彙，而這個提供者只擁有提醒。

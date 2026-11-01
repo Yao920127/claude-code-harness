@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-08-self-referential-cordis-toolset.md
 /agent-note-cordis-runtime-inspection-and-runner-isolation:
   en: d96c123d1989b22b
-  zh: 4a53cdd763955f19
+  zh: 59ec9afcc0a303fc
 /agent-note-cordis-runtime-inspection-and-runner-isolation/problem:
   en: 29d1465c348331e9
-  zh: 25dbc885f5d7ee7d
+  zh: ea3c3f0bfbcb120a
 /agent-note-cordis-runtime-inspection-and-runner-isolation/decision:
   en: 8a4cbb660f2409d7
-  zh: 2219e39468e6baee
+  zh: fb7e3c1edbd255fa
 /agent-note-cordis-runtime-inspection-and-runner-isolation/alternatives-considered:
   en: 637137a3b035c211
-  zh: 5a667bfe2446a5f8
+  zh: a7b4f59f9640bda2
 /agent-note-cordis-runtime-inspection-and-runner-isolation/consequences:
   en: a21f854954e01db6
-  zh: c16bbe7c3580b394
+  zh: ba36473caefb5485

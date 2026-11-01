@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-28-portable-execution-world-consumers.md
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds:
   en: 42609904ffe19d80
-  zh: fcacbf7912df216c
+  zh: e3c038a3af60a91b
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/problem:
   en: 959a378a04f28e89
-  zh: ff496169735b4d7b
+  zh: d2664a13f37ba946
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/decision:
   en: 23eca65b89ae572a
-  zh: 630d844a7c6438df
+  zh: 0901dee592530d73
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/remote-provider-ownership:
   en: bde2e1fa8f3aeee0
-  zh: 42a13bb4cf540d6d
+  zh: 3e772caaeeb7b136
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/verification:
   en: b34540c3548ea98f
-  zh: 79e53bda3981802c
+  zh: 2d88488286beaec5
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/alternatives-considered:
   en: a5f455ad35d0615c
-  zh: df4f501a6d723838
+  zh: 648f16e6a3e6139e
 /agent-note-portable-consumers-over-filesystem-and-subprocess-execution-worlds/consequences:
   en: 3e8426e4a6788505
-  zh: 143b8c07d21d95d1
+  zh: 693f84fd23c61f57

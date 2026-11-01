@@ -1,5 +1,5 @@
 ---
-description: "共享的 dsh 核心：为每个 dsh --profile 表层提供模型访问、工具、持久会话与安全默认值，供用户组合或定制 profile。"
+description: "共享的 dsh 核心：為每個 dsh --profile 表層提供模型存取、工具、持久工作階段與安全預設值，供使用者組合或定製 profile。"
 kind: "package-bundle"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-bundle"
 
 ## 概述
 
-每个基于 base 的 `dsh --profile` 表层都运行在 `dsh-base` 上，因此这些表层共享模型连接、完整工具集、持久会话历史和 workspace 安全默认值。随附的 `sdk-minimal` profile 刻意改用完整的独立配置树。你通常不直接操作本组合包——随发行版交付的基于 base 的 profile 已经包含它，自定义的基于 base 的 profile 则把它放在第一位。需要其他默认值时，应修改自己的 profile patch 或添加后续组合包；本包不是供导入的库。
+每個基於 base 的 `dsh --profile` 表層都執行在 `dsh-base` 上，因此這些表層共享模型連線、完整工具集、持久工作階段歷史和 workspace 安全預設值。隨附的 `sdk-minimal` profile 刻意改用完整的獨立設定樹。你通常不直接操作本組合包——隨發行版交付的基於 base 的 profile 已經包含它，自定義的基於 base 的 profile 則把它放在第一位。需要其他預設值時，應修改自己的 profile patch 或新增後續組合包；本包不是供匯入的庫。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-你会自动获得 dsh 核心：随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 已包含它，自定义 profile 则把它列为第一个组合包。之后一切无需任何额外配置即可工作。
+你會自動獲得 dsh 核心：隨發行版交付的 `web`、`headless`、`sdk` 與 `acp` profile 已包含它，自定義 profile 則把它列為第一個組合包。之後一切無需任何額外設定即可工作。
 
-### 最小自定义 profile
+### 最小自定義 profile
 
-要在共享核心之上构建 profile，请创建一个 profile，其 `package.json` 把 `@deepseek-ai/dsh-base` 列在首位：
+要在共享核心之上建置 profile，請建立一個 profile，其 `package.json` 把 `@deepseek-ai/dsh-base` 列在首位：
 
 ```json
 {
@@ -43,13 +43,13 @@ kind: "package-bundle"
 }
 ```
 
-运行 `dsh --profile my-profile "your task"`，你就得到一个可用的 agent（智能体），带模型访问、工具、持久化与默认权限策略。随发行版交付的 `web`、`headless`、`sdk` 与 `acp` profile 会在首次使用时为你创建。要添加更多组合包，运行 `dsh plugin --profile <name> add <package>`；内置组合包从 dsh 安装目录解析。profile 约定见 [app-boot 的 profile 章节](../../boot/app-boot/README.zh.md)。
+執行 `dsh --profile my-profile "your task"`，你就得到一個可用的 agent（智慧代理），帶模型存取、工具、持久化與預設權限策略。隨發行版交付的 `web`、`headless`、`sdk` 與 `acp` profile 會在首次使用時為你建立。要新增更多組合包，執行 `dsh plugin --profile <name> add <package>`；內建組合包從 dsh 安裝目錄解析。profile 約定見 [app-boot 的 profile 章節](../../boot/app-boot/README.zh.md)。
 
-### 你得到什么
+### 你得到什麼
 
-开箱即用，基于本核心构建的每个 profile 都提供：DeepSeek 模型连接（提供方与模型可配置，你还可以在设置中启用额外提供方）、完整工具集——文件编辑、shell 命令、web 搜索、公开 HTTP(S) 抓取、subagent、任务与目标跟踪——可跨重启存活的持久会话，以及默认权限策略：把文件写入限制在工作区内，危险操作前征询许可。Web 抓取无需逐次审批，其提供方会拒绝非公开目的地址。反馈保存在会话日志中。[OTel 会话上传](../../session/session-telemetry-otel/README.zh.md)对所有用户默认使用 `FEEDBACK_ONLY`，包括 `deepseek-official`：新的文本反馈、消息评分、编辑与撤回会释放截至该事件的完整规范会话日志前缀，包含上下文。后续记录等待下一次显式反馈；发送已授权批次无需进一步交互或模型调用。`DISABLED` 阻止 OTel 捕获。默认开启的 [DeepSeek 会话日志贡献器](../../session/session-log-deepseek/README.zh.md)仍是独立的请求路径。
+開箱即用，基於本核心建置的每個 profile 都提供：DeepSeek 模型連線（提供者與模型可設定，你還可以在設定中啟用額外提供者）、完整工具集——檔案編輯、shell 命令、web 搜尋、公開 HTTP(S) 抓取、subagent、任務與目標跟蹤——可跨重新啟動存活的持久工作階段，以及預設權限策略：把檔案寫入限制在工作區內，危險操作前徵詢許可。Web 抓取無需逐次審批，其提供者會拒絕非公開目的地址。回饋儲存在工作階段日誌中。[OTel 工作階段上傳](../../session/session-telemetry-otel/README.zh.md)對所有使用者預設使用 `FEEDBACK_ONLY`，包括 `deepseek-official`：新的文字回饋、訊息評分、編輯與撤回會釋放截至該事件的完整規範工作階段日誌字首，包含上下文。後續記錄等待下一次顯式回饋；傳送已授權批次無需進一步互動或模型呼叫。`DISABLED` 阻止 OTel 捕捉。預設開啟的 [DeepSeek 工作階段日誌貢獻器](../../session/session-log-deepseek/README.zh.md)仍是獨立的請求路徑。
 
-默认文件编辑使用 `read`、`write` 和 `edit`。`str_replace_editor` 工具仍可显式启用。要将它加入基于 base 的 profile，请在 profile、home 或逐次调用 patch 中添加以下条目：
+預設檔案編輯使用 `read`、`write` 和 `edit`。`str_replace_editor` 工具仍可顯式啟用。要將它加入基於 base 的 profile，請在 profile、home 或逐次呼叫 patch 中新增以下條目：
 
 ```yaml
 - insert:
@@ -59,93 +59,93 @@ kind: "package-bundle"
         maxOutputChars: 16000
 ```
 
-本 bundle 统一挂载 [MCP 资源](../../mcp/mcp-resources/README.zh.md)一次。只需为所需服务器配置 [MCP 客户端条目](../../mcp/mcp-client/README.zh.md)。其他提供方挂载的客户端在所属作用域中也属于已配置状态。调用方作用域中没有已配置服务器时，不会获得 MCP 工具或提示词文本。
+本 bundle 統一掛載 [MCP 資源](../../mcp/mcp-resources/README.zh.md)一次。只需為所需伺服器設定 [MCP 用戶端條目](../../mcp/mcp-client/README.zh.md)。其他提供者掛載的用戶端在所屬作用域中也屬於已設定狀態。呼叫方作用域中沒有已設定伺服器時，不會獲得 MCP 工具或提示詞文字。
 
-### 各平台的 shell 工具
+### 各平臺的 shell 工具
 
-在 macOS 与 Linux 上你获得 bash shell 工具；在 Windows 上则获得对应的 PowerShell 孪生工具，因此每台机器恰好有一套 shell 栈。各平台的安全行为完全一致。偏好不受沙盒约束的 PowerShell 执行器的 Windows 主机可以在其 profile patch 中切换 shell 行——切换必须同时禁用两个 PowerShell 行并重新启用两个 bash 行，否则 profile 无法加载。
+在 macOS 與 Linux 上你獲得 bash shell 工具；在 Windows 上則獲得對應的 PowerShell 孿生工具，因此每臺機器恰好有一套 shell 棧。各平臺的安全行為完全一致。偏好不受沙盒約束的 PowerShell 執行器的 Windows 主機可以在其 profile patch 中切換 shell 行——切換必須同時停用兩個 PowerShell 行並重新啟用兩個 bash 行，否則 profile 無法載入。
 
-### 更改默认值
+### 更改預設值
 
-要改变基于本核心构建的 profile 提供的内容——不同的默认模型、更严格的权限模式、更多或更少的工具——请编辑 profile 的 `cordis.patch.yml` 或添加后面的组合包。每个 patch 条目会替换目标的整个配置，因此请重述每个想保留的设置。保持沙箱化文件系统提供方作为唯一的文件写入路径：在其之上再添加普通文件系统提供方会导致 profile 加载失败。
+要改變基於本核心建置的 profile 提供的內容——不同的預設模型、更嚴格的權限模式、更多或更少的工具——請編輯 profile 的 `cordis.patch.yml` 或新增後面的組合包。每個 patch 條目會替換目標的整個設定，因此請重述每個想保留的設定。保持沙箱化檔案系統提供者作為唯一的檔案寫入路徑：在其之上再新增普通檔案系統提供者會導致 profile 載入失敗。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本组合包是一份静态 patch 文档：一个应用到空 profile 根之上的 `insert` 列表。它不挂载任何服务、不发出任何事件、也不持有任何可变状态；每条插入行所属的包负责该行的行为与不变式。
+本組合包是一份靜態 patch 文件：一個應用到空 profile 根之上的 `insert` 列表。它不掛載任何服務、不發出任何事件、也不持有任何可變狀態；每條插入行所屬的包負責該行的行為與不變式。
 
-### 组合机制
+### 組合機制
 
-patch 会替换目标行的整个 `config`，而不是合并进它。后续组合包层与用户的 profile `cordis.patch.yml` 按 id 覆盖行，每行最后一次写入生效。按模式取值不同的行不属于这里：每个模式组合包重述自己的完整配置，让任何单一行最多只属于一个组合包层加用户层。完整行集合及其设计依据以行内注释写在 [`cordis.patch.yml`](cordis.patch.yml) 里；[生成的组合图](../../../apps/cli/composition.md)负责渲染它。
+patch 會替換目標行的整個 `config`，而不是合併進它。後續組合包層與使用者的 profile `cordis.patch.yml` 按 id 覆蓋行，每行最後一次寫入生效。按模式取值不同的行不屬於這裡：每個模式組合包重述自己的完整設定，讓任何單一行最多隻屬於一個組合包層加使用者層。完整行集合及其設計依據以行內註解寫在 [`cordis.patch.yml`](cordis.patch.yml) 裡；[生成的組合圖](../../../apps/cli/composition.md)負責渲染它。
 
-### 平台门控
+### 平臺門控
 
-patch 在自身上按平台门控两个 shell 栈：`bash-sandbox` 与 `tool-bash` 携带 `disabled: !!js process.platform === 'win32'`，孪生行 `pwsh-sandbox` 与 `tool-pwsh` 以取反的表达式仅在 win32 挂载。权限面与 POSIX 完全一致：沙箱策略通过 Windows ACL 受限令牌 runner（`dsh-sandbox-local` → `@deepseek-ai/dsh-sandbox-windows-acl`）执行相同的文件效果策略，`fs-sandbox` 继续围栏 `ctx.fs` 写入——在其旁再挂载 `dsh-fs-local` 会重复注册 `ctx.fs` 并在加载时失败。
+patch 在自身上按平臺門控兩個 shell 棧：`bash-sandbox` 與 `tool-bash` 攜帶 `disabled: !!js process.platform === 'win32'`，孿生行 `pwsh-sandbox` 與 `tool-pwsh` 以取反的表示式僅在 win32 掛載。權限面與 POSIX 完全一致：沙箱策略透過 Windows ACL 受限權杖 runner（`dsh-sandbox-local` → `@deepseek-ai/dsh-sandbox-windows-acl`）執行相同的檔案效果策略，`fs-sandbox` 繼續圍欄 `ctx.fs` 寫入——在其旁再掛載 `dsh-fs-local` 會重複註冊 `ctx.fs` 並在載入時失敗。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`cordis.patch.yml`](cordis.patch.yml) | 组合包的实体：基础插件行，附以行内注释说明各行依据 |
-| [`src/index.ts`](src/index.ts) | 包入口；不携带任何运行时 API |
-| — | 不发布运行时不变式伴生入口；本包是静态 patch 列表载体（由其他包拥有的 loader 行构成的 YAML 文档）；它不挂载任何服务、不发出任何事件，也没有任何可检查的可变关系。每条插入行所属的包负责该行的不变式。 |
-| [`tests/base.spec.ts`](tests/base.spec.ts) | manifest（元数据清单）声明与平台门控检查 |
+| [`cordis.patch.yml`](cordis.patch.yml) | 組合包的實體：基礎外掛行，附以行內註解說明各行依據 |
+| [`src/index.ts`](src/index.ts) | 包入口；不攜帶任何執行時 API |
+| — | 不釋出執行時不變式伴生入口；本包是靜態 patch 列表載體（由其他包擁有的 loader 行構成的 YAML 文件）；它不掛載任何服務、不發出任何事件，也沒有任何可檢查的可變關係。每條插入行所屬的包負責該行的不變式。 |
+| [`tests/base.spec.ts`](tests/base.spec.ts) | manifest（中繼資料清單）宣告與平臺門控檢查 |
 
-### 不变式归属
+### 不變式歸屬
 
-不发布不变式伴生入口，因为本包是静态 patch 列表载体：每条插入行由所属的包负责其不变式，组合包自身没有任何可审计的可变关系。
+不釋出不變式伴生入口，因為本包是靜態 patch 列表載體：每條插入行由所屬的包負責其不變式，組合包自身沒有任何可審計的可變關係。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当你想深入了解 profile、基于本核心构建的表层或确切组合时，阅读以下页面。
+當你想深入瞭解 profile、基於本核心建置的表層或確切組合時，閱讀以下頁面。
 
-- [app-boot 的 profile 章节](../../boot/app-boot/README.zh.md)——profile 如何解析、分层与定制。
-- [组合包索引](../README.zh.md)——基于本核心构建的表层。
-- [生成组合图](../../../apps/cli/composition.md)——随发行版交付的每个 profile 使用的确切插件集合。
-- [Profile 组合包设计笔记](../../../.agents/notes/implemented/architecture/2026-08-05-profile-plugin-bundles.zh.md)——profile 与组合包的组合设计。
-- [Codex 与 Claude Code 提供方组合包](../../subagent/README.zh.md)——可叠加安装的可选提供方组合包。
+- [app-boot 的 profile 章節](../../boot/app-boot/README.zh.md)——profile 如何解析、分層與定製。
+- [組合包索引](../README.zh.md)——基於本核心建置的表層。
+- [生成組合圖](../../../apps/cli/composition.md)——隨發行版交付的每個 profile 使用的確切外掛集合。
+- [Profile 組合包設計筆記](../../../.agents/notes/implemented/architecture/2026-08-05-profile-plugin-bundles.zh.md)——profile 與組合包的組合設計。
+- [Codex 與 Claude Code 提供者組合包](../../subagent/README.zh.md)——可疊加安裝的可選提供者組合包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过每条插入行所属的包间接产生影响，由各包负责其行的模型可见行为。
+透過每條插入行所屬的包間接產生影響，由各包負責其行的模型可見行為。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-组合包本身不添加任何请求前缀；每条插入行所属的包负责各自的缓存影响。
+組合包本身不新增任何請求字首；每條插入行所屬的包負責各自的快取影響。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制告诉你核心何时需要额外注意、覆盖应放在哪里。它们是当前包约束，不是通用对比或任务积压。
+這些限制告訴你核心何時需要額外注意、覆蓋應放在哪裡。它們是目前包約束，不是通用對比或任務積壓。
 
-- **覆盖会替换整个设置块**——patch 条目会替换目标的整个配置，因此你的覆盖必须重述每个想保留的设置；不会自动合并。
-- **按表层的设置属于该表层的组合包**——web GUI 与 headless 模式取值不同的默认值放在对应表层的组合包里，而不是共享核心。
-- **Windows 的临时目录授权是按会话的私有子目录**——`workspace-write` 把写入限制在工作区与会话自己的 temp 子目录（`<temp>\dsh-<hash>`，受限子进程的 TMP/TEMP 被改写）；`read-only` 不授予任何临时目录写入权限。见 `@deepseek-ai/dsh-sandbox-windows-acl`。
-- **在沙箱化文件系统提供方之上添加普通提供方会导致 profile 失败**——两者注册同一个服务，profile 因此拒绝加载；二选一。
+- **覆蓋會替換整個設定塊**——patch 條目會替換目標的整個設定，因此你的覆蓋必須重述每個想保留的設定；不會自動合併。
+- **按表層的設定屬於該表層的組合包**——web GUI 與 headless 模式取值不同的預設值放在對應表層的組合包裡，而不是共享核心。
+- **Windows 的臨時目錄授權是按工作階段的私有子目錄**——`workspace-write` 把寫入限制在工作區與工作階段自己的 temp 子目錄（`<temp>\dsh-<hash>`，受限子程序的 TMP/TEMP 被改寫）；`read-only` 不授予任何臨時目錄寫入權限。見 `@deepseek-ai/dsh-sandbox-windows-acl`。
+- **在沙箱化檔案系統提供者之上新增普通提供者會導致 profile 失敗**——兩者註冊同一個服務，profile 因此拒絕載入；二選一。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-基础组合在凭证服务旁挂载授权服务和平台账号提供者。提供者只在显式登录尝试期间打开回调监听器。
+基礎組合在憑證服務旁掛載授權服務和平臺帳號提供者。提供者只在顯式登入嘗試期間開啟回呼監聽器。

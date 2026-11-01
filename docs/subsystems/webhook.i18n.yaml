@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/webhook.md
 /webhook-runtime:
   en: a9237452c010af40
-  zh: ce76dc8401ca88ee
+  zh: 7d48bb8448a9a382
 /webhook-runtime/shared-values:
   en: 99af66fb4c51ecf6
-  zh: fa1f2e88c7b13e46
+  zh: a2234e28d586efbe
 /webhook-runtime/fire-and-forget-dispatch:
   en: 0e62c74b195d1c74
-  zh: d458f2b210daf6ac
+  zh: 23c928ed7e75e591
 /webhook-runtime/session-creation:
   en: 2ccdbc45140f9c41
-  zh: af509a7fb0f84e18
+  zh: 3e7c7d2f657d6aa2
 /webhook-runtime/github-adapter:
   en: ddb0522ef321a8c5
-  zh: 6f08a99848facaf3
+  zh: 574f0589bca5c8a1

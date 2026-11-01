@@ -1,34 +1,34 @@
-# 语音输入
+# 語音輸入
 
 [English](voice-input.md) | 中文
 
-实验性语音识别包含三个角色：[服务定义](../../packages/experimental/speech-to-text/README.zh.md)路由具名 Provider，[SenseVoice Provider](../../packages/experimental/speech-to-text-sensevoice/README.zh.md)拥有本地推理，[Remote 消费者](../../packages/experimental/api-speech-to-text/README.zh.md)服务浏览器。[可选 Bundle](../../packages/experimental/voice-input-bundle/README.zh.md)将它们与麦克风 UI 组合。
+實驗性語音識別包含三個角色：[服務定義](../../packages/experimental/speech-to-text/README.zh.md)路由具名 Provider，[SenseVoice Provider](../../packages/experimental/speech-to-text-sensevoice/README.zh.md)擁有本地推理，[Remote 消費者](../../packages/experimental/api-speech-to-text/README.zh.md)服務瀏覽器。[可選 Bundle](../../packages/experimental/voice-input-bundle/README.zh.md)將它們與麥克風 UI 組合。
 
-## Provider 选择
+## Provider 選擇
 
-`SpeechProviderId` 为注册标识添加类型品牌。`SpeechProviderInfo` 携带显示名称、支持的 `languages` 语言提示及 `host-local` 或 `cloud` 处理位置。`SpeechRequest` 包含 WAV 字节和可选的 Provider、语言选择；`resolve()` 生成捕获一个 Provider 实例的 `SpeechSpec`。缺失的 Provider 或不支持的语言会报错；替换或撤销会使已解析的任务失效。音频不会回退到其他 Provider。
+`SpeechProviderId` 為註冊標識新增型別品牌。`SpeechProviderInfo` 攜帶顯示名稱、支援的 `languages` 語言提示及 `host-local` 或 `cloud` 處理位置。`SpeechRequest` 包含 WAV 位元組和可選的 Provider、語言選擇；`resolve()` 生成捕捉一個 Provider 實例的 `SpeechSpec`。缺失的 Provider 或不支援的語言會報錯；替換或撤銷會使已解析的任務失效。音訊不會退回到其他 Provider。
 
-`SpeechProvider.transcribe()` 接收完整的 `SpeechInput` 与 `AbortSignal`。`Transcript` 返回纯文本 `text`、`audioSeconds` 和 `inferenceSeconds`。Provider 响应取消，并在注销完成前结束其任务。本地 Provider 串行执行调用、限制队列，并独立于 Session 管理工作进程生命周期。
+`SpeechProvider.transcribe()` 接收完整的 `SpeechInput` 與 `AbortSignal`。`Transcript` 返回純文字 `text`、`audioSeconds` 和 `inferenceSeconds`。Provider 回應取消，並在登出完成前結束其任務。本地 Provider 序列執行呼叫、限制佇列，並獨立於 Session 管理工作程序生命週期。
 
-## 浏览器与 Host 所有权
+## 瀏覽器與 Host 所有權
 
-浏览器拥有麦克风轨道与未发送的草稿。`TranscriptionRequest` 通过带认证的 Remote 发送规范 base64 PCM16 WAV。`SpeechCatalog` 公布可用 Provider、默认选择及录音字节和时长限制。API 在识别前校验这些进程输入。
+瀏覽器擁有麥克風軌道與未傳送的草稿。`TranscriptionRequest` 透過帶認證的 Remote 傳送規範 base64 PCM16 WAV。`SpeechCatalog` 公佈可用 Provider、預設選擇及錄音位元組和時長限制。API 在識別前驗證這些程序輸入。
 
-输入门面在录音前捕获带版本的选区。`InputActions.insertText()` 仅在选区版本仍有效且提交状态允许编辑时，插入一次可撤销的纯文本编辑。插入被拒绝时，转写文字保留以供显式插入。切换 Session 或释放插件使迟到结果失效。识别本身不写入 Session 事件；普通用户提交拥有最终的模型可见文字。
+輸入門面在錄音前捕捉帶版本的選區。`InputActions.insertText()` 僅在選區版本仍有效且提交狀態允許編輯時，插入一次可撤銷的純文字編輯。插入被拒絕時，轉寫文字保留以供顯式插入。切換 Session 或釋放外掛使遲到結果失效。識別本身不寫入 Session 事件；普通使用者提交擁有最終的模型可見文字。
 
-## 准备与设置
+## 準備與設定
 
-`SpeechProviderInfo.downloadSources` 公布准备阶段的源。`SpeechPreparationOptions.downloadSource` 为单次任务选择一个源；省略时保留提供方策略。SenseVoice 校验公布的选项，固定使用手动指定的源而不回退，并拒绝在准备期间改源。UI 为当前卡片中的重试保留选择，但不会将其保存为识别偏好。
+`SpeechProviderInfo.downloadSources` 公佈準備階段的源。`SpeechPreparationOptions.downloadSource` 為單次任務選擇一個源；省略時保留提供者策略。SenseVoice 驗證公佈的選項，固定使用手動指定的源而不退回，並拒絕在準備期間改源。UI 為目前卡片中的重試保留選擇，但不會將其儲存為識別偏好。
 
-Host Provider 在页面和 Session 变化期间拥有同一个准备任务。Client 在输入框、安装引导弹窗、Bundle 详情之间共享一份 `follow()` 订阅。可选 `SpeechSetupEstimate` 元数据提供各 Provider 的资源预期，与实测进度分开。`SpeechPreparationStepKind` 标识有序资源操作；`SpeechPreparationStep` 记录各步骤状态与开始时间。完整 `SpeechPreparationState` 在取消或失败后保留这些步骤。折叠 UI 显示当前操作，展开后列出所有步骤，仅进行中步骤显示字节进度或等待时间。关闭观察者不会取消准备。已校验文件在重试及空闲进程回收后继续复用。
+Host Provider 在頁面和 Session 變化期間擁有同一個準備任務。Client 在輸入框、安裝引導彈出視窗、Bundle 詳情之間共享一份 `follow()` 訂閱。可選 `SpeechSetupEstimate` 中繼資料提供各 Provider 的資源預期，與實測進度分開。`SpeechPreparationStepKind` 標識有序資源操作；`SpeechPreparationStep` 記錄各步驟狀態與開始時間。完整 `SpeechPreparationState` 在取消或失敗後保留這些步驟。摺疊 UI 顯示目前操作，展開後列出所有步驟，僅進行中步驟顯示位元組進度或等待時間。關閉觀察者不會取消準備。已驗證檔案在重試及空閒程序回收後繼續複用。
 
-准备失败时可包含 `SpeechDownloadFailure`，提供文件、下载源、原因分类以及可选错误码或 HTTP 状态。Client 将恢复建议本地化；原始下载错误留在 Host。
+準備失敗時可包含 `SpeechDownloadFailure`，提供檔案、下載源、原因分類以及可選錯誤碼或 HTTP 狀態。Client 將恢復建議在地化；原始下載錯誤留在 Host。
 
-麦克风占用模型选择器与发送按钮之间的 `conversation.input.activity`。点击开始录音并展开工具栏；停止后转写并插入草稿。活动栏保留编辑器与提交按钮，拥有局部反馈，并在卸载时释放展开状态。取消、Escape 或隐藏页面会丢弃录音。波形历史展示实测麦克风音量。Bundle 详情包含识别偏好、准备状态和进度。显式启用时通过 `plugins.bundle.activation` 引导缺少模型的用户前往安装；列表只显示 Bundle 描述和开关。
+麥克風佔用模型選擇器與傳送按鈕之間的 `conversation.input.activity`。點選開始錄音並展開工具欄；停止後轉寫並插入草稿。活動欄保留編輯器與提交按鈕，擁有區域性回饋，並在解除安裝時釋放展開狀態。取消、Escape 或隱藏頁面會丟棄錄音。波形歷史展示實測麥克風音量。Bundle 詳情包含識別偏好、準備狀態和進度。顯式啟用時透過 `plugins.bundle.activation` 引導缺少模型的使用者前往安裝；列表只顯示 Bundle 描述和開關。
 
-## 设计依据
+## 設計依據
 
-[语音输入决策](../../.agents/notes/implemented/architecture/2026-09-16-experimental-voice-input.zh.md)解释临时音频、显式 Provider 选择和延迟准备本地运行时。
+[語音輸入決策](../../.agents/notes/implemented/architecture/2026-09-16-experimental-voice-input.zh.md)解釋臨時音訊、顯式 Provider 選擇和延遲準備本地執行時。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

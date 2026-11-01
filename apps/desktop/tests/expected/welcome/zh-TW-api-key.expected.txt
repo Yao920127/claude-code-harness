@@ -1,0 +1,8 @@
+Claude Code Harness
+Claude Code Harness
+新增一個 API Key 開始使用
+設定 DeepSeek 官方模型，即可開始使用
+輸入 API 金鑰 [password]
+儲存並繼續 [disabled]
+稍後設定
+返回登入

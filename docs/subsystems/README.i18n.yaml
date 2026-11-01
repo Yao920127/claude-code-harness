@@ -4,4 +4,4 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/README.md
 /subsystems:
   en: 58466f6fd60755eb
-  zh: ab46a374f5a3c3ed
+  zh: 563b6fc55d93242b

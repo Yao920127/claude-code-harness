@@ -8,7 +8,7 @@ const API_VERSION = '2026-03-10'
 
 function token() {
   const value = process.env.GH_TOKEN || process.env.GITHUB_TOKEN
-  if (!value) throw new Error('GH_TOKEN 或 GITHUB_TOKEN 未设置')
+  if (!value) throw new Error('GH_TOKEN 或 GITHUB_TOKEN 未設定')
   return value
 }
 
@@ -171,29 +171,29 @@ export async function projectContext(number, includeStatusActor = false, include
   )
   const project = data.organization?.projectV2
   const issue = data.repository?.issue
-  if (!project || project.title !== config.projectTitle) throw new Error('目标 Project 不存在或标题不匹配')
+  if (!project || project.title !== config.projectTitle) throw new Error('目標 Project 不存在或標題不匹配')
   if (!issue) throw new Error(`#${number} 不存在`)
   const statusField = project.fields.nodes.find((field) => field?.name === 'Status')
-  if (!statusField) throw new Error('Project 缺少 Status 字段')
+  if (!statusField) throw new Error('Project 缺少 Status 欄位')
   const priorityField = project.fields.nodes.find((field) => field?.name === config.priorityField)
-  if (!priorityField) throw new Error(`Project 缺少 ${config.priorityField} 字段`)
+  if (!priorityField) throw new Error(`Project 缺少 ${config.priorityField} 欄位`)
   if (priorityField.dataType !== 'SINGLE_SELECT') {
-    throw new Error(`Project ${config.priorityField} 字段必须为 Single Select`)
+    throw new Error(`Project ${config.priorityField} 欄位必須為 Single Select`)
   }
   if (priorityField.isIssueField) {
-    throw new Error(`Project ${config.priorityField} 字段必须为 Project custom field`)
+    throw new Error(`Project ${config.priorityField} 欄位必須為 Project custom field`)
   }
   const startDateField = includeStartDate
     ? project.fields.nodes.find((field) => field?.name === config.startDateField)
     : null
   if (includeStartDate && !startDateField) {
-    throw new Error(`Project 缺少 ${config.startDateField} 字段`)
+    throw new Error(`Project 缺少 ${config.startDateField} 欄位`)
   }
   if (startDateField && startDateField.dataType !== 'DATE') {
-    throw new Error(`Project ${config.startDateField} 字段必须为 Date`)
+    throw new Error(`Project ${config.startDateField} 欄位必須為 Date`)
   }
   if (startDateField?.isIssueField) {
-    throw new Error(`Project ${config.startDateField} 字段必须为 Project Date 字段`)
+    throw new Error(`Project ${config.startDateField} 欄位必須為 Project Date 欄位`)
   }
   const item = issue.projectItems.nodes.find((candidate) => candidate.project.id === project.id)
   const latestStatusEvent = issue.timelineItems?.nodes

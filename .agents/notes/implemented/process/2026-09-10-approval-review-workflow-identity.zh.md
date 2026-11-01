@@ -1,25 +1,25 @@
-# Agent Note: 按文件路径识别审批评审工作流
+# Agent Note: 按檔案路徑識別審批評審工作流
 
 Status: implemented
 
 [English](2026-09-10-approval-review-workflow-identity.md) | 中文
 
-## 问题
+## 問題
 
-GitHub 可能用展开后的 `run-name` 填充工作流运行的 `name`。审批评审工作流在该标题中包含拉取请求编号，因此将 `workflow_run.name` 与静态工作流名称比较，会在刷新审批状态前拒绝有效的评审事件。
+GitHub 可能用展開後的 `run-name` 填充工作流執行的 `name`。審批評審工作流在該標題中包含拉取請求編號，因此將 `workflow_run.name` 與靜態工作流名稱比較，會在重新整理審批狀態前拒絕有效的評審事件。
 
-## 决策
+## 決策
 
-[审批发布器](../../../../.github/review-ownership/check-approval.mjs) 按精确的 `workflow_run.path` 识别评审事件工作流。它还要求该运行由 `pull_request_review` 触发且成功完成，从 `display_title` 解析拉取请求编号，验证提供的拉取请求关联，并在计算审批结果前将拉取请求当前的头提交与已评审的头提交进行比较。
+[審批發布器](../../../../.github/review-ownership/check-approval.mjs) 按精確的 `workflow_run.path` 識別評審事件工作流。它還要求該執行由 `pull_request_review` 觸發且成功完成，從 `display_title` 解析拉取請求編號，驗證提供的拉取請求關聯，並在計算審批結果前將拉取請求目前的頭提交與已評審的頭提交進行比較。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**接受名称前缀。** 显示名称无法识别工作流文件；另一个工作流可以使用相同的标题。
+**接受名稱字首。** 顯示名稱無法識別工作流檔案；另一個工作流可以使用相同的標題。
 
-**删除带编号的运行标题。** 当 GitHub 返回空的 `pull_requests` 数组时，标题提供拉取请求编号。删除它需要另一种传递机制。
+**刪除帶編號的執行標題。** 當 GitHub 返回空的 `pull_requests` 陣列時，標題提供拉取請求編號。刪除它需要另一種傳遞機制。
 
-## 影响
+## 影響
 
-运行标题的展开不会阻止审批刷新，而非预期的工作流文件仍无法通过验证。移动评审事件工作流时，需要更新发布器预期的路径。
+執行標題的展開不會阻止審批重新整理，而非預期的工作流檔案仍無法透過驗證。移動評審事件工作流時，需要更新發布器預期的路徑。
 
-[审批策略测试](../../../../.github/review-ownership/check-approval.test.mjs) 覆盖带编号的运行名称、无效的来源路径和事件、未成功的运行、无效标题以及已被替代的头提交。[审批结果策略](2026-09-09-blocked-weighted-approvals-remain-pending.zh.md) 继续负责待定与成功状态的语义。
+[審批策略測試](../../../../.github/review-ownership/check-approval.test.mjs) 覆蓋帶編號的執行名稱、無效的來源路徑和事件、未成功的執行、無效標題以及已被替代的頭提交。[審批結果策略](2026-09-09-blocked-weighted-approvals-remain-pending.zh.md) 繼續負責待定與成功狀態的語義。

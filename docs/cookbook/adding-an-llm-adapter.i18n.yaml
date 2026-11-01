@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/cookbook/adding-an-llm-adapter.md
 /cookbook-adding-an-llm-adapter:
   en: 27a78fc5fb65725b
-  zh: c40c4f5848ef0f92
+  zh: a1882368bc226df6
 /cookbook-adding-an-llm-adapter/the-shape:
   en: 52a0bbb65eaadf28
-  zh: 106021dc36e12533
+  zh: f6865f32e4eeb6fd
 /cookbook-adding-an-llm-adapter/protocol-obligations-the-contract-two-implementations-verified:
   en: 2702a60f5670dd27
-  zh: 5ac992d0a8a61818
+  zh: 9deb5515fad8244b
 /cookbook-adding-an-llm-adapter/implementation-structure:
   en: 00c0560e1cef749b
-  zh: 86af574891125d83
+  zh: 4d9fbec762705ab2
 /cookbook-adding-an-llm-adapter/verification:
   en: 104cc3ad431dc19d
-  zh: cfa5cb6ef7152912
+  zh: 4fd1b6ae5cc78912

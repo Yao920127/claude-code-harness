@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-用 image/offload 事件记录选中的图片出现位置，通过所属插件的消息投影派生 offloaded 标记。
+用 image/offload 事件記錄選中的圖片出現位置，透過所屬外掛的訊息投影派生 offloaded 標記。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -81,16 +81,16 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-现有日志仍可读取。可选的图片字段 offloaded 使未标记的出现位置保持保留状态。新事件在读取时必须被识别：不认识 image/offload 的旧版本拒绝读取这些日志，当前读取器需要对应的消息投影。事件信封和结构性的 Session 格式版本不变。
+現有日誌仍可讀取。可選的圖片欄位 offloaded 使未標記的出現位置保持保留狀態。新事件在讀取時必須被識別：不認識 image/offload 的舊版本拒絕讀取這些日誌，目前讀取器需要對應的訊息投影。事件信封和結構性的 Session 格式版本不變。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-Session 和图片省略测试覆盖事件校验、不可变消息投影、缺少处理器、恢复和重试。所选的 1,144 项测试和两项 TypeScript 图片快照通过。Python advanced SDK 录制已通过构建后的 dsh profile 刷新，包含独立的 image/offload 事件。
+Session 和圖片省略測試覆蓋事件驗證、不可變訊息投影、缺少處理器、恢復和重試。所選的 1,144 項測試和兩項 TypeScript 圖片快照透過。Python advanced SDK 錄製已透過建置後的 dsh profile 重新整理，包含獨立的 image/offload 事件。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

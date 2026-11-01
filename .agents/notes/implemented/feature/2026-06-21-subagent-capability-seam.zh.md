@@ -4,73 +4,73 @@ Status: implemented
 
 [English](2026-06-21-subagent-capability-seam.md) | 中文
 
-> 完整 seam 已交付：`dsh-subagent` 接口与 `dsh-tool-subagent` 消费方；两个进程内后端（`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`）；嵌套 agent（智能体）快照基础设施（[逐会话快照回放](../../archived/testing/2026-06-22-subagent-snapshot-replay.md)）；以及进程外的 ACP（Agent Client Protocol）、Codex 与 Claude Code 后端（[ACP Agent Note](../../archived/feature/2026-06-22-acp-subagent-backend.md)、[产品提供方 Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.zh.md)）。
+> 完整 seam 已交付：`dsh-subagent` 介面與 `dsh-tool-subagent` 消費方；兩個程序內後端（`dsh-subagent-spawn-in-process`、`dsh-subagent-fork-in-process`）；巢狀 agent（智慧代理）快照基礎設施（[逐工作階段快照回放](../../archived/testing/2026-06-22-subagent-snapshot-replay.md)）；以及程序外的 ACP（Agent Client Protocol）、Codex 與 Claude Code 後端（[ACP Agent Note](../../archived/feature/2026-06-22-acp-subagent-backend.md)、[產品提供者 Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.zh.md)）。
 
-## 问题
+## 問題
 
-harness 有一个长期搁置的 seam 用于 **subagent**：一个 agent 将工作委派给另一个 agent。这一意图在 `Agent`/`AgentLoop` 接口中已有草案（[packages/core/agent/src/types.ts](../../../../packages/core/agent/src/types.ts)、[packages/core/agent-loop/src/index.ts](../../../../packages/core/agent-loop/src/index.ts)）：一个创建选项引用父 agent（fork = 用父会话的事件日志初始化子会话；spawn = 全新会话），子 agent 以 `Agent` 句柄返回，使 steering（中途引导）和事件订阅可以统一工作。
+harness 有一個長期擱置的 seam 用於 **subagent**：一個 agent 將工作委派給另一個 agent。這一意圖在 `Agent`/`AgentLoop` 介面中已有草案（[packages/core/agent/src/types.ts](../../../../packages/core/agent/src/types.ts)、[packages/core/agent-loop/src/index.ts](../../../../packages/core/agent-loop/src/index.ts)）：一個建立選項引用父 agent（fork = 用父工作階段的事件日誌初始化子工作階段；spawn = 全新工作階段），子 agent 以 `Agent` 控制代碼返回，使 steering（中途引導）和事件訂閱可以統一工作。
 
-**多种 subagent 实现必须在运行时共存。**一个父 agent 可能在同一个会话中既需要一个廉价的进程内子 agent 处理有限范围的子任务，又需要一个隔离的进程外子 agent（通过 ACP）。传输方式：
+**多種 subagent 實作必須在執行時共存。**一個父 agent 可能在同一個工作階段中既需要一個廉價的程序內子 agent 處理有限範圍的子任務，又需要一個隔離的程序外子 agent（透過 ACP）。傳輸方式：
 
-- **进程内**：在同一个 `Context` 上创建一个具体的子 `Agent`（最廉价，且鉴于现有 agent 工厂几乎零成本）；
-- **ACP**：作为 ACP *客户端*驱动另一个 agent 进程（可以是自身的另一个实例）；
-- **Codex app-server 与 Claude Code Agent SDK**：当前的一次性同类提供方，将同一个命名提供方约定应用于官方产品进程（[产品提供方 Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.zh.md)）；
-- 后续：**A2A**，采用同样的进程外形态：「启动子 agent、发送提示词、结算、取消」。
+- **程序內**：在同一個 `Context` 上建立一個具體的子 `Agent`（最廉價，且鑑於現有 agent 工廠幾乎零成本）；
+- **ACP**：作為 ACP *用戶端*驅動另一個 agent 程序（可以是自身的另一個實例）；
+- **Codex app-server 與 Claude Code Agent SDK**：目前的一次性同類提供者，將同一個命名提供者約定應用於官方產品程序（[產品提供者 Agent Note](2026-08-04-claude-code-and-codex-subagent-backends.zh.md)）；
+- 後續：**A2A**，採用同樣的程序外形態：「啟動子 agent、傳送提示詞、結算、取消」。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-### 为何不采用 bash seam 的形状
+### 為何不採用 bash seam 的形狀
 
-bash seam（[能力 seam](../architecture/2026-06-13-capability-seams.zh.md)）在每个上下文中只注册恰好一个 `ShellExecutor`；加载第二个会抛异常。这对 bash 是正确的（一台机器、一种执行命令的方式），但对这里是错误的：共存才是需求。因此 subagent 服务是一个**命名提供方注册表**——每个实现以唯一名称注册，调用方按名称选择——镜像 **LLM（大语言模型）适配器注册表**（`LlmRuntime.registerAdapter`），而非单服务的 bash 执行器。seam 仍然是由三类包构成的结构（Service Definition / Service Provider / Consumer）；只是「一个 vs. 多个实现」这个维度不同。
+bash seam（[能力 seam](../architecture/2026-06-13-capability-seams.zh.md)）在每個上下文中只註冊恰好一個 `ShellExecutor`；載入第二個會拋異常。這對 bash 是正確的（一臺機器、一種執行命令的方式），但對這裡是錯誤的：共存才是需求。因此 subagent 服務是一個**命名提供者註冊表**——每個實作以唯一名稱註冊，呼叫方按名稱選擇——映像 **LLM（大語言模型）介面卡註冊表**（`LlmRuntime.registerAdapter`），而非單服務的 bash 執行器。seam 仍然是由三類包構成的結構（Service Definition / Service Provider / Consumer）；只是「一個 vs. 多個實作」這個維度不同。
 
-## 决策
+## 決策
 
-### 由三类包构成的边界
+### 由三類包構成的邊界
 
-新建包组 `packages/subagent/`：
+新建包組 `packages/subagent/`：
 
 | 包 | 角色 |
 |---|---|
-| `@deepseek-ai/dsh-subagent` | 接口：`SubagentRuntime`（`ctx.subagents`）、`SubagentProvider`、`SubagentRun`、请求、结果、能力词汇、`subagent/*` 事件 |
-| `@deepseek-ai/dsh-subagent-spawn-in-process` | 实现：通过 `ctx.agents.create` 创建全新的进程内子 agent |
-| `@deepseek-ai/dsh-subagent-fork-in-process` | 实现：用父 agent 日志快照初始化的进程内子 agent |
-| `@deepseek-ai/dsh-subagent-acp` | 实现：作为 ACP 客户端驱动已配置的子进程 |
-| `@deepseek-ai/dsh-subagent-codex` | 实现：一次性官方 Codex app-server 进程 |
-| `@deepseek-ai/dsh-subagent-claude-code` | 实现：通过 Agent SDK 运行的一次性官方 Claude Code 进程 |
-| `@deepseek-ai/dsh-tool-subagent` | 消费方：基于 `ctx.subagents` 的面向模型的 `subagent` 工具 |
+| `@deepseek-ai/dsh-subagent` | 介面：`SubagentRuntime`（`ctx.subagents`）、`SubagentProvider`、`SubagentRun`、請求、結果、能力詞彙、`subagent/*` 事件 |
+| `@deepseek-ai/dsh-subagent-spawn-in-process` | 實作：透過 `ctx.agents.create` 建立全新的程序內子 agent |
+| `@deepseek-ai/dsh-subagent-fork-in-process` | 實作：用父 agent 日誌快照初始化的程序內子 agent |
+| `@deepseek-ai/dsh-subagent-acp` | 實作：作為 ACP 用戶端驅動已設定的子程序 |
+| `@deepseek-ai/dsh-subagent-codex` | 實作：一次性官方 Codex app-server 程序 |
+| `@deepseek-ai/dsh-subagent-claude-code` | 實作：透過 Agent SDK 執行的一次性官方 Claude Code 程序 |
+| `@deepseek-ai/dsh-tool-subagent` | 消費方：基於 `ctx.subagents` 的面向模型的 `subagent` 工具 |
 
-### 原语：异步 `start → SubagentRun`
+### 原語：非同步 `start → SubagentRun`
 
-提供方暴露 `start(request) → Promise<SubagentRun>`。完成时发布一个子 agent，并将其运行句柄转交给调用方。发布前失败的工作会拒绝 `start()`，而发布后的提示词、轮次、取消与基础设施结果会通过 `run.result` 结算，且不会隐藏 child id。同一个信号覆盖发布前后的取消；`dispose()`（资源释放）取消剩余工作并等待完全停稳。启动被拒绝时会清理未发布资源，且不发出生命周期事件；发布后的结果失败则会结束已经发布的生命周期事件对。`start` 与传输方式无关；`spawn` 仅指代全新的进程内后端。
+提供者暴露 `start(request) → Promise<SubagentRun>`。完成時釋出一個子 agent，並將其執行控制代碼轉交給呼叫方。釋出前失敗的工作會拒絕 `start()`，而釋出後的提示詞、輪次、取消與基礎設施結果會透過 `run.result` 結算，且不會隱藏 child id。同一個訊號覆蓋釋出前後的取消；`dispose()`（資源釋放）取消剩餘工作並等待完全停穩。啟動被拒絕時會清理未釋出資源，且不發出生命週期事件；釋出後的結果失敗則會結束已經發布的生命週期事件對。`start` 與傳輸方式無關；`spawn` 僅指代全新的程序內後端。
 
-### 两类可选能力，两种发现方式
+### 兩類可選能力，兩種發現方式
 
-- **启动时功能**（`agentOptions`、`outputSchema`、`depthLimit`、`toolFilter`、`persona`）挂在静态的 `provider.capabilities` 描述符上。服务在委派之前检查每个被请求的功能，如果提供方不支持则**响亮拒绝**（`SubagentError('UNSUPPORTED_CAPABILITY')`），绝不接受后静默忽略。这些功能必须在 run 存在之前检查，因此不能是运行时方法。
-- **可继续创建**使用可选的 `SubagentProvider.prepareContinuable` 方法；方法是否存在本身即为能力，TypeScript 类型收窄即为发现机制，因此不需要可能与实现失同步的独立 flag。继续执行管理器直接通过 `AgentHandle` 负责后续投递与冷恢复，而一次性 `SubagentRun` 没有 steering 或 resume 操作，具体由[可继续 subagent](2026-07-28-continuable-subagent-conversations.zh.md) 细化。
+- **啟動時功能**（`agentOptions`、`outputSchema`、`depthLimit`、`toolFilter`、`persona`）掛在靜態的 `provider.capabilities` 描述符上。服務在委派之前檢查每個被請求的功能，如果提供者不支援則**響亮拒絕**（`SubagentError('UNSUPPORTED_CAPABILITY')`），絕不接受後靜默忽略。這些功能必須在 run 存在之前檢查，因此不能是執行時方法。
+- **可繼續建立**使用可選的 `SubagentProvider.prepareContinuable` 方法；方法是否存在本身即為能力，TypeScript 型別收窄即為發現機制，因此不需要可能與實作失同步的獨立 flag。繼續執行管理器直接透過 `AgentHandle` 負責後續投遞與冷恢復，而一次性 `SubagentRun` 沒有 steering 或 resume 操作，具體由[可繼續 subagent](2026-07-28-continuable-subagent-conversations.zh.md) 細化。
 
-### Fork 与 fresh 是独立后端，而非一个 flag
+### Fork 與 fresh 是獨立後端，而非一個 flag
 
-全新子 agent 与 fork 子 agent 是独立的提供方，而非请求中的一个 flag。`dsh-subagent-spawn-in-process` 启动隔离的子 agent；`dsh-subagent-fork-in-process` 用一个平衡前缀初始化子 agent，该前缀仅包含已完成的父轮次。进行中的轮次被排除，因为其 subagent 调用尚无结果，无法构成有效的回放历史。
+全新子 agent 與 fork 子 agent 是獨立的提供者，而非請求中的一個 flag。`dsh-subagent-spawn-in-process` 啟動隔離的子 agent；`dsh-subagent-fork-in-process` 用一個平衡字首初始化子 agent，該字首僅包含已完成的父輪次。進行中的輪次被排除，因為其 subagent 呼叫尚無結果，無法構成有效的回放歷史。
 
-### 子 agent 隔离与父日志
+### 子 agent 隔離與父日誌
 
-每个进程内 subagent 运行在**自己的 `Session`** 中（独立 id、`parentSession` 谱系），独立持久化。远端 ACP 和一次性产品提供方则会生成一个父级作用域的生命周期 id，且不暴露本地 `Agent` 或子 `Session`；其内部状态留在远端进程中。两种形式下，父日志都仅记录 spawn `tool/call` 及其 `tool/result`（子 agent 的最终输出，或带可选提供方诊断的失败结果），而子 agent 的步骤和工具调用均留在父日志之外。
+每個程序內 subagent 執行在**自己的 `Session`** 中（獨立 id、`parentSession` 譜系），獨立持久化。遠端 ACP 和一次性產品提供者則會生成一個父級作用域的生命週期 id，且不暴露本地 `Agent` 或子 `Session`；其內部狀態留在遠端程序中。兩種形式下，父日誌都僅記錄 spawn `tool/call` 及其 `tool/result`（子 agent 的最終輸出，或帶可選提供者診斷的失敗結果），而子 agent 的步驟和工具呼叫均留在父日誌之外。
 
 ### 同步收集（首版）
 
-`dsh-tool-subagent` 将其执行信号传给 `start()`，等待子 agent 结果，并在报告前 dispose 该 run。非完成态的结果变为错误结果，而非成功的部分输出；它会把由[非交互权限决策](2026-08-15-product-subagent-noninteractive-permissions.zh.md)负责的可选安全诊断与部分 assistant 文本分开呈现。结果与 dispose 的拒绝仍可彼此独立地观察。
+`dsh-tool-subagent` 將其執行訊號傳給 `start()`，等待子 agent 結果，並在報告前 dispose 該 run。非完成態的結果變為錯誤結果，而非成功的部分輸出；它會把由[非互動權限決策](2026-08-15-product-subagent-noninteractive-permissions.zh.md)負責的可選安全診斷與部分 assistant 文字分開呈現。結果與 dispose 的拒絕仍可彼此獨立地觀察。
 
-### 传输提供方选择是配置，不面向模型
+### 傳輸提供者選擇是設定，不面向模型
 
-`dsh-tool-subagent` 绑定到恰好一个 subagent 传输提供方名称（`Config.provider`）。若要暴露多种传输方式，请多次加载该工具插件，每次绑定不同的提供方和不同的 `toolName`（工具注册表拒绝重名）。*服务*持有多提供方注册表；*工具*选择其中一个——schema 中没有 subagent 传输/type 参数。后续 opt-in 增加了子 agent LLM 提供方/模型字段，但没有改变这项传输决策；见[模型选择的 subagent 路由](2026-08-18-model-selected-subagent-routes.zh.md)。
+`dsh-tool-subagent` 繫結到恰好一個 subagent 傳輸提供者名稱（`Config.provider`）。若要暴露多種傳輸方式，請多次載入該工具外掛，每次繫結不同的提供者和不同的 `toolName`（工具註冊表拒絕重名）。*服務*持有多提供者註冊表；*工具*選擇其中一個——schema 中沒有 subagent 傳輸/type 參數。後續 opt-in 增加了子 agent LLM 提供者/模型欄位，但沒有改變這項傳輸決策；見[模型選擇的 subagent 路由](2026-08-18-model-selected-subagent-routes.zh.md)。
 
-## 测试
+## 測試
 
-注册表与工具测试仅用包内脚本化提供方替换非确定性的子 agent，同时测试真实的 `SubagentRuntime`、生命周期、任务集成和面向模型的工具。loader 回归测试仍覆盖提供方与消费方的 export，以防止[事故复盘（postmortem）0001](../../../../docs/postmortem/0001-acp-default-export-drops-inject.zh.md) 中描述的失败。注册表测试覆盖重载安全性、重名和启动时能力拒绝；嵌套 agent 场景通过[逐会话快照回放](../../archived/testing/2026-06-22-subagent-snapshot-replay.md)进行无密钥回放；进程内后端还有真实循环的单元测试和带密钥的 e2e 测试。
+註冊表與工具測試僅用包內腳本化提供者替換非確定性的子 agent，同時測試真實的 `SubagentRuntime`、生命週期、任務整合和麵向模型的工具。loader 迴歸測試仍覆蓋提供者與消費方的 export，以防止[事故檢討（postmortem）0001](../../../../docs/postmortem/0001-acp-default-export-drops-inject.zh.md) 中描述的失敗。註冊表測試覆蓋過載安全性、重名和啟動時能力拒絕；巢狀 agent 情境透過[逐工作階段快照回放](../../archived/testing/2026-06-22-subagent-snapshot-replay.md)進行無金鑰回放；程序內後端還有真實迴圈的單元測試和帶金鑰的 e2e 測試。
 
-## 后果
+## 後果
 
-- **递归。** 如果不设限制，进程内子 agent 能看到委派工具并递归调用。进程内后端实现了可选的绝对深度限制和有作用域的实时全局 `toolFilter`；ACP 声明这两项能力为关闭状态，并拒绝此类请求。[subagent 组合控制 Agent Note](2026-07-12-subagent-persona-tool-filter-and-depth.zh.md) 负责定义它们的确切语义和安全边界。
-- **阻塞父轮次。** 前台收集在子 agent 的整个持续时间内保持父 agent 的步骤打开。后台委派使用共享的 `ctx.jobs` 运行时与通用 `job_*` 工具，与后台 bash 共用同一套收集机制；subagent seam 本身仍不感知任务。
-- **实时进度。** 仅暴露生命周期事件与最终结果；逐分片的子→父更新流推迟到后台重新设计时一并处理。
-- **ACP 客户端接口。** 将 ACP 子 agent 的 `fs`/`terminal` 代理回父 agent（共享工作区模式）是后续工作；该后端不声明这两项能力，子 agent 在自己的进程中自行服务。
+- **遞迴。** 如果不設限制，程序內子 agent 能看到委派工具並遞迴呼叫。程序內後端實作了可選的絕對深度限制和有作用域的即時全域 `toolFilter`；ACP 宣告這兩項能力為關閉狀態，並拒絕此類請求。[subagent 組合控制 Agent Note](2026-07-12-subagent-persona-tool-filter-and-depth.zh.md) 負責定義它們的確切語義和安全邊界。
+- **阻塞父輪次。** 前臺收集在子 agent 的整個持續時間內保持父 agent 的步驟開啟。後臺委派使用共享的 `ctx.jobs` 執行時與通用 `job_*` 工具，與後臺 bash 共用同一套收集機制；subagent seam 本身仍不感知任務。
+- **即時進度。** 僅暴露生命週期事件與最終結果；逐分片的子→父更新流推遲到後臺重新設計時一併處理。
+- **ACP 用戶端介面。** 將 ACP 子 agent 的 `fs`/`terminal` 代理回父 agent（共享工作區模式）是後續工作；該後端不宣告這兩項能力，子 agent 在自己的程序中自行服務。

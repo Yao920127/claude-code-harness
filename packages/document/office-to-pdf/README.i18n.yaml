@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/document/office-to-pdf/README.md
 /:
   en: c3e6e5964cf9df7d
-  zh: a3874301c5f7745f
+  zh: 02aaddda702b6a21
 /deepseek-ai-dsh-office-to-pdf:
   en: fc7d38b1fd8bd1d0
   zh: 580c51545286af31
 /deepseek-ai-dsh-office-to-pdf/summary:
   en: 5df2262ee89a5601
-  zh: c999e9e5574ee169
+  zh: fcfe846e63eac816
 /deepseek-ai-dsh-office-to-pdf/table-of-contents:
   en: d152484eb41ac6b4
-  zh: a134331a31395608
+  zh: 6c33bbe7f1395da6
 /deepseek-ai-dsh-office-to-pdf/use-this-package:
   en: 52227a5bd93ee125
-  zh: 5b48a8dc2db7c3b9
+  zh: c477cff7d411eb6d
 /deepseek-ai-dsh-office-to-pdf/understand-the-implementation:
   en: 2cd10fdd5204d64a
-  zh: 769a79b7d684fda4
+  zh: d21fc3dc268f4c4d
 /deepseek-ai-dsh-office-to-pdf/further-exploration:
   en: 4d5e635227d14056
-  zh: 6c72a032786acd55
+  zh: 0bca867813792694
 /deepseek-ai-dsh-office-to-pdf/model-experience:
   en: b03ae5780f8495eb
-  zh: 2a5428663141e3db
+  zh: b7c05a953dd13cee
 /deepseek-ai-dsh-office-to-pdf/model-experience/kv-cache-effect:
   en: e77332dfb6691852
-  zh: 2d7ce43f908b35ef
+  zh: 335f9650ce1b39c3
 /deepseek-ai-dsh-office-to-pdf/known-limitations-and-deferred-work:
   en: 6cd56e2c8255ffd9
-  zh: 75891a4136f929e0
+  zh: ba99670cadd92c8f
 /deepseek-ai-dsh-office-to-pdf/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 8ec3e73528ddb1a6
+  zh: 6443901b0186f637

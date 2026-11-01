@@ -1,55 +1,55 @@
-# Agent Note: 显式轮次取消能力
+# Agent Note: 顯式輪次取消能力
 
 Status: implemented
 
 [English](2026-07-16-explicit-turn-cancellation.md) | 中文
 
-## 问题
+## 問題
 
-取消是一种生命周期短于 Agent（智能体）驱动器的控制能力。自由文本字符串无法完整区分所有调用方，步骤级控制器也无法中断提示词提交、提示词组装、继续决策或轮次终止策略。持久化 `Error`、`AbortSignal.reason` 或后端私有对象还会向持久化回放暴露不稳定的运行时细节。
+取消是一種生命週期短於 Agent（智慧代理）驅動器的控制能力。自由文字字串無法完整區分所有呼叫方，步驟級控制器也無法中斷提示詞提交、提示片語裝、繼續決策或輪次終止策略。持久化 `Error`、`AbortSignal.reason` 或後端私有物件還會向持久化回放暴露不穩定的執行時細節。
 
-[发起 Agent 作用域决策](2026-07-15-agent-initiator-scope.zh.md)有意让 AsyncLocalStorage 只携带同一个 Agent。若把轮次、步骤或 signal 状态加入这个与驱动器同生命周期的边界，陈旧的异步后代就会看似仍对后续轮次拥有权限。因此，取消需要一个轮次归属方并显式传播，且不创建另一套环境上下文或公开的轮次包装层。
+[發起 Agent 作用域決策](2026-07-15-agent-initiator-scope.zh.md)有意讓 AsyncLocalStorage 只攜帶同一個 Agent。若把輪次、步驟或 signal 狀態加入這個與驅動器同生命週期的邊界，陳舊的非同步後代就會看似仍對後續輪次擁有權限。因此，取消需要一個輪次歸屬方並顯式傳播，且不建立另一套環境上下文或公開的輪次包裝層。
 
-## 决策
+## 決策
 
-Agent 拥有仅用于运行时的 `AgentCancelCause` 联合类型 `{ kind: 'user' } | { kind: 'parent' } | { kind: 'hook'; reason: string } | { kind: 'disposed' }`，`agent.cancel()` 必须显式传入其一。TypeScript 在这个类型化的同进程边界中强制执行该词汇，不提供运行时校验器、后备行为，也不为无类型调用方提供特殊兼容性约定。持有者中止时携带的是调用方自己的那个对象，而非一份分离的拷贝，因此能接触到该 signal 的传输层可以向其添加属性：Node 的 fetch 会给它收到的 reason 赋一个 `stack`。所以循环在 cause 成为持久数据的那一步拷贝已声明字段。在 `cancel()` 处冻结 cause 并非可选方案——undici 是在严格模式代码中执行该赋值的，被冻结的 reason 会让 `fetch` 以 `TypeError: Cannot add property stack` 取代中止原因而拒绝。空闲状态下没有可修改的持有者，也不会让后续工作预先进入取消状态。
+Agent 擁有僅用於執行時的 `AgentCancelCause` 聯合型別 `{ kind: 'user' } | { kind: 'parent' } | { kind: 'hook'; reason: string } | { kind: 'disposed' }`，`agent.cancel()` 必須顯式傳入其一。TypeScript 在這個型別化的同程序邊界中強制執行該詞彙，不提供執行時驗證器、後備行為，也不為無型別呼叫方提供特殊相容性約定。持有者中止時攜帶的是呼叫方自己的那個物件，而非一份分離的複製，因此能接觸到該 signal 的傳輸層可以向其新增屬性：Node 的 fetch 會給它收到的 reason 賦一個 `stack`。所以迴圈在 cause 成為持久資料的那一步複製已宣告欄位。在 `cancel()` 處凍結 cause 並非可選方案——undici 是在嚴格模式程式碼中執行該賦值的，被凍結的 reason 會讓 `fetch` 以 `TypeError: Cannot add property stack` 取代中止原因而拒絕。空閒狀態下沒有可修改的持有者，也不會讓後續工作預先進入取消狀態。
 
-正在运行的轮次被中断后，以粗粒度的持久化结果 `{ kind: 'aborted' }` 结束。终态事件记录轮次发生了什么，运行时 signal 标识谁请求了取消；回放不会重复保存 `user` 或 `parent`。会话 seed/load 会拒绝携带取消原因或任何其他额外字段的旧式中止记录，因此回放无法重新引入由调用方持有的取消细节。仅限进程内的 `agent/cancel-requested` 通知不会持久化；未来若有审计需求，应使用独立的持久化控制请求事件，让请求与最终结果保持为两项事实。持久化事件不包含调用栈、signal、错误对象、自由文本取消原因或后端私有细节。
+正在執行的輪次被中斷後，以粗粒度的持久化結果 `{ kind: 'aborted' }` 結束。終態事件記錄輪次發生了什麼，執行時 signal 標識誰請求了取消；回放不會重複儲存 `user` 或 `parent`。工作階段 seed/load 會拒絕攜帶取消原因或任何其他額外欄位的舊式中止記錄，因此回放無法重新引入由呼叫方持有的取消細節。僅限程序內的 `agent/cancel-requested` 通知不會持久化；未來若有審計需求，應使用獨立的持久化控制請求事件，讓請求與最終結果保持為兩項事實。持久化事件不包含呼叫堆疊、signal、錯誤物件、自由文字取消原因或後端私有細節。
 
-AgentLoop 为每个待启动轮次私有地持有一个 `TurnCancellation`。它在通知 `agent/status = running` 前安装该持有者，使其中唯一的 `AbortController` 持续覆盖 inbox 领取、`agent/pre-step`、提示词组装、每个步骤、模型与工具执行以及 `agent/turn-stopping`；随后在发布 `turn/end` 前立即清除所安装的那个持有者。因此，即使驱动器状态可能在持久化刷新结算前保持 `running`，终态事件观察者及其后的持久化刷新也无法取消已完成的轮次工作。所有参与的方法、事件和请求值都会收到同一个显式 signal；下一个轮次会收到全新的 signal。
+AgentLoop 為每個待啟動輪次私有地持有一個 `TurnCancellation`。它在通知 `agent/status = running` 前安裝該持有者，使其中唯一的 `AbortController` 持續覆蓋 inbox 領取、`agent/pre-step`、提示片語裝、每個步驟、模型與工具執行以及 `agent/turn-stopping`；隨後在釋出 `turn/end` 前立即清除所安裝的那個持有者。因此，即使驅動器狀態可能在持久化重新整理結算前保持 `running`，終態事件觀察者及其後的持久化重新整理也無法取消已完成的輪次工作。所有參與的方法、事件和請求值都會收到同一個顯式 signal；下一個輪次會收到全新的 signal。
 
-对于轮次被认领前已取消的排队工作，驱动器只保留一个不携带取消原因的运行前标记。实际生效的 `cancel()` 会先发出仅供观察的 `agent/cancel-requested` 通知并携带最终确定的类型化取消原因，然后才清除排队工作和 steering（中途引导）工作或中止持有者；通知失败不能阻止此次停止，空闲状态下调用则不发出任何通知。通知观察者同步加入队列的工作也会被这次清除，而稍后由 signal 中止观察者加入队列的工作会被锁存，并在被中止的活动收敛到空闲时执行——`disposed` 取消则将其停放（[取消收敛窗口唤醒锁存](../bug-fix/2026-08-07-cancel-convergence-wake-latch.zh.md)）。若 `running` 监听器同步取消旧工作并发送替代提示词，驱动器会丢弃已中止的持有者，并为替代提示词创建全新的持有者。同一活跃持有者上的重复取消遵循首次请求优先，后续调用仍可清除新入队的待处理工作。
+對於輪次被認領前已取消的排隊工作，驅動器只保留一個不攜帶取消原因的執行前標記。實際生效的 `cancel()` 會先發出僅供觀察的 `agent/cancel-requested` 通知並攜帶最終確定的型別化取消原因，然後才清除排隊工作和 steering（中途引導）工作或中止持有者；通知失敗不能阻止此次停止，空閒狀態下呼叫則不發出任何通知。通知觀察者同步加入佇列的工作也會被這次清除，而稍後由 signal 中止觀察者加入佇列的工作會被鎖存，並在被中止的活動收斂到空閒時執行——`disposed` 取消則將其停放（[取消收斂視窗喚醒鎖存](../bug-fix/2026-08-07-cancel-convergence-wake-latch.zh.md)）。若 `running` 監聽器同步取消舊工作併傳送替代提示詞，驅動器會丟棄已中止的持有者，併為替代提示詞建立全新的持有者。同一活躍持有者上的重複取消遵循首次請求優先，後續呼叫仍可清除新入隊的待處理工作。
 
-显式事件签名传递单个 payload 对象：agent 作用域事件在 payload 中携带 `agent` 和 `signal`，`next` 位于最后；其余 API 保持 `signal` 紧邻 waterfall（瀑布式事件）的最终 `next` 之前。`PreStepContext` 与 `RequestFailureContext` 已退役，其字段并入 `agent/pre-step` 与 `agent/request-error` 的 payload（[payload-object 事件](../../archived/architecture/2026-08-06-agent-event-payload-objects.md)）。进入 pre-step 时、请求配置、请求错误恢复、模型生成、工具执行、审批、轮次停止以及 subagent 或工作流请求都会收到当前 signal。钩子桥接器也必须提供 `RunHookOptions.signal`，使轮次取消能够到达 Bash 执行器由提供方管理的终止与等待边界；[原生 containment 决策](2026-08-28-subprocess-native-containment.zh.md)负责受支持本地路径上的 scope、Job 与 fallback 机制。`SystemPrompt.assemble()` 在 `AssembleContext` 中携带 `signal?: AbortSignal`，因为该对象是显式请求值，也可表示轮次之外不携带 signal 的组装。监听器可以配合该 signal 取消，但不得保留它来控制其他轮次。
+顯式事件簽名傳遞單個 payload 物件：agent 作用域事件在 payload 中攜帶 `agent` 和 `signal`，`next` 位於最後；其餘 API 保持 `signal` 緊鄰 waterfall（瀑布式事件）的最終 `next` 之前。`PreStepContext` 與 `RequestFailureContext` 已退役，其欄位併入 `agent/pre-step` 與 `agent/request-error` 的 payload（[payload-object 事件](../../archived/architecture/2026-08-06-agent-event-payload-objects.md)）。進入 pre-step 時、請求設定、請求錯誤恢復、模型生成、工具執行、審批、輪次停止以及 subagent 或工作流請求都會收到目前 signal。掛鉤橋接器也必須提供 `RunHookOptions.signal`，使輪次取消能夠到達 Bash 執行器由提供者管理的終止與等待邊界；[原生 containment 決策](2026-08-28-subprocess-native-containment.zh.md)負責受支援本地路徑上的 scope、Job 與 fallback 機制。`SystemPrompt.assemble()` 在 `AssembleContext` 中攜帶 `signal?: AbortSignal`，因為該物件是顯式請求值，也可表示輪次之外不攜帶 signal 的組裝。監聽器可以配合該 signal 取消，但不得保留它來控制其他輪次。
 
-`ctx.agents` 仍只携带发起 Agent。环境中的 Agent 并不代表存活、当前轮次或取消权限。cause 读取器是 loop 私有的，它直接陈述机器私有的 slot 不变量（只有 `cancel()` 会中止轮次控制器，且总是携带类型化的 cause），而不是对 reason 做结构化再校验；不存在从任意 signal 读取 cause 的公开辅助函数。并发 Agent 会同时隔离各自的发起方身份和轮次 signal；子驱动会遮蔽父发起方，而父请求 signal 仍通过 subagent seam 传递。
+`ctx.agents` 仍只攜帶發起 Agent。環境中的 Agent 並不代表存活、目前輪次或取消權限。cause 讀取器是 loop 私有的，它直接陳述機器私有的 slot 不變數（只有 `cancel()` 會中止輪次控制器，且總是攜帶型別化的 cause），而不是對 reason 做結構化再驗證；不存在從任意 signal 讀取 cause 的公開輔助函式。並行 Agent 會同時隔離各自的發起方身份和輪次 signal；子驅動會遮蔽父發起方，而父請求 signal 仍透過 subagent seam 傳遞。
 
-Agent dispose（资源释放）会在活跃持有者上请求仅用于运行时的 `{ kind: 'disposed' }` 中断。若取消已经先占用控制器的中断原因，该原因便无法改写，因此终态分类会先检查生命周期状态：资源释放结果优先，之后受支持的 `user` 或 `parent` 取消原因形成粗粒度的中止结果，其他异常保留现有错误路径。ACP（Agent Client Protocol）取消映射为 `user`；进程内 spawn 和 fork 的传播映射为 `parent`。远程 ACP subagent 保持现有协议。
+Agent dispose（資源釋放）會在活躍持有者上請求僅用於執行時的 `{ kind: 'disposed' }` 中斷。若取消已經先佔用控制器的中斷原因，該原因便無法改寫，因此終態分類會先檢查生命週期狀態：資源釋放結果優先，之後受支援的 `user` 或 `parent` 取消原因形成粗粒度的中止結果，其他異常保留現有錯誤路徑。ACP（Agent Client Protocol）取消對映為 `user`；程序內 spawn 和 fork 的傳播對映為 `parent`。遠端 ACP subagent 保持現有協定。
 
-取消仍然是协作式的。AgentLoop 会在异步等待边界前后检查中断，但不会用 `Promise.race` 放弃进程内监听器、适配器或工具 Promise。忽略 signal 的工作必须真正结算，`whenIdle()`、句柄 dispose 和作用域清理才会报告完全停稳。
+取消仍然是協作式的。AgentLoop 會在非同步等待邊界前後檢查中斷，但不會用 `Promise.race` 放棄程序內監聽器、介面卡或工具 Promise。忽略 signal 的工作必須真正結算，`whenIdle()`、控制代碼 dispose 和作用域清理才會報告完全停穩。
 
-## 验证
+## 驗證
 
-约定测试验证类型化调用方联合类型、在 cause 成为持久数据处拷贝字段、默认行为与首次请求优先行为、粗粒度的会话 JSON 往返与旧式记录拒绝、ACP `user`、进程内 subagent `parent` 以及 dispose 优先级。AgentLoop 测试让协作式监听器在 pre-step、系统提示词组装、请求、模型流、请求错误恢复、工具执行和轮次停止处等待 signal；并断言同一轮次使用一个 signal，不同轮次使用全新的 signal，终态发布期间和持久化刷新受阻期间不存在取消权限。真实钩子桥接器测试会在报告空闲状态前取消并回收受阻的提示词钩子。
+約定測試驗證型別化呼叫方聯合型別、在 cause 成為持久資料處複製欄位、預設行為與首次請求優先行為、粗粒度的工作階段 JSON 往返與舊式記錄拒絕、ACP `user`、程序內 subagent `parent` 以及 dispose 優先順序。AgentLoop 測試讓協作式監聽器在 pre-step、系統提示片語裝、請求、模型流、請求錯誤恢復、工具執行和輪次停止處等待 signal；並斷言同一輪次使用一個 signal，不同輪次使用全新的 signal，終態釋出期間和持久化重新整理受阻期間不存在取消權限。真實掛鉤橋接器測試會在報告空閒狀態前取消並回收受阻的提示詞掛鉤。
 
-发起方作用域测试断言所有钩子仍观察到同一个 Agent 且没有环境中的轮次 signal，并发 Agent 保持独立的身份与 signal，嵌套子驱动只遮蔽身份。竞态测试覆盖空闲状态取消、运行前取消、从 `running` 监听器提交替代提示词、重复取消以及取消与 dispose 竞争下的完全停稳。
+發起方作用域測試斷言所有掛鉤仍觀察到同一個 Agent 且沒有環境中的輪次 signal，並行 Agent 保持獨立的身份與 signal，巢狀子驅動只遮蔽身份。競態測試覆蓋空閒狀態取消、執行前取消、從 `running` 監聽器提交替代提示詞、重複取消以及取消與 dispose 競爭下的完全停穩。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**把 signal 存入 ALS。** ALS 会在整个驱动器生命周期内跟随异步后代，而取消权限在一个轮次结束时就已终止。泄漏的回调可能观察到陈旧 signal，或者迫使实现使用可变的环境状态，因此发起方作用域继续只携带 Agent，控制能力继续显式传递。
+**把 signal 存入 ALS。** ALS 會在整個驅動器生命週期內跟隨非同步後代，而取消權限在一個輪次結束時就已終止。洩漏的回呼可能觀察到陳舊 signal，或者迫使實作使用可變的環境狀態，因此發起方作用域繼續只攜帶 Agent，控制能力繼續顯式傳遞。
 
-**持久化自由文本原因。** 字符串允许拼写漂移、阻碍穷尽分支判断，还会鼓励消费方解析展示文本。运行时使用封闭的可辨识联合类型，终态记录只需要稳定的中止结果。
+**持久化自由文字原因。** 字串允許拼寫漂移、阻礙窮盡分支判斷，還會鼓勵消費方解析展示文字。執行時使用封閉的可辨識聯合型別，終態記錄只需要穩定的中止結果。
 
-**在 `turn/end` 中持久化类型化调用方取消原因。** 当前没有任何生产环境中的回放、UI、ACP、遥测或工作流消费方区分 `user` 与 `parent`。把请求来源复制到终态结果会混淆两项事实，还会在没有消费方的情况下引入会话特有校验；未来的审计记录可以包含独立的取消请求事件。
+**在 `turn/end` 中持久化型別化呼叫方取消原因。** 目前沒有任何生產環境中的回放、UI、ACP、遙測或工作流消費方區分 `user` 與 `parent`。把請求來源複製到終態結果會混淆兩項事實，還會在沒有消費方的情況下引入工作階段特有驗證；未來的審計記錄可以包含獨立的取消請求事件。
 
-**现在就定义推测性的 `superseded`、`timeout` 和 `shutdown` 变体。** 当前没有 Agent 取消生产方实现这些语义。`shutdown` 已经属于生命周期 dispose；超时或替代只有在拥有明确归属策略和唯一终态含义时才应进入联合类型。
+**現在就定義推測性的 `superseded`、`timeout` 和 `shutdown` 變體。** 目前沒有 Agent 取消生產方實作這些語義。`shutdown` 已經屬於生命週期 dispose；超時或替代只有在擁有明確歸屬策略和唯一終態含義時才應進入聯合型別。
 
-**公开轮次或步骤上下文包装类型。** 现有 seam 已经标识 Agent、轮次和步骤。包装类型会加宽所有 API、重复归属，并诱导调用方把捕获的对象当成持久权限。
+**公開輪次或步驟上下文包裝型別。** 現有 seam 已經標識 Agent、輪次和步驟。包裝型別會加寬所有 API、重複歸屬，並誘導呼叫方把捕捉的物件當成持久權限。
 
-**在宽限期后放弃不协作的工作。** 同进程工作仍在运行时就报告空闲状态，会破坏资源清理与资源归属保证。硬终止需要 worker 或进程隔离边界，不属于该控制边界。
+**在寬限期後放棄不協作的工作。** 同程序工作仍在執行時就報告空閒狀態，會破壞資源清理與資源歸屬保證。硬終止需要 worker 或程序隔離邊界，不屬於該控制邊界。
 
-## 后果
+## 後果
 
-取消拥有一个运行时归属方、每个活跃轮次一个 signal，以及一套类型化的运行时调用方词汇。会话保留其消费方实际使用的粗粒度 `aborted` 结果，拒绝携带原因的旧式形式，并与运行时对象保持隔离。协作式取消覆盖每个异步轮次扩展点，包括第一个步骤之前和最后一个步骤之后的工作，而终态发布和持久化仍在其权限范围之外。
+取消擁有一個執行時歸屬方、每個活躍輪次一個 signal，以及一套型別化的執行時呼叫方詞彙。工作階段保留其消費方實際使用的粗粒度 `aborted` 結果，拒絕攜帶原因的舊式形式，並與執行時物件保持隔離。協作式取消覆蓋每個非同步輪次擴充功能點，包括第一個步驟之前和最後一個步驟之後的工作，而終態釋出和持久化仍在其權限範圍之外。
 
-显式 signal 会给多个公开事件增加参数，并要求插件有意识地转发取消。这是有意设计：权限在调用边界可见，生命周期与轮次匹配，陈旧的环境异步后代无法获得控制能力。不协作的进程内工作可能延迟取消，但所报告的完全停稳仍然真实。
+顯式 signal 會給多個公開事件增加參數，並要求外掛有意識地轉發取消。這是有意設計：權限在呼叫邊界可見，生命週期與輪次匹配，陳舊的環境非同步後代無法獲得控制能力。不協作的程序內工作可能延遲取消，但所報告的完全停穩仍然真實。

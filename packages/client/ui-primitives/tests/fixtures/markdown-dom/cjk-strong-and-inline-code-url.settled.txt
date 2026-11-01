@@ -2,11 +2,11 @@
   <p>
     <strong>
       #text "注意："
-    #text "内容在标点后直接闭合。"
+    #text "內容在標點後直接閉合。"
   <p>
     #text "**Notice:**text keeps upstream parsing."
   <p>
-    #text "*提醒！*单星号也保持上游行为。"
+    #text "*提醒！*單星號也保持上游行為。"
   <p>
     <code>
       <a href="https://example.com/preview?q=one%20two#result" rel="noopener noreferrer" target="_blank">
@@ -16,7 +16,7 @@
           <path d="M7.99976 14.0889C9.23509 14.0889 10.1743 11.3629 10.1743 8.00006C10.1743 4.63739 9.23509 1.91138 7.99976 1.91138" stroke="currentColor">
           <path d="M7.99973 14.0889C6.76445 14.0889 5.8252 11.3629 5.8252 8.00006C5.8252 4.63739 6.76445 1.91138 7.99973 1.91138" stroke="currentColor">
         #text "https://example.com/preview?q=one%20two#result"
-    #text " 与 "
+    #text " 與 "
     <code>
       #text "curl http://127.0.0.1:3199/"
     #text " 以及 "

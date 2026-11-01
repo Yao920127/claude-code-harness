@@ -1,12 +1,12 @@
-# 事件系统
+# 事件系統
 
 [English](events.md) | 中文
 
-事件是 Cordis 插件间通信的核心机制。Harness 大量使用事件来实现松耦合的扩展点。
+事件是 Cordis 外掛間通訊的核心機制。Harness 大量使用事件來實作松耦合的擴充功能點。
 
 ## 基本用法
 
-### 监听事件
+### 監聽事件
 
 ```ts ignore-check
 ctx.on('event-name', (payload) => {
@@ -14,7 +14,7 @@ ctx.on('event-name', (payload) => {
 })
 ```
 
-### 触发事件
+### 觸發事件
 
 ```ts ignore-check
 ctx.emit('event-name', payload)
@@ -22,11 +22,11 @@ ctx.emit('event-name', payload)
 
 ## 事件模式
 
-Cordis 提供多种事件模式，适用于不同的交互契约：
+Cordis 提供多種事件模式，適用於不同的互動契約：
 
-### emit — 广播
+### emit — 廣播
 
-所有监听器同步执行，返回值会被忽略：
+所有監聽器同步執行，回傳值會被忽略：
 
 ```ts ignore-check
 // Emit
@@ -40,7 +40,7 @@ ctx.on('my-plugin/ready', ({ id }) => {
 
 ### bail — 短路
 
-监听器按顺序运行，第一个不是 `null`、`false` 或 `undefined` 的返回值会成为最终结果：
+監聽器按順序執行，第一個不是 `null`、`false` 或 `undefined` 的回傳值會成為最終結果：
 
 ```ts ignore-check
 // Dispatch
@@ -53,17 +53,17 @@ ctx.on('some-check', (input) => {
 })
 ```
 
-### serial — 顺序执行
+### serial — 順序執行
 
-监听器按注册顺序依次执行，并等待异步结果；第一个不是 `null`、`false` 或 `undefined` 的返回值会终止后续执行：
+監聽器按註冊順序依次執行，並等待非同步結果；第一個不是 `null`、`false` 或 `undefined` 的回傳值會終止後續執行：
 
 ```ts ignore-check
 await ctx.serial('setup-phase', context)
 ```
 
-### waterfall（瀑布式事件）— 流水线
+### waterfall（瀑布式事件）— 流水線
 
-每个监听器可以包装下游返回值，形成处理链。**必须调用 `next()` 传递给下游**，不调用即会短路流水线：
+每個監聽器可以包裝下游回傳值，形成處理鏈。**必須呼叫 `next()` 傳遞給下游**，不呼叫即會短路流水線：
 
 ```ts ignore-check
 // Dispatch
@@ -77,12 +77,12 @@ ctx.on('my-plugin/transform', async (_input, next) => {
 ```
 
 ::: warning
-waterfall 监听器**必须调用 `next()`**。不调用 `next` 会短路整个流水线，这是故意为之的设计——用于实现拦截/网关逻辑。
+waterfall 監聽器**必須呼叫 `next()`**。不呼叫 `next` 會短路整個流水線，這是故意為之的設計——用於實作攔截/閘道邏輯。
 :::
 
-## 类型安全的事件
+## 型別安全的事件
 
-Harness 使用 TypeScript 声明合并来为事件提供类型安全：
+Harness 使用 TypeScript 宣告合併來為事件提供型別安全：
 
 ```ts
 import '@deepseek-ai/cordis'
@@ -99,15 +99,15 @@ declare module '@deepseek-ai/cordis' {
 // are now inferred correctly.
 ```
 
-## Cordis 事件与会话记录
+## Cordis 事件與工作階段記錄
 
-Harness 的 Cordis 事件遵循 `namespace/action` 命名，例如 `agent/pre-step`、`agent/request`、`agent/request-error`、`tools/result` 和 `session/event`。完整签名与触发模式见[子系统页面](../../../subsystems/core.zh.md)上生成的 `cordis-surface` 区块。
+Harness 的 Cordis 事件遵循 `namespace/action` 命名，例如 `agent/pre-step`、`agent/request`、`agent/request-error`、`tools/result` 和 `session/event`。完整簽名與觸發模式見[子系統頁面](../../../subsystems/core.zh.md)上生成的 `cordis-surface` 區塊。
 
-`turn/*`、`step/*`、`tool/call`、`tool/result` 和 `compaction/*` 是持久化的会话事件类型，不是同名 Cordis 事件。需要观察它们时，监听 `session/event` 并检查 `event.type`。
+`turn/*`、`step/*`、`tool/call`、`tool/result` 和 `compaction/*` 是持久化的工作階段事件型別，不是同名 Cordis 事件。需要觀察它們時，監聽 `session/event` 並檢查 `event.type`。
 
-## 事件监听器也是效果
+## 事件監聽器也是效果
 
-通过 `ctx.on()` 注册的监听器会在插件卸载时自动移除：
+透過 `ctx.on()` 註冊的監聽器會在外掛解除安裝時自動移除：
 
 ```ts ignore-check
 export function apply(ctx: Context) {
@@ -116,9 +116,9 @@ export function apply(ctx: Context) {
 }
 ```
 
-## 示例：日志插件
+## 範例：日誌外掛
 
-这个插件记录工具调用和工具结果：
+這個外掛記錄工具呼叫和工具結果：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -139,5 +139,5 @@ export function apply(ctx: Context) {
 
 ## 下一步
 
-- [能力分层](../practice/index.zh.md) — 了解能力接口中的事件
-- [LLM（大语言模型）适配器](../practice/llm-adapter.zh.md) — 实现一个完整的 LLM 后端
+- [能力分層](../practice/index.zh.md) — 瞭解能力介面中的事件
+- [LLM（大語言模型）介面卡](../practice/llm-adapter.zh.md) — 實作一個完整的 LLM 後端

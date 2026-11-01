@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-10-desktop-local-updater-qualification.md
 /agent-note-qualify-desktop-update-downloads-with-an-isolated-local-server:
   en: 71382ca7e306c188
-  zh: ee13377b994ff06a
+  zh: d9faecbac89476d4
 /agent-note-qualify-desktop-update-downloads-with-an-isolated-local-server/problem:
   en: a621d24f1336bf19
-  zh: 56dc14cda197b301
+  zh: 4db41f5cce165257
 /agent-note-qualify-desktop-update-downloads-with-an-isolated-local-server/decision:
   en: b8e5f482693b9213
-  zh: 4ac670ae629d3fd1
+  zh: 325d2dfbcb062eff
 /agent-note-qualify-desktop-update-downloads-with-an-isolated-local-server/alternatives-considered:
   en: f93809633864e337
-  zh: 4bd2141c2a36e1ac
+  zh: d6f1702c72b8669d
 /agent-note-qualify-desktop-update-downloads-with-an-isolated-local-server/consequences:
   en: 4ef44c91915206b5
-  zh: f4ecf7b2d6df4932
+  zh: 3133300c62ceacce

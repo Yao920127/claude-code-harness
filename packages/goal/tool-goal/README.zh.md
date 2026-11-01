@@ -1,5 +1,5 @@
 ---
-description: "面向选择、组合或排查 get_goal、create_goal 与 update_goal 的用户与维护者的模型侧 goal 工具说明。"
+description: "面向選擇、組合或排查 get_goal、create_goal 與 update_goal 的使用者與維護者的模型側 goal 工具說明。"
 kind: "package-reference"
 ---
 
@@ -9,37 +9,37 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-tool-goal` 让模型读取持久 goal，并根据人类直接请求推断和创建长期 goal。创建、编辑、暂停或恢复要求该直接请求出现在顶层 agent（智能体）轮次中；完成或阻塞也可以在自主 Goal Round 中执行。更新必须使用先前读取到的精确 goal id 和 revision。`resume` 会重新启用 active-but-disarmed 或 blocked 的 goal，而持久的 paused goal 由用户通过 Web 或 `/goal resume` 恢复。自主阻塞要求同一条件持续达到可配置阈值，默认是连续三个 Round。
+`dsh-tool-goal` 讓模型讀取持久 goal，並根據人類直接請求推斷和建立長期 goal。建立、編輯、暫停或恢復要求該直接請求出現在頂層 agent（智慧代理）輪次中；完成或阻塞也可以在自主 Goal Round 中執行。更新必須使用先前讀取到的精確 goal id 和 revision。`resume` 會重新啟用 active-but-disarmed 或 blocked 的 goal，而持久的 paused goal 由使用者透過 Web 或 `/goal resume` 恢復。自主阻塞要求同一條件持續達到可設定閾值，預設是連續三個 Round。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当模型需要自行创建和更新持久 goal 时，把 `dsh-tool-goal` 挂在 goal 服务旁边。这些工具是 goal 表面面向模型的一半；`/goal` 命令是面向人类的一半，续行驱动器在自主 Round 结束时使用同一套工具完成或阻塞 goal。
+當模型需要自行建立和更新持久 goal 時，把 `dsh-tool-goal` 掛在 goal 服務旁邊。這些工具是 goal 表面面向模型的一半；`/goal` 命令是面向人類的一半，續行驅動器在自主 Round 結束時使用同一套工具完成或阻塞 goal。
 
 ### 工具
 
-三个工具都返回相同的紧凑 JSON——没有当前 goal 时为 `{ goal: null }`，否则返回 goal 的 id、revision、目标、phase、已开始 Round、Round 上限、可选的 blocker reason 与续行是否已启用——与 Native 调用方已经渲染的内容一致。
+三個工具都返回相同的緊湊 JSON——沒有目前 goal 時為 `{ goal: null }`，否則返回 goal 的 id、revision、目標、phase、已開始 Round、Round 上限、可選的 blocker reason 與續行是否已啟用——與 Native 呼叫方已經渲染的內容一致。
 
 | 工具 | 作用 |
 |---|---|
-| `get_goal()` | 读取当前 goal；没有当前 goal 时返回 `null` |
-| `create_goal(objective, max_goal_rounds?)` | 根据人类直接发起的顶层轮次创建一个 goal |
-| `update_goal(goal_id, revision, action, objective?, max_goal_rounds?, blocked_reason?)` | 对精确 goal revision 执行 `edit`、`pause`、`resume`、`complete` 或 `blocked` |
+| `get_goal()` | 讀取目前 goal；沒有目前 goal 時返回 `null` |
+| `create_goal(objective, max_goal_rounds?)` | 根據人類直接發起的頂層輪次建立一個 goal |
+| `update_goal(goal_id, revision, action, objective?, max_goal_rounds?, blocked_reason?)` | 對精確 goal revision 執行 `edit`、`pause`、`resume`、`complete` 或 `blocked` |
 
-在 `update_goal` 之前调用 `get_goal`，并复制精确的 `goal_id` 与 `revision`；所有调用都互斥，因此模型排序的批次能观察到更早变更及其新 revision。替换值只属于 `edit`；`blocked_reason` 只有在 `blocked` 时才必填，并以稳定代码 `model-reported` 持久化。严格 schema 下的空字符串和零填充值视为省略，而有意义的值仍限定到各自 action。
+在 `update_goal` 之前呼叫 `get_goal`，並複製精確的 `goal_id` 與 `revision`；所有呼叫都互斥，因此模型排序的批次能觀察到更早變更及其新 revision。替換值只屬於 `edit`；`blocked_reason` 只有在 `blocked` 時才必填，並以穩定程式碼 `model-reported` 持久化。嚴格 schema 下的空字串和零填充值視為省略，而有意義的值仍限定到各自 action。
 
-### 配置
+### 設定
 
 ```yaml
 - id: tool-goal
@@ -48,68 +48,68 @@ kind: "package-reference"
     blockedAfterConsecutiveRounds: 3
 ```
 
-该值必须是正的安全整数。它既提供模型自行报告阻塞的硬下限，也决定模型指引中指明的数值。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-goal)是每个受支持字段的穷尽式真源。
+該值必須是正的安全整數。它既提供模型自行報告阻塞的硬下限，也決定模型指引中指明的數值。生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-goal)是每個受支援欄位的窮盡式真源。
 
-### 权限规则
+### 權限規則
 
-工具只为活跃驱动器内、处于开放轮次中的精确活跃调用 agent 执行。`create`、`edit`、`pause` 和 `resume` 还要求运行时根 agent 的当前轮次中存在人类直接消息——subagent 或非人类生产方不能创建或编辑 goal。`resume` 会在 goal 服务执行前拒绝持久的 paused goal；该状态只属于面向用户的恢复路径。`complete` 和 `blocked` 还接受完全一致的当前 Goal Round：来源为 goal 的 Round 可以立即完成 goal，但 `blocked` 调用在达到配置的连续 Round 数量之前会被机械拒绝——模型判断同一条件是否确实持续，并必须在 `blocked_reason` 中说明。人类直接请求可以立即停止 goal。
+工具只為活躍驅動器內、處於開放輪次中的精確活躍呼叫 agent 執行。`create`、`edit`、`pause` 和 `resume` 還要求執行時根 agent 的目前輪次中存在人類直接訊息——subagent 或非人類生產方不能建立或編輯 goal。`resume` 會在 goal 服務執行前拒絕持久的 paused goal；該狀態只屬於面向使用者的恢復路徑。`complete` 和 `blocked` 還接受完全一致的目前 Goal Round：來源為 goal 的 Round 可以立即完成 goal，但 `blocked` 呼叫在達到設定的連續 Round 數量之前會被機械拒絕——模型判斷同一條件是否確實持續，並必須在 `blocked_reason` 中說明。人類直接請求可以立即停止 goal。
 
-成功报告 `complete` 或 `blocked` 的自主 Round 还会在该步骤后结束物理轮次，模型会收到一条结束指令，要求向用户写出最终消息。人类直接变更绝不会触发这种停止：assistant 可以确认变更，循环仍可接收并发的人类 steering（中途引导）。
+成功報告 `complete` 或 `blocked` 的自主 Round 還會在該步驟後結束物理輪次，模型會收到一條結束指令，要求向使用者寫出最終訊息。人類直接變更絕不會觸發這種停止：assistant 可以確認變更，迴圈仍可接收並行的人類 steering（中途引導）。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释工具如何强制执行权限并渲染输出；可观察约定已在[使用本包](#use-this-package)中说明。
+本節解釋工具如何強制執行權限並渲染輸出；可觀察約定已在[使用本包](#use-this-package)中說明。
 
-### 设计
+### 設計
 
-- **执行时权限。** 每次调用都解析精确活跃 agent、其继承的 `AgentRegistry` initiator、running 状态与开放轮次；`create`、`edit`、`pause` 和 `resume` 还要求运行时根 agent 的当前轮次中存在已接受的 `{ kind: 'user' }` 消息或 steering 事件。持久的 paused goal 会让 `resume` 以 `GOAL_TOOL_RESUME_PAUSED` 失败；面向用户的命令或 Web 控件拥有该转换。持久 fork 谱系不会降低已恢复根 agent 的等级；活跃 subagent 所有权会降低。
-- **人类输入的宿主证明。** `Agent.followup()` 与 `steer()` 会在调用方省略 source 时分配 `{ kind: 'user' }`，因此插件、调度器与其他非人类生产方必须传入自己的 source，不能继承人类权限。
-- **带配置阈值的系统提示词指引。** 本包注册一个 `tool:goal` 系统提示词章节，其固定文本插入 `blockedAfterConsecutiveRounds`；同一数值就是执行时强制执行的硬下限。
-- **终局 Round 的结束上下文。** 成功的自主 `complete` 或 `blocked` 会延后一条 `<goal_complete>` 或 `<goal_blocked>` 结束指令，让模型在轮次结束前向用户做一次交代；人类直接变更绝不会延后该上下文。
+- **執行時權限。** 每次呼叫都解析精確活躍 agent、其繼承的 `AgentRegistry` initiator、running 狀態與開放輪次；`create`、`edit`、`pause` 和 `resume` 還要求執行時根 agent 的目前輪次中存在已接受的 `{ kind: 'user' }` 訊息或 steering 事件。持久的 paused goal 會讓 `resume` 以 `GOAL_TOOL_RESUME_PAUSED` 失敗；面向使用者的命令或 Web 控制元件擁有該轉換。持久 fork 譜系不會降低已恢復根 agent 的等級；活躍 subagent 所有權會降低。
+- **人類輸入的主機證明。** `Agent.followup()` 與 `steer()` 會在呼叫方省略 source 時分配 `{ kind: 'user' }`，因此外掛、排程器與其他非人類生產方必須傳入自己的 source，不能繼承人類權限。
+- **帶設定閾值的系統提示詞指引。** 本包註冊一個 `tool:goal` 系統提示詞章節，其固定文字插入 `blockedAfterConsecutiveRounds`；同一數值就是執行時強制執行的硬下限。
+- **終局 Round 的結束上下文。** 成功的自主 `complete` 或 `blocked` 會延後一條 `<goal_complete>` 或 `<goal_blocked>` 結束指令，讓模型在輪次結束前向使用者做一次交代；人類直接變更絕不會延後該上下文。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：工具注册、配置、系统提示词章节、结果渲染 |
-| [`src/authority.ts`](src/authority.ts) | 执行时权限检查与 Goal Round 接受 |
-| [`src/wrapup.ts`](src/wrapup.ts) | 终局自主更新的结束消息指令 |
-| — | 不发布运行时不变式伴生入口；此面向模型的适配器不拥有独立状态或事件协议；已接受的变更由 goal 领域检查，权限行为则由本包测试验证。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：工具註冊、設定、系統提示詞章節、結果渲染 |
+| [`src/authority.ts`](src/authority.ts) | 執行時權限檢查與 Goal Round 接受 |
+| [`src/wrapup.ts`](src/wrapup.ts) | 終局自主更新的結束訊息指令 |
+| — | 不釋出執行時不變式伴生入口；此面向模型的介面卡不擁有獨立狀態或事件協定；已接受的變更由 goal 領域檢查，權限行為則由本包測試驗證。 |
 
-### 工具输出
+### 工具輸出
 
-三个工具共用一种规范输出：紧凑 JSON `{ goal: null }`，或 `{ goal: { id, revision, objective, phase, roundsStarted, maxGoalRounds, blockedReason? }, activation }`。结果中的 `activation` 是实时观察值，绝不会成为回放权限依据。UI 客户端收到纯通用卡片——`get_goal` 为 read，变更使用 other。
+三個工具共用一種規範輸出：緊湊 JSON `{ goal: null }`，或 `{ goal: { id, revision, objective, phase, roundsStarted, maxGoalRounds, blockedReason? }, activation }`。結果中的 `activation` 是即時觀察值，絕不會成為回放權限依據。UI 用戶端收到純通用卡片——`get_goal` 為 read，變更使用 other。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-这些工具是 goal 表面面向模型的一半；如需了解它们变更的状态及其所遵循的策略，请阅读以下页面。
+這些工具是 goal 表面面向模型的一半；如需瞭解它們變更的狀態及其所遵循的策略，請閱讀以下頁面。
 
-- [goal 服务](../goal/README.zh.md)——工具变更的 goal 状态与生命周期。
-- [goal 组地图](../README.zh.md)——goal 各包及其组合方式。
-- [生成的工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)——模型接收的精确 schema。
-- [goal 工具 Agent Note](../../../.agents/notes/implemented/feature/2026-07-19-model-facing-goal-tools.zh.md)——权限拆分与 UX 决策。
+- [goal 服務](../goal/README.zh.md)——工具變更的 goal 狀態與生命週期。
+- [goal 組地圖](../README.zh.md)——goal 各包及其組合方式。
+- [生成的工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)——模型接收的精確 schema。
+- [goal 工具 Agent Note](../../../.agents/notes/implemented/feature/2026-07-19-model-facing-goal-tools.zh.md)——權限拆分與 UX 決策。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 系统提示词
+### 系統提示詞
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-固定 goal 策略允许以任意语言推断 goal 意图，解释会话 resume／fork 后如何重新启用续行，并限制完成／阻塞声明；创建范围和更新前读取 ref 由工具定义说明。持久 paused 的 resume 会在执行时以 `GOAL_TOOL_RESUME_PAUSED` 拒绝；面向用户的 goal 控件拥有该转换。配置的阈值会插入该指引。
+固定 goal 策略允許以任意語言推斷 goal 意圖，解釋工作階段 resume／fork 後如何重新啟用續行，並限制完成／阻塞宣告；建立範圍和更新前讀取 ref 由工具定義說明。持久 paused 的 resume 會在執行時以 `GOAL_TOOL_RESUME_PAUSED` 拒絕；面向使用者的 goal 控制元件擁有該轉換。設定的閾值會插入該指引。
 
 ##### Goal 策略
 
@@ -117,47 +117,47 @@ kind: "package-reference"
 create_goal may infer goal intent from a direct human request in any language. After session resume or fork, an active goal is disarmed: when a human asks to continue or resume in any wording or language, use update_goal action resume to rearm it. Mark complete only when the objective is actually achieved. Mark blocked only after the same blocking condition persists for at least 3 consecutive goal rounds, and report that concrete condition in blocked_reason; difficulty, uncertainty, or useful remaining work is not blocked.
 ```
 
-#### Token 影响
+#### Token 影響
 
-此插件的提示词注册位于请求范围内时，每次请求都会产生少量固定输入成本。
+此外掛的提示詞註冊位於請求範圍內時，每次請求都會產生少量固定輸入成本。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-插件范围、配置阈值和指引文本不变时，前缀保持稳定。启用、dispose（资源释放）或配置变更可能使此提示词章节的复用失效。
+外掛範圍、設定閾值和指引文字不變時，字首保持穩定。啟用、dispose（資源釋放）或設定變更可能使此提示詞章節的複用失效。
 
-### 工具 schema 与结果
+### 工具 schema 與結果
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-生成的 [`get_goal`、`create_goal` 和 `update_goal` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)。成功结果是紧凑 JSON。变更会追加 goal 领域的持久 `goal/change` 事件，而不会将模型上下文加入队列。结果中的 `activation` 是实时观察值，绝不会成为回放权限依据。
+生成的 [`get_goal`、`create_goal` 和 `update_goal` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-goal)。成功結果是緊湊 JSON。變更會追加 goal 領域的持久 `goal/change` 事件，而不會將模型上下文加入佇列。結果中的 `activation` 是即時觀察值，絕不會成為回放權限依據。
 
-#### Token 影响
+#### Token 影響
 
-固定 schema 成本，加上每次调用的一条紧凑结果。持久变更不会增加单独的模型可见上下文。
+固定 schema 成本，加上每次呼叫的一條緊湊結果。持久變更不會增加單獨的模型可見上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-schema 的定义与可见性不变时，前缀保持稳定。调用和结果会追加到可复用请求前缀之后，不会使更早条目失效。
+schema 的定義與可見性不變時，字首保持穩定。呼叫和結果會追加到可複用請求字首之後，不會使更早條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明 goal 工具何时不合适或需要特别注意。它们是当前包约束，不是任务积压。
+這些限制說明 goal 工具何時不合適或需要特別注意。它們是目前包約束，不是任務積壓。
 
-- **语义意图仍由模型判断**——执行只能证明当前轮次包含一条人类直接发送的消息，无法证明请求是否足够重大而值得创建 goal。
-- **阻塞条件是否相同仍由模型判断**——运行时强制统计互不重复的已准入 Goal Round，而不判断障碍在语义上是否等价；独立评估器的实现暂缓。
-- **不负责调度或直接面向人类呈现**——这些工具只变更状态；同会话驱动器与 `dsh-command-goal` 是同一领域的独立消费方。
-- **Goal Round 权限需要驱动器**——除非续行驱动器准入 goal 来源的用户轮次，否则自主 `complete`／`blocked` 路径不会启用；只挂载这个包不会创建这些轮次。
-- **提示词注册与过滤相互独立**——某个范围可能隐藏工具，却保留指引，除非部署将两项注册限定在同一范围。
+- **語義意圖仍由模型判斷**——執行只能證明目前輪次包含一條人類直接傳送的訊息，無法證明請求是否足夠重大而值得建立 goal。
+- **阻塞條件是否相同仍由模型判斷**——執行時強制統計互不重複的已准入 Goal Round，而不判斷障礙在語義上是否等價；獨立評估器的實作暫緩。
+- **不負責排程或直接面向人類呈現**——這些工具只變更狀態；同工作階段驅動器與 `dsh-command-goal` 是同一領域的獨立消費方。
+- **Goal Round 權限需要驅動器**——除非續行驅動器准入 goal 來源的使用者輪次，否則自主 `complete`／`blocked` 路徑不會啟用；只掛載這個包不會建立這些輪次。
+- **提示詞註冊與過濾相互獨立**——某個範圍可能隱藏工具，卻保留指引，除非部署將兩項註冊限定在同一範圍。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性。开放问题：goal 策略章节是否应与工具注册独立限定范围，避免某个范围隐藏工具却保留指引。
+本開發備註是維護者的工作上下文，明確不具權威性。開放問題：goal 策略章節是否應與工具註冊獨立限定範圍，避免某個範圍隱藏工具卻保留指引。
 
 </details>

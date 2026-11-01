@@ -5,18 +5,18 @@ export const PERMISSION_ACCESS_NS = 'permission.access'
 
 /** Simplified Chinese dictionary (the key-set source of truth). */
 export const zh = {
-  'title': '权限',
-  'description': '选择新会话的默认权限模式',
-  'loading': '加载中',
+  'title': '權限',
+  'description': '選擇新工作階段的預設權限模式',
+  'loading': '載入中',
   'unavailable': '不可用',
-  'preset.readOnly': '仅可查看',
-  'preset.workspaceWrite': '工作区内修改',
-  'preset.fullAccess': '完全权限',
-  'confirm.title': '确认启用完全权限？',
-  'confirm.description': '启用完全权限后，新会话将减少确认步骤，并且可以直接执行更多操作，包括敏感操作、文件修改或外部命令。仅建议在你信任后续任务时使用。',
-  'confirm.acknowledge': '我已了解风险，并愿意继续',
+  'preset.readOnly': '僅可檢視',
+  'preset.workspaceWrite': '工作區內修改',
+  'preset.fullAccess': '完全權限',
+  'confirm.title': '確認啟用完全權限？',
+  'confirm.description': '啟用完全權限後，新工作階段將減少確認步驟，並且可以直接執行更多操作，包括敏感操作、檔案修改或外部命令。僅建議在你信任後續任務時使用。',
+  'confirm.acknowledge': '我已瞭解風險，並願意繼續',
   'confirm.cancel': '取消',
-  'confirm.enable': '启用完全权限',
+  'confirm.enable': '啟用完全權限',
 } satisfies Record<string, string>
 
 /** The settings.permission namespace key union. */
@@ -40,23 +40,23 @@ export const en = {
 
 /** Simplified Chinese dictionary for the current-session popup gate. */
 export const accessZh = {
-  'mode': '访问模式，当前：{name}',
-  'close': '关闭',
-  'preset.readOnly': '仅可查看',
-  'preset.workspaceWrite': '工作区内修改',
-  'preset.fullAccess': '完全权限',
-  'confirm.title': '确认启用完全权限？',
-  'confirm.description': '启用完全权限后，智能体将减少确认步骤，并且可以直接执行更多操作，包括敏感操作、文件修改或外部命令。仅建议在你信任当前任务时使用。',
-  'confirm.acknowledge': '我已了解风险，并愿意继续',
+  'mode': '存取模式，目前：{name}',
+  'close': '關閉',
+  'preset.readOnly': '僅可檢視',
+  'preset.workspaceWrite': '工作區內修改',
+  'preset.fullAccess': '完全權限',
+  'confirm.title': '確認啟用完全權限？',
+  'confirm.description': '啟用完全權限後，智慧代理將減少確認步驟，並且可以直接執行更多操作，包括敏感操作、檔案修改或外部命令。僅建議在你信任目前任務時使用。',
+  'confirm.acknowledge': '我已瞭解風險，並願意繼續',
   'confirm.cancel': '取消',
-  'confirm.enable': '启用完全权限',
+  'confirm.enable': '啟用完全權限',
   'auto.label': 'Auto review',
   'auto.badge': 'EXP',
-  'auto.description': '无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。',
-  'auto.confirm.title': '确认启用 Auto review（实验）？',
-  'auto.confirm.description': 'Auto review 不使用沙箱。每次原生工具调用和 PTC 内层调用前，都会由与当前 agent 相同的模型进行审查；审查拒绝的调用由你批准或拒绝。此功能仍属实验性，可能误放行或误拒绝，并会消耗额外 token。',
-  'auto.confirm.acknowledge': '我已了解这些风险，并愿意继续',
-  'auto.confirm.enable': '启用 Auto review',
+  'auto.description': '無沙箱執行；每次原生工具呼叫和 PTC 內層呼叫前由同一模型進行實驗性審查。',
+  'auto.confirm.title': '確認啟用 Auto review（實驗）？',
+  'auto.confirm.description': 'Auto review 不使用沙箱。每次原生工具呼叫和 PTC 內層呼叫前，都會由與目前 agent 相同的模型進行審查；審查拒絕的呼叫由你批准或拒絕。此功能仍屬實驗性，可能誤放行或誤拒絕，並會消耗額外 token。',
+  'auto.confirm.acknowledge': '我已瞭解這些風險，並願意繼續',
+  'auto.confirm.enable': '啟用 Auto review',
 } satisfies Record<string, string>
 
 /** Current-session popup-gate key union. */

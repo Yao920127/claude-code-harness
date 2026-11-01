@@ -1,4 +1,4 @@
-# Agent Note: 工作区文件服务
+# Agent Note: 工作區檔案服務
 
 Status: implemented
 
@@ -6,28 +6,28 @@ Status: implemented
 
 ## Problem
 
-Web 客户端需要从一个未必在 Host 机器上的浏览器查看会话工作区里的文件：agent 产出的文件、`read` 工具行点名的路径，之后还有文件树，以及既不小也不是文本的文件预览。唯一一个经线路读取工作区文件的端点以 `workspace-file.ts` 住在 Session Controller 上，与它毫无关系的会话生命周期为邻。它在一个总字节上限之下返回整个文件，因此大日志连一部分都看不了、二进制根本看不了；它没有 `stat`、没有列举、没有变更信号，预览不重读就无法得知 agent 已改写文件；其结果还以 Host 的 `url` 命名文件，而 Client 上没有任何东西把这种拼法当地址用。
+Web 用戶端需要從一個未必在 Host 機器上的瀏覽器檢視工作階段工作區裡的檔案：agent 產出的檔案、`read` 工具行點名的路徑，之後還有檔案樹，以及既不小也不是文字的檔案預覽。唯一一個經線路讀取工作區檔案的端點以 `workspace-file.ts` 住在 Session Controller 上，與它毫無關係的工作階段生命週期為鄰。它在一個總位元組上限之下返回整個檔案，因此大日誌連一部分都看不了、二進位制根本看不了；它沒有 `stat`、沒有列舉、沒有變更訊號，預覽不重讀就無法得知 agent 已改寫檔案；其結果還以 Host 的 `url` 命名檔案，而 Client 上沒有任何東西把這種拼法當地址用。
 
-两个约束框定了这项服务。经 `ctx.fs` 的文件读取使用 Session 组合后的文件系统后端，其读取权限可能延伸到工作区外，而目录树与变更流消费方以工作区为根。服务为普通文件保留后端的读取决策，同时执行文件类型与有界缓冲检查；`list` 与 `changes` 保留工作区包含限制。另外 `dsh-fs` 只暴露一种原始字节读取 `readBytes(target, signal, maxBytes)`，它拒绝任何比上限更长的文件：对模型整体摄入的图片是正确的，对大文件的一个窗口则毫无用处。
+兩個約束框定了這項服務。經 `ctx.fs` 的檔案讀取使用 Session 組合後的檔案系統後端，其讀取權限可能延伸到工作區外，而目錄樹與變更流消費方以工作區為根。服務為普通檔案保留後端的讀取決策，同時執行檔案型別與有界緩衝檢查；`list` 與 `changes` 保留工作區包含限制。另外 `dsh-fs` 只暴露一種原始位元組讀取 `readBytes(target, signal, maxBytes)`，它拒絕任何比上限更長的檔案：對模型整體攝入的圖片是正確的，對大檔案的一個視窗則毫無用處。
 
 ## Decision
 
-`packages/api/workspace-files`（`@deepseek-ai/dsh-api-workspace-files`）同时拥有 Host 服务 `ctx.workspaceFiles`、`workspaceFiles` Remote 命名空间，以及将 `stat` 与 `changes` 转成[资源模型](2026-09-05-client-resource-model.zh.md)实时元数据的 Client `file` 提供者；包组织方式由[双面包组织](2026-09-07-workspace-files-dual-face-package.zh.md)规定。文件方法从工作区根解析相对路径，但继承 Session 文件系统后端的读取权限；`list` 与 `changes` 仍限于工作区。[工作区文件读取权限](2026-09-09-workspace-file-read-authority.zh.md)拥有这一分层及其安全后果。结果以文件在文件系统执行环境中的绝对路径命名文件，内容则受页、字节窗口或整文件上限约束。字节窗口依托 `dsh-fs` 新增的 seam `FileSystem.readByteRange`，由每个提供者实现。Session Controller 不再携带任何工作区文件代码。
+`packages/api/workspace-files`（`@deepseek-ai/dsh-api-workspace-files`）同時擁有 Host 服務 `ctx.workspaceFiles`、`workspaceFiles` Remote 名稱空間，以及將 `stat` 與 `changes` 轉成[資源模型](2026-09-05-client-resource-model.zh.md)即時中繼資料的 Client `file` 提供者；包組織方式由[雙面包組織](2026-09-07-workspace-files-dual-face-package.zh.md)規定。檔案方法從工作區根解析相對路徑，但繼承 Session 檔案系統後端的讀取權限；`list` 與 `changes` 仍限於工作區。[工作區檔案讀取權限](2026-09-09-workspace-file-read-authority.zh.md)擁有這一分層及其安全後果。結果以檔案在檔案系統執行環境中的絕對路徑命名檔案，內容則受頁、位元組視窗或整檔案上限約束。位元組視窗依託 `dsh-fs` 新增的 seam `FileSystem.readByteRange`，由每個提供者實作。Session Controller 不再攜帶任何工作區檔案程式碼。
 
-### 包拓扑
+### 包拓撲
 
-[双面包组织](2026-09-07-workspace-files-dual-face-package.zh.md)取代本记录中把 Host 与 Client 分成两个包的组织选择；这里的文件服务、分页和变更流约定保持不变。[工作区文件读取权限](2026-09-09-workspace-file-read-authority.zh.md)取代文件方法原有的工作区包含选择。Host 与 Client 分别编译在两个叶配置中，共享线路类型，Client 不导入 Host 运行时入口。
+[雙面包組織](2026-09-07-workspace-files-dual-face-package.zh.md)取代本記錄中把 Host 與 Client 分成兩個包的組織選擇；這裡的檔案服務、分頁和變更流約定保持不變。[工作區檔案讀取權限](2026-09-09-workspace-file-read-authority.zh.md)取代檔案方法原有的工作區包含選擇。Host 與 Client 分別編譯在兩個葉設定中，共享線路型別，Client 不匯入 Host 執行時入口。
 
-| 面 | 包 | 文件 | 依赖 |
+| 面 | 包 | 檔案 | 依賴 |
 |---|---|---|---|
-| Host | `api/workspace-files/tsconfig.host.json` | `src/index.ts`（`WorkspaceFiles`、`Config`、围栏、切页器）、`src/changes.ts`（`WorkspaceChangeFeed`）、`src/types.ts`（线路类型、错误码） | `dsh-fs`、`dsh-sandbox-policy`、`dsh-typert-protocol`、`dsh-session`、`dsh-session-persistence` |
-| Client | `api/workspace-files/tsconfig.client.json` | `src/client/index.ts`（插件体）、`provider.ts`、`change-feed.ts`、`remote.ts`、`types.ts`，以及共享的 `src/types.ts` | `dsh-api-gateway/client`、`dsh-session/types`、`dsh-client-resources`、`dsh-client-ui-slots`、`dsh-util-workspace-path`、`dsh-typert-protocol`，以及本包生成的 `./remote` |
+| Host | `api/workspace-files/tsconfig.host.json` | `src/index.ts`（`WorkspaceFiles`、`Config`、圍欄、切頁器）、`src/changes.ts`（`WorkspaceChangeFeed`）、`src/types.ts`（線路型別、錯誤碼） | `dsh-fs`、`dsh-sandbox-policy`、`dsh-typert-protocol`、`dsh-session`、`dsh-session-persistence` |
+| Client | `api/workspace-files/tsconfig.client.json` | `src/client/index.ts`（外掛體）、`provider.ts`、`change-feed.ts`、`remote.ts`、`types.ts`，以及共享的 `src/types.ts` | `dsh-api-gateway/client`、`dsh-session/types`、`dsh-client-resources`、`dsh-client-ui-slots`、`dsh-util-workspace-path`、`dsh-typert-protocol`，以及本包生成的 `./remote` |
 
-`api/remotes` 和两个根聚合分别引用匹配的 Host/Client 叶子。包导出 `.`、`./client`、`./types`、`./typert` 和 `./remote`，web-app 中单个 `workspace-files` 条目供应两面。Client 插件注入 `['resources', 'remote', 'remote.workspaceFiles']`；资源模型直接从协议包取结果类型，Sidebar 参数声明归文本预览，因此 Client 编译图不再反向依赖 Remote 装配或右栏 UI。
+`api/remotes` 和兩個根聚合分別引用匹配的 Host/Client 葉子。包匯出 `.`、`./client`、`./types`、`./typert` 和 `./remote`，web-app 中單個 `workspace-files` 條目供應兩面。Client 外掛注入 `['resources', 'remote', 'remote.workspaceFiles']`；資源模型直接從協定包取結果型別，Sidebar 參數宣告歸文字預覽，因此 Client 編譯圖不再反向依賴 Remote 裝配或右欄 UI。
 
-### `workspaceFiles` 文件操作
+### `workspaceFiles` 檔案操作
 
-每个 Host 方法首参都是 `WorkspaceFileScope`。`workspaceFileScope` Gateway lookup 解析 Session 身份。它优先读取 live Session header，cold Session 则只调用 `SessionPersistence.stat`；不会激活 Agent、读取事件正文或回退到父 Session。scope 携带所选 Session id 及其 `cwd`，仅当该 header 没有 `cwd` 时才使用沙箱策略的部署根。Client 传入 Session id，从不自行命名根。五个签名照 `src/index.ts` 的声明：
+每個 Host 方法首參都是 `WorkspaceFileScope`。`workspaceFileScope` Gateway lookup 解析 Session 身份。它優先讀取 live Session header，cold Session 則只呼叫 `SessionPersistence.stat`；不會啟用 Agent、讀取事件正文或退回到父 Session。scope 攜帶所選 Session id 及其 `cwd`，僅當該 header 沒有 `cwd` 時才使用沙箱策略的部署根。Client 傳入 Session id，從不自行命名根。五個簽名照 `src/index.ts` 的宣告：
 
 ```ts ignore-check
 @Remote async read(workspaceFileScope: WorkspaceFileScope, path: string, range: WorkspaceFileRange, signal: AbortSignal): Promise<WorkspaceFileText>
@@ -37,113 +37,113 @@ Web 客户端需要从一个未必在 Host 机器上的浏览器查看会话工�
 @Remote({ mode: 'stream' }) changes(workspaceFileScope: WorkspaceFileScope, signal: AbortSignal): AsyncIterable<WorkspaceFileWatchFrame>
 ```
 
-- **`stat`** 返回 `WorkspaceFileStat { absolutePath, version, bytes? }`：文件身份、不透明的新鲜度令牌，以及后端报得出时的大小。它只接受普通文件。
-- **`read`** 返回一个行窗口 `WorkspaceFileText = WorkspaceFileStat & { offset, text, lines, eof }`；`lines` 计页内行数，使只含一个空行的页（`text: ''`、`lines: 1`）与越过文件末尾的页（`lines: 0`）可区分。`range.offset` 是 1 起算的首行，缺省 1；`range.limit` 是最多行数，缺省 `maxLines` 且不得超过。行以 `\n` 结束，末尾的 `\n` 终止最后一行而不是开启一空行；`text` 以 `\n` 连接本页各行且不带终止符；页含最后一行时 `eof` 为 true，越过末尾的 offset 返回 `eof` 为 true 的空页。切页器沿 `streamText` 前进，数过窗口前的行而不保留，把每个窗内片段先按 `maxBytes` 核准再缓冲，并在越过窗口的第一个字符处返回，因此任意大小的文件只花一页内存。页上的 `version` 与 `bytes` 来自流之前的那次 stat。
-- **`readBytes`** 返回原生字节、文件元数据、偏移量和 EOF。必填选项对象未传 `range` 时，在 `maxFileBytes` 上限内完整读取；传入时，在 `maxBytes` 上限内读取有界窗口。`range: {}` 使用零偏移和配置的窗口上限；窗口可读取超过完整文件上限的文件。[二进制传输决议](2026-09-17-workspace-file-binary-transfer.zh.md)负责 Remote 响应编码。
-- **`baseFile`** 独立于 `range` 选择目标解析方式：目标 `path` 必须为相对路径，从基准文件所在目录解析。Host 对两个文件执行普通文件检查，并保留后端读取权限。[Document Preview](2026-09-08-document-preview-operations.zh.md)负责内容加载与地址语义。
-- **`list`** 返回 `WorkspaceDirectoryListing { path, entries, truncated }`：被列目录相对根的工作区路径（根为空串）、其直接子项按后端的稳定名序以 `{ name, type, size? }` 给出，以及 `maxEntries` 是否截断了列表。`type` 为 `file`、`directory` 或 `other`；符号链接子项报告其指向目标的类型，悬空者为 `other`。列表报告为目录的子项经其解析目标打开，Windows 目录联接亦然，此时列表以该目标命名；[目录链接列举](../bug-fix/2026-09-18-windows-directory-junction-listing.zh.md)拥有该规则。dotfile 照常列出，不做任何过滤。
-- **`changes`** 产出 `WorkspaceFileWatchFrame`：在观察队列注册且工作区根解析完成后先发 `{ kind: 'ready' }`，随后为 `{ kind: 'change', change }`。载荷 `WorkspaceFileChange` 对存在的文件为 `{ absolutePath, version }`，对消失的文件为 `{ absolutePath, absent: true }`。来源是工作区根内的 `fs/observed`，不监视操作系统。首次拉取后的观察都会排队，包括根解析期间的观察；取消或插件释放会结束该代流。
+- **`stat`** 返回 `WorkspaceFileStat { absolutePath, version, bytes? }`：檔案身份、不透明的新鮮度權杖，以及後端報得出時的大小。它只接受普通檔案。
+- **`read`** 返回一個行視窗 `WorkspaceFileText = WorkspaceFileStat & { offset, text, lines, eof }`；`lines` 計頁內行數，使只含一個空行的頁（`text: ''`、`lines: 1`）與越過檔案末尾的頁（`lines: 0`）可區分。`range.offset` 是 1 起算的首行，預設 1；`range.limit` 是最多行數，預設 `maxLines` 且不得超過。行以 `\n` 結束，末尾的 `\n` 終止最後一行而不是開啟一空行；`text` 以 `\n` 連線本頁各行且不帶終止符；頁含最後一行時 `eof` 為 true，越過末尾的 offset 返回 `eof` 為 true 的空頁。切頁器沿 `streamText` 前進，數過視窗前的行而不保留，把每個窗內片段先按 `maxBytes` 核准再緩衝，並在越過視窗的第一個字元處返回，因此任意大小的檔案只花一頁記憶體。頁上的 `version` 與 `bytes` 來自流之前的那次 stat。
+- **`readBytes`** 返回原生位元組、檔案中繼資料、偏移量和 EOF。必填選項物件未傳 `range` 時，在 `maxFileBytes` 上限內完整讀取；傳入時，在 `maxBytes` 上限內讀取有界視窗。`range: {}` 使用零偏移和設定的視窗上限；視窗可讀取超過完整檔案上限的檔案。[二進位制傳輸決議](2026-09-17-workspace-file-binary-transfer.zh.md)負責 Remote 回應編碼。
+- **`baseFile`** 獨立於 `range` 選擇目標解析方式：目標 `path` 必須為相對路徑，從基準檔案所在目錄解析。Host 對兩個檔案執行普通檔案檢查，並保留後端讀取權限。[Document Preview](2026-09-08-document-preview-operations.zh.md)負責內容載入與地址語義。
+- **`list`** 返回 `WorkspaceDirectoryListing { path, entries, truncated }`：被列目錄相對根的工作區路徑（根為空串）、其直接子項按後端的穩定名序以 `{ name, type, size? }` 給出，以及 `maxEntries` 是否截斷了列表。`type` 為 `file`、`directory` 或 `other`；符號連結子項報告其指向目標的型別，懸空者為 `other`。列表報告為目錄的子項經其解析目標開啟，Windows 目錄聯接亦然，此時列表以該目標命名；[目錄連結列舉](../bug-fix/2026-09-18-windows-directory-junction-listing.zh.md)擁有該規則。dotfile 照常列出，不做任何過濾。
+- **`changes`** 產出 `WorkspaceFileWatchFrame`：在觀察佇列註冊且工作區根解析完成後先發 `{ kind: 'ready' }`，隨後為 `{ kind: 'change', change }`。載荷 `WorkspaceFileChange` 對存在的檔案為 `{ absolutePath, version }`，對消失的檔案為 `{ absolutePath, absent: true }`。來源是工作區根內的 `fs/observed`，不監視作業系統。首次拉取後的觀察都會排隊，包括根解析期間的觀察；取消或外掛釋放會結束該代流。
 
-### 线路上的路径
+### 線路上的路徑
 
-离开服务的路径词汇有两套，每个方法只用其中一套。`read`、`readBytes`、`stat` 与 `changes` 以 `absolutePath` 命名文件：它在文件系统执行环境中、符号链接已解析的绝对路径（`ctx.fs.processPath(target)`），因此 Client 提供者按绝对路径把变更帧匹配到已打开的地址：Client 把地址路径原样交给 Host，并只按成功的 `stat.absolutePath` 绑定跟随者，不读取会话摘要的 cwd。`list` 说工作区路径——与其 `path` 参数相同的语法，绝对或相对根——因为其消费方是一棵以根为起点的树。该字段叫 `absolutePath` 而不叫 `url`，因为它不是资源地址；地址语法归 `dsh-util-workspace-path` 所有，与资源模型一并描述。`read`、`readBytes`、`stat` 与 `list` 的输入路径是绝对路径或相对会话工作区根的路径，从不相对后端自己的 cwd；带 `baseFile` 的 `readBytes` 从基准文件所在目录解析目标。
+離開服務的路徑詞彙有兩套，每個方法只用其中一套。`read`、`readBytes`、`stat` 與 `changes` 以 `absolutePath` 命名檔案：它在檔案系統執行環境中、符號連結已解析的絕對路徑（`ctx.fs.processPath(target)`），因此 Client 提供者按絕對路徑把變更幀匹配到已開啟的地址：Client 把地址路徑原樣交給 Host，並只按成功的 `stat.absolutePath` 繫結跟隨者，不讀取工作階段摘要的 cwd。`list` 說工作區路徑——與其 `path` 參數相同的語法，絕對或相對根——因為其消費方是一棵以根為起點的樹。該欄位叫 `absolutePath` 而不叫 `url`，因為它不是資源地址；地址語法歸 `dsh-util-workspace-path` 所有，與資源模型一併描述。`read`、`readBytes`、`stat` 與 `list` 的輸入路徑是絕對路徑或相對工作階段工作區根的路徑，從不相對後端自己的 cwd；帶 `baseFile` 的 `readBytes` 從基準檔案所在目錄解析目標。
 
-`version` 是消费者只比较是否相等、从不解析的不透明字符串：本地后端由设备、inode、大小及纳秒级 mtime 与 ctime 导出，因此内容不变的重写也会改变它。`offset` 在 `read` 上指行、在 `readBytes` 上指字节；两套单位从不混用，二者的 `eof` 都表示窗口到达了文件末尾。
+`version` 是消費者只比較是否相等、從不解析的不透明字串：本地後端由裝置、inode、大小及納秒級 mtime 與 ctime 匯出，因此內容不變的重寫也會改變它。`offset` 在 `read` 上指行、在 `readBytes` 上指位元組；兩套單位從不混用，二者的 `eof` 都表示視窗到達了檔案末尾。
 
-### 文件检查与工作区包含
+### 檔案檢查與工作區包含
 
-`read`、`readBytes` 与 `stat` 共享普通文件检查，之后依赖文件系统后端的读取权限。`list` 共享路径检查，但还会检查工作区包含关系；`changes` 则把观察过滤到工作区根内。服务执行以下检查：
+`read`、`readBytes` 與 `stat` 共享普通檔案檢查，之後依賴檔案系統後端的讀取權限。`list` 共享路徑檢查，但還會檢查工作區包含關係；`changes` 則把觀察過濾到工作區根內。服務執行以下檢查：
 
-1. **路径本身。** `lstat` 在跟随任何东西之前检查路径：缺失路径为 `not-found`；符号链接——不论指向哪里，包括指回工作区内——对文件方法为 `not-regular-file`（kind 为 `symlink`）。`list` 改为跟随末端链接并判定解析后的目标：目标经 stat 必须为目录，指向文件的链接或目标已消失的链接为 `not-directory`（kind 为 `symlink`）。空路径是 `gateway/bad-request`。
-2. **`list` 的工作区包含。** 目录解析为目标，由 `ctx.fs.contains(root, target)` 判定，其中 `root` 是从所选 Session header 解析出的 `WorkspaceFileScope.workspaceRoot`。`..` 爬出或根外绝对目录为 `outside-workspace`。`changes` 对观察到的目标使用相同的后端包含判定。
-3. **上限。** 超过 `maxBytes` 的页或窗口，或 `read` 索要超过 `maxLines` 的行数，一律拒绝、绝不截短，因为悄悄截短的页读起来就像整页；超过 `maxEntries` 的列表被截断并如实报告。全文及关联文件读取超过 `maxFileBytes` 时被拒绝。
-4. **文本。** 仅限 `read`：到页末为止不是 UTF-8 的内容、后端 8 KiB 开头样本里的 NUL 字节，或页内任何位置的 NUL 字节，都是 `not-text`；页之后的字节不检查。
+1. **路徑本身。** `lstat` 在跟隨任何東西之前檢查路徑：缺失路徑為 `not-found`；符號連結——不論指向哪裡，包括指回工作區內——對檔案方法為 `not-regular-file`（kind 為 `symlink`）。`list` 改為跟隨末端連結並判定解析後的目標：目標經 stat 必須為目錄，指向檔案的連結或目標已消失的連結為 `not-directory`（kind 為 `symlink`）。空路徑是 `gateway/bad-request`。
+2. **`list` 的工作區包含。** 目錄解析為目標，由 `ctx.fs.contains(root, target)` 判定，其中 `root` 是從所選 Session header 解析出的 `WorkspaceFileScope.workspaceRoot`。`..` 爬出或根外絕對目錄為 `outside-workspace`。`changes` 對觀察到的目標使用相同的後端包含判定。
+3. **上限。** 超過 `maxBytes` 的頁或視窗，或 `read` 索要超過 `maxLines` 的行數，一律拒絕、絕不截短，因為悄悄截短的頁讀起來就像整頁；超過 `maxEntries` 的列表被截斷並如實報告。全文及關聯檔案讀取超過 `maxFileBytes` 時被拒絕。
+4. **文字。** 僅限 `read`：到頁末為止不是 UTF-8 的內容、後端 8 KiB 開頭樣本里的 NUL 位元組，或頁內任何位置的 NUL 位元組，都是 `not-text`；頁之後的位元組不檢查。
 
-路径检查之后，文件方法再对解析出的目标 `stat` 一次，因为文件可能在读取前已消失或换了种类：消失者为 `not-found`，被替换者为带新种类的 `not-regular-file`。对 `list` 而言，根外条目若类型本身已不合格，会先报告其种类而不是位置；末端链接先解析并通过包含检查，再读取其目标种类。
+路徑檢查之後，檔案方法再對解析出的目標 `stat` 一次，因為檔案可能在讀取前已消失或換了種類：消失者為 `not-found`，被替換者為帶新種類的 `not-regular-file`。對 `list` 而言，根外條目若型別本身已不合格，會先報告其種類而不是位置；末端連結先解析並透過包含檢查，再讀取其目標種類。
 
-### 失败
+### 失敗
 
-每种失败都是一个带类型化 details 的 `RemoteError` 代码，声明在抛出它的代码旁，按代码而非消息区分。
+每種失敗都是一個帶型別化 details 的 `RemoteError` 程式碼，宣告在丟擲它的程式碼旁，按程式碼而非訊息區分。
 
-| 代码 | 何时 | Details |
+| 程式碼 | 何時 | Details |
 |---|---|---|
-| `workspace-file/not-found` | 路径处无条目，或文件在过关后消失 | `{ path }` |
-| `workspace-file/outside-workspace` | `list` 的目标不在工作区根内 | `{ path }` |
-| `workspace-file/too-large` | 一页文本或字节窗口超过 `maxBytes`，或全文读取超过 `maxFileBytes` | `{ path, limit }` |
-| `workspace-file/not-text` | 到页末为止的非法 UTF-8，或样本或页内的 NUL 字节（仅 `read`） | `{ path }` |
-| `workspace-file/not-regular-file` | 对非普通文件执行 `read`、`readBytes` 或 `stat` | `{ path, kind: 'directory' \| 'symlink' \| 'other' }` |
-| `workspace-file/not-directory` | 对非目录执行 `list` | `{ path, kind: 'file' \| 'symlink' \| 'other' }` |
-| `workspace-file/unsupported-address` | Client 铸出：本提供者无法服务的资源地址 | `{ address }` |
-| `workspace-file/unknown-workspace` | Client 铸出：不携带 Session 的 `absolute` 地址 | `{ address }` |
-| `gateway/bad-request` | 空路径，或不是范围内整数的 `offset`、`limit`、`length` | `{}` |
+| `workspace-file/not-found` | 路徑處無條目，或檔案在過關後消失 | `{ path }` |
+| `workspace-file/outside-workspace` | `list` 的目標不在工作區根內 | `{ path }` |
+| `workspace-file/too-large` | 一頁文字或位元組視窗超過 `maxBytes`，或全文讀取超過 `maxFileBytes` | `{ path, limit }` |
+| `workspace-file/not-text` | 到頁末為止的非法 UTF-8，或樣本或頁內的 NUL 位元組（僅 `read`） | `{ path }` |
+| `workspace-file/not-regular-file` | 對非普通檔案執行 `read`、`readBytes` 或 `stat` | `{ path, kind: 'directory' \| 'symlink' \| 'other' }` |
+| `workspace-file/not-directory` | 對非目錄執行 `list` | `{ path, kind: 'file' \| 'symlink' \| 'other' }` |
+| `workspace-file/unsupported-address` | Client 鑄出：本提供者無法服務的資源地址 | `{ address }` |
+| `workspace-file/unknown-workspace` | Client 鑄出：不攜帶 Session 的 `absolute` 地址 | `{ address }` |
+| `gateway/bad-request` | 空路徑，或不是範圍內整數的 `offset`、`limit`、`length` | `{}` |
 
-这个集合只增不改不删：可以新增代码，但不重命名、不移除任何一个，因为消费方跨线路按这些字符串分支。
+這個集合只增不改不刪：可以新增程式碼，但不重新命名、不移除任何一個，因為消費方跨線路按這些字串分支。
 
-### 配置
+### 設定
 
-四个字段，都是可在 `cordis.yml` 中修改、经校验的正整数，此外没有其他可调项：`maxBytes`（默认 2,097,152，即 2 MiB）是单页文本与单个字节窗口的含上限；`maxLines`（默认 5,000）是页的缺省与最大行数；`maxEntries`（默认 2,000）是返回目录条目数的上限；`maxFileBytes`（默认 33,554,432，即 32 MiB）限制全文及关联文件读取。分页和开窗读取不限制整个文件的大小。
+四個欄位，都是可在 `cordis.yml` 中修改、經驗證的正整數，此外沒有其他可調項：`maxBytes`（預設 2,097,152，即 2 MiB）是單頁文字與單個位元組視窗的含上限；`maxLines`（預設 5,000）是頁的預設與最大行數；`maxEntries`（預設 2,000）是返回目錄條目數的上限；`maxFileBytes`（預設 33,554,432，即 32 MiB）限制全文及關聯檔案讀取。分頁和開窗讀取不限制整個檔案的大小。
 
 ### `dsh-fs` 中的 `readByteRange` seam
 
-大文件的字节窗口需要一种以窗口为界的文件系统读取，而 `FileSystem` 只有以整文件为界的 `readBytes(target, signal, maxBytes)`。因此 `dsh-fs` 新增第二个原始字节原语：
+大檔案的位元組視窗需要一種以視窗為界的檔案系統讀取，而 `FileSystem` 只有以整檔案為界的 `readBytes(target, signal, maxBytes)`。因此 `dsh-fs` 新增第二個原始位元組原語：
 
 ```ts ignore-check
 abstract readByteRange(target: FsTarget, range: { offset: number; length: number }, signal?: AbortSignal): Promise<Uint8Array>
 ```
 
-它返回 `[offset, offset + length)` 处的字节，文件在窗内结束则变短，`offset` 位于或越过末尾则为空。窗口即界：后端最多传输为到达 `offset` 而跳过的前缀之外的 `length` 字节，从不缓冲整个文件，因此调用方对 `length` 的上限就是防无界缓冲的守卫，与 `readBytes` 的界并列而非取代它。参数顺序遵循 `readText`、`streamText` 与 `listDir`——先目标，再操作自己的参数，最后可选 signal——而不是 `readBytes` 把 signal 放中间的形式，那是该类中唯一的例外。`offset` 与 `length` 按前置条件都是非负整数；seam 是类型化的同进程边界，不做任何校验，由 Remote 方法在线路处校验。
+它返回 `[offset, offset + length)` 處的位元組，檔案在窗內結束則變短，`offset` 位於或越過末尾則為空。視窗即界：後端最多傳輸為到達 `offset` 而跳過的字首之外的 `length` 位元組，從不緩衝整個檔案，因此呼叫方對 `length` 的上限就是防無界緩衝的守衛，與 `readBytes` 的界並列而非取代它。參數順序遵循 `readText`、`streamText` 與 `listDir`——先目標，再操作自己的參數，最後可選 signal——而不是 `readBytes` 把 signal 放中間的形式，那是該類中唯一的例外。`offset` 與 `length` 按前置條件都是非負整數；seam 是型別化的同程序邊界，不做任何驗證，由 Remote 方法線上路處驗證。
 
-`fs-local` 在与其他读取相同的普通文件 stat 之后打开 `createReadStream(targetKey, { start: offset, end: offset + length - 1 })`，对 `length` 为 0 直接返回空数组而不开流；`fs-sandbox` 继承 `LocalFileSystem`，随之继承该方法。继承 `FileSystem` 的四个测试替身也实现了该方法。
+`fs-local` 在與其他讀取相同的普通檔案 stat 之後開啟 `createReadStream(targetKey, { start: offset, end: offset + length - 1 })`，對 `length` 為 0 直接返回空陣列而不開流；`fs-sandbox` 繼承 `LocalFileSystem`，隨之繼承該方法。繼承 `FileSystem` 的四個測試替身也實作了該方法。
 
 ### Client `file` 提供者
 
-Client 导出向 `ctx.resources` 注册一个 `ResourceProvider<'file'>`，存活期与插件相同，并声明 `ResourceProtocolMap.file`。Document Preview 包把本包导出的 `WorkspaceFileParams` 注册为 `SidebarRightResourceParamsMap.file`。
+Client 匯出向 `ctx.resources` 註冊一個 `ResourceProvider<'file'>`，存活期與外掛相同，並宣告 `ResourceProtocolMap.file`。Document Preview 包把本包匯出的 `WorkspaceFileParams` 註冊為 `SidebarRightResourceParamsMap.file`。
 
-- **值是元数据**，`WorkspaceFileStat { absolutePath, version, bytes? }`；内容从不进入流，因为内容可以任意大，而流是用来推送变更而不是载荷的。消费者用 `read` 读页（或用 `readBytes` 开窗），并比较版本判断它们是否过时；新鲜度判断和刷新属于各消费方，不属于共享观察。
-- **地址命名文件，作用域决定读取会话。** `session` 地址携带的相对或绝对路径原样交给 Host；工作区根为相对路径提供基准，Session 文件系统后端决定读取权限。Client 不需要持有 cwd。`absolute` 地址不带 Session，以 `workspace-file/unknown-workspace` 失败，不借用当前或 tab 所属 Session。不支持的语法产生 `workspace-file/unsupported-address`。这两种 Client 错误会结束流。
-- **帧。** 第一帧是 `stat`或其失败的 `ok: false` 帧；提供者不抛也不接，因为 Remote 面从不 reject，而提供者流里的抛错只可能是编程错误，任其浮出。携带值尚未持有的版本的 Host 写入产生该版本、保留字节数、不做 stat；携带已持有版本的帧被丢弃。报告的消失会再 stat 一次——仍在则是新元数据，不在则是保留上一个值供展示的 `not-found` 帧。跟随的是地址而不是文件：stat 失败后流继续，因此 agent 创建该文件会让资源恢复正常。中止 signal 则流静默结束。
-- **每会话一条 `changes` 订阅。** 首位跟随者打开 `remote.$stream`，最后一位离开时释放，后继流和插件拆除等待关闭完成。Client 接受 Host 的 `ready` 后才开始首次 `stat`；本地发出 WebSocket 请求不是 Host 确认。跟随者先按地址注册，缓冲路径未知期间的变更，成功 stat 后按返回的 `absolutePath` 过滤排队与实时帧，反斜杠归一为斜杠。尚未成功绑定时，Session 内任何写入均可触发重新 stat。载体掉线由 Gateway 监督器重连；Host 结束或终态失败会结束跟随者，并保留最近元数据，直到重新打开。
-- **导航参数。** `SidebarRightResourceParamsMap.file` 是 `WorkspaceFileParams { line?: number }`，即要显露的 1 起算行号。行号作为导航参数而不是地址的一部分传递，因为不论从顶部还是第 400 行打开，文件都是同一份内容。
+- **值是中繼資料**，`WorkspaceFileStat { absolutePath, version, bytes? }`；內容從不進入流，因為內容可以任意大，而流是用來推送變更而不是載荷的。消費者用 `read` 讀頁（或用 `readBytes` 開窗），並比較版本判斷它們是否過時；新鮮度判斷和重新整理屬於各消費方，不屬於共享觀察。
+- **地址命名檔案，作用域決定讀取工作階段。** `session` 地址攜帶的相對或絕對路徑原樣交給 Host；工作區根為相對路徑提供基準，Session 檔案系統後端決定讀取權限。Client 不需要持有 cwd。`absolute` 地址不帶 Session，以 `workspace-file/unknown-workspace` 失敗，不借用目前或 tab 所屬 Session。不支援的語法產生 `workspace-file/unsupported-address`。這兩種 Client 錯誤會結束流。
+- **幀。** 第一幀是 `stat`或其失敗的 `ok: false` 幀；提供者不拋也不接，因為 Remote 面從不 reject，而提供者流裡的拋錯只可能是程式設計錯誤，任其浮出。攜帶值尚未持有的版本的 Host 寫入產生該版本、保留位元組數、不做 stat；攜帶已持有版本的幀被丟棄。報告的消失會再 stat 一次——仍在則是新中繼資料，不在則是保留上一個值供展示的 `not-found` 幀。跟隨的是地址而不是檔案：stat 失敗後流繼續，因此 agent 建立該檔案會讓資源恢復正常。中止 signal 則流靜默結束。
+- **每工作階段一條 `changes` 訂閱。** 首位跟隨者開啟 `remote.$stream`，最後一位離開時釋放，後繼流和外掛拆除等待關閉完成。Client 接受 Host 的 `ready` 後才開始首次 `stat`；本地發出 WebSocket 請求不是 Host 確認。跟隨者先按地址註冊，緩衝路徑未知期間的變更，成功 stat 後按返回的 `absolutePath` 過濾排隊與即時幀，反斜槓歸一為斜槓。尚未成功繫結時，Session 內任何寫入均可觸發重新 stat。載體掉線由 Gateway 監督器重連；Host 結束或終態失敗會結束跟隨者，並保留最近中繼資料，直到重新開啟。
+- **導航參數。** `SidebarRightResourceParamsMap.file` 是 `WorkspaceFileParams { line?: number }`，即要顯露的 1 起算行號。行號作為導航參數而不是地址的一部分傳遞，因為不論從頂部還是第 400 行開啟，檔案都是同一份內容。
 
-### 相关记录
+### 相關記錄
 
-[资源模型](2026-09-05-client-resource-model.zh.md)拥有 `ctx.resources`、`useResource`、`dsh-resource://<type>/…` 地址语法以及"每个地址一份资源"的推理；[文本预览与文件树](../feature/2026-09-05-sidebar-text-preview-and-file-tree.zh.md)是 `read`、`list` 与 `file` 提供者随包交付的消费方；[右侧 Sidebar 停靠基础设施](../feature/2026-09-04-right-sidebar-docking-infrastructure.zh.md)是它们打开进去的界面；[工作区文件链接](../feature/2026-07-31-web-workspace-file-links.zh.md)是经 HTTP 供文件被否决之处。任何在这套体系上扩展的人都经 `remote.workspaceFiles` 触达同样的五个方法、经 `useResource<'file'>` 触达同样的 `file` 资源；线路类型以 `@deepseek-ai/dsh-api-workspace-files/types` 发布。[工作区文件读取权限](2026-09-09-workspace-file-read-authority.zh.md)负责 Host 读取权限与 HTML 安全取舍；[Document Preview](2026-09-08-document-preview-operations.zh.md)负责内容加载和逐 tab 新鲜度。
+[資源模型](2026-09-05-client-resource-model.zh.md)擁有 `ctx.resources`、`useResource`、`dsh-resource://<type>/…` 地址語法以及"每個地址一份資源"的推理；[文字預覽與檔案樹](../feature/2026-09-05-sidebar-text-preview-and-file-tree.zh.md)是 `read`、`list` 與 `file` 提供者隨包交付的消費方；[右側 Sidebar 停靠基礎設施](../feature/2026-09-04-right-sidebar-docking-infrastructure.zh.md)是它們開啟進去的介面；[工作區檔案連結](../feature/2026-07-31-web-workspace-file-links.zh.md)是經 HTTP 供檔案被否決之處。任何在這套體系上擴充功能的人都經 `remote.workspaceFiles` 觸達同樣的五個方法、經 `useResource<'file'>` 觸達同樣的 `file` 資源；線路型別以 `@deepseek-ai/dsh-api-workspace-files/types` 釋出。[工作區檔案讀取權限](2026-09-09-workspace-file-read-authority.zh.md)負責 Host 讀取權限與 HTML 安全取捨；[Document Preview](2026-09-08-document-preview-operations.zh.md)負責內容載入和逐 tab 新鮮度。
 
 ## Alternatives considered
 
-**把工作区文件端点留在 Session Controller 上。** 最初形态：总字节上限之下的一个 `read`，作为 Session Controller 的子插件注册，因为线路入口本来就在那里。被否，因为 Workspace File 服务是自己的能力——读取和 stat 文件，并列举和观察工作区——这些查询应归于一处，而 Session Controller 关心的是会话生命周期。搬出也让服务长到五个方法而不给 Controller 的文件添第二重目的。
+**把工作區檔案端點留在 Session Controller 上。** 最初形態：總位元組上限之下的一個 `read`，作為 Session Controller 的子外掛註冊，因為線路入口本來就在那裡。被否，因為 Workspace File 服務是自己的能力——讀取和 stat 檔案，並列舉和觀察工作區——這些查詢應歸於一處，而 Session Controller 關心的是工作階段生命週期。搬出也讓服務長到五個方法而不給 Controller 的檔案添第二重目的。
 
-**带有反向 UI 依赖的双面包。** 拆包选择源于 `api/remotes` 引用 Client 叶子后形成的两条工程引用环：资源模型为了结果类型引用 Remote 装配，文件提供者为了 Sidebar 参数表引用右栏 UI。TypeScript 以 `TS6202` 拒绝这些环。[双面包组织](2026-09-07-workspace-files-dual-face-package.zh.md)取代拆包选择：结果类型直接取自协议包，Sidebar 参数注册移至文本预览；保留两个根聚合中的显式编译入口。
+**帶有反向 UI 依賴的雙面包。** 拆包選擇源於 `api/remotes` 引用 Client 葉子後形成的兩條工程引用環：資源模型為了結果型別引用 Remote 裝配，檔案提供者為了 Sidebar 參數列引用右欄 UI。TypeScript 以 `TS6202` 拒絕這些環。[雙面包組織](2026-09-07-workspace-files-dual-face-package.zh.md)取代拆包選擇：結果型別直接取自協定包，Sidebar 參數註冊移至文字預覽；保留兩個根聚合中的顯式編譯入口。
 
-**提供可导航的工作区文档。** 因源隔离问题不采用；[二进制传输](2026-09-17-workspace-file-binary-transfer.zh.md)返回 multipart 数据，HTML 仍隔离在 Blob iframe 中。
+**提供可導航的工作區文件。** 因源隔離問題不採用；[二進位制傳輸](2026-09-17-workspace-file-binary-transfer.zh.md)返回 multipart 資料，HTML 仍隔離在 Blob iframe 中。
 
-**文件读取采用“日志可达”或工作区包含授权。** 唯一把文件内容送过线路的先例——命令附件——只授权出现在会话日志里的文件，这会排除手输路径；工作区包含则会排除 Session 后端其他位置的可读文件。[工作区文件读取权限](2026-09-09-workspace-file-read-authority.zh.md)改为以后端读取决策为准，只对工作区形态的操作保留包含限制。
+**檔案讀取採用“日誌可達”或工作區包含授權。** 唯一把檔案內容送過線路的先例——命令附件——只授權出現在工作階段日誌裡的檔案，這會排除手輸路徑；工作區包含則會排除 Session 後端其他位置的可讀檔案。[工作區檔案讀取權限](2026-09-09-workspace-file-read-authority.zh.md)改為以後端讀取決策為準，只對工作區形態的操作保留包含限制。
 
-**为字节窗口整文件读取再切片。** `readBytes` 的临时形态经 `readBytes(target, signal, offset + length)` 从文件开头读到窗口末端再切片。它读不了比该末端更长的文件的窗口——seam 会以过大拒绝这样的文件——因此没有任何窗口能报告 `eof: false`，与该方法存在的理由相悖。被否，改为以窗口为界的 `readByteRange` seam。
+**為位元組視窗整檔案讀取再切片。** `readBytes` 的臨時形態經 `readBytes(target, signal, offset + length)` 從檔案開頭讀到視窗末端再切片。它讀不了比該末端更長的檔案的視窗——seam 會以過大拒絕這樣的檔案——因此沒有任何視窗能報告 `eof: false`，與該方法存在的理由相悖。被否，改為以視窗為界的 `readByteRange` seam。
 
-**把文件字段命名为 `url`（或 `hostUrl`）。** Session Controller 的 `WorkspaceFileText.url` 是 Host 侧文件的 `file:` URL。资源地址出现后即被否：线路上的 URL 读起来像地址，而这个不是——它只是地址所携同一路径的另一种编码拼法，Client 必须解码才能匹配变更帧。线路字段按其所是命名，因此字段为 `absolutePath`，`changes` 帧携带同一字段。
+**把檔案欄位命名為 `url`（或 `hostUrl`）。** Session Controller 的 `WorkspaceFileText.url` 是 Host 側檔案的 `file:` URL。資源地址出現後即被否：線路上的 URL 讀起來像地址，而這個不是——它只是地址所攜同一路徑的另一種編碼拼法，Client 必須解碼才能匹配變更幀。線路欄位按其所是命名，因此欄位為 `absolutePath`，`changes` 幀攜帶同一欄位。
 
-**在 `FileSystem` 基类里给 `readByteRange` 一个默认实现。** 基于 `readBytes` 的非抽象默认能免去测试替身一个方法，但只能靠把文件从头读到窗口末端来实现——正是上文否决的行为——或者传一个无界上限。改为抽象方法，由每个提供者与替身实现。
+**在 `FileSystem` 基類裡給 `readByteRange` 一個預設實作。** 基於 `readBytes` 的非抽象預設能免去測試替身一個方法，但只能靠把檔案從頭讀到視窗末端來實作——正是上文否決的行為——或者傳一個無界上限。改為抽象方法，由每個提供者與替身實作。
 
-**工作区操作使用字符串前缀包含判定。** 把解析后的路径字符串与根比较比 `fs.contains` 简单，但 `resolve` 会取 realpath，离开根的符号链接解析到根外路径，而对未解析拼法的前缀测试会放行；对已解析拼法的前缀测试也仍需后端对"同一文件"的定义。`list` 与 `changes` 由文件系统判定包含关系。
+**工作區操作使用字串字首包含判定。** 把解析後的路徑字串與根比較比 `fs.contains` 簡單，但 `resolve` 會取 realpath，離開根的符號連結解析到根外路徑，而對未解析拼法的字首測試會放行；對已解析拼法的字首測試也仍需後端對"同一檔案"的定義。`list` 與 `changes` 由檔案系統判定包含關係。
 
 ## Consequences
 
-- 工作区文件访问由 `api/workspace-files` 的 Host/Client 两面共同承担；Session Controller 不携带其中任何实现，两面的编译与运行时入口保持独立。header-only Session scope 让普通、subagent、live 与 cold Session 都能解析自己的相对路径，不需要 Agent 生命周期，也不回退父 Session。
-- 任意大小的文件都能打开：文本按行页、任何文件按字节窗口，在 Host 上各自只花一页或一窗内存；全文读取则受 `maxFileBytes` 约束；代价是消费者自己拼装页面，且单行超过 `maxBytes` 的行没有任何页，因为页按行切。
-- 每个文件系统提供者都提供开窗的原始读取；`fs-local` 直接定位到所请求的偏移量。
-- 线路上的路径是规范的：`absolutePath` 与变更帧以符号链接已解析的拼法命名文件。跟随者绑定到成功的 `stat.absolutePath`，因此同一文件的另一种拼法——经符号链接到达的工作区根——也使用该规范变更键。
-- 变更帧只报告 agent 自己的操作。用户编辑器、shell 或子进程改动的文件不产生帧；agent 仅仅读取一个被别处改动的文件却会产生帧，因为读取观察到了新版本。
-- 文件类型检查先于后端读取，`list` 也先报种类再报根外位置。页的 `version` 可能落后内容一次写入，停滞的 `changes` 消费者会让 Host 内存增长，因为一代流的队列无界；每一条都是包 README 记录在册的已知取舍。
-- `file` 资源推送变更而非内容，因此预览不靠载荷就得知文件已更新并读取它想要的页；失败的打开继续跟随地址，因此 agent 创建该文件时 tab 无需用户动作即恢复正常。
-- Office 授权探测使用带单字节 `range` 的 `readBytes`；Document Preview 对整文件格式使用同一方法并省略 `range`。
+- 工作區檔案存取由 `api/workspace-files` 的 Host/Client 兩面共同承擔；Session Controller 不攜帶其中任何實作，兩面的編譯與執行時入口保持獨立。header-only Session scope 讓普通、subagent、live 與 cold Session 都能解析自己的相對路徑，不需要 Agent 生命週期，也不退回父 Session。
+- 任意大小的檔案都能開啟：文字按行頁、任何檔案按位元組視窗，在 Host 上各自只花一頁或一窗記憶體；全文讀取則受 `maxFileBytes` 約束；代價是消費者自己拼裝頁面，且單行超過 `maxBytes` 的行沒有任何頁，因為頁按行切。
+- 每個檔案系統提供者都提供開窗的原始讀取；`fs-local` 直接定位到所請求的偏移量。
+- 線路上的路徑是規範的：`absolutePath` 與變更幀以符號連結已解析的拼法命名檔案。跟隨者繫結到成功的 `stat.absolutePath`，因此同一檔案的另一種拼法——經符號連結到達的工作區根——也使用該規範變更鍵。
+- 變更幀只報告 agent 自己的操作。使用者編輯器、shell 或子程序改動的檔案不產生幀；agent 僅僅讀取一個被別處改動的檔案卻會產生幀，因為讀取觀察到了新版本。
+- 檔案型別檢查先於後端讀取，`list` 也先報種類再報根外位置。頁的 `version` 可能落後內容一次寫入，停滯的 `changes` 消費者會讓 Host 記憶體增長，因為一代流的佇列無界；每一條都是包 README 記錄在冊的已知取捨。
+- `file` 資源推送變更而非內容，因此預覽不靠載荷就得知檔案已更新並讀取它想要的頁；失敗的開啟繼續跟隨地址，因此 agent 建立該檔案時 tab 無需使用者動作即恢復正常。
+- Office 授權探測使用帶單位元組 `range` 的 `readBytes`；Document Preview 對整檔案格式使用同一方法並省略 `range`。
 
 ## Testing
 
-`packages/api/workspace-files/tests` 中的 Host spec 覆盖 live 与 cold subagent Session 的 header-only scope 解析、部署 fallback、缺失身份与 lookup 释放；分页读取（整文件、嵌套路径、空文件、多字节 UTF-8、行窗口边界、缺省与拒绝的 limit、保留回车）；字节窗口（缺省、中段与尾窗、越界与空文件、`Uint8Array` 往返、版本、上限、坏范围以及无大小时的 `eof`）；`stat`；工作区外读取及后端拒绝；`list` 的包含、截断、目录链接、目标已消失的链接与 `not-directory`；以及由 `fs/observed` 驱动并按根过滤的 `changes`。Client spec 覆盖提供者帧、变更流、不支持地址及注册与释放。`fs/fs` 与 `fs-local` spec 钉住 `readByteRange`；`dsh-util-workspace-path` spec 钉住文件地址语法。connection fixture 为 web e2e 套件提供 `stat`、分页 `read`、`list` 与一帧可选启用的 `changes`。
+`packages/api/workspace-files/tests` 中的 Host spec 覆蓋 live 與 cold subagent Session 的 header-only scope 解析、部署 fallback、缺失身份與 lookup 釋放；分頁讀取（整檔案、巢狀路徑、空檔案、多位元組 UTF-8、行視窗邊界、預設與拒絕的 limit、保留回車）；位元組視窗（預設、中段與尾窗、越界與空檔案、`Uint8Array` 往返、版本、上限、壞範圍以及無大小時的 `eof`）；`stat`；工作區外讀取及後端拒絕；`list` 的包含、截斷、目錄連結、目標已消失的連結與 `not-directory`；以及由 `fs/observed` 驅動並按根過濾的 `changes`。Client spec 覆蓋提供者幀、變更流、不支援地址及註冊與釋放。`fs/fs` 與 `fs-local` spec 釘住 `readByteRange`；`dsh-util-workspace-path` spec 釘住檔案地址語法。connection fixture 為 web e2e 套件提供 `stat`、分頁 `read`、`list` 與一幀可選啟用的 `changes`。
 
 ## Deferred
 
-- 给 `changes` 一代流的队列加上限。
-- 写入和搜索操作；本服务只读。
-- 文件地址中 `session` 之外的作用域；语法留有余地，提供者只服务一个。
+- 給 `changes` 一代流的佇列加上限。
+- 寫入和搜尋操作；本服務只讀。
+- 檔案地址中 `session` 之外的作用域；語法留有餘地，提供者只服務一個。

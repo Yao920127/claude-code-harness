@@ -1,5 +1,5 @@
 ---
-description: "面向模型的后台任务控制，供选择、配置或排查 job_output、job_list、job_kill 与完成通知的用户与维护者阅读。"
+description: "面向模型的後臺任務控制，供選擇、設定或排查 job_output、job_list、job_kill 與完成通知的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,180 +9,180 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `dsh-tool-jobs`，可通过 `job_output`、`job_list` 与 `job_kill` 检查和控制后台命令、PTY 工作与 subagent。读取可在配置的超时内等待，列表结果标识各任务的 kind 与状态，而取消只有在工作停止后才结算。归属明确的工作完成时，agent（智能体）会收到会话内通知：繁忙的 agent 在下一步收到通知，空闲的 agent 则由 follow-up 轮次唤醒。配置控制等待上限、完成投递与可选的连续唤醒上限。流输出仅供单一读取方消费，待领通知无法在所有者释放后存活。
+使用 `dsh-tool-jobs`，可透過 `job_output`、`job_list` 與 `job_kill` 檢查和控制後臺命令、PTY 工作與 subagent。讀取可在設定的超時內等待，列表結果標識各任務的 kind 與狀態，而取消只有在工作停止後才結算。歸屬明確的工作完成時，agent（智慧代理）會收到工作階段內通知：繁忙的 agent 在下一步收到通知，空閒的 agent 則由 follow-up 輪次喚醒。設定控制等待上限、完成投遞與可選的連續喚醒上限。流輸出僅供單一讀取方消費，待領通知無法在所有者釋放後存活。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 agent 需要启动、观察和停止后台任务的任何组合中加载本插件：它注册三个工具、附加生产方所需的控制器，并投递完成通知。它需要组合中已提供的 `ctx.tools`、`ctx.jobs` 与 `ctx.systemPrompt` 服务；完成通知经 `ctx.agents` 解析投递目标，凡有归属任务的组合都已提供它。
+在 agent 需要啟動、觀察和停止後臺任務的任何組合中載入本外掛：它註冊三個工具、附加生產方所需的控制器，並投遞完成通知。它需要組合中已提供的 `ctx.tools`、`ctx.jobs` 與 `ctx.systemPrompt` 服務；完成通知經 `ctx.agents` 解析投遞目標，凡有歸屬任務的組合都已提供它。
 
-### 三个工具
+### 三個工具
 
-- `job_output(job_id, wait?, timeout_ms?)`——读取任务输出。流任务只返回自上次读取以来的输出；最终输出任务在结算后返回其结果。每个响应都以 `[status: ...]` 结尾。除非 `wait: true`，否则读取是非阻塞的；`wait: true` 最多等待到配置上限，超时时仍让运行中的任务保持存活。一次读取先渲染 stdout，再把 stderr 放进一段 `[stderr]`，标注读取前已离开内存的输出，并在结算后的第一次读取恰好携带一次任务的结果（subagent 的回答）。
-- `job_list()`——列出你的后台任务及其 id、kind 与状态，每行一个：`<id> [<kind>] <status> — <label>`。
-- `job_kill(job_id, reason?)`——立即请求取消运行中的任务；任务在其工作真正停止后以 `killed` 结算。终止任务返回其当前快照，可选的原因会被记录并转发给任务。
+- `job_output(job_id, wait?, timeout_ms?)`——讀取任務輸出。流任務只返回自上次讀取以來的輸出；最終輸出任務在結算後返回其結果。每個回應都以 `[status: ...]` 結尾。除非 `wait: true`，否則讀取是非阻塞的；`wait: true` 最多等待到設定上限，超時時仍讓執行中的任務保持存活。一次讀取先渲染 stdout，再把 stderr 放進一段 `[stderr]`，標註讀取前已離開記憶體的輸出，並在結算後的第一次讀取恰好攜帶一次任務的結果（subagent 的回答）。
+- `job_list()`——列出你的後臺任務及其 id、kind 與狀態，每行一個：`<id> [<kind>] <status> — <label>`。
+- `job_kill(job_id, reason?)`——立即請求取消執行中的任務；任務在其工作真正停止後以 `killed` 結算。終止任務返回其目前快照，可選的原因會被記錄並轉發給任務。
 
-三个工具依次返回 `{ text, job }`、`PublicJobSnapshot[]` 与 `{ outcome: 'cancellation-requested' | 'already-finished', job }`。公共快照携带 id、kind、label、带实时进度行或终态 detail 的状态，以及开始／结束时间，并省略归属与环偏移。三个工具都通过通用 UI 卡片渲染：output 和 list 用 `read`，kill 用 `execute`。
+三個工具依次返回 `{ text, job }`、`PublicJobSnapshot[]` 與 `{ outcome: 'cancellation-requested' | 'already-finished', job }`。公共快照攜帶 id、kind、label、帶即時進度行或終態 detail 的狀態，以及開始／結束時間，並省略歸屬與環偏移。三個工具都透過通用 UI 卡片渲染：output 和 list 用 `read`，kill 用 `execute`。
 
 ### 完成通知
 
-任务完成时，拥有它的 agent 会收到会话内消息 `background job <id> (<kind>: <label>) finished [status: ...]. Read its output with job_output.`。繁忙的 agent 会在下一步收到注入的通知——inbox 尚有内容时轮次无法结束，因此同时结算的多个任务只花掉一步，而不是各占一轮。空闲的 agent 则被一个 follow-up 轮次唤醒，因为无人领取的通知就是模型永远不会知道的完成。模型已经收走的完成不再通知：注册表把释放了存活 `wait` 的结算报告为 `awaited`——无论是 `job_output` 的等待，还是 shell 工具在等待自己的前台命令——插件则记着模型经 `job_kill` 请求的杀停；所有者或服务 teardown 导致的结算会被跳过，因为没有人能读它。
+任務完成時，擁有它的 agent 會收到工作階段內訊息 `background job <id> (<kind>: <label>) finished [status: ...]. Read its output with job_output.`。繁忙的 agent 會在下一步收到注入的通知——inbox 尚有內容時輪次無法結束，因此同時結算的多個任務只花掉一步，而不是各佔一輪。空閒的 agent 則被一個 follow-up 輪次喚醒，因為無人領取的通知就是模型永遠不會知道的完成。模型已經收走的完成不再通知：註冊表把釋放了存活 `wait` 的結算報告為 `awaited`——無論是 `job_output` 的等待，還是 shell 工具在等待自己的前臺命令——外掛則記著模型經 `job_kill` 請求的殺停；所有者或服務 teardown 導致的結算會被跳過，因為沒有人能讀它。
 
-唤醒默认不设上限：无人值守的 agent 连续串起后台命令与一次性 subagent 时，每次完成都会唤醒它。`maxConsecutiveWakes` 可以封顶：每个所有者最多被唤醒这么多次，此后的通知降级为注入；领取任何用户撰写的消息都会恢复预算。上限用来约束自激链——被唤醒的一轮可能启动某个后台任务，而它的完成又会唤醒同一个所有者——但超出上限的通知会静默等到用户下一次输入，依赖唤醒完成工作的会话会停在那里。`completionDelivery: quiet` 让空闲所有者也在注入通道上，确定性 transcript（文本记录）需要的正是这一点。
+喚醒預設不設上限：無人值守的 agent 連續串起後臺命令與一次性 subagent 時，每次完成都會喚醒它。`maxConsecutiveWakes` 可以封頂：每個所有者最多被喚醒這麼多次，此後的通知降級為注入；領取任何使用者撰寫的訊息都會恢復預算。上限用來約束自激鏈——被喚醒的一輪可能啟動某個後臺任務，而它的完成又會喚醒同一個所有者——但超出上限的通知會靜默等到使用者下一次輸入，依賴喚醒完成工作的工作階段會停在那裡。`completionDelivery: quiet` 讓空閒所有者也在注入通道上，確定性 transcript（文字記錄）需要的正是這一點。
 
-### 最小配置
+### 最小設定
 
-不带配置加载插件是常用路径；`waitTimeoutMs` 高于 `maxWaitTimeoutMs` 时会在加载时失败。
+不帶設定載入外掛是常用路徑；`waitTimeoutMs` 高於 `maxWaitTimeoutMs` 時會在載入時失敗。
 
 ```yaml
 - name: '@deepseek-ai/dsh-tool-jobs'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `waitTimeoutMs` | `30,000` | `wait: true` 省略 `timeout_ms` 时使用的等待时间 |
-| `maxWaitTimeoutMs` | `600,000` | 模型所给等待时间的上限；更大的值向下收敛到它 |
-| `completionDelivery` | `wakeup` | `wakeup` 为空闲所有者开启一轮；`quiet` 让通知继续待领 |
-| `maxConsecutiveWakes` | 未设置 | 一个所有者可由唤醒开启的轮数，超出后通知降级为注入；未设置即不封顶 |
+| `waitTimeoutMs` | `30,000` | `wait: true` 省略 `timeout_ms` 時使用的等待時間 |
+| `maxWaitTimeoutMs` | `600,000` | 模型所給等待時間的上限；更大的值向下收斂到它 |
+| `completionDelivery` | `wakeup` | `wakeup` 為空閒所有者開啟一輪；`quiet` 讓通知繼續待領 |
+| `maxConsecutiveWakes` | 未設定 | 一個所有者可由喚醒開啟的輪數，超出後通知降級為注入；未設定即不封頂 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-jobs)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-jobs)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 可能出什么问题
+### 可能出什麼問題
 
-组合中未加载 `tool-jobs` 的 agent 无法启动后台工作：本插件的控制器正是生产方 `ctx.jobs.start()` 得以启用所依赖的。模型给出的等待时间超过 `maxWaitTimeoutMs` 时会向下收敛到上限，超时的等待返回 `[status: running]` 并让任务保持存活，而不是失败。待领于空闲所有者的完成通知无法在该所有者释放后存活。
+組合中未載入 `tool-jobs` 的 agent 無法啟動後臺工作：本外掛的控制器正是生產方 `ctx.jobs.start()` 得以啟用所依賴的。模型給出的等待時間超過 `maxWaitTimeoutMs` 時會向下收斂到上限，超時的等待返回 `[status: running]` 並讓任務保持存活，而不是失敗。待領於空閒所有者的完成通知無法在該所有者釋放後存活。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释工具背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋工具背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **与 kind 无关的控制。** 同一套三个工具读取、列出和取消每种生产方 kind 的任务——bash、subagent、PTY——因为它们都通过通用的 `ctx.jobs` 运行时注册。
-- **投递归本插件，收件人归注册表。** 插件决定未报告的完成如何到达所有者——注入繁忙的一步，或唤醒空闲所有者的一轮——而注册表把每次结算路由给其所有者 scope 链所能抵达的监听器，因此某个 preset 下的挂载永远看不到另一个 preset 的 agent，无论挂载了多少 preset，一个 agent 每次完成都只读到一条通知。
-- **生产方自有的输出上限。** 生产方提供 `outputLimitBytes` 时，完整的模型侧结果——输出读取、终止 kill 快照或完成通知——会在添加状态与通知元数据之后被施加上限；省略该字段的生产方保持无界行为。
+- **與 kind 無關的控制。** 同一套三個工具讀取、列出和取消每種生產方 kind 的任務——bash、subagent、PTY——因為它們都透過通用的 `ctx.jobs` 執行時註冊。
+- **投遞迴本外掛，收件人歸註冊表。** 外掛決定未報告的完成如何到達所有者——注入繁忙的一步，或喚醒空閒所有者的一輪——而註冊表把每次結算路由給其所有者 scope 鏈所能抵達的監聽器，因此某個 preset 下的掛載永遠看不到另一個 preset 的 agent，無論掛載了多少 preset，一個 agent 每次完成都只讀到一條通知。
+- **生產方自有的輸出上限。** 生產方提供 `outputLimitBytes` 時，完整的模型側結果——輸出讀取、終止 kill 快照或完成通知——會在新增狀態與通知中繼資料之後被施加上限；省略該欄位的生產方保持無界行為。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：工具注册、结算订阅与模型杀停集合、提示词区段、输出上限 |
-| [`src/render.ts`](src/render.ts) | 面向模型的渲染：公共投影、状态行与消耗式增量（stdout、`[stderr]` 段、丢失输出提示） |
-| — | 不发布运行时不变式伴生入口；执行关系归能力 seam 所有。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：工具註冊、結算訂閱與模型殺停集合、提示詞區段、輸出上限 |
+| [`src/render.ts`](src/render.ts) | 面向模型的渲染：公共投影、狀態行與消耗式增量（stdout、`[stderr]` 段、丟失輸出提示） |
+| — | 不釋出執行時不變式伴生入口；執行關係歸能力 seam 所有。 |
 
-### 输出上限
+### 輸出上限
 
-`job_output` 与 `job_kill` 会在策略运行前于前置的 pre-execute 监听器中捕获调用方可见任务，因此生产方上限适用于完整渲染结果。`job_output` 在策略保留默认渲染时保持其输出／状态拆分，对输出尾部与 `[status: ...]` 后缀设界；其他单文本结果——拒绝、短路、规范化工具或流水线失败、替换与阻止——按单个文本设界，而结构化多块策略结果保持自身形状。有界完成通知先为稳定的 `background job <id>` 前缀与 `job_output` 收集指令预留空间，再把剩余字节用于可变的 kind、label、status、detail 与截断标记，因此在 PTY 支持的 64 字节下限下通知仍可操作；已有的生产方截断标记会被复用，不会重复添加。
+`job_output` 與 `job_kill` 會在策略執行前於前置的 pre-execute 監聽器中捕捉呼叫方可見任務，因此生產方上限適用於完整渲染結果。`job_output` 在策略保留預設渲染時保持其輸出／狀態拆分，對輸出尾部與 `[status: ...]` 字尾設界；其他單文字結果——拒絕、短路、規範化工具或流水線失敗、替換與阻止——按單個文字設界，而結構化多塊策略結果保持自身形狀。有界完成通知先為穩定的 `background job <id>` 字首與 `job_output` 收集指令預留空間，再把剩餘位元組用於可變的 kind、label、status、detail 與截斷標記，因此在 PTY 支援的 64 位元組下限下通知仍可操作；已有的生產方截斷標記會被複用，不會重複新增。
 
-### 通知投递通道
+### 通知投遞通道
 
-结算订阅（`{ owners: 'scope' }`）跳过注册表报告为 `awaited` 的结算、模型经 `job_kill` 杀停的任务、无所有者的任务与 teardown 结算，然后解析登记在拥有者会话下的 agent。`wakeup` 投递为空闲所有者开启一轮；设置了 `maxConsecutiveWakes` 时只在预算内开启，按确切 `Agent` 记录在 `WeakMap` 中，领取用户撰写的消息（`agent/inbox/claimed`）会重置该所有者的预算。繁忙的所有者——或超出所配预算的任何通知，以及 `quiet` 投递——改为注入 next-step inbox。注册表只计入结算时仍被欠着投影的等待，因此超时或中止的等待会让之后的结算照常通知；移除会把任务从模型杀停集合里删掉，该集合只保有模型杀停过的存活任务。
+結算訂閱（`{ owners: 'scope' }`）跳過註冊表報告為 `awaited` 的結算、模型經 `job_kill` 殺停的任務、無所有者的任務與 teardown 結算，然後解析登記在擁有者工作階段下的 agent。`wakeup` 投遞為空閒所有者開啟一輪；設定了 `maxConsecutiveWakes` 時只在預算內開啟，按確切 `Agent` 記錄在 `WeakMap` 中，領取使用者撰寫的訊息（`agent/inbox/claimed`）會重置該所有者的預算。繁忙的所有者——或超出所配預算的任何通知，以及 `quiet` 投遞——改為注入 next-step inbox。註冊表只計入結算時仍被欠著投影的等待，因此超時或中止的等待會讓之後的結算照常通知；移除會把任務從模型殺停集合裡刪掉，該集合只保有模型殺停過的存活任務。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从任务类型逐步进入注册表约定与生成 schema。
+當包級約定不夠用時閱讀以下頁面。它們從任務型別逐步進入註冊表約定與生成 schema。
 
-- [后台任务运行时子系统](../../../docs/subsystems/jobs.zh.md)——任务类型、快照字段与 `ctx.jobs` 的 Cordis 接口面。
-- [jobs 组映射](../README.zh.md)——同级组页面及其包表格。
-- [注册表约定](../jobs/README.zh.md)——工具背后的抽象 `ctx.jobs` 服务。
-- [进程本地注册表](../jobs-local/README.zh.md)——任务在本进程中的运行位置。
-- [生成的工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-jobs)——`job_output`、`job_list` 与 `job_kill` 的确切 schema。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-jobs)——每个受支持配置字段及其源声明。
-- [任务注册表 seam Agent Note](../../../.agents/notes/archived/architecture/2026-07-26-job-registry-seam.md)——按所有者隔离的注册表约定及其理由。
+- [後臺任務執行時子系統](../../../docs/subsystems/jobs.zh.md)——任務型別、快照欄位與 `ctx.jobs` 的 Cordis 介面面。
+- [jobs 組對映](../README.zh.md)——同級組頁面及其包表格。
+- [註冊表約定](../jobs/README.zh.md)——工具背後的抽象 `ctx.jobs` 服務。
+- [程序本地註冊表](../jobs-local/README.zh.md)——任務在本程序中的執行位置。
+- [生成的工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-jobs)——`job_output`、`job_list` 與 `job_kill` 的確切 schema。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-jobs)——每個受支援設定欄位及其源宣告。
+- [任務註冊表 seam Agent Note](../../../.agents/notes/archived/architecture/2026-07-26-job-registry-seam.md)——按所有者隔離的註冊表約定及其理由。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 系统提示词
+### 系統提示詞
 
-#### 模型看到什么
+#### 模型看到什麼
 
-该插件注册 scope 中的每次请求都包含以下指引。按 agent scope 过滤工具时，可能会隐藏工具，却不会移除独立注册的提示词区段。
+該外掛註冊 scope 中的每次請求都包含以下指引。按 agent scope 過濾工具時，可能會隱藏工具，卻不會移除獨立註冊的提示詞區段。
 
-##### 后台任务指引
+##### 後臺任務指引
 
 ```markdown
 Track every background job id you start. You are notified in-session when a job finishes — do not busy-poll or sleep on one; keep working on independent steps and do not duplicate a running job's work. Before giving a final answer, collect every still-relevant job with job_output (set wait: true only when you are genuinely blocked on it), and job_kill jobs that stopped mattering.
 ```
 
-#### Token 影响
+#### Token 影響
 
-激活期间，每次请求都会产生少量固定的输入 token 开销。
+啟用期間，每次請求都會產生少量固定的輸入 token 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-只要插件 scope 与指引文本不变，前缀就保持稳定。激活或释放可能使从该提示词区段起的复用失效。
+只要外掛 scope 與指引文字不變，字首就保持穩定。啟用或釋放可能使從該提示詞區段起的複用失效。
 
 ### 工具 schema
 
-#### 模型看到什么
+#### 模型看到什麼
 
-该工具集可见时，会看到生成的 [`job_output`、`job_list` 和 `job_kill` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-jobs)。
+該工具集可見時，會看到生成的 [`job_output`、`job_list` 和 `job_kill` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-jobs)。
 
-#### Token 影响
+#### Token 影響
 
-工具可见时，每次请求都会产生固定的 schema token 开销。
+工具可見時，每次請求都會產生固定的 schema token 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-只要工具定义与可见性不变，前缀就保持稳定。注册生命周期或 scope 限制可能使从第一个发生变化的 schema token 起的复用失效。
+只要工具定義與可見性不變，字首就保持穩定。註冊生命週期或 scope 限制可能使從第一個發生變化的 schema token 起的複用失效。
 
-### 结果与通知
+### 結果與通知
 
-#### 模型看到什么
+#### 模型看到什麼
 
-读取会返回输出或 `(no new output)`，随后是 `[status: <status>]` 和可选 detail。空列表返回 `(no background jobs)`。kill 返回 `requested cancellation of job <id>` 或现有终止状态。模型尚未收走且有所有者归属的完成使用上述通知。
+讀取會返回輸出或 `(no new output)`，隨後是 `[status: <status>]` 和可選 detail。空列表返回 `(no background jobs)`。kill 返回 `requested cancellation of job <id>` 或現有終止狀態。模型尚未收走且有所有者歸屬的完成使用上述通知。
 
-#### Token 影响
+#### Token 影響
 
-结果与通知在压缩（compaction）前保留于父级历史。流读取不会重复已消费的输出；生产方提供的 `outputLimitBytes` 会限制每次完整读取或通知。在 `wakeup` 下，抵达空闲所有者的通知还会额外买下一次用户并未要求的模型请求，其数量仅在设置了 `maxConsecutiveWakes` 时按所有者封顶；抵达繁忙所有者的通知则只是给它已经在支付的那一轮加一步。
+結果與通知在壓縮（compaction）前保留於父級歷史。流讀取不會重複已消費的輸出；生產方提供的 `outputLimitBytes` 會限制每次完整讀取或通知。在 `wakeup` 下，抵達空閒所有者的通知還會額外買下一次使用者並未要求的模型請求，其數量僅在設定了 `maxConsecutiveWakes` 時按所有者封頂；抵達繁忙所有者的通知則只是給它已經在支付的那一輪加一步。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明工具何时不合适。它们是当前包约束，不是任务积压。
+這些限制說明工具何時不合適。它們是目前包約束，不是任務積壓。
 
-- **落在 driver 退休窗口内的结算仍会让通知搁浅**——在轮次循环最后一次检查 inbox 与 driver 提交 idle 相位之间，所有者读起来仍是繁忙，因此通知走注入且无人唤醒。steering（中途引导）存在同样的问题；修复它属于 `agent-loop`。
-- **已花掉的唤醒预算不会随时间恢复**——设置了 `maxConsecutiveWakes` 时，只有用户撰写的输入才能补充，因此预算耗尽的无人值守 agent 要等到其他原因开启下一轮时才收走剩余通知，且客户端不会显示有通知在等待。
-- **待领于空闲所有者的通知无法在该所有者释放后存活**——释放时的取消会清空未领取的 inbox，日志保留插入/取消这一对作为记录。
-- **模型读取只有单一消费方**——独立观察者使用注册表非消耗的 `readAt`（Web 客户端的 `job.follow`），而不是这些工具。
-- **无 owner 的任务没有会话隔离**——外部调用方必须提供策略或避开这些任务。
+- **落在 driver 退休視窗內的結算仍會讓通知擱淺**——在輪次迴圈最後一次檢查 inbox 與 driver 提交 idle 相位之間，所有者讀起來仍是繁忙，因此通知走注入且無人喚醒。steering（中途引導）存在同樣的問題；修復它屬於 `agent-loop`。
+- **已花掉的喚醒預算不會隨時間恢復**——設定了 `maxConsecutiveWakes` 時，只有使用者撰寫的輸入才能補充，因此預算耗盡的無人值守 agent 要等到其他原因開啟下一輪時才收走剩餘通知，且用戶端不會顯示有通知在等待。
+- **待領於空閒所有者的通知無法在該所有者釋放後存活**——釋放時的取消會清空未領取的 inbox，日誌保留插入/取消這一對作為記錄。
+- **模型讀取只有單一消費方**——獨立觀察者使用註冊表非消耗的 `readAt`（Web 用戶端的 `job.follow`），而不是這些工具。
+- **無 owner 的任務沒有工作階段隔離**——外部呼叫方必須提供策略或避開這些任務。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

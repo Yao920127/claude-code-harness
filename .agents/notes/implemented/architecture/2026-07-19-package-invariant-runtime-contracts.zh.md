@@ -1,78 +1,78 @@
-# Agent Note: 有意义的包不变量约定
+# Agent Note: 有意義的包不變數約定
 
 Status: implemented
 
 [English](2026-07-19-package-invariant-runtime-contracts.md) | 中文
 
-## 问题
+## 問題
 
-包自有不变量服务让发布和注册实现了全覆盖，但最初的生成基线允许空安装器。后续方案又用针对插件名称、注入、effect、服务方法和纯工具库中的固定示例的通用断言替代这些空实现。这些断言虽然让每个 companion 都能执行，却没有提高系统安全性：TypeScript、Cordis 启动、包测试和模块加载测试已经约束这些形状，而不变量服务应当发现不可能出现的运行时状态。
+包自有不變數服務讓釋出和註冊實作了全覆蓋，但最初的生成基線允許空安裝器。後續方案又用針對外掛名稱、注入、effect、服務方法和純工具庫中的固定範例的通用斷言替代這些空實作。這些斷言雖然讓每個 companion 都能執行，卻沒有提高系統安全性：TypeScript、Cordis 啟動、包測試和模組載入測試已經約束這些形狀，而不變數服務應當發現不可能出現的執行時狀態。
 
-有用的运行时不变量会关联时间上的多个观测，或关联可变数据结构中的多个部分。例如：终止事件没有对应的开始事件、LLM（大语言模型）delta 指向未打开的块，或持久化结果的身份与请求不同。仅确认声明的方法存在、插件名称符合预期，或常量示例仍返回已知值，都不属于这种关系。
+有用的執行時不變數會關聯時間上的多個觀測，或關聯可變資料結構中的多個部分。例如：終止事件沒有對應的開始事件、LLM（大語言模型）delta 指向未開啟的塊，或持久化結果的身份與請求不同。僅確認宣告的方法存在、外掛名稱符合預期，或常數範例仍返回已知值，都不屬於這種關係。
 
-有些包确实没有可持续观测的关系。纯工具、仅负责组合的包、薄适配器、可执行入口和测试支持包可能仍有重要约定，但类型检查、加载检查、聚焦单元测试或集成测试更适合执行这些约定。强迫这些包添加合成运行时断言，只会让实现围绕通过门禁优化，而不是检测损坏。
+有些包確實沒有可持續觀測的關係。純工具、僅負責組合的包、薄介面卡、可執行入口和測試支援包可能仍有重要約定，但型別檢查、載入檢查、聚焦單元測試或整合測試更適合執行這些約定。強迫這些包新增合成執行時斷言，只會讓實作圍繞透過門禁最佳化，而不是檢測損壞。
 
-## 决策
+## 決策
 
-### 已发布的断言必须有意义
+### 已釋出的斷言必須有意義
 
-只有拥有可独立观察的运行时关系时，workspace 包才发布单独构建的 `./invariant` companion。已发布 companion 必须：
+只有擁有可獨立觀察的執行時關係時，workspace 包才釋出單獨建置的 `./invariant` companion。已釋出 companion 必須：
 
-- 安装包自有的事件流或相关可变数据结构检查，并通过绑定的 `fail(message)` 报告器报告违规；并且
-- 用该包的准确 npm 包名注册，同时保持诊断逻辑不进入根入口。
+- 安裝檔自有的事件流或相關可變資料結構檢查，並透過繫結的 `fail(message)` 報告器報告違規；並且
+- 用該包的準確 npm 包名註冊，同時保持診斷邏輯不進入根入口。
 
-没有合理关系时，包会省略 companion 与发布接线，并在 README 中记录该包的具体原因。如果后续变更引入可独立观察的关系，就必须用相应检查替换该说明。省略机制与当前审计由[省略不必要 companion 的决策](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)负责。
+沒有合理關係時，包會省略 companion 與釋出接線，並在 README 中記錄該包的具體原因。如果後續變更引入可獨立觀察的關係，就必須用相應檢查替換該說明。省略機制與目前審計由[省略不必要 companion 的決策](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)負責。
 
-中央 `dsh-invariants` 服务只负责配置、注册唯一性、子 fiber 生命周期、回滚、dispose（资源释放）和归属到包的失败。它不暴露通用插件形状、服务形状或启动断言 helper，也不导入产品包。
+中央 `dsh-invariants` 服務只負責設定、註冊唯一性、子 fiber 生命週期、復原、dispose（資源釋放）和歸屬到包的失敗。它不暴露通用外掛形狀、服務形狀或啟動斷言 helper，也不匯入產品包。
 
-### 已实施检查示例
+### 已實施檢查範例
 
-已发布 companion 由 `verify-package-invariants` 机械枚举；当前审计数量记录在[省略不必要 companion 的决策](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)中。下表仅展示有代表性的运行时关系，不会逐项列出所有 companion。
+已釋出 companion 由 `verify-package-invariants` 機械列舉；目前審計數量記錄在[省略不必要 companion 的決策](../simplification/2026-08-28-omit-unneeded-invariant-companions.zh.md)中。下表僅展示有代表性的執行時關係，不會逐項列出所有 companion。
 
-| 所有者 | 运行时关系 |
+| 所有者 | 執行時關係 |
 |---|---|
-| `dsh-session` | 序号严格递增、轮次/步骤包围关系，以及同一步骤内的工具调用/工具结果配对。 |
-| `dsh-agent` | agent（智能体）状态不得重复，并且不能离开终态 disposed。 |
-| `dsh-scope` | 作用域事件必须携带 carrier，且路由 subject 保持一致。 |
-| `dsh-agent-loop` | 从会话事件日志重建带显式标记的冻结 loop 请求。 |
-| `dsh-llm` | 流中块的文法、delta 类型/索引匹配、单次 usage、块闭合和终止 finish。 |
-| `dsh-llm-retry` | 持久化重试记录指向当前打开轮次中最近关闭的步骤；每个步骤的记录保持唯一，重试次数单调递增，并且重试次数和非负的定时器延迟均保持在边界内。 |
-| `dsh-tools` | pre/execute/post 阶段单调推进，以及最终 execution/result 快照不可变。 |
-| `dsh-system-prompt` | 权威 assembly 中 section、工具和 variable 的数据约束。 |
-| `dsh-compaction` | 压缩（compaction）start/summary/end 配对、范围端点、token 数量和成功时必须存在 summary。 |
-| `dsh-hook-protocol` | 钩子 invocation/result 的关联、dialect、身份和 duration 约束。 |
-| `dsh-sandbox-policy` | 持久化 `sandbox/mode` 事件必须使用封闭的 sandbox-mode 词表。 |
-| `dsh-fs` | 文件系统决策/观测事件必须携带可用的 target 和 version 身份。 |
-| `dsh-goal` | 持久化目标快照保持来源归属、渲染内容、修订号、生命周期和时间戳关系，并保证已准入的 Round 连续编号。 |
-| `dsh-goal-round-driver` | 目标来源的继续执行消息必须匹配根据此前持久化目标状态重建的提示词。 |
-| `dsh-subagent` | 提供方 add/remove 和 child start/end 事件必须保持身份与配对。 |
-| `dsh-permission-presets` | 持久化 permission 决策必须引用当前 permission 表中的 preset。 |
-| `dsh-user-approval` | approval asked/decided 记录按 call 配对，并使用有效 outcome 和 policy。 |
-| `dsh-workflow` | 工作流和 child-agent start/end 事件保持 run metadata、身份、outcome、数量和 error 关系。 |
-| `dsh-jobs` | 当前与终态 task 快照保持 id/kind、owner、status 和 timestamp 关系。 |
-| `dsh-tool-todo` | 持久化全量快照使用唯一且已 trim 的条目和封闭 status。 |
-| `dsh-time-context` | 标注插件来源的时钟 reading 必须匹配会话当前打开的轮次、下一个步骤开始前的位置和 elapsed baseline；渲染时间必须可解析，且不得晚于对应事件。 |
+| `dsh-session` | 序號嚴格遞增、輪次/步驟包圍關係，以及同一步驟內的工具呼叫/工具結果配對。 |
+| `dsh-agent` | agent（智慧代理）狀態不得重複，並且不能離開終態 disposed。 |
+| `dsh-scope` | 作用域事件必須攜帶 carrier，且路由 subject 保持一致。 |
+| `dsh-agent-loop` | 從工作階段事件日誌重建帶顯式標記的凍結 loop 請求。 |
+| `dsh-llm` | 流中塊的文法、delta 型別/索引匹配、單次 usage、塊閉合和終止 finish。 |
+| `dsh-llm-retry` | 持久化重試記錄指向目前開啟輪次中最近關閉的步驟；每個步驟的記錄保持唯一，重試次數單調遞增，並且重試次數和非負的定時器延遲均保持在邊界內。 |
+| `dsh-tools` | pre/execute/post 階段單調推進，以及最終 execution/result 快照不可變。 |
+| `dsh-system-prompt` | 權威 assembly 中 section、工具和 variable 的資料約束。 |
+| `dsh-compaction` | 壓縮（compaction）start/summary/end 配對、範圍端點、token 數量和成功時必須存在 summary。 |
+| `dsh-hook-protocol` | 掛鉤 invocation/result 的關聯、dialect、身份和 duration 約束。 |
+| `dsh-sandbox-policy` | 持久化 `sandbox/mode` 事件必須使用封閉的 sandbox-mode 詞表。 |
+| `dsh-fs` | 檔案系統決策/觀測事件必須攜帶可用的 target 和 version 身份。 |
+| `dsh-goal` | 持久化目標快照保持來源歸屬、渲染內容、修訂號、生命週期和時間戳關係，並保證已准入的 Round 連續編號。 |
+| `dsh-goal-round-driver` | 目標來源的繼續執行訊息必須匹配根據此前持久化目標狀態重建的提示詞。 |
+| `dsh-subagent` | 提供者 add/remove 和 child start/end 事件必須保持身份與配對。 |
+| `dsh-permission-presets` | 持久化 permission 決策必須引用目前 permission 表中的 preset。 |
+| `dsh-user-approval` | approval asked/decided 記錄按 call 配對，並使用有效 outcome 和 policy。 |
+| `dsh-workflow` | 工作流和 child-agent start/end 事件保持 run metadata、身份、outcome、數量和 error 關係。 |
+| `dsh-jobs` | 目前與終態 task 快照保持 id/kind、owner、status 和 timestamp 關係。 |
+| `dsh-tool-todo` | 持久化全量快照使用唯一且已 trim 的條目和封閉 status。 |
+| `dsh-time-context` | 標註外掛來源的時鐘 reading 必須匹配工作階段目前開啟的輪次、下一個步驟開始前的位置和 elapsed baseline；渲染時間必須可解析，且不得晚於對應事件。 |
 
-基于会话的 companion 在加载时验证已有持久化事件；关系依赖事件顺序时，会使用每个候选事件之前的事件前缀。其他检查观测权威实时事件边界或可变服务结果。如果接受无效事件会提交错误状态，验证就在发布前执行。
+基於工作階段的 companion 在載入時驗證已有持久化事件；關係依賴事件順序時，會使用每個候選事件之前的事件字首。其他檢查觀測權威即時事件邊界或可變服務結果。如果接受無效事件會提交錯誤狀態，驗證就在釋出前執行。
 
-### 仓库门禁与测试
+### 儲存庫門禁與測試
 
-`verify-package-invariants` 发现每个 workspace 包。它接受完整省略，拒绝陈旧或不完整的 companion 接线，并对已发布 companion 强制完整名称注册、仅含具名 export 的 Loader 形状、`./invariant` export、发布文件、依赖、TypeScript reference 和 bundle entry 完整。其 AST 规则拒绝生成标记、默认导出和空 installer。每个 installer 都必须接收并使用失败报告器，注册时还必须传入该经检查的本地 `install` 函数。门禁不会通过方法名或 helper 调用推断语义质量。
+`verify-package-invariants` 發現每個 workspace 包。它接受完整省略，拒絕陳舊或不完整的 companion 接線，並對已釋出 companion 強制完整名稱註冊、僅含具名 export 的 Loader 形狀、`./invariant` export、釋出檔案、依賴、TypeScript reference 和 bundle entry 完整。其 AST 規則拒絕生成標記、預設匯出和空 installer。每個 installer 都必須接收並使用失敗報告器，註冊時還必須傳入該經檢查的本地 `install` 函式。門禁不會透過方法名或 helper 呼叫推斷語義品質。
 
-Vitest 为每个包测试拓扑使用 `{ enabled: true }` 挂载 `InvariantRegistry`，并在所有者发布 companion 时加载它。不变量 subpath 的 path mapping 会解析源 companion，而不是陈旧的构建输出。聚焦 suite 覆盖每个已发布 companion 的有效和无效观测；穷举拓扑通过真实 Loader 命名空间归一化运行每个源 companion。结构门禁验证每个包的发布映射后，产物门禁会暂存其 manifest（元数据清单）声明的 `lib/` 文件，在 plain Node 下导入已编译的 `./invariant` 自引用，并重复执行该 Loader 形状检查；这样，若 companion 导入未声明的运行时分片，门禁就会在发布前失败。合成事件流的测试必须构造有效的外围生命周期，除非测试本身就是在断言违规。
+Vitest 為每個包測試拓撲使用 `{ enabled: true }` 掛載 `InvariantRegistry`，並在所有者釋出 companion 時載入它。不變數 subpath 的 path mapping 會解析源 companion，而不是陳舊的建置輸出。聚焦 suite 覆蓋每個已釋出 companion 的有效和無效觀測；窮舉拓撲透過真實 Loader 名稱空間歸一化執行每個源 companion。結構門禁驗證每個包的釋出對映後，產物門禁會暫存其 manifest（中繼資料清單）宣告的 `lib/` 檔案，在 plain Node 下匯入已編譯的 `./invariant` 自引用，並重復執行該 Loader 形狀檢查；這樣，若 companion 匯入未宣告的執行時分片，門禁就會在釋出前失敗。合成事件流的測試必須建構有效的外圍生命週期，除非測試本身就是在斷言違規。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **保留带说明的空 companion。** 拒绝，因为只为表达 README 可以直接记录的否定结论而保留源码、发布、依赖与测试接线，成本过高。
-- **要求每个包都执行断言。** 拒绝，因为方法存在性、插件形状和固定示例断言会重复更强的类型、加载和单元测试约定，却没有检查运行时一致性。
-- **在服务中保留通用形状 helper。** 拒绝，因为这会混淆编译期 API 验证和运行时不变量，并鼓励在中央定义产品假设。
-- **把产品检查移入服务。** 拒绝，因为产品词汇、依赖、测试和变更所有权应归属于产生这些数据的包。
-- **从根入口隐式注册 companion。** 拒绝，因为组合顺序和可选服务存在性会产生隐藏 effect。
+- **保留帶說明的空 companion。** 拒絕，因為只為表達 README 可以直接記錄的否定結論而保留原始碼、釋出、依賴與測試接線，成本過高。
+- **要求每個包都執行斷言。** 拒絕，因為方法存在性、外掛形狀和固定範例斷言會重複更強的型別、載入和單元測試約定，卻沒有檢查執行時一致性。
+- **在服務中保留通用形狀 helper。** 拒絕，因為這會混淆編譯期 API 驗證和執行時不變數，並鼓勵在中央定義產品假設。
+- **把產品檢查移入服務。** 拒絕，因為產品詞彙、依賴、測試和變更所有權應歸屬於產生這些資料的包。
+- **從根入口隱式註冊 companion。** 拒絕，因為組合順序和可選服務存在性會產生隱藏 effect。
 
-## 后果
+## 後果
 
-- 拥有合理运行时关系的包具有可见的所有权与发布 wiring；没有该关系的包会在 README 中记录省略原因。
-- 空 companion 会让门禁失败，不完整的省略接线也会在构建或发布前失败。
-- 类型声明、Cordis 可加载性、插件 metadata、服务方法 API 和纯代数继续由所属的编译、加载、单元或集成门禁覆盖。
-- 运行时失败会标明所属 npm 包，并指出不一致的观测，而不是复述必要的 API 形状。
-- 原有 selection、blocklist 优先级、重复所有权、回滚、dispose 和 HMR（热模块替换）服务约定保持不变。
+- 擁有合理執行時關係的包具有可見的所有權與釋出 wiring；沒有該關係的包會在 README 中記錄省略原因。
+- 空 companion 會讓門禁失敗，不完整的省略接線也會在建置或釋出前失敗。
+- 型別宣告、Cordis 可載入性、外掛 metadata、服務方法 API 和純代數繼續由所屬的編譯、載入、單元或整合門禁覆蓋。
+- 執行時失敗會標明所屬 npm 包，並指出不一致的觀測，而不是複述必要的 API 形狀。
+- 原有 selection、blocklist 優先順序、重複所有權、復原、dispose 和 HMR（熱模組替換）服務約定保持不變。

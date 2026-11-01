@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的持久化工作流运行 Conversation Node：把顶层工作流运行重建为带嵌套成员折叠的独立聊天节点。"
+description: "dsh Web 用戶端的持久化工作流執行 Conversation Node：把頂層工作流執行重建為帶巢狀成員摺疊的獨立聊天節點。"
 kind: "package-reference"
 ---
 
@@ -9,94 +9,94 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `dsh-client-ui-workflow-run` 可以把每个持久化的顶层工作流运行作为独立 Chat 节点查看。展开运行可查看阶段，展开阶段可查看成员；运行中、失败、已取消与已中断的层级默认展开，已完成层级保持折叠。只有当运行中的成员属于当前会话且可在本地访问时，才能打开其子会话。节点只显示身份与状态；脚本、输出、错误、日志、用量、拓扑与控制操作不属于本界面。
+使用 `dsh-client-ui-workflow-run` 可以把每個持久化的頂層工作流執行作為獨立 Chat 節點檢視。展開執行可檢視階段，展開階段可檢視成員；執行中、失敗、已取消與已中斷的層級預設展開，已完成層級保持摺疊。只有當執行中的成員屬於目前工作階段且可在本地存取時，才能開啟其子工作階段。節點只顯示身份與狀態；腳本、輸出、錯誤、日誌、用量、拓撲與控制操作不屬於本介面。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-经 `dsh-tool-workflow` 发起的顶层工作流运行会在对话中显示为独立节点：展开运行查看其阶段，展开阶段查看其成员。阶段组只来自开始过的成员；成员结算只改变状态，不删除或重排成员。
+經 `dsh-tool-workflow` 發起的頂層工作流執行會在對話中顯示為獨立節點：展開執行檢視其階段，展開階段檢視其成員。階段組只來自開始過的成員；成員結算只改變狀態，不刪除或重排成員。
 
-### 导航节点
+### 導航節點
 
-运行使用 32 像素行，带常驻 chevron、行内状态点与状态文字；阶段使用 disclosure 行，在主区显示标题与成员数、在固定尾部显示聚合状态；成员使用 16 像素状态点槽、可省略名称区与固定状态列。打开成员的子 Session 需要成员与子级均在运行，且子级属于当前 Session 的直接子级目录。子级活动状态使用统一 UI status，未知时使用 Session 摘要。Session 摘要不建立成员关系；目录中缺失、父级不符或终态的条目不可交互。
+執行使用 32 畫素行，帶常駐 chevron、行內狀態點與狀態文字；階段使用 disclosure 行，在主區顯示標題與成員數、在固定尾部顯示聚合狀態；成員使用 16 畫素狀態點槽、可省略名稱區與固定狀態列。開啟成員的子 Session 需要成員與子級均在執行，且子級屬於目前 Session 的直接子級目錄。子級活動狀態使用統一 UI status，未知時使用 Session 摘要。Session 摘要不建立成員關係；目錄中缺失、父級不符或終態的條目不可互動。
 
-### 状态与完成
+### 狀態與完成
 
-完成状态会立即更新，但只要焦点仍位于展开内容内，自动折叠就会等待焦点离开。若所属轮次或步骤已关闭但终点事件缺失，界面把相应运行或成员显示为已中断，而不改写工具结果。
+完成狀態會立即更新，但只要焦點仍位於展開內容內，自動摺疊就會等待焦點離開。若所屬輪次或步驟已關閉但終點事件缺失，介面把相應執行或成員顯示為已中斷，而不改寫工具結果。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-节点是持久化会话事件的确定性回放：`tool-workflow/run-start` 以 `runId` 创建唯一上下文，成员开始、成员结束与运行结束事件按日志顺序更新该上下文。只有 update 的历史尾页会保持 pending，直到更早页面补入唯一 start；此后 prepend、完整回放与实时 append 得到相同状态。
+節點是持久化工作階段事件的確定性回放：`tool-workflow/run-start` 以 `runId` 建立唯一上下文，成員開始、成員結束與執行結束事件按日誌順序更新該上下文。只有 update 的歷史尾頁會保持 pending，直到更早頁面補入唯一 start；此後 prepend、完整回放與即時 append 得到相同狀態。
 
-### 展开选择
+### 展開選擇
 
-普通运行更新保留当前选择，首次进入异常状态时仅自动展开一次，正常完成时仅自动折叠一次；已完成阶段在同一 phase key 下有新的成员开始运行时，该阶段与外层运行会再次自动展开。若一次全新的正常周期在同一次渲染中完整到达，而运行仍处于活动状态，该阶段最终保持折叠，但外层运行会自动展开一次，以展示更新后的摘要。阶段选择由 `WorkflowRunPanel` 持有，因此关闭并重新打开外层运行不会重置这些选择；renderer remount 会根据持久化事实重建每层的初始选择。
+普通執行更新保留目前選擇，首次進入異常狀態時僅自動展開一次，正常完成時僅自動摺疊一次；已完成階段在同一 phase key 下有新的成員開始執行時，該階段與外層執行會再次自動展開。若一次全新的正常週期在同一次渲染中完整到達，而執行仍處於活動狀態，該階段最終保持摺疊，但外層執行會自動展開一次，以展示更新後的摘要。階段選擇由 `WorkflowRunPanel` 持有，因此關閉並重新開啟外層執行不會重置這些選擇；renderer remount 會根據持久化事實重建每層的初始選擇。
 
-### 装配
+### 裝配
 
-本包把 Definition、locale 字典与 `workflow-run` renderer 都注册为 Cordis effect；移除客户端 entry 会撤销三者。shipped Web bundle 在 `ui-conversation` 与 `ui-tool` 之后装配该插件。
+本包把 Definition、locale 字典與 `workflow-run` renderer 都註冊為 Cordis effect；移除用戶端 entry 會撤銷三者。shipped Web bundle 在 `ui-conversation` 與 `ui-tool` 之後裝配該外掛。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖工具 seam、对话宿主与工具展示层。
+以下頁面覆蓋工具 seam、對話主機與工具展示層。
 
-- [tool-workflow](../../workflow/tool-workflow/README.zh.md)——拥有四类 `tool-workflow/*` 会话事件的工具。
-- [ui-conversation](../ui-conversation/README.zh.md)——承载 `conversation.chat.node` slot 的聊天界面。
-- [ui-tool](../ui-tool/README.zh.md)——本节点相邻的工具调用展示层。
-- [Conversation 子系统](../../../docs/subsystems/conversation.zh.md)——业务自有功能如何注册 Conversation node。
+- [tool-workflow](../../workflow/tool-workflow/README.zh.md)——擁有四類 `tool-workflow/*` 工作階段事件的工具。
+- [ui-conversation](../ui-conversation/README.zh.md)——承載 `conversation.chat.node` slot 的聊天介面。
+- [ui-tool](../ui-tool/README.zh.md)——本節點相鄰的工具呼叫展示層。
+- [Conversation 子系統](../../../docs/subsystems/conversation.zh.md)——業務自有功能如何註冊 Conversation node。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端 UI 插件层，只渲染持久化工作流记录，不改变模型上下文。
+無。該包是瀏覽器端 UI 外掛層，只渲染持久化工作流記錄，不改變模型上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义哪些运行会产生记录、节点暴露什么；它们是当前包约束。
+這些限制定義哪些執行會產生記錄、節點暴露什麼；它們是目前包約束。
 
-- **只有经 `dsh-tool-workflow` 发起的顶层调用会生成这些记录**：嵌套 PTC mode 调用和直接 `WorkflowEngine` 消费方不会生成。
-- **导航刻意只面向实时运行**：终态成员继续保留供复盘，但本节点永不为其提供冷会话入口。
-- **节点只显示运行、阶段、成员身份与状态**：脚本、输出、错误、日志、用量、静态拓扑与控制操作都不属于本界面。
+- **只有經 `dsh-tool-workflow` 發起的頂層呼叫會生成這些記錄**：巢狀 PTC mode 呼叫和直接 `WorkflowEngine` 消費方不會生成。
+- **導航刻意只面向即時執行**：終態成員繼續保留供檢討，但本節點永不為其提供冷工作階段入口。
+- **節點只顯示執行、階段、成員身份與狀態**：腳本、輸出、錯誤、日誌、用量、靜態拓撲與控制操作都不屬於本介面。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。浏览器插件只贡献由 effect 持有的 Conversation Definition、keyed renderer 与 dictionary；测试证明资源释放时会撤销这三项贡献；Host tool 包负责持久事件不变式。
+**執行時不變式：** 不釋出伴生入口。瀏覽器外掛只貢獻由 effect 持有的 Conversation Definition、keyed renderer 與 dictionary；測試證明資源釋放時會撤銷這三項貢獻；Host tool 包負責持久事件不變式。

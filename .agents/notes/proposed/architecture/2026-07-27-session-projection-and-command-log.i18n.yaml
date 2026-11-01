@@ -4,46 +4,46 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-07-27-session-projection-and-command-log.md
 /agent-note-session-projections-and-command-lifecycle-logging:
   en: c4b22a24c549feb8
-  zh: 4e4921326e0cd13a
+  zh: df78ea46e802581a
 /agent-note-session-projections-and-command-lifecycle-logging/problem:
   en: 017166a86aa35cad
-  zh: b6a2e826fbed2474
+  zh: 60a2c740701f3029
 /agent-note-session-projections-and-command-lifecycle-logging/proposal:
   en: d13f906be5b62374
-  zh: 1cf74760f668902a
+  zh: 99ebef8d7dfea7b0
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/whole-value-event-rule:
   en: e6c93d89a25f0d03
-  zh: 65e1f5842bc74008
+  zh: 95d7942dc0c44b50
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/host-projection-registry-dsh-session-projection-new-package:
   en: 6068eb6aba54b102
-  zh: 20e91466baf6ad11
+  zh: e9a09c79cc5d93b5
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/shipped-consumer-the-subagent-identity-unit:
   en: 10093535660c3cae
-  zh: a7f4ff9e71ee6751
+  zh: 2a2dd8c9766a392f
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/wire-projections-block-on-the-history-tail-page:
   en: 1a6357e8821e7951
-  zh: b4b75959af4f3910
+  zh: b32b4f7af0def908
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/push-frame-and-the-client-value-store-domains-write-zero-client-code:
   en: e95962f82eefed51
-  zh: d2b3dfa8a23c8f0f
+  zh: 09d15bfd052a45bf
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/plan-through-the-standard-command-channel-worked-example:
   en: be319089ba75cae5
-  zh: 2cf0ec8d0ef79564
+  zh: 1d9f5e0c20d5a583
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/react-useprojection-the-fifth-framework-hook-seat:
   en: 7b536bd8a51cc5dc
-  zh: 1ead63f6358b3799
+  zh: 2ec0842980dd1be1
 /agent-note-session-projections-and-command-lifecycle-logging/proposal/command-lifecycle-in-the-log:
   en: a7e04451f3ed417c
-  zh: fb60c8729200b825
+  zh: de2d8b62ae763d38
 /agent-note-session-projections-and-command-lifecycle-logging/delivery-plan:
   en: 64ad8d08a8ab44e0
-  zh: fb0a0f7369d0bd23
+  zh: f414ef7b69291b92
 /agent-note-session-projections-and-command-lifecycle-logging/alternatives-considered:
   en: e945e84e8360e0c4
-  zh: becdeb100a4c5b6b
+  zh: 649a40b21a115b08
 /agent-note-session-projections-and-command-lifecycle-logging/acceptance-criteria:
   en: 9dfcca30fffda225
-  zh: 0beddb81d32e0ca7
+  zh: 7dc99569e7e2a2aa
 /agent-note-session-projections-and-command-lifecycle-logging/risks:
   en: f0eb219b4119ca7d
-  zh: de870016c1623895
+  zh: c7a3b0c39029607e

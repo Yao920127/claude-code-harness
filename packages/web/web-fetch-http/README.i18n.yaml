@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write packages/web/web-fetch-http/README.md
 /:
   en: a55f23f2363fdbd6
-  zh: b1fd7328e041ec52
+  zh: 32d4a927d60b805b
 /deepseek-ai-dsh-web-fetch-http:
   en: 2e839bfc4c365701
   zh: 62dd5239ae93471c
 /deepseek-ai-dsh-web-fetch-http/summary:
   en: 88157c32f36635d5
-  zh: a149d576df0349bc
+  zh: a23e39b89213eec7
 /deepseek-ai-dsh-web-fetch-http/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-web-fetch-http/use-this-package:
   en: 630b12516d53e905
-  zh: eed124cfe9c8dc1f
+  zh: 85846b60dea0cdd6
 /deepseek-ai-dsh-web-fetch-http/use-this-package/when-to-choose-it:
   en: eb52e77279c21d6f
-  zh: 0560e89caa377bfc
+  zh: dffb422e70b2330b
 /deepseek-ai-dsh-web-fetch-http/use-this-package/minimal-configuration:
   en: e4534189d5230861
-  zh: 5905731d7b5d9c60
+  zh: c66423ab52e7e512
 /deepseek-ai-dsh-web-fetch-http/use-this-package/what-a-fetch-returns:
   en: 2d18cdcc9b53dd0f
-  zh: 3bc6ca7c5933ee5d
+  zh: 2a6713401d005f08
 /deepseek-ai-dsh-web-fetch-http/use-this-package/transport-behavior:
   en: c432147daf2877cf
-  zh: c14d507dd66e124a
+  zh: 134ea1574c99c41b
 /deepseek-ai-dsh-web-fetch-http/use-this-package/failures-and-recovery:
   en: 35407f106dc65deb
-  zh: 02118072fba68b8f
+  zh: 35e9b5c103edc95c
 /deepseek-ai-dsh-web-fetch-http/understand-the-implementation:
   en: 9842c69ad3636bb3
-  zh: 3cdc3f816cbdd0cb
+  zh: 1ea0cb6e2365c1f3
 /deepseek-ai-dsh-web-fetch-http/understand-the-implementation/design-philosophy:
   en: a8d806f0706f02e2
-  zh: d922732a5b7e88bd
+  zh: 1189cbecca9e14bf
 /deepseek-ai-dsh-web-fetch-http/understand-the-implementation/source-map:
   en: e22ec70d55e0d8f7
-  zh: 1a333660eae37b1f
+  zh: 63f556f44bd8e99d
 /deepseek-ai-dsh-web-fetch-http/understand-the-implementation/read-path:
   en: 749c0ffeac145807
-  zh: 1468821a33a9518a
+  zh: 99a506dac0245525
 /deepseek-ai-dsh-web-fetch-http/further-exploration:
   en: eeaaf0b455673a1c
-  zh: 0874f9f44ff9a220
+  zh: 27b0b262d419ff73
 /deepseek-ai-dsh-web-fetch-http/model-experience:
   en: 5c488f8d23ce3e90
-  zh: 3cc8f8dc3ab60b65
+  zh: ef2e2712caeae5a8
 /deepseek-ai-dsh-web-fetch-http/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: d75d48f485447a74
+  zh: 3f8f51ffd2cc93ad
 /deepseek-ai-dsh-web-fetch-http/known-limitations-and-deferred-work:
   en: 4d935fd8f466a234
-  zh: c398eb7aa737f5ea
+  zh: 1f541f1ae972b4dc
 /deepseek-ai-dsh-web-fetch-http/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

@@ -145,7 +145,7 @@ it('rejects unavailable CLI and Node paths before exposing an executable command
 })
 
 it('executes capabilities using only paths returned by the loaded skill from a separate workspace', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'office CLI 工作目录 '))
+  const root = await mkdtemp(join(tmpdir(), 'office CLI 工作目錄 '))
   const ctx = new Context()
   try {
     await ctx.plugin(SkillRegistry)

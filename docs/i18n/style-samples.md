@@ -1,87 +1,87 @@
-# 翻译语体样例（style samples）
+# 翻譯語體樣例（style samples）
 
-本文件是翻译语体的校准锚点：每组样例是一段英文原文与一段人工定稿的中文译文，覆盖本仓库文档的主要文体。**译文的语体以这些样例为准**——文体样例的效力高于对语气的文字描述，但术语表、忠实性与结构规则仍然优先。翻译或评审时对照最接近的文体样例。本文件中英对照、自成双语，不参与配对（见 [README.md](README.md) 排除清单）。
+本檔案是翻譯語體的校準錨點：每組樣例是一段英文原文與一段人工定稿的中文譯文，覆蓋本儲存庫文件的主要文體。**譯文的語體以這些樣例為準**——文體樣例的效力高於對語氣的文字描述，但術語表、忠實性與結構規則仍然優先。翻譯或評審時對照最接近的文體樣例。本檔案中英對照、自成雙語，不參與配對（見 [README.md](README.md) 排除清單）。
 
-维护方式：人工评审校准出新的金标段落后追加到对应文体；发现语义、结构或术语错误时直接修正。新增或修正样例都需经过 PR 评审。
+維護方式：人工評審校準出新的金標段落後追加到對應文體；發現語義、結構或術語錯誤時直接修正。新增或修正樣例都需經過 PR 評審。
 
-## ① 架构叙述
+## ① 架構敘述
 
 > This document describes the architecture of the DeepSeek Harness — the foundation of **DeepSeek Code**. The governing principle, from the microkernel design discussion: **everything is a plugin**. The core is deliberately tiny — a handful of abstract services plus one concrete loop plugin (`dsh-agent-loop`) — and every product feature is a plugin against the extension API described here, without modifying the loop.
 
-本文介绍 DeepSeek Harness 整体架构，它是 **DeepSeek Code** 的底层基座。微内核设计讨论中确立了核心设计准则：**一切皆插件**。内核刻意做得极精简，仅包含少量抽象服务，外加一个实体循环插件 `dsh-agent-loop`。所有产品功能均基于本文定义的扩展接口开发为独立插件，无需改动主循环逻辑。
+本文介紹 DeepSeek Harness 整體架構，它是 **DeepSeek Code** 的底層基座。微核心設計討論中確立了核心設計準則：**一切皆外掛**。核心刻意做得極精簡，僅包含少量抽象服務，外加一個實體迴圈外掛 `dsh-agent-loop`。所有產品功能均基於本文定義的擴充功能介面開發為獨立外掛，無需改動主迴圈邏輯。
 
 > Dependency rule: extension plugins depend on interfaces, never on `dsh-agent-loop` (the loop is swappable); composition bundles such as `dsh-base` and `dsh-sdk-minimal` may assemble the concrete loop.
 
-依赖约束规范：各类扩展插件仅依赖抽象接口，严禁直接依赖 `dsh-agent-loop`（该主循环支持替换实现）；`dsh-base` 与 `dsh-sdk-minimal` 等组合包可以组装具体循环。
+依賴約束規範：各類擴充功能外掛僅依賴抽象介面，嚴禁直接依賴 `dsh-agent-loop`（該主迴圈支援替換實作）；`dsh-base` 與 `dsh-sdk-minimal` 等組合包可以組裝具體迴圈。
 
 > This document covers **behavior**; type definitions live in [subsystems/](../subsystems/core.md), the per-event/service reference lives in the generated regions of [subsystems/](../subsystems/core.md), and package contracts in the package READMEs state each package's required configuration and behavior ([map](../../packages/README.md)).
 
-本文档描述整体行为逻辑；类型定义存放于 [subsystems/](../subsystems/core.zh.md)；各类事件、服务的详细参考见 [subsystems/](../subsystems/core.zh.md) 中的生成区块；相应的 README 说明每个包（package）要求的配置和行为（[索引](../../packages/README.zh.md)）。
+本文件描述整體行為邏輯；型別定義存放於 [subsystems/](../subsystems/core.zh.md)；各類事件、服務的詳細參考見 [subsystems/](../subsystems/core.zh.md) 中的生成區塊；相應的 README 說明每個包（package）要求的設定和行為（[索引](../../packages/README.zh.md)）。
 
-## ② 防御模式规则
+## ② 防禦模式規則
 
 > Hard-won bug-class rules: each pattern below is a class of defect that actually shipped or nearly shipped here, stated as the rule that prevents its recurrence. Read this before writing lifecycle, concurrency, subprocess, or teardown code.
 
-这些都是踩坑总结得出的缺陷分类规范：下文每种范式都对应一类曾上线、或险些流入线上的问题，每条规范旨在杜绝同类问题复现。编写生命周期、并发、子进程、资源销毁相关代码前，请务必阅读本文档。
+這些都是踩坑總結得出的缺陷分類規範：下文每種正規化都對應一類曾上線、或險些流入線上的問題，每條規範旨在杜絕同類問題復現。編寫生命週期、並行、子程序、資源銷燬相關程式碼前，請務必閱讀本文件。
 
 > **Dispose must reach quiescence, not just request it** — A teardown that issues kills/aborts but returns before the work stops leaves orphans. Make cleanup async and await the children's exit (kill → await `done`), and close listener/notification registries BEFORE killing so late completions stay silent. Tests prove disposal waited (pid gone right after `await fiber.dispose()`), not merely that the process eventually dies.
 
-**dispose（资源释放）必须等待所有任务完全停稳，不能仅下发终止指令就返回**：如果清理过程只发出终止或中断信号，却不等任务停止就返回，就会留下孤儿进程。清理应采用异步方式，等待所有子任务彻底退出（先发出终止信号，再等待退出）；发出信号前应先关闭监听器与通知注册表，使延迟到达的完成事件不再触发通知。测试要证明 dispose 的确等到清理完成：执行完 `await fiber.dispose()` 后进程 PID 立即消失，不能只检查进程最终会自行消亡。
+**dispose（資源釋放）必須等待所有任務完全停穩，不能僅下發終止指令就返回**：如果清理過程只發出終止或中斷訊號，卻不等任務停止就返回，就會留下孤兒程序。清理應採用非同步方式，等待所有子任務徹底退出（先發出終止訊號，再等待退出）；發出訊號前應先關閉監聽器與通知註冊表，使延遲到達的完成事件不再觸發通知。測試要證明 dispose 的確等到清理完成：執行完 `await fiber.dispose()` 後程序 PID 立即消失，不能只檢查程序最終會自行消亡。
 
 > **Async state is not synchronous state** — `agent.followup()` does not flip status before returning; a background job's completion races turn boundaries; `reader.close()` fires for both EOF and disposal. Never gate control flow on a status you only just requested — drive lifecycle off the events/promises that actually fire (`agent/status`, `task.done`), and observe the transition (saw `running` THEN `idle`) instead of treating status as a per-follow-up result: several queued follow-ups run as consecutive turns under one `running` interval, while cancellation or disposal can discard unstarted items.
 
-**异步状态不等同于同步瞬时状态**：调用 `agent.followup()` 不会在返回前同步更新状态；后台任务的完成时间与轮次边界存在竞态；`reader.close()` 既会在读到文件末尾时触发，也会在资源释放时触发。切勿把刚刚发起的状态变更当成已经生效，据此控制流程；生命周期逻辑应以实际触发的事件和已完成的 promise（`agent/status`、`task.done`）为准，并观察完整的状态变化（先 `running`，再 `idle`），不要把状态当作逐次 `followup()` 的结果：多次排队的 `followup()` 会作为连续轮次运行，但可能共用一个 `running` 区间；取消或资源释放还可能丢弃尚未启动的队列项。
+**非同步狀態不等同於同步瞬時狀態**：呼叫 `agent.followup()` 不會在返回前同步更新狀態；後臺任務的完成時間與輪次邊界存在競態；`reader.close()` 既會在讀到檔案末尾時觸發，也會在資源釋放時觸發。切勿把剛剛發起的狀態變更當成已經生效，據此控制流程；生命週期邏輯應以實際觸發的事件和已完成的 promise（`agent/status`、`task.done`）為準，並觀察完整的狀態變化（先 `running`，再 `idle`），不要把狀態當作逐次 `followup()` 的結果：多次排隊的 `followup()` 會作為連續輪次執行，但可能共用一個 `running` 區間；取消或資源釋放還可能丟棄尚未啟動的佇列項。
 
-## ③ 测试政策清单
+## ③ 測試政策清單
 
 > **Coverage gate** (`pnpm run test:coverage`): the gating run, per-file 100% on `packages/*/*/src`. An uncovered line is often dead code the gate is correctly flagging for deletion, not a missing test to bolt on. Line coverage is necessary, never sufficient — it proves lines ran, not that the feature works as shipped.
 
-覆盖率门禁（`pnpm run test:coverage`）：作为合入门禁校验，要求 `packages/*/*/src` 目录下每个文件行覆盖率达到 100%。未覆盖代码行大多是无用死代码，门禁标记这类代码是提示删除，而非单纯补充测试。行覆盖率是必要条件，但远不充分：它仅能证明代码被执行过，无法保证功能符合线上预期。
+覆蓋率門禁（`pnpm run test:coverage`）：作為合入門禁驗證，要求 `packages/*/*/src` 目錄下每個檔案行覆蓋率達到 100%。未覆蓋程式碼行大多是無用死程式碼，門禁標記這類程式碼是提示刪除，而非單純補充測試。行覆蓋率是必要條件，但遠不充分：它僅能證明程式碼被執行過，無法保證功能符合線上預期。
 
 > We are DeepSeek — do not ration real-API tests. A no-key test proves the plumbing; only a with-key run proves the agent works against a real model. Write many: real prompts that write files, multi-turn conversations, tool use, cancellation mid-stream. Cheapest and highest-value are **smoke tests** that boot the real example, send one real prompt, and check the world — they catch the "green unit tests, broken product" class that mocks structurally cannot. The self-skip exists only so secretless CI and keyless contributors aren't blocked; it is not a cost signal.
 
-我们是 DeepSeek：真实接口相关测试不得刻意缩减用例数量。无密钥测试仅能验证底层通路；只有携带有效密钥执行的用例，才能确认 agent（智能体）可正常对接真实模型。请大量编写此类测试：包含文件写入类真实提示词、多轮对话、工具调用、流式中途取消等场景。
+我們是 DeepSeek：真實介面相關測試不得刻意縮減案例數量。無金鑰測試僅能驗證底層通路；只有攜帶有效金鑰執行的案例，才能確認 agent（智慧代理）可正常對接真實模型。請大量編寫此類測試：包含檔案寫入類真實提示詞、多輪對話、工具呼叫、流式中途取消等情境。
 
-成本最低、收益最高的是**冒烟测试**：拉起完整真实示例，发送一条真实提示，并检查文件、进程等外部可观察结果。这类用例能捕获一类问题——单元测试全部绿灯，但产品实际运行故障，单靠 mock 完全无法发现这类缺陷。
+成本最低、收益最高的是**冒煙測試**：拉起完整真實範例，傳送一條真實提示，並檢查檔案、程序等外部可觀察結果。這類案例能捕捉一類問題——單元測試全部綠燈，但產品實際執行故障，單靠 mock 完全無法發現這類缺陷。
 
-自带自动跳过逻辑，仅用于保障无密钥 CI 环境、无权限贡献者不会被流程拦截，不代表可以以此为由削减真实接口测试投入。
+自帶自動跳過邏輯，僅用於保障無金鑰 CI 環境、無權限貢獻者不會被流程攔截，不代表可以以此為由削減真實介面測試投入。
 
 > **Prefer the real implementation over a mock** — Mock only genuinely expensive or non-deterministic dependencies (the LLM adapter, the network, the clock); keep everything downstream real. A hand-rolled stand-in proves the bridge moves bytes, not that the shipping tool behaves as asserted — the two drift while the test stays green.
 
-**优先使用真实实现，而非 mock 替身**——仅对开销极大、结果不确定的依赖做 mock（LLM（大语言模型）适配器、网络、时钟），其余下游组件全部使用真实实现。手写的 mock 替身只能验证数据通路能传输字节，无法保证线上工具符合预期逻辑；长期下来业务逻辑与 mock 实现会出现偏差，但测试仍会显示通过。
+**優先使用真實實作，而非 mock 替身**——僅對開銷極大、結果不確定的依賴做 mock（LLM（大語言模型）介面卡、網路、時鐘），其餘下游元件全部使用真實實作。手寫的 mock 替身只能驗證資料通路能傳輸位元組，無法保證線上工具符合預期邏輯；長期下來業務邏輯與 mock 實作會出現偏差，但測試仍會顯示透過。
 
-## ④ 机制描述
+## ④ 機制描述
 
 > Blob hashes, not commit hashes, so the record is computable for files edited in the same PR (`git hash-object foo.md`) and consistency is a pure content comparison. The recorded hash also recovers the exact last-confirmed text of either side (`git cat-file -p <hash>`), so an out-of-sync pair is updated by diffing the edited side against its last-confirmed state and patching the counterpart minimally — never by re-translating whole files.
 
-系统采用文件 blob hash 而非 commit hash 记录状态。同一 PR 内修改文件时，可通过 `git hash-object foo.md` 直接算出对应 blob hash，仅对比文件内容即可判断双语文档是否同步。通过记录的 blob hash，可使用 `git cat-file -p <hash>` 还原上次确认对齐时两侧的原文。当双语文档不一致时，只需对比修改版本与上次确认版本的差异，最小幅度同步修改另一侧译文，无需全文重新翻译。
+系統採用檔案 blob hash 而非 commit hash 記錄狀態。同一 PR 內修改檔案時，可透過 `git hash-object foo.md` 直接算出對應 blob hash，僅對比檔案內容即可判斷雙語文件是否同步。透過記錄的 blob hash，可使用 `git cat-file -p <hash>` 還原上次確認對齊時兩側的原文。當雙語文件不一致時，只需對比修改版本與上次確認版本的差異，最小幅度同步修改另一側譯文，無需全文重新翻譯。
 
-## ⑤ 政策声明
+## ⑤ 政策宣告
 
 > The gate's limit, stated plainly: a green gate means the pair was confirmed consistent at these exact contents, not that the confirmation was sound. It checks hashes and Markdown structure; it cannot judge whether the two sides actually say the same thing — that is the reviewer's half of the contract. A re-recorded pair with a sloppy counterpart passes the gate; it must not pass review.
 
-门禁的限制很明确：通过门禁只说明两侧文件当前的 blob hash 与伴随记录吻合，并且 Markdown 结构签名一致，也就是说，这组内容曾被确认一致；它不代表这次确认可靠。评审人必须检查两种语言是否真正表达了相同的意思。即使译文粗糙、表意有误，重新记录配对后仍能通过门禁，但绝不能通过人工评审。
+門禁的限制很明確：透過門禁只說明兩側檔案目前的 blob hash 與伴隨記錄吻合，並且 Markdown 結構簽名一致，也就是說，這組內容曾被確認一致；它不代表這次確認可靠。評審人必須檢查兩種語言是否真正表達了相同的意思。即使譯文粗糙、表意有誤，重新記錄配對後仍能透過門禁，但絕不能透過人工評審。
 
-## ⑥ Agent Note 论证
+## ⑥ Agent Note 論證
 
 > Comparing git timestamps of the pair (no record) — rejected: formatting-only edits would false-positive, and a counterpart committed after an unrelated edit would false-negative; content identity is the only signal that means what the gate claims.
 
-对比双语文件的 git 时间戳（无记录方案）——不予采纳：仅调整格式的改动会触发误报，无关修改后再提交译文又会造成漏检。只有基于内容本身的标识（每侧文件的 blob hash 与伴随记录比对），才能承载门禁所声称的语义。
+對比雙語檔案的 git 時間戳（無記錄方案）——不予採納：僅調整格式的改動會觸發誤報，無關修改後再提交譯文又會造成漏檢。只有基於內容本身的標識（每側檔案的 blob hash 與伴隨記錄比對），才能承載門禁所聲稱的語義。
 
-## ⑦ 统一要求（长段拆分示范）
+## ⑦ 統一要求（長段拆分示範）
 
 > **Universal requirement**: every in-scope document merges as a complete bilingual pair. The manifest contains only explicit exclusions: it has no per-file rollout list, date cutoff, or README-specific policy class. […] Pairing is a continuing obligation: every later edit to either side updates the counterpart and consistency record in the same change.
 
-**统一要求**：每篇纳入范围的文档合入时都必须构成完整的双语配对。manifest（元数据清单）只包含显式排除项：其中没有逐文件推进清单、日期分界或 README 专用政策类别。（……）配对是一项持续义务：后续修改任一侧时，都必须在同一变更中同步更新对侧文件和一致性记录。
+**統一要求**：每篇納入範圍的文件合入時都必須構成完整的雙語配對。manifest（中繼資料清單）只包含顯式排除項：其中沒有逐檔案推進清單、日期分界或 README 專用政策類別。（……）配對是一項持續義務：後續修改任一側時，都必須在同一變更中同步更新對側檔案和一致性記錄。
 
-## 从样例提炼的要点
+## 從樣例提煉的要點
 
-- 语体是规范制度文：完整主谓、确定语气；不口语化，也不学术腔。
-- 给句子补显式执行主体：英文的被动句和抽象主语，中文写成「系统／门禁／工具／评审人」做主语。
-- 用中文工程惯用语替换直译：false positive/negative→误报／漏检、ratchet→只向前收紧不倒退放宽、reviewable act→评审凭证。
-- 隐喻本地化而非移植：bilingual from birth→从创建起就要求双语齐备；grandfathered→历史存量遗留。
-- 类别名词说中文并在首现括注英文：实操手册（cookbook）、事故复盘（postmortem）；指目录或路径时保留代码体英文。
-- 长段按语义单元拆段，一段一件事；名词短语展开为动词句。
-- 母语重写不等于删减：原文每个语义成分都要落地。
-- 样例与 [terminology.md](terminology.md) 冲突时，以术语表为准：收录样例前按表修正术语（例如 agent、mock、LLM 保留英文，cancellation 译「取消」）。
-- 代码体标识符（事件名 `agent/status`、状态值 `running`、包名 `dsh-bash-local` 等）在译文中保留 code span 原文，不得口语化改写；Pass 2 必须逐句核验。
+- 語體是規範制度文：完整主謂、確定語氣；不口語化，也不學術腔。
+- 給句子補顯式執行主體：英文的被動句和抽象主語，中文寫成「系統／門禁／工具／評審人」做主語。
+- 用中文工程慣用語替換直譯：false positive/negative→誤報／漏檢、ratchet→只向前收緊不倒退放寬、reviewable act→評審憑證。
+- 隱喻在地化而非移植：bilingual from birth→從建立起就要求雙語齊備；grandfathered→歷史存量遺留。
+- 類別名詞說中文並在首現括注英文：實操手冊（cookbook）、事故檢討（postmortem）；指目錄或路徑時保留程式碼體英文。
+- 長段按語義單元拆段，一段一件事；名詞短語展開為動詞句。
+- 母語重寫不等於刪減：原文每個語義成分都要落實。
+- 樣例與 [terminology.md](terminology.md) 衝突時，以術語表為準：收錄樣例前按表修正術語（例如 agent、mock、LLM 保留英文，cancellation 譯「取消」）。
+- 程式碼體識別符號（事件名 `agent/status`、狀態值 `running`、包名 `dsh-bash-local` 等）在譯文中保留 code span 原文，不得口語化改寫；Pass 2 必須逐句核驗。

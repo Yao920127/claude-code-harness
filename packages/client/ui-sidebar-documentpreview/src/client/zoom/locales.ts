@@ -1,10 +1,10 @@
 /** Shared zoom copy embedded into renderer-owned dictionaries. */
 export const zoomZh = {
-  zoomControls: '缩放控件',
-  zoomMenu: '选择缩放比例',
-  zoomOut: '缩小',
+  zoomControls: '縮放控制元件',
+  zoomMenu: '選擇縮放比例',
+  zoomOut: '縮小',
   zoomIn: '放大',
-  zoomFitWidth: '适应宽度',
+  zoomFitWidth: '適應寬度',
   zoomValue: '{percent}%',
 } as const
 

@@ -1,78 +1,78 @@
-- dialog "快捷键":
+- dialog "快捷鍵":
   - banner:
-    - heading "快捷键" [level=2]
-    - button "关闭快捷键"
-  - search "搜索快捷键":
-    - searchbox "搜索快捷键"
-  - region "应用操作":
+    - heading "快捷鍵" [level=2]
+    - button "關閉快捷鍵"
+  - search "搜尋快捷鍵":
+    - searchbox "搜尋快捷鍵"
+  - region "應用操作":
     - list:
       - listitem:
-        - button "修改快捷键速查快捷键"
-        - text: 快捷键速查 ⌘ /
+        - button "修改快捷鍵速查快捷鍵"
+        - text: 快捷鍵速查 ⌘ /
       - listitem:
-        - button "修改新会话快捷键"
-        - text: 新会话 ⌥ ⌘ N
+        - button "修改新工作階段快捷鍵"
+        - text: 新工作階段 ⌥ ⌘ N
       - listitem:
-        - button "修改展开／收起左侧栏快捷键"
-        - text: 展开／收起左侧栏 ⌥ ⌘ B
+        - button "修改展開／收起左側欄快捷鍵"
+        - text: 展開／收起左側欄 ⌥ ⌘ B
       - listitem:
-        - button "修改搜索会话快捷键"
-        - text: 搜索会话 ⌥ ⌘ K
+        - button "修改搜尋工作階段快捷鍵"
+        - text: 搜尋工作階段 ⌥ ⌘ K
       - listitem:
-        - button "修改添加工作区快捷键"
-        - text: 添加工作区 ⌥ ⌘ O
+        - button "修改新增工作區快捷鍵"
+        - text: 新增工作區 ⌥ ⌘ O
       - listitem:
-        - button "修改重命名会话快捷键"
-        - text: 重命名会话 ⇧ ⌘ R
+        - button "修改重新命名工作階段快捷鍵"
+        - text: 重新命名工作階段 ⇧ ⌘ R
       - listitem:
-        - button "修改分叉会话快捷键"
-        - text: 分叉会话 ⇧ ⌘ F
+        - button "修改分叉工作階段快捷鍵"
+        - text: 分叉工作階段 ⇧ ⌘ F
       - listitem:
-        - button "修改归档会话快捷键"
-        - text: 归档会话 ⌥ ⌘ A
+        - button "修改歸檔工作階段快捷鍵"
+        - text: 歸檔工作階段 ⌥ ⌘ A
       - listitem:
-        - button "修改打开设置快捷键"
-        - text: 打开设置 ⌘ ,
+        - button "修改開啟設定快捷鍵"
+        - text: 開啟設定 ⌘ ,
       - listitem:
-        - button "修改展开／收起右侧栏快捷键"
-        - text: 展开／收起右侧栏 ⇧ ⌘ B
+        - button "修改展開／收起右側欄快捷鍵"
+        - text: 展開／收起右側欄 ⇧ ⌘ B
       - listitem:
-        - button "修改工作区文件快捷键"
-        - text: 工作区文件 ⌥ ⌘ P
+        - button "修改工作區檔案快捷鍵"
+        - text: 工作區檔案 ⌥ ⌘ P
       - listitem:
-        - button "修改切换终端面板快捷键"
-        - text: "切换终端面板 ⌃ `"
+        - button "修改切換終端面板快捷鍵"
+        - text: "切換終端面板 ⌃ `"
       - listitem:
-        - button "修改分栏快捷键"
-        - text: 分栏 ⌘ \
+        - button "修改分欄快捷鍵"
+        - text: 分欄 ⌘ \
       - listitem:
-        - button "修改面板全屏／退出全屏快捷键"
-        - text: 面板全屏／退出全屏 ⌥ ⌘ Enter
+        - button "修改面板全螢幕／退出全螢幕快捷鍵"
+        - text: 面板全螢幕／退出全螢幕 ⌥ ⌘ Enter
       - listitem:
-        - button "修改刷新当前页面快捷键"
-        - text: 刷新当前页面 暂无快捷键
+        - button "修改重新整理目前頁面快捷鍵"
+        - text: 重新整理目前頁面 暫無快捷鍵
       - listitem:
-        - button "修改关闭当前页面／窗口快捷键"
-        - text: 关闭当前页面／窗口 ⌥ ⌘ W
-  - region "消息输入":
-    - heading "消息输入" [level=3]
+        - button "修改關閉目前頁面／視窗快捷鍵"
+        - text: 關閉目前頁面／視窗 ⌥ ⌘ W
+  - region "訊息輸入":
+    - heading "訊息輸入" [level=3]
     - list:
-      - listitem: 使用互补的 Queue／Steer 方式 ⌘ Enter
-      - listitem: 打开引用菜单 @
-      - listitem: 换行 ⇧ Enter
-      - listitem: 发送消息 Enter
-      - listitem: 打开命令菜单 /
+      - listitem: 使用互補的 Queue／Steer 方式 ⌘ Enter
+      - listitem: 開啟引用選單 @
+      - listitem: 換行 ⇧ Enter
+      - listitem: 傳送訊息 Enter
+      - listitem: 開啟命令選單 /
       - listitem: 停止生成 Esc Esc
-  - region "菜单与弹层":
-    - heading "菜单与弹层" [level=3]
+  - region "選單與彈層":
+    - heading "選單與彈層" [level=3]
     - list:
-      - listitem: 关闭菜单或顶层弹窗 Esc
-      - listitem: 移动菜单选择 ↑ ↓
-      - listitem: 选择菜单项 Enter
-  - region "审批区域":
-    - heading "审批区域" [level=3]
+      - listitem: 關閉選單或頂層彈出視窗 Esc
+      - listitem: 移動選單選擇 ↑ ↓
+      - listitem: 選擇選單項 Enter
+  - region "審批區域":
+    - heading "審批區域" [level=3]
     - list:
-      - listitem: 允许一次 Enter
-      - listitem: 拒绝 Esc
+      - listitem: 允許一次 Enter
+      - listitem: 拒絕 Esc
   - contentinfo:
-    - button "恢复全部默认" [disabled]
+    - button "恢復全部預設" [disabled]

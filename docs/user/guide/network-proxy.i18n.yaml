@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write docs/user/guide/network-proxy.md
 /run-dsh-behind-a-network-proxy:
   en: 7659888fbb3e2e0d
-  zh: 96c019583f5bf7ab
+  zh: 3c9f489af63d3b95
 /run-dsh-behind-a-network-proxy/export-the-variables:
   en: 6c92d33cc57ced2a
-  zh: 653b6ffeb4d102b0
+  zh: ed8b9393e4a06c0c
 /run-dsh-behind-a-network-proxy/why-your-browser-is-proxied-but-your-terminal-is-not:
   en: d565b202923482a1
-  zh: 7eb5a36a3d7504d7
+  zh: 24ce7ba6e4ea4947
 /run-dsh-behind-a-network-proxy/choose-what-stays-direct:
   en: 307f5b01e6e09661
-  zh: 39eccb0287afc128
+  zh: 169bf60a3f62cb34
 /run-dsh-behind-a-network-proxy/limits-worth-knowing:
   en: d0defd7e52100d1f
-  zh: 50f38176e16f55e4
+  zh: 1eadb2d1360f49ac
 /run-dsh-behind-a-network-proxy/what-stays-direct:
   en: 34b04f98af3e09ae
-  zh: 4c530b755b552942
+  zh: 65bdc8176dd03225
 /run-dsh-behind-a-network-proxy/check-that-it-worked:
   en: d7455972489f79a8
-  zh: 1e7295e10a211769
+  zh: a1fd54a5853d1747

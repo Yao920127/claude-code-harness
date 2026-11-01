@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-20-routed-model-context-and-compaction-policy.md
 /agent-note-routed-model-context-and-compaction-policy:
   en: eca190695d4857f5
-  zh: f9d6411b8a8612ae
+  zh: 8930917633f9e1c7
 /agent-note-routed-model-context-and-compaction-policy/problem:
   en: f7d1f343e487d725
-  zh: c7f736180e44d586
+  zh: 27d7d796db53dd8f
 /agent-note-routed-model-context-and-compaction-policy/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-routed-model-context-and-compaction-policy/decision/adapters-own-exact-route-capacity:
   en: 7bcf0ae2c74a0eb7
-  zh: bc0e04a25492d5ba
+  zh: 3abefe0b49fc174a
 /agent-note-routed-model-context-and-compaction-policy/decision/token-measurement-remains-model-agnostic:
   en: 51d1b39d06407320
-  zh: 85c88f6b5d8508d6
+  zh: f05bf7c78e606d85
 /agent-note-routed-model-context-and-compaction-policy/decision/compact-basic-resolves-a-target-spec:
   en: d8827f9fa70aa65f
-  zh: a9d29e05dcb0cfdb
+  zh: 29f9e838a7b638fc
 /agent-note-routed-model-context-and-compaction-policy/decision/target-specific-pressure-failures-preserve-optional-composition:
   en: 1bd81ae0a1409e24
-  zh: 635c2937d5a94df7
+  zh: 16f356d7a7422aef
 /agent-note-routed-model-context-and-compaction-policy/testing:
   en: 1ac13596df50571f
-  zh: 8605a6f0de049dfc
+  zh: f6ba9c165a7b7a1d
 /agent-note-routed-model-context-and-compaction-policy/alternatives-considered:
   en: 0ca0a4b1318188ec
-  zh: de98cd4494a6c0d0
+  zh: 71519301cf16acef
 /agent-note-routed-model-context-and-compaction-policy/consequences:
   en: d00f83e85ba5e431
-  zh: 32665480f0cdc4ea
+  zh: 506312a7c24e0386

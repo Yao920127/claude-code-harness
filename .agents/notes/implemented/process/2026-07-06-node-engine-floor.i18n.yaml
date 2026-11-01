@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-07-06-node-engine-floor.md
 /agent-note-raise-the-node-lts-engine-floor-to-22-19:
   en: 01f43f2b4c6bd4fa
-  zh: 7f34e5b3c1c55419
+  zh: 47875855ceae4b05
 /agent-note-raise-the-node-lts-engine-floor-to-22-19/problem:
   en: d7bf1b1699ce0dc8
-  zh: f10dfd0e4787bb44
+  zh: a209d56d780c7ae5
 /agent-note-raise-the-node-lts-engine-floor-to-22-19/decision:
   en: 0051c0d8c1948f63
-  zh: cbab7aa0f53f7200
+  zh: a772c8b7b44e5015
 /agent-note-raise-the-node-lts-engine-floor-to-22-19/consequences:
   en: 0b9fbe932d9a8b1f
-  zh: 642e19d06caecef2
+  zh: 05a8ca9569dc9f7b
 /agent-note-raise-the-node-lts-engine-floor-to-22-19/alternatives-considered:
   en: c433389b2064eaf9
-  zh: 57de2af812def1c4
+  zh: 72d7ff007399086b

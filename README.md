@@ -10,7 +10,7 @@ Claude Code Harness (CCH) is a fork of [DeepSeek Harness](https://github.com/dee
 
 - **Claude Code model route** — [`dsh-llm-claude-code`](packages/llm/llm-claude-code/README.md) runs each model call as one Claude Code turn through the official Claude Agent SDK. The model selector lists the models your Claude account can use, such as Claude Sonnet 5 and Claude Fable 5.1. Claude Code runs its own tools and asks for permission through the harness approval card.
 - **Claude Code as the default** — the [`dsh-cch`](packages/bundle/cch/README.md) bundle makes Claude Code the default model and removes the DeepSeek model routes and DeepSeek account sign-in.
-- **Traditional Chinese interface** — [`dsh-client-locale-zh-hant`](packages/client/locale-zh-hant/README.md) adds a 繁體中文 language that converts the Simplified Chinese dictionaries with OpenCC, and the app starts in it by default; the desktop menus, dialogs, and sign-in screen use Traditional Chinese too.
+- **Traditional Chinese interface** — every Chinese interface text and Chinese document is written in Traditional Chinese (Taiwan), and the app starts in 繁體中文 by default; the desktop menus, dialogs, and sign-in screen use Traditional Chinese too.
 - **Claude look** — [`dsh-client-ui-brand-claude`](packages/client/ui-brand-claude/README.md) shows the Claude mark and applies a cream-and-coral palette with Inter and EB Garamond, following [DESIGN.md](DESIGN.md). Light, dark, and system appearance all work.
 - **Desktop app** — the Electron app is named Claude Code Harness. At startup it checks the sign-in of Claude Code, Codex, Antigravity, Grok, and OpenCode; when none is signed in it offers each CLI's own login, and you can also continue without signing in. It keeps its data in `~/.cch`, separate from a DeepSeek Harness installation, and builds as an unsigned macOS disk image.
 
@@ -46,7 +46,6 @@ pnpm install
 pnpm run build
 pnpm dsh plugin --profile web add \
   link:$PWD/packages/llm/llm-claude-code \
-  link:$PWD/packages/client/locale-zh-hant \
   link:$PWD/packages/client/ui-brand-claude \
   link:$PWD/packages/bundle/cch
 pnpm dsh web

@@ -1,15 +1,15 @@
-# 通过提示词配置持久化插件
+# 透過提示詞設定持久化外掛
 
 [English](dynamic-cordis.md) | 中文
 
-创造模式提供 [Plugin Manager](../../../../packages/boot/plugin-manager/README.zh.md) 和只读[运行时检查](../../../../packages/extensions/tool-cordis/README.zh.md)。插件配置属于当前 profile，影响其会话，并在进程重启后保留。
+創造模式提供 [Plugin Manager](../../../../packages/boot/plugin-manager/README.zh.md) 和只讀[執行時檢查](../../../../packages/extensions/tool-cordis/README.zh.md)。外掛設定屬於目前 profile，影響其工作階段，並在程序重新啟動後保留。
 
-## 连接 MCP 服务器
+## 連線 MCP 伺服器
 
-启动 Web profile 并选择创造模式。准备一个可访问且提供 `ping` 的 Streamable HTTP MCP 服务器，将其实际端点填入以下提示词：
+啟動 Web profile 並選擇創造模式。準備一個可存取且提供 `ping` 的 Streamable HTTP MCP 伺服器，將其實際端點填入以下提示詞：
 
-> 将 `<endpoint>` 处的 MCP 服务器配置到当前 profile，命名为 `demo`。立即启用它的工具，然后调用它的 ping 工具并告诉我结果。
+> 將 `<endpoint>` 處的 MCP 伺服器設定到目前 profile，命名為 `demo`。立即啟用它的工具，然後呼叫它的 ping 工具並告訴我結果。
 
-agent 编写纯配置组合包，在 patch 中插入 `@deepseek-ai/dsh-mcp-client`，再通过 `plugin_manager install_bundle` 安装。启用 HMR 时，工具会出现在同一个运行中的会话里。同时检查管理结果（`application: applied`）和成功的 `mcp__demo__ping` 调用。返回 `restart-required` 的已保存条目尚未激活；失败条目需要修复配置。
+agent 編寫純設定組合包，在 patch 中插入 `@deepseek-ai/dsh-mcp-client`，再透過 `plugin_manager install_bundle` 安裝。啟用 HMR 時，工具會出現在同一個執行中的工作階段裡。同時檢查管理結果（`application: applied`）和成功的 `mcp__demo__ping` 呼叫。返回 `restart-required` 的已儲存條目尚未啟用；失敗條目需要修復設定。
 
-修改配置前先读取组合包 patch。使用 Plugin Manager 停用条目或移除组合包。可接受的配置及连接失败行为见 [MCP client 参考](../../../../packages/mcp/mcp-client/README.zh.md)。
+修改設定前先讀取組合包 patch。使用 Plugin Manager 停用條目或移除組合包。可接受的設定及連線失敗行為見 [MCP client 參考](../../../../packages/mcp/mcp-client/README.zh.md)。

@@ -1,17 +1,17 @@
-<!-- 英文源文件由 scripts/gen-cordis-catalog.ts 生成；本中文文件是通过双语配对维护的经评审对侧。
-     更新时先运行 `pnpm run gen-cordis-catalog` 更新英文，再更新本文件并运行 `pnpm run verify-translation-pairing --write docs/cordis-api/context.md` 重新记录配对。 -->
+<!-- 英文原始檔由 scripts/gen-cordis-catalog.ts 生成；本中文件案是透過雙語配對維護的經評審對側。
+     更新時先執行 `pnpm run gen-cordis-catalog` 更新英文，再更新本檔案並執行 `pnpm run verify-translation-pairing --write docs/cordis-api/context.md` 重新記錄配對。 -->
 
 # 上下文
 
 [English](context.md) | 中文
 
-上下文是 Cordis 的核心对象：所有服务、事件和生命周期 API 都通过 `ctx` 访问。事件方法见[事件](events.zh.md)，副作用与当前 fiber 见 [Fiber](fiber.zh.md)，插件加载见[注册表](registry.zh.md)。
+上下文是 Cordis 的核心物件：所有服務、事件和生命週期 API 都透過 `ctx` 存取。事件方法見[事件](events.zh.md)，副作用與目前 fiber 見 [Fiber](fiber.zh.md)，外掛載入見[註冊表](registry.zh.md)。
 
-Cordis 插件的根依赖容器和子依赖容器。
+Cordis 外掛的根依賴容器和子依賴容器。
 
-上下文是一个代理：普通属性读取通过服务解析器进行，而 `extend()`、`isolate()` 和 `intercept()` 会创建有作用域的子上下文，且不修改其父上下文。
+上下文是一個代理：普通屬性讀取透過服務解析器進行，而 `extend()`、`isolate()` 和 `intercept()` 會建立有作用域的子上下文，且不修改其父上下文。
 
-[源码](../../vendor/cordis/src/context.ts#L42)
+[原始碼](../../vendor/cordis/src/context.ts#L42)
 
 ### ctx.extend(meta?)
 
@@ -28,15 +28,15 @@ Cordis 插件的根依赖容器和子依赖容器。
 extend(meta = {}): this
 ```
 
-在当前作用域之上创建一个带有额外元数据的子上下文。
+在目前作用域之上建立一個帶有額外中繼資料的子上下文。
 
-子上下文通过原型继承当前上下文的所有属性；`meta` 的自有属性会遮蔽继承的同名属性。父上下文不会被修改。
+子上下文透過原型繼承目前上下文的所有屬性；`meta` 的自有屬性會遮蔽繼承的同名屬性。父上下文不會被修改。
 
-- `meta`：要在子上下文上定义的自有属性，包括以 symbol 为键的属性。
+- `meta`：要在子上下文上定義的自有屬性，包括以 symbol 為鍵的屬性。
 
-**返回**继承自当前上下文的子上下文。
+**返回**繼承自目前上下文的子上下文。
 
-[源码](../../vendor/cordis/src/context.ts#L99)
+[原始碼](../../vendor/cordis/src/context.ts#L99)
 
 ### ctx.isolate(name, label?)
 
@@ -56,16 +56,16 @@ extend(meta = {}): this
 isolate(name: string, label?: symbol)
 ```
 
-创建一个子上下文，使 `name` 拥有独立的服务作用域。
+建立一個子上下文，使 `name` 擁有獨立的服務作用域。
 
-在返回的上下文之下，对服务 `name` 的读写会根据新标签解析，而不再根据父上下文的标签解析，因此可以提供不同的实现而不影响父作用域。将同一个 `label` 传给两次 `isolate()` 调用，可使二者加入同一作用域。
+在返回的上下文之下，對服務 `name` 的讀寫會根據新標籤解析，而不再根據父上下文的標籤解析，因此可以提供不同的實作而不影響父作用域。將同一個 `label` 傳給兩次 `isolate()` 呼叫，可使二者加入同一作用域。
 
-- `name`：要隔离的服务名称。
-- `label`：要加入的作用域标签；默认为一个新建的唯一 symbol。
+- `name`：要隔離的服務名稱。
+- `label`：要加入的作用域標籤；預設為一個新建的唯一 symbol。
 
-**返回**一个子上下文，其 `name` 服务在新作用域中解析。
+**返回**一個子上下文，其 `name` 服務在新作用域中解析。
 
-[源码](../../vendor/cordis/src/context.ts#L121)
+[原始碼](../../vendor/cordis/src/context.ts#L121)
 
 ### ctx.intercept(name, config)
 
@@ -86,16 +86,16 @@ intercept<K extends InjectKey>(name: K, config: Context[K] extends { [symbols.co
 intercept(name: string, config: any): this
 ```
 
-为在此上下文之下启动的插件添加服务专属的拦截配置。
+為在此上下文之下啟動的外掛新增服務專屬的攔截設定。
 
-在返回的上下文下加载的插件会看到 `config` 已合并到服务解析后的配置中（祖先条目在前；见 `Service[symbols.resolveConfig]`）。父上下文不受影响。
+在返回的上下文下載入的外掛會看到 `config` 已合併到服務解析後的設定中（祖先條目在前；見 `Service[symbols.resolveConfig]`）。父上下文不受影響。
 
-- `name`：要拦截其配置的服务名称。
-- `config`：要为该服务合并的拦截配置。
+- `name`：要攔截其設定的服務名稱。
+- `config`：要為該服務合併的攔截設定。
 
-**返回**一个携带额外拦截条目的子上下文。
+**返回**一個攜帶額外攔截條目的子上下文。
 
-[源码](../../vendor/cordis/src/context.ts#L139)
+[原始碼](../../vendor/cordis/src/context.ts#L139)
 
 ### ctx.root
 
@@ -104,9 +104,9 @@ intercept(name: string, config: any): this
 root: this
 ```
 
-应用的根上下文，所有子上下文均共享它。@experimental
+應用的根上下文，所有子上下文均共享它。@experimental
 
-[源码](../../vendor/cordis/src/context.ts#L22)
+[原始碼](../../vendor/cordis/src/context.ts#L22)
 
 ### ctx.baseUrl
 
@@ -115,9 +115,9 @@ root: this
 baseUrl?: string
 ```
 
-用于解析相对插件／模块说明符的基础 URL，前提是运行时设置了该值。
+用於解析相對外掛／模組說明符的基礎 URL，前提是執行時設定了該值。
 
-[源码](../../vendor/cordis/src/context.ts#L24)
+[原始碼](../../vendor/cordis/src/context.ts#L24)
 
 ### ctx.events
 
@@ -126,9 +126,9 @@ baseUrl?: string
 events: EventsService
 ```
 
-事件总线。它的方法也会混入 `ctx`（`ctx.on`、`ctx.emit` 等）。
+事件匯流排。它的方法也會混入 `ctx`（`ctx.on`、`ctx.emit` 等）。
 
-[源码](../../vendor/cordis/src/context.ts#L26)
+[原始碼](../../vendor/cordis/src/context.ts#L26)
 
 ### ctx.logger
 
@@ -137,9 +137,9 @@ events: EventsService
 logger: LoggerService
 ```
 
-日志服务。调用 `ctx.logger(name)` 可获取具名 logger。
+日誌服務。呼叫 `ctx.logger(name)` 可取得具名 logger。
 
-[源码](../../vendor/cordis/src/context.ts#L28)
+[原始碼](../../vendor/cordis/src/context.ts#L28)
 
 ### ctx.reflect
 
@@ -148,9 +148,9 @@ logger: LoggerService
 reflect: ReflectService
 ```
 
-为上下文代理提供支持的反射层（`ctx.get`、`ctx.provide` 等）。
+為上下文代理提供支援的反射層（`ctx.get`、`ctx.provide` 等）。
 
-[源码](../../vendor/cordis/src/context.ts#L30)
+[原始碼](../../vendor/cordis/src/context.ts#L30)
 
 ### ctx.registry
 
@@ -159,11 +159,11 @@ reflect: ReflectService
 registry: RegistryService
 ```
 
-插件注册表。它的方法会混入 `ctx`（`ctx.plugin`、`ctx.inject`）。
+外掛註冊表。它的方法會混入 `ctx`（`ctx.plugin`、`ctx.inject`）。
 
-[源码](../../vendor/cordis/src/context.ts#L32)
+[原始碼](../../vendor/cordis/src/context.ts#L32)
 
-## 静态成员
+## 靜態成員
 
 ### Context.effect
 
@@ -172,9 +172,9 @@ registry: RegistryService
 static readonly effect: unique symbol
 ```
 
-资源释放函数用于公开其 EffectMeta 诊断树的 symbol 键。
+資源釋放函式用於公開其 EffectMeta 診斷樹的 symbol 鍵。
 
-[源码](../../vendor/cordis/src/context.ts#L44)
+[原始碼](../../vendor/cordis/src/context.ts#L44)
 
 ### Context.filter
 
@@ -183,9 +183,9 @@ static readonly effect: unique symbol
 static readonly filter: unique symbol
 ```
 
-上下文监听器过滤器的 symbol 键，每次分派事件时都会查询该过滤器。
+上下文監聽器過濾器的 symbol 鍵，每次分派事件時都會查詢該過濾器。
 
-[源码](../../vendor/cordis/src/context.ts#L46)
+[原始碼](../../vendor/cordis/src/context.ts#L46)
 
 ### Context.isolate
 
@@ -194,9 +194,9 @@ static readonly filter: unique symbol
 static readonly isolate: unique symbol
 ```
 
-隔离映射的 symbol 键（见 `Context[symbols.isolate]` 属性）。
+隔離對映的 symbol 鍵（見 `Context[symbols.isolate]` 屬性）。
 
-[源码](../../vendor/cordis/src/context.ts#L48)
+[原始碼](../../vendor/cordis/src/context.ts#L48)
 
 ### Context.intercept
 
@@ -205,9 +205,9 @@ static readonly isolate: unique symbol
 static readonly intercept: unique symbol
 ```
 
-拦截映射的 symbol 键（见 `Context[symbols.intercept]` 属性）。
+攔截對映的 symbol 鍵（見 `Context[symbols.intercept]` 屬性）。
 
-[源码](../../vendor/cordis/src/context.ts#L50)
+[原始碼](../../vendor/cordis/src/context.ts#L50)
 
 ### Context.is(value)
 
@@ -224,17 +224,17 @@ static readonly intercept: unique symbol
 static is(value: any): value is Context
 ```
 
-对于 Cordis 上下文代理和上下文原型，返回 true。
+對於 Cordis 上下文代理和上下文原型，返回 true。
 
-此方法可跨 realm 和多个 cordis 副本工作，因为其品牌标识以全局 symbol 为键，而不是通过 `instanceof` 判断。
+此方法可跨 realm 和多個 cordis 副本工作，因為其品牌標識以全域 symbol 為鍵，而不是透過 `instanceof` 判斷。
 
-- `value`：要测试的值。
+- `value`：要測試的值。
 
-**返回** `true` 时，`value` 是 Cordis 上下文，并会收窄其类型。
+**返回** `true` 時，`value` 是 Cordis 上下文，並會收窄其型別。
 
-[源码](../../vendor/cordis/src/context.ts#L61)
+[原始碼](../../vendor/cordis/src/context.ts#L61)
 
-## 服务存储与混入
+## 服務儲存與混入
 
 ### ctx.get(name, strict?)
 
@@ -251,14 +251,14 @@ get<K extends string & keyof this>(name: K, strict?: boolean): undefined | this[
 get(name: string, strict?: boolean): any
 ```
 
-从存储中读取服务，无需满足注入要求。
+從儲存中讀取服務，無需滿足注入要求。
 
-- `name`：服务名称。
-- `strict`：设为 `true`（默认值）时，仅返回其提供方 fiber 当前处于活动状态的实现。
+- `name`：服務名稱。
+- `strict`：設為 `true`（預設值）時，僅返回其提供者 fiber 目前處於活動狀態的實作。
 
-**返回**服务值；如果尚未提供，则返回 `undefined`。
+**返回**服務值；如果尚未提供，則返回 `undefined`。
 
-[源码](../../vendor/cordis/src/reflect.ts#L17)
+[原始碼](../../vendor/cordis/src/reflect.ts#L17)
 
 ### ctx.set(name, value)
 
@@ -276,14 +276,14 @@ set<K extends string & keyof this>(name: K, value: undefined | this[K]): void
 set(name: string, value: any): void
 ```
 
-覆盖已提供服务的值。
+覆蓋已提供服務的值。
 
-只有提供该服务的 fiber 才能设置它；设置尚未提供的名称会抛出异常。
+只有提供該服務的 fiber 才能設定它；設定尚未提供的名稱會丟擲異常。
 
-- `name`：服务名称。
-- `value`：新的服务值。
+- `name`：服務名稱。
+- `value`：新的服務值。
 
-[源码](../../vendor/cordis/src/reflect.ts#L29)
+[原始碼](../../vendor/cordis/src/reflect.ts#L29)
 
 ### ctx.provide(name, value)
 
@@ -304,16 +304,16 @@ provide<K extends string & keyof this>(name: K, value: undefined | this[K]): () 
 provide(name: string, value?: any): () => void
 ```
 
-注册一个归当前 fiber 所有的服务实现。
+註冊一個歸目前 fiber 所有的服務實作。
 
-fiber 激活后，该服务对同一隔离作用域内的依赖方可见；当返回的资源释放函数运行或 fiber 卸载时，该服务会被取消注册，并唤醒依赖方。如果该名称已在此作用域中被提供，或已声明为访问器，则抛出异常。
+fiber 啟用後，該服務對同一隔離作用域內的依賴方可見；當返回的資源釋放函式執行或 fiber 解除安裝時，該服務會被取消註冊，並喚醒依賴方。如果該名稱已在此作用域中被提供，或已宣告為存取器，則丟擲異常。
 
-- `name`：服务名称。
-- `value`：服务值。
+- `name`：服務名稱。
+- `value`：服務值。
 
-**返回**一个用于取消注册该服务的资源释放函数。
+**返回**一個用於取消註冊該服務的資源釋放函式。
 
-[源码](../../vendor/cordis/src/reflect.ts#L44)
+[原始碼](../../vendor/cordis/src/reflect.ts#L44)
 
 ### ctx.accessor(name, options)
 
@@ -330,14 +330,14 @@ fiber 激活后，该服务对同一隔离作用域内的依赖方可见；当�
 accessor(name: string, options: Omit<Property.Accessor, 'type'>): void
 ```
 
-定义一个由 get/set 钩子支持的计算型上下文属性。
+定義一個由 get/set 掛鉤支援的計算型上下文屬性。
 
-当前 fiber 卸载时会移除该访问器。如果该名称已被声明，则抛出异常。
+目前 fiber 解除安裝時會移除該存取器。如果該名稱已被宣告，則丟擲異常。
 
-- `name`：上下文属性名称。
-- `options`：`get` 钩子和可选的 `set` 钩子。
+- `name`：上下文屬性名稱。
+- `options`：`get` 掛鉤和可選的 `set` 掛鉤。
 
-[源码](../../vendor/cordis/src/reflect.ts#L56)
+[原始碼](../../vendor/cordis/src/reflect.ts#L56)
 
 ### ctx.mixin(name, mixins)
 
@@ -356,11 +356,11 @@ mixin<K extends string & keyof this>(name: K, mixins: (keyof this & keyof this[K
 mixin<T extends {}>(source: T, mixins: (keyof this & keyof T)[] | Dict<string>): void
 ```
 
-直接在 `ctx` 上公开服务的指定成员。
+直接在 `ctx` 上公開服務的指定成員。
 
-每个混入的键都会成为一个转发到该服务的访问器，并将方法绑定到该服务。例如，`ctx.on` 会转发到 `ctx.events.on`。当前 fiber 卸载时会移除这些混入。
+每個混入的鍵都會成為一個轉發到該服務的存取器，並將方法繫結到該服務。例如，`ctx.on` 會轉發到 `ctx.events.on`。目前 fiber 解除安裝時會移除這些混入。
 
-- `name`：存放源服务的上下文属性。
-- `mixins`：要转发的键，或从源键到 ctx 键的映射。
+- `name`：存放源服務的上下文屬性。
+- `mixins`：要轉發的鍵，或從源鍵到 ctx 鍵的對映。
 
-[源码](../../vendor/cordis/src/reflect.ts#L67)
+[原始碼](../../vendor/cordis/src/reflect.ts#L67)

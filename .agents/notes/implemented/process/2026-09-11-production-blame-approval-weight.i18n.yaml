@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-11-production-blame-approval-weight.md
 /agent-note-weight-approvals-by-changed-production-line-ownership:
   en: 40516dee2915ffc3
-  zh: 3d58358bc7110df2
+  zh: 05a3dcf825b37006
 /agent-note-weight-approvals-by-changed-production-line-ownership/problem:
   en: 2dbd821b8d65b054
-  zh: 9bef2993db51a00d
+  zh: 0dde4b419e78e2b7
 /agent-note-weight-approvals-by-changed-production-line-ownership/decision:
   en: 7dc225f91538ace1
-  zh: a22d05ffd8d32b6d
+  zh: 2e9a1c0a49283b61
 /agent-note-weight-approvals-by-changed-production-line-ownership/alternatives-considered:
   en: 5e8af03e3ff6018a
-  zh: 6b518c8eee8c5172
+  zh: 36d589b28489a6e5
 /agent-note-weight-approvals-by-changed-production-line-ownership/consequences:
   en: 08495483b77771be
-  zh: a798d4af0eda55fe
+  zh: 9894ce8976e90be9
 /agent-note-weight-approvals-by-changed-production-line-ownership/verification:
   en: cb604625373372b9
-  zh: f9056d20ab612537
+  zh: 99da58d73d86fe25

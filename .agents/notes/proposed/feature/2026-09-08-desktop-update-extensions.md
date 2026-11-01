@@ -36,13 +36,13 @@ Do not use `0.1.3-dsk.1` to repair stable `0.1.3`: SemVer orders it below the st
 
 The [initial publication rule](2026-09-08-desktop-update-policy-and-installation.md) adds the stable feed when shared stable releases exist, without switching fixed-Nightly clients. A user-facing stable subscription and selector remain deferred. If enabled, persist the selected channel; never infer it from the installed version. Preserve `allowDowngrade = false` when assigning the updater channel. Moving from Nightly to stable keeps a higher installed Nightly until a higher stable version exists, without downgrading Desktop or bundled dsh.
 
-Channel switching may immediately check; download behavior must follow the approved setting. Ignore old-channel responses and reconfirm downloaded artifacts against the new channel before installation. A channel change does not clear mandatory blocking without a valid policy response for the new conditions. Display a persistent Nightly explanation under the selector, with candidate Chinese copy “提前体验新功能，版本可能不稳定。”; hide it after selecting stable, while separately explaining any wait for a higher stable version.
+Channel switching may immediately check; download behavior must follow the approved setting. Ignore old-channel responses and reconfirm downloaded artifacts against the new channel before installation. A channel change does not clear mandatory blocking without a valid policy response for the new conditions. Display a persistent Nightly explanation under the selector, with candidate Chinese copy “提前體驗新功能，版本可能不穩定。”; hide it after selecting stable, while separately explaining any wait for a higher stable version.
 
 Design compatibility only for Desktop packages actually distributed. If a future migration has real clients reading `alpha.yml` or `rc.yml`, publish a higher bridge version to the old feed and Nightly until the old entry can be retired. No such bridge is required initially.
 
 ### Automatic-installation setting
 
-The candidate setting is automatic installation, potentially enabled by default only after product approval and measured platform behavior. Candidate Chinese helper text is “关闭后仍会提示更新，需手动升级。” If next-launch installation is not acceptable, evaluate a download-only setting and retain explicit installation confirmation.
+The candidate setting is automatic installation, potentially enabled by default only after product approval and measured platform behavior. Candidate Chinese helper text is “關閉後仍會提示更新，需手動升級。” If next-launch installation is not acceptable, evaluate a download-only setting and retain explicit installation confirmation.
 
 | Setting | Newer version discovered | Later complete app launch |
 |---|---|---|

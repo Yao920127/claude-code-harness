@@ -1,48 +1,48 @@
-# Agent Note：job 注册表吸收观测 record；独立的 activity seam 被移除
+# Agent Note：job 註冊表吸收觀測 record；獨立的 activity seam 被移除
 
 Status: implemented
 
-Superseded：下文描述的 record 声明（`JobStart.record`、`RecordingJob`、`readRecord`、`pumpJobOutput`）与拆分的线路（会话控制流上的 `SessionJob.record`、`ctx.jobOutput`）已收敛为一个输出环与 `ctx.jobs` 上的直接操作——见 [jobs seam 收敛](2026-09-03-jobs-seam-consolidation.zh.md)。把独立 activity seam 吸收进 `ctx.jobs` 的论证仍然成立。
+Superseded：下文描述的 record 宣告（`JobStart.record`、`RecordingJob`、`readRecord`、`pumpJobOutput`）與拆分的線路（工作階段控制流上的 `SessionJob.record`、`ctx.jobOutput`）已收斂為一個輸出環與 `ctx.jobs` 上的直接操作——見 [jobs seam 收斂](2026-09-03-jobs-seam-consolidation.zh.md)。把獨立 activity seam 吸收進 `ctx.jobs` 的論證仍然成立。
 
 [English](2026-09-01-jobs-absorb-activity-record.md) | 中文
 
-## 问题
+## 問題
 
-[activity 观测 seam](../feature/2026-08-24-activity-observation-seam.zh.md) 把实时输出流做成了 `ctx.jobs` 旁边的第二个注册表：生产者要把同一份工作登记两次（job 管生命周期，activity 管观测），手工保持两个终态一致（`observeBackgroundActivity` 要等 `proc.done` 才映射 outcome，防止 pump 失败把错误终态冻上去），通过 `ActivityCorrelation.jobId` 关联两行，并给每个观测调用包上注册表缺失的降级分支。Web 客户端维护两份名册（session-control 的 `jobs` 帧与 activity control 流）并逐行做 join。合并前实测：八个配对调用点；生产者人口为——后台 bash/pwsh（双注册表）、PTY 发送与 subagent 委托（仅 jobs）、前台 workflow（仅 activity）。
+[activity 觀測 seam](../feature/2026-08-24-activity-observation-seam.zh.md) 把即時輸出流做成了 `ctx.jobs` 旁邊的第二個註冊表：生產者要把同一份工作登記兩次（job 管生命週期，activity 管觀測），手工保持兩個終態一致（`observeBackgroundActivity` 要等 `proc.done` 才對映 outcome，防止 pump 失敗把錯誤終態凍上去），透過 `ActivityCorrelation.jobId` 關聯兩行，並給每個觀測呼叫包上註冊表缺失的降級分支。Web 用戶端維護兩份名冊（session-control 的 `jobs` 幀與 activity control 流）並逐行做 join。合併前實測：八個配對呼叫點；生產者人口為——後臺 bash/pwsh（雙註冊表）、PTY 傳送與 subagent 委託（僅 jobs）、前臺 workflow（僅 activity）。
 
-唯一没有 job 的 activity 是前台 workflow 镜像。拆分带来的其他一切——独立观察者、绝对偏移读取、有界保留——都是 record 的性质，不是注册表拆分的性质。
+唯一沒有 job 的 activity 是前臺 workflow 映像。拆分帶來的其他一切——獨立觀察者、絕對偏移讀取、有界保留——都是 record 的性質，不是註冊表拆分的性質。
 
-## 决策
+## 決策
 
-`ctx.jobs` 拥有观测 record；`packages/activity/`、`packages/api/activity-controller` 与 correlation 词表被移除。
+`ctx.jobs` 擁有觀測 record；`packages/activity/`、`packages/api/activity-controller` 與 correlation 詞表被移除。
 
-- **`JobStart.record?: true`** 声明可观测输出 record。`run(job)` 现在收到 job 的生产者面——`record: true` 的 start 收到 `RecordingJob { id, append(text, {channel?, gapBefore?}), updateDetail(detail) }`，其余收到普通的 `RunningJob { id, updateDetail(detail) }`——因此 id 在 starter 运行前签发（starter 抛出仍然不登记任何东西；序号被跳过）。starter 内暂存的写入在登记提交时可见。`updateDetail` 对所有 job 可用，让 `job_list` 也能看到实时进度行；未声明 record 的 `append` 记日志并丢弃。
-- **没有 `end`。** job 结算——生产者 outcome、kill 或 teardown——是 record 唯一的关闭：裁剪到结算保留量并发出最后一个 `onOutput` 信号。双结算配对（`ActivityHandle.end` 与 teardown 强结的 first-wins 对账）被删除，而非重新实现。
-- **`readRecord(id, from, caller)`** 是非消耗多读者视图（绝对 UTF-8 偏移，低于保留窗口为 `lossy`），围栏与其他 job 读取一致；永不置 `reported`。模型面的 `readOutput` 游标原样保留——两个投影服务不同读者，刻意保持分离。
-- **`jobs-local`** 吸收块环（`retainBytes` 运行期 256 KiB，`settledRetainBytes` 结算后 16 KiB），`pumpJobOutput` 在 seam 旁替换 `pumpActivityOutput`。生产者把 pump 的末次排空折进 `hooks.done`，让 record 在结算关闭前握有最后的字节。
-- **wire 按角色拆分。** `SessionJob.record`（恰在 record job 上存在）在会话控制流上标记行可观测；`api-job-controller` 的 `job` 命名空间上的 `job.follow({sessionId?, jobId, from?})` 流式发送 anchor/output/status 帧，围栏读取者由请求的 session 解析。`api-activity-controller` 删除；其名册流是冗余的（jobs 帧就是名册），observe 机制位于 `api-job-controller`（`observe.ts`，客户端 `ctx.jobOutput`），它在自己的 apply 里解析所依赖的 Remote 面。
-- **`ui-activity` 改回上游名字 `ui-jobs`**，渲染单一名册：`jobsBySession` 行，恰在 `record` 存在时可展开。双名册 join 被删除。
-- **前台 workflow 有意失去实时面板。** `tool-workflow` 的 activity 镜像被移除；前台 run 只通过已记录的 run/member 生命周期事件呈现，逐行的 `workflow/phase` / `workflow/log` 叙述在 workflow 获得 `run_in_background` 并登记 record job 之前没有观察者。jobs 保持纯后台注册表——没有 `foreground` 模式位、没有模型不可见行、没有无 run 行。
+- **`JobStart.record?: true`** 宣告可觀測輸出 record。`run(job)` 現在收到 job 的生產者面——`record: true` 的 start 收到 `RecordingJob { id, append(text, {channel?, gapBefore?}), updateDetail(detail) }`，其餘收到普通的 `RunningJob { id, updateDetail(detail) }`——因此 id 在 starter 執行前簽發（starter 丟擲仍然不登記任何東西；序號被跳過）。starter 內暫存的寫入在登記提交時可見。`updateDetail` 對所有 job 可用，讓 `job_list` 也能看到即時進度行；未宣告 record 的 `append` 記日誌並丟棄。
+- **沒有 `end`。** job 結算——生產者 outcome、kill 或 teardown——是 record 唯一的關閉：裁剪到結算保留量並行出最後一個 `onOutput` 訊號。雙結算配對（`ActivityHandle.end` 與 teardown 強結的 first-wins 對帳）被刪除，而非重新實作。
+- **`readRecord(id, from, caller)`** 是非消耗多讀者檢視（絕對 UTF-8 偏移，低於保留視窗為 `lossy`），圍欄與其他 job 讀取一致；永不置 `reported`。模型面的 `readOutput` 遊標原樣保留——兩個投影服務不同讀者，刻意保持分離。
+- **`jobs-local`** 吸收塊環（`retainBytes` 執行期 256 KiB，`settledRetainBytes` 結算後 16 KiB），`pumpJobOutput` 在 seam 旁替換 `pumpActivityOutput`。生產者把 pump 的末次排空折進 `hooks.done`，讓 record 在結算關閉前握有最後的位元組。
+- **wire 按角色拆分。** `SessionJob.record`（恰在 record job 上存在）在工作階段控制流上標記行可觀測；`api-job-controller` 的 `job` 名稱空間上的 `job.follow({sessionId?, jobId, from?})` 流式傳送 anchor/output/status 幀，圍欄讀取者由請求的 session 解析。`api-activity-controller` 刪除；其名冊流是冗餘的（jobs 幀就是名冊），observe 機制位於 `api-job-controller`（`observe.ts`，用戶端 `ctx.jobOutput`），它在自己的 apply 裡解析所依賴的 Remote 面。
+- **`ui-activity` 改回上游名字 `ui-jobs`**，渲染單一名冊：`jobsBySession` 行，恰在 `record` 存在時可展開。雙名冊 join 被刪除。
+- **前臺 workflow 有意失去即時面板。** `tool-workflow` 的 activity 映像被移除；前臺 run 只透過已記錄的 run/member 生命週期事件呈現，逐行的 `workflow/phase` / `workflow/log` 敘述在 workflow 獲得 `run_in_background` 並登記 record job 之前沒有觀察者。jobs 保持純後臺註冊表——沒有 `foreground` 模式位、沒有模型不可見行、沒有無 run 行。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **`foreground: true` job 模式**以保留前台 workflow 面板：它需要两个耦合的执行点（出生即 reported 与 `job_list` 过滤），两者一旦分叉就会双投递或向模型泄漏行，而它换来的只是一个可被 `run_in_background` 替代的边缘特性。
-- **用 record 服务模型读取**（删除 `readOutput`）：模型读取是生产者格式化的（截断与 spill 提示、sandbox 标记）且消耗型；record 是原始、带 channel 标签、非消耗的。统一二者要么把生产者特有格式化搬进注册表，要么把噪声混入观察者流。
-- **保留拆分但共享实现**（公共注册表库）：它消除重复骨架，但保留真正的成本——双重登记、终态配对、correlation、第二条 wire 名册与第二个包族。
+- **`foreground: true` job 模式**以保留前臺 workflow 面板：它需要兩個耦合的執行點（出生即 reported 與 `job_list` 過濾），兩者一旦分叉就會雙投遞或向模型洩漏行，而它換來的只是一個可被 `run_in_background` 替代的邊緣特性。
+- **用 record 服務模型讀取**（刪除 `readOutput`）：模型讀取是生產者格式化的（截斷與 spill 提示、sandbox 標記）且消耗型；record 是原始、帶 channel 標籤、非消耗的。統一二者要麼把生產者特有格式化搬進註冊表，要麼把噪聲混入觀察者流。
+- **保留拆分但共享實作**（公共註冊表庫）：它消除重複骨架，但保留真正的成本——雙重登記、終態配對、correlation、第二條 wire 名冊與第二個包族。
 
-[先前 seam note](../feature/2026-08-24-activity-observation-seam.zh.md) 反对用持久会话事件或 control 流承载实时输出的论证仍然成立并原样沿用：record 是进程本地观测状态，从不是会话事件，「模型可见 ⟺ 已记录」不受影响。
+[先前 seam note](../feature/2026-08-24-activity-observation-seam.zh.md) 反對用持久工作階段事件或 control 流承載即時輸出的論證仍然成立並原樣沿用：record 是程序本地觀測狀態，從不是工作階段事件，「模型可見 ⟺ 已記錄」不受影響。
 
-## 评审修正
+## 評審修正
 
-对已合并设计的评审确定了上文各节未言明的五点：
+對已合併設計的評審確定了上文各節未言明的五點：
 
-- **泵的等待资源恒定。** `pumpJobOutput` 对生产者的 `done` 只订阅一次，同一时刻只保留一个待触发的 timer；结算清掉 timer 并唤醒当前等待。此前每个轮询轮次都对同一个 pending promise 赛跑，每轮留下一个 reaction 直到任务结束——默认节奏下跑一天的任务会累积上百万个闭包。
-- **客户端卸载等待载体静止。** `ctx.jobOutput` 的 effect disposer 是异步的，await 每条打开的 `RemoteStream.dispose()`：Cordis 会 await 异步 disposer，而一个在旧 iterator 仍在关闭时就宣告卸载完成的 fiber，在 HMR 下可能与下一个插件实例重叠。
-- **名册标记 record，不计字节。** `SessionJob.record: true` 取代了 `outputTotal`：`append` 不提交名册变更（只有生命周期提交触发 `onJobsChanged`），镜像的计数在输出到达的瞬间就陈旧了；而为一个没有任何行需要的数字按 append 广播整份名册被否决。实时偏移随观测流的 `opened` 锚帧到达。
-- **record 是尽力而为的实时预览。** 生产者按轮询轮次复制 stdout 与 stderr，同一窗口内的写入先 stdout 落地；pipe 捕获无法还原真实交错（只有 PTY 或 `2>&1` 可以），客户端拼接 chunk 时也不区分 `channel`。`channel` 留在 wire 上，因为它正是让这一限制可见、也是将来区分渲染 stderr 所需要的东西。
-- **声明决定生产者面的类型。** `JobStart` 是按 `record` 判别的联合类型：`RecordingJobStart.run` 收到 `RecordingJob`，`PlainJobStart.run` 收到没有 `append` 的 `RunningJob`，注册表给普通 job 构造的面根本没有这个方法——注册表无处存放的输出成为不可表达，而不是警告后丢弃。
-- **Web e2e 的保活是 barrier 而非时钟。** 后台命令守在测试拥有的、位于 job cwd 的文件上，由场景显式 kill，因此 CI 卡顿不可能先把任务结算掉；每个场景是一个测试，绝不是共享 job id 的测试链。
+- **泵的等待資源恆定。** `pumpJobOutput` 對生產者的 `done` 只訂閱一次，同一時刻只保留一個待觸發的 timer；結算清掉 timer 並喚醒目前等待。此前每個輪詢輪次都對同一個 pending promise 賽跑，每輪留下一個 reaction 直到任務結束——預設節奏下跑一天的任務會累積上百萬個閉包。
+- **用戶端解除安裝等待載體靜止。** `ctx.jobOutput` 的 effect disposer 是非同步的，await 每條開啟的 `RemoteStream.dispose()`：Cordis 會 await 非同步 disposer，而一個在舊 iterator 仍在關閉時就宣告解除安裝完成的 fiber，在 HMR 下可能與下一個外掛實例重疊。
+- **名冊標記 record，不計位元組。** `SessionJob.record: true` 取代了 `outputTotal`：`append` 不提交名冊變更（只有生命週期提交觸發 `onJobsChanged`），映像的計數在輸出到達的瞬間就陳舊了；而為一個沒有任何行需要的數字按 append 廣播整份名冊被否決。即時偏移隨觀測流的 `opened` 錨幀到達。
+- **record 是盡力而為的即時預覽。** 生產者按輪詢輪次複製 stdout 與 stderr，同一視窗內的寫入先 stdout 落實；pipe 捕捉無法還原真實交錯（只有 PTY 或 `2>&1` 可以），用戶端拼接 chunk 時也不區分 `channel`。`channel` 留在 wire 上，因為它正是讓這一限制可見、也是將來區分渲染 stderr 所需要的東西。
+- **宣告決定生產者面的型別。** `JobStart` 是按 `record` 判別的聯合型別：`RecordingJobStart.run` 收到 `RecordingJob`，`PlainJobStart.run` 收到沒有 `append` 的 `RunningJob`，註冊表給普通 job 建構的面根本沒有這個方法——註冊表無處存放的輸出成為不可表達，而不是警告後丟棄。
+- **Web e2e 的保活是 barrier 而非時鐘。** 後臺命令守在測試擁有的、位於 job cwd 的檔案上，由情境顯式 kill，因此 CI 卡頓不可能先把任務結算掉；每個情境是一個測試，絕不是共享 job id 的測試鏈。
 
-## 后果
+## 後果
 
-每个可观测行都是可 kill 的 job；没有生命周期的纯观测面需要新的归属（harness 诊断属于 inspector 平面，不在这里）。未来的远端 job provider 必须同时实现生命周期与 record。record 的保留配置在 `jobs-local`；观测 wire 的节奏配置（`observeFlushMs`、`observeMaxFrameBytes`）在 `api-job-controller`。
+每個可觀測行都是可 kill 的 job；沒有生命週期的純觀測面需要新的歸屬（harness 診斷屬於 inspector 平面，不在這裡）。未來的遠端 job provider 必須同時實作生命週期與 record。record 的保留設定在 `jobs-local`；觀測 wire 的節奏設定（`observeFlushMs`、`observeMaxFrameBytes`）在 `api-job-controller`。

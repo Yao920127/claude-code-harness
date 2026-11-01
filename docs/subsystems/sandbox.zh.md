@@ -1,14 +1,14 @@
-# 进程沙箱
+# 程序沙箱
 
 [English](sandbox.md) | 中文
 
-[dsh-sandbox](../../packages/sandbox/sandbox) 的进程沙箱 seam 将与配套子进程提供方共享执行环境的子进程 argv 包装在文件效果策略中，而不将消费方耦合到特定平台运行器。[dsh-sandbox-local](../../packages/sandbox/sandbox-local) 提供 Linux bwrap/Landlock、macOS Seatbelt 与 Windows ACL 受限令牌后端；[dsh-bash-sandbox](../../packages/shell/bash-sandbox) 和 [dsh-pwsh-sandbox](../../packages/shell/pwsh-sandbox) 是其消费方。[dsh-sandbox-ssh](../../packages/ssh/sandbox-ssh/README.zh.md) 通过与 SSH 文件系统及子进程提供方配套的远端后端执行同一策略。
+[dsh-sandbox](../../packages/sandbox/sandbox) 的程序沙箱 seam 將與配套子程序提供者共享執行環境的子程序 argv 包裝在檔案效果策略中，而不將消費方耦合到特定平臺執行器。[dsh-sandbox-local](../../packages/sandbox/sandbox-local) 提供 Linux bwrap/Landlock、macOS Seatbelt 與 Windows ACL 受限權杖後端；[dsh-bash-sandbox](../../packages/shell/bash-sandbox) 和 [dsh-pwsh-sandbox](../../packages/shell/pwsh-sandbox) 是其消費方。[dsh-sandbox-ssh](../../packages/ssh/sandbox-ssh/README.zh.md) 透過與 SSH 檔案系統及子程序提供者配套的遠端後端執行同一策略。
 
-源码：[`packages/sandbox/sandbox/src/index.ts`](../../packages/sandbox/sandbox/src/index.ts)
+原始碼：[`packages/sandbox/sandbox/src/index.ts`](../../packages/sandbox/sandbox/src/index.ts)
 
-## 模式与强制执行
+## 模式與強制執行
 
-`SandboxMode` 仅管控文件系统效果。`read-only` 要求后端拒绝写入——POSIX runner 还会授予其 shell 所需的 `/dev/null` 接收器，而 Windows ACL runner 不授予任何显式可写根目录，并因环境 ACL 缺口报告部分强制执行；`workspace-write` 允许在工作区根目录及后端承诺的临时区域下写入；`danger-full-access` 绕过隔离。网络与进程可见性不在此处的定义范围内。
+`SandboxMode` 僅管控檔案系統效果。`read-only` 要求後端拒絕寫入——POSIX runner 還會授予其 shell 所需的 `/dev/null` 接收器，而 Windows ACL runner 不授予任何顯式可寫根目錄，並因環境 ACL 缺口報告部分強制執行；`workspace-write` 允許在工作區根目錄及後端承諾的臨時區域下寫入；`danger-full-access` 繞過隔離。網路與程序可見性不在此處的定義範圍內。
 
 ```ts type-equiv
 /**
@@ -20,14 +20,14 @@
 type SandboxMode = 'read-only' | 'workspace-write' | 'danger-full-access'
 ```
 
-只有前两种模式可以发送给提供方。`danger-full-access` 的消费方直接 spawn 原始 argv，不调用 `ctx.sandbox`。
+只有前兩種模式可以傳送給提供者。`danger-full-access` 的消費方直接 spawn 原始 argv，不呼叫 `ctx.sandbox`。
 
 ```ts type-equiv
 /** A confining (non-`danger-full-access`) mode — the modes a {@link SandboxPolicy} can carry. */
 type ConfinedSandboxMode = Exclude<SandboxMode, 'danger-full-access'>
 ```
 
-强制执行完整性是后端报告的事实。`full` 表示后端管控了该模式承诺的所有文件效果；`partial` 表示活跃后端或较旧的内核 ABI 仅管控其中一个子集，因此要求绝对保证的消费方必须拒绝或向上暴露这一区别。当前的部分强制执行情形包括较旧的 Landlock ABI，以及 Windows ACL runner 的硬链接、读取不受限与 AppContainer ACL 边界。
+強制執行完整性是後端報告的事實。`full` 表示後端管控了該模式承諾的所有檔案效果；`partial` 表示活躍後端或較舊的核心 ABI 僅管控其中一個子集，因此要求絕對保證的消費方必須拒絕或向上暴露這一區別。目前的部分強制執行情形包括較舊的 Landlock ABI，以及 Windows ACL runner 的硬連結、讀取不受限與 AppContainer ACL 邊界。
 
 ```ts type-equiv
 /**
@@ -38,9 +38,9 @@ type ConfinedSandboxMode = Exclude<SandboxMode, 'danger-full-access'>
 type SandboxEnforcement = 'full' | 'partial'
 ```
 
-## 逐调用策略
+## 逐呼叫策略
 
-完整执行策略会按每次能力调用解析并携带。它包括 `danger-full-access`，因此消费方可以只解析一次策略，再决定是否绕过约束。普通工具调用从调用会话的不可变 cwd 派生 `workspaceRoot`；部署配置是没有 agent（智能体）时的回退值。解析器保留执行环境中的绝对路径写法。执行限制的提供方在文件实际存在的位置规范化根目录，因此包含 `symlink/..` 的 cwd 会标识配套子进程提供方实际运行的目录。
+完整執行策略會按每次能力呼叫解析並攜帶。它包括 `danger-full-access`，因此消費方可以只解析一次策略，再決定是否繞過約束。普通工具呼叫從呼叫工作階段的不可變 cwd 派生 `workspaceRoot`；部署設定是沒有 agent（智慧代理）時的退回值。解析器保留執行環境中的絕對路徑寫法。執行限制的提供者在檔案實際存在的位置規範化根目錄，因此包含 `symlink/..` 的 cwd 會標識配套子程序提供者實際執行的目錄。
 
 ```ts type-equiv
 /**
@@ -64,7 +64,7 @@ interface SandboxExecutionPolicy {
 }
 ```
 
-`ctx.sandboxPolicy.resolve()` 接收活跃会话；对于已批准的重试，还接收显式模式。该服务拥有优先级与 root 回退规则，使 bash 和 fs 不必重复实现。
+`ctx.sandboxPolicy.resolve()` 接收活躍工作階段；對於已批准的重試，還接收顯式模式。該服務擁有優先順序與 root 退回規則，使 bash 和 fs 不必重複實作。
 
 ```ts type-equiv
 /** Inputs that select the sandbox policy for one capability call. */
@@ -76,7 +76,7 @@ interface SandboxPolicyRequest {
 }
 ```
 
-只有受约束的执行会到达 `ctx.sandbox`；传给提供方的策略在保留同一 root 的同时收窄模式。这使并发会话、消费方与一次性提权重试可以向同一提供方请求不同边界，而无需改变提供方状态。
+只有受約束的執行會到達 `ctx.sandbox`；傳給提供者的策略在保留同一 root 的同時收窄模式。這使並行工作階段、消費方與一次性提權重試可以向同一提供者請求不同邊界，而無需改變提供者狀態。
 
 ```ts type-equiv
 /**
@@ -95,9 +95,9 @@ interface SandboxPolicy extends SandboxExecutionPolicy {
 
 <a id="wrapped-argv-and-classification-dialects"></a>
 
-## 包装后的 argv 与分类方言
+## 包裝後的 argv 與分類方言
 
-`RunnerFailureRule` 汇集用于判定 runner 在执行命令前失败的证据。消费方要求进程以非零状态退出，并同时满足可选的允许退出码门控，以及余下某一 stderr 行中不区分大小写的致命签名。系统会先按不区分大小写的整行精确匹配移除信息性排除项，因此无害的 runner 通知本身不能证明失败。匹配到的行仍可用作错误详情；分类过程不会重写 stderr。
+`RunnerFailureRule` 彙集用於判定 runner 在執行命令前失敗的證據。消費方要求程序以非零狀態退出，並同時滿足可選的允許結束代碼門控，以及餘下某一 stderr 行中不區分大小寫的致命簽名。系統會先按不區分大小寫的整行精確匹配移除資訊性排除項，因此無害的 runner 通知本身不能證明失敗。匹配到的行仍可用作錯誤詳情；分類過程不會重寫 stderr。
 
 ```ts type-equiv
 /**
@@ -117,7 +117,7 @@ interface RunnerFailureRule {
 }
 ```
 
-`ConfinedArgv` 是消费方实际 spawn 的内容。除了替换后的 argv，它还携带后端的强制执行事实和两种正交的 stderr 分类器。`denialSignatures` 用于识别沙箱正常工作时受限命令被阻止的情况。`runnerFailureRules` 用于识别沙箱 runner 在执行命令之前拒绝或失败的情况；消费方应先检查后者，将其作为沙箱基础设施故障上报，而非普通任务失败。
+`ConfinedArgv` 是消費方實際 spawn 的內容。除了替換後的 argv，它還攜帶後端的強制執行事實和兩種正交的 stderr 分類器。`denialSignatures` 用於識別沙箱正常工作時受限命令被阻止的情況。`runnerFailureRules` 用於識別沙箱 runner 在執行命令之前拒絕或失敗的情況；消費方應先檢查後者，將其作為沙箱基礎設施故障上報，而非普通任務失敗。
 
 ```ts type-equiv
 /**
@@ -149,13 +149,13 @@ interface ConfinedArgv {
 }
 ```
 
-[本地提供方](../../packages/sandbox/sandbox-local/README.zh.md)拥有运维配置，并将其 runner 方言映射到这些规则。[沙箱化 bash 消费方](../../packages/shell/bash-sandbox/README.zh.md)拥有 spawn 与结果归因。
+[本地提供者](../../packages/sandbox/sandbox-local/README.zh.md)擁有運維設定，並將其 runner 方言對映到這些規則。[沙箱化 bash 消費方](../../packages/shell/bash-sandbox/README.zh.md)擁有 spawn 與結果歸因。
 
-## 提供方与 fail-closed 错误
+## 提供者與 fail-closed 錯誤
 
-`await ctx.sandbox.confine(argv, policy, signal)` 在执行环境中解析策略路径并返回 `ConfinedArgv`，没有可用后端时以 `SandboxUnavailableError`（错误码 `SANDBOX_UNAVAILABLE`）拒绝。可选信号可在启动前取消解析。消费方也可以在 spawn 或观察所返回的 argv 时对失败进行分类；该归因属于消费方约定。对于受限策略，静默的无隔离透传永远不合法。
+`await ctx.sandbox.confine(argv, policy, signal)` 在執行環境中解析策略路徑並返回 `ConfinedArgv`，沒有可用後端時以 `SandboxUnavailableError`（錯誤碼 `SANDBOX_UNAVAILABLE`）拒絕。可選訊號可在啟動前取消解析。消費方也可以在 spawn 或觀察所返回的 argv 時對失敗進行分類；該歸因屬於消費方約定。對於受限策略，靜默的無隔離直接傳遞永遠不合法。
 
-提供方选择、探测、缓存和后端特定的强制执行报告归[本地提供方](../../packages/sandbox/sandbox-local/README.zh.md)所有。
+提供者選擇、探測、快取和後端特定的強制執行報告歸[本地提供者](../../packages/sandbox/sandbox-local/README.zh.md)所有。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

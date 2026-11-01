@@ -1,5 +1,5 @@
 ---
-description: "Web GUI 的 plan 模式状态徽章：显示 plan 模式已开启并可将其关闭的 composer 控件；供 plan 模式的用户与维护者阅读。"
+description: "Web GUI 的 plan 模式狀態徽章：顯示 plan 模式已開啟並可將其關閉的 composer 控制元件；供 plan 模式的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,96 +9,96 @@ kind: "package-reference"
 
 ## 概述
 
-计划模式让你在实施前审阅计划。通过 `/plan` 进入，通过编辑器中的状态按钮退出。提交的计划自动在右侧边栏打开供审阅；批准、拒绝或关闭审批后，仍可通过已完成回合末尾的产物卡片查看。重新打开同一计划会聚焦已有标签页，刷新浏览器后会从会话历史恢复正文。
+計劃模式讓你在實施前審閱計劃。透過 `/plan` 進入，透過編輯器中的狀態按鈕退出。提交的計劃自動在右側邊欄開啟供審閱；批准、拒絕或關閉審批後，仍可透過已完成回合末尾的產物卡片檢視。重新開啟同一計劃會聚焦已有標籤頁，重新整理瀏覽器後會從工作階段歷史恢復正文。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-与 `ui-conversation` 及 `dsh-plan-mode` 一起挂载本插件；plan 模式激活时，徽章随即占据 composer 的 plan 座位（访问模式控件右侧）。经 `/plan` 命令路径进入 plan 模式——从 composer 的 `+` Command 菜单选择「计划」，或键入 `/plan`——再用徽章将其关闭。
+與 `ui-conversation` 及 `dsh-plan-mode` 一起掛載本外掛；plan 模式啟用時，徽章隨即佔據 composer 的 plan 座位（存取模式控制元件右側）。經 `/plan` 命令路徑進入 plan 模式——從 composer 的 `+` Command 選單選擇「計劃」，或鍵入 `/plan`——再用徽章將其關閉。
 
-### 徽章显示什么
+### 徽章顯示什麼
 
-当有效目标为 plan 模式时，该座位渲染蓝色「计划」状态按钮——标签前是计划图标，按钮可用且被悬停或键盘聚焦时换成圆形 ×——点击执行 `/plan off`。否则座位保持为空：未组合 plan-mode 的宿主，或尚无会话的 Draft，都不显示任何内容。plan 模式为有效目标期间，composer 文本框的 placeholder 切换为 plan 任务提示——「describe your task to generate plan」——除非所属 surface 提供自己的 placeholder。
+當有效目標為 plan 模式時，該座位渲染藍色「計劃」狀態按鈕——標籤前是計劃圖示，按鈕可用且被懸停或鍵盤聚焦時換成圓形 ×——點選執行 `/plan off`。否則座位保持為空：未組合 plan-mode 的主機，或尚無工作階段的 Draft，都不顯示任何內容。plan 模式為有效目標期間，composer 文字框的 placeholder 切換為 plan 任務提示——「describe your task to generate plan」——除非所屬 surface 提供自己的 placeholder。
 
-### 查看已提交的计划
+### 檢視已提交的計劃
 
-回合结束后，每次提交的计划都会显示在该回合末尾的产物区域，并采用文件产物卡片的样式，包含 Markdown 图标、标题和“打开”操作。在当前浏览器会话中，每份待审计划自动打开一次；关闭后，重新挂载审批组件不会再次展开，新提交会打开其对应计划。历史卡片仅在点击后打开。通过卡片或审批条带上的“查看全文”链接可阅读完整 Markdown。计划标签页显示纯文本文件图标。不同提交保留独立标签页；是否开始实施仍由审批按钮决定。
+回合結束後，每次提交的計劃都會顯示在該回合末尾的產物區域，並採用檔案產物卡片的樣式，包含 Markdown 圖示、標題和“開啟”操作。在目前瀏覽器工作階段中，每份待審計劃自動開啟一次；關閉後，重新掛載審批元件不會再次展開，新提交會開啟其對應計劃。歷史卡片僅在點選後開啟。透過卡片或審批條帶上的“檢視全文”連結可閱讀完整 Markdown。計劃標籤頁顯示純文字檔案圖示。不同提交保留獨立標籤頁；是否開始實施仍由審批按鈕決定。
 
-没有已记录调用标识的审批也会自动打开。完整正文只保存在标签页的导航内存中，待处理审批卡片可以重新打开它。刷新页面会丢失该正文；失效的预览会提示用户返回待处理审批。在嵌入式子对话中打开计划时，预览使用当前可见的侧栏，读取文档仍保留子会话地址。
+沒有已記錄呼叫標識的審批也會自動開啟。完整正文只儲存在標籤頁的導航記憶體中，待處理審批卡片可以重新開啟它。重新整理頁面會丟失該正文；失效的預覽會提示使用者返回待處理審批。在嵌入式子對話中開啟計劃時，預覽使用目前可見的側欄，讀取文件仍保留子工作階段地址。
 
-### 失败
+### 失敗
 
-准入失败（`matched: false`、业务错误、传输故障）以内联错误呈现，徽章保持显示直至投影确认退出。
+准入失敗（`matched: false`、業務錯誤、傳輸故障）以內聯錯誤呈現，徽章保持顯示直至投影確認退出。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-徽章占据 conversation 声明的 `conversation.input.plan` 单实例座位；node 半部是空 apply（roster 行）。读取经 standard-kit 的 `useProjection` 走通用投影对：有效目标是 `pending ? !active : active`——折叠的宿主值而非客户端乐观态，因此到达的帧无论哪个方向都会纠正徽章。座位注入面携带一个动词 `exitPlanMode`，经 `ctx.remote.commands.execute` 执行 `/plan off`，并把准入失败映射为一行内联错误。placeholder 与提示文案位于 ui-conversation 的 `conversation` locale 命名空间，与已认领 `/plan` 命令的提示逐字共用。
+徽章佔據 conversation 宣告的 `conversation.input.plan` 單實例座位；node 半部是空 apply（roster 行）。讀取經 standard-kit 的 `useProjection` 走通用投影對：有效目標是 `pending ? !active : active`——摺疊的主機值而非用戶端樂觀態，因此到達的幀無論哪個方向都會糾正徽章。座位注入面攜帶一個動詞 `exitPlanMode`，經 `ctx.remote.commands.execute` 執行 `/plan off`，並把准入失敗對映為一行內聯錯誤。placeholder 與提示文案位於 ui-conversation 的 `conversation` locale 名稱空間，與已認領 `/plan` 命令的提示逐字共用。
 
-计划卡片通过 Conversation Definition 从原生 `tool/call` 或 PTC dispatch 参数派生，并使用每次调用已解析的回合位置。它们与文件产物一起贡献到可追加的 `conversation.chat.turnTail` 列表。计划资源地址标识调用及完整的普通会话地址或子会话直接父级地址；provider 读取已有会话历史及较早分页，不把正文存入侧边栏布局。提问插件拥有审批操作插槽，并提供请求键、完整正文和可选的调用标识。自动打开通过绑定的 hook 读取 `ctx.sidebarRight.mounted`，在座位出现在屏幕上后才执行：全局面板打开期间到达的审批，会在返回时与座位在同一次提交里先挂载、早于座位完成绑定。[决策记录](../../../.agents/notes/implemented/feature/2026-09-17-persistent-plan-cards.zh.md)说明审批与文档为何保持独立生命周期。 子代理计划地址也保留未知模式，以便历史读取解析子 descriptor。
+計劃卡片透過 Conversation Definition 從原生 `tool/call` 或 PTC dispatch 參數派生，並使用每次呼叫已解析的回合位置。它們與檔案產物一起貢獻到可追加的 `conversation.chat.turnTail` 列表。計劃資源地址標識呼叫及完整的普通工作階段地址或子工作階段直接父級地址；provider 讀取已有工作階段歷史及較早分頁，不把正文存入側邊欄佈局。提問外掛擁有審批操作插槽，並提供請求鍵、完整正文和可選的呼叫標識。自動開啟透過繫結的 hook 讀取 `ctx.sidebarRight.mounted`，在座位出現在螢幕上後才執行：全域面板開啟期間到達的審批，會在返回時與座位在同一次提交裡先掛載、早於座位完成繫結。[決策記錄](../../../.agents/notes/implemented/feature/2026-09-17-persistent-plan-cards.zh.md)說明審批與文件為何保持獨立生命週期。 子代理計劃地址也保留未知模式，以便歷史讀取解析子 descriptor。
 
-框架绑定的 `usePlans(turn)` 只提供该回合的已提交计划数据。Chat 随节点更新维护成员索引，并在读取时排列该集合；卡片渲染不扫描整段对话，也不订阅其他回合或节点类型。
+框架繫結的 `usePlans(turn)` 只提供該回合的已提交計劃資料。Chat 隨節點更新維護成員索引，並在讀取時排列該集合；卡片渲染不掃描整段對話，也不訂閱其他回合或節點型別。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当 plan surface 不够用时阅读以下页面。它们从徽章进入 plan 模式领域与 composer 外壳。
+當 plan surface 不夠用時閱讀以下頁面。它們從徽章進入 plan 模式領域與 composer 外殼。
 
-- [dsh-plan-mode](../../plan/plan-mode/README.zh.md)——拥有 plan 模式、`/plan` 命令、投影与 policy 段。
-- [ui-conversation](../ui-conversation/README.zh.md)——声明 composer 的 `conversation.input.plan` 座位与 placeholder locale 键。
-- [工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-plan-mode)——模型退出 plan 模式所用的 `exit_plan_mode` 工具 schema。
-- [客户端包映射](../README.zh.md)——相邻的浏览器 UI 包。
+- [dsh-plan-mode](../../plan/plan-mode/README.zh.md)——擁有 plan 模式、`/plan` 命令、投影與 policy 段。
+- [ui-conversation](../ui-conversation/README.zh.md)——宣告 composer 的 `conversation.input.plan` 座位與 placeholder locale 鍵。
+- [工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-plan-mode)——模型退出 plan 模式所用的 `exit_plan_mode` 工具 schema。
+- [用戶端包對映](../README.zh.md)——相鄰的瀏覽器 UI 包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接地，通过 chip 派发的 `/plan off` 命令行：`dsh-plan-mode` 拥有该命令行驱动的模型可见 policy 段、退出工具 schema 与已记录状态。
+間接地，透過 chip 派發的 `/plan off` 命令列：`dsh-plan-mode` 擁有該命令列驅動的模型可見 policy 段、退出工具 schema 與已記錄狀態。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-进入或离开 plan mode 会改变活跃的 `plan:policy` 系统提示词段，因此改变请求前缀；chip 本身不添加任何提示词内容。
+進入或離開 plan mode 會改變活躍的 `plan:policy` 系統提示詞段，因此改變請求字首；chip 本身不新增任何提示詞內容。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制界定了当前 plan 徽章。它们是当前包约束，不是 plan 模式对比或任务积压。
+這些限制界定了目前 plan 徽章。它們是目前包約束，不是 plan 模式對比或任務積壓。
 
-- **Plan 模式是引导而非执行沙箱**——需要强制只读规划的部署必须组合独立的沙箱与审批策略。
-- **徽章属于默认 composer**——待处理的涉及整个 composer 的交互（如 plan 评审）会临时取代 InputBar 及其徽章。
-- **未激活时无 plan 控件**——入口使用共享 Command source；有能力但模式未激活的会话在工具行不显示 plan 入口。
+- **Plan 模式是引導而非執行沙箱**——需要強制只讀規劃的部署必須組合獨立的沙箱與審批策略。
+- **徽章屬於預設 composer**——待處理的涉及整個 composer 的互動（如 plan 評審）會臨時取代 InputBar 及其徽章。
+- **未啟用時無 plan 控制元件**——入口使用共享 Command source；有能力但模式未啟用的工作階段在工具行不顯示 plan 入口。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。plan state 与 boundary 的所有权由 dsh-plan-mode 审计；本包的 control 是一种 slot effect，其声明、注册与清理由本包执行。
+**執行時不變式：** 不釋出伴生入口。plan state 與 boundary 的所有權由 dsh-plan-mode 審計；本包的 control 是一種 slot effect，其宣告、註冊與清理由本包執行。

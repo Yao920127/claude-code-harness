@@ -1,11 +1,11 @@
-- dialog "快捷键":
+- dialog "快捷鍵":
   - banner:
-    - heading "快捷键" [level=2]
-    - button "关闭快捷键"
-  - search "搜索快捷键":
-    - searchbox "搜索快捷键": abc
-    - button "清空搜索"
-  - status: 没有匹配的快捷键
+    - heading "快捷鍵" [level=2]
+    - button "關閉快捷鍵"
+  - search "搜尋快捷鍵":
+    - searchbox "搜尋快捷鍵": abc
+    - button "清空搜尋"
+  - status: 沒有匹配的快捷鍵
   - contentinfo:
-    - button "恢复全部默认"
-    - text: 1 项已自定义
+    - button "恢復全部預設"
+    - text: 1 項已自定義

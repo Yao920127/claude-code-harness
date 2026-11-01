@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write packages/experimental/inspector/README.md
 /:
   en: ff4e1ec5ccd5d0b3
-  zh: d29383843e3decc8
+  zh: 21f79667428303b0
 /deepseek-ai-dsh-experimental-inspector:
   en: 1060bee3ef37134d
   zh: 7a7b0096714f4279
 /deepseek-ai-dsh-experimental-inspector/summary:
   en: 65ed8a4c21915cc0
-  zh: dcb1ae527e6bfc8c
+  zh: 26f944d936dc9ac5
 /deepseek-ai-dsh-experimental-inspector/table-of-contents:
   en: 2650c2b268bf6dff
-  zh: 43a08863d2c75ad1
+  zh: d91ecb2805cf1f5f
 /deepseek-ai-dsh-experimental-inspector/runtime-layout:
   en: a713d2910acf48c9
-  zh: 152dcdba78e73115
+  zh: 3f52814552b05bc6
 /deepseek-ai-dsh-experimental-inspector/configuration:
   en: 95f1c9c4ea6ba8b8
-  zh: 16b56e2dd8c7408a
+  zh: 52c24ce4f88a45a2
 /deepseek-ai-dsh-experimental-inspector/observation-api:
   en: d32f994e6c9d0c4a
-  zh: ac2f35f5799aeae0
+  zh: 96a91776c316e666
 /deepseek-ai-dsh-experimental-inspector/cordis-tree-inspection:
   en: 9abe1a8cd52386fb
-  zh: a5e96ec22a503153
+  zh: 67e2398c9e852368
 /deepseek-ai-dsh-experimental-inspector/host-fetch-capture:
   en: 187859f65acc45d7
-  zh: 606e93905c8275e6
+  zh: e8f4f2849a0bbd1b
 /deepseek-ai-dsh-experimental-inspector/security:
   en: 2372c96aba1ce7e6
-  zh: 823ceaa99cfb1f6a
+  zh: 3894a40eac4fea2b
 /deepseek-ai-dsh-experimental-inspector/model-experience:
   en: 6ac8fb2f45b3a97c
-  zh: 9162ffb1a133e11b
+  zh: 291fc3b5dde5b688
 /deepseek-ai-dsh-experimental-inspector/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: 64715dc7e6d02f71
+  zh: 50bf606762e3ebe6
 /deepseek-ai-dsh-experimental-inspector/known-limitations-and-deferred-work:
   en: a35e1559aff5e7aa
-  zh: fbe20422dbe4a0f6
+  zh: e634267eb0cc7cfd
 /deepseek-ai-dsh-experimental-inspector/known-limitations-and-deferred-work/dev-note:
   en: 59a59a4788c80163
-  zh: db23a6b9dc0880ba
+  zh: 7c8e02c10ac7206c

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-17-plugin-detail-page-extension-slots.md
 /agent-note-plugin-detail-pages-as-an-extension-point:
   en: 71b432dfc4475c08
-  zh: a9f9a7e272c32093
+  zh: 1d773124d108691b
 /agent-note-plugin-detail-pages-as-an-extension-point/problem:
   en: 39f7e246e6ab3beb
-  zh: dba3ba5206d81d8d
+  zh: 59c980ea4f2bb390
 /agent-note-plugin-detail-pages-as-an-extension-point/decision:
   en: df2cba037b6bcb4d
-  zh: 82d0a5dc61a1716c
+  zh: 657c9a645d479b61
 /agent-note-plugin-detail-pages-as-an-extension-point/alternatives-considered:
   en: cdcc8710be8ab1be
-  zh: d82781a3c353984f
+  zh: d561d2a808d505c5
 /agent-note-plugin-detail-pages-as-an-extension-point/consequences:
   en: 0567cb3fbfbdb4f8
-  zh: 256811c9a7271da1
+  zh: 5708061122ef9884
 /agent-note-plugin-detail-pages-as-an-extension-point/testing:
   en: 8957db157d2f743e
-  zh: fb24db99bb5a55aa
+  zh: 24dec48e9e88ed73

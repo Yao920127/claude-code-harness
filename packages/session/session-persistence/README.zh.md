@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的持久会话存储 seam 说明，用于选择持久化后端、恢复会话，或按共享服务约定构建后端。"
+description: "面向使用者與維護者的持久工作階段儲存 seam 說明，用於選擇持久化後端、恢復工作階段，或按共享服務約定建置後端。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-本包让应用通过后端无关的 API 持久存储并恢复会话事件日志。读者可以创建、打开、检查、列出、追加、读取、刷新和关闭已存储会话，同时保持连续且仅追加的历史记录。只有完成 flush 才构成持久性屏障；读取方不会收到撕裂尾部或无效记录，并且每个后端实例内每个会话只允许一个写入方。若希望每个会话使用一份压缩日志，可选用随产品交付的 [JSONL 后端](../session-persistence-jsonl/README.zh.md)；也可以实现具备相同可观察保证的其他后端。
+本包讓應用透過後端無關的 API 持久儲存並恢復工作階段事件日誌。讀者可以建立、開啟、檢查、列出、追加、讀取、重新整理和關閉已儲存工作階段，同時保持連續且僅追加的歷史記錄。只有完成 flush 才構成永續性屏障；讀取方不會收到撕裂尾部或無效記錄，並且每個後端實例內每個工作階段只允許一個寫入方。若希望每個工作階段使用一份壓縮日誌，可選用隨產品交付的 [JSONL 後端](../session-persistence-jsonl/README.zh.md)；也可以實作具備相同可觀察保證的其他後端。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-挂载一个持久化后端即可让会话持久化。后端把自己注册为 `ctx.sessionPersistence`，并把每个已发布会话的实时事件路由进该会话的活跃写句柄；agent-loop——会话在生产环境中的发布点——在发布之前获取每个会话的写句柄，因此组合中的其他部分不变。
+掛載一個持久化後端即可讓工作階段持久化。後端把自己註冊為 `ctx.sessionPersistence`，並把每個已釋出工作階段的即時事件路由進該工作階段的活躍寫控制代碼；agent-loop——工作階段在生產環境中的釋出點——在釋出之前取得每個工作階段的寫控制代碼，因此組合中的其他部分不變。
 
-### 选择后端
+### 選擇後端
 
-seam 随产品交付 [JSONL](../session-persistence-jsonl/README.zh.md) 后端。它为每个会话存储一份仅追加的 `.jsonl.zstd` 日志。第三方后端可以直接实现该服务；必须遵守的[后端约定](#understand-the-implementation)见下文。
+seam 隨產品交付 [JSONL](../session-persistence-jsonl/README.zh.md) 後端。它為每個工作階段儲存一份僅追加的 `.jsonl.zstd` 日誌。第三方後端可以直接實作該服務；必須遵守的[後端約定](#understand-the-implementation)見下文。
 
-### 服务提供什么
+### 服務提供什麼
 
-挂载后端后，五个服务方法寻址已存储会话：
+掛載後端後，五個服務方法定址已儲存工作階段：
 
 ```text
 const handle = await ctx.sessionPersistence.create(header)     // store a new session, take write ownership
@@ -45,121 +45,121 @@ await ctx.sessionPersistence.delete(id)                        // permanently re
 await ctx.sessionPersistence.flush()                           // backend-wide durability barrier over every active write handle
 ```
 
-服务级 `flush()` 排空每个活跃写句柄已路由的事件并把其会话实体化，效果与各句柄自己的 `flush` 完全相同；失败按会话聚合为一个 `AggregateError` 而不中途放弃清扫，清扫途中被关闭的句柄视同已 flush，因为 close 本身会持久排空。
+服務級 `flush()` 排空每個活躍寫控制代碼已路由的事件並把其工作階段實體化，效果與各控制代碼自己的 `flush` 完全相同；失敗按工作階段聚合為一個 `AggregateError` 而不中途放棄清掃，清掃途中被關閉的控制代碼視同已 flush，因為 close 本身會持久排空。
 
-每一次日志读写都流经返回的 `SessionHandle`；不存在按 id 寻址的 append 或 load 方法。`handle.read(offset?, length?)` 返回 `{ eventState, events }`：外层 slice 属于调用方，`eventState` 则区分由调用方独占的 `detached` 事件图与可能同时位于后端缓存中的 `shared-frozen` 事件图。该状态由生成方确定，即使切片为空也会保留。两种状态都能直接接管而无需复制；需要可变事件的消费方必须先克隆事件。读取绝不包含撕裂尾部，同一句柄上的重复读取绝不会观察到比先前读取更旧的状态，写句柄也能读到自己成功的 append。`handle.append(events)` 追加一个连续批次，其第一个 `seq` 等于已存储 next-seq；完成时的持久化是尽力而为的——批次被接受、有序，并对同一后端实例上的读取可见，只有完成的 `flush` 才承诺它在崩溃后依然存在（交付的 JSONL 后端恰好会立即持久化每个批次）。`handle.flush()` 是持久性屏障，同时把空的已创建会话实体化，使其可被持久列出。`handle.close()` 幂等且不可取消：读句柄释放本地资源；写句柄完成待处理的持久化并释放写所有权。一旦某次 `append` 或 `flush` 完成，其后在同一后端实例上开始的读取——无论经由任何句柄，还是经由 `stat`/`list`——至少能观察到该前缀。
+每一次日誌讀寫都流經返回的 `SessionHandle`；不存在按 id 定址的 append 或 load 方法。`handle.read(offset?, length?)` 返回 `{ eventState, events }`：外層 slice 屬於呼叫方，`eventState` 則區分由呼叫方獨佔的 `detached` 事件圖與可能同時位於後端快取中的 `shared-frozen` 事件圖。該狀態由生成方確定，即使切片為空也會保留。兩種狀態都能直接接管而無需複製；需要可變事件的消費方必須先克隆事件。讀取絕不包含撕裂尾部，同一控制代碼上的重複讀取絕不會觀察到比先前讀取更舊的狀態，寫控制代碼也能讀到自己成功的 append。`handle.append(events)` 追加一個連續批次，其第一個 `seq` 等於已儲存 next-seq；完成時的持久化是盡力而為的——批次被接受、有序，並對同一後端實例上的讀取可見，只有完成的 `flush` 才承諾它在崩潰後依然存在（交付的 JSONL 後端恰好會立即持久化每個批次）。`handle.flush()` 是永續性屏障，同時把空的已建立工作階段實體化，使其可被持久列出。`handle.close()` 冪等且不可取消：讀控制代碼釋放本地資源；寫控制代碼完成待處理的持久化並釋放寫所有權。一旦某次 `append` 或 `flush` 完成，其後在同一後端實例上開始的讀取——無論經由任何控制代碼，還是經由 `stat`/`list`——至少能觀察到該字首。
 
-### 所有权与可见性
+### 所有權與可見性
 
-`create` 与 `open(id, 'write')` 取得进程内单写者所有权：在持有者活跃期间第二次以写模式打开会以 `SessionAlreadyOwnedError` 拒绝，对已占用 id 执行 `create` 会以 `SessionAlreadyExistsError` 拒绝，在 `read` 句柄上执行修改会以 `SessionReadOnlyError` 拒绝——一种句柄类型，运行时拒绝。对已关闭句柄的任何操作会以 `SessionHandleClosedError` 拒绝，`SessionOwnershipLostError` 标记写所有权已永久丢失的写句柄（关闭并重新打开）。已创建的会话自 `create` 完成之刻起即可在本进程内被观察到，而后端可以把物理实体化推迟到第一次 `append` 或 `flush`；其他进程只能看到已实体化的会话，一个在崩溃前从未实体化的会话等于从未存在。
+`create` 與 `open(id, 'write')` 取得程序內單寫者所有權：在持有者活躍期間第二次以寫模式開啟會以 `SessionAlreadyOwnedError` 拒絕，對已佔用 id 執行 `create` 會以 `SessionAlreadyExistsError` 拒絕，在 `read` 控制代碼上執行修改會以 `SessionReadOnlyError` 拒絕——一種控制代碼型別，執行時拒絕。對已關閉控制代碼的任何操作會以 `SessionHandleClosedError` 拒絕，`SessionOwnershipLostError` 標記寫所有權已永久丟失的寫控制代碼（關閉並重新開啟）。已建立的工作階段自 `create` 完成之刻起即可在本程序內被觀察到，而後端可以把物理實體化推遲到第一次 `append` 或 `flush`；其他程序只能看到已實體化的工作階段，一個在崩潰前從未實體化的工作階段等於從未存在。
 
-### 实时写路径与关闭排空
+### 即時寫路徑與關閉排空
 
-实时写路径由后端自持：它一次性安装会话监听器，把每个已发布会话的事件按 id 路由到该会话的活跃写句柄——`session/event` 复制进有界的内部批处理窗口，`session/flush` 是即时的持久性与错误观察屏障，`session/disposed` 执行最终排空并关闭句柄。没有活跃写句柄的已发布会话不做任何持久化。后台写入失败时按序保留其事件、暂停自动路径并记入日志；下一次显式 flush 会重试，并在再次失败时明确返回拒绝。`close()` 本身会先经由仍然打开的存储排空路由缓冲区再释放所有权，因此即便根 fiber 的 dispose（资源释放）并发运行各 fiber 的 disposer，后端拆卸时的关闭清扫也能保证应用关闭不丢数据。
+即時寫路徑由後端自持：它一次性安裝工作階段監聽器，把每個已釋出工作階段的事件按 id 路由到該工作階段的活躍寫控制代碼——`session/event` 複製進有界的內部批處理視窗，`session/flush` 是即時的永續性與錯誤觀察屏障，`session/disposed` 執行最終排空並關閉控制代碼。沒有活躍寫控制代碼的已釋出工作階段不做任何持久化。後臺寫入失敗時按序保留其事件、暫停自動路徑並記入日誌；下一次顯式 flush 會重試，並在再次失敗時明確返回拒絕。`close()` 本身會先經由仍然開啟的儲存排空路由緩衝區再釋放所有權，因此即便根 fiber 的 dispose（資源釋放）並行執行各 fiber 的 disposer，後端拆卸時的關閉清掃也能保證應用關閉不丟資料。
 
-### 恢复与崩溃恢复
+### 恢復與崩潰恢復
 
-持久化返回物理上有效的日志；语义修复属于读方。中途崩溃的会话保留其未闭合的最终轮次——单个轮次可能很大，而这些事件在崩溃前已持久追加；只有从未确认的撕裂尾部中不完整的碎片会被丢弃——从中恢复的完整记录由写路径在句柄的第一次新 append 之前持久重写。恢复（agent-loop）通过其写句柄读取已存储日志，计算 `interruptedTurnClosers`——合成 `tool/result` 错误、任何未闭合的 `step/end`，以及 `turn/end {interrupted}`——并把它们作为普通批次通过同一句柄追加。只读观察方（session-query）仅在内存中用同样的 closer 配平被中断的冷日志。
+持久化返回物理上有效的日誌；語義修復屬於讀方。中途崩潰的工作階段保留其未閉合的最終輪次——單個輪次可能很大，而這些事件在崩潰前已持久追加；只有從未確認的撕裂尾部中不完整的碎片會被丟棄——從中恢復的完整記錄由寫路徑在控制代碼的第一次新 append 之前持久重寫。恢復（agent-loop）透過其寫控制代碼讀取已儲存日誌，計算 `interruptedTurnClosers`——合成 `tool/result` 錯誤、任何未閉合的 `step/end`，以及 `turn/end {interrupted}`——並把它們作為普通批次透過同一控制代碼追加。只讀觀察方（session-query）僅在記憶體中用同樣的 closer 配平被中斷的冷日誌。
 
-### 失败与恢复
+### 失敗與恢復
 
-当前构建无法忠实解读的存储日志会被拒绝，并返回指明拒绝方向的错误，绝不会被误读。`SessionHandle` 只暴露由 `SESSION_FORMAT_VERSION` 标识的当前逻辑记录；提供方必须在返回句柄前转换任何受支持的历史存储，随产品交付的 JSONL 提供方会通过静态 catalog 迁移受支持的历史代际。更新的格式会要求操作者升级 harness。本构建不认识的事件类型会被拒绝，除非其信封标记为 `ignorable`；已提交前缀中的损坏以 `SessionPersistenceCorruptionError` 拒绝。
+目前建置無法忠實解讀的儲存日誌會被拒絕，並返回指明拒絕方向的錯誤，絕不會被誤讀。`SessionHandle` 只暴露由 `SESSION_FORMAT_VERSION` 標識的目前邏輯記錄；提供者必須在返回控制代碼前轉換任何受支援的歷史儲存，隨產品交付的 JSONL 提供者會透過靜態 catalog 遷移受支援的歷史代際。更新的格式會要求操作者升級 harness。本建置不認識的事件型別會被拒絕，除非其信封標記為 `ignorable`；已提交字首中的損壞以 `SessionPersistenceCorruptionError` 拒絕。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节说明 seam 如何实现持久存储以及后端如何接入；可观察约定见[使用本包](#use-this-package)与生成的 [Cordis API](../../../docs/subsystems/persistence.zh.md#cordis-surface)。
+本節說明 seam 如何實作持久儲存以及後端如何接入；可觀察約定見[使用本包](#use-this-package)與生成的 [Cordis API](../../../docs/subsystems/persistence.zh.md#cordis-surface)。
 
-### 设计理念
+### 設計理念
 
-本包是 seam，而不是后端框架：它只导出抽象 `SessionPersistence` 服务、`SessionHandle` 约定、消费方捕获的稳定错误类、纯函数的存储记录校验辅助（`storage-contract`）以及带品牌类型的修订值——再无其他。每个提供方拥有自己完整的存储运行时（句柄类、修改排序、单写者记账、实时事件路由、拆卸），`tests/` 下的两套共享测试套件——`runPersistenceContract` 与 `runLiveWritePathContract`——固定所有提供方都必须一致的可观察行为。有意为之的后果：各提供方在存储恰好相似之处可以彼此相像，但没有任何实现机制跨越包边界。
+本包是 seam，而不是後端框架：它只匯出抽象 `SessionPersistence` 服務、`SessionHandle` 約定、消費方捕捉的穩定錯誤類、純函式的儲存記錄驗證輔助（`storage-contract`）以及帶品牌型別的修訂值——再無其他。每個提供者擁有自己完整的儲存執行時（控制代碼類、修改排序、單寫者記帳、即時事件路由、拆卸），`tests/` 下的兩套共享測試套件——`runPersistenceContract` 與 `runLiveWritePathContract`——固定所有提供者都必須一致的可觀察行為。有意為之的後果：各提供者在儲存恰好相似之處可以彼此相像，但沒有任何實作機制跨越包邊界。
 
-### 每个后端必须遵守的不变量
+### 每個後端必須遵守的不變數
 
-- **仅追加，连续 `seq`。** 已提交事件绝不重写；`append` 的第一个 `seq` 必须等于已存储 next-seq，缺口会被拒绝。
-- **撕裂的物理尾部绝不到达读取方。** 它属于一次从未完成的 append；写路径在第一次新 append 之前将其持久截断。
-- **无损 JSON 数据。** 批次与 header 经过共享的单遍校验并快照边界（`materializeAppendBatch`/`materializeCreateHeader`）；无法序列化的载荷在调用处被拒绝。
-- **持久性。** `append` 尽力而为地持久化；`flush`——逐句柄或服务级——是承诺存储并同时把空会话实体化的屏障。
-- **遇到未知或无效格式时拒绝读取。** `validateStoredEvents` 拒绝未知事件词汇与已废弃的预发布形态；`assertVersion` 拒绝外来格式版本。
-- **每个后端实例单写者。** 提供方的进程内认领在 `create`/`open('write')` 时取得，在句柄关闭时释放。
+- **僅追加，連續 `seq`。** 已提交事件絕不重寫；`append` 的第一個 `seq` 必須等於已儲存 next-seq，缺口會被拒絕。
+- **撕裂的物理尾部絕不到達讀取方。** 它屬於一次從未完成的 append；寫路徑在第一次新 append 之前將其持久截斷。
+- **無損 JSON 資料。** 批次與 header 經過共享的單遍驗證並快照邊界（`materializeAppendBatch`/`materializeCreateHeader`）；無法序列化的載荷在呼叫處被拒絕。
+- **永續性。** `append` 盡力而為地持久化；`flush`——逐控制代碼或服務級——是承諾儲存並同時把空工作階段實體化的屏障。
+- **遇到未知或無效格式時拒絕讀取。** `validateStoredEvents` 拒絕未知事件詞彙與已廢棄的預釋出形態；`assertVersion` 拒絕外來格式版本。
+- **每個後端實例單寫者。** 提供者的程序內認領在 `create`/`open('write')` 時取得，在控制代碼關閉時釋放。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：抽象 `SessionPersistence` 服务与重新导出的 seam 词汇 |
-| [`src/handle.ts`](src/handle.ts) | `SessionHandle` 约定：read/append/flush/close 语义与新鲜度规则 |
-| [`src/storage-contract.ts`](src/storage-contract.ts) | 共享校验：版本门禁、未知事件词汇拒绝、批次实体化、连续性 |
-| [`src/errors.ts`](src/errors.ts) | 稳定的句柄/所有权失败与格式拒绝 |
-| [`src/revision.ts`](src/revision.ts) | 带品牌类型的不透明修订值 token |
-| — | 不发布运行时不变式伴生入口；持久化正确性需要后端往返与崩溃尾部测试；本包不暴露可持续观察的进程内关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：抽象 `SessionPersistence` 服務與重新匯出的 seam 詞彙 |
+| [`src/handle.ts`](src/handle.ts) | `SessionHandle` 約定：read/append/flush/close 語義與新鮮度規則 |
+| [`src/storage-contract.ts`](src/storage-contract.ts) | 共享驗證：版本門禁、未知事件詞彙拒絕、批次實體化、連續性 |
+| [`src/errors.ts`](src/errors.ts) | 穩定的控制代碼/所有權失敗與格式拒絕 |
+| [`src/revision.ts`](src/revision.ts) | 帶品牌型別的不透明修訂值 token |
+| — | 不釋出執行時不變式伴生入口；持久化正確性需要後端往返與崩潰尾部測試；本包不暴露可持續觀察的程序內關係。 |
 
-### 写入路径概览
+### 寫入路徑概覽
 
-写入器会话的每个 `session/event` 都复制进该句柄的内部缓冲。第一个待处理事件开启固定批处理窗口；后续事件加入但不重置截止时间。窗口到期后经由句柄的修改链排空待处理前缀；排空期间接纳的事件按顺序合并进下一个链上的批次。`session/flush` 取消等待并排空至完全停稳，随后运行 `handle.flush()`，因此 loop 在下一轮次前把它用作排序与错误观察检查点。失败的后台排空保留其事件并暂停自动计时器；显式 flush、写入器 close 或后端拆卸会立即重试，并在再次失败时明确返回拒绝。构造 seed 事件绝不发出 `session/event`，因此发布前通过句柄追加的 seed 绝不会被重新入队。
+寫入器工作階段的每個 `session/event` 都複製進該控制代碼的內部緩衝。第一個待處理事件開啟固定批處理視窗；後續事件加入但不重置截止時間。視窗到期後經由控制代碼的修改鏈排空待處理字首；排空期間接納的事件按順序合併進下一個鏈上的批次。`session/flush` 取消等待並排空至完全停穩，隨後執行 `handle.flush()`，因此 loop 在下一輪次前把它用作排序與錯誤觀察檢查點。失敗的後臺排空保留其事件並暫停自動計時器；顯式 flush、寫入器 close 或後端拆卸會立即重試，並在再次失敗時明確返回拒絕。建構 seed 事件絕不發出 `session/event`，因此釋出前透過控制代碼追加的 seed 絕不會被重新入隊。
 
-### 存储记录校验
+### 儲存記錄驗證
 
-seam 的共享辅助函数校验由 `SESSION_FORMAT_VERSION` 标识的当前逻辑记录，append 只写当前格式（[理由](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)）。历史解码与不可变后继发布属于各提供方内部，并在其返回句柄前完成。每个后端都在句柄读取与写 open 预热时运行 `storage-contract` 校验，把未知事件类型作为 `SessionFormatUnsupportedError` 拒绝，把格式错误的当前记录作为 `SessionPersistenceCorruptionError` 拒绝，并在后端为每个会话保留一份产物时附上原始日志的 `SessionLocation`。
+seam 的共享輔助函式驗證由 `SESSION_FORMAT_VERSION` 標識的目前邏輯記錄，append 只寫目前格式（[理由](../../../.agents/notes/implemented/architecture/2026-08-31-released-session-format-migrations.zh.md)）。歷史解碼與不可變後繼釋出屬於各提供者內部，並在其返回控制代碼前完成。每個後端都在控制代碼讀取與寫 open 預熱時執行 `storage-contract` 驗證，把未知事件型別作為 `SessionFormatUnsupportedError` 拒絕，把格式錯誤的目前記錄作為 `SessionPersistenceCorruptionError` 拒絕，並在後端為每個工作階段保留一份產物時附上原始日誌的 `SessionLocation`。
 
 </details>
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享持久性模型逐步进入随产品交付的后端与决策证据。
+當包級約定不夠用時閱讀以下頁面。它們從共享永續性模型逐步進入隨產品交付的後端與決策證據。
 
-- [会话持久化子系统](../../../docs/subsystems/persistence.zh.md)——完整服务约定、句柄语义、flush 检查点、崩溃恢复与生成的 Cordis API。
-- [基于句柄的持久化 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-27-handle-based-session-persistence.zh.md)——seam 设计及其所有权模型。
-- [JSONL 持久化后端](../session-persistence-jsonl/README.zh.md)——随产品交付、按会话存储文件的后端。
-- [会话检查点策略](../session-checkpoint-policy/README.zh.md)——在语义边界上经由 `session/flush` 刷新的插件。
-- [会话包映射](../README.zh.md)——相邻的持久化、投影、标题与遥测包。
+- [工作階段持久化子系統](../../../docs/subsystems/persistence.zh.md)——完整服務約定、控制代碼語義、flush 檢查點、崩潰恢復與生成的 Cordis API。
+- [基於控制代碼的持久化 Agent Note](../../../.agents/notes/implemented/architecture/2026-08-27-handle-based-session-persistence.zh.md)——seam 設計及其所有權模型。
+- [JSONL 持久化後端](../session-persistence-jsonl/README.zh.md)——隨產品交付、按工作階段儲存檔案的後端。
+- [工作階段檢查點策略](../session-checkpoint-policy/README.zh.md)——在語義邊界上經由 `session/flush` 重新整理的外掛。
+- [工作階段包對映](../README.zh.md)——相鄰的持久化、投影、標題與遙測包。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 恢复的对话历史
+### 恢復的對話歷史
 
-#### 模型看到什么
+#### 模型看到什麼
 
-seam 不添加提示词或 schema。恢复会将已存储的表层事件还原为消息历史；已存储请求 header 重建较早调用，新 loop 则为下一次请求组合当前系统提示词、工具与会话前缀。崩溃修复将没有持久调用的 assistant 请求标记为 `TOOL_NOT_STARTED`；有持久调用但无结果时变为 `TOOL_OUTCOME_UNKNOWN`，其文本允许模型重试只读或幂等工作，但要求验证副作用或询问用户，而不是盲目重试。
+seam 不新增提示詞或 schema。恢復會將已儲存的表層事件還原為訊息歷史；已儲存請求 header 重建較早呼叫，新 loop 則為下一次請求組合目前系統提示詞、工具與工作階段字首。崩潰修復將沒有持久呼叫的 assistant 請求標記為 `TOOL_NOT_STARTED`；有持久呼叫但無結果時變為 `TOOL_OUTCOME_UNKNOWN`，其文字允許模型重試只讀或冪等工作，但要求驗證副作用或詢問使用者，而不是盲目重試。
 
-#### Token 影响
+#### Token 影響
 
-普通持久化期间为零 token。恢复后会重新计入保留历史的 token 用量，并照常计入当前请求 envelope 的 token 用量；每个已修复调用都会增加一段以引用形式保留的错误文本。
+普通持久化期間為零 token。恢復後會重新計入保留歷史的 token 用量，並照常計入目前請求 envelope 的 token 用量；每個已修復呼叫都會增加一段以引用形式保留的錯誤文字。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-持久化不修改当前请求前缀。只有当重建历史、当前 envelope 与模型路由匹配时，恢复 loop 才能重用提供方缓存；崩溃修复结果仅追加，不重写较早历史。
+持久化不修改目前請求字首。只有當重建歷史、目前 envelope 與模型路由匹配時，恢復 loop 才能重用提供者快取；崩潰修復結果僅追加，不重寫較早歷史。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制界定 seam 保证的终点。它们是当前包约束，不是待办事项。
+這些限制界定 seam 保證的終點。它們是目前包約束，不是待辦事項。
 
-- **seam 只保证单个后端实例内的写所有权**——跨进程排他由具体提供方负责。随产品交付的 JSONL 提供方通过内核锁在不同实例和进程之间提供租约；其他提供方必须记录等效保证，或要求部署方阻止并发写入。
-- **在有活跃会话时重载后端插件会使其写入器明确报错**——重载后的后端无法服务旧实例签发的句柄；写入会持续失败直到会话重启，没有任何机制静默重新接管日志。
-- **只有通过句柄获取的会话才会持久化**——仅靠 `ctx.sessions.create` + `session/flush` 不存储任何内容；agent-loop 是生产环境的获取点，测试通过 `create`/`append`/`close` 写入初始存储数据。
-- **无删除或保留接口**——剪枝已存储会话属于带外后端维护。
-- **`list()` 无分页且无过滤**——它返回每个已存储会话的快照；适合本地存储，大规模时无索引。
-- **合成 closer 是唯一崩溃方案**——恢复通过写句柄追加 `interruptedTurnClosers`；没有继续中断轮次而不先关闭它的部分轮次恢复。
+- **seam 只保證單個後端實例內的寫所有權**——跨程序排他由具體提供者負責。隨產品交付的 JSONL 提供者透過核心鎖在不同實例和程序之間提供租約；其他提供者必須記錄等效保證，或要求部署方阻止並行寫入。
+- **在有活躍工作階段時過載後端外掛會使其寫入器明確報錯**——過載後的後端無法服務舊實例簽發的控制代碼；寫入會持續失敗直到工作階段重新啟動，沒有任何機制靜默重新接管日誌。
+- **只有透過控制代碼取得的工作階段才會持久化**——僅靠 `ctx.sessions.create` + `session/flush` 不儲存任何內容；agent-loop 是生產環境的取得點，測試透過 `create`/`append`/`close` 寫入初始儲存資料。
+- **無刪除或保留介面**——剪枝已儲存工作階段屬於帶外後端維護。
+- **`list()` 無分頁且無過濾**——它返回每個已儲存工作階段的快照；適合本地儲存，大規模時無索引。
+- **合成 closer 是唯一崩潰方案**——恢復透過寫控制代碼追加 `interruptedTurnClosers`；沒有繼續中斷輪次而不先關閉它的部分輪次恢復。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

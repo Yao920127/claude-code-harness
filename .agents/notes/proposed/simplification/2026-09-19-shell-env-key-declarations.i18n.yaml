@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-shell-env-key-declarations.md
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership:
   en: 45ac68010d497bfd
-  zh: 388e4f51893c4615
+  zh: 4f8630ac85476b19
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership/problem:
   en: ff308f45fc6f5242
-  zh: 025b58883a3e175b
+  zh: 133940aff5716396
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership/proposal:
   en: ffd78167917dfa4b
-  zh: dbcb1004009ea9f5
+  zh: 97c4f4d2e5098c10
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership/alternatives-considered:
   en: 476de18c44f2ad86
-  zh: a0a15da6c5e7fbf7
+  zh: 59bf5f51d861d6d9
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership/acceptance-criteria:
   en: 3196e83f9ae22f45
-  zh: 0766bf5914672572
+  zh: ddbffbdbabee24e3
 /agent-note-keep-shell-environment-declarations-focused-on-key-ownership/risks:
   en: 55e2677a8d48d759
-  zh: ff97043cc6a6a31b
+  zh: 7351dc756b86bec7

@@ -1,5 +1,5 @@
 ---
-description: "面向模型的持久 bash 工具，供选择、配置或排查跨调用保留的按所有者隔离 shell 状态的使用者与维护者阅读。"
+description: "面向模型的持久 bash 工具，供選擇、設定或排查跨呼叫保留的按所有者隔離 shell 狀態的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-本包为 agent（智能体）提供 `bash` 工具，使 cwd、导出的变量、函数与后台任务跨调用保留。每个 agent 都有隔离的 shell，其命令串行执行。需要跨调用状态的工作流应选择本包；每条命令都应从干净环境开始时使用 `dsh-tool-bash`。配置 PTY 后端与单条命令的超时；`exit`、超时或取消会重置 shell，而等待 stdin 的交互式命令可能一直运行到超时。
+本包為 agent（智慧代理）提供 `bash` 工具，使 cwd、匯出的變數、函式與後臺任務跨呼叫保留。每個 agent 都有隔離的 shell，其命令序列執行。需要跨呼叫狀態的工作流應選擇本包；每條命令都應從乾淨環境開始時使用 `dsh-tool-bash`。設定 PTY 後端與單條命令的超時；`exit`、超時或取消會重置 shell，而等待 stdin 的互動式命令可能一直執行到超時。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在 agent 需要在命令之间保持 shell 状态的任何组合中加载本插件——例如长时间构建会话、已激活的环境，或为后续步骤导出变量的脚本。它注册 `bash` 工具，需要 `ctx.tools` 与 `ctx.terminals` 服务，并在执行时需要拥有者 agent 会话。
+在 agent 需要在命令之間保持 shell 狀態的任何組合中載入本外掛——例如長時間建置工作階段、已啟用的環境，或為後續步驟匯出變數的腳本。它註冊 `bash` 工具，需要 `ctx.tools` 與 `ctx.terminals` 服務，並在執行時需要擁有者 agent 工作階段。
 
-### 何时选择
+### 何時選擇
 
-当工作依赖跨调用状态时选择持久工具：一次性 `dsh-tool-bash` 调用无法记住 `cd` 或导出的变量。当每条命令都应从已知、干净的环境开始，或命令又短又独立时，选择一次性工具。这里不支持需要交互 stdin 的命令——读取输入的前台子进程会一直阻塞到命令超时——因此交互工作属于 terminal 工具。
+當工作依賴跨呼叫狀態時選擇持久工具：一次性 `dsh-tool-bash` 呼叫無法記住 `cd` 或匯出的變數。當每條命令都應從已知、乾淨的環境開始，或命令又短又獨立時，選擇一次性工具。這裡不支援需要互動 stdin 的命令——讀取輸入的前臺子程序會一直阻塞到命令超時——因此互動工作屬於 terminal 工具。
 
-### 最小配置
+### 最小設定
 
-默认的 `shell` 后端通过 `dsh-terminal-bash` 启动交互式 bash；部署方可以注册其他 PTY 后端并按名称选择。
+預設的 `shell` 後端透過 `dsh-terminal-bash` 啟動互動式 bash；部署方可以註冊其他 PTY 後端並按名稱選擇。
 
 ```yaml
 - name: '@deepseek-ai/dsh-terminal'
@@ -41,119 +41,119 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-tool-bash-persistent'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `backendType` | `shell` | 用于每个 agent shell 的已注册 PTY 后端 |
-| `timeoutMs` | `300,000` | 单条命令的墙钟上限；超时关闭 shell |
-| `maxOutputChars` | `16,000` | 保留的命令输出字符上限；固定诊断信息在其后追加 |
-| `description` | `Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.` | 面向模型的环境约定；部署方可描述自己的环境 |
+| `backendType` | `shell` | 用於每個 agent shell 的已註冊 PTY 後端 |
+| `timeoutMs` | `300,000` | 單條命令的牆鐘上限；超時關閉 shell |
+| `maxOutputChars` | `16,000` | 保留的命令輸出字元上限；固定診斷資訊在其後追加 |
+| `description` | `Run commands in a persistent bash shell. State, including the current directory and exported environment variables, persists across calls for this agent.` | 面向模型的環境約定；部署方可描述自己的環境 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### agent 可以依赖什么
+### agent 可以依賴什麼
 
-命令共享每个 agent 一个 shell，因此状态一直保留到 `exit`、超时或重置——每一种都会关闭 shell 并告诉 agent 下一次调用从工作区的新目录与环境开始。结果排除私有完成标记；每条完成的命令都追加 `[Command finished with exit code N]`，而在报告该状态前就退出的 shell 改为追加 `[shell exited: code N]`、`[shell killed by signal: SIG]` 或 `[shell exited]`，然后重置。长输出保留最早的已保留前缀并附裁剪通知；若 terminal 已经丢弃该前缀，结果会明确说明，而不是把尾部当作完整输出呈现。
+命令共享每個 agent 一個 shell，因此狀態一直保留到 `exit`、超時或重置——每一種都會關閉 shell 並告訴 agent 下一次呼叫從工作區的新目錄與環境開始。結果排除私有完成標記；每條完成的命令都追加 `[Command finished with exit code N]`，而在報告該狀態前就退出的 shell 改為追加 `[shell exited: code N]`、`[shell killed by signal: SIG]` 或 `[shell exited]`，然後重置。長輸出保留最早的已保留字首並附裁剪通知；若 terminal 已經丟棄該字首，結果會明確說明，而不是把尾部當作完整輸出呈現。
 
-### 可能出什么问题
+### 可能出什麼問題
 
-没有拥有者 agent 会话的调用会以 `bash requires an owning agent session` 失败，没有 PTY 后端的组合会激活该工具，但首次调用以 `no PTY backend registered for "shell"` 失败。交互式前台子进程（例如 REPL）只有在后端证明其 stdin 等待时才提前返回部分输出；否则调用一直运行到 `timeoutMs`，随后关闭不确定的 shell 并报告重置。取消也会重置并丢弃结果，即使完整状态标记已经可观察。清理完成后，ToolRuntime 发布 `Error: tool call aborted`，错误码为 `ABORTED`；取消原因不作为命令输出渲染。排队期间被取消的调用不发送命令。
+沒有擁有者 agent 工作階段的呼叫會以 `bash requires an owning agent session` 失敗，沒有 PTY 後端的組合會啟用該工具，但首次呼叫以 `no PTY backend registered for "shell"` 失敗。互動式前臺子程序（例如 REPL）只有在後端證明其 stdin 等待時才提前返回部分輸出；否則呼叫一直執行到 `timeoutMs`，隨後關閉不確定的 shell 並報告重置。取消也會重置並丟棄結果，即使完整狀態標記已經可觀察。清理完成後，ToolRuntime 釋出 `Error: tool call aborted`，錯誤碼為 `ABORTED`；取消原因不作為命令輸出渲染。排隊期間被取消的呼叫不傳送命令。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释工具背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋工具背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **每个 owner 一个 shell，互不共享。** shell 注册表按调用方 `Agent` 为每个会话建键，因此并发 agent 永不共享状态，同一 agent 的命令通过按 owner 的队列串行化。
-- **标记锚定提取。** 每条命令都用携带退出状态的唯一起止标记包装；工具轮询 PTY scrollback 并提取真实标记之间的区间，因此提示符与回显输入永不泄漏进结果。
-- **重置，而非修复。** 任何不确定状态——显式 `exit`、超时、发送失败、中止——都会关闭 shell 并让下一次调用从全新状态开始，因为半知情的 shell 不如干净的 shell。
-- **按 owner 的生命周期。** shell 在首次使用时惰性创建，在插件释放或 owner 拆除时终止；按所有者隔离的 `ctx.terminals` 服务把每个操作都围栏到拥有它的 agent。
+- **每個 owner 一個 shell，互不共享。** shell 註冊表按呼叫方 `Agent` 為每個工作階段建鍵，因此並行 agent 永不共享狀態，同一 agent 的命令透過按 owner 的佇列序列化。
+- **標記錨定提取。** 每條命令都用攜帶退出狀態的唯一起止標記包裝；工具輪詢 PTY scrollback 並提取真實標記之間的區間，因此提示符與回顯輸入永不洩漏進結果。
+- **重置，而非修復。** 任何不確定狀態——顯式 `exit`、超時、傳送失敗、中止——都會關閉 shell 並讓下一次呼叫從全新狀態開始，因為半知情的 shell 不如干淨的 shell。
+- **按 owner 的生命週期。** shell 在首次使用時惰性建立，在外掛釋放或 owner 拆除時終止；按所有者隔離的 `ctx.terminals` 服務把每個操作都圍欄到擁有它的 agent。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：shell 注册表、命令包装、scrollback 轮询、提取与渲染 |
-| — | 不发布运行时不变式伴生入口；适配器私有的 owner-to-shell 缓存没有可观察的事件或数据关系。shell 复用仍可通过工具执行观察。生命周期测试会验证其清理行为，无需仅为不变式增加公共 API。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：shell 註冊表、命令包裝、scrollback 輪詢、提取與渲染 |
+| — | 不釋出執行時不變式伴生入口；介面卡私有的 owner-to-shell 快取沒有可觀察的事件或資料關係。shell 複用仍可透過工具執行觀察。生命週期測試會驗證其清理行為，無需僅為不變式增加公共 API。 |
 
 ### 命令流程
 
-首条命令通过 `ctx.terminals.spawn` 生成 shell，禁用输入回显（`stty -echo`），并等待就绪。随后每条命令都包装成一行物理文本——printf 起始标记、用 `$'…'` 转义的命令体、printf 结束标记加 `$?`——因此内嵌换行无法把终端提示符泄漏进结果。工具以 1,000 行一页轮询 scrollback，直到出现结束标记，提取区间并连同任何状态标记一起渲染。超时会中止截止时间、捕获部分输出并重置 shell。
+首條命令透過 `ctx.terminals.spawn` 生成 shell，停用輸入回顯（`stty -echo`），並等待就緒。隨後每條命令都包裝成一行物理文字——printf 起始標記、用 `$'…'` 轉義的命令體、printf 結束標記加 `$?`——因此內嵌換行無法把終端提示符洩漏進結果。工具以 1,000 行一頁輪詢 scrollback，直到出現結束標記，提取區間並連同任何狀態標記一起渲染。超時會中止截止時間、捕捉部分輸出並重置 shell。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从 terminal 家族逐步进入 seam、后端，以及按所有者会话背后的设计笔记。
+當包級約定不夠用時閱讀以下頁面。它們從 terminal 家族逐步進入 seam、後端，以及按所有者工作階段背後的設計筆記。
 
-- [terminal 包映射](../../terminal/README.zh.md)——持久 PTY 能力家族。
-- [terminal seam](../../terminal/terminal/README.zh.md)——工具背后的 `ctx.terminals` 服务。
-- [terminal-bash 后端](../../terminal/terminal-bash/README.zh.md)——默认的 `shell` 后端。
-- [tool-terminal](../../terminal/tool-terminal/README.zh.md)——面向交互工作的六个模型侧 terminal 工具。
-- [持久 PTY 会话 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——按所有者会话的设计及其理由。
-- [生成的工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)——`bash` 参数 schema 的确切内容。
-- [生成的配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)——每个受支持配置字段及其源声明。
+- [terminal 包對映](../../terminal/README.zh.md)——持久 PTY 能力家族。
+- [terminal seam](../../terminal/terminal/README.zh.md)——工具背後的 `ctx.terminals` 服務。
+- [terminal-bash 後端](../../terminal/terminal-bash/README.zh.md)——預設的 `shell` 後端。
+- [tool-terminal](../../terminal/tool-terminal/README.zh.md)——面向互動工作的六個模型側 terminal 工具。
+- [持久 PTY 工作階段 Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——按所有者工作階段的設計及其理由。
+- [生成的工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)——`bash` 參數 schema 的確切內容。
+- [生成的設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
 ### 工具 schema
 
-#### 模型看到什么
+#### 模型看到什麼
 
-生成的 [`bash` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)，包括配置的 `description`。本插件不贡献独立的系统提示词区段；人设与环境指引由部署方负责。
+生成的 [`bash` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-bash-persistent)，包括設定的 `description`。本外掛不貢獻獨立的系統提示詞區段；人設與環境指引由部署方負責。
 
-#### Token 影响
+#### Token 影響
 
-`bash` 可见期间产生固定 schema 开销。
+`bash` 可見期間產生固定 schema 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-只要配置的描述与 schema 不变，前缀就保持稳定。
+只要設定的描述與 schema 不變，字首就保持穩定。
 
-### 工具结果
+### 工具結果
 
-#### 模型看到什么
+#### 模型看到什麼
 
-命令共享每个 agent 一个 shell，因此 cwd、导出的变量、已激活的环境、函数与后台任务都会跨调用保留。结果排除私有完成标记。当 shell 在没有打印完成标记的情况下再次读取 stdin——`exec`、中断，或提供方证明其 stdin 等待的交互式前台子进程之后——调用返回捕获的部分输出，它可能以后端自己的提示符文本结尾。每条完成的命令都追加 `[Command finished with exit code N]`；在报告该状态前就退出的 shell 改为追加 `[shell exited: code N]`、`[shell killed by signal: SIG]`，或后端两者都未提供时的 `[shell exited]`，然后重置并告诉模型下一次调用从全新状态开始。长输出保留最早的已保留前缀并附裁剪通知。若 PTY 已经丢弃该前缀，结果会明确说明，而不是把尾部当作完整输出呈现。超时返回有界部分输出并追加 `[Command timed out or OOM]`、关闭不确定的 shell 并报告重置。
+命令共享每個 agent 一個 shell，因此 cwd、匯出的變數、已啟用的環境、函式與後臺任務都會跨呼叫保留。結果排除私有完成標記。當 shell 在沒有列印完成標記的情況下再次讀取 stdin——`exec`、中斷，或提供者證明其 stdin 等待的互動式前臺子程序之後——呼叫返回捕捉的部分輸出，它可能以後端自己的提示符文字結尾。每條完成的命令都追加 `[Command finished with exit code N]`；在報告該狀態前就退出的 shell 改為追加 `[shell exited: code N]`、`[shell killed by signal: SIG]`，或後端兩者都未提供時的 `[shell exited]`，然後重置並告訴模型下一次呼叫從全新狀態開始。長輸出保留最早的已保留字首並附裁剪通知。若 PTY 已經丟棄該字首，結果會明確說明，而不是把尾部當作完整輸出呈現。超時返回有界部分輸出並追加 `[Command timed out or OOM]`、關閉不確定的 shell 並報告重置。
 
-#### Token 影响
+#### Token 影響
 
-依数据而定。`maxOutputChars` 限制保留的命令输出；固定的裁剪、丢失前缀、状态、超时与重置诊断可能延长结果。
+依資料而定。`maxOutputChars` 限制保留的命令輸出；固定的裁剪、丟失字首、狀態、超時與重置診斷可能延長結果。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加的工具结果位于可复用请求前缀之后。
+僅追加的工具結果位於可複用請求字首之後。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明工具何时不合适或需要特别小心。它们是当前包约束，不是任务积压。
+這些限制說明工具何時不合適或需要特別小心。它們是目前包約束，不是任務積壓。
 
-- **工具需要拥有者 agent 与真实的 PTY 后端**——无 agent 的调用与无法启动交互 shell 的后端都会失败。
-- **交互式前台子进程只在子进程提供方证明其 stdin 等待时才提前返回部分输出**——否则调用一直运行到 `timeoutMs`。
-- **显式 `exit` 与超时会丢弃 shell 状态**——取消同样重置并丢弃结果，即使完整状态标记已经可观察；下一次调用启动全新 shell。
-- **网络访问与包镜像等环境事实属于配置的 `description`**——而不是本包的默认描述。
+- **工具需要擁有者 agent 與真實的 PTY 後端**——無 agent 的呼叫與無法啟動互動 shell 的後端都會失敗。
+- **互動式前臺子程序只在子程序提供者證明其 stdin 等待時才提前返回部分輸出**——否則呼叫一直執行到 `timeoutMs`。
+- **顯式 `exit` 與超時會丟棄 shell 狀態**——取消同樣重置並丟棄結果，即使完整狀態標記已經可觀察；下一次呼叫啟動全新 shell。
+- **網路存取與包映像等環境事實屬於設定的 `description`**——而不是本包的預設描述。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

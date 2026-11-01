@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-12-subagent-persona-tool-filter-and-depth.md
 /agent-note-configure-subagent-persona-tool-visibility-and-depth:
   en: ea51f1e98afc88b7
-  zh: 6aa0101b8de5097f
+  zh: bf7e42120d65c867
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/problem:
   en: 311bc04b9c36ab53
-  zh: 0c52e6493e9350a5
+  zh: 42091b6bbb1d5212
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision:
   en: 79b3fcfaaaaccf9e
-  zh: 0287bfb41c7b9707
+  zh: 387194f0183da785
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision/persona-is-a-scoped-shadow:
   en: 8b299c99d26aa5c3
-  zh: 6956efbd236cef8e
+  zh: 82e3e0f19a67fc30
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision/tool-filtering-is-one-live-global-view-rule:
   en: a9fe46283ea28722
-  zh: 7b7d1be7c070b893
+  zh: 8c3e3de15bcf4e15
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision/depth-is-an-absolute-tree-cap:
   en: 9145bec4e3f7eb5b
-  zh: 986276925cb064d9
+  zh: 121d7e445b12e073
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision/capability-gating-keeps-providers-honest:
   en: 5334afafefdb0f59
-  zh: 7e96c9a08bbc3d1a
+  zh: 7e197227bb7e32ee
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/decision/unpublished-setup-makes-the-first-request-correct:
   en: 3c988dfff07c8da3
-  zh: 8ce2fbcc438e7dd8
+  zh: 2372aab469dc109b
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/visibility-is-not-authority:
   en: d0db5310a87ff8e4
-  zh: 4b9f502238cd4bae
+  zh: 9abe841bbdeb0be5
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/alternatives-considered:
   en: 78ae41331d8fcc3e
-  zh: a93ee10b3e30c267
+  zh: 2371ae1a3d4b3b50
 /agent-note-configure-subagent-persona-tool-visibility-and-depth/consequences:
   en: d5f05d63b7a01dd8
-  zh: f0be1e88b06d8cc9
+  zh: 23549f0900f15235

@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-08-08-unified-github-label-taxonomy.md
 /agent-note-unified-github-label-taxonomy:
   en: 59560a685380483f
-  zh: 1bf2324f05c8968a
+  zh: 986a28e81793445f
 /agent-note-unified-github-label-taxonomy/problem:
   en: 8c0c360d500f22f0
-  zh: 97c815076ee9b53b
+  zh: 7e1c7f8d5672706a
 /agent-note-unified-github-label-taxonomy/decision:
   en: 398fb26c5da12e42
-  zh: 02c16ca5058283bc
+  zh: 37161e2ed24d8662
 /agent-note-unified-github-label-taxonomy/decision/kinds:
   en: 04e51bc9313727a0
-  zh: 443388bc0472c368
+  zh: 61ec0d1186a29bbf
 /agent-note-unified-github-label-taxonomy/decision/areas:
   en: b8d485a8222d0938
-  zh: 8fbb27557db98023
+  zh: 537dabf89eeb93fe
 /agent-note-unified-github-label-taxonomy/decision/issues-and-migrations:
   en: 6d720c37cf806ae6
-  zh: c16c420482d02067
+  zh: d33d1c530bfaef56
 /agent-note-unified-github-label-taxonomy/alternatives-considered:
   en: 57740baaeda04f6d
-  zh: 8da0aabac6b06424
+  zh: 66989521f2f14f0f
 /agent-note-unified-github-label-taxonomy/consequences:
   en: 41169a21b2ac9801
-  zh: 5506bf106f95163d
+  zh: e1067d53a19d6e8f

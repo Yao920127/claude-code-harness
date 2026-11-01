@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-06-evidence-driven-performance-skill.md
 /agent-note-evidence-driven-performance-optimization-workflow:
   en: 0a63ab9dc4847f40
-  zh: f8ba9a608396c47c
+  zh: ea004a84101d63be
 /agent-note-evidence-driven-performance-optimization-workflow/problem:
   en: 2e0cb63ef966a541
-  zh: 1853e223e530708e
+  zh: 58d9ebcf4a0269ff
 /agent-note-evidence-driven-performance-optimization-workflow/decision:
   en: bd0e363221108421
-  zh: fc83dc1020d53f4e
+  zh: 4983b635ec541f5c
 /agent-note-evidence-driven-performance-optimization-workflow/historical-evidence:
   en: 2d913642c87e5a01
-  zh: 45fce898640c87e8
+  zh: 3937919e9b8a95e0
 /agent-note-evidence-driven-performance-optimization-workflow/alternatives-considered:
   en: 70d016cd8e541933
-  zh: 2ebeb9cbeba8129e
+  zh: d5558d0073778bcb
 /agent-note-evidence-driven-performance-optimization-workflow/consequences:
   en: 961c634c37340937
-  zh: 9a528567223f7bfa
+  zh: 862018d3a10335b3

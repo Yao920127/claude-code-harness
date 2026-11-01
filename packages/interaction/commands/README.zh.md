@@ -1,5 +1,5 @@
 ---
-description: "交互式 UI 的面向用户斜杠命令注册表：插件拥有的命令直接针对 agent（智能体）执行，不产生模型消息；供组合或扩展命令面的用户与维护者阅读。"
+description: "互動式 UI 的面向使用者斜槓命令註冊表：外掛擁有的命令直接針對 agent（智慧代理）執行，不產生模型訊息；供組合或擴充功能命令面的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-commands` 让用户能在交互式 Harness UI 中运行 `/command [input]` 操作，且不会把命令或结果变成模型消息。命令可以展示输入提示、接受附件，并只针对一个 agent 生效，同时为其他 agent 保留同名的全局命令。每次通过准入的执行都会记录到接收 agent 的会话日志中，UI 则在模型历史之外渲染结算结果。它适合为 `dsh` CLI（命令行界面）或 Web 客户端提供直接面向用户的控制；无 UI 的演示与 ACP（Agent Client Protocol）自动化不提供此命令面。
+`dsh-commands` 讓使用者能在互動式 Harness UI 中執行 `/command [input]` 操作，且不會把命令或結果變成模型訊息。命令可以展示輸入提示、接受附件，並只針對一個 agent 生效，同時為其他 agent 保留同名的全域命令。每次透過准入的執行都會記錄到接收 agent 的工作階段日誌中，UI 則在模型歷史之外渲染結算結果。它適合為 `dsh` CLI（命令列介面）或 Web 用戶端提供直接面向使用者的控制；無 UI 的演示與 ACP（Agent Client Protocol）自動化不提供此命令面。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当交互式 UI 希望用户用斜杠命令而非模型提示词驱动 agent 侧行为时，组合此服务。无 UI 的演示主干和 ACP 自动化不提供命令适配器，也不需要它。
+當互動式 UI 希望使用者用斜槓命令而非模型提示詞驅動 agent 側行為時，組合此服務。無 UI 的演示主幹和 ACP 自動化不提供命令介面卡，也不需要它。
 
-### 注册命令
+### 註冊命令
 
-插件通过 `ctx.commands.register()` 注册命令，提供小写名称、发现界面中的说明、可选的 `input` 提示和处理器。可选的品牌类型字段 `definitionId` 为适配器提供带插件命名空间的稳定定义标识，它独立于显示文案和每次执行的 `commandId`。有效描述符只携带被选中定义的标识，作用域覆盖不会继承被遮蔽注册项的标识。
+外掛透過 `ctx.commands.register()` 註冊命令，提供小寫名稱、發現介面中的說明、可選的 `input` 提示和處理器。可選的品牌型別欄位 `definitionId` 為介面卡提供帶外掛名稱空間的穩定定義標識，它獨立於顯示文案和每次執行的 `commandId`。有效描述符只攜帶被選中定義的標識，作用域覆蓋不會繼承被遮蔽註冊項的標識。
 
 ```text
 ctx.commands.register({
@@ -43,108 +43,108 @@ ctx.commands.register({
 })
 ```
 
-处理器返回 `success` 或 `error`，并可附带由适配器渲染的 UI 文本。`recordInput` 默认为 true；若载荷由命令自己的权威领域事件持有，命令会将 `recordInput` 设为 false，避免会话日志重复记录该输入。同一作用域内重复注册同名命令会抛出异常。
+處理器返回 `success` 或 `error`，並可附帶由介面卡渲染的 UI 文字。`recordInput` 預設為 true；若載荷由命令自己的權威領域事件持有，命令會將 `recordInput` 設為 false，避免工作階段日誌重複記錄該輸入。同一作用域內重複註冊同名命令會丟擲異常。
 
-### 命令语法
+### 命令語法
 
-命令行的第 0 字节必须是斜杠，随后是小写名称（可含字母、数字、`_` 或 `-`），再之后是输入末尾或空白。名称之后的每个字节——包括分隔空白——都是该命令的 `rawInput`，命令自己拥有其专属语法。不符合命令语法、或名称未知的行会被适配器拒绝，而不是变成模型提示词。
+命令列的第 0 位元組必須是斜槓，隨後是小寫名稱（可含字母、數字、`_` 或 `-`），再之後是輸入末尾或空白。名稱之後的每個位元組——包括分隔空白——都是該命令的 `rawInput`，命令自己擁有其專屬語法。不符合命令語法、或名稱未知的行會被介面卡拒絕，而不是變成模型提示詞。
 
 ### 限定到 agent 的命令
 
-普通注册全局生效。挂载在 agent 自身上下文之下的命令生产插件会声明 `commands` 注入，并注册精确限定到该 agent 的命令；该定义只对这个 agent 遮蔽同名的全局定义。
+普通註冊全域生效。掛載在 agent 自身上下文之下的命令生產外掛會宣告 `commands` 注入，並註冊精確限定到該 agent 的命令；該定義只對這個 agent 遮蔽同名的全域定義。
 
 ### 附件
 
-命令可以声明 `input.attachments` 以接受 composer 图片与通用文件。执行器负责强制执行声明：把附件发给未声明的命令、附件存储缺失、会话范围内的文件上传凭证未知或图片批量超出限制，都会在处理器运行前以错误结果结算。图片以 base64 输入通过命令 wire，通用文件则引用后台上传完成后得到的凭证，因此命令提交不会再次读取文件字节。通过准入的 `ImageBlock` 与 `FileBlock` 按用户选择顺序组成冻结的 `invocation.attachments` 数组，其模型可见用途由处理器负责。
+命令可以宣告 `input.attachments` 以接受 composer 圖片與通用檔案。執行器負責強制執行宣告：把附件發給未宣告的命令、附件儲存缺失、工作階段範圍內的檔案上傳憑證未知或圖片批次超出限制，都會在處理器執行前以錯誤結果結算。圖片以 base64 輸入透過命令 wire，通用檔案則引用後臺上傳完成後得到的憑證，因此命令提交不會再次讀取檔案位元組。透過准入的 `ImageBlock` 與 `FileBlock` 按使用者選擇順序組成凍結的 `invocation.attachments` 陣列，其模型可見用途由處理器負責。
 
-### 从适配器分派
+### 從介面卡分派
 
-交互式适配器调用 `execute(agent, line, attachments, signal)`，传入确切的接收 agent、完整命令行与本次提交的有序附件。它返回已结算的 `CommandExecution`——规范化结果加生命周期配对 `commandId`——语法无效或名称未知时返回 `undefined`。`list(agent)` 与 `find(agent, name)` 在应用 agent 作用域遮蔽后用于命令发现。
+互動式介面卡呼叫 `execute(agent, line, attachments, signal)`，傳入確切的接收 agent、完整命令列與本次提交的有序附件。它返回已結算的 `CommandExecution`——規範化結果加生命週期配對 `commandId`——語法無效或名稱未知時返回 `undefined`。`list(agent)` 與 `find(agent, name)` 在應用 agent 作用域遮蔽後用於命令發現。
 
 ### 取消
 
-调用方的中止信号会让注册表停止等待处理器；无视信号的处理器可能在调用方停止等待后继续产生自身的外部副作用。被取消或抛异常的处理器在日志中以 `command/done` 错误结算。
+呼叫方的中止訊號會讓註冊表停止等待處理器；無視訊號的處理器可能在呼叫方停止等待後繼續產生自身的外部副作用。被取消或拋異常的處理器在日誌中以 `command/done` 錯誤結算。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-可观察行为已在[使用本包](#use-this-package)中说明；本节解释注册表的构建方式与其约定的归属。
+可觀察行為已在[使用本包](#use-this-package)中說明；本節解釋註冊表的建置方式與其約定的歸屬。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `CommandRuntime` 服务：注册、作用域、分派、生命周期事件 |
-| [`src/types.ts`](src/types.ts) | 命令定义、描述符、执行与结果类型 |
-| [`src/brand.ts`](src/brand.ts) | 稳定命令定义标识和每次执行的生命周期 id |
-| [`src/invariant.ts`](src/invariant.ts) | 不变式伴生插件：按会话日志配对 `command/run` 与 `command/done` |
+| [`src/index.ts`](src/index.ts) | `CommandRuntime` 服務：註冊、作用域、分派、生命週期事件 |
+| [`src/types.ts`](src/types.ts) | 命令定義、描述符、執行與結果型別 |
+| [`src/brand.ts`](src/brand.ts) | 穩定命令定義標識和每次執行的生命週期 id |
+| [`src/invariant.ts`](src/invariant.ts) | 不變式伴生外掛：按工作階段日誌配對 `command/run` 與 `command/done` |
 
-### 生命周期事件
+### 生命週期事件
 
-`execute()` 会生成一个 `commandId`，在处理器运行前追加 `command/run`，并在结算时追加携带结果类型与原样文本的 `command/done`；确切载荷字段见 [`src/index.ts`](src/index.ts)。成功结果可以通过 `sourceEventSeq` 指向更早的一条非命令权威领域事件；处理器抛出或被中止时以 `kind: 'error'` 结算。两个事件都作为仅用于日志的事件直接独立追加：没有轮次包裹它们，持久化机制会在常规检查点和销毁期间排空这些事件。未通过准入的输入（语法无效或名称未知）不记录任何事件。
+`execute()` 會生成一個 `commandId`，在處理器執行前追加 `command/run`，並在結算時追加攜帶結果型別與原樣文字的 `command/done`；確切載荷欄位見 [`src/index.ts`](src/index.ts)。成功結果可以透過 `sourceEventSeq` 指向更早的一條非命令權威領域事件；處理器丟擲或被中止時以 `kind: 'error'` 結算。兩個事件都作為僅用於日誌的事件直接獨立追加：沒有輪次包裹它們，持久化機制會在常規檢查點和銷燬期間排空這些事件。未透過准入的輸入（語法無效或名稱未知）不記錄任何事件。
 
 ### 作用域
 
-注册表通过 `ScopedLayers` 维护全局层与按 agent 的作用域层，并按 agent 合并视图。子级注入形态——挂载在 `agent.ctx` 之下的命令生产插件声明自身的 `commands` 注入——保留了 agent 作用域，同时不会让核心 agent loop（智能体循环）依赖 UI 服务。同一层内的名称重复会在注册时失败；注册或移除命令时，系统会通知每个 `commands/change` 观察者，使运行中的适配器能够刷新发现结果。观察者失败会写入日志，既不能否决注册表变更，也不能阻止后续观察者运行。
+註冊表透過 `ScopedLayers` 維護全域層與按 agent 的作用域層，並按 agent 合併檢視。子級注入形態——掛載在 `agent.ctx` 之下的命令生產外掛宣告自身的 `commands` 注入——保留了 agent 作用域，同時不會讓核心 agent loop（智慧代理迴圈）依賴 UI 服務。同一層內的名稱重複會在註冊時失敗；註冊或移除命令時，系統會通知每個 `commands/change` 觀察者，使執行中的介面卡能夠重新整理發現結果。觀察者失敗會寫入日誌，既不能否決註冊表變更，也不能阻止後續觀察者執行。
 
 ### 附件准入
 
-附件强制执行发生在执行器中：图片经 `admitEncodedImages` 提交，文件通过唯一的会话感知凭证提供方解析，执行器在调用处理器前恢复原始混合顺序。验证拒绝不会开始写入附件。图片存储失败可能留下等待清理且无法引用的内容寻址对象，但不会发布模型可见消息。取消会在处理器运行前生效。命令返回错误时，分发方 composer 的草稿与附件卡保持原位。
+附件強制執行發生在執行器中：圖片經 `admitEncodedImages` 提交，檔案透過唯一的工作階段感知憑證提供者解析，執行器在呼叫處理器前恢復原始混合順序。驗證拒絕不會開始寫入附件。圖片儲存失敗可能留下等待清理且無法引用的內容定址物件，但不會發布模型可見訊息。取消會在處理器執行前生效。命令返回錯誤時，分發方 composer 的草稿與附件卡保持原位。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享命令词汇逐步进入设计证据与相邻表面。
+當包級約定不夠用時閱讀以下頁面。它們從共享命令詞彙逐步進入設計證據與相鄰表面。
 
-- [命令子系统参考](../../../docs/subsystems/commands.zh.md)——注册表语义、输入元数据与 `ctx.commands` 的 Cordis 接口面。
-- [命令注册 Agent Note](../../../.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md)——此服务背后的边界与分发约定。
-- [交互组映射](../README.zh.md)——相邻的审批、权限与问答包。
-- [Plan mode 包](../../plan/plan-mode/README.zh.md)——一个驱动模型可见工作的已交付命令生产方。
+- [命令子系統參考](../../../docs/subsystems/commands.zh.md)——註冊表語義、輸入中繼資料與 `ctx.commands` 的 Cordis 介面面。
+- [命令註冊 Agent Note](../../../.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md)——此服務背後的邊界與分發約定。
+- [互動組對映](../README.zh.md)——相鄰的審批、權限與問答包。
+- [Plan mode 包](../../plan/plan-mode/README.zh.md)——一個驅動模型可見工作的已交付命令生產方。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 直接面向用户的命令
+### 直接面向使用者的命令
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-注册表自身不会提交任何内容。已知斜杠命令在 UI 命令平面执行，其 `CommandResult` 文本不会作为用户消息提交。已交付的适配器会拒绝未知斜杠命令输入，而不是将其变成模型提示词。命令生产方可以显式使用接收命令的 `Agent`；例如，[`dsh-plan-mode`](../../plan/plan-mode/README.zh.md#model-and-human-interactions)在选择 plan mode 后，会提交 `/plan [message]` 中的可选消息与有序附件。执行器只负责把附件准入为持久化对象，是否以及如何成为模型可见消息由声明接受的生产方决定。
+註冊表自身不會提交任何內容。已知斜槓命令在 UI 命令平面執行，其 `CommandResult` 文字不會作為使用者訊息提交。已交付的介面卡會拒絕未知斜槓命令輸入，而不是將其變成模型提示詞。命令生產方可以顯式使用接收命令的 `Agent`；例如，[`dsh-plan-mode`](../../plan/plan-mode/README.zh.md#model-and-human-interactions)在選擇 plan mode 後，會提交 `/plan [message]` 中的可選訊息與有序附件。執行器只負責把附件准入為持久化物件，是否以及如何成為模型可見訊息由宣告接受的生產方決定。
 
-#### Token 影响
+#### Token 影響
 
-命令发现、执行和 UI 输出不会增加模型 token。命令生产方显式安排的 agent 工作与相应 agent 输入具有相同的 token 影响。
+命令發現、執行和 UI 輸出不會增加模型 token。命令生產方顯式安排的 agent 工作與相應 agent 輸入具有相同的 token 影響。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-注册表元数据、命令输入和直接输出绝不会进入模型请求，也不会影响其缓存。发生变更的领域负责之后产生的所有缓存影响。
+註冊表中繼資料、命令輸入和直接輸出絕不會進入模型請求，也不會影響其快取。發生變更的領域負責之後產生的所有快取影響。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明注册表不提供什么。它们是当前包约束，不是 UI 积压事项。
+這些限制說明註冊表不提供什麼。它們是目前包約束，不是 UI 積壓事項。
 
-- **仅支持非结构化文本输入**：表单、补全 schema 和类型化参数仍由各命令自行解析。
-- **副作用采用协作式取消**：中止后，分发会停止等待；处理器必须遵循信号，才能停止已经进入外部系统的工作。
+- **僅支援非結構化文字輸入**：表單、補全 schema 和型別化參數仍由各命令自行解析。
+- **副作用採用協作式取消**：中止後，分發會停止等待；處理器必須遵循訊號，才能停止已經進入外部系統的工作。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

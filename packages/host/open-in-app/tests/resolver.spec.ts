@@ -469,7 +469,7 @@ describe('registry and desktop parsing', () => {
     const dump = [
       'ignored preamble',
       'HKEY_CURRENT_USER\\...\\App Paths\\Code.exe',
-      '    (默认)    REG_SZ    C:\\Code.exe',
+      '    (預設)    REG_SZ    C:\\Code.exe',
       '    Path    REG_EXPAND_SZ    %LOCALAPPDATA%\\Code',
       '    Flags    REG_DWORD    0x1',
       '',

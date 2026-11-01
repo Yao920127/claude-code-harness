@@ -1,5 +1,5 @@
 ---
-description: "identity 包组：由遥测、反馈与 DeepSeek 提供方请求共享的匿名关联 id，每个 harness home 一个。"
+description: "identity 包組：由遙測、回饋與 DeepSeek 提供者請求共享的匿名關聯 id，每個 harness home 一個。"
 kind: "package-group"
 ---
 
@@ -9,29 +9,29 @@ kind: "package-group"
 
 ## 概述
 
-identity 组为每个 harness home 提供一个匿名 id，该安装的遥测、反馈与 DeepSeek 请求会把它附加到各自的记录上，因此离开同一个 home 的所有内容都能被识别为来自同一套安装，而无需识别用户身份。无需配置任何东西：id 会在这些功能之一首次运行时自动出现，并在文件被删除前保持稳定。本组只有一个包；本页列出本组的组成，包 README 负责细节。
+identity 組為每個 harness home 提供一個匿名 id，該安裝的遙測、回饋與 DeepSeek 請求會把它附加到各自的記錄上，因此離開同一個 home 的所有內容都能被識別為來自同一套安裝，而無需識別使用者身份。無需設定任何東西：id 會在這些功能之一首次執行時自動出現，並在檔案被刪除前保持穩定。本組只有一個包；本頁列出本組的組成，包 README 負責細節。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 |
+| 包 | 職責 |
 |---|---|
-| [`anonymous-user-id`](anonymous-user-id/README.zh.md) | 让每个 harness home 拥有一个匿名 id，遥测、反馈与 DeepSeek 请求把它附加到记录上，使来自同一安装的记录无需识别用户即可被辨认 |
+| [`anonymous-user-id`](anonymous-user-id/README.zh.md) | 讓每個 harness home 擁有一個匿名 id，遙測、回饋與 DeepSeek 請求把它附加到記錄上，使來自同一安裝的記錄無需識別使用者即可被辨認 |
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [会话遥测子系统](../../docs/subsystems/session-telemetry.zh.md)——在导出中携带该 id 的遥测功能。
-- [dsh-llm-deepseek](../llm/llm-deepseek/README.zh.md)——在请求中携带该 id 的 DeepSeek 提供方。
-- [dsh-command-feedback](../feedback/command-feedback/README.zh.md)——在确认文本中点名该匿名安装的反馈命令。
+- [工作階段遙測子系統](../../docs/subsystems/session-telemetry.zh.md)——在匯出中攜帶該 id 的遙測功能。
+- [dsh-llm-deepseek](../llm/llm-deepseek/README.zh.md)——在請求中攜帶該 id 的 DeepSeek 提供者。
+- [dsh-command-feedback](../feedback/command-feedback/README.zh.md)——在確認文字中點名該匿名安裝的回饋命令。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

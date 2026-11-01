@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-16-creator-persistent-plugin-management.md
 /agent-note-creator-mode-installs-persistent-plugin-bundles:
   en: c73c641d920a1431
-  zh: c8ee5e861cc8bad3
+  zh: e131abca2c131720
 /agent-note-creator-mode-installs-persistent-plugin-bundles/problem:
   en: 44615a7a0939054e
-  zh: b8efa721321ba0d7
+  zh: 556a55a3ffe6efbd
 /agent-note-creator-mode-installs-persistent-plugin-bundles/decision:
   en: 3530a89a72e35bdd
-  zh: 3601941563747b5d
+  zh: 4db9ad0564a98a4e
 /agent-note-creator-mode-installs-persistent-plugin-bundles/alternatives-considered:
   en: af527d8aabdfd59c
-  zh: 34388da992d2ab56
+  zh: 70ebebc187c833bc
 /agent-note-creator-mode-installs-persistent-plugin-bundles/consequences:
   en: f27b9e492a6035e0
-  zh: 3d7832ad169b7daa
+  zh: d5aab0b8ebc52536

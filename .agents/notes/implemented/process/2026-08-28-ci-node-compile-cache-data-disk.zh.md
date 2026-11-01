@@ -1,43 +1,43 @@
-# Agent Note: 将 Node 编译缓存重定向到数据卷 runner 临时目录
+# Agent Note: 將 Node 編譯快取重定向到資料卷 runner 臨時目錄
 
 Status: implemented
 
 [English](2026-08-28-ci-node-compile-cache-data-disk.md) | 中文
 
-## 问题
+## 問題
 
-自托管 Linux CI 虚拟机（`vm-backup` 池，32 个 runner 实例共宿一机）的根分区 inode 正在耗尽。issue #3134 的残留（`/tmp/dsh-*`）是来源之一；第二个、更大的来源是 Node.js 模块编译缓存。CI 工具链中的工具显式调用 `module.enableCompileCache()`：pnpm 11.7.0 在入口（`bin/pnpm.mjs` 中的 `module.enableCompileCache?.()`）每次调用都启用缓存，TypeScript 在 `tsc`/`tsserver` 中启用；vitest 转发该 API 但自身不启用。每次这样的调用都把序列化 V8 字节码缓存写到 `os.tmpdir()/node-compile-cache`。在共享虚拟机上即根分区的 `/tmp`：2026-08-28 实测为 **697,389 个 inode、9.2 GB**，其中 34,110 个文件不足 1 小时——缓存每次 CI 运行都在增长且从不清理，即使 `dsh-*` 残留被控制，根分区 3,276,800 个 inode 仍趋向耗尽。
+自託管 Linux CI 虛擬機器（`vm-backup` 池，32 個 runner 實例共宿一機）的根分割槽 inode 正在耗盡。issue #3134 的殘留（`/tmp/dsh-*`）是來源之一；第二個、更大的來源是 Node.js 模組編譯快取。CI 工具鏈中的工具顯式呼叫 `module.enableCompileCache()`：pnpm 11.7.0 在入口（`bin/pnpm.mjs` 中的 `module.enableCompileCache?.()`）每次呼叫都啟用快取，TypeScript 在 `tsc`/`tsserver` 中啟用；vitest 轉發該 API 但自身不啟用。每次這樣的呼叫都把序列化 V8 位元組碼快取寫到 `os.tmpdir()/node-compile-cache`。在共享虛擬機器上即根分割槽的 `/tmp`：2026-08-28 實測為 **697,389 個 inode、9.2 GB**，其中 34,110 個檔案不足 1 小時——快取每次 CI 執行都在增長且從不清理，即使 `dsh-*` 殘留被控制，根分割槽 3,276,800 個 inode 仍趨向耗盡。
 
-## 决策
+## 決策
 
-每个可能运行在 `vm-backup` 池的 Linux lane（`ci.yml` static/coverage/snapshots——默认 hosted，仅 `DSH_CI_FAILOVER_LINUX=selfhosted` 时自托管；`ci-master.yml` serial standby——始终自托管）都把 `NODE_COMPILE_CACHE` 重定向到 per-runner 数据卷临时目录 `${{ runner.temp }}/node-compile-cache`。`runner.temp` 在 `/data_local`（1 TB，inode 用量约 1%）上，per-runner（`_workNN/_temp`），因此缓存不再消耗根分区 inode。
+每個可能執行在 `vm-backup` 池的 Linux lane（`ci.yml` static/coverage/snapshots——預設 hosted，僅 `DSH_CI_FAILOVER_LINUX=selfhosted` 時自託管；`ci-master.yml` serial standby——始終自託管）都把 `NODE_COMPILE_CACHE` 重定向到 per-runner 資料卷臨時目錄 `${{ runner.temp }}/node-compile-cache`。`runner.temp` 在 `/data_local`（1 TB，inode 用量約 1%）上，per-runner（`_workNN/_temp`），因此快取不再消耗根分割槽 inode。
 
-重定向是在 `actions/checkout` 之后的一个 step，把 `NODE_COMPILE_CACHE=${{ runner.temp }}/node-compile-cache` 写入 `$GITHUB_ENV`，因此 lane 中后续每个 step——`pnpm/action-setup`、store 路径探测、安装、Playwright 安装和测试门禁——都会继承该变量。必须用注入而非 job 级 env：`runner` 上下文在 job 级 `env` 不可用（与早前 TMPDIR 工作相同的约束）；而仅给门禁 step 设 step 级 env 会让更早的 pnpm 调用继续写根分区 `/tmp`。sandbox（bwrap/Landlock）未授权 `runner.temp` 路径的受限子进程会继承该变量但**静默跳过缓存**——已在虚拟机上验证：`NODE_COMPILE_CACHE` 指向 bwrap 内未授权路径时，`node` 正常运行（exit 0），与 `mkdtemp` 的只读文件系统硬失败不同。编译缓存按设计是尽力而为；写失败只是缓存未命中，不是崩溃。
+重定向是在 `actions/checkout` 之後的一個 step，把 `NODE_COMPILE_CACHE=${{ runner.temp }}/node-compile-cache` 寫入 `$GITHUB_ENV`，因此 lane 中後續每個 step——`pnpm/action-setup`、store 路徑探測、安裝、Playwright 安裝和測試門禁——都會繼承該變數。必須用注入而非 job 級 env：`runner` 上下文在 job 級 `env` 不可用（與早前 TMPDIR 工作相同的約束）；而僅給門禁 step 設 step 級 env 會讓更早的 pnpm 呼叫繼續寫根分割槽 `/tmp`。sandbox（bwrap/Landlock）未授權 `runner.temp` 路徑的受限子程序會繼承該變數但**靜默跳過快取**——已在虛擬機器上驗證：`NODE_COMPILE_CACHE` 指向 bwrap 內未授權路徑時，`node` 正常執行（exit 0），與 `mkdtemp` 的只讀檔案系統硬失敗不同。編譯快取按設計是盡力而為；寫失敗只是快取未命中，不是崩潰。
 
-## 验证
+## 驗證
 
-- VM 探针：`NODE_COMPILE_CACHE=/data_local/ci/compile-cache-probe node -e 'require("node:fs")'` 在数据盘写出了 `v22.23.2-x64-*` 缓存子目录（位置切换生效）。
-- VM 探针（bwrap）：`NODE_COMPILE_CACHE` 指向 bwrap profile 未授权的路径时，`node` 正常运行（exit 0）——缓存写失败被容忍。
-- `scripts/ci-workflow.spec.ts` 断言每个 Linux lane 都在 `pnpm/action-setup` 之前把 `NODE_COMPILE_CACHE=${{ runner.temp }}/node-compile-cache`（`$GITHUB_ENV` 的 `KEY=VALUE` 行）注入 `$GITHUB_ENV`；位置断言在注入移出首次 pnpm 调用之后时会失败。
-- CI lane：三个必需的 Linux job（默认 hosted，`DSH_CI_FAILOVER_LINUX` 时自托管 `vm-backup`）会在新 env 下跑完整套件；缓存处理回归会表现为 lane 失败。
+- VM 探針：`NODE_COMPILE_CACHE=/data_local/ci/compile-cache-probe node -e 'require("node:fs")'` 在資料盤寫出了 `v22.23.2-x64-*` 快取子目錄（位置切換生效）。
+- VM 探針（bwrap）：`NODE_COMPILE_CACHE` 指向 bwrap profile 未授權的路徑時，`node` 正常執行（exit 0）——快取寫失敗被容忍。
+- `scripts/ci-workflow.spec.ts` 斷言每個 Linux lane 都在 `pnpm/action-setup` 之前把 `NODE_COMPILE_CACHE=${{ runner.temp }}/node-compile-cache`（`$GITHUB_ENV` 的 `KEY=VALUE` 行）注入 `$GITHUB_ENV`；位置斷言在注入移出首次 pnpm 呼叫之後時會失敗。
+- CI lane：三個必需的 Linux job（預設 hosted，`DSH_CI_FAILOVER_LINUX` 時自託管 `vm-backup`）會在新 env 下跑完整套件；快取處理迴歸會表現為 lane 失敗。
 
-## 备选方案
+## 備選方案
 
-### 为什么不彻底禁用编译缓存？
+### 為什麼不徹底停用編譯快取？
 
-`NODE_DISABLE_COMPILE_CACHE=1` 会立即停止根分区增长，但会放弃每次运行的启动加速，而缓存是 Node 正当有用的特性（由 pnpm 和 TypeScript 显式启用）。重定向在保留收益的同时把成本移出受限分区。
+`NODE_DISABLE_COMPILE_CACHE=1` 會立即停止根分割槽增長，但會放棄每次執行的啟動加速，而快取是 Node 正當有用的特性（由 pnpm 和 TypeScript 顯式啟用）。重定向在保留收益的同時把成本移出受限分割槽。
 
-### 为什么不把 `node-compile-cache` 纳入 `dsh-*` 清理？
+### 為什麼不把 `node-compile-cache` 納入 `dsh-*` 清理？
 
-CI 清理（残留清理改动中新增）针对测试残留；编译缓存是缓存而非残留。每次运行删掉它会丢弃缓存本要提供的加速。重定向是结构性修复：缓存的增长移到为它准备的卷上。
+CI 清理（殘留清理改動中新增）針對測試殘留；編譯快取是快取而非殘留。每次執行刪掉它會丟棄快取本要提供的加速。重定向是結構性修復：快取的增長移到為它準備的捲上。
 
-### 为什么不用 job 级 env 或只给门禁 step 设 env？
+### 為什麼不用 job 級 env 或只給門禁 step 設 env？
 
-`runner` 上下文只在 step 级 `env` 可用；job 级 `env` 会求值为空字符串（GitHub contexts-availability），静默让缓存留在根分区。只给门禁 step 设 step 级 env 也只覆盖那一个 step：lane 中更早的每次 pnpm 调用（setup、store 路径探测、安装）仍会写根分区 `/tmp`。在 checkout 与 `pnpm/action-setup` 之间的 step 注入 `$GITHUB_ENV`，使变量在 lane 首次 pnpm 调用之前生效，一个 step 即可覆盖整条 lane。
+`runner` 上下文只在 step 級 `env` 可用；job 級 `env` 會求值為空字串（GitHub contexts-availability），靜默讓快取留在根分割槽。只給門禁 step 設 step 級 env 也只覆蓋那一個 step：lane 中更早的每次 pnpm 呼叫（setup、store 路徑探測、安裝）仍會寫根分割槽 `/tmp`。在 checkout 與 `pnpm/action-setup` 之間的 step 注入 `$GITHUB_ENV`，使變數在 lane 首次 pnpm 呼叫之前生效，一個 step 即可覆蓋整條 lane。
 
-## 后果
+## 後果
 
-- **买到**：Node 编译缓存不再消耗根分区 inode；该来源的 inode 压力被移除且不损失缓存的启动收益。缓存现在位于数据卷上的 per-runner `_workNN/_temp`。
-- **代价**：缓存在 `runner.temp` 累积，而 runner 不会在 job 之间清空它（早前实测）——但在数据卷（inode 用量约 1%）上无碍。
-- **代价**：没有 `runner.temp` 授权的受限子进程会为其自身的 `node` 调用跳过缓存；这是缓存未命中而非失败，符合 Node 的尽力而为契约。
-- **代价**：改动只涉及 CI 配置；本地开发保持默认 `os.tmpdir()` 位置。
+- **買到**：Node 編譯快取不再消耗根分割槽 inode；該來源的 inode 壓力被移除且不損失快取的啟動收益。快取現在位於資料捲上的 per-runner `_workNN/_temp`。
+- **代價**：快取在 `runner.temp` 累積，而 runner 不會在 job 之間清空它（早前實測）——但在資料卷（inode 用量約 1%）上無礙。
+- **代價**：沒有 `runner.temp` 授權的受限子程序會為其自身的 `node` 呼叫跳過快取；這是快取未命中而非失敗，符合 Node 的盡力而為契約。
+- **代價**：改動只涉及 CI 設定；本地開發保持預設 `os.tmpdir()` 位置。

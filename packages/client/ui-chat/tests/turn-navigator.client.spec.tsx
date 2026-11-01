@@ -43,8 +43,8 @@ describe('TurnNavigator', () => {
     expect(scrollTo).not.toHaveBeenCalled()
     expect(rect).not.toHaveBeenCalled()
     expect(within(nav).getAllByRole('button').length).toBeLessThan(40)
-    expect(view.getByRole('button', { name: '跳转到第 1000 轮' }).getAttribute('aria-current')).toBe('true')
-    expect(view.queryByRole('button', { name: '跳转到第 1 轮' })).toBeNull()
+    expect(view.getByRole('button', { name: '跳轉到第 1000 輪' }).getAttribute('aria-current')).toBe('true')
+    expect(view.queryByRole('button', { name: '跳轉到第 1 輪' })).toBeNull()
   })
 
   it('exposes separate activation and fixed-height scrolling controls without querying the scroll extent', async () => {
@@ -52,14 +52,14 @@ describe('TurnNavigator', () => {
     const ref = createRef<TurnNavigatorHandle>()
     const onNavigate = vi.fn()
     const view = render(<TurnNavigator ref={ref} items={items} activeTurn={1} busyTurn={null} onNavigate={onNavigate} t={t} />)
-    await view.findByRole('button', { name: '跳转到第 1 轮' })
+    await view.findByRole('button', { name: '跳轉到第 1 輪' })
     const scroller = view.getByRole('navigation').firstElementChild as HTMLElement
     Object.defineProperty(scroller, 'scrollHeight', { get: () => { throw new Error('scroll extent read') } })
     Object.defineProperty(scroller, 'clientHeight', { get: () => { throw new Error('viewport height read') } })
 
     await act(async () => { ref.current?.scrollToTurn(500) })
     expect(scroller.scrollTop).toBe(4_846)
-    expect(view.getByRole('button', { name: '跳转到第 500 轮' })).toBeTruthy()
+    expect(view.getByRole('button', { name: '跳轉到第 500 輪' })).toBeTruthy()
     expect(onNavigate).not.toHaveBeenCalled()
 
     act(() => { ref.current?.activateTurn(700) })
@@ -75,14 +75,14 @@ describe('TurnNavigator', () => {
         <TurnNavigator ref={ref} items={items} activeTurn={1} busyTurn={null} onNavigate={vi.fn()} t={t} />
       </StrictMode>,
     )
-    const first = await view.findByRole('button', { name: '跳转到第 1 轮' })
+    const first = await view.findByRole('button', { name: '跳轉到第 1 輪' })
     act(() => { first.focus() })
     await act(async () => { ref.current?.scrollToTurn(900) })
 
     expect(document.activeElement).toBe(first)
     expect(first.isConnected).toBe(true)
-    expect(view.getByRole('button', { name: '跳转到第 900 轮' })).toBeTruthy()
-    fireEvent.pointerMove(view.getByRole('button', { name: '跳转到第 900 轮' }))
+    expect(view.getByRole('button', { name: '跳轉到第 900 輪' })).toBeTruthy()
+    fireEvent.pointerMove(view.getByRole('button', { name: '跳轉到第 900 輪' }))
     expect(view.getByRole('tooltip').textContent).toBe('prompt 900')
     act(() => { first.blur() })
     expect(first.isConnected).toBe(false)
@@ -92,7 +92,7 @@ describe('TurnNavigator', () => {
     installTurnNavigatorObserver(288)
     const props = { items, activeTurn: 50, busyTurn: null, onNavigate: vi.fn(), t }
     const view = render(<TurnNavigator {...props} />)
-    await view.findByRole('button', { name: '跳转到第 50 轮' })
+    await view.findByRole('button', { name: '跳轉到第 50 輪' })
     const scroller = view.getByRole('navigation').firstElementChild as HTMLElement
     const scrollTo = vi.spyOn(scroller, 'scrollTo')
     Object.defineProperty(scroller, 'scrollHeight', { get: () => { throw new Error('scroll extent read') } })
@@ -123,7 +123,7 @@ describe('TurnNavigator', () => {
   it('does not let scroll-induced pointer entry replace a hover or focused preview', async () => {
     installTurnNavigatorObserver()
     const view = render(<TurnNavigator items={items} activeTurn={1} busyTurn={null} onNavigate={vi.fn()} t={t} />)
-    const twentieth = await view.findByRole('button', { name: '跳转到第 20 轮' })
+    const twentieth = await view.findByRole('button', { name: '跳轉到第 20 輪' })
     const nav = view.getByRole('navigation')
     const scroller = nav.firstElementChild as HTMLElement
     vi.spyOn(scroller, 'getBoundingClientRect').mockImplementation(() => { throw new Error('synchronous rect read') })
@@ -134,15 +134,15 @@ describe('TurnNavigator', () => {
 
     scroller.scrollTop = 100
     fireEvent.scroll(scroller)
-    fireEvent.pointerEnter(view.getByRole('button', { name: '跳转到第 30 轮' }))
+    fireEvent.pointerEnter(view.getByRole('button', { name: '跳轉到第 30 輪' }))
     expect(view.getByRole('tooltip').textContent).toBe('prompt 20')
 
-    const focused = view.getByRole('button', { name: '跳转到第 21 轮' })
+    const focused = view.getByRole('button', { name: '跳轉到第 21 輪' })
     act(() => { focused.focus() })
     const previewId = view.getByRole('tooltip').id
     scroller.scrollTop = 600
     fireEvent.scroll(scroller)
-    const underPointer = view.getByRole('button', { name: '跳转到第 70 轮' })
+    const underPointer = view.getByRole('button', { name: '跳轉到第 70 輪' })
     fireEvent.pointerEnter(underPointer)
     expect(document.activeElement).toBe(focused)
     expect(view.getByRole('tooltip').textContent).toBe('prompt 21')

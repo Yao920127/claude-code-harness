@@ -1,6 +1,6 @@
-- region "欢迎使用 DeepSeek Harness":
-  - heading "欢迎使用 DeepSeek Harness" [level=1]:
-    - text: 欢迎使用
+- region "歡迎使用 DeepSeek Harness":
+  - heading "歡迎使用 DeepSeek Harness" [level=1]:
+    - text: 歡迎使用
     - emphasis: DeepSeek Harness
-  - paragraph: DeepSeek Harness 会以本地文件夹作为工作区，通过调用各种工具，读写本机文件，完成搜索整理资料、制作文档表格、编写代码、排查问题等各种任务。
-  - button "开始设置"
+  - paragraph: DeepSeek Harness 會以本地資料夾作為工作區，透過呼叫各種工具，讀寫本機檔案，完成搜尋整理資料、製作文件表格、編寫程式碼、排查問題等各種任務。
+  - button "開始設定"

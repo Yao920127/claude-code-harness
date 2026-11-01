@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-14-independent-libreoffice-kit.md
 /agent-note-independent-libreoffice-kit-ownership:
   en: ee1625b5a309d9e6
-  zh: c3e78e1b1aa92fd8
+  zh: 7ab5641098236cf5
 /agent-note-independent-libreoffice-kit-ownership/problem:
   en: 2fc4ac7bdd4a3474
-  zh: 21ebdd3ac9264132
+  zh: e5eea8b9b727a3bf
 /agent-note-independent-libreoffice-kit-ownership/decision:
   en: 31200a9be3940dc0
-  zh: 8e22be1d160ec3e4
+  zh: b5a38ee192000bcf
 /agent-note-independent-libreoffice-kit-ownership/alternatives-considered:
   en: 55175bb30630bf0c
-  zh: 788853ddd5f7a4e9
+  zh: d6a245dc9df0c82a
 /agent-note-independent-libreoffice-kit-ownership/consequences:
   en: ace5eeafb4795ab6
-  zh: 136489e75455c8e7
+  zh: 202514b1ce664e8c

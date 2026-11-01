@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-07-27-request-error-retry-action.md
 /agent-note-request-error-retry-action:
   en: 672e3acc184e72f7
-  zh: 10334d48de7dcc0e
+  zh: 710728604506cfff
 /agent-note-request-error-retry-action/problem:
   en: 8b9476349def23b6
-  zh: e3b034bae896e24b
+  zh: c1eb7cbf73276619
 /agent-note-request-error-retry-action/decision:
   en: 3937a99236b23d80
-  zh: ec5e9cb21744e3ae
+  zh: 441893562fe47e5a
 /agent-note-request-error-retry-action/alternatives-considered:
   en: 8f50ac6497dfd03e
-  zh: 4f1d07901132a184
+  zh: 6ae14147c993750f
 /agent-note-request-error-retry-action/consequences:
   en: 3e60793a09964f5a
-  zh: b28626761a229d85
+  zh: d87ea3d4660e3cb3

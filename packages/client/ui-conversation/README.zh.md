@@ -1,5 +1,5 @@
 ---
-description: "Target-neutral 对话装配与浏览器 shell：事件和视图注册表、逐会话 binding、输入状态、slot 与临时 composer takeover。"
+description: "Target-neutral 對話裝配與瀏覽器 shell：事件和檢視註冊表、逐工作階段 binding、輸入狀態、slot 與臨時 composer takeover。"
 kind: "package-reference"
 ---
 
@@ -9,87 +9,87 @@ kind: "package-reference"
 
 ## 概述
 
-`ui-conversation` 拥有与 target 无关的 Conversation 组装和共享浏览器 shell。它消费 Session Controller 的 `SessionEventLikeEntry` feed，通过 `ctx.uiConversation` 暴露不依赖 React 的注册表与逐 Session binding，并通过 `ctx.uiSession` 提供 `useConversation`、`useInput` 和 `inputActions` 标准 props。它还拥有按会话的持久化图片 URL 缓存：`ctx.uiConversation.imageUrl(sessionId, attachment)` 为每个附件解析一个经会话授权的浏览器 URL，并随 Session binding 释放而撤销，因此所有 Conversation target 共享一次 `session.attachment` 读取。Chat 等具体 target 位于独立包，由各自包注册 Definition、快照 builder、View 和 renderer。
+`ui-conversation` 擁有與 target 無關的 Conversation 組裝和共享瀏覽器 shell。它消費 Session Controller 的 `SessionEventLikeEntry` feed，透過 `ctx.uiConversation` 暴露不依賴 React 的註冊表與逐 Session binding，並透過 `ctx.uiSession` 提供 `useConversation`、`useInput` 和 `inputActions` 標準 props。它還擁有按工作階段的持久化圖片 URL 快取：`ctx.uiConversation.imageUrl(sessionId, attachment)` 為每個附件解析一個經工作階段授權的瀏覽器 URL，並隨 Session binding 釋放而撤銷，因此所有 Conversation target 共享一次 `session.attachment` 讀取。Chat 等具體 target 位於獨立包，由各自包註冊 Definition、快照 builder、View 和 renderer。
 
-## 目录
+## 目錄
 
-- [Conversation 组装](#conversation-assembly)
-- [Shell 与标准 props](#shell-and-standard-props)
-- [临时 composer entry](#temporary-composer-entries)
-- [模型体验](#model-experience)
-- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [Conversation 組裝](#conversation-assembly)
+- [Shell 與標準 props](#shell-and-standard-props)
+- [臨時 composer entry](#temporary-composer-entries)
+- [模型體驗](#model-experience)
+- [已知限制與暫緩事項](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="conversation-assembly"></a>
-## Conversation 组装
+## Conversation 組裝
 
-`UiConversation.events` 是 event Definition 的唯一 registry，`UiConversation.views` 是 target snapshot builder 的唯一 registry。两者都拒绝重复 key、保持注册顺序、返回幂等 disposer，并在 contribution roster 变化时重建现有 binding。`UiConversation.binding(bindingOrSessionId)` 为当前 Session Controller binding 返回 identity 稳定的 Conversation binding，不会另开事件源。 View Definition 可以声明 `toolCallFocus`，将工具调用 id 转换为自身的焦点标识。仅当此目标拥有可见的 View 条目时，Conversation 才提供 Inspect 回调；Chat 直接使用回调，不选择目标。
+`UiConversation.events` 是 event Definition 的唯一 registry，`UiConversation.views` 是 target snapshot builder 的唯一 registry。兩者都拒絕重複 key、保持註冊順序、返回冪等 disposer，並在 contribution roster 變化時重建現有 binding。`UiConversation.binding(bindingOrSessionId)` 為目前 Session Controller binding 返回 identity 穩定的 Conversation binding，不會另開事件源。 View Definition 可以宣告 `toolCallFocus`，將工具呼叫 id 轉換為自身的焦點標識。僅當此目標擁有可見的 View 條目時，Conversation 才提供 Inspect 回呼；Chat 直接使用回呼，不選擇目標。
 
-`ConversationBinding.openTurn` 是对象标识稳定的只读来源：最新轮次的开始事件已加载且尚未结束时提供其编号，否则为 `undefined`。观察到的轮次变化同步发布，即使没有活动视图也是如此。固定停止输入同时读取这个来源、会话运行状态和待处理交互状态。卸载会话绑定会解除其事件源订阅。
+`ConversationBinding.openTurn` 是物件標識穩定的只讀來源：最新輪次的開始事件已載入且尚未結束時提供其編號，否則為 `undefined`。觀察到的輪次變化同步釋出，即使沒有活動檢視也是如此。固定停止輸入同時讀取這個來源、工作階段執行狀態和待處理互動狀態。解除安裝工作階段繫結會解除其事件源訂閱。
 
-适配器把每个 `SessionEventLikeEntry` 直接交给 assembler。外层 `type` 区分持久事件与 Client-only transient event，内部 `event` 则统一公开 `type`、`seq`、`time` 与 `data`；Definition 接收这个内部 `SessionEventLike`。replacement window 可以包含两种 entry，历史 prepend 携带持久 entry，实时 append 则可以携带任一种。持久与瞬态事件使用同一组 match/start/update 接口。当前最早的 start 初始化 State；后续所有 Match，包括同一身份的其他 start，都用于更新。不消费 Assistant delta 的 Definition 对 `assistant/live-chunk` 返回 `null`。replace window 或 revision 断档从完整已加载窗口重建；连续 revision 的 append、prepend 与 Assistant settlement 使用增量组装。settlement 只删除具名 attempt 的 transient match，应用可选持久 entry，并从剩余最早的 start 重算受影响的 Context，刷新前序索引及 dependent，不替换无关 target node。没有剩余 start 的 Context 不保留 State，但其 key 和已发布节点仍保留，供后续证据复用，直到完整窗口重建；所属 Definition 可以隐藏这些节点。assembler 拥有 Context 匹配、Turn/Step location、target node 物化、target activity 和稳定 target source。`ConversationSnapshot` 只包含与 target 无关的 View 与 active-target 事实；Session lifecycle 状态仍属于 `SessionSnapshot`。
+介面卡把每個 `SessionEventLikeEntry` 直接交給 assembler。外層 `type` 區分持久事件與 Client-only transient event，內部 `event` 則統一公開 `type`、`seq`、`time` 與 `data`；Definition 接收這個內部 `SessionEventLike`。replacement window 可以包含兩種 entry，歷史 prepend 攜帶持久 entry，即時 append 則可以攜帶任一種。持久與瞬態事件使用同一組 match/start/update 介面。目前最早的 start 初始化 State；後續所有 Match，包括同一身份的其他 start，都用於更新。不消費 Assistant delta 的 Definition 對 `assistant/live-chunk` 返回 `null`。replace window 或 revision 斷檔從完整已載入視窗重建；連續 revision 的 append、prepend 與 Assistant settlement 使用增量組裝。settlement 只刪除具名 attempt 的 transient match，應用可選持久 entry，並從剩餘最早的 start 重算受影響的 Context，重新整理前序索引及 dependent，不替換無關 target node。沒有剩餘 start 的 Context 不保留 State，但其 key 和已釋出節點仍保留，供後續證據複用，直到完整視窗重建；所屬 Definition 可以隱藏這些節點。assembler 擁有 Context 匹配、Turn/Step location、target node 物化、target activity 和穩定 target source。`ConversationSnapshot` 只包含與 target 無關的 View 與 active-target 事實；Session lifecycle 狀態仍屬於 `SessionSnapshot`。
 
-shell 选择解析出 target 或 target source 收到首个 subscriber 时，该 target 进入 active 状态。assembler 从当前 Context 对它执行一次 replace，并使它参与后续增量 flush；创建 source 不会激活 target，取消订阅也不会停用 target。
+shell 選擇解析出 target 或 target source 收到首個 subscriber 時，該 target 進入 active 狀態。assembler 從目前 Context 對它執行一次 replace，並使它參與後續增量 flush；建立 source 不會啟用 target，取消訂閱也不會停用 target。
 
-`UiConversation.groups` 为每个已注册目标注册一个可选的业务 Group Definition。它在节点物化后消费投影后的节点变化、变化轮次及已索引的目标位置，覆盖首次激活，并拥有全部分段规则与组数据。按索引读取 Turn 时保留相邻 Node 造成的分隔，使业务更新可以限制在受影响轮次和组内。assembler 先校验并安装根引用和按键索引的组快照，再发布 Node、Group 和 Location 数据来源。未分组目标保持原有路径。[分组](../../../docs/subsystems/conversation.zh.md#group-definitions)定义输入有效期、类型化注册、原子更新及渲染器职责。
+`UiConversation.groups` 為每個已註冊目標註冊一個可選的業務 Group Definition。它在節點物化後消費投影后的節點變化、變化輪次及已索引的目標位置，覆蓋首次啟用，並擁有全部分段規則與組資料。按索引讀取 Turn 時保留相鄰 Node 造成的分隔，使業務更新可以限制在受影響輪次和組內。assembler 先驗證並安裝根引用和按鍵索引的組快照，再發布 Node、Group 和 Location 資料來源。未分組目標保持原有路徑。[分組](../../../docs/subsystems/conversation.zh.md#group-definitions)定義輸入有效期、型別化註冊、原子更新及渲染器職責。
 
-Group 注册时缺少 View 目标会报错。已注册的 View Definition 被移除后，其分组计算暂停并清空已发布结果，但保留 Group Definition；重新注册该 View 后，沿现有替换流程从当前已加载时间线重建。切换 View 页签不会移除 View Definition。
+Group 註冊時缺少 View 目標會報錯。已註冊的 View Definition 被移除後，其分組計算暫停並清空已釋出結果，但保留 Group Definition；重新註冊該 View 後，沿現有替換流程從目前已載入時間線重建。切換 View 頁籤不會移除 View Definition。
 
-target package 通过 declaration merge 扩展 snapshot 与 Location data map，再调用 `ctx.uiConversation.events.register(...)` 和 `ctx.uiConversation.views.register(...)`。target 通过 `ctx.uiConversation.binding(binding).target(targetId)` 读取其 Session-owned source。注册属于 Cordis effect，返回的 disposer 从同一个 registry 移除 contribution。共享的请求检查服务于每个 target：`ctx.uiConversation.inspectSystemPrompt(previous, event)` 将系统消息与位置替换解释为不可变的已加载 surface 状态。它按 surface 顺序选择最后一个非空的存活系统节点，为连续重写只保留存活的替换位置；遇到未建立索引的更早端点后，提示词保持不可用，直到向前补页回放提供其顺序。target 自有的 Definition 独立保留历史卡片。`ctx.uiConversation.inspectRequestPrompt(previous, header, system)` 根据该有效提示词分类请求变更；普通消息与流式分片无需处理系统状态。
+target package 透過 declaration merge 擴充功能 snapshot 與 Location data map，再呼叫 `ctx.uiConversation.events.register(...)` 和 `ctx.uiConversation.views.register(...)`。target 透過 `ctx.uiConversation.binding(binding).target(targetId)` 讀取其 Session-owned source。註冊屬於 Cordis effect，返回的 disposer 從同一個 registry 移除 contribution。共享的請求檢查服務於每個 target：`ctx.uiConversation.inspectSystemPrompt(previous, event)` 將系統訊息與位置替換解釋為不可變的已載入 surface 狀態。它按 surface 順序選擇最後一個非空的存活系統節點，為連續重寫只保留存活的替換位置；遇到未建立索引的更早端點後，提示詞保持不可用，直到向前補頁回放提供其順序。target 自有的 Definition 獨立保留歷史卡片。`ctx.uiConversation.inspectRequestPrompt(previous, header, system)` 根據該有效提示詞分類請求變更；普通訊息與流式分片無需處理系統狀態。
 
 <a id="shell-and-standard-props"></a>
-## Shell 与标准 props
+## Shell 與標準 props
 
-共享图片插槽属性将展示选择与持久化引用分开：`thumbnail` 请求完整缩放的附件列表缩略图，`compact` 请求裁剪的图片方块。每张图片可通过可选的 `label` 提供无障碍展示名称；加载和缓存标识仍使用原始附件引用。[ui-attachment](../ui-attachment/README.zh.md) 负责渲染与灯箱。
+共享圖片插槽屬性將展示選擇與持久化引用分開：`thumbnail` 請求完整縮放的附件列表縮圖，`compact` 請求裁剪的圖片方塊。每張圖片可透過可選的 `label` 提供無障礙展示名稱；載入和快取標識仍使用原始附件引用。[ui-attachment](../ui-attachment/README.zh.md) 負責渲染與燈箱。
 
-控件组的尺寸、内容、可见性或字体加载状态变化后，composer 测量展开状态下的控件组。若无法排在同一行，控制栏为模型位设置 `--dsh-composer-model-text-display: none` 和 `--dsh-composer-model-icon-display: block`；两者默认值分别为 `block` 和 `none`。若连图标也放不下，仍允许换行。
+控制元件組的尺寸、內容、可見性或字型載入狀態變化後，composer 測量展開狀態下的控制元件組。若無法排在同一行，控制欄為模型位設定 `--dsh-composer-model-text-display: none` 和 `--dsh-composer-model-icon-display: block`；兩者預設值分別為 `block` 和 `none`。若連圖示也放不下，仍允許換行。
 
-上下文占用按钮在输入卡片下方、会话统计右侧显示圆环和百分比。点击按钮可在视口内的面板查看 token 构成，没有统计项时面板也不会越界；上下文用量和容量尚不可用时，按钮保持隐藏。
+上下文佔用按鈕在輸入卡片下方、工作階段統計右側顯示圓環和百分比。點選按鈕可在視口內的面板檢視 token 構成，沒有統計項時面板也不會越界；上下文用量和容量尚不可用時，按鈕保持隱藏。
 
-关闭代码工作工具时，外壳仅隐藏 Trajectory；其他插件贡献的 View 仍然可用。可用 View 少于两个时隐藏 View 标签栏。在 Trajectory 激活时关闭代码工作工具会返回 Chat；已保存的 View 偏好和 Session 记录保持不变。开启后，Trajectory 恢复可用。View 所有者接收可用列表，使导航操作跟随相同的可见性。
+關閉程式碼工作工具時，外殼僅隱藏 Trajectory；其他外掛貢獻的 View 仍然可用。可用 View 少於兩個時隱藏 View 標籤欄。在 Trajectory 啟用時關閉程式碼工作工具會返回 Chat；已儲存的 View 偏好和 Session 記錄保持不變。開啟後，Trajectory 恢復可用。View 所有者接收可用列表，使導航操作跟隨相同的可見性。
 
-输入框注册「文件」命令动作，负责其标题、可用性和原生文件选择器回调。菜单可用性与实际调用都读取已挂载输入框当前的附件接收策略。输入框卸载或锁定后该动作不可用，插件 dispose（资源释放）时移除注册。回调绑定留在输入模块内部。
+輸入框註冊「檔案」命令動作，負責其標題、可用性和原生檔案選擇器回呼。選單可用性與實際呼叫都讀取已掛載輸入框目前的附件接收策略。輸入框解除安裝或鎖定後該動作不可用，外掛 dispose（資源釋放）時移除註冊。回呼繫結留在輸入模組內部。
 
-`SessionInputShell` 通过私有 [DraftEditorRuntime](src/client/input/editor/runtime.ts) 为每个 Session 持有一个 Lexical editor，同时保留提交、附件选择和恢复决策。[DraftEditor](src/client/input/editor/DraftEditor.tsx) 呈现借用的 editor；InputBar 保留钩子与 refs，并通过 [view-binding](src/client/input/editor/view-binding.ts) 安装 DOM 行为。编辑器类型位于 [draft-editor.ts](src/client/contract/draft-editor.ts)，共享输入和提交类型位于 [input.ts](src/client/contract/input.ts)。编辑器后台更新会保留草稿选区，不修改文档选区或从其他控件夺回焦点；显式聚焦 Composer 时恢复其选区。这一拆分不支持同一 Session 同时挂载多个可编辑 root；[两阶段隔离提案](../../../.agents/notes/proposed/architecture/2026-09-14-composer-model-and-draft-editor.zh.md) 定义剩余工作。
+`SessionInputShell` 透過私有 [DraftEditorRuntime](src/client/input/editor/runtime.ts) 為每個 Session 持有一個 Lexical editor，同時保留提交、附件選擇和恢復決策。[DraftEditor](src/client/input/editor/DraftEditor.tsx) 呈現借用的 editor；InputBar 保留掛鉤與 refs，並透過 [view-binding](src/client/input/editor/view-binding.ts) 安裝 DOM 行為。編輯器型別位於 [draft-editor.ts](src/client/contract/draft-editor.ts)，共享輸入和提交型別位於 [input.ts](src/client/contract/input.ts)。編輯器後臺更新會保留草稿選區，不修改文件選區或從其他控制元件奪回焦點；顯式聚焦 Composer 時恢復其選區。這一拆分不支援同一 Session 同時掛載多個可編輯 root；[兩階段隔離提案](../../../.agents/notes/proposed/architecture/2026-09-14-composer-model-and-draft-editor.zh.md) 定義剩餘工作。
 
-已认领的命令在仅删除参数和末尾分隔空格时保留身份与高亮，改动命令名才会释放认领。所有命令和语言使用相同规则，包括 `/goal`、`/目标`、`/plan` 和 `/计划`。输入法组合输入期间，命令提示和普通占位文字持续隐藏，直到编辑器提交最终文字且对应输入为空时才重新显示。
+已認領的命令在僅刪除參數和末尾分隔空格時保留身份與高亮，改動命令名才會釋放認領。所有命令和語言使用相同規則，包括 `/goal`、`/目標`、`/plan` 和 `/計劃`。輸入法組合輸入期間，命令提示和普通佔位文字持續隱藏，直到編輯器提交最終文字且對應輸入為空時才重新顯示。
 
-工作区选择使用 `uiWorkspace.openWorkspace` 准备目标并提交导航。草稿文字和附件仅在该请求仍为当前请求时，通过它的同步准备回调搬移；后续导航或所有者释放会保留原草稿。
+工作區選擇使用 `uiWorkspace.openWorkspace` 準備目標並提交導航。草稿文字和附件僅在該請求仍為目前請求時，透過它的同步準備回呼搬移；後續導航或所有者釋放會保留原草稿。
 
-本包占据 root 作用域 `main` 中的 `conversation` key。其 `main.conversation` 外壳将常驻的 `conversation.header` 放在可选 Session 的 `conversation.content` Component Factory 外。未选中 Session 时，头部仍承载根作用域导航；标题、操作和 View 标签保留在严格 Session 子组件中。Factory 拥有共享正文与 Composer，通过其标准 Hook 读取当前 Session，并公开 strict-Session `views` 与 root-scoped `widthControls` 两个局部位置。默认 adapter 渲染现有 `conversation.session` entry，主 occurrence 选择宽度拖拽条；嵌入式 occurrence 可以替换 `views`、省略拖拽条，且不渲染主 Header。共享正文与 Composer 注册 queue dock 和 Todo dock。Todo dock 在 composer 上方使用共享面板 elevation；其中的行分别以共享 idle、ongoing 与 done 标记表示待处理、进行中与已完成。`ctx.uiSession.provide()` 从同一个 Session binding 物化 Conversation 与 input source，并将 `inputActions` 作为稳定标准 prop 提供。
+本包占據 root 作用域 `main` 中的 `conversation` key。其 `main.conversation` 外殼將常駐的 `conversation.header` 放在可選 Session 的 `conversation.content` Component Factory 外。未選中 Session 時，頭部仍承載根作用域導航；標題、操作和 View 標籤保留在嚴格 Session 子元件中。Factory 擁有共享正文與 Composer，透過其標準 Hook 讀取目前 Session，並公開 strict-Session `views` 與 root-scoped `widthControls` 兩個區域性位置。預設 adapter 渲染現有 `conversation.session` entry，主 occurrence 選擇寬度拖拽條；嵌入式 occurrence 可以替換 `views`、省略拖拽條，且不渲染主 Header。共享正文與 Composer 註冊 queue dock 和 Todo dock。Todo dock 在 composer 上方使用共享面板 elevation；其中的行分別以共享 idle、ongoing 與 done 標記表示待處理、進行中與已完成。`ctx.uiSession.provide()` 從同一個 Session binding 物化 Conversation 與 input source，並將 `inputActions` 作為穩定標準 prop 提供。
 
-blank Session 保留 header 的 leading 与 corner 控件，包括右侧栏展开入口，同时隐藏标题、actions、utilities 和 View tabs。选择 Workspace 会创建这些控件所需的 Session，无需先发送消息。没有选中 Session 时，strict header 不挂载；常驻 header 在 macOS 桌面保留 40px 的窗口顶条，由它自己作为拖拽行持有，在 Web、Windows 或 Linux 上不预留空白高度。侧栏各入口仍遵循自身的数据与执行环境要求。 已开始的 Session 在可用 View 少于两个时使用单行标题栏，仅在渲染标签行时保留其高度。
+blank Session 保留 header 的 leading 與 corner 控制元件，包括右側欄展開入口，同時隱藏標題、actions、utilities 和 View tabs。選擇 Workspace 會建立這些控制元件所需的 Session，無需先傳送訊息。沒有選中 Session 時，strict header 不掛載；常駐 header 在 macOS 桌面保留 40px 的視窗頂條，由它自己作為拖拽行持有，在 Web、Windows 或 Linux 上不預留空白高度。側欄各入口仍遵循自身的資料與執行環境要求。 已開始的 Session 在可用 View 少於兩個時使用單行標題欄，僅在渲染標籤行時保留其高度。
 
-View 选择规则固定：有效且已注册的持久化选择优先，其次是已注册的 `chat`，否则不渲染 View；绝不选择第一个已注册 View。Shell phase 只组合 Session lifecycle 与 active-target set，不读取任何 target-specific 快照。
+View 選擇規則固定：有效且已註冊的持久化選擇優先，其次是已註冊的 `chat`，否則不渲染 View；絕不選擇第一個已註冊 View。Shell phase 只組合 Session lifecycle 與 active-target set，不讀取任何 target-specific 快照。
 
-Session 首次绑定或缓存的 Session 成为 current 时，shell 会在渲染前读取持久化 View 偏好，激活已注册的偏好 View 或 Chat fallback，并在后续 tab 或 focus 选择写入 store 前先激活对应 target。blank Session 仍不渲染 `conversation.view` slot；未选中的 target 不会激活。
+Session 首次繫結或快取的 Session 成為 current 時，shell 會在渲染前讀取持久化 View 偏好，啟用已註冊的偏好 View 或 Chat fallback，並在後續 tab 或 focus 選擇寫入 store 前先啟用對應 target。blank Session 仍不渲染 `conversation.view` slot；未選中的 target 不會啟用。
 
-主 occurrence 的活跃 transcript 只在未被内容覆盖的两侧沟槽中提供正文宽度拖拽条；嵌入式 occurrence 省略这些拖拽条。View 如果绘制进沟槽，只将具体的可见元素提到拖拽条上方；透明的全宽包装层保持在下方，不会占用空白沟槽。该规则要求此元素与 Conversation body 之间不能引入中间堆叠上下文；浏览器场景固定了交付 Chromium 的行为。Chat 将该规则用于表格元素，其限定在阅读列内的工具卡片无需提高层级。指针位于拖拽条上时，滚轮仍会滚动 transcript，Ctrl+滚轮则保留为浏览器缩放手势。粘滞 composer 刻意拥有完整的底部区带，该区域不是宽度调整目标；已捕获的拖拽会将指示线提高到松开为止（[拖动手柄样式](src/client/skeleton/ConversationRoot.module.css)）。
+主 occurrence 的活躍 transcript 只在未被內容覆蓋的兩側溝槽中提供正文寬度拖拽條；嵌入式 occurrence 省略這些拖拽條。View 如果繪製進溝槽，只將具體的可見元素提到拖拽條上方；透明的全寬包裝層保持在下方，不會佔用空白溝槽。該規則要求此元素與 Conversation body 之間不能引入中間堆疊上下文；瀏覽器情境固定了交付 Chromium 的行為。Chat 將該規則用於表格元素，其限定在閱讀列內的工具卡片無需提高層級。指標位於拖拽條上時，滾輪仍會滾動 transcript，Ctrl+滾輪則保留為瀏覽器縮放手勢。粘滯 composer 刻意擁有完整的底部區帶，該區域不是寬度調整目標；已捕捉的拖拽會將指示線提高到鬆開為止（[拖曳手柄樣式](src/client/skeleton/ConversationRoot.module.css)）。
 
-宽度拖拽条的指示线只在已捕获指针的拖拽期间跟随指针，普通悬停不改变其位置。
+寬度拖拽條的指示線只在已捕捉指標的拖拽期間跟隨指標，普通懸停不改變其位置。
 
-常驻 composer 在无 Session 与有 Session 之间保持挂载。输入空白字符会隐藏占位提示；没有附件的纯空白草稿无法发送。无 Session 时，同一个编辑器表面保持 inert，Workspace picker 连接 blank Session。该表面是 shell 所有的 Lexical 编辑器：引用 chip 是携带 owner 序列化身份的原子 decorator 节点（提交时经 owner codec 展开），已认领的 slash command 保持为带样式的行首文本，文件夹文本引用以图标前缀携带文件夹图形，草稿的剪贴板投影镜像到逐 Session Conversation store。QueueDock 从 Session 的 `inbox` 投影读取 `next-turn`，包含从冷状态恢复的消息，仅排除仍由本地 transcript 提交承接的 requestId。其他排队行保留正常展示和操作。Queue 操作通过 scoped `ctx.conversation` service 寻址准确的 queue occurrence；queue 预览经 `ui-primitives` 的共享行内引用投影渲染已发送文本（wire 会话形式折叠为其标签），并按原始附件顺序展示本地或持久化的图片和文件。图片使用缩略图，文件使用紧凑的名称与大小卡片。编辑态在可随内容增高的 textarea 中展示字面发送文本，因此重新编辑不会丢失换行；Enter 保存，Shift+Enter 换行，Escape 取消。持久化缩略图通过会话图片 URL 缓存解析。繁忙时 Enter 行为保存在 Host-backed `ui-conversation` settings namespace。 composer 键盘映射经斜杠流水线裁决触发菜单的按键——Tab 确认高亮补全项（可下钻项则下钻），Escape 与 Shift+Tab 离开菜单且不选定——其余按键交给编辑器自身。 接管键盘的浮层通过 `SessionInput.focus()` 把键盘还回来，该路径走 Lexical 自己的 focus，因此光标回到草稿原来的位置而不是开头。
+常駐 composer 在無 Session 與有 Session 之間保持掛載。輸入空白字元會隱藏佔位提示；沒有附件的純空白草稿無法傳送。無 Session 時，同一個編輯器表面保持 inert，Workspace picker 連線 blank Session。該表面是 shell 所有的 Lexical 編輯器：引用 chip 是攜帶 owner 序列化身份的原子 decorator 節點（提交時經 owner codec 展開），已認領的 slash command 保持為帶樣式的行首文字，資料夾文字引用以圖示字首攜帶資料夾圖形，草稿的剪貼簿投影映像到逐 Session Conversation store。QueueDock 從 Session 的 `inbox` 投影讀取 `next-turn`，包含從冷狀態恢復的訊息，僅排除仍由本地 transcript 提交承接的 requestId。其他排隊行保留正常展示和操作。Queue 操作透過 scoped `ctx.conversation` service 定址準確的 queue occurrence；queue 預覽經 `ui-primitives` 的共享行內引用投影渲染已傳送文字（wire 工作階段形式摺疊為其標籤），並按原始附件順序展示本地或持久化的圖片和檔案。圖片使用縮圖，檔案使用緊湊的名稱與大小卡片。編輯態在可隨內容增高的 textarea 中展示字面傳送文字，因此重新編輯不會丟失換行；Enter 儲存，Shift+Enter 換行，Escape 取消。持久化縮圖透過工作階段圖片 URL 快取解析。繁忙時 Enter 行為儲存在 Host-backed `ui-conversation` settings namespace。 composer 鍵盤對映經斜槓流水線裁決觸發選單的按鍵——Tab 確認高亮補全項（可下鑽項則下鑽），Escape 與 Shift+Tab 離開選單且不選定——其餘按鍵交給編輯器自身。 接管鍵盤的浮層透過 `SessionInput.focus()` 把鍵盤還回來，該路徑走 Lexical 自己的 focus，因此游標回到草稿原來的位置而不是開頭。
 
-普通 Enter 使用已配置的投递模式，严格的 Ctrl+Enter 或 Cmd+Enter 使用互补模式，Shift+Enter 插入换行。带 Alt、AltGraph、同时带 Ctrl 与 Cmd，或 Shift 与 Ctrl/Cmd 的 Enter 保持草稿和指令菜单不变，并将 DOM 事件留给应用快捷键。Conversation 插件注册发送、换行、互补投递、命令菜单和引用菜单的固定条目，并在卸载前保留这些键位。
+普通 Enter 使用已設定的投遞模式，嚴格的 Ctrl+Enter 或 Cmd+Enter 使用互補模式，Shift+Enter 插入換行。帶 Alt、AltGraph、同時帶 Ctrl 與 Cmd，或 Shift 與 Ctrl/Cmd 的 Enter 保持草稿和指令選單不變，並將 DOM 事件留給應用快捷鍵。Conversation 外掛註冊傳送、換行、互補投遞、命令選單和引用選單的固定條目，並在解除安裝前保留這些鍵位。
 
-默认发送采用乐观提交：Enter 在同一事务里清空草稿、occurrence 表和撤销历史，composer 保持 `plain`，发送作为 detached attempt 运行，发送期间可以继续输入和提交。`sendSession` 在序列化之前用投递模式注册 Session 提交回显（`session.beginSubmission`），并在 `pendingSubmissions` 中保留图片与文件的选择顺序；Session 根据该模式与当前运行状态推导位置，因此空闲发送进入 transcript（文本记录），繁忙时 Queue 进入 QueueDock，繁忙时 Steer 进入 pending-steering 区域。随后让出一帧，图片经浏览器原生 `FileReader` data-URL 路径编码，文件则引用已暂存凭证。命令提交也用同一凭证表示通用文件，因此发送 `/goal` 或 `/plan` 时不会再次读取这些浏览器文件。提示词复用提交 `requestId`；Session 按同一 `rpcId` 关联展示接管，并仅退休回显一次。多个并发发送失败时，在用户编辑还原内容之前按提交顺序合并还原；命令提交保持冻结的 `submitting` 阶段。Detached attempt 持有附件 id，直到 admission 完成或 Session scope 销毁。回显以 observed 退休时，durable 图片缓存立即公开每个预览 URL，读取 admitted 附件后用规范化 URL 替换预览，并在各 URL 停止使用后撤销，同时释放文件卡。选中的通用文件进入同一个先进先出的后台上传队列；`maxConcurrentFileUploads` 默认允许两个 Worker transport 同时运行，Conversation 服务在切换 Session 时继续持有排队和运行中的传输操作及字节进度，移除草稿会跳过排队中的传输或中止正在运行的传输。浏览器 shell 暴露 `__DSH_HOST_PATHS__` 时（桌面应用），拖入或粘贴的文件夹以及拖入、选择或粘贴的带真实路径的非图片文件会成为 `@路径` chip；图片仍然上传。拖放和粘贴通过浏览器 entry API 识别目录；该 API 不可用或没有返回 entry 时，粘贴项沿用普通文件处理。文件选择器不能选择目录。引用需要启用 `ui-reference` 插件，原路径也必须仍可由模型的文件工具读取。工作区内的路径使用相对形式，其他路径保留绝对形式。整批文件先校验再插入，保留来源顺序和已选中的文字，引用之间有空白分隔，含空格的路径使用闭合引号。没有该桥的浏览器会拒绝拖入或粘贴的文件夹，桌面端无法获取文件夹路径时单独报错。continuable 子代理禁用附件入口，也不创建本地回显，因为其 transport 不保留浏览器 request id。
+預設傳送採用樂觀提交：Enter 在同一事務裡清空草稿、occurrence 表和撤銷歷史，composer 保持 `plain`，傳送作為 detached attempt 執行，傳送期間可以繼續輸入和提交。`sendSession` 在序列化之前用投遞模式註冊 Session 提交回顯（`session.beginSubmission`），並在 `pendingSubmissions` 中保留圖片與檔案的選擇順序；Session 根據該模式與目前執行狀態推導位置，因此空閒傳送進入 transcript（文字記錄），繁忙時 Queue 進入 QueueDock，繁忙時 Steer 進入 pending-steering 區域。隨後讓出一幀，圖片經瀏覽器原生 `FileReader` data-URL 路徑編碼，檔案則引用已暫存憑證。命令提交也用同一憑證表示通用檔案，因此傳送 `/goal` 或 `/plan` 時不會再次讀取這些瀏覽器檔案。提示詞複用提交 `requestId`；Session 按同一 `rpcId` 關聯展示接管，並僅退休回顯一次。多個並行傳送失敗時，在使用者編輯還原內容之前按提交順序合併還原；命令提交保持凍結的 `submitting` 階段。Detached attempt 持有附件 id，直到 admission 完成或 Session scope 銷燬。回顯以 observed 退休時，durable 圖片快取立即公開每個預覽 URL，讀取 admitted 附件後用規範化 URL 替換預覽，並在各 URL 停止使用後撤銷，同時釋放檔案卡。選中的通用檔案進入同一個先進先出的後臺上傳佇列；`maxConcurrentFileUploads` 預設允許兩個 Worker transport 同時執行，Conversation 服務在切換 Session 時繼續持有排隊和執行中的傳輸操作及位元組進度，移除草稿會跳過排隊中的傳輸或中止正在執行的傳輸。瀏覽器 shell 暴露 `__DSH_HOST_PATHS__` 時（桌面應用），拖入或貼上的資料夾以及拖入、選擇或貼上的帶真實路徑的非圖片檔案會成為 `@路徑` chip；圖片仍然上傳。拖放和貼上透過瀏覽器 entry API 識別目錄；該 API 不可用或沒有返回 entry 時，貼上項沿用普通檔案處理。檔案選擇器不能選擇目錄。引用需要啟用 `ui-reference` 外掛，原路徑也必須仍可由模型的檔案工具讀取。工作區內的路徑使用相對形式，其他路徑保留絕對形式。整批檔案先驗證再插入，保留來源順序和已選中的文字，引用之間有空白分隔，含空格的路徑使用閉合引號。沒有該橋的瀏覽器會拒絕拖入或貼上的資料夾，桌面端無法取得資料夾路徑時單獨報錯。continuable 子代理停用附件入口，也不建立本地回顯，因為其 transport 不保留瀏覽器 request id。
 
-排队提交的本地回显在禁用的编辑、删除、插话按钮旁显示“发送中…”；折叠后的队列在标题栏保留发送状态。匹配的 Host 队列行替换回显后，各操作按原有的纯文本内容和运行状态要求启用。仅收到提示词确认不会启用队列操作。提交失败会移除回显并显示错误；输入框为空或仍保留上一次自动恢复的内容时，composer 恢复失败草稿，保留用户随后输入的文字。
+排隊提交的本地回顯在停用的編輯、刪除、插話按鈕旁顯示“傳送中…”；摺疊後的佇列在標題欄保留髮送狀態。匹配的 Host 佇列行替換回顯後，各操作按原有的純文字內容和執行狀態要求啟用。僅收到提示詞確認不會啟用佇列操作。提交失敗會移除回顯並顯示錯誤；輸入框為空或仍保留上一次自動恢復的內容時，composer 恢復失敗草稿，保留使用者隨後輸入的文字。
 
-Send 和 Stop 按钮禁用时不显示提示气泡，轮次结束后由 Stop 切换成禁用 Send 的按钮也遵循此规则。普通 composer 运行时，如果草稿为空或输入不可用，主指针操作保持为 Stop。可提交的文字或附件会把同一位置切换为 Send；清空或成功提交草稿后恢复 Stop。繁忙态 Enter 设置为普通 Session 与可继续 child 选择 Queue 或 Steer 投递，运行中的 Send 按钮按 plain Enter 解析出的同一模式投递；当它在普通消息草稿上可用（没有待上传文件）时，其标签以该模式命名（排队发送或插话发送），因此该设置同时约束 Enter 与按钮，而 Cmd/Ctrl+Enter 仍使用另一模式；空闲会话、空草稿与 `/` 命令行保留普通的 Send 标签（[决策](../../../.agents/notes/implemented/bug-fix/2026-09-04-busy-send-button-follows-enter-setting.zh.md)）。它们的 QueueDock 行共享 Edit、Remove 与 Steer，空草稿也共享 steer-all 组合键。One-shot child 继续只读。Plan Mode 与 active goal 不改变附件入口。可继续 child 保留独立的 Send 与 Stop 操作，但不提供「文件」菜单项、粘贴或拖放入口；parent 离线时，Send 与 composer 手势锁定，但在线 inbox 的 QueueDock 控制仍可使用（[决策](../../../.agents/notes/archived/bug-fix/2026-08-20-running-draft-primary-send.md)、[inbox 控制](../../../.agents/notes/implemented/feature/2026-08-27-continuable-subagent-human-inbox-control.zh.md)）。
+Send 和 Stop 按鈕停用時不顯示提示氣泡，輪次結束後由 Stop 切換成停用 Send 的按鈕也遵循此規則。普通 composer 執行時，如果草稿為空或輸入不可用，主指標操作保持為 Stop。可提交的文字或附件會把同一位置切換為 Send；清空或成功提交草稿後恢復 Stop。繁忙態 Enter 設定為普通 Session 與可繼續 child 選擇 Queue 或 Steer 投遞，執行中的 Send 按鈕按 plain Enter 解析出的同一模式投遞；當它在普通訊息草稿上可用（沒有待上傳檔案）時，其標籤以該模式命名（排隊傳送或插話傳送），因此該設定同時約束 Enter 與按鈕，而 Cmd/Ctrl+Enter 仍使用另一模式；空閒工作階段、空草稿與 `/` 命令列保留普通的 Send 標籤（[決策](../../../.agents/notes/implemented/bug-fix/2026-09-04-busy-send-button-follows-enter-setting.zh.md)）。它們的 QueueDock 行共享 Edit、Remove 與 Steer，空草稿也共享 steer-all 組合鍵。One-shot child 繼續只讀。Plan Mode 與 active goal 不改變附件入口。可繼續 child 保留獨立的 Send 與 Stop 操作，但不提供「檔案」選單項、貼上或拖放入口；parent 離線時，Send 與 composer 手勢鎖定，但線上 inbox 的 QueueDock 控制仍可使用（[決策](../../../.agents/notes/archived/bug-fix/2026-08-20-running-draft-primary-send.md)、[inbox 控制](../../../.agents/notes/implemented/feature/2026-08-27-continuable-subagent-human-inbox-control.zh.md)）。
 
-文件标签和可编辑的 skill 引用共用覆盖整个引用的悬停背景，并跟随输入框的行高与文字基线。首次点击立即由已注册的引用来源负责打开预览，包括双击序列的第一次点击。后续点击保留原生文本选择行为；已有非折叠选区时，指针点击不打开预览。预览不改变草稿、剪贴板文本或提交内容。
+檔案標籤和可編輯的 skill 引用共用覆蓋整個引用的懸停背景，並跟隨輸入框的行高與文字基線。首次點選立即由已註冊的引用來源負責開啟預覽，包括雙擊序列的第一次點選。後續點選保留原生文字選擇行為；已有非摺疊選區時，指標點選不開啟預覽。預覽不改變草稿、剪貼簿文字或提交內容。
 
-当会话被其他写句柄占用时，发送失败的 toast 提示用户退出其他正在运行的 DSH 后重试。
+當工作階段被其他寫控制代碼佔用時，傳送失敗的 toast 提示使用者退出其他正在執行的 DSH 後重試。
 
-在获得焦点的 Chat 或 Composer 中连续独立按下两次 Esc，可停止当前运行轮次并保留排队消息。间隔由 shortcuts 插件的 `stopSequenceMs` 配置决定，默认 500 ms。菜单、审批、模态层、终端、内嵌网页、输入法、重复按键，以及输入区域、Session 或轮次变化会清空序列。快捷键与 Stop 按钮调用同一作用域取消操作。插件将 Stop 注册为 `input` 展示分组中的固定操作。该注册使普通 Esc 不能分配给可编辑快捷键，并为 Stop 按钮的悬停和键盘聚焦提示提供 `Esc Esc` 序列。
+在獲得焦點的 Chat 或 Composer 中連續獨立按下兩次 Esc，可停止目前執行輪次並保留排隊訊息。間隔由 shortcuts 外掛的 `stopSequenceMs` 設定決定，預設 500 ms。選單、審批、模態層、終端、內嵌網頁、輸入法、重複按鍵，以及輸入區域、Session 或輪次變化會清空序列。快捷鍵與 Stop 按鈕呼叫同一作用域取消操作。外掛將 Stop 註冊為 `input` 展示分組中的固定操作。該註冊使普通 Esc 不能分配給可編輯快捷鍵，併為 Stop 按鈕的懸停和鍵盤聚焦提示提供 `Esc Esc` 序列。
 
 <a id="temporary-composer-entries"></a>
-## 临时 composer entry
+## 臨時 composer entry
 
-`conversation.composer` 是通用 chain，其完整 owner currency 为：
+`conversation.composer` 是通用 chain，其完整 owner currency 為：
 
 ```ts type-equiv
 /** Owner values used to elect a composer takeover. */
@@ -103,7 +103,7 @@ interface ComposerChainProps {
 }
 ```
 
-业务包仅可在一个 Remote waterfall request pending 期间安装 entry：
+業務包僅可在一個 Remote waterfall request pending 期間安裝 entry：
 
 ```tsx
 import type { ComposerChainProps } from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -132,37 +132,37 @@ try {
 }
 ```
 
-selector 必须是 owner currency 的纯函数。非 null 返回值作为 `matched` 传给组件；`PropsRuntime<'conversation.composer'>` 提供标准 Session 与 global props。Chain 顺序仍按 `priority` 升序，再按注册顺序；首个返回非 null 的 selector 获选。Shell 会在 takeover 下保持默认 composer 挂载。Request 状态、listener、response encoding 和任何 request-specific child slot 都属于业务 package，不进入 `SessionSnapshot`，也不由 core 包声明。
+selector 必須是 owner currency 的純函式。非 null 回傳值作為 `matched` 傳給元件；`PropsRuntime<'conversation.composer'>` 提供標準 Session 與 global props。Chain 順序仍按 `priority` 升序，再按註冊順序；首個返回非 null 的 selector 獲選。Shell 會在 takeover 下保持預設 composer 掛載。Request 狀態、listener、response encoding 和任何 request-specific child slot 都屬於業務 package，不進入 `SessionSnapshot`，也不由 core 包宣告。
 
-`InputActions.captureInsertion()` 捕获草稿选区与版本；`insertText(text, span)` 仅在版本未变且编辑器允许编辑时，插入一次可撤销的纯文本编辑。异步消费者在插入被拒绝后负责保留结果，等待用户操作。
+`InputActions.captureInsertion()` 捕捉草稿選區與版本；`insertText(text, span)` 僅在版本未變且編輯器允許編輯時，插入一次可撤銷的純文字編輯。非同步消費者在插入被拒絕後負責保留結果，等待使用者操作。
 
-`conversation.input.activity` 在模型选择器与发送按钮之间承载一个控件。其 `onActiveChange` 回调将控件展开至整条工具栏并隐藏普通辅助控件和上下文用量按钮，同时保留编辑器与提交按钮。关闭活动后恢复这些控件，上下文详情保持关闭。首页输入框下方没有内容时，该区域保持收起。占用者在卸载时释放展开状态，并拥有活动专属反馈。
+`conversation.input.activity` 在模型選擇器與傳送按鈕之間承載一個控制元件。其 `onActiveChange` 回呼將控制元件展開至整條工具欄並隱藏普通輔助控制元件和上下文用量按鈕，同時保留編輯器與提交按鈕。關閉活動後恢復這些控制元件，上下文詳情保持關閉。首頁輸入框下方沒有內容時，該區域保持收起。佔用者在解除安裝時釋放展開狀態，並擁有活動專屬回饋。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为本包渲染浏览器状态，并通过 Session Controller API 发送用户确认提交的输入，而不构造模型请求。
+無，因為本包渲染瀏覽器狀態，並透過 Session Controller API 傳送使用者確認提交的輸入，而不建構模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；Conversation 组装和浏览器输入状态不会改变提供方侧的 prompt cache。
+無；Conversation 組裝和瀏覽器輸入狀態不會改變提供者側的 prompt cache。
 
-## 已知限制与暂缓事项
+## 已知限制與暫緩事項
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **只有已注册 target 可以渲染**——除已注册的 `chat` 偏好外，shell 刻意不提供隐式 fallback target。
-- **Factory occurrence 继承渲染位置的 Session**——`conversation.content` 不接受独立寻址的 Session；该能力需要单独的 Session provider。
+- **只有已註冊 target 可以渲染**——除已註冊的 `chat` 偏好外，shell 刻意不提供隱式 fallback target。
+- **Factory occurrence 繼承渲染位置的 Session**——`conversation.content` 不接受獨立定址的 Session；該能力需要單獨的 Session provider。
 
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。Conversation Definition、target builder 与 View 已由其所属注册表和 Slot ledger 校验。
+**執行時不變式：** 不釋出伴生入口。Conversation Definition、target builder 與 View 已由其所屬註冊表和 Slot ledger 驗證。

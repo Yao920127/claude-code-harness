@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-13-partitioned-coverage-location-canonicalization.md
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge:
   en: 9346bcf9fc59bea8
-  zh: 170ebd969ac038bd
+  zh: 9d61edf251073501
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/problem:
   en: c2f8792fb6ec46d1
-  zh: cc01e2e2ff14f367
+  zh: 86226811e9da39b3
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/decision:
   en: 07f37eb8430ef8ee
-  zh: bc2910040b90291c
+  zh: 0480638a67b270d5
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/divergent-statement-maps-across-vite-environments:
   en: 4f6d088fd7e272fc
-  zh: d44463ee8485b060
+  zh: 45e58146b677b1d4
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/testing:
   en: 59a8515f97eb4c63
-  zh: 86d655d454da2c63
+  zh: 55df72f8cec71c47
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/alternatives-considered:
   en: 8c7efd287cf0e56b
-  zh: 2ed0477918e10f4e
+  zh: e3f9386def1b138c
 /agent-note-canonicalize-partition-coverage-locations-before-the-blob-merge/consequences:
   en: c7a2e99922697cb6
-  zh: 0c98a57b00263bf8
+  zh: 86200fa12abcc1bf

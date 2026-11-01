@@ -85,7 +85,7 @@ describe('translation pairing index reads', () => {
       })
       mkdirSync(join(root, 'docs'), { recursive: true })
       writeFileSync(join(root, 'docs/reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'docs/reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'docs/reference.zh.md'), '# 參考\n')
       execFileSync('git', ['-C', root, 'add', 'docs'])
 
       expect(gitIndexPaths(root)).toEqual(new Set([
@@ -186,7 +186,7 @@ describe('translation pairing switchers', () => {
 describe('translation pairing link language parity', () => {
   it('compares a .zh.md target and its .md sibling as the same document', () => {
     const en = 'See [docs](persistence.md) and [notes](note.md#anchor).'
-    const zh = '参见[文档](persistence.zh.md)与[笔记](note.zh.md#anchor)。'
+    const zh = '參見[文件](persistence.zh.md)與[筆記](note.zh.md#anchor)。'
     expect(
       translationStructureDiff(
         signature(en),
@@ -197,7 +197,7 @@ describe('translation pairing link language parity', () => {
 
   it('still rejects a genuinely different target', () => {
     const en = 'See [docs](persistence.md).'
-    const zh = '参见[文档](other.md)。'
+    const zh = '參見[文件](other.md)。'
     expect(
       translationStructureDiff(
         signature(en),
@@ -219,9 +219,9 @@ describe('translation pairing records', () => {
     '## Code', '', '```sh', 'pnpm run x', '```', '',
   ].join('\n')
   const zh = [
-    '# 指南', '', '[English](foo.md) | 中文', '', '简介。', '',
+    '# 指南', '', '[English](foo.md) | 中文', '', '簡介。', '',
     '## 事件', '', '事件表。', '', '| Event | Mode |', '| --- | --- |', '| `a` | `emit` |', '| `b` | `emit` |', '',
-    '## 代码', '', '```sh', 'pnpm run x', '```', '',
+    '## 程式碼', '', '```sh', 'pnpm run x', '```', '',
   ].join('\n')
 
   it('keys sections by English heading path and hashes everything outside code blocks and generated regions', () => {
@@ -251,7 +251,7 @@ describe('translation pairing records', () => {
   })
 
   it('refuses sides with different heading counts', () => {
-    expect(() => record(en, `${zh}\n## 额外\n`)).toThrow('docs/foo.md has 3 heading(s) but docs/foo.zh.md has 4')
+    expect(() => record(en, `${zh}\n## 額外\n`)).toThrow('docs/foo.md has 3 heading(s) but docs/foo.zh.md has 4')
   })
 
   it('round-trips the canonical record and rejects malformed entries', () => {
@@ -282,18 +282,18 @@ describe('translation pairing records', () => {
   it('merges records of edits to different sections with the default text merge', () => {
     const edit = (heading: string, english: string, chinese: string): string => renderTranslationPairingRecord(
       paths,
-      record(en.replace(heading, english), zh.replace(heading === 'Intro.' ? '简介。' : '事件表。', chinese)),
+      record(en.replace(heading, english), zh.replace(heading === 'Intro.' ? '簡介。' : '事件表。', chinese)),
     )
     const root = mkdtempSync(join(tmpdir(), 'dsh-translation-pairing-merge-'))
     try {
       writeFileSync(join(root, 'base'), renderTranslationPairingRecord(paths, record(en, zh)))
-      writeFileSync(join(root, 'current'), edit('Intro.', 'New intro.', '新简介。'))
+      writeFileSync(join(root, 'current'), edit('Intro.', 'New intro.', '新簡介。'))
       writeFileSync(join(root, 'other'), edit('Event table.', 'New table.', '新表。'))
       const merged = spawnSync('git', ['merge-file', '-p', 'current', 'base', 'other'], { cwd: root, encoding: 'utf8' })
       expect(merged.status).toBe(0)
       expect(merged.stdout).toBe(renderTranslationPairingRecord(paths, record(
         en.replace('Intro.', 'New intro.').replace('Event table.', 'New table.'),
-        zh.replace('简介。', '新简介。').replace('事件表。', '新表。'),
+        zh.replace('簡介。', '新簡介。').replace('事件表。', '新表。'),
       )))
     } finally {
       rmSync(root, { recursive: true, force: true })
@@ -364,9 +364,9 @@ describe('translation structural signature', () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-translation-structure-'))
     try {
       writeFileSync(join(root, 'reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'reference.zh.md'), '# 參考\n')
       const sourceMarkdown = '[Reference](reference.md?view=full#section)\n'
-      const counterpartMarkdown = '[参考](reference.zh.md?view=full#section)\n'
+      const counterpartMarkdown = '[參考](reference.zh.md?view=full#section)\n'
       const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.zh.md')
       const counterpart = fixtureSignature(root, 'guide.zh.md', counterpartMarkdown, 'guide.md')
       expect(translationStructureDiff(source, counterpart)).toEqual([])
@@ -379,7 +379,7 @@ describe('translation structural signature', () => {
     const root = mkdtempSync(join(tmpdir(), 'dsh-translation-structure-'))
     try {
       writeFileSync(join(root, 'reference.md'), '# Reference\n')
-      writeFileSync(join(root, 'reference.zh.md'), '# 参考\n')
+      writeFileSync(join(root, 'reference.zh.md'), '# 參考\n')
       const markdown = [
         '[Reference][doc]',
         '',
@@ -410,7 +410,7 @@ describe('translation structural signature', () => {
         writeFileSync(join(root, `${name}.zh.md`), `# ${name} zh\n`)
       }
       const sourceMarkdown = '[Reference][ref]\n\n[ref]: reference.md\n[ref]: other.md\n'
-      const counterpartMarkdown = '[参考][ref]\n\n[ref]: different.zh.md\n[ref]: other.zh.md\n'
+      const counterpartMarkdown = '[參考][ref]\n\n[ref]: different.zh.md\n[ref]: other.zh.md\n'
       const source = fixtureSignature(root, 'guide.md', sourceMarkdown, 'guide.zh.md')
       const counterpart = fixtureSignature(root, 'guide.zh.md', counterpartMarkdown, 'guide.md')
       expect(translationStructureDiff(source, counterpart)).toEqual([

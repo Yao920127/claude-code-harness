@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/2026-09-20-unknown-child-catalog.md
 /:
   en: 3d5a424ae7d7e46b
-  zh: c22a8e4a62d8cc1a
+  zh: 630ac71355b9ea16
 /2026-09-20-unknown-child-catalog:
   en: bf0eed877450b875
   zh: 76cc12e1c6e1efec
 /2026-09-20-unknown-child-catalog/summary:
   en: af6ba3bddd431d70
-  zh: 0daa9e83ea3ab376
+  zh: d93a0f0383d3960f
 /2026-09-20-unknown-child-catalog/table-of-contents:
   en: 6cf314a069ceb451
-  zh: 9adff678e9ecab3b
+  zh: 378f31ff431be8cb
 /2026-09-20-unknown-child-catalog/declaration:
   en: 6907136f28e48c90
-  zh: 02f8298485f3d8e7
+  zh: c57270ea21c7a438
 /2026-09-20-unknown-child-catalog/compatibility:
   en: fc032425397b984e
-  zh: c85930e504d29cba
+  zh: 31c945d66446557b
 /2026-09-20-unknown-child-catalog/verification:
   en: 8c5a5cdbc15c3a47
-  zh: 06b6419920d89443
+  zh: 9796e90b56226a9a
 /2026-09-20-unknown-child-catalog/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

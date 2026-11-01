@@ -4,52 +4,52 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-09-06-logical-session-storage-rebuild.md
 /agent-note-logical-session-and-storage-rebuild:
   en: 035f8aa28d4fb486
-  zh: 4fa5eef40371cf2f
+  zh: 78f6afeb37f367a3
 /agent-note-logical-session-and-storage-rebuild/problem:
   en: fe3de6c728124b77
-  zh: a28e89b8fee09662
+  zh: 3af074bd741cdfbc
 /agent-note-logical-session-and-storage-rebuild/proposal:
   en: 68347f4cef24d57d
-  zh: e11eaec209be63c6
+  zh: 8c090e42248e4a0c
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface:
   en: 27e8e604c508ca73
-  zh: 70247d9608e139a4
+  zh: 8943d298d83c5577
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface/public-model:
   en: add476512bd9ef36
-  zh: a8a5225ccd22ec07
+  zh: 7da982cdedbb6c71
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface/stage-1-substages:
   en: 9b28d667b2fd1b28
-  zh: be44f9f96f698bf2
+  zh: f36edbca25b2f529
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface/stage-progress:
   en: 4903b4362660063e
-  zh: ba06aeb34539ef8d
+  zh: 8928f517ec68f90b
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface/invariants:
   en: 81fc51ad0abe4f65
-  zh: a9dad4cb9d5905a1
+  zh: 1787d0d5ab7b0702
 /agent-note-logical-session-and-storage-rebuild/stage-1-one-public-logical-session-interface/enforcement-and-completion:
   en: ca6c3e02033b0d01
-  zh: 54a89a7e47c2d282
+  zh: 19a2df7a026e8cc2
 /agent-note-logical-session-and-storage-rebuild/destination-architecture:
   en: e0b4199ec0d5a669
-  zh: abc06df82b3f357e
+  zh: 3b0b91d4b71be401
 /agent-note-logical-session-and-storage-rebuild/destination-architecture/ownership-rules:
   en: cf9d6e20f25929ff
-  zh: 46c0f13a1f562e0f
+  zh: 1176b5a57b204c31
 /agent-note-logical-session-and-storage-rebuild/destination-architecture/later-stages:
   en: d61edd7e232bcb44
-  zh: f9065dd60d49bc13
+  zh: 947a93ede70e2c97
 /agent-note-logical-session-and-storage-rebuild/compatibility-and-non-goals:
   en: bf81660f7d4638fa
-  zh: 4d59310d2e6476fd
+  zh: ba44048c6b190d83
 /agent-note-logical-session-and-storage-rebuild/references:
   en: 32c7669fd961ad1a
-  zh: 09dca97558a3e7b0
+  zh: 85e3b3f6314e1756
 /agent-note-logical-session-and-storage-rebuild/alternatives-considered:
   en: 4bc014b676d93c13
-  zh: 1e0a04856da60bb0
+  zh: 73bdc51b8985212f
 /agent-note-logical-session-and-storage-rebuild/acceptance-criteria:
   en: 1a9dfc903efe9627
-  zh: f23ff556ffa33f64
+  zh: 2d1cdaae0981794f
 /agent-note-logical-session-and-storage-rebuild/risks:
   en: 0916205231867aff
-  zh: 6efe11a2375d5459
+  zh: fca4ef15fe99b665

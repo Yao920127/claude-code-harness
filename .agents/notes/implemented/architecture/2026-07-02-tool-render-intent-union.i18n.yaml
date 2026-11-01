@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-02-tool-render-intent-union.md
 /agent-note-tagged-render-intent-union-for-tool-call-presentation:
   en: 599dd6f91059580e
-  zh: b6a46767bb4198e6
+  zh: 834f032d37b1f21c
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/problem:
   en: 3a4b92dca651b979
-  zh: 6b10ce7ba3681180
+  zh: 4e578cee5fb8d39c
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/decision:
   en: aff6d789bde63f17
-  zh: 73782526b46a3ee5
+  zh: ab5a664dfbbbcfc4
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/decision/why-a-tagged-union-beats-the-field-bag:
   en: ed7b15039050e65e
-  zh: a719562b5fcdbd4e
+  zh: 425b43d653dd3cf5
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/decision/producer-mapping:
   en: c87f22a29caef002
-  zh: 7bfd28c1df80b8a1
+  zh: 31d06f67cef21e1f
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/decision/terminal-fallback-ownership:
   en: 0bb2f60726afc4d9
-  zh: 60040141447b4a2e
+  zh: 722898b2c7d00684
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/decision/purity-preserved:
   en: 1ba6a480967c524d
-  zh: 90535e843f346bcf
+  zh: 2be7382b25abc93e
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/alternatives-considered:
   en: 2cd4801f3162227b
-  zh: 76afaa23bc2b9eb0
+  zh: f7135a08b80297f4
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/consequences:
   en: 81d8366d826285c2
-  zh: b437b862794c146e
+  zh: 4102508ffcdead22
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/non-goals:
   en: e9d60967a9b3f9bd
-  zh: 6dfa9ac30d847879
+  zh: f373108a01076f44
 /agent-note-tagged-render-intent-union-for-tool-call-presentation/related:
   en: fe27f777b3728fa4
-  zh: 4b648dbf731ace00
+  zh: d907265604d467c1

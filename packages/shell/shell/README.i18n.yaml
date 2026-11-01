@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/shell/shell/README.md
 /:
   en: 4a173bf52227a3b6
-  zh: 76bb85595252765c
+  zh: 5912e19d29e41479
 /deepseek-ai-dsh-shell:
   en: 607578ed1d9dbabe
   zh: e6c674aad094f056
 /deepseek-ai-dsh-shell/summary:
   en: bb40932744bc4b80
-  zh: 22e2af1327b2f835
+  zh: 3edda22bdda80249
 /deepseek-ai-dsh-shell/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-shell/use-this-package:
   en: b81fffe9eb713a49
-  zh: ac37478e7f1f7499
+  zh: 1683390abee37ee3
 /deepseek-ai-dsh-shell/use-this-package/foreground-commands:
   en: cf38f6bc0e150602
-  zh: 2ff6cfb0ce48a7b8
+  zh: 02629b3409c5805e
 /deepseek-ai-dsh-shell/use-this-package/background-processes:
   en: 277c543917453017
-  zh: d2c100e37944f151
+  zh: 2a554d649d523e32
 /deepseek-ai-dsh-shell/use-this-package/deadlines-and-bounded-waits:
   en: 719b0708bf3cf1cf
-  zh: 044f53d543960f42
+  zh: dbe9f3d0b063713f
 /deepseek-ai-dsh-shell/use-this-package/requests-and-resolved-specs:
   en: e104e13a7dae9491
-  zh: 1b219491fabf780b
+  zh: 09cb37b4d6989203
 /deepseek-ai-dsh-shell/use-this-package/choosing-and-composing-an-executor:
   en: ddcf8a0c7a45e8d3
-  zh: e4ee99e2e27234fe
+  zh: 1bd483a4edc5dda1
 /deepseek-ai-dsh-shell/use-this-package/the-shared-exit-status-contract:
   en: f4125282c1deab36
-  zh: 46b8ee789ae68a9a
+  zh: eeaceab1282d2237
 /deepseek-ai-dsh-shell/understand-the-implementation:
   en: d2192b68c2faf92b
-  zh: 7678a2fd356d8587
+  zh: 1bf71b5232fa82ce
 /deepseek-ai-dsh-shell/understand-the-implementation/design-philosophy:
   en: a6467114855249e8
-  zh: 65b53a2839cb411e
+  zh: b05a2ac9fd602c76
 /deepseek-ai-dsh-shell/understand-the-implementation/source-map:
   en: 80d45b2de500588a
-  zh: 23da8d99b05f4db6
+  zh: dfc891fcbd6a4282
 /deepseek-ai-dsh-shell/understand-the-implementation/settings-namespace:
   en: a5b81ecee7fe9938
-  zh: 25fcf060b48e14cf
+  zh: 75a2a2632dd1310c
 /deepseek-ai-dsh-shell/understand-the-implementation/background-lifecycle-and-ownership:
   en: 63853c610719e1bb
-  zh: 09668e6fd34c9161
+  zh: 3988f533dfed02bf
 /deepseek-ai-dsh-shell/further-exploration:
   en: e1653edf9807c768
-  zh: bac6f0001ca214d6
+  zh: 85f8b751ca29bcdf
 /deepseek-ai-dsh-shell/model-experience:
   en: 7dec7effc0b15288
-  zh: 6ac73faa9ae252ed
+  zh: eaba7c46a95f1766
 /deepseek-ai-dsh-shell/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: 788a4799b1d65a8b
+  zh: 1b43847b5264dd6b
 /deepseek-ai-dsh-shell/known-limitations-and-deferred-work:
   en: d45d58f3ac323b73
-  zh: a4a4fe86a4f9f15c
+  zh: 7a1c510864a34738
 /deepseek-ai-dsh-shell/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3c8bbe93d71a3377
+  zh: 443bba825b3e1f85

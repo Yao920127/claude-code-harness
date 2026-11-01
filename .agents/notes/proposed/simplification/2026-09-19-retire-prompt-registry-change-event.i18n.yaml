@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-retire-prompt-registry-change-event.md
 /agent-note-retire-the-prompt-registry-change-event:
   en: 081a6a1f8f256c6e
-  zh: c49dd9c0e7e42f24
+  zh: e8e0d6b2ad95cb31
 /agent-note-retire-the-prompt-registry-change-event/problem:
   en: 22259f002f329483
-  zh: d5a9c78a80af5187
+  zh: 4ff7e78bdd3e9673
 /agent-note-retire-the-prompt-registry-change-event/proposal:
   en: dba84cfd3aa5f719
-  zh: d3f6eece6f2f8148
+  zh: 978c6c6a73de238d
 /agent-note-retire-the-prompt-registry-change-event/alternatives-considered:
   en: 768edcebf26d1af4
-  zh: 7c009a2f1513061e
+  zh: 748672e9581bd1bc
 /agent-note-retire-the-prompt-registry-change-event/acceptance-criteria:
   en: 1ca375eac1e970f7
-  zh: 741e1d56ec2bc89b
+  zh: fb12739dea72fd98
 /agent-note-retire-the-prompt-registry-change-event/risks:
   en: 0a86fce4d2962eef
-  zh: cecb538a90fdd5ea
+  zh: dd0424ea02988529

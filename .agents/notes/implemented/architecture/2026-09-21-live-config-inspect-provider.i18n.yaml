@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-21-live-config-inspect-provider.md
 /agent-note-live-plugin-config-inspection-replaces-the-host-builtin-provider:
   en: f57edbb8b3fa60ae
-  zh: 8d0fa0eb73bbdaf1
+  zh: 11048122369f501f
 /agent-note-live-plugin-config-inspection-replaces-the-host-builtin-provider/problem:
   en: e01cc31ce200b24b
-  zh: 7462a52c3e59ec87
+  zh: 3916612f2560194d
 /agent-note-live-plugin-config-inspection-replaces-the-host-builtin-provider/decision:
   en: a7d21366030c31ac
-  zh: 047299df13e504b7
+  zh: 365611f64bbacf06
 /agent-note-live-plugin-config-inspection-replaces-the-host-builtin-provider/alternatives-considered:
   en: a19dba57a4108fc6
-  zh: 2e64893e8bcf6513
+  zh: 34c77de883fa6259
 /agent-note-live-plugin-config-inspection-replaces-the-host-builtin-provider/consequences:
   en: efa454977043c76d
-  zh: d6bf61ac47310d3e
+  zh: 7d91da8d21bfb1e2

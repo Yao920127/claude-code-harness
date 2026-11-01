@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-20-dynamic-tool-updates.md
 /agent-note-active-tool-headers-and-stateful-request-projection:
   en: c40dd7568bba391f
-  zh: 295ce33341e0aab7
+  zh: 67b1f8b8547c9f0e
 /agent-note-active-tool-headers-and-stateful-request-projection/problem:
   en: 97fe58a13135b4a1
-  zh: 7490373a8d941da5
+  zh: 003b3ef823fe791e
 /agent-note-active-tool-headers-and-stateful-request-projection/decision:
   en: 0c40a9283650c643
-  zh: 91a18d752d09a9ce
+  zh: 5e7961bf9db03989
 /agent-note-active-tool-headers-and-stateful-request-projection/alternatives-considered:
   en: b78785f2a603eba8
-  zh: b8c268228da7e2e7
+  zh: 57d7e42a0275f2ed
 /agent-note-active-tool-headers-and-stateful-request-projection/consequences:
   en: 93c32b795b71a1cc
-  zh: d42b5c563341c898
+  zh: 09b7d4a96875f519

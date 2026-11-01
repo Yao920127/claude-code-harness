@@ -1,9 +1,9 @@
 /** Locale-owned HTML implementation name and iframe status text. */
 export const zh = {
   title: 'HTML',
-  frame: 'HTML 文档预览',
-  loading: '文档渲染中...',
-  failed: '无法预览这份 HTML 文档',
+  frame: 'HTML 文件預覽',
+  loading: '文件渲染中...',
+  failed: '無法預覽這份 HTML 文件',
 } satisfies Record<string, string>
 
 /** HTML renderer dictionary keys. */

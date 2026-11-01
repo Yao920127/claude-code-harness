@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/ssh/README.md
 /:
   en: cc733bef2f8faa24
-  zh: 5af0a04d349066ce
+  zh: b447851c166b9484
 /ssh-posix-remote-execution-providers:
   en: b0cf352e20ea98f7
-  zh: 2cd695d6e0710822
+  zh: 6b15f854131dc152
 /ssh-posix-remote-execution-providers/summary:
   en: 0f6b92200d01f322
-  zh: f6da6f842ccd7f9e
+  zh: 6e5edc8c66d2debd
 /ssh-posix-remote-execution-providers/table-of-contents:
   en: 09848f4d056e4fc1
-  zh: 8df6139cff0288f6
+  zh: 3ab179e03f688394
 /ssh-posix-remote-execution-providers/packages:
   en: c17835929a260861
-  zh: 6d847e8a12f62444
+  zh: 6ab018a2b0b188a3
 /ssh-posix-remote-execution-providers/related-documentation:
   en: 7ebd72bec519e550
-  zh: 20023cb415ddae24
+  zh: 71a4f2ddfdc3bf29
 /ssh-posix-remote-execution-providers/dev-note:
   en: 1c6c2e1fc4a5c914
-  zh: 16223cd641384c0e
+  zh: 43cb90a3940a207f

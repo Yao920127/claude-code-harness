@@ -1,27 +1,27 @@
-# Agent Note: 从仓库门禁中移除 Knip
+# Agent Note: 從儲存庫門禁中移除 Knip
 
 Status: implemented
 
 [English](2026-08-19-remove-knip.md) | 中文
 
-## 问题
+## 問題
 
-Knip 从静态源码图推导未使用文件、export 和依赖。DeepSeek Harness 还会从包 manifest（元数据清单）和配置中装载 Cordis 插件、向 `lib/` 生成 Typert 契约面、拆分 Host 与 Client 程序，并声明仅由生成代码或运行时装载代码消费的依赖。因此，仓库必须维护 workspace 专用入口列表和忽略依赖例外，才能让受支持路径通过扫描。包与测试布局变化还必须维护这份对可执行图的第二重近似描述。
+Knip 從靜態原始碼圖推導未使用檔案、export 和依賴。DeepSeek Harness 還會從包 manifest（中繼資料清單）和設定中裝載 Cordis 外掛、向 `lib/` 生成 Typert 契約面、拆分 Host 與 Client 程式，並宣告僅由生成程式碼或執行時裝載程式碼消費的依賴。因此，儲存庫必須維護 workspace 專用入口列表和忽略依賴例外，才能讓受支援路徑透過掃描。包與測試佈局變化還必須維護這份對可執行圖的第二重近似描述。
 
-仓库已经为视作发布约定的故障提供了更窄的检查：TypeScript 与 Oxlint 验证源码 import，workspace 约束验证 manifest，`verify-optional-dependency-imports` 验证可选 import，`verify-runtime-closure` 验证运行时依赖，`verify-client-packages` 验证 Client 打包，publint 验证发布包。通用未使用代码结果只是建议，而其例外却是必需维护项。
+儲存庫已經為視作釋出約定的故障提供了更窄的檢查：TypeScript 與 Oxlint 驗證原始碼 import，workspace 約束驗證 manifest，`verify-optional-dependency-imports` 驗證可選 import，`verify-runtime-closure` 驗證執行時依賴，`verify-client-packages` 驗證 Client 打包，publint 驗證釋出包。通用未使用程式碼結果只是建議，而其例外卻是必需維護項。
 
-## 决策
+## 決策
 
-Knip 不再是仓库依赖或质量门禁。根 manifest 不含 Knip 脚本或 devDependency，门禁图和 `hygiene` 命令不调用它，仓库也不携带 Knip 配置。包指南和注释直接描述运行时或生成代码要求，不再讲解 Knip 例外。
+Knip 不再是儲存庫依賴或品質門禁。根 manifest 不含 Knip 腳本或 devDependency，門禁圖和 `hygiene` 命令不呼叫它，儲存庫也不攜帶 Knip 設定。包指南和註解直接描述執行時或生成程式碼要求，不再講解 Knip 例外。
 
-仓库没有检查全仓未使用文件、export 或依赖的静态门禁。维护者需要从调用点、manifest、配置、生成产物、测试、文档和 Cordis Loader 路径证明一项删除是安全的。
+儲存庫沒有檢查全倉未使用檔案、export 或依賴的靜態門禁。維護者需要從呼叫點、manifest、設定、生成產物、測試、文件和 Cordis Loader 路徑證明一項刪除是安全的。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**保留 Knip 及其例外清单。** 这会保留一项宽泛的建议信号，但每条受支持的动态或生成路径都需要配置，而这些配置会重述 manifest、构建配置和包专用检查已经拥有的事实。这份例外清单使普通包变更依赖一个无法表示组装后应用的源码图。
+**保留 Knip 及其例外清單。** 這會保留一項寬泛的建議訊號，但每條受支援的動態或生成路徑都需要設定，而這些設定會重述 manifest、建置設定和包專用檢查已經擁有的事實。這份例外清單使普通包變更依賴一個無法表示組裝後應用的原始碼圖。
 
-## 后果
+## 後果
 
-CI 和 `hygiene` 少运行一个命令，包变更也不再更新一份并行的入口与依赖例外清单。仓库放弃自动生成宽泛的未使用代码与未使用依赖报告；评审与简化工作必须根据真实装载路径证明删除安全。
+CI 和 `hygiene` 少執行一個命令，包變更也不再更新一份並行的入口與依賴例外清單。儲存庫放棄自動生成寬泛的未使用程式碼與未使用依賴報告；評審與簡化工作必須根據真實裝載路徑證明刪除安全。
 
-未来的未使用代码检查必须理解 manifest 驱动的 Cordis 装载、生成输出与 Host/Client 拆分，且不需要逐 workspace 忽略清单。在此之前，缺少源码 import 的依赖本身不能证明该依赖是死代码。
+未來的未使用程式碼檢查必須理解 manifest 驅動的 Cordis 裝載、生成輸出與 Host/Client 拆分，且不需要逐 workspace 忽略清單。在此之前，缺少原始碼 import 的依賴本身不能證明該依賴是死程式碼。

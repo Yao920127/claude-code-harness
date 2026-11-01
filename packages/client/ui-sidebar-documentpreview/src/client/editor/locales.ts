@@ -10,20 +10,20 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 
 /** Simplified Chinese dictionary and key source. */
 export const zh = {
-  title: '编辑',
-  loading: '正在打开编辑器',
-  save: '保存',
-  saving: '正在保存',
-  saved: '已保存',
-  unsaved: '未保存的修改',
-  changed: '文件在你打开后已被修改，保存会覆盖那些修改。',
-  external: '文件在磁盘上已更新，你仍有未保存的修改。',
-  reload: '重新加载文件',
-  overwrite: '仍然保存',
-  retry: '重试',
-  failed: '无法打开文件：{message}',
-  saveFailed: '保存失败：{message}',
-  unavailable: '文件服务不可用。',
+  title: '編輯',
+  loading: '正在開啟編輯器',
+  save: '儲存',
+  saving: '正在儲存',
+  saved: '已儲存',
+  unsaved: '未儲存的修改',
+  changed: '檔案在你開啟後已被修改，儲存會覆蓋那些修改。',
+  external: '檔案在磁碟上已更新，你仍有未儲存的修改。',
+  reload: '重新載入檔案',
+  overwrite: '仍然儲存',
+  retry: '重試',
+  failed: '無法開啟檔案：{message}',
+  saveFailed: '儲存失敗：{message}',
+  unavailable: '檔案服務不可用。',
 }
 
 /** English dictionary with the same keys. */

@@ -1,5 +1,5 @@
 ---
-description: "面向把已认证 JSON 事件路由到 webhook 运行时的部署，说明带签名的 GitHub webhook 适配器。"
+description: "面向把已認證 JSON 事件路由到 webhook 執行時的部署，說明帶簽名的 GitHub webhook 介面卡。"
 kind: "package-reference"
 ---
 
@@ -9,80 +9,80 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-webhook-github` 会在注入的 `ctx.webServer` 上注册一条精确 HTTP 路由。它限制并验证 GitHub 原始 JSON body，投影提供方无关的交付，调用 `ctx.webhookRuntime.dispatch()`，并在不等待规则或会话的情况下返回 `202`。部署需要为通用 webhook 运行时提供经过身份验证的 GitHub 入口时，请使用它。
+`dsh-webhook-github` 會在注入的 `ctx.webServer` 上註冊一條精確 HTTP 路由。它限制並驗證 GitHub 原始 JSON body，投影提供者無關的交付，呼叫 `ctx.webhookRuntime.dispatch()`，並在不等待規則或工作階段的情況下返回 `202`。部署需要為通用 webhook 執行時提供經過身份驗證的 GitHub 入口時，請使用它。
 
-## 目录
+## 目錄
 
-- [配置](#configuration)
-- [HTTP 约定](#http-contract)
-- [专用监听器组合](#dedicated-listener-composition)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [設定](#configuration)
+- [HTTP 約定](#http-contract)
+- [專用監聽器組合](#dedicated-listener-composition)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="configuration"></a>
-## 配置
+## 設定
 
-| Key | 含义 |
+| Key | 含義 |
 |---|---|
-| `source` | 携带给规则的非空适配器实例，例如 `primary-github`。 |
-| `path` | 不带尾随斜杠、查询或片段的精确非根路径。 |
-| `secretEnv` | 包含 GitHub webhook 密钥的凭据引用。 |
-| `maxBodyBytes` | 未改动请求 body 的正安全整数上限。 |
+| `source` | 攜帶給規則的非空介面卡實例，例如 `primary-github`。 |
+| `path` | 不帶尾隨斜槓、查詢或片段的精確非根路徑。 |
+| `secretEnv` | 包含 GitHub webhook 金鑰的憑證引用。 |
+| `maxBodyBytes` | 未改動請求 body 的正安全整數上限。 |
 
-所有字段均为必填。每次请求都会重新解析密钥引用，因此轮换会在下一次交付生效，而无需重新加载插件。
+所有欄位均為必填。每次請求都會重新解析金鑰引用，因此輪換會在下一次交付生效，而無需重新載入外掛。
 
 <a id="http-contract"></a>
-## HTTP 约定
+## HTTP 約定
 
-只接受 `POST application/json`。适配器读取有界 UTF-8 body，要求 `X-Hub-Signature-256`、`X-GitHub-Delivery` 与 `X-GitHub-Event`，解析密钥，在 JSON 解析前验证 HMAC，并要求顶层是无损 JSON 对象。它绝不记录密钥、签名或 payload。
+只接受 `POST application/json`。介面卡讀取有界 UTF-8 body，要求 `X-Hub-Signature-256`、`X-GitHub-Delivery` 與 `X-GitHub-Event`，解析金鑰，在 JSON 解析前驗證 HMAC，並要求頂層是無損 JSON 物件。它絕不記錄金鑰、簽名或 payload。
 
-| 状态 | 含义 |
+| 狀態 | 含義 |
 |---|---|
-| `202` | 已验证 JSON 已在内存中分发。 |
-| `400` | 必需 header、UTF-8、JSON 或顶层对象无效。 |
-| `401` | 签名无效。 |
+| `202` | 已驗證 JSON 已在記憶體中分發。 |
+| `400` | 必需 header、UTF-8、JSON 或頂層物件無效。 |
+| `401` | 簽名無效。 |
 | `405` | 方法不是 `POST`。 |
-| `413` | 声明或流式 body 超过 `maxBodyBytes`。 |
+| `413` | 宣告或流式 body 超過 `maxBodyBytes`。 |
 | `415` | media type 不是 `application/json`。 |
-| `503` | 凭据或 webhook 运行时不可用。 |
+| `503` | 憑證或 webhook 執行時不可用。 |
 
-`202` 不表示任何规则已经匹配，也不表示已创建会话。GitHub 事件特定字段的验证属于各规则；适配器只保证通过身份验证的通用 JSON。
+`202` 不表示任何規則已經匹配，也不表示已建立工作階段。GitHub 事件特定欄位的驗證屬於各規則；介面卡只保證透過身份驗證的通用 JSON。
 
 <a id="dedicated-listener-composition"></a>
-## 专用监听器组合
+## 專用監聽器組合
 
-普通 Web profile 已经拥有 `ctx.webServer`。把另一个 `dsh-host-webserver` 和此适配器挂载到仅隔离 `webServer` 的 group 内；适配器仍会继承凭据与 `webhookRuntime`。[GitHub 评审指南](../../../docs/user/guide/github-review.zh.md)在 TLS 反向代理后使用 `127.0.0.1:3081/github`，而 UI 继续位于端口 3080。
+普通 Web profile 已經擁有 `ctx.webServer`。把另一個 `dsh-host-webserver` 和此介面卡掛載到僅隔離 `webServer` 的 group 內；介面卡仍會繼承憑證與 `webhookRuntime`。[GitHub 評審指南](../../../docs/user/guide/github-review.zh.md)在 TLS 反向代理後使用 `127.0.0.1:3081/github`，而 UI 繼續位於埠 3080。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-webhook` 间接产生影响：此适配器不贡献提示词或工具 schema；匹配规则拥有会话请求与模型可见文本。
+透過 `dsh-webhook` 間接產生影響：此介面卡不貢獻提示詞或工具 schema；匹配規則擁有工作階段請求與模型可見文字。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-相互独立。身份验证与 HTTP 分发不触碰模型请求；任何新会话前缀都属于消费它的规则与运行时。
+相互獨立。身份驗證與 HTTP 分發不觸碰模型請求；任何新工作階段字首都屬於消費它的規則與執行時。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **无 TLS**：注入的开发 WebServer 通常只监听 loopback，并位于 TLS 反向代理或 tunnel 后。
-- **仅通用 payload 验证**：规则负责验证自己消费的 GitHub 事件字段。
-- **不向提供方确认下游工作**：`202` 先于任意规则调用与会话创建。
-- **不支持表单编码**：GitHub 必须发送 `application/json`；`application/x-www-form-urlencoded` 会被拒绝。
+- **無 TLS**：注入的開發 WebServer 通常只監聽 loopback，並位於 TLS 反向代理或 tunnel 後。
+- **僅通用 payload 驗證**：規則負責驗證自己消費的 GitHub 事件欄位。
+- **不向提供者確認下游工作**：`202` 先於任意規則呼叫與工作階段建立。
+- **不支援表單編碼**：GitHub 必須傳送 `application/json`；`application/x-www-form-urlencoded` 會被拒絕。
 
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。authentication 与 input validation 在对应 HTTP 操作中完成；route/disposer 对称性由 `dsh-host-webserver` 负责。
+**執行時不變式：** 不釋出伴生入口。authentication 與 input validation 在對應 HTTP 操作中完成；route/disposer 對稱性由 `dsh-host-webserver` 負責。

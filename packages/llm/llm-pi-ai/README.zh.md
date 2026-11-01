@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的 pi-ai 多提供方适配器说明：通过 pi-ai 目录与手工声明网关路由 harness LLM（大语言模型）服务。"
+description: "面向使用者與維護者的 pi-ai 多提供者介面卡說明：透過 pi-ai 目錄與手工宣告閘道路由 harness LLM（大語言模型）服務。"
 kind: "package-reference"
 ---
 
@@ -9,33 +9,33 @@ kind: "package-reference"
 
 ## 概述
 
-`@deepseek-ai/dsh-llm-pi-ai` 通过一份配置把模型请求路由到多个 pi-ai 提供方、OpenAI 兼容网关或自托管服务器。已安装的 pi-ai 提供方会提供端点、协议和模型目录默认值；自定义路由可以直接声明这些值，无需修改代码。profile 与凭据按请求解析，因此设置变更会在下一个请求生效，无需重启。受支持的提供方可以使用已存储的 OAuth 或交互式密钥登录，并通过跨进程锁刷新凭据。本包可以在没有路由时启动，并在用户设置添加路由后将其激活。
+`@deepseek-ai/dsh-llm-pi-ai` 透過一份設定把模型請求路由到多個 pi-ai 提供者、OpenAI 相容閘道或自託管伺服器。已安裝的 pi-ai 提供者會提供端點、協定和模型目錄預設值；自定義路由可以直接宣告這些值，無需修改程式碼。profile 與憑證按請求解析，因此設定變更會在下一個請求生效，無需重新啟動。受支援的提供者可以使用已儲存的 OAuth 或互動式金鑰登入，並透過跨程序鎖重新整理憑證。本包可以在沒有路由時啟動，並在使用者設定新增路由後將其啟用。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合需要通过 pi-ai 的提供方目录、或通过 pi-ai 已安装目录未描述的网关路由模型请求时挂载本插件。`providers` 字典就是整个配置面：每个键都是请求用 `GenerateOptions.provider` 选择的提供方路由名。
+當組合需要透過 pi-ai 的提供者目錄、或透過 pi-ai 已安裝目錄未描述的閘道路由模型請求時掛載本外掛。`providers` 字典就是整個設定面：每個鍵都是請求用 `GenerateOptions.provider` 選擇的提供者路由名。
 
-适配器接受 LLM 服务的[仅供请求使用的 user 输入](../llm/README.zh.md#use-this-package)，并可将其与持久历史混用。user 身份与来源不会进入 pi-ai 内容；assistant 回放元数据和工具调用关联仍由持久消息携带。
+介面卡接受 LLM 服務的[僅供請求使用的 user 輸入](../llm/README.zh.md#use-this-package)，並可將其與持久歷史混用。user 身份與來源不會進入 pi-ai 內容；assistant 回放中繼資料和工具呼叫關聯仍由持久訊息攜帶。
 
-### 何时选择
+### 何時選擇
 
-当同一组合服务多个提供方、某条路由需要 pi-ai 目录默认值并修正少数字段、或必须通过自有端点与协议到达手工声明网关时，选择本适配器。当部署不需要其他提供方时，选择 `dsh-llm-deepseek` 直连 DeepSeek 路由。两个适配器可以同时挂载，因为它们的路由名不冲突；注册其他适配器已拥有的路由会导致插件加载失败。
+當同一組合服務多個提供者、某條路由需要 pi-ai 目錄預設值並修正少數欄位、或必須透過自有端點與協定到達手工宣告閘道時，選擇本介面卡。當部署不需要其他提供者時，選擇 `dsh-llm-deepseek` 直連 DeepSeek 路由。兩個介面卡可以同時掛載，因為它們的路由名不衝突；註冊其他介面卡已擁有的路由會導致外掛載入失敗。
 
-### 配置提供方路由
+### 設定提供者路由
 
-每个 profile 都可以设置 `retryPolicy`；省略时使用 normal mode、最多重试五次。`apiKeyEnv` 是按请求经 harness 凭据 seam 解析的凭据引用，因此配置文件绝不包含密钥；解析为空的引用会让请求以 `MISSING_CREDENTIAL` 失败。省略它会让路由保持已配置但无密钥（configured-but-keyless）状态，对已安装目录路由而言即交由 pi-ai 提供方原生的环境发现。
+每個 profile 都可以設定 `retryPolicy`；省略時使用 normal mode、最多重試五次。`apiKeyEnv` 是按請求經 harness 憑證 seam 解析的憑證引用，因此設定檔絕不包含金鑰；解析為空的引用會讓請求以 `MISSING_CREDENTIAL` 失敗。省略它會讓路由保持已設定但無金鑰（configured-but-keyless）狀態，對已安裝目錄路由而言即交由 pi-ai 提供者原生的環境發現。
 
 ```yaml
 - name: '@deepseek-ai/dsh-llm-pi-ai'
@@ -72,176 +72,176 @@ kind: "package-reference"
               high: high
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `apiKeyEnv` | 无 | 按请求解析的凭据引用；省略时交由 pi-ai 环境发现 |
-| `displayName` | 提供方名 | 选择器界面显示的标签 |
-| `api` | 目录协议 | 协议格式；仅目录不提供的路由需要 |
-| `baseURL` | 目录端点 | 路由上所有模型的端点 |
-| `models` | 已安装目录 | 整体替换路由目录；每个条目从已安装模型取默认值 |
-| `modelOverrides` | 无 | 重塑个别已安装目录模型，而不替换其余模型 |
-| `compat` | 目录检测 | 无法识别端点的协议兼容开关 |
-| `defaultContextWindow` | `262,144` | 未描述模型的容量回退 |
-| `defaultMaxTokens` | `32,768` | 未描述模型的输出上限回退 |
-| `requestImagePixelBudget` | `4,194,304` | 每张确定性请求图片的总像素预算 |
-| `requestImageMaxBytes` | `1 MiB` | 每张请求图片在 base64 扩展前的编码字节目标 |
-| `maxRequestImageBytes` | `20 MiB` | base64 图片载荷总上限，保留图片超过时请求以 `IMAGE_OFFLOAD_REQUIRED` 失败 |
-| `retryPolicy` | normal，5 次重试 | 由 `dsh-llm-retry` 执行的提供方自有重试策略 |
+| `apiKeyEnv` | 無 | 按請求解析的憑證引用；省略時交由 pi-ai 環境發現 |
+| `displayName` | 提供者名 | 選擇器介面顯示的標籤 |
+| `api` | 目錄協定 | 協定格式；僅目錄不提供的路由需要 |
+| `baseURL` | 目錄端點 | 路由上所有模型的端點 |
+| `models` | 已安裝目錄 | 整體替換路由目錄；每個條目從已安裝模型取預設值 |
+| `modelOverrides` | 無 | 重塑個別已安裝目錄模型，而不替換其餘模型 |
+| `compat` | 目錄檢測 | 無法識別端點的協定相容開關 |
+| `defaultContextWindow` | `262,144` | 未描述模型的容量退回 |
+| `defaultMaxTokens` | `32,768` | 未描述模型的輸出上限退回 |
+| `requestImagePixelBudget` | `4,194,304` | 每張確定性請求圖片的總畫素預算 |
+| `requestImageMaxBytes` | `1 MiB` | 每張請求圖片在 base64 擴充功能前的編碼位元組目標 |
+| `maxRequestImageBytes` | `20 MiB` | base64 圖片載荷總上限，保留圖片超過時請求以 `IMAGE_OFFLOAD_REQUIRED` 失敗 |
+| `retryPolicy` | normal，5 次重試 | 由 `dsh-llm-retry` 執行的提供者自有重試策略 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)是每个受支持字段及其 JSDoc 的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)是每個受支援欄位及其 JSDoc 的窮盡式真源。
 
-### 登录提供方
+### 登入提供者
 
-pi-ai 提供登录的提供方可以通过 harness 授权 seam 登录：流程提供 OAuth 或交互式密钥提示（密钥键入 pi-ai 自己的登录提示，而非设置表单），得到的凭据存储在 harness 凭据存储的 `llm-pi-ai/<provider id>` 记录中。存储的登录在其路由的 `apiKeyEnv` 覆盖之下完成认证，并在存储的跨进程锁下自行刷新；退出登录即删除存储记录。落在记录文法之外——小写连字符标识符——的手工声明路由键无法登录，因为对它的记录写入会以 `LlmError('UNSTORABLE_PROVIDER_ID')` 拒绝；这类路由改用 `apiKeyEnv` 或提供方 ambient 设置认证。
+pi-ai 提供登入的提供者可以透過 harness 授權 seam 登入：流程提供 OAuth 或互動式金鑰提示（金鑰鍵入 pi-ai 自己的登入提示，而非設定表單），得到的憑證儲存在 harness 憑證儲存的 `llm-pi-ai/<provider id>` 記錄中。儲存的登入在其路由的 `apiKeyEnv` 覆蓋之下完成認證，並在儲存的跨程序鎖下自行重新整理；退出登入即刪除儲存記錄。落在記錄文法之外——小寫連字元識別符號——的手工宣告路由鍵無法登入，因為對它的記錄寫入會以 `LlmError('UNSTORABLE_PROVIDER_ID')` 拒絕；這類路由改用 `apiKeyEnv` 或提供者 ambient 設定認證。
 
-### 解析模型目录
+### 解析模型目錄
 
-profile 的 `models` 列表会替换而非扩展路由的已安装目录；每个条目从同 id 已安装模型取未设置字段的默认值，因此把路由收窄到两个模型、修正一个容量或添加比已安装目录更新的模型都是一行编辑。`modelOverrides` 无需该代价即可重塑个别已安装目录模型——修正一个模型，保留其余三十七个——当它与 `models` 列表并存、位于手工声明路由上、或点名目录未描述的模型时会被拒绝，因为静默不变的模型会成为别人日后寻找的拼写错误。
+profile 的 `models` 列表會替換而非擴充功能路由的已安裝目錄；每個條目從同 id 已安裝模型取未設定欄位的預設值，因此把路由收窄到兩個模型、修正一個容量或新增比已安裝目錄更新的模型都是一行編輯。`modelOverrides` 無需該代價即可重塑個別已安裝目錄模型——修正一個模型，保留其餘三十七個——當它與 `models` 列表並存、位於手工宣告路由上、或點名目錄未描述的模型時會被拒絕，因為靜默不變的模型會成為別人日後尋找的拼寫錯誤。
 
-### 带推理（reasoning）与协议兼容运行
+### 帶推理（reasoning）與協定相容執行
 
-`reasoningEfforts` 声明模型可选择的 thinking 等级：每个键都是选择器提供的等级，其值是分派时在协议中发送的拼写，因此 `max: ultra` 可以为拥有自有词汇的网关重命名等级。省略该字段时保留已安装目录条目的能力；`false` 声明非推理模型。对于 pi-ai 无法识别的端点，`compat` 开关重塑请求——哪个角色携带系统提示词、哪个字段限制输出、thinking 等级如何传递——可逐路由、逐模型配置。条目与已安装目录都没有尺寸的模型，会采用路由的 `defaultContextWindow` 与 `defaultMaxTokens` 回退值。
+`reasoningEfforts` 宣告模型可選擇的 thinking 等級：每個鍵都是選擇器提供的等級，其值是分派時在協定中傳送的拼寫，因此 `max: ultra` 可以為擁有自有詞彙的閘道重新命名等級。省略該欄位時保留已安裝目錄條目的能力；`false` 宣告非推理模型。對於 pi-ai 無法識別的端點，`compat` 開關重塑請求——哪個角色攜帶系統提示詞、哪個欄位限制輸出、thinking 等級如何傳遞——可逐路由、逐模型設定。條目與已安裝目錄都沒有尺寸的模型，會採用路由的 `defaultContextWindow` 與 `defaultMaxTokens` 退回值。
 
-对于自托管 Chat Completions 端点，`thinkingTokenBudgetField` 选择推理预算参数，`vllmPriority` 在服务端启用优先级调度时设置整数调度优先级。模板参数接受 `$var: thinking.budget`。`openai-responses` 网关可设置 `supportsMaxOutputTokens: false` 来省略 `max_output_tokens`；Azure 与 Codex 传输会忽略这个共享兼容字段。这些控制均需显式启用；目录拥有的 Anthropic effort 和回退能力不是可配置开关。
+對於自託管 Chat Completions 端點，`thinkingTokenBudgetField` 選擇推理預算參數，`vllmPriority` 在伺服器端啟用優先順序排程時設定整數排程優先順序。範本參數接受 `$var: thinking.budget`。`openai-responses` 閘道可設定 `supportsMaxOutputTokens: false` 來省略 `max_output_tokens`；Azure 與 Codex 傳輸會忽略這個共享相容欄位。這些控制均需顯式啟用；目錄擁有的 Anthropic effort 和退回能力不是可設定開關。
 
-### 运行时更改配置
+### 執行時更改設定
 
-每次操作捕获当前 `providers` Config 引用。新增或修改的 provider 配置在表单持久化前验证；未更改的目录故障仍可编辑。路由集合或重试策略变化时原子更新注册；如果其他适配器已拥有所请求的路由，则保留先前路由。
+每次操作捕捉目前 `providers` Config 引用。新增或修改的 provider 設定在表單持久化前驗證；未更改的目錄故障仍可編輯。路由集合或重試策略變化時原子更新註冊；如果其他介面卡已擁有所請求的路由，則保留先前路由。
 
-### 从端点发现模型
+### 從端點發現模型
 
-插件会回答「该提供方可以提供哪些模型？」，供配置界面正在编辑或起草的路由使用。已安装目录提供的路由直接由目录回答，不发网络请求，并将其 `input` 数组保留为发现结果的 `inputModalities`；只有目录未描述的路由才会经网络询问。`openai-completions` 与 `openai-responses` 使用带 bearer 鉴权的 `GET {baseURL}/models`，`anthropic-messages` 则以 `x-api-key` 和 `anthropic-version` 使用原生 `GET /v1/models?limit=1000` 语义；其列表 URL 接受带或不带末尾 `/v1` 的 API 根地址，因为网关文档两种写法都会发布，且只有该列表 URL 会归一化这一段，模型请求收到的仍是配置原样的 `baseURL`。已配置且具名的路由会在 Host 内部提供已存凭据与 profile `headers`，因此通过 `cordis.patch.yml` 或 Cordis 配置设置的部署标头可以到达模型发现请求，但不会成为发现请求或 Models 页面的字段；表单中新键入的密钥仍优先于已存凭据。解析器接受标准 `data` 数组或富信息 `models` 对象，并归一化每个候选的 id、显示名、上下文窗口与最大输出 token 数；Anthropic 的 `max_input_tokens` 与 `max_tokens` 会进入相同容量字段，即使对象条目点名了另一个规范 id，对象键仍是请求 id，原始类型的对象属性会被忽略，缺失的显示名则回退到该请求 id。回答是界面可以提供给用户采纳的候选元数据——不存储任何内容，`cordis.patch.yml` 仍然是决定路由服务内容的唯一事实。
+外掛會回答「該提供者可以提供哪些模型？」，供設定介面正在編輯或起草的路由使用。已安裝目錄提供的路由直接由目錄回答，不髮網路請求，並將其 `input` 陣列保留為發現結果的 `inputModalities`；只有目錄未描述的路由才會經網路詢問。`openai-completions` 與 `openai-responses` 使用帶 bearer 授權驗證的 `GET {baseURL}/models`，`anthropic-messages` 則以 `x-api-key` 和 `anthropic-version` 使用原生 `GET /v1/models?limit=1000` 語義；其列表 URL 接受帶或不帶末尾 `/v1` 的 API 根地址，因為閘道文件兩種寫法都會發布，且只有該列表 URL 會歸一化這一段，模型請求收到的仍是設定原樣的 `baseURL`。已設定且具名的路由會在 Host 內部提供已存憑證與 profile `headers`，因此透過 `cordis.patch.yml` 或 Cordis 設定設定的部署標頭可以到達模型發現請求，但不會成為發現請求或 Models 頁面的欄位；表單中新鍵入的金鑰仍優先於已存憑證。解析器接受標準 `data` 陣列或富資訊 `models` 物件，並歸一化每個候選的 id、顯示名、上下文視窗與最大輸出 token 數；Anthropic 的 `max_input_tokens` 與 `max_tokens` 會進入相同容量欄位，即使物件條目點名了另一個規範 id，物件鍵仍是請求 id，原始型別的物件屬性會被忽略，缺失的顯示名則退回到該請求 id。回答是介面可以提供給使用者採納的候選中繼資料——不儲存任何內容，`cordis.patch.yml` 仍然是決定路由服務內容的唯一事實。
 
-### 失败与恢复
+### 失敗與恢復
 
-pi-ai 不提供的路由需要 `api`、`baseURL` 与非空 `models` 列表；无法服务的 profile 会在写入处被拒绝，并点名路由与模型。失败携带稳定 code：无法使用的凭据以 `INVALID_CREDENTIAL` 失败并点名路由与引用，`apiKeyEnv` 引用解析为空的路由以 `MISSING_CREDENTIAL` 失败，未配置模型以 `UNKNOWN_MODEL` 失败，终止性提供方失败则区分 `QUOTA` 与暂时性 `RATE_LIMIT`。`GenerateOptions.stop` 以 `UNSUPPORTED_OPTION` 被拒绝，因为 pi-ai 的通用流式 UI 无法跨提供方保证它。
+pi-ai 不提供的路由需要 `api`、`baseURL` 與非空 `models` 列表；無法服務的 profile 會在寫入處被拒絕，並點名路由與模型。失敗攜帶穩定 code：無法使用的憑證以 `INVALID_CREDENTIAL` 失敗並點名路由與引用，`apiKeyEnv` 引用解析為空的路由以 `MISSING_CREDENTIAL` 失敗，未設定模型以 `UNKNOWN_MODEL` 失敗，終止性提供者失敗則區分 `QUOTA` 與暫時性 `RATE_LIMIT`。`GenerateOptions.stop` 以 `UNSUPPORTED_OPTION` 被拒絕，因為 pi-ai 的通用流式 UI 無法跨提供者保證它。
 
-Config 更新严格验证发生变化的 provider。初始加载将已存储的目录故障保留为可编辑的 provider 诊断；未更改的故障 provider 不阻止其他编辑。可用模型仍可选择，无法解析的模型在网络 I/O 前失败。修复或删除问题配置会清除其诊断。
+Config 更新嚴格驗證發生變化的 provider。初始載入將已儲存的目錄故障保留為可編輯的 provider 診斷；未更改的故障 provider 不阻止其他編輯。可用模型仍可選擇，無法解析的模型在網路 I/O 前失敗。修復或刪除問題設定會清除其診斷。
 
-只修改 `displayName`、`apiKeyEnv` 或 `baseURL` 而未解决提供方的模型配置错误时，保存仍会被拒绝。例如，OpenRouter 路由的模型 `111` 缺少 `api` 时，不能单独保存路由名称的修改：需要在同一份编辑草稿中修复或删除该模型，再保存完整的提供方配置。中间修复状态保留在草稿中，直到整条提供方配置通过校验；其他提供方可以独立保存。
+只修改 `displayName`、`apiKeyEnv` 或 `baseURL` 而未解決提供者的模型設定錯誤時，儲存仍會被拒絕。例如，OpenRouter 路由的模型 `111` 缺少 `api` 時，不能單獨儲存路由名稱的修改：需要在同一份編輯草稿中修復或刪除該模型，再儲存完整的提供者設定。中間修復狀態保留在草稿中，直到整條提供者設定透過驗證；其他提供者可以獨立儲存。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释适配器背后的设计；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋介面卡背後的設計；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-适配器建立在不可变快照与按操作解析之上。每个操作都会在第一次 `await` 前捕获整个快照——profile 加一个持有每条路由所构建 `Provider` 的 `createModels()` 集合——配置变更会构建新集合而非修改使用中的集合，因此在一个配置下开始的请求绝不会在另一个配置下结束。路由自己的凭据引用经 harness seam 解析，并以请求 `apiKey` 选项传入，pi-ai 将其视为优先级最高的 auth 覆盖——这正是明确失败引用语义的所在。该覆盖未覆盖的一切都经集合自身的 auth 到达 pi-ai：凭据存储持有登录写入、刷新轮换的记录（以 `llm-pi-ai/<provider id>` 寻址），auth context 回答提供方解析时提出的 ambient 问题。两者跨快照保持稳定，因此配置变更重建集合时不会忘记谁已登录。运行时 import 使用 pi-ai 的 provider、API 与 utility 入口；`src/models.ts` 提供本适配器所需的少量 model helper，而不会求值 pi-ai 聚合入口。
+介面卡建立在不可變快照與按操作解析之上。每個操作都會在第一次 `await` 前捕捉整個快照——profile 加一個持有每條路由所建置 `Provider` 的 `createModels()` 集合——設定變更會建置新集合而非修改使用中的集合，因此在一個設定下開始的請求絕不會在另一個設定下結束。路由自己的憑證引用經 harness seam 解析，並以請求 `apiKey` 選項傳入，pi-ai 將其視為優先順序最高的 auth 覆蓋——這正是明確失敗引用語義的所在。該覆蓋未覆蓋的一切都經集合自身的 auth 到達 pi-ai：憑證儲存持有登入寫入、重新整理輪換的記錄（以 `llm-pi-ai/<provider id>` 定址），auth context 回答提供者解析時提出的 ambient 問題。兩者跨快照保持穩定，因此設定變更重建集合時不會忘記誰已登入。執行時 import 使用 pi-ai 的 provider、API 與 utility 入口；`src/models.ts` 提供本介面卡所需的少量 model helper，而不會求值 pi-ai 聚合入口。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | Config 快照、目录及路由注册 |
-| [`src/auth.ts`](src/auth.ts) | 覆盖 harness 凭据平面的凭据存储与 ambient auth context |
-| [`src/login.ts`](src/login.ts) | 面向提供登录的已安装提供方的授权流程 |
-| [`src/config.ts`](src/config.ts) | Profile schema、解析与可服务性校验 |
-| [`src/catalog.ts`](src/catalog.ts) | 已安装目录集成与漂移门禁 |
-| [`src/models.ts`](src/models.ts) | 基于 pi-ai 窄入口的 model collection、静态 provider 与 reasoning level |
-| [`src/provider.ts`](src/provider.ts) | 受支持协议表与提供方构建 |
-| [`src/context.ts`](src/context.ts) | Harness 到 pi-ai 的上下文转换、图片处理、回放恢复 |
-| [`src/stream.ts`](src/stream.ts) | 把 pi-ai 事件转换为 harness `StreamChunk` 值 |
-| [`src/replay.ts`](src/replay.ts) | 带版本的 `ReplayEnvelope` 存储与校验 |
-| [`src/discovery.ts`](src/discovery.ts) | 面向配置界面的端点询问 |
+| [`src/index.ts`](src/index.ts) | Config 快照、目錄及路由註冊 |
+| [`src/auth.ts`](src/auth.ts) | 覆蓋 harness 憑證平面的憑證儲存與 ambient auth context |
+| [`src/login.ts`](src/login.ts) | 面向提供登入的已安裝提供者的授權流程 |
+| [`src/config.ts`](src/config.ts) | Profile schema、解析與可服務性驗證 |
+| [`src/catalog.ts`](src/catalog.ts) | 已安裝目錄整合與漂移門禁 |
+| [`src/models.ts`](src/models.ts) | 基於 pi-ai 窄入口的 model collection、靜態 provider 與 reasoning level |
+| [`src/provider.ts`](src/provider.ts) | 受支援協定表與提供者建置 |
+| [`src/context.ts`](src/context.ts) | Harness 到 pi-ai 的上下文轉換、圖片處理、回放恢復 |
+| [`src/stream.ts`](src/stream.ts) | 把 pi-ai 事件轉換為 harness `StreamChunk` 值 |
+| [`src/replay.ts`](src/replay.ts) | 帶版本的 `ReplayEnvelope` 儲存與驗證 |
+| [`src/discovery.ts`](src/discovery.ts) | 面向設定介面的端點詢問 |
 
-### 注册与目录
+### 註冊與目錄
 
-插件会在可配置提供方目录中声明它能认证的每个已安装目录提供方，并加入当前 profile 声明的每条路由，因此配置界面可以在任何路由存在之前提供完整目录。每个条目都携带 `declared`——pi-ai 是否在该键下不提供任何内容——因为只有适配器能区分手工声明路由与收窄目录路由。路由注册具有原子性：与其他适配器冲突的候选集合会让此前路由继续服务。零路由的裸挂载即休眠姿态：settings 分节提供 profile 前不注册任何内容，分节清空时路由随之消失。
+外掛會在可設定提供者目錄中宣告它能認證的每個已安裝目錄提供者，並加入目前 profile 宣告的每條路由，因此設定介面可以在任何路由存在之前提供完整目錄。每個條目都攜帶 `declared`——pi-ai 是否在該鍵下不提供任何內容——因為只有介面卡能區分手工宣告路由與收窄目錄路由。路由註冊具有原子性：與其他介面卡衝突的候選集合會讓此前路由繼續服務。零路由的裸掛載即休眠姿態：settings 分節提供 profile 前不註冊任何內容，分節清空時路由隨之消失。
 
-### 回放与词汇
+### 回放與詞彙
 
-成功 assistant 响应会存储带版本的、无损 JSON 回放状态，与产生它们的提供方和模型放在一起——响应级事实加每个流式块一条逐块条目。请求时，`LlmRuntime` 仅当同一适配器实例拥有两条路由时才传递回放状态；适配器校验它并恢复原生响应 id、提供方签名与可选的 `providerThinkingLevel` effort 元数据，缺失的 effort 元数据仍保持缺失。回放会对照 assistant 来源校验请求模型身份，并在提供方解析别名或回退时单独恢复 Anthropic 响应模型。回放状态缺失或无法使用时会降级为提供方无关内容，并保留 assistant 来源中必需的提供方和模型。pi-ai 工具调用参数是解析后的对象，因此适配器解析输入并重新字符串化输出，以符合 harness 原始 JSON 约定；pi-ai 流内错误事件映射为终止 `finish` 分片。
+成功 assistant 回應會儲存帶版本的、無損 JSON 回放狀態，與產生它們的提供者和模型放在一起——回應級事實加每個流式塊一條逐塊條目。請求時，`LlmRuntime` 僅當同一介面卡實例擁有兩條路由時才傳遞迴放狀態；介面卡驗證它並恢復原生回應 id、提供者簽名與可選的 `providerThinkingLevel` effort 中繼資料，缺失的 effort 中繼資料仍保持缺失。回放會對照 assistant 來源驗證請求模型身份，並在提供者解析別名或退回時單獨恢復 Anthropic 回應模型。回放狀態缺失或無法使用時會降級為提供者無關內容，並保留 assistant 來源中必需的提供者和模型。pi-ai 工具呼叫參數是解析後的物件，因此介面卡解析輸入並重新字串化輸出，以符合 harness 原始 JSON 約定；pi-ai 流內錯誤事件對映為終止 `finish` 分片。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从服务约定逐步进入孪生适配器与共享类型。
+當包級約定不夠用時閱讀以下頁面。它們從服務約定逐步進入孿生介面卡與共享型別。
 
-- [dsh-llm 服务](../llm/README.zh.md)——本适配器注册其上的提供方无关服务。
-- [llm-deepseek 适配器](../llm-deepseek/README.zh.md)——`deepseek-official` 路由的 DeepSeek 直连孪生。
-- [LLM 流式子系统](../../../docs/subsystems/llm-streaming.zh.md)——`StreamChunk` 协议与适配器约定。
-- [llm-retry](../llm-retry/README.zh.md)——应用每个 profile `retryPolicy` 的重试执行器。
-- [孪生 LLM 适配器](../../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——为什么 DeepSeek 路由交付两个结构不同的适配器。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)——每个受支持配置字段及其源声明。
+- [dsh-llm 服務](../llm/README.zh.md)——本介面卡註冊其上的提供者無關服務。
+- [llm-deepseek 介面卡](../llm-deepseek/README.zh.md)——`deepseek-official` 路由的 DeepSeek 直連孿生。
+- [LLM 流式子系統](../../../docs/subsystems/llm-streaming.zh.md)——`StreamChunk` 協定與介面卡約定。
+- [llm-retry](../llm-retry/README.zh.md)——應用每個 profile `retryPolicy` 的重試執行器。
+- [孿生 LLM 介面卡](../../../.agents/notes/implemented/architecture/2026-06-13-twin-llm-adapters.zh.md)——為什麼 DeepSeek 路由交付兩個結構不同的介面卡。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 经 pi-ai 的提供方请求
+### 經 pi-ai 的提供者請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-所选目录模型会收到一条系统提示词（`GenerateOptions.system`，否则取历史中首条 `system` 消息的文本；首条 system 消息文本为空时不发送系统提示词）、其余历史、工具与 pi-ai 通用流式 API 支持的采样字段。每张保留图片前都会有文本，注明其完整附件 id 与实际请求尺寸。当前执行文件系统可以映射附件提供方的宿主对象时，该文本还会携带只读规范化对象路径，并警告规范化或请求投影可能缩放或重新编码上传内容。日志中的图片省略决策选中的每个出现位置都会在替换文本中保留自己的身份与当前已解析访问方式，其规范化附件不会读取或变换。当保留的出现位置按精确 base64 载荷仍超过路由的 `maxRequestImageBytes` 时，调用以 `IMAGE_OFFLOAD_REQUIRED` 失败，由 `dsh-compaction-image-offload` 用 `image/offload` 事件记录所选位置并重试步骤。提供方原生回放元数据只在适配器针对历史内容校验通过后恢复。
+所選目錄模型會收到一條系統提示詞（`GenerateOptions.system`，否則取歷史中首條 `system` 訊息的文字；首條 system 訊息文字為空時不傳送系統提示詞）、其餘歷史、工具與 pi-ai 通用流式 API 支援的取樣欄位。每張保留圖片前都會有文字，註明其完整附件 id 與實際請求尺寸。目前執行檔案系統可以對映附件提供者的主機物件時，該文字還會攜帶只讀規範化物件路徑，並警告規範化或請求投影可能縮放或重新編碼上傳內容。日誌中的圖片省略決策選中的每個出現位置都會在替換文字中保留自己的身份與目前已解析存取方式，其規範化附件不會讀取或變換。當保留的出現位置按精確 base64 載荷仍超過路由的 `maxRequestImageBytes` 時，呼叫以 `IMAGE_OFFLOAD_REQUIRED` 失敗，由 `dsh-compaction-image-offload` 用 `image/offload` 事件記錄所選位置並重試步驟。提供者原生回放中繼資料只在介面卡針對歷史內容驗證透過後恢復。
 
-#### Token 影响
+#### Token 影響
 
-提供方分词决定精确输入。保留图片会添加稳定的附件与坐标描述符；卸载占位符会替代省略图片的视觉 token。回放元数据可能让原生 API 复用提供方侧状态。
+提供者分詞決定精確輸入。保留圖片會新增穩定的附件與座標描述符；解除安裝預留位置會替代省略圖片的視覺 token。回放中繼資料可能讓原生 API 複用提供者側狀態。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-转换保持逻辑请求顺序，图片句柄与卸载占位符则会添加模型可见文本。即使附件身份与请求字节保持稳定，执行世界路径变化也会改写历史句柄，并可能从该图片起阻止复用。更换适配器实例、提供方、模型或其他上游 token 具有相同的后缀影响。一次省略决策会把较早图片换成占位文本，因此复用在该消息处结束；省略永不回退，此后前缀保持稳定。
+轉換保持邏輯請求順序，圖片控制代碼與解除安裝預留位置則會新增模型可見文字。即使附件身份與請求位元組保持穩定，執行世界路徑變化也會改寫歷史控制代碼，並可能從該圖片起阻止複用。更換介面卡實例、提供者、模型或其他上游 token 具有相同的字尾影響。一次省略決策會把較早圖片換成佔位文字，因此複用在該訊息處結束；省略永不退回，此後字首保持穩定。
 
-### 提供方响应
+### 提供者回應
 
-#### 模型看到什么
+#### 模型看到什麼
 
-pi-ai 事件变成 harness 的推理、文本、工具调用、用量与 finish 分片。适配器把解析后的工具参数以原始 JSON 字符串传给 harness。
+pi-ai 事件變成 harness 的推理、文字、工具呼叫、用量與 finish 分片。介面卡把解析後的工具參數以原始 JSON 字串傳給 harness。
 
-#### Token 影响
+#### Token 影響
 
-生成内容只在 loop 记录后才影响后续输入。提供方未单独报告推理 token 时，pi-ai 会把推理 token 并入输出用量，并原样保留其精确 `totalTokens` 值。
+生成內容只在 loop 記錄後才影響後續輸入。提供者未單獨報告推理 token 時，pi-ai 會把推理 token 併入輸出用量，並原樣保留其精確 `totalTokens` 值。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-已记录的响应内容会追加到下一个请求，不会使其更早可复用前缀失效。未记录的传输元数据与用量计量不影响缓存标识。
+已記錄的回應內容會追加到下一個請求，不會使其更早可複用字首失效。未記錄的傳輸中繼資料與用量計量不影響快取標識。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明适配器在哪里停止、由未来工作接续。它们是当前包约束，不是通用 pi-ai 对比或任务积压。
+這些限制說明介面卡在哪裡停止、由未來工作接續。它們是目前包約束，不是通用 pi-ai 對比或任務積壓。
 
-- **`maxRequestImageBytes` 只计算 base64 图片载荷**，文本、工具、描述符与 JSON 结构在该上限之外，因此它必须留有余量地低于网关请求体上限。
-- **登录只存在于发起它的进程中**——授权尝试不持久，因此登录中途刷新页面会放弃它，用户需要重新开始。退出登录是对已存储记录执行 `deleteRecord`，只在本地忘记它，不会告知签发方。
-- **提供方原生发现经本插件的 ambient context 回答**——不点名凭据的路由交由目录提供方自身解析，它会询问环境值（`AZURE_OPENAI_API_KEY`、`AWS_PROFILE` 及各提供方自有集合）与本地凭据文件。两个问题都在这里得到回答：凭据 seam 先于进程环境被查询，文件存在性则针对宿主进程的文件系统以 `~` 展开后检查。它做不到的是*读取*凭据文件内容——自行解析 `~/.aws/credentials` 的提供方会直接读取，不经该 seam。
-- **重置恢复继承配置**——重置下层 profile 提供的路由会恢复该路由。
-- **完整替换 Config 可以移除继承的字典条目**——字段重置则恢复其继承值。
-- **`headers` 可以携带 redactor 永远看不到的凭据**——profile 解析会拒绝 Fetch 无法表示的名称与值，但该字典仍是纯字符串；以 `apiKeyEnv` 引用存储凭据。
-- **发现操作不更改已配置模型**——需显式将发现结果采纳到路由配置中。
-- **Anthropic 模型发现最多读取 1,000 个模型**——请求使用 API 的最大页大小，但不会遍历 `has_more`；第一页之外的条目需要手工添加。
-- **每条路由一种协议格式**——混合协议目录路由无法承载另一协议格式的模型；把提供方拆到两个路由键是变通办法。
-- **模态声明不受校验**——声明 `image` 而其网关不支持的模型会在提示词准入后被提供方拒绝。持久图片仍留在历史中，同一误声明模型可能再次失败；切换到纯文本模型仍然可行，因为共享 LLM 运行时会针对该请求把图片引用投影为稳定文本。
-- **未认证路由取决于其协议**——不点名凭据的路由解析为已配置但无密钥，但 pi-ai 的 OpenAI 兼容实现仍要求 API 密钥或 `Authorization` 标头，因此无密钥本地服务器需要由 `apiKeyEnv` 引用或 `headers` 中的 `Authorization` 条目提供的占位凭据。
-- **不支持 `GenerateOptions.stop`**——pi-ai 的通用流式选项无法跨提供方保证停止序列行为。
-- **只有历史中首条 `system` 消息会成为 pi-ai 的 `systemPrompt`**——pi-ai 只有一个系统槽位，因此后续的 `system` 消息，或在同时设置了 `GenerateOptions.system` 时的首条消息，会在原位置折叠为 `user` 消息；系统提示词的提供方专属放置遵循 pi-ai，而非 harness 自有的协议覆盖。system 或 assistant 历史中的图片（包括首条系统消息中的图片）在两条转换路径上都会以 `UNSUPPORTED_CONTENT` 失败。
-- **提供方 HTTP 状态不可用**——pi-ai 错误事件不跨提供方暴露稳定 HTTP 状态。
-- **重试策略由提供方自有，而非 SDK 重试**——pi-ai SDK 重试保持禁用，因此持久 agent（智能体）步骤与 `llm/retry` 事件拥有每个可见尝试，直接 `ctx.llm.stream()` 调用仍是单次尝试。
-- **流式工具调用参数只在调用结束时解析一次**——安装的 pi-ai 带有 [`patches/@earendil-works__pi-ai@0.85.1.patch`](../../../patches/@earendil-works__pi-ai@0.85.1.patch)，它移除了每个流适配器中对整段累计参数 JSON 的逐 delta 重新解析（上游 [earendil-works/pi#9265](https://github.com/earendil-works/pi/issues/9265)）；未打补丁时，数 MB 的参数流会在事件循环上消耗 O(n²) CPU，并使进程内所有会话停滞。在 `toolcall_end` 之前，pi-ai partial 的工具调用 `arguments` 保持为 `{}`；本适配器只读取 delta 字符串与最终参数。每次升级 pi-ai 时都要重新应用或撤销该补丁。
+- **`maxRequestImageBytes` 只計算 base64 圖片載荷**，文字、工具、描述符與 JSON 結構在該上限之外，因此它必須留有餘量地低於閘道請求體上限。
+- **登入只存在於發起它的程序中**——授權嘗試不持久，因此登入中途重新整理頁面會放棄它，使用者需要重新開始。退出登入是對已儲存記錄執行 `deleteRecord`，只在本地忘記它，不會告知簽發方。
+- **提供者原生髮現經本外掛的 ambient context 回答**——不點名憑證的路由交由目錄提供者自身解析，它會詢問環境值（`AZURE_OPENAI_API_KEY`、`AWS_PROFILE` 及各提供者自有集合）與本地憑證檔案。兩個問題都在這裡得到回答：憑證 seam 先於程序環境被查詢，檔案存在性則針對主機程序的檔案系統以 `~` 展開後檢查。它做不到的是*讀取*憑證檔案內容——自行解析 `~/.aws/credentials` 的提供者會直接讀取，不經該 seam。
+- **重置恢復繼承設定**——重置下層 profile 提供的路由會恢復該路由。
+- **完整替換 Config 可以移除繼承的字典條目**——欄位重置則恢復其繼承值。
+- **`headers` 可以攜帶 redactor 永遠看不到的憑證**——profile 解析會拒絕 Fetch 無法表示的名稱與值，但該字典仍是純字串；以 `apiKeyEnv` 引用儲存憑證。
+- **發現操作不更改已設定模型**——需顯式將發現結果採納到路由設定中。
+- **Anthropic 模型發現最多讀取 1,000 個模型**——請求使用 API 的最大頁大小，但不會遍歷 `has_more`；第一頁之外的條目需要手工新增。
+- **每條路由一種協定格式**——混合協定目錄路由無法承載另一協定格式的模型；把提供者拆到兩個路由鍵是變通辦法。
+- **模態宣告不受驗證**——宣告 `image` 而其閘道不支援的模型會在提示詞准入後被提供者拒絕。持久圖片仍留在歷史中，同一誤宣告模型可能再次失敗；切換到純文字模型仍然可行，因為共享 LLM 執行時會針對該請求把圖片引用投影為穩定文字。
+- **未認證路由取決於其協定**——不點名憑證的路由解析為已設定但無金鑰，但 pi-ai 的 OpenAI 相容實作仍要求 API 金鑰或 `Authorization` 標頭，因此無金鑰本地伺服器需要由 `apiKeyEnv` 引用或 `headers` 中的 `Authorization` 條目提供的佔位憑證。
+- **不支援 `GenerateOptions.stop`**——pi-ai 的通用流式選項無法跨提供者保證停止序列行為。
+- **只有歷史中首條 `system` 訊息會成為 pi-ai 的 `systemPrompt`**——pi-ai 只有一個系統槽位，因此後續的 `system` 訊息，或在同時設定了 `GenerateOptions.system` 時的首條訊息，會在原位置摺疊為 `user` 訊息；系統提示詞的提供者專屬放置遵循 pi-ai，而非 harness 自有的協定覆蓋。system 或 assistant 歷史中的圖片（包括首條系統訊息中的圖片）在兩條轉換路徑上都會以 `UNSUPPORTED_CONTENT` 失敗。
+- **提供者 HTTP 狀態不可用**——pi-ai 錯誤事件不跨提供者暴露穩定 HTTP 狀態。
+- **重試策略由提供者自有，而非 SDK 重試**——pi-ai SDK 重試保持停用，因此持久 agent（智慧代理）步驟與 `llm/retry` 事件擁有每個可見嘗試，直接 `ctx.llm.stream()` 呼叫仍是單次嘗試。
+- **流式工具呼叫參數只在呼叫結束時解析一次**——安裝的 pi-ai 帶有 [`patches/@earendil-works__pi-ai@0.85.1.patch`](../../../patches/@earendil-works__pi-ai@0.85.1.patch)，它移除了每個流介面卡中對整段累計參數 JSON 的逐 delta 重新解析（上游 [earendil-works/pi#9265](https://github.com/earendil-works/pi/issues/9265)）；未打補丁時，數 MB 的參數流會在事件迴圈上消耗 O(n²) CPU，並使程序內所有工作階段停滯。在 `toolcall_end` 之前，pi-ai partial 的工具呼叫 `arguments` 保持為 `{}`；本介面卡只讀取 delta 字串與最終參數。每次升級 pi-ai 時都要重新應用或撤銷該補丁。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是不具权威性的工作上下文：尚未决定的探索方向与维护者备注。已交付的行为与既定理由以上文、包代码和相关 Agent Note 为准。
+本開發備註是不具權威性的工作上下文：尚未決定的探索方向與維護者備註。已交付的行為與既定理由以上文、包程式碼和相關 Agent Note 為準。
 
-- 提供的协议集合刻意比 pi-ai 的完整 API 集合更窄：Bedrock、Vertex、Azure 与 Codex 通过 profile 无法以密钥、端点与标头完整描述的流程认证；目录路由仍可经自有提供方到达它们，只有显式覆盖会被拒绝。Codex 可经授权流程的 OAuth grant 登录。
-- `compat` 开关集合由漂移门禁钉在 pi-ai 的 compat 类型上；上游升级若新增字段、为更多协议赋予 compat 类型或扩大值联合，会在有人分类前让构建失败。
+- 提供的協定集合刻意比 pi-ai 的完整 API 集合更窄：Bedrock、Vertex、Azure 與 Codex 透過 profile 無法以金鑰、端點與標頭完整描述的流程認證；目錄路由仍可經自有提供者到達它們，只有顯式覆蓋會被拒絕。Codex 可經授權流程的 OAuth grant 登入。
+- `compat` 開關集合由漂移門禁釘在 pi-ai 的 compat 型別上；上游升級若新增欄位、為更多協定賦予 compat 型別或擴大值聯合，會在有人分類前讓建置失敗。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。本包没有独立事件序列或可变数据关系，相关约定在所属 seam 强制执行。
+**執行時不變式：** 不釋出伴生入口。本包沒有獨立事件序列或可變資料關係，相關約定在所屬 seam 強制執行。

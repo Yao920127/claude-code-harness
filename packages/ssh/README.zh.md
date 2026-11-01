@@ -1,44 +1,44 @@
 ---
-description: "POSIX SSH 提供方家族：共享连接、远端文件系统、托管子进程及文件效果沙箱。"
+description: "POSIX SSH 提供者家族：共享連線、遠端檔案系統、託管子程序及檔案效果沙箱。"
 kind: "package-group"
 ---
 
-# ssh/ — POSIX 远端执行提供方
+# ssh/ — POSIX 遠端執行提供者
 
 [English](README.md) | 中文
 
 ## 概述
 
-本家族将文件、普通进程、终端及沙箱执行放在同一台 POSIX SSH 主机上，Harness 保留在本地。共享 OpenSSH 连接与已安装辅助程序支持现有文件系统、子进程及沙箱接口。适用于消费方遵守提供方路径语义的 headless 或自定义配置组合。
+本家族將檔案、普通程序、終端及沙箱執行放在同一臺 POSIX SSH 主機上，Harness 保留在本地。共享 OpenSSH 連線與已安裝輔助程式支援現有檔案系統、子程序及沙箱介面。適用於消費方遵守提供者路徑語義的 headless 或自定義設定組合。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | 服务 |
+| 包 | 職責 | 服務 |
 |---|---|---|
-| [`ssh`](ssh/README.zh.md) | 连接、辅助程序身份及传输生命周期 | `ctx.ssh` |
-| [`fs-ssh`](fs-ssh/README.zh.md) | 远端文件身份、读取及带保护的原子修改 | `ctx.fs` |
-| [`subprocess-ssh`](subprocess-ssh/README.zh.md) | 可执行文件查找、进程、控制流及终端 | `ctx.subprocess` |
-| [`sandbox-ssh`](sandbox-ssh/README.zh.md) | 远端文件效果限制及执行信息 | `ctx.sandbox` |
+| [`ssh`](ssh/README.zh.md) | 連線、輔助程式身份及傳輸生命週期 | `ctx.ssh` |
+| [`fs-ssh`](fs-ssh/README.zh.md) | 遠端檔案身份、讀取及帶保護的原子修改 | `ctx.fs` |
+| [`subprocess-ssh`](subprocess-ssh/README.zh.md) | 可執行檔案查詢、程序、控制流及終端 | `ctx.subprocess` |
+| [`sandbox-ssh`](sandbox-ssh/README.zh.md) | 遠端檔案效果限制及執行資訊 | `ctx.sandbox` |
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [SSH 子系统](../../docs/subsystems/ssh.zh.md) — 共享执行坐标及传输归属。
-- [POSIX SSH 决策](../../.agents/notes/implemented/architecture/2026-09-11-posix-ssh-runtime.zh.md) — 替代方案、影响及验证要求。
+- [SSH 子系統](../../docs/subsystems/ssh.zh.md) — 共享執行座標及傳輸歸屬。
+- [POSIX SSH 決策](../../.agents/notes/implemented/architecture/2026-09-11-posix-ssh-runtime.zh.md) — 替代方案、影響及驗證要求。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者工作上下文 — 点击展开</summary>
+<summary>維護者工作上下文 — 點選展開</summary>
 
-远端能力实现保留共享异步终端及取消接口。绝不能从远端路径字符串推断本地路径访问能力。
+遠端能力實作保留共享非同步終端及取消介面。絕不能從遠端路徑字串推斷本地路徑存取能力。
 
 </details>

@@ -1,5 +1,5 @@
 ---
-description: "会话反馈：`/feedback` 命令、Web 反馈弹窗背后的 `sessionFeedback` Host Remote，以及固定的分类表；供用户与维护者选择、组合或排查反馈采集。"
+description: "工作階段回饋：`/feedback` 命令、Web 回饋彈出視窗背後的 `sessionFeedback` Host Remote，以及固定的分類表；供使用者與維護者選擇、組合或排查回饋採集。"
 kind: "package-reference"
 ---
 
@@ -9,55 +9,55 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-command-feedback` 让用户告诉 harness 他们对会话的看法。输入 `/feedback` 加一条评价，评价即被记录，并以会话 id 与匿名用户 id 确认；Web 反馈弹窗通过 `sessionFeedback` Host Remote 记录分类与可选描述。记录是即时的，绝不会启动模型工作：模型既看不到这条评价，也不会被打断。本包同时拥有所有反馈界面共用的固定分类表。它随标准 `dsh` 基础组合交付，无需任何配置；无头模式、ACP（Agent Client Protocol）与 JSON-RPC 入口不提供斜杠命令。
+`dsh-command-feedback` 讓使用者告訴 harness 他們對工作階段的看法。輸入 `/feedback` 加一條評價，評價即被記錄，並以工作階段 id 與匿名使用者 id 確認；Web 回饋彈出視窗透過 `sessionFeedback` Host Remote 記錄分類與可選描述。記錄是即時的，絕不會啟動模型工作：模型既看不到這條評價，也不會被打斷。本包同時擁有所有回饋介面共用的固定分類表。它隨標準 `dsh` 基礎組合交付，無需任何設定；無頭模式、ACP（Agent Client Protocol）與 JSON-RPC 入口不提供斜槓命令。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-用户可以直接在 Web 客户端中记录反馈：`/feedback` 命令随标准 `dsh` 基础组合交付，无需配置，可在任何对话中使用。自定义应用必须把 Session 服务、命令注册表与本插件组合在一起，才能提供同样的命令。
+使用者可以直接在 Web 用戶端中記錄回饋：`/feedback` 命令隨標準 `dsh` 基礎組合交付，無需設定，可在任何對話中使用。自定義應用必須把 Session 服務、命令註冊表與本外掛組合在一起，才能提供同樣的命令。
 
 ### `/feedback` 命令
 
-输入 `/feedback` 加你的评价并发送。成功时会以接收会话 id 与匿名用户 id 确认：
+輸入 `/feedback` 加你的評價併傳送。成功時會以接收工作階段 id 與匿名使用者 id 確認：
 
-| 输入 | 结果 |
+| 輸入 | 結果 |
 |---|---|
-| `/feedback the diff view is unreadable` | 记录评价并以两行确认：`Feedback recorded for session {sessionId}` 和 `Anonymous user: {userId}.` |
-| `/feedback` | 用法错误：`Feedback text is required. Usage: /feedback <text>`。仅含空白的输入视为空输入。 |
+| `/feedback the diff view is unreadable` | 記錄評價並以兩行確認：`Feedback recorded for session {sessionId}` 和 `Anonymous user: {userId}.` |
+| `/feedback` | 用法錯誤：`Feedback text is required. Usage: /feedback <text>`。僅含空白的輸入視為空輸入。 |
 
-前后空白会被去除，但除此之外，评价会按输入原样保留：不进行截断、大小写折叠或命令解析——`/feedback /plan felt slow` 记录的就是这段字面文本。每次执行命令都会记录自己的条目；不会发生合并或替换。
+前後空白會被去除，但除此之外，評價會按輸入原樣保留：不進行截斷、大小寫摺疊或命令解析——`/feedback /plan felt slow` 記錄的就是這段字面文字。每次執行命令都會記錄自己的條目；不會發生合併或替換。
 
 <a id="the-web-feedback-dialog"></a>
-### Web 反馈弹窗
+### Web 回饋彈出視窗
 
-在 Web 客户端中，不带文本的 `/feedback`（从输入框菜单选中，或直接输入后发送）会打开反馈弹窗，而不是返回用法错误。弹窗提供下表的七个分类和一个自由文本框；每一项都可不填，空提交也会被接受，对话日志和其他反馈事件一样随记录的事件一起投递。弹窗通过 `sessionFeedback.record` 记录，追加的是同一个 `feedback/record` 事件，但没有命令簿记，也没有确认行；弹窗改用 toast 提示。
+在 Web 用戶端中，不帶文字的 `/feedback`（從輸入框選單選中，或直接輸入後傳送）會開啟回饋彈出視窗，而不是返回用法錯誤。彈出視窗提供下表的七個分類和一個自由文字框；每一項都可不填，空提交也會被接受，對話日誌和其他回饋事件一樣隨記錄的事件一起投遞。彈出視窗透過 `sessionFeedback.record` 記錄，追加的是同一個 `feedback/record` 事件，但沒有命令簿記，也沒有確認行；彈出視窗改用 toast 提示。
 
-| 分类 id | 含义 |
+| 分類 id | 含義 |
 |---|---|
-| `task-result` | 任务结果 |
-| `instruction-following` | 指令理解与遵循 |
-| `product-interaction` | 产品功能与交互 |
-| `service-stability` | 稳定性和速度 |
-| `resource-cost` | 资源使用与费用 |
-| `security-privacy-permission` | 安全隐私与权限 |
+| `task-result` | 任務結果 |
+| `instruction-following` | 指令理解與遵循 |
+| `product-interaction` | 產品功能與互動 |
+| `service-stability` | 穩定性和速度 |
+| `resource-cost` | 資源使用與費用 |
+| `security-privacy-permission` | 安全隱私與權限 |
 | `other` | 其他 |
 
-这些 id 是日志中的持久词汇，与逐消息反馈共用；各界面自行拥有本地化标签。
+這些 id 是日誌中的持久詞彙，與逐訊息回饋共用；各介面自行擁有在地化標籤。
 
-### 从自己的 UI 记录反馈
+### 從自己的 UI 記錄回饋
 
-反馈不一定来自斜杠命令或弹窗：任何 UI、钩子或 host 集成都可以通过 `recordFeedback` 或 `sessionFeedback` Remote 直接记录评价，享有同样的保证且无需模型轮次。想要斜杠命令的自定义应用，把 Session 存储、命令注册表与本插件组合在一起即可；`sessionFeedback` Remote 从 Session 存储中解析 live Session：
+回饋不一定來自斜槓命令或彈出視窗：任何 UI、掛鉤或 host 整合都可以透過 `recordFeedback` 或 `sessionFeedback` Remote 直接記錄評價，享有同樣的保證且無需模型輪次。想要斜槓命令的自定義應用，把 Session 儲存、命令註冊表與本外掛組合在一起即可；`sessionFeedback` Remote 從 Session 儲存中解析 live Session：
 
 ```yaml
 - id: session
@@ -68,90 +68,90 @@ kind: "package-reference"
   name: '@deepseek-ai/dsh-command-feedback'
 ```
 
-Web 客户端随附该命令。无头模式、ACP 自动化和 JSON-RPC 不提供斜杠命令，因此 `/feedback` 在那里不可用。
+Web 用戶端隨附該命令。無頭模式、ACP 自動化和 JSON-RPC 不提供斜槓命令，因此 `/feedback` 在那裡不可用。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 设计理念
+### 設計理念
 
-评价是会话日志中一个仅追加的事实，由事件而非产生它的触发方式拥有：反馈可能来自命令、弹窗或任何集成，因此事实绝不能依赖斜杠命令。命令自身的簿记不携带载荷，所以评价文本在日志中只存在于一个地方，且该事件绝不会呈现给模型。
+評價是工作階段日誌中一個僅追加的事實，由事件而非產生它的觸發方式擁有：回饋可能來自命令、彈出視窗或任何整合，因此事實絕不能依賴斜槓命令。命令自身的簿記不攜帶載荷，所以評價文字在日誌中只存在於一個地方，且該事件絕不會呈現給模型。
 
-### 评价如何被记录
+### 評價如何被記錄
 
-生产方去除文本空白，把空白文本记为缺省，并向会话日志写入一个事件，即使条目既无文本也无分类；`/feedback` 处理器自行拒绝空输入，其余部分是该生产方的薄包装层；`sessionFeedback.record` Remote 则按 id 找到 live Session 后同样调用它，没有 live 持有者时回答 `session-not-found`。两条路径都不启动模型工作。写入是即时但未 flush 的：确认文本表示条目已到达日志，而不是已落盘。某个 harness home 首次接受的命令评价还会创建确认文本所报告的匿名用户 id。精确的生产方约定见 [`src/index.ts`](src/index.ts)；事件载荷、分类表与 Remote 词汇见 [`src/types.ts`](src/types.ts)。
+生產方去除文字空白，把空白文字記為預設，並向工作階段日誌寫入一個事件，即使條目既無文字也無分類；`/feedback` 處理器自行拒絕空輸入，其餘部分是該生產方的薄包裝層；`sessionFeedback.record` Remote 則按 id 找到 live Session 後同樣呼叫它，沒有 live 持有者時回答 `session-not-found`。兩條路徑都不啟動模型工作。寫入是即時但未 flush 的：確認文字表示條目已到達日誌，而不是已寫入磁碟。某個 harness home 首次接受的命令評價還會建立確認文字所報告的匿名使用者 id。精確的生產方約定見 [`src/index.ts`](src/index.ts)；事件載荷、分類表與 Remote 詞彙見 [`src/types.ts`](src/types.ts)。
 
-### 源码索引
+### 原始碼索引
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`recordFeedback` 生产方、`sessionFeedback` Remote 服务、`/feedback` 命令注册 |
-| [`src/types.ts`](src/types.ts) | `feedback/record` 事件声明、分类表，以及 Remote 请求与结果类型 |
-| — | 未发布配套的运行时不变式；每个 `feedback/record` 都是独立的仅追加事实，不涉及跨事件关系或与可变数据的关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`recordFeedback` 生產方、`sessionFeedback` Remote 服務、`/feedback` 命令註冊 |
+| [`src/types.ts`](src/types.ts) | `feedback/record` 事件宣告、分類表，以及 Remote 請求與結果型別 |
+| — | 未釋出配套的執行時不變式；每個 `feedback/record` 都是獨立的僅追加事實，不涉及跨事件關係或與可變資料的關係。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们涵盖这条采集路径所依赖的命令注册表、持久化与身份事实。
+當包級約定不夠用時閱讀以下頁面。它們涵蓋這條採集路徑所依賴的命令註冊表、持久化與身份事實。
 
-- [dsh-commands](../../interaction/commands/README.zh.md)——发现全局命令并定义 `recordInput` 语义的注册表。
-- [会话持久化子系统](../../../docs/subsystems/persistence.zh.md)——追加事件如何持久化、flush 屏障的含义。
-- [匿名用户身份](../../identity/anonymous-user-id/README.zh.md)——确认文本报告的 id。
-- [ui-message-feedback](../../client/ui-message-feedback/README.zh.md)——通过 `sessionFeedback` Remote 记录的 Web 反馈弹窗。
-- [反馈包索引](../README.zh.md)——展示仅写入日志的采集与逐消息反馈在包中的并列位置。
+- [dsh-commands](../../interaction/commands/README.zh.md)——發現全域命令並定義 `recordInput` 語義的註冊表。
+- [工作階段持久化子系統](../../../docs/subsystems/persistence.zh.md)——追加事件如何持久化、flush 屏障的含義。
+- [匿名使用者身份](../../identity/anonymous-user-id/README.zh.md)——確認文字報告的 id。
+- [ui-message-feedback](../../client/ui-message-feedback/README.zh.md)——透過 `sessionFeedback` Remote 記錄的 Web 回饋彈出視窗。
+- [回饋包索引](../README.zh.md)——展示僅寫入日誌的採集與逐訊息回饋在包中的並列位置。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 用户 `/feedback` 采集
+### 使用者 `/feedback` 採集
 
-#### 模型看到什么
+#### 模型看到什麼
 
-无。斜杠输入、弹窗、`feedback/record` 以及确认文本都不出现在模型请求中。反馈事件和注册表生命周期记录仅写入日志且不携带 `surfaceOp`，因此它们绝不会进入有序 surface、`deriveMessages()` 或系统提示词。在某个轮次中记录反馈不会改变该轮次剩余的请求。
+無。斜槓輸入、彈出視窗、`feedback/record` 以及確認文字都不出現在模型請求中。回饋事件和註冊表生命週期記錄僅寫入日誌且不攜帶 `surfaceOp`，因此它們絕不會進入有序 surface、`deriveMessages()` 或系統提示詞。在某個輪次中記錄回饋不會改變該輪次剩餘的請求。
 
-#### Token 影响
+#### Token 影響
 
-无直接 token 影响。无论是已接受的条目还是用法错误，都不会在记录所在轮次或此后任何轮次增加模型 token。
+無直接 token 影響。無論是已接受的條目還是用法錯誤，都不會在記錄所在輪次或此後任何輪次增加模型 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与模型请求路径无关。记录只追加到会话日志，不触碰已经可复用的请求前缀。本包贡献的任何内容都不会使缓存复用失效。
+與模型請求路徑無關。記錄只追加到工作階段日誌，不觸碰已經可複用的請求字首。本包貢獻的任何內容都不會使快取複用失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明会话反馈何时不合适，或何时行为与用户预期不同。它们是当前包约束，不是任务积压。
+這些限制說明工作階段回饋何時不合適，或何時行為與使用者預期不同。它們是目前包約束，不是任務積壓。
 
-- **没有反馈检索或管理 surface**——本包不为 `feedback/record` 提供检索、聚合或面向模型的工具。
-- **只有分类与文本**——一条条目至多携带一个分类和一个自由文本字符串，没有严重程度或关联事件链接。
-- **Remote 只服务 live Session**——没有 live 持有者的 Session，`sessionFeedback.record` 回答 `session-not-found`；弹窗打开期间 Session 退役时，Web 弹窗会报告该失败。
-- **不支持修改或撤回**——会话日志是仅追加的，本包也不新增 tombstone，因此错误的条目会一直保留在记录中，只能由后续条目取代。
-- **没有显式持久化屏障**——确认文本紧随追加而非 flush，因此紧临崩溃前记录的条目可能与其他未 flush 的尾部一同丢失。需要该保证的消费方可自行等待 `ctx.sessions.flush(session)`。
-- **新会话上没有可见的确认**——Web transcript（文本记录）只在会话激活后渲染命令行，因此在仍为空白的新会话上输入 `/feedback <text>` 会记录事件但不会显示确认行；弹窗的 toast 不依赖文本记录。
-- **随附的产品入口中只有 Web 使用此命令**——无头模式、ACP 自动化和 JSON-RPC 不提供命令适配器，因此 `/feedback` 在那里不可用。
+- **沒有回饋檢索或管理 surface**——本包不為 `feedback/record` 提供檢索、聚合或面向模型的工具。
+- **只有分類與文字**——一條條目至多攜帶一個分類和一個自由文字字串，沒有嚴重程度或關聯事件連結。
+- **Remote 只服務 live Session**——沒有 live 持有者的 Session，`sessionFeedback.record` 回答 `session-not-found`；彈出視窗開啟期間 Session 退役時，Web 彈出視窗會報告該失敗。
+- **不支援修改或撤回**——工作階段日誌是僅追加的，本包也不新增 tombstone，因此錯誤的條目會一直保留在記錄中，只能由後續條目取代。
+- **沒有顯式持久化屏障**——確認文字緊隨追加而非 flush，因此緊臨崩潰前記錄的條目可能與其他未 flush 的尾部一同丟失。需要該保證的消費方可自行等待 `ctx.sessions.flush(session)`。
+- **新工作階段上沒有可見的確認**——Web transcript（文字記錄）只在工作階段啟用後渲染命令列，因此在仍為空白的新工作階段上輸入 `/feedback <text>` 會記錄事件但不會顯示確認行；彈出視窗的 toast 不依賴文字記錄。
+- **隨附的產品入口中只有 Web 使用此命令**——無頭模式、ACP 自動化和 JSON-RPC 不提供命令介面卡，因此 `/feedback` 在那裡不可用。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性。已交付的行为、限制与理由以上文与包代码为准。
+本開發備註是維護者的工作上下文，明確不具權威性。已交付的行為、限制與理由以上文與包程式碼為準。
 
-- 确认文本句子与分类顺序由 [`tests/command-feedback.spec.ts`](tests/command-feedback.spec.ts) 固定；修改它们会改变用户可见文案。
-- 检索 surface 仍是第一条限制背后的开放方向；当前约定没有为它预留任何格式。
+- 確認文字句子與分類順序由 [`tests/command-feedback.spec.ts`](tests/command-feedback.spec.ts) 固定；修改它們會改變使用者可見文案。
+- 檢索 surface 仍是第一條限制背後的開放方向；目前約定沒有為它預留任何格式。
 
 </details>

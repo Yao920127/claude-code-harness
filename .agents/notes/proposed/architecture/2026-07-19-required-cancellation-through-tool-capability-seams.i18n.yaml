@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-07-19-required-cancellation-through-tool-capability-seams.md
 /agent-note-required-cancellation-through-tool-reachable-capability-seams:
   en: 7999f4da8ee4fe80
-  zh: ea49c90e2bbaacb8
+  zh: 9fd55d07a68cd354
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/problem:
   en: c244ddd6aadf87ad
-  zh: d30d623e9bf25c6b
+  zh: f4b6b769a755f8e9
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/proposal:
   en: 20ed2d4cacc14f0c
-  zh: 19ee19bcf3596048
+  zh: f755e3eae01a2929
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/proposal/scope-boundary:
   en: c9df2c946d26f728
-  zh: cc5bcd1710a864ef
+  zh: aea8e19988ed7975
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/alternatives-considered:
   en: 0f2e31037bb1071c
-  zh: 6c654c553300ceb5
+  zh: 03044f1bc271554c
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/acceptance-criteria:
   en: a439a907dc6b2457
-  zh: a693d1b8bb05b67f
+  zh: f55182f99e2138c0
 /agent-note-required-cancellation-through-tool-reachable-capability-seams/risks:
   en: c071970c88e73cb7
-  zh: 58eaf135ac19ecc9
+  zh: 8d36004e738ec1e2

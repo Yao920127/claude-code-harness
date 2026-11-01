@@ -4,10 +4,10 @@
 #   pnpm run verify-translation-pairing --write python/sdk/examples/README.md
 /python-sdk-example:
   en: d9dfc996ea2ace40
-  zh: 33de241bad6c4ee1
+  zh: d0c449da689d8f45
 /python-sdk-example/run-the-minimal-agent:
   en: 0a23802ca759a16c
-  zh: 9a68ff9642f90efb
+  zh: bd3fa889416da2c5
 /python-sdk-example/add-plugins:
   en: 5e1e30dac13f6c9e
-  zh: 0af98ebb75c88f43
+  zh: ae8244aab8eaa687

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/sandbox.md
 /process-sandbox:
   en: e0d4876306b192c3
-  zh: 63baaa0c79e87deb
+  zh: 5dca0a67caca305c
 /process-sandbox/modes-and-enforcement:
   en: 11f91b55cc317334
-  zh: 296678c4675864c1
+  zh: 8ad45f036cd25c33
 /process-sandbox/per-call-policy:
   en: 7661eb4559bbc395
-  zh: 0dceeb0bba367862
+  zh: 3ed413c1e2112a2c
 /process-sandbox/wrapped-argv-and-classification-dialects:
   en: 2ba8930762e92e40
-  zh: 220f64da1a9e5d57
+  zh: 5720221ccf9a4d8d
 /process-sandbox/provider-and-fail-closed-errors:
   en: a90a38fe4b11737c
-  zh: 2397768e48712617
+  zh: 84a853724f7b9d52

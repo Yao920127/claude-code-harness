@@ -1121,7 +1121,7 @@ describe('remaining branches', () => {
   it('ignores Host status and error events for sessions without an instance', ({ mock, remote }) => {
     const manager = makeManager(mock, remote)
     manager.handleSessionStatus(S2, true)
-    manager.handleSessionError(S2, '无实例')
+    manager.handleSessionError(S2, '無實例')
   })
 
   it('keeps list-entry identity for unchanged rows across an unrelated list change', async ({ mock, remote }) => {

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-08-playwright-video-gif.md
 /agent-note-playwright-video-captures-continuous-browser-demos:
   en: fcca6f069dc51b80
-  zh: e9d171b6c84f92a7
+  zh: 4c78693c400b07dc
 /agent-note-playwright-video-captures-continuous-browser-demos/problem:
   en: 967fed211899587e
-  zh: 0062f7ca29211105
+  zh: d11ab3779ada19eb
 /agent-note-playwright-video-captures-continuous-browser-demos/decision:
   en: 5f9e88a564fd6b8a
-  zh: b78164f92167dada
+  zh: afc932e4ad5472cd
 /agent-note-playwright-video-captures-continuous-browser-demos/alternatives-considered:
   en: 221e89bafcb152d4
-  zh: b33816c680dc450f
+  zh: 85ff39c8cadddb0b
 /agent-note-playwright-video-captures-continuous-browser-demos/consequences:
   en: e5c9eb6df05801ba
-  zh: 786cd7775bfceb9e
+  zh: f940095c2c6b9b8d

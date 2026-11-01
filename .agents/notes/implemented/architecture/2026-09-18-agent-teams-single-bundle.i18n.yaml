@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-18-agent-teams-single-bundle.md
 /agent-note-enable-agent-teams-with-one-bundle:
   en: c595b526791a8dfd
-  zh: 61f4bf6948e41bee
+  zh: 05e11fe0b7fd4e0a
 /agent-note-enable-agent-teams-with-one-bundle/problem:
   en: 8dd802c775d24e42
-  zh: 53cf2818dd93181e
+  zh: 722bfb5afa34be1f
 /agent-note-enable-agent-teams-with-one-bundle/decision:
   en: d513c3239b59b2ee
-  zh: 7692b7ae43befc9d
+  zh: f8f0d58e913acad0
 /agent-note-enable-agent-teams-with-one-bundle/alternatives-considered:
   en: 32952c4e1b6f486d
-  zh: 6c9b91eaf0460d30
+  zh: a8a9def441bbfe7f
 /agent-note-enable-agent-teams-with-one-bundle/consequences:
   en: be92cb1ce7c86cb6
-  zh: 0da06f76df72f97e
+  zh: 663db211ab5319a1
 /agent-note-enable-agent-teams-with-one-bundle/verification:
   en: 8fc694c4c84401f1
-  zh: 6540462f6896bef7
+  zh: 9ce8f9ab2b6fb380

@@ -2,21 +2,21 @@
 
 [English](product.md) | 中文
 
-Acme Agent 是一款开源 agent harness（智能体框架），用于自动化仓库日常事务。
+Acme Agent 是一款開源 agent harness（智慧代理框架），用於自動化儲存庫日常事務。
 
-本段包含供示例使用的中性占位文本。
+本段包含供範例使用的中性佔位文本。
 
-## 安装
+## 安裝
 
-安装 Node.js 24，然后运行：
+安裝 Node.js 24，然後執行：
 
 ```sh
 npx acme-agent setup
 ```
 
-该命令会打印设置地址，默认地址为 `http://127.0.0.1:3080`。
+該命令會列印設定地址，預設地址為 `http://127.0.0.1:3080`。
 
-## 社区
+## 社群
 
-- 在 Issue 跟踪器中报告 bug。
-- 为你的插件仓库添加 `acme-agent` 主题。
+- 在 Issue 跟蹤器中報告 bug。
+- 為你的外掛儲存庫新增 `acme-agent` 主題。

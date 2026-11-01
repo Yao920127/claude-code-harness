@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-19-v3-incomplete-child-catalog-evidence.md
 /agent-note-preserve-v3-sessions-with-incomplete-child-catalog-evidence:
   en: ff7fbd846f8edf2f
-  zh: 8f4703ea0b0d7cc9
+  zh: c16994f06a390f4f
 /agent-note-preserve-v3-sessions-with-incomplete-child-catalog-evidence/problem:
   en: a5d524599f02e77f
-  zh: b79687f999f4024c
+  zh: 2520998d9a07babe
 /agent-note-preserve-v3-sessions-with-incomplete-child-catalog-evidence/decision:
   en: cfd781300b663010
-  zh: 6f7865d5619a1e52
+  zh: 07fb1a60e332c0b5
 /agent-note-preserve-v3-sessions-with-incomplete-child-catalog-evidence/alternatives-considered:
   en: b7ce0d1b6b280d7f
-  zh: 3deeaef73a3a7856
+  zh: 00120b9f95117472
 /agent-note-preserve-v3-sessions-with-incomplete-child-catalog-evidence/consequences:
   en: 9f8b6446f6cdea60
-  zh: d0a07674bf8434c4
+  zh: a1a00dbc6a78ba91

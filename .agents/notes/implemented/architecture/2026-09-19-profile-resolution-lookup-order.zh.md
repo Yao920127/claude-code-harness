@@ -1,4 +1,4 @@
-# Agent Note: profile 解析的主线祖先链与拦截层
+# Agent Note: profile 解析的主線祖先鏈與攔截層
 
 Status: implemented
 
@@ -6,23 +6,23 @@ Status: implemented
 
 ## Problem
 
-profile 从自己的包项目加载插件。dsh 本体包和 bundle 内嵌的依赖不在 profile 的依赖树上，Node 默认的 `node_modules` 查找从 profile 出发找不到它们。
+profile 從自己的包專案載入外掛。dsh 本體包和 bundle 內嵌的依賴不在 profile 的依賴樹上，Node 預設的 `node_modules` 查詢從 profile 出發找不到它們。
 
-解析规则需要能被开发者一句话复述：哪一段是普通 Node 行为，哪一段是 dsh 的干预，干预的范围到哪里为止。此前的运行时实现把 `$DSH_HOME/profiles/node_modules` 整层对所有包名隐藏，又为历史目录形状保留了专门的识别代码，规则无法用一句话说清，也无法判断某次解析结果是否符合预期。
+解析規則需要能被開發者一句話複述：哪一段是普通 Node 行為，哪一段是 dsh 的干預，干預的範圍到哪裡為止。此前的執行時實作把 `$DSH_HOME/profiles/node_modules` 整層對所有包名隱藏，又為歷史目錄形狀保留了專門的識別程式碼，規則無法用一句話說清，也無法判斷某次解析結果是否符合預期。
 
 ## Decision
 
-普通模块请求保留 Node 的祖先 `node_modules` 顺序。profile 内，runtime resolution 条目占据 `$DSH_HOME/profiles/node_modules` 上对应的包位置。对于已记录的树外链接目录中的 importer，每个候选 `D/node_modules` 只应用一条规则：包名同时出现在 `D/package.json` 的 `peerDependencies` 和 runtime resolution 中，就由运行时包占据该位置；否则 Node 尝试该位置的物理包。更近的候选先于更高祖先的 peer 声明。显式 CommonJS `paths` 始终绕过拦截。其余解析行为由 Node 负责。[不可变 generation 的构造、发布、Worker 继承与运行时载体](2026-09-09-profile-resolution-generations.zh.md)由既有 Note 记录，本篇不复述。
+普通模組請求保留 Node 的祖先 `node_modules` 順序。profile 內，runtime resolution 條目佔據 `$DSH_HOME/profiles/node_modules` 上對應的包位置。對於已記錄的樹外連結目錄中的 importer，每個候選 `D/node_modules` 只應用一條規則：包名同時出現在 `D/package.json` 的 `peerDependencies` 和 runtime resolution 中，就由執行時包占據該位置；否則 Node 嘗試該位置的物理包。更近的候選先於更高祖先的 peer 宣告。顯式 CommonJS `paths` 始終繞過攔截。其餘解析行為由 Node 負責。[不可變 generation 的建構、釋出、Worker 繼承與執行時載體](2026-09-09-profile-resolution-generations.zh.md)由既有 Note 記錄，本篇不復述。
 
-### 一、解析规则
+### 一、解析規則
 
-#### 1. 主线：Node 的祖先 `node_modules` 链
+#### 1. 主線：Node 的祖先 `node_modules` 鏈
 
-importer 指发起 `import` 或 `require` 的那个模块文件。Node 从 importer 所在目录开始，沿祖先 `node_modules` 候选位置查到文件系统根，跳过多余的 `node_modules/node_modules` 位置。CommonJS 还查询 `NODE_PATH` 与全局目录，ESM 不查询。在 Node 的包入口与失败规则下，最近的匹配候选优先。
+importer 指發起 `import` 或 `require` 的那個模組檔案。Node 從 importer 所在目錄開始，沿祖先 `node_modules` 候選位置查到檔案系統根，跳過多餘的 `node_modules/node_modules` 位置。CommonJS 還查詢 `NODE_PATH` 與全域目錄，ESM 不查詢。在 Node 的包入口與失敗規則下，最近的匹配候選優先。
 
-软链接按 Node 默认行为跟随到真实路径。一个模块一旦以真实路径加载，它后续 import 的主线就是真实路径的祖先链，与它被链接到哪里无关。
+軟連結按 Node 預設行為跟隨到真實路徑。一個模組一旦以真實路徑載入，它後續 import 的主線就是真實路徑的祖先鏈，與它被連結到哪裡無關。
 
-下面这条链是全文表格引用的编号。importer 为 `$DSH_HOME/profiles/web/node_modules/my-plugin/index.js`：
+下面這條鏈是全文表格引用的編號。importer 為 `$DSH_HOME/profiles/web/node_modules/my-plugin/index.js`：
 
 ```text
 ① $DSH_HOME/profiles/web/node_modules/my-plugin/node_modules
@@ -32,151 +32,151 @@ importer 指发起 `import` 或 `require` 的那个模块文件。Node 从 impor
 ⑤ /node_modules
 ```
 
-① 是插件私有依赖，② 是 profile 安装的包，③ 是拦截层，runtime resolution 占据其中有条目的包目录，④ 是 Harness home，⑤ 是文件系统根。CommonJS 随后保留 `NODE_PATH` 与全局目录的查询，不在这些额外位置应用 peer 拦截。
+① 是外掛私有依賴，② 是 profile 安裝的包，③ 是攔截層，runtime resolution 佔據其中有條目的包目錄，④ 是 Harness home，⑤ 是檔案系統根。CommonJS 隨後保留 `NODE_PATH` 與全域目錄的查詢，不在這些額外位置應用 peer 攔截。
 
-#### 2. 拦截层：runtime resolution 占据 `$DSH_HOME/profiles/node_modules/<包名>`
+#### 2. 攔截層：runtime resolution 佔據 `$DSH_HOME/profiles/node_modules/<包名>`
 
-拦截层是 importer 所属 profile 目录（`$DSH_HOME/profiles/<name>`）之上的第一个祖先 `node_modules`。树内所有 profile 的这一层都是 `$DSH_HOME/profiles/node_modules`。
+攔截層是 importer 所屬 profile 目錄（`$DSH_HOME/profiles/<name>`）之上的第一個祖先 `node_modules`。樹內所有 profile 的這一層都是 `$DSH_HOME/profiles/node_modules`。
 
-runtime resolution 中的每个包名，在这一层上占据 `<拦截层>/<包名>` 这个包目录的位置。对 `@deepseek-ai/dsh-tools` 这样的本体包名，③ 上的包目录就是运行中安装的那一份；磁盘上同名的旧链接或旧目录不再是链上的成员。对 runtime resolution 没有的包名，③ 上的包目录就是磁盘上的物理内容。
+runtime resolution 中的每個包名，在這一層上佔據 `<攔截層>/<包名>` 這個包目錄的位置。對 `@deepseek-ai/dsh-tools` 這樣的本體包名，③ 上的包目錄就是執行中安裝的那一份；磁碟上同名的舊連結或舊目錄不再是鏈上的成員。對 runtime resolution 沒有的包名，③ 上的包目錄就是磁碟上的物理內容。
 
-一次裸包名请求的顺序：主线先走完 profile 目录内部的各层（①②），有候选就交给 Node 在候选内解析并返回。走到 ③ 时，runtime resolution 有该包名的条目，Node 就在条目记录的包目录内解析；找到就返回，包内缺文件则按 Node 自身对"已找到包"的处理继续，CommonJS 从 ④ 继续逐层找子路径，ESM 直接报错。runtime resolution 没有条目，Node 就看 ③ 的物理目录，再到 ④。
+一次裸包名請求的順序：主線先走完 profile 目錄內部的各層（①②），有候選就交給 Node 在候選內解析並返回。走到 ③ 時，runtime resolution 有該包名的條目，Node 就在條目記錄的包目錄內解析；找到就返回，包內缺檔案則按 Node 自身對"已找到包"的處理繼續，CommonJS 從 ④ 繼續逐層找子路徑，ESM 直接報錯。runtime resolution 沒有條目，Node 就看 ③ 的物理目錄，再到 ④。
 
-Node 仍然负责 `exports`、`imports`、conditions、`main`、子路径、扩展名、缓存与错误码。被选中的包因 `exports` 拒绝某个子路径时报错终局，不会换另一个同名包。
+Node 仍然負責 `exports`、`imports`、conditions、`main`、子路徑、副檔名、快取與錯誤碼。被選中的包因 `exports` 拒絕某個子路徑時報錯終局，不會換另一個同名包。
 
-拦截层不读、不写、不删任何磁盘链接。历史残留的软链接一律按普通文件系统内容处理：本体包名在 ③ 上的位置已被 runtime resolution 占据，旧链接永远不会被读到；其余包名按主线正常看到 ③ 里的内容。profile 加载时一次性删除 dsh 0.1.5 系列发布版的 Link 后端写进 profile 的投影：profile `node_modules` 下目标位于 `<profile>/.dsh-module-fallback/node_modules` 内的软链接，以及该目录本身。pnpm 安装的包和其他软链接都保留。
+攔截層不讀、不寫、不刪任何磁碟連結。歷史殘留的軟連結一律按普通檔案系統內容處理：本體包名在 ③ 上的位置已被 runtime resolution 佔據，舊連結永遠不會被讀到；其餘包名按主線正常看到 ③ 裡的內容。profile 載入時一次性刪除 dsh 0.1.5 系列釋出版的 Link 後端寫進 profile 的投影：profile `node_modules` 下目標位於 `<profile>/.dsh-module-fallback/node_modules` 內的軟連結，以及該目錄本身。pnpm 安裝的包和其他軟連結都保留。
 
-#### 3. 链接目录：在每个祖先候选位置应用 peer 拦截
+#### 3. 連結目錄：在每個祖先候選位置應用 peer 攔截
 
-`<profile>/node_modules/<包名>` 链接到 profiles 树外的真实目录 R 时，R 是一个 linked root。R 不必包含 `package.json` 或 `node_modules`，可以是包目录、monorepo 中的单个包，也可以是 `src` 目录。R 之下的 importer 沿 Node 的真实祖先链查询。记录的根目录决定哪些 importer 参与拦截，不会把它们的查找限制在 R 内。
+`<profile>/node_modules/<包名>` 連結到 profiles 樹外的真實目錄 R 時，R 是一個 linked root。R 不必包含 `package.json` 或 `node_modules`，可以是包目錄、monorepo 中的單個包，也可以是 `src` 目錄。R 之下的 importer 沿 Node 的真實祖先鏈查詢。記錄的根目錄決定哪些 importer 參與攔截，不會把它們的查詢限制在 R 內。
 
-linked 拦截排除 installation 作用域包目录内的 importer，同时识别配置路径和真实路径。因此，链接整个 checkout 不会接管宿主自身的依赖查询。重叠的 linked root 共同描述参与范围：祖先链由 importer 决定，root 顺序和链接名称都不会选择另一套 peer 集合。
+linked 攔截排除 installation 作用域包目錄內的 importer，同時識別設定路徑和真實路徑。因此，連結整個 checkout 不會接管主機自身的依賴查詢。重疊的 linked root 共同描述參與範圍：祖先鏈由 importer 決定，root 順序和連結名稱都不會選擇另一套 peer 集合。
 
-在每个候选 `D/node_modules`，当前 `D/package.json` 的 peer 声明命中且运行时表提供该包名时，就使用运行时包。这只占据该包的位置，即使 `D/node_modules` 在磁盘上不存在也成立。声明和运行时条目缺少任一项，Node 就尝试物理候选。缺少 manifest 不会终止查找。`dependencies` 与 `devDependencies` 不启用拦截，peer 的版本范围也不是额外的解析筛选条件。运行时表提供 React 等第三方 peer 时，同样适用这条规则。
+在每個候選 `D/node_modules`，目前 `D/package.json` 的 peer 宣告命中且執行時表提供該包名時，就使用執行時包。這隻佔據該包的位置，即使 `D/node_modules` 在磁碟上不存在也成立。宣告和執行時條目缺少任一項，Node 就嘗試物理候選。缺少 manifest 不會終止查詢。`dependencies` 與 `devDependencies` 不啟用攔截，peer 的版本範圍也不是額外的解析篩選條件。執行時表提供 React 等第三方 peer 時，同樣適用這條規則。
 
-更近的物理候选先于后续祖先的 peer 声明。选中包的 `exports` 拒绝请求时，Node 的错误是终局。旧式 CommonJS 子路径缺失可以继续到下一位置，再应用那个目录的 peer 规则；不会重试已被占据位置上的物理副本。每次新的 linked 解析读取所访问位置的 manifest，不缓存选中的路由。不可读的 manifest 不提供 peer，Node 保留其原生 manifest 诊断。这不清除 Node 缓存，也不自动重新加载已加载的模块。
+更近的物理候選先於後續祖先的 peer 宣告。選中包的 `exports` 拒絕請求時，Node 的錯誤是終局。舊式 CommonJS 子路徑缺失可以繼續到下一位置，再應用那個目錄的 peer 規則；不會重試已被佔據位置上的物理副本。每次新的 linked 解析讀取所存取位置的 manifest，不快取選中的路由。不可讀的 manifest 不提供 peer，Node 保留其原生 manifest 診斷。這不清除 Node 快取，也不自動重新載入已載入的模組。
 
-runtime resolution 构造时扫描 `<profile>/node_modules` 的顶层与 `@scope/*` 链接。successor 可以在既有包映射和本地包名约束内新增或移除 linked root。移除无需重启：目录不再被任何 root 覆盖时，后续解析恢复原生查询。[Generation 规则](2026-09-09-profile-resolution-generations.zh.md#immutable-generations)定义了发布、已有模块引用，以及跨越移除操作的重新链接检查。依赖的真实路径在所有已记录 linked root 之外时，即使插件链接到它，也不参与拦截。
+runtime resolution 建構時掃描 `<profile>/node_modules` 的頂層與 `@scope/*` 連結。successor 可以在既有包對映和本地包名約束內新增或移除 linked root。移除無需重新啟動：目錄不再被任何 root 覆蓋時，後續解析恢復原生查詢。[Generation 規則](2026-09-09-profile-resolution-generations.zh.md#immutable-generations)定義了釋出、已有模組引用，以及跨越移除操作的重新連結檢查。依賴的真實路徑在所有已記錄 linked root 之外時，即使外掛連結到它，也不參與攔截。
 
-#### 4. 拦截层里有什么：runtime resolution 的扫描内容
+#### 4. 攔截層裡有什麼：runtime resolution 的掃描內容
 
-runtime resolution 在 profile 启动时一次算出，由四部分组成。
+runtime resolution 在 profile 啟動時一次算出，由四部分組成。
 
-- installation 闭包：从当前运行的 dsh 包的 `package.json` 出发，沿 `dependencies` 与 `peerDependencies` 做广度优先遍历，每条边从声明它的 manifest 按 Node 规则解析，同一个包名由第一次找到的已安装包占有。闭包有数百条，约一半在 `@deepseek-ai/` 作用域，一半是第三方库。这些条目对所有 profile 生效。
-- bundle-only 条目：profile 选中的、不属于闭包的 bundle，从它的 manifest 出发做同样的遍历，闭包已占有的包名不覆盖。这些条目只对选中该 bundle 的 profile 生效，用于让 Loader 从 profile 根按裸名导入 bundle 内嵌的插件。
-- 本地包名：profile 直接依赖中已经安装在 `$DSH_HOME/profiles/<name>/node_modules` 的包名。它们本来就在主线 ② 上，记录下来只为免去一次目录探测。
-- linked root：`$DSH_HOME/profiles/<name>/node_modules` 顶层与 `@scope/*` 里目标同时位于共享 profiles 树和当前 profile 目录之外的目录链接，记录链接名称与真实目录。目录自身的 manifest 可缺省。目标缺失或为文件的链接都排除。位于共享树外的应用自有 profile，不会把内部 pnpm store 链接登记为外部 root。
+- installation 閉包：從目前執行的 dsh 包的 `package.json` 出發，沿 `dependencies` 與 `peerDependencies` 做廣度優先遍歷，每條邊從宣告它的 manifest 按 Node 規則解析，同一個包名由第一次找到的已安裝檔佔有。閉包有數百條，約一半在 `@deepseek-ai/` 作用域，一半是第三方庫。這些條目對所有 profile 生效。
+- bundle-only 條目：profile 選中的、不屬於閉包的 bundle，從它的 manifest 出發做同樣的遍歷，閉包已佔有的包名不覆蓋。這些條目只對選中該 bundle 的 profile 生效，用於讓 Loader 從 profile 根按裸名匯入 bundle 內嵌的外掛。
+- 本地包名：profile 直接依賴中已經安裝在 `$DSH_HOME/profiles/<name>/node_modules` 的包名。它們本來就在主線 ② 上，記錄下來只為免去一次目錄探測。
+- linked root：`$DSH_HOME/profiles/<name>/node_modules` 頂層與 `@scope/*` 裡目標同時位於共享 profiles 樹和目前 profile 目錄之外的目錄連結，記錄連結名稱與真實目錄。目錄自身的 manifest 可預設。目標缺失或為檔案的連結都排除。位於共享樹外的應用自有 profile，不會把內部 pnpm store 連結登記為外部 root。
 
-CLI 的安装锚点来自 `import.meta.url`，Node 已对它做过 realpath；Desktop Host 从其运行时目录拼出锚点，该目录不是软链接。两者的安装根目录都等于真实目录，bundle 发现与依赖遍历使用同一个位置。遍历中每一层依赖都以所属包的真实目录作为下一层的查找锚点，并记录声明它的 manifest 位置。命中后 Node 从这个声明位置解析，得到与该包自己内部 import 相同的结果。每个条目记录包名、包目录、版本、声明位置与作用域。已声明但未安装的依赖跳过；bundle 包根自身不成为条目。
+CLI 的安裝錨點來自 `import.meta.url`，Node 已對它做過 realpath；Desktop Host 從其執行時目錄拼出錨點，該目錄不是軟連結。兩者的安裝根目錄都等於真實目錄，bundle 發現與依賴遍歷使用同一個位置。遍歷中每一層依賴都以所屬包的真實目錄作為下一層的查詢錨點，並記錄宣告它的 manifest 位置。命中後 Node 從這個宣告位置解析，得到與該包自己內部 import 相同的結果。每個條目記錄包名、包目錄、版本、宣告位置與作用域。已宣告但未安裝的依賴跳過；bundle 包根自身不成為條目。
 
-#### 5. hook 覆盖范围
+#### 5. hook 覆蓋範圍
 
-hook 只在 importer 位于 `$DSH_HOME/profiles/**` 或某个 linked root 之下时参与。builtin、相对路径、绝对路径、URL 请求，以及 importer 在这两处之外的一切请求，直接交给 Node。`require.resolve(request, { paths })` 同样直接交给 Node，包括路径指向 profile 或链接目录的情况。
+hook 只在 importer 位於 `$DSH_HOME/profiles/**` 或某個 linked root 之下時參與。builtin、相對路徑、絕對路徑、URL 請求，以及 importer 在這兩處之外的一切請求，直接交給 Node。`require.resolve(request, { paths })` 同樣直接交給 Node，包括路徑指向 profile 或連結目錄的情況。
 
-ESM 与 CommonJS 两个适配器调用同一个路由函数，主线程与 Harness 自有 Worker 都安装同一份 runtime resolution。实现位于 `packages/boot/app-boot/src/profile-resolution/resolver.ts`，runtime resolution 的构造位于 `packages/boot/app-boot/src/profile.ts`。
+ESM 與 CommonJS 兩個介面卡呼叫同一個路由函式，主執行緒與 Harness 自有 Worker 都安裝同一份 runtime resolution。實作位於 `packages/boot/app-boot/src/profile-resolution/resolver.ts`，runtime resolution 的建構位於 `packages/boot/app-boot/src/profile.ts`。
 
-#### 6. 包目录与模块文件
+#### 6. 包目錄與模組檔案
 
-`packageDir('pkg', parentURL)` 与 `packageDir('pkg/sub', parentURL)` 定位包目录，不加载代码，也不校验子路径。普通入口与文件请求仍由 Node 应用 `exports`、`main`、conditions 和文件存在性规则。因此，包目录查询可以成功，同时导入缺失或未导出的文件会失败。`import.meta.resolve` 可以为不存在的已导出文件返回 URL，但导入该 URL 仍然失败，这与原生 Node 一致。
+`packageDir('pkg', parentURL)` 與 `packageDir('pkg/sub', parentURL)` 定位包目錄，不載入程式碼，也不驗證子路徑。普通入口與檔案請求仍由 Node 應用 `exports`、`main`、conditions 和檔案存在性規則。因此，包目錄查詢可以成功，同時匯入缺失或未匯出的檔案會失敗。`import.meta.resolve` 可以為不存在的已匯出檔案返回 URL，但匯入該 URL 仍然失敗，這與原生 Node 一致。
 
-### 二、预演
+### 二、預演
 
-#### 表 1：ESM 与 CommonJS 在各类请求下的主线与拦截
+#### 表 1：ESM 與 CommonJS 在各類請求下的主線與攔截
 
-下表以本体包 `@deepseek-ai/dsh-tools`（runtime resolution 有条目）和第三方库 `left-pad`（runtime resolution 无条目）为例；`pkg` 泛指两者。
+下表以本體包 `@deepseek-ai/dsh-tools`（runtime resolution 有條目）和第三方庫 `left-pad`（runtime resolution 無條目）為例；`pkg` 泛指兩者。
 
-| 请求形态 | ESM | CommonJS | ③ 上该包名的位置 | 包内缺文件时 |
+| 請求形態 | ESM | CommonJS | ③ 上該包名的位置 | 包內缺檔案時 |
 |---|---|---|---|---|
-| 裸包名 `pkg`，包有 `exports` | ①② 有 `pkg` 目录则 Node 在其中按 `exports` 取入口 | Node 从同一候选选择 require condition | 有条目：runtime resolution 的包；无条目：物理目录 | 已导出目标缺失时终局报错 |
-| 裸包名 `pkg`，包无 `exports` | 入口取 `main` 或 `index` | 原生旧式入口查询 | 同上 | ESM 终局报错；CommonJS 仅对原生查询未命中继续，声明的 `main` 无效时不继续 |
-| 子路径 `pkg/sub`，包有 `exports` | 第一个找到的 `pkg` 决定；`./sub` 未导出则 `ERR_PACKAGE_PATH_NOT_EXPORTED` 终局 | 同 ESM | 同上 | 终局，不找别的副本 |
-| 子路径 `pkg/sub`，包无 `exports` | 第一个找到的 `pkg` 内没有 `sub` 则 `ERR_MODULE_NOT_FOUND` 终局 | 逐层尝试 `<层>/pkg/sub`：①②，然后 ③ 上该包名的位置（有条目即 runtime resolution 的包目录），然后 ④ | 同上 | ESM 终局；CommonJS 继续下一层，即 ④ |
-| `#alias` 包内别名 | 所属 manifest 的 `imports` 映射到裸包名后，按上面各行处理；映射到相对路径则直接交 Node | 同 ESM，conditions 取调用方传入或默认值 | 同对应行 | 同对应行 |
-| `require.resolve(pkg, { paths })` | 无此形式 | 无论路径位于何处，都把整个请求及原始选项交给 Node | 不拦截，只看物理内容 | 原生 Node 的继续查询与错误 |
-| 包自引用（importer 所属包按自己的 `name` import） | 交 Node，保留原 importer | 同 ESM | 不参与 | 不适用 |
-| 相对 / 绝对 / URL / builtin | 交 Node | 交 Node | 不参与 | 不适用 |
+| 裸包名 `pkg`，包有 `exports` | ①② 有 `pkg` 目錄則 Node 在其中按 `exports` 取入口 | Node 從同一候選選擇 require condition | 有條目：runtime resolution 的包；無條目：物理目錄 | 已匯出目標缺失時終局報錯 |
+| 裸包名 `pkg`，包無 `exports` | 入口取 `main` 或 `index` | 原生舊式入口查詢 | 同上 | ESM 終局報錯；CommonJS 僅對原生查詢未命中繼續，宣告的 `main` 無效時不繼續 |
+| 子路徑 `pkg/sub`，包有 `exports` | 第一個找到的 `pkg` 決定；`./sub` 未匯出則 `ERR_PACKAGE_PATH_NOT_EXPORTED` 終局 | 同 ESM | 同上 | 終局，不找別的副本 |
+| 子路徑 `pkg/sub`，包無 `exports` | 第一個找到的 `pkg` 內沒有 `sub` 則 `ERR_MODULE_NOT_FOUND` 終局 | 逐層嘗試 `<層>/pkg/sub`：①②，然後 ③ 上該包名的位置（有條目即 runtime resolution 的包目錄），然後 ④ | 同上 | ESM 終局；CommonJS 繼續下一層，即 ④ |
+| `#alias` 包內別名 | 所屬 manifest 的 `imports` 對映到裸包名後，按上面各行處理；對映到相對路徑則直接交 Node | 同 ESM，conditions 取呼叫方傳入或預設值 | 同對應行 | 同對應行 |
+| `require.resolve(pkg, { paths })` | 無此形式 | 無論路徑位於何處，都把整個請求及原始選項交給 Node | 不攔截，只看物理內容 | 原生 Node 的繼續查詢與錯誤 |
+| 包自引用（importer 所屬包按自己的 `name` import） | 交 Node，保留原 importer | 同 ESM | 不參與 | 不適用 |
+| 相對 / 絕對 / URL / builtin | 交 Node | 交 Node | 不參與 | 不適用 |
 
-命中 runtime resolution 后，Node 报出的 `ERR_MODULE_NOT_FOUND` 与 `ERR_PACKAGE_PATH_NOT_EXPORTED` 会把内部的声明位置替换回原 importer；CommonJS 的 require stack 也去掉内部锚点。
+命中 runtime resolution 後，Node 報出的 `ERR_MODULE_NOT_FOUND` 與 `ERR_PACKAGE_PATH_NOT_EXPORTED` 會把內部的宣告位置替換回原 importer；CommonJS 的 require stack 也去掉內部錨點。
 
-#### 表 2：Web 与 Desktop 两种 profile 的拦截位置
+#### 表 2：Web 與 Desktop 兩種 profile 的攔截位置
 
-| profile | 目录 | 拦截层 | 与 web 的差异 |
+| profile | 目錄 | 攔截層 | 與 web 的差異 |
 |---|---|---|---|
-| web | `$DSH_HOME/profiles/web` | `$DSH_HOME/profiles/node_modules` | 基准 |
-| desktop | `$DSH_HOME/profiles/desktop` | `$DSH_HOME/profiles/node_modules` | 无。同一棵树、同一层；Desktop 的 Host 以 Node 模式运行同一套 resolver |
-| 树外 profile | `loadProfileDirectory` 接受的任意目录 | 该目录之上的第一个祖先 `node_modules` | 规则相同；当前没有产品使用树外 profile，只有单元测试覆盖 |
+| web | `$DSH_HOME/profiles/web` | `$DSH_HOME/profiles/node_modules` | 基準 |
+| desktop | `$DSH_HOME/profiles/desktop` | `$DSH_HOME/profiles/node_modules` | 無。同一棵樹、同一層；Desktop 的 Host 以 Node 模式執行同一套 resolver |
+| 樹外 profile | `loadProfileDirectory` 接受的任意目錄 | 該目錄之上的第一個祖先 `node_modules` | 規則相同；目前沒有產品使用樹外 profile，只有單元測試覆蓋 |
 
-#### 表 3：插件被 link 到树外时的主线
+#### 表 3：外掛被 link 到樹外時的主線
 
-插件 `my-plugin` 被 `<profile>/node_modules/my-plugin` 链接到真实目录 R；R 的 manifest 把 `@deepseek-ai/dsh-tools` 声明为 peer 并装成 devDependency，把 `zod` 声明为 dependency。
+外掛 `my-plugin` 被 `<profile>/node_modules/my-plugin` 連結到真實目錄 R；R 的 manifest 把 `@deepseek-ai/dsh-tools` 宣告為 peer 並裝成 devDependency，把 `zod` 宣告為 dependency。
 
-| import 来源 → 目标 | hook 是否参与 | 结果 |
+| import 來源 → 目標 | hook 是否參與 | 結果 |
 |---|---|---|
-| profile → 链接的插件 | 参与到 ② 为止 | ② 的软链接被 Node 跟随，插件以真实路径加载 |
-| 链接插件 → `zod` | 参与，`R/node_modules` 上 `zod` 未被占据 | `R/node_modules/zod`，开发者自己安装的版本 |
-| 链接插件 → `@deepseek-ai/dsh-tools`（peer） | 参与，`R/node_modules` 上该名被占据 | 运行中的 dsh 的那一份；`R/node_modules` 里的 devDependency 副本不被读到 |
-| 链接插件 → 只声明为 dependency 的有状态 dsh 包 | 参与，未被占据 | `R/node_modules` 里自己的副本，产生第二个实例；与树内把 dsh 包装进 ② 的错误相同，改为 peer 即可 |
-| 链接插件 → 未声明的包名 | 参与，R 不占据该包名 | `R/node_modules` 的物理内容，再沿真实祖先链逐位置应用同一规则 |
-| R 内传递依赖 → 任何包名 | 参与 | 每个位置使用自己的 manifest 的 peer；更近的物理候选先于后续 peer 声明 |
-| link 目标 R 无 manifest → 祖先声明的 peer | 参与 | 从 R 开始查；更近的物理候选优先，否则祖先 peer 可以选中运行时包，即使那里没有物理 `node_modules` |
-| 真实目录在所有 linked root 外的提升依赖 → 任何包名 | 不参与 | 从该依赖真实目录进行原生 Node 查询 |
-| 位于宽链接目录内的 installation 作用域包 → 任何包名 | 不参与 linked 拦截 | 原生查询保留宿主包自身的依赖 |
-| 任意 importer → `require.resolve(pkg, { paths })` | 不参与 | 使用指定路径进行原生 Node 查询 |
+| profile → 連結的外掛 | 參與到 ② 為止 | ② 的軟連結被 Node 跟隨，外掛以真實路徑載入 |
+| 連結外掛 → `zod` | 參與，`R/node_modules` 上 `zod` 未被佔據 | `R/node_modules/zod`，開發者自己安裝的版本 |
+| 連結外掛 → `@deepseek-ai/dsh-tools`（peer） | 參與，`R/node_modules` 上該名被佔據 | 執行中的 dsh 的那一份；`R/node_modules` 裡的 devDependency 副本不被讀到 |
+| 連結外掛 → 只宣告為 dependency 的有狀態 dsh 包 | 參與，未被佔據 | `R/node_modules` 裡自己的副本，產生第二個實例；與樹內把 dsh 包裝進 ② 的錯誤相同，改為 peer 即可 |
+| 連結外掛 → 未宣告的包名 | 參與，R 不佔據該包名 | `R/node_modules` 的物理內容，再沿真實祖先鏈逐位置應用同一規則 |
+| R 內傳遞依賴 → 任何包名 | 參與 | 每個位置使用自己的 manifest 的 peer；更近的物理候選先於後續 peer 宣告 |
+| link 目標 R 無 manifest → 祖先宣告的 peer | 參與 | 從 R 開始查；更近的物理候選優先，否則祖先 peer 可以選中執行時包，即使那裡沒有物理 `node_modules` |
+| 真實目錄在所有 linked root 外的提升依賴 → 任何包名 | 不參與 | 從該依賴真實目錄進行原生 Node 查詢 |
+| 位於寬連結目錄內的 installation 作用域包 → 任何包名 | 不參與 linked 攔截 | 原生查詢保留主機包自身的依賴 |
+| 任意 importer → `require.resolve(pkg, { paths })` | 不參與 | 使用指定路徑進行原生 Node 查詢 |
 
-### 三、开发者接入指引
+### 三、開發者接入指引
 
-#### 1. 正常安装
+#### 1. 正常安裝
 
-`dsh plugin --profile <name> add <包名 | git spec | file:../本地检出>` 把参数转发给 pnpm，在 profile 目录内以 hoisted 布局安装。profile 的 `pnpm-workspace.yaml` 设置 `autoInstallPeers: false`，插件声明为 peer 的 dsh 包不会被装进 profile，由拦截层提供当前运行安装的那一份，插件与 dsh 共用同一个模块实例。
+`dsh plugin --profile <name> add <包名 | git spec | file:../本地檢出>` 把參數轉發給 pnpm，在 profile 目錄內以 hoisted 佈局安裝。profile 的 `pnpm-workspace.yaml` 設定 `autoInstallPeers: false`，外掛宣告為 peer 的 dsh 包不會被裝進 profile，由攔截層提供目前執行安裝的那一份，外掛與 dsh 共用同一個模組實例。
 
-插件自己的第三方依赖被 hoist 到 `$DSH_HOME/profiles/<name>/node_modules`，按主线 ② 找到。与 installation 闭包同名时最近者优先，插件使用自己声明的版本。`file:` 形式把本地检出复制进 profile，随后的解析与注册表安装完全相同。
+外掛自己的第三方依賴被 hoist 到 `$DSH_HOME/profiles/<name>/node_modules`，按主線 ② 找到。與 installation 閉包同名時最近者優先，外掛使用自己宣告的版本。`file:` 形式把本地檢出複製進 profile，隨後的解析與註冊表安裝完全相同。
 
-#### 2. 开发模式：插件仓库在 profile 树外
+#### 2. 開發模式：外掛儲存庫在 profile 樹外
 
-`npm link`，或 `dsh plugin add ../my-plugin` 这类裸目录路径（pnpm 按 `link:` 处理），会让 profile 里的条目成为指向插件仓库的软链接，仓库目录成为 linked root。插件以真实路径加载。查找到其 manifest 的 peer 位置时，匹配的运行时条目由当前运行的安装提供，无论 dsh 来自 npm 全局安装、Desktop 内置还是源码仓启动。该位置的 devDependency 副本服务编译器，普通请求不会加载它。link 指向无 manifest 的 `src` 目录时，也可以通过同一条祖先查询使用父目录的 peer。
+`npm link`，或 `dsh plugin add ../my-plugin` 這類裸目錄路徑（pnpm 按 `link:` 處理），會讓 profile 裡的條目成為指向外掛儲存庫的軟連結，儲存庫目錄成為 linked root。外掛以真實路徑載入。查詢到其 manifest 的 peer 位置時，匹配的執行時條目由目前執行的安裝提供，無論 dsh 來自 npm 全域安裝、Desktop 內建還是原始碼倉啟動。該位置的 devDependency 副本服務編譯器，普通請求不會載入它。link 指向無 manifest 的 `src` 目錄時，也可以透過同一條祖先查詢使用父目錄的 peer。
 
-manifest 的写法与 harness 自身的包相同：需要与宿主共享实例的 dsh 包同时声明在 `peerDependencies` 与 `devDependencies`，peer 让 `R/node_modules` 上的位置被占据，dev 副本给编译器和独立测试使用；第三方依赖以及 `@deepseek-ai/dsh-brand`、`@deepseek-ai/dsh-util-values` 这类无状态 dsh 工具包放在 `dependencies`。修改 `peerDependencies` 后，重新加载插件时的新解析会使用新声明；已加载模块的生命周期仍由 Node 和 Cordis 管理。
+manifest 的寫法與 harness 自身的包相同：需要與主機共享實例的 dsh 包同時宣告在 `peerDependencies` 與 `devDependencies`，peer 讓 `R/node_modules` 上的位置被佔據，dev 副本給編譯器和獨立測試使用；第三方依賴以及 `@deepseek-ai/dsh-brand`、`@deepseek-ai/dsh-util-values` 這類無狀態 dsh 工具包放在 `dependencies`。修改 `peerDependencies` 後，重新載入外掛時的新解析會使用新宣告；已載入模組的生命週期仍由 Node 和 Cordis 管理。
 
-另两种可用布局：插件仓库自装 `@deepseek-ai/dsh` 并从仓库里启动 `pnpm exec dsh --profile <name>`；或把 dsh 包 link 到本机源码仓并从源码仓启动。两者让运行中的 dsh 与仓库里的副本本来就是同一份，但 linked 插件不要求使用这两种布局。
+另兩種可用佈局：外掛儲存庫自裝 `@deepseek-ai/dsh` 並從儲存庫裡啟動 `pnpm exec dsh --profile <name>`；或把 dsh 包 link 到本機原始碼倉並從原始碼倉啟動。兩者讓執行中的 dsh 與儲存庫裡的副本本來就是同一份，但 linked 外掛不要求使用這兩種佈局。
 
 ## Alternatives considered
 
-**让 runtime resolution 只在主线全部走完后兜底。** 主线会先在 ③ 读到历史残留的本体链接并使用它，与"本体以当前运行的安装为准"冲突。runtime resolution 必须占据 ③ 上本体包名的位置。
+**讓 runtime resolution 只在主線全部走完後後備。** 主線會先在 ③ 讀到歷史殘留的本體連結並使用它，與"本體以目前執行的安裝為準"衝突。runtime resolution 必須佔據 ③ 上本體包名的位置。
 
-**把 runtime resolution 当作插入主线的一整层，而不是占据 ③ 上的包目录。** 两者只在一处不同：CommonJS 命中 runtime resolution 的包后子路径缺失时，前者会再回头读 ③ 上同名的旧副本，后者按 Node 对"已找到的包"的处理直接到 ④。占据包目录与 Node 语义一致，也不需要为 ③ 保留任何额外判断。
+**把 runtime resolution 當作插入主線的一整層，而不是佔據 ③ 上的包目錄。** 兩者只在一處不同：CommonJS 命中 runtime resolution 的包後子路徑缺失時，前者會再回頭讀 ③ 上同名的舊副本，後者按 Node 對"已找到的包"的處理直接到 ④。佔據包目錄與 Node 語義一致，也不需要為 ③ 保留任何額外判斷。
 
-**让 installation 闭包条目绝对优先于更近的副本。** 闭包含 281 个第三方库。插件私有的 `zod`、`yaml` 等版本会被安装闭包里的版本覆盖，破坏与 Node 一致的最近者优先。受支持的安装流程已经不把 dsh 的 peer 装进 profile，不需要再用覆盖来保证单实例。
+**讓 installation 閉包條目絕對優先於更近的副本。** 閉包含 281 個第三方庫。外掛私有的 `zod`、`yaml` 等版本會被安裝閉包裡的版本覆蓋，破壞與 Node 一致的最近者優先。受支援的安裝流程已經不把 dsh 的 peer 裝進 profile，不需要再用覆蓋來保證單實例。
 
-**在解析时识别 `.dsh-module-fallback` 形状的软链接并绕过。** 这会为不再产生的目录在查找路径里保留专门逻辑，每次解析都要付出判断。在 profile 加载时一次性删除这些投影能得到同样的结果：一个 bundle 被停用但仍装着时，它投影出来的插件不再遮住 runtime resolution 从另一个 bundle 选出的同名插件。
+**在解析時識別 `.dsh-module-fallback` 形狀的軟連結並繞過。** 這會為不再產生的目錄在查詢路徑裡保留專門邏輯，每次解析都要付出判斷。在 profile 載入時一次性刪除這些投影能得到同樣的結果：一個 bundle 被停用但仍裝著時，它投影出來的外掛不再遮住 runtime resolution 從另一個 bundle 選出的同名外掛。
 
-**把拦截层所在的物理目录整层隐藏。** 与"其余解析与 Node 一致"冲突：放在 `$DSH_HOME/profiles/node_modules` 的非本体包会对所有 profile 不可见。
+**把攔截層所在的物理目錄整層隱藏。** 與"其餘解析與 Node 一致"衝突：放在 `$DSH_HOME/profiles/node_modules` 的非本體包會對所有 profile 不可見。
 
-**让 runtime resolution 的全部条目占据 `R/node_modules` 上的包目录。** 与 ③ 完全同形，但闭包里的几百个第三方库会遮住插件仓库自己安装的 `zod`、`yaml` 版本，与树内 ①② 赢 ③ 相反。只占据 peer 保住了「插件自己的第三方版本优先」。
+**讓 runtime resolution 的全部條目佔據 `R/node_modules` 上的包目錄。** 與 ③ 完全同形，但閉包裡的幾百個第三方庫會遮住外掛儲存庫自己安裝的 `zod`、`yaml` 版本，與樹內 ①② 贏 ③ 相反。只佔據 peer 保住了「外掛自己的第三方版本優先」。
 
-**按 importer 最近的 manifest 的 `dependencies` 决定哪些包名走原生。** 这类声明不标识查询位置，也无法描述在祖先找到的未声明包。逐位置的 peer 声明只增加一条资格规则，不替换 Node 的查询顺序。
+**按 importer 最近的 manifest 的 `dependencies` 決定哪些包名走原生。** 這類宣告不標識查詢位置，也無法描述在祖先找到的未宣告包。逐位置的 peer 宣告只增加一條資格規則，不替換 Node 的查詢順序。
 
-**只读 linked root 的 peer，或要求它自身有 manifest。** link 可以指向 `src` 目录，更近的包与祖先 manifest 都有各自的查询位置。把拦截固定在 R 会漏掉这些声明，或覆盖更近的物理候选。
+**只讀 linked root 的 peer，或要求它自身有 manifest。** link 可以指向 `src` 目錄，更近的包與祖先 manifest 都有各自的查詢位置。把攔截固定在 R 會漏掉這些宣告，或覆蓋更近的物理候選。
 
-**在 runtime resolution 构造时固定 peer 集合。** 开发者每次修改 `peerDependencies` 都得重启 dsh。解析时读取让新查询看到变动，代价是开发模式下要读取所访问的 manifest。已加载的请求是否需要再次解析，仍由 Node 的模块缓存决定。
+**在 runtime resolution 建構時固定 peer 集合。** 開發者每次修改 `peerDependencies` 都得重新啟動 dsh。解析時讀取讓新查詢看到變動，代價是開發模式下要讀取所存取的 manifest。已載入的請求是否需要再次解析，仍由 Node 的模組快取決定。
 
-**拦截指向 profile 内的显式 CommonJS paths。** 显式搜索列表是调用方的选择。原样交给 Node 能保留一个清晰的例外，而不是让各个路径项遵循不同策略。
+**攔截指向 profile 內的顯式 CommonJS paths。** 顯式搜尋列表是呼叫方的選擇。原樣交給 Node 能保留一個清晰的例外，而不是讓各個路徑項遵循不同策略。
 
-**把 linked root 之上的主线接回 profile 的 ②③。** 这是 Node `--preserve-symlinks` 的形式，`R/node_modules` 仍是原生的第一层，devDependency 副本照样先被找到，单实例问题原样保留。
+**把 linked root 之上的主線接回 profile 的 ②③。** 這是 Node `--preserve-symlinks` 的形式，`R/node_modules` 仍是原生的第一層，devDependency 副本照樣先被找到，單實例問題原樣保留。
 
 ## Verification
 
-- [profile-resolution.spec.ts](../../../../packages/boot/app-boot/tests/profile-resolution.spec.ts) 中的表驱动矩阵：importer 取 profile 根与 profile 内插件，包名取 installation 条目、bundle-only 条目与表外包名，①②③④ 四层的每一种有无组合，②③ 各含真目录与指向别处的软链接两种形态；每格断言 ESM import、CommonJS require、`require.resolve` 与 `packageDir` 元数据落在同一个目录。
-- 同一文件内的 linked root 用例：`<profile>/node_modules` 的软链接指向树外仓库，仓库 `node_modules` 里放同名 devDependency 副本；包名取声明为 peer 的 installation 条目、声明为 dependency 的 installation 条目、仓库自己的第三方 dependency、未声明的包名，importer 取仓库自身文件与仓库内传递依赖；断言四种解析方式一致、devDependency 副本不被读到，以及改写 `peerDependencies` 后下一次解析立即按新声明进行。
-- [差分矩阵](../../../../packages/boot/app-boot/tests/linked-resolution-matrix.spec.ts)构造独立的原生、拦截与参考目录。只有参考副本把合格 peer 位置替换为运行时包的链接，再让 Node 解析文件。单包与 pnpm monorepo 用例对比入口、文件、目录、import/require、`import.meta.resolve` 与显式路径的结果，覆盖 manifest 缺失、`node_modules` 缺失、错误 peer 声明、React、作用域外 helper 和旧式子路径继续查询。断言比较选包、现存路径、错误码与模块实例；显式 paths 使用未投射的原生参考。
-- 同一文件内的专项用例覆盖表 1 各行：有无 `exports` 的裸包名与子路径、`#alias`、显式 `paths`、包自引用、命中 runtime resolution 后 CommonJS 子路径缺失时跳过 ③ 直接到 ④，以及树外 profile 的拦截位置。
-- [CLI 真启动测试](../../../../apps/cli/tests/profiles/headless/tests/profile-resolution.ts)覆盖 src 与 lib 启动、普通与 npm-link 布局，以及指向无 manifest 的 `src` 目录且其父目录声明 peer 的链接。测试检查 Tools/AgentLoop 共享实例、原生显式路径选中开发者副本、依赖沿真实路径解析，以及文件和链接目标保持不变。源码模式的 CommonJS 检查使用具备现存 JavaScript 入口的 fixture 包；安装中真实的 CommonJS 入口需要相应构建产物。
+- [profile-resolution.spec.ts](../../../../packages/boot/app-boot/tests/profile-resolution.spec.ts) 中的表驅動矩陣：importer 取 profile 根與 profile 內外掛，包名取 installation 條目、bundle-only 條目與表外包名，①②③④ 四層的每一種有無組合，②③ 各含真目錄與指向別處的軟連結兩種形態；每格斷言 ESM import、CommonJS require、`require.resolve` 與 `packageDir` 中繼資料落在同一個目錄。
+- 同一檔案內的 linked root 案例：`<profile>/node_modules` 的軟連結指向樹外儲存庫，儲存庫 `node_modules` 裡放同名 devDependency 副本；包名取宣告為 peer 的 installation 條目、宣告為 dependency 的 installation 條目、儲存庫自己的第三方 dependency、未宣告的包名，importer 取儲存庫自身檔案與儲存庫內傳遞依賴；斷言四種解析方式一致、devDependency 副本不被讀到，以及改寫 `peerDependencies` 後下一次解析立即按新宣告進行。
+- [差分矩陣](../../../../packages/boot/app-boot/tests/linked-resolution-matrix.spec.ts)建構獨立的原生、攔截與參考目錄。只有參考副本把合格 peer 位置替換為執行時包的連結，再讓 Node 解析檔案。單包與 pnpm monorepo 案例對比入口、檔案、目錄、import/require、`import.meta.resolve` 與顯式路徑的結果，覆蓋 manifest 缺失、`node_modules` 缺失、錯誤 peer 宣告、React、作用域外 helper 和舊式子路徑繼續查詢。斷言比較選包、現存路徑、錯誤碼與模組實例；顯式 paths 使用未投射的原生參考。
+- 同一檔案內的專項案例覆蓋表 1 各行：有無 `exports` 的裸包名與子路徑、`#alias`、顯式 `paths`、包自引用、命中 runtime resolution 後 CommonJS 子路徑缺失時跳過 ③ 直接到 ④，以及樹外 profile 的攔截位置。
+- [CLI 真啟動測試](../../../../apps/cli/tests/profiles/headless/tests/profile-resolution.ts)覆蓋 src 與 lib 啟動、普通與 npm-link 佈局，以及指向無 manifest 的 `src` 目錄且其父目錄宣告 peer 的連結。測試檢查 Tools/AgentLoop 共享實例、原生顯式路徑選中開發者副本、依賴沿真實路徑解析，以及檔案和連結目標保持不變。原始碼模式的 CommonJS 檢查使用具備現存 JavaScript 入口的 fixture 包；安裝中真實的 CommonJS 入口需要相應建置產物。
 
 ## Consequences
 
-买到的：模块解析无需磁盘投影；命中拦截层的 dsh 本体包来自当前运行的安装，link 到树外的插件声明的 peer 也适用；其余解析保留 Node 的祖先链和包入口规则；解析路径不识别历史投影目录。
+買到的：模組解析無需磁碟投影；命中攔截層的 dsh 本體包來自目前執行的安裝，link 到樹外的外掛宣告的 peer 也適用；其餘解析保留 Node 的祖先鏈和包入口規則；解析路徑不識別歷史投影目錄。
 
-付出的：installation 闭包中的第三方库仍占据 ③ 上的包目录；profile 插件没有更近副本时会使用安装中的版本。linked 请求只在匹配的 peer 位置选中运行时包，更近的物理副本仍优先。开发者需要相应安排声明与依赖位置。runtime resolution 不校验 peer 版本范围。
+付出的：installation 閉包中的第三方庫仍佔據 ③ 上的包目錄；profile 外掛沒有更近副本時會使用安裝中的版本。linked 請求只在匹配的 peer 位置選中執行時包，更近的物理副本仍優先。開發者需要相應安排宣告與依賴位置。runtime resolution 不驗證 peer 版本範圍。
 
-只有 `<profile>/node_modules` 的直接链接成为 linked root；依赖真实目录在所有已记录根之外时使用原生 Node。peer 请求不会回到 profile 的 ②：运行时表不提供的包名必须能在真实祖先链上找到。linked 请求承担实时读取 peer manifest 的成本。同一链接换目标仍需重启；模块缓存失效与自动监视不属于这条规则。
+只有 `<profile>/node_modules` 的直接連結成為 linked root；依賴真實目錄在所有已記錄根之外時使用原生 Node。peer 請求不會回到 profile 的 ②：執行時表不提供的包名必須能在真實祖先鏈上找到。linked 請求承擔即時讀取 peer manifest 的成本。同一連結換目標仍需重新啟動；模組快取失效與自動監視不屬於這條規則。
 
-显式 CommonJS paths、插件自行启动的子进程、第三方 Worker 和外部工具不会获得运行时 peer 映射。不经过 hook 的消费者无法通过生成的磁盘链接找到本体包。resolver 继续依赖受支持的 Node Internal 接口。
+顯式 CommonJS paths、外掛自行啟動的子程序、第三方 Worker 和外部工具不會獲得執行時 peer 對映。不經過 hook 的消費者無法透過生成的磁碟連結找到本體包。resolver 繼續依賴受支援的 Node Internal 介面。

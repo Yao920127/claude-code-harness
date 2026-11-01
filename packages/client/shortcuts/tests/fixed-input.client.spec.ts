@@ -102,7 +102,7 @@ it('publishes fixed reservations and removes them with their owning registration
   expect(registry.definitions()).toEqual([{ id: 'response.stop', defaults: {}, fixed: [{ code: 'Escape', modifiers: [] }] }])
   expect(() => registry.registerFixed(command)).toThrow('Duplicate')
   expect(() => registry.register({ ...command, aliases: [], defaults: {}, regions: [], modals: [], resolve: () => ({ status: 'pass' }) })).toThrow('Duplicate')
-  label = '停止回复'; registry.refreshLabels()
+  label = '停止回覆'; registry.refreshLabels()
   expect(registry.fixedCatalog.getSnapshot()[0]?.label).toBe(label)
   off(); off()
   expect(registry.fixedCatalog.getSnapshot()).toEqual([])

@@ -1,47 +1,47 @@
-# 事故复盘（postmortem） 0002：文件系统快照工具被永久禁用
+# 事故檢討（postmortem） 0002：檔案系統快照工具被永久停用
 
 [English](0002-js-expression-disabled-filesystem-tools.md) | 中文
 
-状态：已解决
+狀態：已解決
 
 ## 摘要
 
-ACP（Agent Client Protocol）示例试图通过 `disabled: !!js ...` 有条件地启用文件系统插件，但 Cordis 仅在插件 `config` 内部对 JavaScript 表达式求值。原始的表达式对象为 truthy，因此文件系统栈始终处于禁用状态。快照刷新随后将 `UNKNOWN_TOOL` 结果接受为新的预期输出。修复方案改用显式的文件系统 overlay，并增加了静态配置守卫和快照结果守卫。
+ACP（Agent Client Protocol）範例試圖透過 `disabled: !!js ...` 有條件地啟用檔案系統外掛，但 Cordis 僅在外掛 `config` 內部對 JavaScript 表示式求值。原始的表示式物件為 truthy，因此檔案系統棧始終處於停用狀態。快照重新整理隨後將 `UNKNOWN_TOOL` 結果接受為新的預期輸出。修復方案改用顯式的檔案系統 overlay，並增加了靜態設定守衛和快照結果守衛。
 
 ## 概述
 
-默认的 ACP 组合有意只启用 bash，因为其沙箱无法约束进程内的文件系统提供方。文件系统快照场景仍然需要 `read`、`write` 和 `edit`，因此这些插件被放在默认的 `cordis.yml` 中，并附带一个 `disabled` 表达式，意图仅在全权限启动和快照模式下启用它们。
+預設的 ACP 組合有意只啟用 bash，因為其沙箱無法約束程序內的檔案系統提供者。檔案系統快照情境仍然需要 `read`、`write` 和 `edit`，因此這些外掛被放在預設的 `cordis.yml` 中，並附帶一個 `disabled` 表示式，意圖僅在全權限啟動和快照模式下啟用它們。
 
-Cordis Include 将每个 `!!js` 标量解析为一个表达式对象。Loader 递归地对插件的 `config` 进行插值，但直接读取 `disabled` 等配置项元数据。因此每个文件系统配置项看到的都是一个 truthy 对象，在所有模式下均保持禁用。
+Cordis Include 將每個 `!!js` 標量解析為一個表示式物件。Loader 遞迴地對外掛的 `config` 進行插值，但直接讀取 `disabled` 等設定項中繼資料。因此每個檔案系統設定項看到的都是一個 truthy 物件，在所有模式下均保持停用。
 
-## 影响
+## 影響
 
-七个文件系统场景和一个混合工作区编辑场景调用了注册表中不存在的工具。其结构化会话日志携带 `ToolNotFoundError`（code 为 `UNKNOWN_TOOL`），stdout 渲染出通用的失败工具卡片。快照套件通过了，因为结构化会话日志和 stdout 渲染出的通用失败工具卡片均与刷新后的 fixture（测试前置数据）匹配；它证明的是回归的确定性回放，而非文件系统行为的正确性。
+七個檔案系統情境和一個混合工作區編輯情境呼叫了註冊表中不存在的工具。其結構化工作階段日誌攜帶 `ToolNotFoundError`（code 為 `UNKNOWN_TOOL`），stdout 渲染出通用的失敗工具卡片。快照套件透過了，因為結構化工作階段日誌和 stdout 渲染出的通用失敗工具卡片均與重新整理後的 fixture（測試前置資料）匹配；它證明的是迴歸的確定性回放，而非檔案系統行為的正確性。
 
-实际运行的受限默认模式并未获得意外的文件系统访问权限。草率地直接修复插值反而会带来这一风险：权限预设在运行时更新 bash 沙箱和审批状态，但无法挂载、卸载或约束文件系统栈。
+實際執行的受限預設模式並未獲得意外的檔案系統存取權限。草率地直接修復插值反而會帶來這一風險：權限預設在執行時更新 bash 沙箱和審批狀態，但無法掛載、解除安裝或約束檔案系統棧。
 
-## 时间线
+## 時間線
 
-- PR（Pull Request） #261 整合了 ACP 组合并刷新了文件系统快照，同时引入了条件式文件系统配置项。
-- 所有单元测试、覆盖率、快照、文档、构建和 hygiene 检查均通过。
-- 对刷新后的文件系统预期输出的评审发现了通用的失败卡片和结构化的 `UNKNOWN_TOOL` 结果。
-- 一次真实的 Loader 启动确认：每个 `disabled` 值仍为表达式对象，每个文件系统 fiber 均未创建。
+- PR（Pull Request） #261 整合了 ACP 組合並重新整理了檔案系統快照，同時引入了條件式檔案系統設定項。
+- 所有單元測試、覆蓋率、快照、文件、建置和 hygiene 檢查均透過。
+- 對重新整理後的檔案系統預期輸出的評審發現了通用的失敗卡片和結構化的 `UNKNOWN_TOOL` 結果。
+- 一次真實的 Loader 啟動確認：每個 `disabled` 值仍為表示式物件，每個檔案系統 fiber 均未建立。
 
 ## 根因
 
-实现时假设 `!!js` 适用于整个 Loader 配置项。实际只有 `entry.options.config` 使用它：`Entry._resolveConfig()` 对该字段进行插值，而 `Entry.disabled` 直接测试 `entry.options.disabled`，不经过插值。YAML 标签在语法上合法，因此加载过程不产生任何诊断信息。
+實作時假設 `!!js` 適用於整個 Loader 設定項。實際只有 `entry.options.config` 使用它：`Entry._resolveConfig()` 對該欄位進行插值，而 `Entry.disabled` 直接測試 `entry.options.disabled`，不經過插值。YAML 標籤在語法上合法，因此載入過程不產生任何診斷資訊。
 
-快照框架将任何确定性的 transcript（文本记录）视为有效行为。Header pin 验证了组合后的工具 schema，但文件系统场景共享来自默认组合的 pin，因此未独立证明其所需工具已注册。刷新在任何语义断言拒绝缺失工具之前，就已重写了预期的 stdout 和会话日志。
+快照框架將任何確定性的 transcript（文字記錄）視為有效行為。Header pin 驗證了組合後的工具 schema，但檔案系統情境共享來自預設組合的 pin，因此未獨立證明其所需工具已註冊。重新整理在任何語義斷言拒絕缺失工具之前，就已重寫了預期的 stdout 和工作階段日誌。
 
-## 已添加的防护措施
+## 已新增的防護措施
 
-- 文件系统场景启动 `fs.cordis.yml`：一个显式的固定全权限 overlay，配有对应的回放配置和独立的 request-header 类。
-- [`AGENTS.md`](../../AGENTS.md) 与 [Cordis 入门](../cordis-primer.zh.md#loader-configuration)明确说明 `!!js` 在插件 `config` 与配置项 `disabled` 内有效；其他配置项元数据保持字面量，因此条件式组合使用 overlay。
-- `verify-cordis-config` 解析仓库中的 Cordis YAML，拒绝 Loader 配置项元数据中的表达式节点（包括 include patch 和插入的配置项）。
-- `dsh-session-snapshot` 在全新运行和已提交的会话 fixture 中拒绝结构化的 `UNKNOWN_TOOL` 结果，防止其被提交为预期输出。
+- 檔案系統情境啟動 `fs.cordis.yml`：一個顯式的固定全權限 overlay，配有對應的回放設定和獨立的 request-header 類。
+- [`AGENTS.md`](../../AGENTS.md) 與 [Cordis 入門](../cordis-primer.zh.md#loader-configuration)明確說明 `!!js` 在外掛 `config` 與設定項 `disabled` 內有效；其他設定項中繼資料保持字面量，因此條件式組合使用 overlay。
+- `verify-cordis-config` 解析儲存庫中的 Cordis YAML，拒絕 Loader 設定項中繼資料中的表示式節點（包括 include patch 和插入的設定項）。
+- `dsh-session-snapshot` 在全新執行和已提交的工作階段 fixture 中拒絕結構化的 `UNKNOWN_TOOL` 結果，防止其被提交為預期輸出。
 
-## 教训
+## 教訓
 
-- 语法上被接受的配置值不一定在该位置被求值；应记录并验证具体对哪些字段进行插值。
-- 快照刷新是 fixture 的生产过程，不是正确性审查。诸如已注册工具缺失这类语义上不可能的结果，需要独立于预期输出的断言。
-- 权限控制只应描述其实际管辖的能力。组合时的文件系统访问无法安全地跟随运行时的 bash-only 预设。
+- 語法上被接受的設定值不一定在該位置被求值；應記錄並驗證具體對哪些欄位進行插值。
+- 快照重新整理是 fixture 的生產過程，不是正確性審查。諸如已註冊工具缺失這類語義上不可能的結果，需要獨立於預期輸出的斷言。
+- 權限控制只應描述其實際管轄的能力。組合時的檔案系統存取無法安全地跟隨執行時的 bash-only 預設。

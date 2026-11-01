@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-04-busy-send-button-follows-enter-setting.md
 /agent-note-the-busy-send-button-follows-the-enter-setting:
   en: d0e9f804958ee8ce
-  zh: e5cd102fbdd12ff1
+  zh: 1ec090bec44e4d20
 /agent-note-the-busy-send-button-follows-the-enter-setting/problem:
   en: c378dfa9efcc0758
-  zh: 785c3b9ee99c66a4
+  zh: dd88206384b5f332
 /agent-note-the-busy-send-button-follows-the-enter-setting/decision:
-  en: 101e21100f8afd7d
-  zh: 76979af8aee15976
+  en: 286c18331b3ceb35
+  zh: e855179626188899
 /agent-note-the-busy-send-button-follows-the-enter-setting/verification:
   en: eb886930b09445bd
-  zh: 1e671f8f81868490
+  zh: 97ed7467effb0e35
 /agent-note-the-busy-send-button-follows-the-enter-setting/alternatives-considered:
   en: d47aa278a2103890
-  zh: 313f75c7fb8ccd5c
+  zh: 218490426528ba5d
 /agent-note-the-busy-send-button-follows-the-enter-setting/consequences:
   en: a067e427615a682a
-  zh: d72074056e1def4a
+  zh: a5df64cce007d236

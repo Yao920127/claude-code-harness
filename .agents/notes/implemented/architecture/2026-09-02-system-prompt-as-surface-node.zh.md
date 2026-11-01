@@ -1,4 +1,4 @@
-# Agent Note: 系统提示词是 surface 的第 0 号节点
+# Agent Note: 系統提示詞是 surface 的第 0 號節點
 
 Status: implemented
 
@@ -6,90 +6,90 @@ Status: implemented
 
 ## Problem
 
-放在 surface 之外的系统提示词，其持久化表示与模型读到的其他所有消息都不同。对话消息是 surface 事件（`user/message`、`assistant/message`、`tool/result`），由 `Session.deriveMessages()` 按 seq 顺序折叠；而存放在仅记日志的 `request/header` 快照 `system` 字段中的提示词，必须由每个序列化器前置为协议消息 0。[可重建请求 Agent Note](2026-07-05-reconstructable-requests.zh.md) 让两半都成为持久数据，但这种布局让一个模型可见的事实拥有两个归属：surface 拥有消息，header 拥有排在这些消息之前的那条消息。
+放在 surface 之外的系統提示詞，其持久化表示與模型讀到的其他所有訊息都不同。對話訊息是 surface 事件（`user/message`、`assistant/message`、`tool/result`），由 `Session.deriveMessages()` 按 seq 順序摺疊；而存放在僅記日誌的 `request/header` 快照 `system` 欄位中的提示詞，必須由每個序列化器前置為協定訊息 0。[可重建請求 Agent Note](2026-07-05-reconstructable-requests.zh.md) 讓兩半都成為持久資料，但這種佈局讓一個模型可見的事實擁有兩個歸屬：surface 擁有訊息，header 擁有排在這些訊息之前的那條訊息。
 
-这种拆分迫使每个想知道「模型看到了什么」的读取方都要合并两个来源：压缩（compaction）摘要器把 header 中的提示词复制到区域派生消息之前，`dsh-token-meter` 从 header 估算系统提示词却从 surface 为其他每条消息计价，Web 请求提示词卡片、轨迹视图和快照归一化器的 `{{system}}` 占位符各自单独读取 header。变更检测同样被拆开：在 `config` 和 `tools` 旁边逐字节比较 `system` 的 `headerEquals`，让提示词变更与工具变更在日志中无法区分（`request/header` 的 reason 都是 `change`），尽管它们是对对话的两种不同操作。
+這種拆分迫使每個想知道「模型看到了什麼」的讀取方都要合併兩個來源：壓縮（compaction）摘要器把 header 中的提示詞複製到區域派生訊息之前，`dsh-token-meter` 從 header 估算系統提示詞卻從 surface 為其他每條訊息計價，Web 請求提示詞卡片、軌跡檢視和快照歸一化器的 `{{system}}` 預留位置各自單獨讀取 header。變更檢測同樣被拆開：在 `config` 和 `tools` 旁邊逐位元組比較 `system` 的 `headerEquals`，讓提示詞變更與工具變更在日誌中無法區分（`request/header` 的 reason 都是 `change`），儘管它們是對對話的兩種不同操作。
 
-这种拆分还阻塞了下一步。一个把对话中途的 `system` 消息当作提示词替换来接受的模型，需要 harness 向历史追加一条 system 角色消息；当提示词住在 header 里时，没有可追加的 surface 表示，header 也只能靠特例被冻结。[历史内替换决定](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md) 依赖本 Agent Note。
+這種拆分還阻塞了下一步。一個把對話中途的 `system` 訊息當作提示詞替換來接受的模型，需要 harness 向歷史追加一條 system 角色訊息；當提示詞住在 header 裡時，沒有可追加的 surface 表示，header 也只能靠特例被凍結。[歷史內替換決定](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md) 依賴本 Agent Note。
 
 ## Decision
 
-系统提示词住在 surface 上。它是一个普通的 surface 事件 `system/message`，提示词生命周期中的每个操作都是对该事件类型施加现有两种 `SurfaceOp` 变体之一。协议请求不变：surface 折叠产出的就是序列化器发送的消息列表，系统消息在最前面。
+系統提示詞住在 surface 上。它是一個普通的 surface 事件 `system/message`，提示詞生命週期中的每個操作都是對該事件型別施加現有兩種 `SurfaceOp` 變體之一。協定請求不變：surface 摺疊產出的就是序列化器傳送的訊息列表，系統訊息在最前面。
 
 ### 事件
 
-`system/message` 是 `SurfaceEventType` 的成员，与 `user/message`、`assistant/message`、`tool/result` 并列（`packages/core/session/src/types.ts`）。它的载荷与 `tool/result` 对称：`{ turn, step, message }`，其中 `message` 是 `role: 'system'` 的 `SystemMessage`，一个文本块承载渲染后的提示词，source 为 `{ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }`。空的 `content` 记录「没有系统提示词」：该节点保持其 surface 位置，`deriveEventMessage` 把它投影为 `null`，因此不贡献任何协议消息。非空节点逐字投影，因此 `deriveMessages()` 在其 surface 位置返回系统消息，而原样透传 `role: 'system'` 历史消息的 DeepSeek 序列化器把它作为协议消息 0 发出。`EpochHeader` 是 `{ config, adapterDefaults?, tools? }`；`packages/core/session/src/request-header.ts` 中的 `canonicalHeader` 与 `headerEquals` 只比较 config、适配器默认值和工具。
+`system/message` 是 `SurfaceEventType` 的成員，與 `user/message`、`assistant/message`、`tool/result` 並列（`packages/core/session/src/types.ts`）。它的載荷與 `tool/result` 對稱：`{ turn, step, message }`，其中 `message` 是 `role: 'system'` 的 `SystemMessage`，一個文字塊承載渲染後的提示詞，source 為 `{ kind: 'plugin', plugin: '@deepseek-ai/dsh-system-prompt' }`。空的 `content` 記錄「沒有系統提示詞」：該節點保持其 surface 位置，`deriveEventMessage` 把它投影為 `null`，因此不貢獻任何協定訊息。非空節點逐字投影，因此 `deriveMessages()` 在其 surface 位置返回系統訊息，而原樣直接傳遞 `role: 'system'` 歷史訊息的 DeepSeek 序列化器把它作為協定訊息 0 發出。`EpochHeader` 是 `{ config, adapterDefaults?, tools? }`；`packages/core/session/src/request-header.ts` 中的 `canonicalHeader` 與 `headerEquals` 只比較 config、介面卡預設值和工具。
 
 ### 操作
 
 | 情形 | surface 操作 |
 |---|---|
-| surface 上没有存活的 `system/message`（包括渲染后的提示词为空时） | 追加 `system/message`；在会话的首个步骤中它是 surface 第 0 号节点，位于该步骤首条 `user/message` 之前 |
-| 有存活的 `system/message` 且渲染后的提示词与其文本不同（包括提示词变为空） | 恰好替换该节点：`surfaceOp: { op: 'replace', startSeq: <该节点的 seq>, endSeq: <同一值> }`，`sourceEventSeqs: [<该节点的 seq>]`；空提示词产生一个投影为无消息的空内容节点 |
-| 渲染后的提示词与存活节点的文本相同 | 无操作 |
+| surface 上沒有存活的 `system/message`（包括渲染後的提示詞為空時） | 追加 `system/message`；在工作階段的首個步驟中它是 surface 第 0 號節點，位於該步驟首條 `user/message` 之前 |
+| 有存活的 `system/message` 且渲染後的提示詞與其文字不同（包括提示詞變為空） | 恰好替換該節點：`surfaceOp: { op: 'replace', startSeq: <該節點的 seq>, endSeq: <同一值> }`，`sourceEventSeqs: [<該節點的 seq>]`；空提示詞產生一個投影為無訊息的空內容節點 |
+| 渲染後的提示詞與存活節點的文字相同 | 無操作 |
 
-当初始渲染的提示词为空时，循环在初始接纳的用户消息之前预留空系统头部，使稍后首次变为非空的提示词仍替换第 0 号节点。省略该空节点会让后来的提示词追加在用户历史之后，pi-ai 会将其转换为用户消息，而不是 `systemPrompt`。替换第 0 号节点是头部重写在 surface 上的表达：提供方前缀从第一个 token 起改变，日志通过 `sourceEventSeqs` 记录被遮蔽的节点，`replaceGeneration` 与压缩替换时一样推进。因此循环的 `startsSeries` 检测（`requestSurfaceGeneration !== surfaceGeneration`）无需在 `headerEquals` 中比较 `system` 即可覆盖提示词变更。`request/header` 保留 `initial`、`resume`、`change`、`series` 四种 reason；`change` 表示 config 或 tools 变更，提示词替换之后跟随的未变 header 记为 `series`。
+當初始渲染的提示詞為空時，迴圈在初始接納的使用者訊息之前預留空系統頭部，使稍後首次變為非空的提示詞仍替換第 0 號節點。省略該空節點會讓後來的提示詞追加在使用者歷史之後，pi-ai 會將其轉換為使用者訊息，而不是 `systemPrompt`。替換第 0 號節點是頭部重寫在 surface 上的表達：提供者字首從第一個 token 起改變，日誌透過 `sourceEventSeqs` 記錄被遮蔽的節點，`replaceGeneration` 與壓縮替換時一樣推進。因此迴圈的 `startsSeries` 檢測（`requestSurfaceGeneration !== surfaceGeneration`）無需在 `headerEquals` 中比較 `system` 即可覆蓋提示詞變更。`request/header` 保留 `initial`、`resume`、`change`、`series` 四種 reason；`change` 表示 config 或 tools 變更，提示詞替換之後跟隨的未變 header 記為 `series`。
 
-`packages/core/session/src/surface.ts` 在 `assertSystemHeadRewrite` 中强制头部不变量：当第 0 号节点是 `system/message` 时，范围覆盖第 0 号节点的替换会被拒绝，除非替换事件本身是恰好覆盖该节点的 `system/message`。位于更后位置的系统节点没有此类保护；压缩范围可以遮蔽它们。
+`packages/core/session/src/surface.ts` 在 `assertSystemHeadRewrite` 中強制頭部不變數：當第 0 號節點是 `system/message` 時，範圍覆蓋第 0 號節點的替換會被拒絕，除非替換事件本身是恰好覆蓋該節點的 `system/message`。位於更後位置的系統節點沒有此類保護；壓縮範圍可以遮蔽它們。
 
-### 循环中的归属
+### 迴圈中的歸屬
 
-`dsh-agent-loop` 在 `packages/core/agent-loop/src/runtime-context.ts` 中与 `RuntimeContextProjection` 并列拥有 `SystemPromptProjection`。它在每次投影时从当前 surface 读取存活的 `system/message` 节点，因此同一步骤中更早运行的压缩或替换已经反映在内。`project(rendered, { inHistory, startsSeries })` 返回 `{ message, intent }`——没有系统节点存活或[历史内规则](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md)适用时 `intent` 为 `{ surfaceOp: 'append' }`，否则是对最新存活系统节点的精确替换——最新节点已持有渲染文本时返回 `undefined`。
+`dsh-agent-loop` 在 `packages/core/agent-loop/src/runtime-context.ts` 中與 `RuntimeContextProjection` 並列擁有 `SystemPromptProjection`。它在每次投影時從目前 surface 讀取存活的 `system/message` 節點，因此同一步驟中更早執行的壓縮或替換已經反映在內。`project(rendered, { inHistory, startsSeries })` 返回 `{ message, intent }`——沒有系統節點存活或[歷史內規則](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md)適用時 `intent` 為 `{ surfaceOp: 'append' }`，否則是對最新存活系統節點的精確替換——最新節點已持有渲染文字時返回 `undefined`。
 
-在 `packages/core/agent-loop/src/agent.ts` 中，`preStep` 用 `renderPrompt(assembly)` 渲染提示词，并在 `agent/pre-step` waterfall 之后投影它，因此压缩提供者在该 waterfall 内做出的替换对决定可见；`turn()` 紧接在 `step/start` 之后、该步骤的 `user/message` 事件之前提交 `system/message`，因此日志顺序即协议顺序。`buildRequest` 不在请求上设置 `system`：请求由 `header.config`、`session.deriveMessages()`（系统消息在先）和 `header.tools` 构成。循环步骤顺序为：领取收件箱 → `systemPrompt.assemble()` → 投影运行时上下文 → `agent/pre-step` waterfall → 投影系统提示词 → `step/start` → 提交 `system/message`（有变化时） → 提交各条 `user/message` → `agent/request` waterfall → `request/header` → `request/context` → 流式请求。`dsh-agent-loop/invariant` 伴随组件（`packages/core/agent-loop/src/invariant.ts`）断言循环构建的请求满足 `system === undefined` 且 `messages` 等于 `deriveMessages()`。
+在 `packages/core/agent-loop/src/agent.ts` 中，`preStep` 用 `renderPrompt(assembly)` 渲染提示詞，並在 `agent/pre-step` waterfall 之後投影它，因此壓縮提供者在該 waterfall 內做出的替換對決定可見；`turn()` 緊接在 `step/start` 之後、該步驟的 `user/message` 事件之前提交 `system/message`，因此日誌順序即協定順序。`buildRequest` 不在請求上設定 `system`：請求由 `header.config`、`session.deriveMessages()`（系統訊息在先）和 `header.tools` 構成。迴圈步驟順序為：領取收件箱 → `systemPrompt.assemble()` → 投影執行時上下文 → `agent/pre-step` waterfall → 投影系統提示詞 → `step/start` → 提交 `system/message`（有變化時） → 提交各條 `user/message` → `agent/request` waterfall → `request/header` → `request/context` → 流式請求。`dsh-agent-loop/invariant` 伴隨元件（`packages/core/agent-loop/src/invariant.ts`）斷言迴圈建置的請求滿足 `system === undefined` 且 `messages` 等於 `deriveMessages()`。
 
-`dsh-token-meter` 把用量锚定到成功的 `assistant/message` 之前的已计价 surface，而不是 `step/start`。循环在步骤开始之后接纳系统提示词与用户消息，重试恢复还可能在重建请求之前替换节点。捕获当前 surface 会让每个已接纳输入恰好计入一次；内嵌的提供方输出仍单独计价，因此持久 assistant 改写保留其带符号增量。开放步骤只保存 turn 与 step 以验证生命周期，不保存第二份节点快照。
+`dsh-token-meter` 把用量錨定到成功的 `assistant/message` 之前的已計價 surface，而不是 `step/start`。迴圈在步驟開始之後接納系統提示詞與使用者訊息，重試恢復還可能在重建請求之前替換節點。捕捉目前 surface 會讓每個已接納輸入恰好計入一次；內嵌的提供者輸出仍單獨計價，因此持久 assistant 改寫保留其帶符號增量。開放步驟只儲存 turn 與 step 以驗證生命週期，不儲存第二份節點快照。
 
-### 消费方
+### 消費方
 
-| 消费方 | 读取内容 |
+| 消費方 | 讀取內容 |
 |---|---|
-| DeepSeek 序列化器（`serializeRequest`、`serializeRequestWithImages`） | `options.messages`，把 `role: 'system'` 的历史消息作为协议消息 0 透传；`GenerateOptions.system` 为标题提供方等直接单次调用方保留 |
-| `dsh-llm-pi-ai` | 开头的 system 历史消息映射为 pi-ai 的 `systemPrompt` |
-| `compaction-basic` 的 `buildSummarizationInput` | 第 0 号节点的派生消息前置于 `SummarizationInput.messages` 中的区域消息，无单独的 `system` 字段；空内容头节点不投影为消息，但仍受保护而不能被压缩 |
-| `compaction-basic` 的 `selectCompactableRange` | 锚定在首个非系统节点；第 0 号节点永不落入压缩范围 |
-| `dsh-token-meter` | 系统节点作为 surface 节点计价，归入 `systemTokens` 明细 |
-| Web 请求提示词卡片、轨迹请求节点、请求检视 | `system/message` 节点；被替换的第 0 号节点显示为提示词变更，追加的历史内节点显示为提示词更新，各自以折叠可检视的卡片呈现，永不作为聊天气泡 |
-| 快照归一化器的 `{{system}}` 占位符、plan-mode 测试 | 系统节点的文本 |
-| TypeScript 与 Python SDK 预期输出 | 包含 `system/message` 事件 |
-| 人类 transcript（文本记录）投影 | 跳过 `system/message`；它是模型历史，不是对话 |
+| DeepSeek 序列化器（`serializeRequest`、`serializeRequestWithImages`） | `options.messages`，把 `role: 'system'` 的歷史訊息作為協定訊息 0 直接傳遞；`GenerateOptions.system` 為標題提供者等直接單次呼叫方保留 |
+| `dsh-llm-pi-ai` | 開頭的 system 歷史訊息對映為 pi-ai 的 `systemPrompt` |
+| `compaction-basic` 的 `buildSummarizationInput` | 第 0 號節點的派生訊息前置於 `SummarizationInput.messages` 中的區域訊息，無單獨的 `system` 欄位；空內容頭節點不投影為訊息，但仍受保護而不能被壓縮 |
+| `compaction-basic` 的 `selectCompactableRange` | 錨定在首個非系統節點；第 0 號節點永不落入壓縮範圍 |
+| `dsh-token-meter` | 系統節點作為 surface 節點計價，歸入 `systemTokens` 明細 |
+| Web 請求提示詞卡片、軌跡請求節點、請求檢視 | `system/message` 節點；被替換的第 0 號節點顯示為提示詞變更，追加的歷史內節點顯示為提示詞更新，各自以摺疊可檢視的卡片呈現，永不作為聊天氣泡 |
+| 快照歸一化器的 `{{system}}` 預留位置、plan-mode 測試 | 系統節點的文字 |
+| TypeScript 與 Python SDK 預期輸出 | 包含 `system/message` 事件 |
+| 人類 transcript（文字記錄）投影 | 跳過 `system/message`；它是模型歷史，不是對話 |
 
-`RuntimeContextProjection` 与 `SystemPromptProjection` 都把一条未提交的消息交给循环由 `turn()` 提交。两者在观察 surface 的方式与操作集上不同：运行时上下文跟随 `session/event` 观察自己拥有的 user 角色快照且只做追加，而系统提示词在每次投影时扫描当前 surface 上的系统节点，因为它的决定取决于有多少节点存活，并按路由追加或替换。
+`RuntimeContextProjection` 與 `SystemPromptProjection` 都把一條未提交的訊息交給迴圈由 `turn()` 提交。兩者在觀察 surface 的方式與操作集上不同：執行時上下文跟隨 `session/event` 觀察自己擁有的 user 角色快照且只做追加，而系統提示詞在每次投影時掃描目前 surface 上的系統節點，因為它的決定取決於有多少節點存活，並按路由追加或替換。
 
-### V2-to-V3 结构转换
+### V2-to-V3 結構轉換
 
-[V2 到 V3 规范](../../../../packages/session/session-format-v2-to-v3/README.zh.md#system-head)负责系统头节点转换与消息身份；其[引用规则](../../../../packages/session/session-format-v2-to-v3/README.zh.md#sequence-references)和[源拒绝](../../../../packages/session/session-format-v2-to-v3/README.zh.md#source-audit)定义保留内容与不支持的输入。迁移布局与原生请求语义等价，而非与原生录制逐字节相同。有效 V2 源在当前步骤不变量下可能没有保持顺序的转换方式；拒绝它优于移动历史或放宽归属。历史接收坐标不得变为对转换后日志的确认。
+[V2 到 V3 規範](../../../../packages/session/session-format-v2-to-v3/README.zh.md#system-head)負責系統頭節點轉換與訊息身份；其[引用規則](../../../../packages/session/session-format-v2-to-v3/README.zh.md#sequence-references)和[源拒絕](../../../../packages/session/session-format-v2-to-v3/README.zh.md#source-audit)定義保留內容與不支援的輸入。遷移佈局與原生請求語義等價，而非與原生錄製逐位元組相同。有效 V2 源在目前步驟不變數下可能沒有保持順序的轉換方式；拒絕它優於移動歷史或放寬歸屬。歷史接收座標不得變為對轉換後日誌的確認。
 
-[已发布格式策略](2026-08-31-released-session-format-migrations.zh.md)保留每条已发布转换的语义；已有目标格式代际不会重跑其入边。投影缓存版本独立于 Session 格式版本。
+[已釋出格式策略](2026-08-31-released-session-format-migrations.zh.md)保留每條已釋出轉換的語義；已有目標格式代際不會重跑其入邊。投影快取版本獨立於 Session 格式版本。
 
-[规范信封规范](../../../../packages/session/session-format-v2-to-v3/README.zh.md#canonical-envelopes)定义与结构转换的组合；[规范信封决策](2026-09-06-v3-canonical-session-envelopes.zh.md)负责严格准入的依据。
+[規範信封規範](../../../../packages/session/session-format-v2-to-v3/README.zh.md#canonical-envelopes)定義與結構轉換的組合；[規範信封決策](2026-09-06-v3-canonical-session-envelopes.zh.md)負責嚴格准入的依據。
 
 ## Alternatives considered
 
-**保留 `header.system`，只为更新添加 `system/message`。** 一个事实两个归属：上述每个消费方都要从 header 读消息 0、从 surface 读后续消息，循环还需要一个在 surface 存在系统节点时让 `headerEquals` 忽略 `system` 的特例。被否决，因为本次变更的目的就是单一表示。
+**保留 `header.system`，只為更新新增 `system/message`。** 一個事實兩個歸屬：上述每個消費方都要從 header 讀訊息 0、從 surface 讀後續訊息，迴圈還需要一個在 surface 存在系統節點時讓 `headerEquals` 忽略 `system` 的特例。被否決，因為本次變更的目的就是單一表示。
 
-**用专门的仅记日志事件 `system-prompt/change` 重写 header。** 保留 header 作为提示词归属，并把变更记录为独立事件种类，但仍无法表达历史内部的系统消息，历史内替换提案还是需要第二套机制。被否决。
+**用專門的僅記日誌事件 `system-prompt/change` 重寫 header。** 保留 header 作為提示詞歸屬，並把變更記錄為獨立事件種類，但仍無法表達歷史內部的系統訊息，歷史內替換提案還是需要第二套機制。被否決。
 
-**在适配器内根据相邻 header 合成系统消息。** 适配器逐请求无状态且从不接触日志；依赖适配器状态的协议历史无法从 surface 折叠重建。被否决。
+**在介面卡內根據相鄰 header 合成系統訊息。** 介面卡逐請求無狀態且從不接觸日誌；依賴介面卡狀態的協定歷史無法從 surface 摺疊重建。被否決。
 
-**像运行时上下文那样用 `user/message` 快照表达提示词。** 复用了现有事件类型，却发送了错误的角色，因此把系统消息视为权威的模型不会这样对待它。被否决。
+**像執行時上下文那樣用 `user/message` 快照表達提示詞。** 複用了現有事件型別，卻傳送了錯誤的角色，因此把系統訊息視為權威的模型不會這樣對待它。被否決。
 
 ## Consequences
 
-- 单一表示：每个想知道「模型看到了什么」的读取方都折叠 surface；没有消费方需要把 header 与消息列表合并。`EpochHeader` 没有 `system` 字段，因此期望该字段的读取方在编译期失败。
-- 提示词变更与工具或 config 变更在日志中可以区分：前者是对第 0 号节点的 `system/message` 替换加随后的 `series` header，后者是 reason 为 `change` 的 `request/header`。
-- 压缩带有一条不变量：第 0 号节点永不被压缩。`dsh-session` 的 surface 管理器在替换操作本身中强制它，因此除 `compaction-basic` 以外的压缩提供方无法通过锚定在 `surfaceNodes[0]` 来遮蔽提示词。更后位置的系统节点按设计不受保护。
-- `replaceGeneration` 在提示词替换时和压缩时一样推进；需要区分两者的读取方检查替换事件的类型。
-- 历史中途的系统节点拥有 surface 表示，这正是[历史内替换决定](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md)所依赖的基础。
-- 初始空提示词占据受保护的头部，但不贡献协议消息；在替换模式下，后来的非空提示词替换它，并保持为开头的系统消息。
-- 录制的快照 fixture 携带 `system/message` 事件而非 header 的 `system` 字段。快照归一化器把该事件的文本标记化为 `{{system}}`，提示词伴随文件从 `system/message` 序列采集（每个提示词版本一节，以 `header.promptChanges` 声明），`request/header` 的 pin 只比较 config 与 tools。
+- 單一表示：每個想知道「模型看到了什麼」的讀取方都摺疊 surface；沒有消費方需要把 header 與訊息列表合併。`EpochHeader` 沒有 `system` 欄位，因此期望該欄位的讀取方在編譯期失敗。
+- 提示詞變更與工具或 config 變更在日誌中可以區分：前者是對第 0 號節點的 `system/message` 替換加隨後的 `series` header，後者是 reason 為 `change` 的 `request/header`。
+- 壓縮帶有一條不變數：第 0 號節點永不被壓縮。`dsh-session` 的 surface 管理器在替換操作本身中強制它，因此除 `compaction-basic` 以外的壓縮提供者無法透過錨定在 `surfaceNodes[0]` 來遮蔽提示詞。更後位置的系統節點按設計不受保護。
+- `replaceGeneration` 在提示詞替換時和壓縮時一樣推進；需要區分兩者的讀取方檢查替換事件的型別。
+- 歷史中途的系統節點擁有 surface 表示，這正是[歷史內替換決定](../feature/2026-09-02-in-history-system-prompt-replacement.zh.md)所依賴的基礎。
+- 初始空提示詞佔據受保護的頭部，但不貢獻協定訊息；在替換模式下，後來的非空提示詞替換它，並保持為開頭的系統訊息。
+- 錄製的快照 fixture 攜帶 `system/message` 事件而非 header 的 `system` 欄位。快照歸一化器把該事件的文字標記化為 `{{system}}`，提示詞伴隨檔案從 `system/message` 序列採集（每個提示詞版本一節，以 `header.promptChanges` 宣告），`request/header` 的 pin 只比較 config 與 tools。
 
 ## Testing
 
-- `packages/compaction/compaction-basic/tests/compaction-loop-repro.spec.ts` 钉住提供方用量下调用后的表面增量为零，覆盖初始、增长、缩短与空提示词、同一步骤中的重试替换、请求中间件和全新回放。
-- `packages/core/session/tests/surface.spec.ts`（`system/message surface node` 块）钉住开头 system 角色的投影、空内容的 `null` 投影、`assertSystemHeadRewrite` 的接受与拒绝路径、更后位置系统节点不受保护，以及对 seed 中非 system 角色或非插件 source 的 `system/message` 的拒绝。
-- `packages/core/agent-loop/tests/system-prompt-projection.spec.ts` 钉住首次渲染时的追加（包括空提示词）、替换模式下后来非空提示词位于派生历史头部、提示词未变时的无操作、变更时对最新存活节点的替换、替换遮蔽了非头部系统节点之后的尾部追加，以及历史内追加与重新基线规则。
-- `packages/core/agent-loop/tests/request-reconstruction.spec.ts`（`a system-prompt change replaces surface node 0 and starts a new series under the same header`）钉住提示词替换之后跟随的 `series` header。
-- `packages/core/agent-loop/tests/invariant.spec.ts` 钉住伴随组件对携带 `system` 字段的循环请求的拒绝，以及其 `messages` 与边界派生结果的相等性检查。
-- `packages/llm/llm-deepseek/tests/serialize.spec.ts`（`serializes a leading system message byte-for-byte like the same prompt passed as options.system`）钉住协议一致性。 `packages/llm/llm-pi-ai/tests/context.spec.ts` 在文本与图片路径上比较两种系统提示词来源。`packages/compaction/compaction-basic/tests/compaction-basic.spec.ts` 通过区域事务与默认摘要器钉住派生前缀、已路由工具、不携带单独 `system` 选项，以及非空或空头节点的保护。
-- `snapshots/` 下的录制快照钉住每个随发 profile 的模型可见协议请求；渲染了提示词的录制会话在其 `session.jsonl` 中于 surface 第 0 号节点携带 `system/message` 事件，会话中途发生提示词变更的会话则携带对第 0 号节点的替换，或在历史内路由上携带追加的节点。
+- `packages/compaction/compaction-basic/tests/compaction-loop-repro.spec.ts` 釘住提供者用量下呼叫後的表面增量為零，覆蓋初始、增長、縮短與空提示詞、同一步驟中的重試替換、請求中介軟體和全新回放。
+- `packages/core/session/tests/surface.spec.ts`（`system/message surface node` 塊）釘住開頭 system 角色的投影、空內容的 `null` 投影、`assertSystemHeadRewrite` 的接受與拒絕路徑、更後位置系統節點不受保護，以及對 seed 中非 system 角色或非外掛 source 的 `system/message` 的拒絕。
+- `packages/core/agent-loop/tests/system-prompt-projection.spec.ts` 釘住首次渲染時的追加（包括空提示詞）、替換模式下後來非空提示詞位於派生歷史頭部、提示詞未變時的無操作、變更時對最新存活節點的替換、替換遮蔽了非頭部系統節點之後的尾部追加，以及歷史內追加與重新基線規則。
+- `packages/core/agent-loop/tests/request-reconstruction.spec.ts`（`a system-prompt change replaces surface node 0 and starts a new series under the same header`）釘住提示詞替換之後跟隨的 `series` header。
+- `packages/core/agent-loop/tests/invariant.spec.ts` 釘住伴隨元件對攜帶 `system` 欄位的迴圈請求的拒絕，以及其 `messages` 與邊界派生結果的相等性檢查。
+- `packages/llm/llm-deepseek/tests/serialize.spec.ts`（`serializes a leading system message byte-for-byte like the same prompt passed as options.system`）釘住協定一致性。 `packages/llm/llm-pi-ai/tests/context.spec.ts` 在文字與圖片路徑上比較兩種系統提示詞來源。`packages/compaction/compaction-basic/tests/compaction-basic.spec.ts` 透過區域事務與預設摘要器釘住派生字首、已路由工具、不攜帶單獨 `system` 選項，以及非空或空頭節點的保護。
+- `snapshots/` 下的錄製快照釘住每個隨發 profile 的模型可見協定請求；渲染了提示詞的錄製工作階段在其 `session.jsonl` 中於 surface 第 0 號節點攜帶 `system/message` 事件，工作階段中途發生提示詞變更的工作階段則攜帶對第 0 號節點的替換，或在歷史內路由上攜帶追加的節點。

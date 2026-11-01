@@ -1,56 +1,56 @@
-# Agent Note: 通用文件上传
+# Agent Note: 通用檔案上傳
 
 Status: implemented
 
 [English](2026-08-26-generic-file-upload.md) | 中文
 
-## 问题
+## 問題
 
-会话可以把粘贴或拖入的图片作为持久附件接收，但其他任何文件都进不了对话：composer 拒绝非图片字节，唯一与文件相关的入口是 `@` 路径引用，而它要求文件本来就能从宿主工作区读到。用户无法从浏览器把 PDF、数据文件或压缩包交给智能体，而 DeepSeek Chat 用户期待回形针加文件卡的上传交互（#2984）。
+工作階段可以把貼上或拖入的圖片作為持久附件接收，但其他任何檔案都進不了對話：composer 拒絕非圖片位元組，唯一與檔案相關的入口是 `@` 路徑引用，而它要求檔案本來就能從主機工作區讀到。使用者無法從瀏覽器把 PDF、資料檔案或壓縮包交給智慧代理，而 DeepSeek Chat 使用者期待回形針加檔案卡的上傳互動（#2984）。
 
-命令平面已经为图片建立了完整提交规则：命令必须同时消费文本与附件，或明确拒绝整次提交。`input.images` 声明和只支持图片的 RPC 载荷使通用文件在普通消息可用后仍走独立拒绝路径。Plan 和 goal 入口需要使用同一附件词汇，同时保留执行器强制规则，不能静默清除草稿。
+命令平面已經為圖片建立了完整提交規則：命令必須同時消費文字與附件，或明確拒絕整次提交。`input.images` 宣告和只支援圖片的 RPC 載荷使通用檔案在普通訊息可用後仍走獨立拒絕路徑。Plan 和 goal 入口需要使用同一附件詞彙，同時保留執行器強制規則，不能靜默清除草稿。
 
-## 决定
+## 決定
 
-文件与图片使用不同存储方案，并进入同一个有序消息附件列表。图片的规范化附件流水线保持不变。其他被选中的文件进入同一个先进先出的后台上传队列，按字节原样保存且不设类型与大小限制，再在本进程内按同一 Session 暂存。相同字节在 `DSH_HOME/attachments/v1/file-objects/<digest-prefix>/<digest>` 下只有一个规范对象；每条模型可见的只读路径 `DSH_HOME/attachments/v1/files/<digest-prefix>/<digest>/<name>` 都是硬链接，因此不同显示名称不会复制内容。该队列可以配置，默认同时运行两项传输。独立的双端 `file-upload` Cordis 包拥有传输与暂存。其 Client `fileUpload` 服务同时接收所属 Session 标识与 `Blob`、精确字节或只能使用一次的 `ReadableStream<Uint8Array>`；它使用该标识组装原始路由请求，或直接调用生成的 Remote。其 Host `fileUploads` 服务拥有流式路由、编码 Remote 兜底、命令凭证解析器，以及以接收方 Agent 的 Session 对象为键的凭证表。编码准入和附件错误识别通过 `ctx.attachments` 完成，字节存储由附件提供方拥有。Session Controller 注册用于休眠普通 Agent 的解析器，并在 prompt 准入时消费凭证；Session 对象不公开文件传输。普通 Web 页面把每个活动请求体交给专用上传 Worker：Blob 请求体通过 XMLHttpRequest 发送并报告包含总量的字节进度，stream 则转移所有权并增量传入 Fetch。Worker-hosted 页面通过页面自有 Fetch 载体把请求体转交给 Host Worker，后者读取有界分片。页面线程不读取通用文件字节，也不做 base64 编码或 JSON 序列化。经过认证的 Host 路由显式使用 Connection 的流式请求模式，因此 bridge 会在消费请求体前分发，本地存储则把有界分片写入私有暂存对象并同时计算摘要。接收完成后，内容寻址对象以原子方式发布；取消或失败会移除暂存文件。上传任务和草稿状态属于常驻的 conversation 根，因此切到另一条 Session 不会停止传输，返回原 Session 时仍显示同一张文件卡和当前进度。移除文件卡会跳过排队中的传输或中止正在运行的传输。发送的消息在 `user/message` 里携带结构化的 `FileBlock`（`{ name, bytes, attachmentId }`），不新增会话事件类型。`LlmRuntime` 的请求组装把每个文件块，包括嵌套工具结果中的文件块，投影成确定性 handle 文本，指出文件与其只读保存路径。handle 会要求主 agent 委派文件任务时附上该路径，并在子级执行环境看不到路径时明确报告。提供方不会收到文件字节，模型在需要时用现有文件工具读取存储副本。
+檔案與圖片使用不同儲存方案，並進入同一個有序訊息附件列表。圖片的規範化附件流水線保持不變。其他被選中的檔案進入同一個先進先出的後臺上傳佇列，按位元組原樣儲存且不設型別與大小限制，再在本程序內按同一 Session 暫存。相同位元組在 `DSH_HOME/attachments/v1/file-objects/<digest-prefix>/<digest>` 下只有一個規範物件；每條模型可見的只讀路徑 `DSH_HOME/attachments/v1/files/<digest-prefix>/<digest>/<name>` 都是硬連結，因此不同顯示名稱不會複製內容。該佇列可以設定，預設同時執行兩項傳輸。獨立的雙端 `file-upload` Cordis 包擁有傳輸與暫存。其 Client `fileUpload` 服務同時接收所屬 Session 標識與 `Blob`、精確位元組或只能使用一次的 `ReadableStream<Uint8Array>`；它使用該標識組裝原始路由請求，或直接呼叫生成的 Remote。其 Host `fileUploads` 服務擁有流式路由、編碼 Remote 後備、命令憑證解析器，以及以接收方 Agent 的 Session 物件為鍵的憑證表。編碼准入和附件錯誤識別透過 `ctx.attachments` 完成，位元組儲存由附件提供者擁有。Session Controller 註冊用於休眠普通 Agent 的解析器，並在 prompt 准入時消費憑證；Session 物件不公開檔案傳輸。普通 Web 頁面把每個活動請求體交給專用上傳 Worker：Blob 請求體透過 XMLHttpRequest 傳送並報告包含總量的位元組進度，stream 則轉移所有權並增量傳入 Fetch。Worker-hosted 頁面透過頁面自有 Fetch 載體把請求體轉交給 Host Worker，後者讀取有界分片。頁面執行緒不讀取通用檔案位元組，也不做 base64 編碼或 JSON 序列化。經過認證的 Host 路由顯式使用 Connection 的流式請求模式，因此 bridge 會在消費請求體前分發，本地儲存則把有界分片寫入私有暫存物件並同時計算摘要。接收完成後，內容定址物件以原子方式釋出；取消或失敗會移除暫存檔案。上傳任務和草稿狀態屬於常駐的 conversation 根，因此切到另一條 Session 不會停止傳輸，返回原 Session 時仍顯示同一張檔案卡和目前進度。移除檔案卡會跳過排隊中的傳輸或中止正在執行的傳輸。傳送的訊息在 `user/message` 裡攜帶結構化的 `FileBlock`（`{ name, bytes, attachmentId }`），不新增工作階段事件型別。`LlmRuntime` 的請求組裝把每個檔案塊，包括巢狀工具結果中的檔案塊，投影成確定性 handle 文字，指出檔案與其只讀儲存路徑。handle 會要求主 agent 委派檔案任務時附上該路徑，並在子級執行環境看不到路徑時明確報告。提供者不會收到檔案位元組，模型在需要時用現有檔案工具讀取儲存副本。
 
-默认模式、激活的 Plan Mode 与 active goal 共用普通 queue、follow-up 和 steer 的附件准入。`/goal` create 和 edit 以及 `/plan` 进入接受同一套有序图片与文件批量；携带附件的控制子命令会在状态变更前拒绝。命令提交引用已完成暂存的文件凭证，不会再次读取或复制通用文件字节。Session Controller 先把每个文件凭证解析为持久引用，再由 `ctx.attachments.admitPromptContent()` 接收完整有序内容列表；附件准入会持久化图片，并让文件引用原样通过。原 Agent 已销毁时，Host 会拒绝发布上传完成凭证，并按 `rpcId` 去重已经存在的 prompt 重试。prompt 凭证在失败恢复期间保持可用，已接受的 queue 或历史 occurrence 被观察后才退休；只被命令使用的凭证保留到 Session 销毁。提交回显在序列化前经 `beginSubmission` 注册，通过 `pendingSubmissions` 携带混合附件，以 `rpcId` 关联，在 queue 或历史观察后只退休一次，并在失败时保留草稿。发送前，composer 把有序附件放进同一条不换行的横向附件栏：图片使用 64 乘 64 像素缩略图，通用文件使用 240 乘 64 像素卡片，带 16 像素圆角、蓝色文档图标、文件名加扩展名与大小，以及悬停或键盘操作时可用的移除按钮。QueueDock 使用相同顺序以及紧凑的缩略图和文件卡。发送后，Chat 把有序附件放进同一个右对齐、可换行的附件区域。只有一张图片时保留图片画廊的大图样式；一条消息含有多个附件时，图片使用 64 乘 64 像素缩略图，文件使用 240 乘 64 像素卡片，文件与图片在可用宽度内共用一行，空间不足时再换行。Trajectory 保持紧凑的用户消息预览，并增加本地化的通用文件数量。回形针、拖拽和粘贴按 MIME 分类；发送会等待每个文件上传完成。continuable 子代理 composer 禁用附件入口，Host 会拒绝收到的任何子会话文件块。
+預設模式、啟用的 Plan Mode 與 active goal 共用普通 queue、follow-up 和 steer 的附件准入。`/goal` create 和 edit 以及 `/plan` 進入接受同一套有序圖片與檔案批次；攜帶附件的控制子命令會在狀態變更前拒絕。命令提交引用已完成暫存的檔案憑證，不會再次讀取或複製通用檔案位元組。Session Controller 先把每個檔案憑證解析為持久引用，再由 `ctx.attachments.admitPromptContent()` 接收完整有序內容列表；附件准入會持久化圖片，並讓檔案引用原樣透過。原 Agent 已銷燬時，Host 會拒絕釋出上傳完成憑證，並按 `rpcId` 去重已經存在的 prompt 重試。prompt 憑證在失敗恢復期間保持可用，已接受的 queue 或歷史 occurrence 被觀察後才退休；只被命令使用的憑證保留到 Session 銷燬。提交回顯在序列化前經 `beginSubmission` 註冊，透過 `pendingSubmissions` 攜帶混合附件，以 `rpcId` 關聯，在 queue 或歷史觀察後只退休一次，並在失敗時保留草稿。傳送前，composer 把有序附件放進同一條不換行的橫向附件欄：圖片使用 64 乘 64 畫素縮圖，通用檔案使用 240 乘 64 畫素卡片，帶 16 畫素圓角、藍色文件圖示、檔名加副檔名與大小，以及懸停或鍵盤操作時可用的移除按鈕。QueueDock 使用相同順序以及緊湊的縮圖和檔案卡。傳送後，Chat 把有序附件放進同一個右對齊、可換行的附件區域。只有一張圖片時保留圖片畫廊的大圖樣式；一條訊息含有多個附件時，圖片使用 64 乘 64 畫素縮圖，檔案使用 240 乘 64 畫素卡片，檔案與圖片在可用寬度內共用一行，空間不足時再換行。Trajectory 保持緊湊的使用者訊息預覽，並增加在地化的通用檔案數量。回形針、拖拽和貼上按 MIME 分類；傳送會等待每個檔案上傳完成。continuable 子代理 composer 停用附件入口，Host 會拒絕收到的任何子工作階段檔案塊。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **把上传存进项目根目录**（OpenHands / ChatGPT `/mnt/data` 的形态）。拒绝：用户目录里的文件可能被编辑、移动或删除，会打断会话日志的稳定引用，污染 `git status`，还要求工作区必须存在。`DSH_HOME` 用内容寻址保存冻结的只读字节；执行世界可见性由投影路径提供，之后还可以补一步拷贝进工作区。
-- **专用的 `read_file` 工具。** 拒绝：handle 文本指向一条普通路径，现有 `read` 工具（以及模型的其他文件工具）已经覆盖它；再加一个读工具只会分裂模型行为而不增加能力。
-- **把内容急切注入提示词。** 对文件的拒绝理由与当年对 `@` 引用完全相同（[web 文件引用](../../archived/feature/2026-07-27-web-file-and-session-references.md)）：附加时相关性未知，惰性工具读取让每次内容访问都留在日志里。
-- **类型白名单与大小上限。** 现阶段拒绝：DeepSeek Chat 的白名单存在是因为其服务端要解析上传，而本 harness 只存字节、让模型自己读。流式载体和存储让内存占用与有界分块大小相关，因此上限属于磁盘与传输策略，不用于保证请求安全。
-- **新增 attachment/file 会话事件。** 拒绝：图片已经采用的「块内联在 `user/message`」模式即可满足模型可见 ⟺ 可日志重建，无需扩大事件词汇。
-- **有附件时阻止所有命令。** 拒绝：`/goal` 目标与 `/plan` 进入需要参考文件，统一拒绝会使这些文件没有进入模型的命令路径。
-- **任何命令成功后自动发送附件。** 拒绝：`/model` 与 `/compact` 等状态命令不表示模型可见输入。附件是否成为用户消息由命令生产方负责。
-- **把目标附件存进 goal 领域。** 拒绝：一条普通的已记录用户消息就能让后续 Goal Round 获得相同历史，无需扩大 goal schema 或把附件复制进 Round 提示词。
-- **任何命令成功都消费附件。** 拒绝：`/goal pause` 或 `/plan off` 会清除无关卡片。只有生产方明确成功才消费附件；无法使用附件的语法形式返回错误。
-- **只在客户端执行声明。** 拒绝：直接 RPC 调用方可以绕过 composer。`CommandRuntime` 在处理器运行前强制检查声明、存储可用性、同一 Session 的文件凭证解析、图片 base64 准入与图片限制。
-- **通过 `ctx.connection` 暴露上传并沿 Session 构造器传递该对象。** 拒绝：Connection 不拥有文件传输，中间对象层也不使用这项依赖。独立上传服务直接接收 Session 标识，并允许普通浏览器与 Worker-hosted 页面替换载体，无需扩大 Connection 或 Session。
+- **把上傳存進專案根目錄**（OpenHands / ChatGPT `/mnt/data` 的形態）。拒絕：使用者目錄裡的檔案可能被編輯、移動或刪除，會打斷工作階段日誌的穩定引用，汙染 `git status`，還要求工作區必須存在。`DSH_HOME` 用內容定址儲存凍結的只讀位元組；執行世界可見性由投影路徑提供，之後還可以補一步複製進工作區。
+- **專用的 `read_file` 工具。** 拒絕：handle 文字指向一條普通路徑，現有 `read` 工具（以及模型的其他檔案工具）已經覆蓋它；再加一個讀工具只會分裂模型行為而不增加能力。
+- **把內容急切注入提示詞。** 對檔案的拒絕理由與當年對 `@` 引用完全相同（[web 檔案引用](../../archived/feature/2026-07-27-web-file-and-session-references.md)）：附加時相關性未知，惰性工具讀取讓每次內容存取都留在日誌裡。
+- **型別白名單與大小上限。** 現階段拒絕：DeepSeek Chat 的白名單存在是因為其伺服器端要解析上傳，而本 harness 只存位元組、讓模型自己讀。流式載體和儲存讓記憶體佔用與有界分塊大小相關，因此上限屬於磁碟與傳輸策略，不用於保證請求安全。
+- **新增 attachment/file 工作階段事件。** 拒絕：圖片已經採用的「塊內聯在 `user/message`」模式即可滿足模型可見 ⟺ 可日誌重建，無需擴大事件詞彙。
+- **有附件時阻止所有命令。** 拒絕：`/goal` 目標與 `/plan` 進入需要參考檔案，統一拒絕會使這些檔案沒有進入模型的命令路徑。
+- **任何命令成功後自動傳送附件。** 拒絕：`/model` 與 `/compact` 等狀態命令不表示模型可見輸入。附件是否成為使用者訊息由命令生產方負責。
+- **把目標附件存進 goal 領域。** 拒絕：一條普通的已記錄使用者訊息就能讓後續 Goal Round 獲得相同歷史，無需擴大 goal schema 或把附件複製進 Round 提示詞。
+- **任何命令成功都消費附件。** 拒絕：`/goal pause` 或 `/plan off` 會清除無關卡片。只有生產方明確成功才消費附件；無法使用附件的語法形式返回錯誤。
+- **只在用戶端執行宣告。** 拒絕：直接 RPC 呼叫方可以繞過 composer。`CommandRuntime` 在處理器執行前強制檢查宣告、儲存可用性、同一 Session 的檔案憑證解析、圖片 base64 准入與圖片限制。
+- **透過 `ctx.connection` 暴露上傳並沿 Session 建構器傳遞該物件。** 拒絕：Connection 不擁有檔案傳輸，中間物件層也不使用這項依賴。獨立上傳服務直接接收 Session 標識，並允許普通瀏覽器與 Worker-hosted 頁面替換載體，無需擴大 Connection 或 Session。
 
-## 后果
+## 後果
 
-- 上传字节永不删除且没有大小上限，`DSH_HOME` 的增长无界；垃圾回收与图片保留问题一同继续挂起。
-- 投影路径只在对应执行环境中有效：无法映射 `DSH_HOME` 的沙箱或远程文件系统会得到显式的无路径 handle，模型会报告无法读取该文件。基于存储的读取兜底被推迟。
-- 暂存上传按 Session 存在 Host 内存里；上传与发送之间 Host 重启会出现 `FILE_NOT_STAGED`，客户端重新添加文件即可。
-- 浏览器到 Host 的传输使用一次不带断点续传偏移的流式 HTTP 请求；连接或 Host 失败后的重试会从第一个字节重新传输整个文件。
-- `ReadableStream` 上传只消费并转移一次 stream；重试必须重新创建 stream，而且在未来 API 允许生产方提供长度前，进度不能报告总量。
-- 浏览器上传 Worker 由自包含函数的字符串形式生成。需要运行时 import 时，必须改用由 tsdown 打包的独立 Worker 入口。
-- 命令必须声明接受附件。命令拒绝时保留文本草稿与全部附件卡，供用户重试。
-- 子代理不独立上传文件。主 agent 委派时传递保存路径；只有同机或继承父级历史且执行环境能映射该路径的子级可以读取。
-- 上传的文件尚未进入 `@` 补全；该联动是计划中的后续阶段。
-- 命令注册表准入带类型标记的 `CommandSubmitAttachment` 联合类型，其中的文件成员携带暂存凭证，再向处理器提供一个冻结的有序 `ImageBlock | FileBlock` 数组。注册表不安排模型输入；`/goal` 增加一条已记录 follow-up，`/plan` steer 有序附件块。
-- 从菜单选择弹窗命令不会提交 composer 的整套内容。附件保持可见，直到用户提交命令行或移除附件。
-- 声明、存储缺失、未知凭证与图片限制拒绝发生在处理器运行前。生产方语法拒绝和图片准入后的取消可能留下无引用的内容寻址对象，由后续附件垃圾回收处理。
+- 上傳位元組永不刪除且沒有大小上限，`DSH_HOME` 的增長無界；垃圾回收與圖片保留問題一同繼續掛起。
+- 投影路徑只在對應執行環境中有效：無法對映 `DSH_HOME` 的沙箱或遠端檔案系統會得到顯式的無路徑 handle，模型會報告無法讀取該檔案。基於儲存的讀取後備被推遲。
+- 暫存上傳按 Session 存在 Host 記憶體裡；上傳與傳送之間 Host 重新啟動會出現 `FILE_NOT_STAGED`，用戶端重新新增檔案即可。
+- 瀏覽器到 Host 的傳輸使用一次不帶斷點續傳偏移的流式 HTTP 請求；連線或 Host 失敗後的重試會從第一個位元組重新傳輸整個檔案。
+- `ReadableStream` 上傳只消費並轉移一次 stream；重試必須重新建立 stream，而且在未來 API 允許生產方提供長度前，進度不能報告總量。
+- 瀏覽器上傳 Worker 由自包含函式的字串形式生成。需要執行時 import 時，必須改用由 tsdown 打包的獨立 Worker 入口。
+- 命令必須宣告接受附件。命令拒絕時保留文字草稿與全部附件卡，供使用者重試。
+- 子代理不獨立上傳檔案。主 agent 委派時傳遞儲存路徑；只有同機或繼承父級歷史且執行環境能對映該路徑的子級可以讀取。
+- 上傳的檔案尚未進入 `@` 補全；該聯動是計劃中的後續階段。
+- 命令註冊表准入帶型別標記的 `CommandSubmitAttachment` 聯合型別，其中的檔案成員攜帶暫存憑證，再向處理器提供一個凍結的有序 `ImageBlock | FileBlock` 陣列。註冊表不安排模型輸入；`/goal` 增加一條已記錄 follow-up，`/plan` steer 有序附件塊。
+- 從選單選擇彈出視窗命令不會提交 composer 的整套內容。附件保持可見，直到使用者提交命令列或移除附件。
+- 宣告、儲存缺失、未知憑證與圖片限制拒絕發生在處理器執行前。生產方語法拒絕和圖片准入後的取消可能留下無引用的內容定址物件，由後續附件垃圾回收處理。
 
-## 测试
+## 測試
 
-单元与集成覆盖原样与流式存储、文件名清洗、声明为 2.19 GiB 的请求通过流式 bridge 且不发生总量缓冲、原始字节与 RPC wire 准入、Blob 与可转移 `ReadableStream` 载体、后台上传并发上限、进度与取消、跨 Session 上传常驻、命令通过文件凭证提交且不再次读取字节、read-only 与 workspace-write 权限下的 native 和 PTC 投影、上传暂存、有序 queue 与 steer 提交、队列转 steer、pending 回显退休与失败恢复、active plan 和 goal 的附件入口、`/plan` 与 `/goal` 混合附件、子代理拒绝、composer 与 Chat 附件布局，以及 Trajectory 文件摘要。keyless `file-upload-round` 快照记录浏览器上传、模型读取文件与答案呈现。
+單元與整合覆蓋原樣與流式儲存、檔名清洗、宣告為 2.19 GiB 的請求透過流式 bridge 且不發生總量緩衝、原始位元組與 RPC wire 准入、Blob 與可轉移 `ReadableStream` 載體、後臺上傳並行上限、進度與取消、跨 Session 上傳常駐、命令透過檔案憑證提交且不再次讀取位元組、read-only 與 workspace-write 權限下的 native 和 PTC 投影、上傳暫存、有序 queue 與 steer 提交、佇列轉 steer、pending 回顯退休與失敗恢復、active plan 和 goal 的附件入口、`/plan` 與 `/goal` 混合附件、子代理拒絕、composer 與 Chat 附件佈局，以及 Trajectory 檔案摘要。keyless `file-upload-round` 快照記錄瀏覽器上傳、模型讀取檔案與答案呈現。
 
-## 相关记录
+## 相關記錄
 
-[Trajectory 附件展示决定](../bug-fix/2026-09-15-trajectory-attachment-presentation.zh.md)负责列表计数与详情面板附件布局。
+[Trajectory 附件展示決定](../bug-fix/2026-09-15-trajectory-attachment-presentation.zh.md)負責列表計數與詳情面板附件佈局。
 
-[输入回显入档决策](../bug-fix/2026-09-22-input-echo-admission-ownership.zh.md)负责有无附件提交的按展示归属回收和迟到 Inbox 排除。
+[輸入回顯入檔決策](../bug-fix/2026-09-22-input-echo-admission-ownership.zh.md)負責有無附件提交的按展示歸屬回收和遲到 Inbox 排除。

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-09-07-file-content-scan.md
 /agent-note-scan-file-content-without-per-array-callbacks:
   en: a814034fce2407dc
-  zh: 7de9ec55cbbb30ab
+  zh: 3b03cfdba47eff34
 /agent-note-scan-file-content-without-per-array-callbacks/problem:
   en: cb13a0053453cf45
-  zh: ce40afb7fa03f9ed
+  zh: 915b3a3966173283
 /agent-note-scan-file-content-without-per-array-callbacks/decision:
   en: e3d83658869a24f7
-  zh: 44dd61458a47df6c
+  zh: 97ba3d7e083136a9
 /agent-note-scan-file-content-without-per-array-callbacks/measurement-evidence:
   en: ad23fa4ee386f3cf
-  zh: 41e54e28d26b3d02
+  zh: e3eb9804580471ba
 /agent-note-scan-file-content-without-per-array-callbacks/alternatives-considered:
   en: 0128940c217dd77c
-  zh: 9394e713dac9675d
+  zh: c34e75387b2b08f6
 /agent-note-scan-file-content-without-per-array-callbacks/consequences:
   en: dace71e8857e57b1
-  zh: 0ee88fdaa4e067ee
+  zh: f08ee5fa74be7b27

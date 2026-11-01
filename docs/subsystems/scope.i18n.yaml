@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/scope.md
 /scoped-registration:
   en: ebcefe4dd75f9a9c
-  zh: e7a4edad80d59002
+  zh: b61e1aa7c755155f
 /scoped-registration/identity-and-dispatch-carrier:
   en: f4e1bdd96c43a845
-  zh: c74409f7f81bd0e0
+  zh: a008d1cb69413a83
 /scoped-registration/owned-registration-context:
   en: 7908e0caa7acf71f
-  zh: 2979adca7cf33912
+  zh: 6428321241e45cba
 /scoped-registration/scoped-registry-layer:
   en: 19c3ed72868597e5
-  zh: 6dbb5327817e0118
+  zh: 15d782f9fb405fe3

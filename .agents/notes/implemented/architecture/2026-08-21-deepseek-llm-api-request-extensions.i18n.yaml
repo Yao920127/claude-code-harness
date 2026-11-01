@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-21-deepseek-llm-api-request-extensions.md
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages:
   en: bbb93b705960a21b
-  zh: 0fc6fc150215f08f
+  zh: 3241aaefafe974dd
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/problem:
   en: 4945ce54f66df55c
-  zh: 9fbd833c1d8122a7
+  zh: 0d80e1ea0436e807
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/decision:
   en: 2388519a1afaac92
-  zh: 6bf758f0560e29a5
+  zh: ef955e5238f5a482
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/incremental-session-log-field:
   en: 4e3138fbdd94259b
-  zh: 8fda801522045b88
+  zh: 62fe64ed4b2465de
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/plugin-package-field:
   en: 0e51b8d8a1bd60fc
-  zh: dd18fd176c3f101f
+  zh: 77115a28d9139562
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/deferred-inventory-caching:
   en: eb69576e756f4aa1
-  zh: 5c1923159da3f7a2
+  zh: 245e7bcd829e535e
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/verification:
   en: 0bda0074b5e11b44
-  zh: 4989c1bb840c78ce
+  zh: 097652b2a0343097
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/alternatives-considered:
   en: 5faf7699272f99b4
-  zh: 7a402e24c80131cf
+  zh: 545beb174b893349
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/alternatives-considered/why-not-request-relative-message-references:
   en: 3f03c2028adf5814
-  zh: c50f7f7b0af04655
+  zh: 615bb8ece9274f5b
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/alternatives-considered/why-not-omit-assistant-chunks-or-overlapping-event-data:
   en: b6eff63f49220dcc
-  zh: 8e4a6c785ed2256a
+  zh: beba361a7e1b55ef
 /agent-note-deepseek-llm-api-request-extensions-for-session-logs-and-plugin-packages/consequences:
   en: 144fc01ad3b2b9bd
-  zh: 0acff935bd7835de
+  zh: ecbc91c5912a5c61

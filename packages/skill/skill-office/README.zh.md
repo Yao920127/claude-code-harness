@@ -1,5 +1,5 @@
 ---
-description: "随包附带的 Word、PowerPoint 和 Excel 指令，供需要 Office 文件编写与结构检查能力的部署使用。"
+description: "隨包附帶的 Word、PowerPoint 和 Excel 指令，供需要 Office 檔案編寫與結構檢查能力的部署使用。"
 kind: "package-reference"
 ---
 
@@ -9,98 +9,98 @@ kind: "package-reference"
 
 ## 概述
 
-Agent（智能体）可以加载 Word、PowerPoint 和 Excel 工作流，默认使用内置 Python 环境，并遵循用户或 AGENTS.md 明确指定的环境。这些 skill（技能）涵盖创建、局部编辑、结构检查和文件交付。环境提供 LibreOffice Kit CLI 时，可直接渲染选定页面或工作表区域、转换所需 PDF，并将重新计算后的工作簿保存为新文件。视觉检查要求模型支持图片输入，复用源文件未变时的预览，并在适用检查通过后结束；普通交付不要求安装渲染器。
+Agent（智慧代理）可以載入 Word、PowerPoint 和 Excel 工作流，預設使用內建 Python 環境，並遵循使用者或 AGENTS.md 明確指定的環境。這些 skill（技能）涵蓋建立、區域性編輯、結構檢查和檔案交付。環境提供 LibreOffice Kit CLI 時，可直接渲染選定頁面或工作表區域、轉換所需 PDF，並將重新計算後的工作簿儲存為新檔案。視覺檢查要求模型支援圖片輸入，複用原始檔未變時的預覽，並在適用檢查透過後結束；普通交付不要求安裝渲染器。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [了解实现](#understand-the-implementation)
-- [延伸阅读](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与暂缓事项](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [瞭解實作](#understand-the-implementation)
+- [延伸閱讀](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與暫緩事項](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-将本提供方与 skill 注册表及 `dsh-tool-skill` 一同挂载，即可在会话目录中提供 `office-docx`、`office-pptx` 和 `office-xlsx`。提供方携带指令和脚本；部署提供解释器、编写库、执行工具与文件交付工具。
+將本提供者與 skill 註冊表及 `dsh-tool-skill` 一同掛載，即可在工作階段目錄中提供 `office-docx`、`office-pptx` 和 `office-xlsx`。提供者攜帶指令和腳本；部署提供直譯器、編寫庫、執行工具與檔案交付工具。
 
-### 最小配置
+### 最小設定
 
 ```yaml
 - name: '@deepseek-ai/dsh-skill-office'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `assetRoot` | 包内的 `assets/` | 包含三个 skill 文件夹和共享 `scripts/` 的绝对资源目录；部署可将其放在应用归档之外。 |
-| `node` | 当前独立 Node 进程 | Node 可执行文件的绝对路径；Electron 和独立 SDK 可执行文件必须显式提供。 |
-| `cli` | 已安装 kit 的 `lib/cli.js` | CLI 入口的绝对路径；`false` 显式禁用 CLI。 |
+| `assetRoot` | 包內的 `assets/` | 包含三個 skill 資料夾和共享 `scripts/` 的絕對資源目錄；部署可將其放在應用歸檔之外。 |
+| `node` | 目前獨立 Node 程序 | Node 可執行檔案的絕對路徑；Electron 和獨立 SDK 可執行檔案必須顯式提供。 |
+| `cli` | 已安裝 kit 的 `lib/cli.js` | CLI 入口的絕對路徑；`false` 顯式停用 CLI。 |
 
-相对路径、资源缺失或 skill 文件的 YAML frontmatter 缺少描述都会导致激活失败。卸载插件会移除其候选项。项目和用户 skill 的优先级仍由 skill 注册表负责。
+相對路徑、資源缺失或 skill 檔案的 YAML frontmatter 缺少描述都會導致啟用失敗。解除安裝外掛會移除其候選項。專案和使用者 skill 的優先順序仍由 skill 註冊表負責。
 
-加载的技能在 `Installed LibreOffice Kit` 段落中提供 `libreofficeKit.node` 和 `libreofficeKit.cli` 的绝对路径。除非用户明确要求不用内置二进制，Agent 将内置 CLI 作为 Node 的第一个参数运行，无需依赖工作目录或搜索 PATH。内置 CLI 失败时报告错误，不替换为系统可执行文件。激活时检查两个路径是否为实际文件。npm 部署默认使用已安装的 kit；Desktop 提供独立 Node 和 ASAR 外的完整 Office 依赖；Python SDK 提供独立 Node 和可执行文件旁的 Office 目录。仅有 Python 的自定义部署必须配置 `cli: false`，或提供独立 Node。
+載入的技能在 `Installed LibreOffice Kit` 段落中提供 `libreofficeKit.node` 和 `libreofficeKit.cli` 的絕對路徑。除非使用者明確要求不用內建二進位制，Agent 將內建 CLI 作為 Node 的第一個參數執行，無需依賴工作目錄或搜尋 PATH。內建 CLI 失敗時報告錯誤，不替換為系統可執行檔案。啟用時檢查兩個路徑是否為實際檔案。npm 部署預設使用已安裝的 kit；Desktop 提供獨立 Node 和 ASAR 外的完整 Office 依賴；Python SDK 提供獨立 Node 和可執行檔案旁的 Office 目錄。僅有 Python 的自定義部署必須設定 `cli: false`，或提供獨立 Node。
 
-### 结构检查
+### 結構檢查
 
-共享 Python 检查器读取 DOCX、PPTX 或 XLSX，不修改源文件。它识别 Transitional 与 Strict OOXML 命名空间，验证 ZIP/XML 和包内引用关系，报告文档结构，并可检查必需文本或幻灯片／工作表数量。DOCX 文本断言覆盖正文、分节引用的页眉和页脚，以及正文引用的脚注和尾注；批注、词库文本与未引用的部件或脚注／尾注不能满足断言。它只使用 Python 标准库。无效包、损坏或加密的 ZIP 成员和报告文件写入失败都会在标准输出中产生 JSON 失败报告。检查通过不代表外观、特性保留或公式计算结果已得到验证。
+共享 Python 檢查器讀取 DOCX、PPTX 或 XLSX，不修改原始檔。它識別 Transitional 與 Strict OOXML 名稱空間，驗證 ZIP/XML 和包內引用關係，報告文件結構，並可檢查必需文字或幻燈片／工作表數量。DOCX 文字斷言覆蓋正文、分節引用的頁首和頁尾，以及正文引用的腳註和尾註；批註、詞庫文字與未引用的部件或腳註／尾註不能滿足斷言。它只使用 Python 標準庫。無效包、損壞或加密的 ZIP 成員和報告檔案寫入失敗都會在標準輸出中產生 JSON 失敗報告。檢查透過不代表外觀、特性保留或公式計算結果已得到驗證。
 
-Excel 数据和公式任务跳过视觉检查；涉及格式、排版、图表外观、打印或已知显示问题时，检查相关区域。基础样式设置本身不触发视觉检查，公式重算和用户要求的导出仍是独立操作。 空白或透明预览不能通过视觉检查。预览失败时结束视觉检查，不创建诊断工作簿、不转换 PDF，也不擅自修改打印设置；交付可用工作簿并说明检查限制。
+Excel 資料和公式任務跳過視覺檢查；涉及格式、排版、圖表外觀、列印或已知顯示問題時，檢查相關區域。基礎樣式設定本身不觸發視覺檢查，公式重算和使用者要求的匯出仍是獨立操作。 空白或透明預覽不能透過視覺檢查。預覽失敗時結束視覺檢查，不建立診斷工作簿、不轉換 PDF，也不擅自修改列印設定；交付可用工作簿並說明檢查限制。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 了解实现
+## 瞭解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-提供方注册三个内置候选项，并在激活时从随包 YAML frontmatter 读取描述。加载后的指令正文不包含这些元数据。加载后的每个 skill 暴露自己的文件系统目录，因此执行工具可以定位共享检查器，而不依赖任务工作目录。可配置的外部资源支持 Python 无法读取应用归档的分发方式。
+提供者註冊三個內建候選項，並在啟用時從隨包 YAML frontmatter 讀取描述。載入後的指令正文不包含這些中繼資料。載入後的每個 skill 暴露自己的檔案系統目錄，因此執行工具可以定位共享檢查器，而不依賴任務工作目錄。可設定的外部資源支援 Python 無法讀取應用歸檔的分發方式。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 提供方注册与配置资源路径。 |
-| [`assets/`](assets/) | 三种工作流和只读 OOXML 检查器。 |
-| — | 不发布运行时不变量伴随入口：提供方拥有不可变候选项，skill 注册表负责注册生命周期和优先级。 |
+| [`src/index.ts`](src/index.ts) | 提供者註冊與設定資源路徑。 |
+| [`assets/`](assets/) | 三種工作流和只讀 OOXML 檢查器。 |
+| — | 不釋出執行時不變數伴隨入口：提供者擁有不可變候選項，skill 註冊表負責註冊生命週期和優先順序。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 延伸阅读
+## 延伸閱讀
 
-- [skill 注册表](../skill/README.zh.md)——发现与优先级。
-- [skill 工具](../tool-skill/README.zh.md)——模型可见目录与正文。
-- [文件交付](../../deliverables/tool-present/README.zh.md)——当前源路径交付。
+- [skill 註冊表](../skill/README.zh.md)——發現與優先順序。
+- [skill 工具](../tool-skill/README.zh.md)——模型可見目錄與正文。
+- [檔案交付](../../deliverables/tool-present/README.zh.md)——目前源路徑交付。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-tool-skill` 间接呈现，由其渲染目录项与选中的指令正文。
+透過 `dsh-tool-skill` 間接呈現，由其渲染目錄項與選中的指令正文。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-挂载提供方会增加三个目录项；加载 skill 时，其正文进入既有 skill 工具的插入位置。提供方不另增提示词分区。
+掛載提供者會增加三個目錄項；載入 skill 時，其正文進入既有 skill 工具的插入位置。提供者不另增提示詞分割槽。
 
-## 已知限制与暂缓事项
+## 已知限制與暫緩事項
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 提供方依赖 LibreOffice Kit，但不安装 Python 或编写库。检查器要求 Python 3.9 或更高版本。
-- 结构检查不判断分页、裁切、字体、图表外观或 Excel 重算。
-- 检查器只接受 DOCX、PPTX 和 XLSX；传统格式、加密文件和启用宏的格式需要合适的其他工作流。
+- 提供者依賴 LibreOffice Kit，但不安裝 Python 或編寫庫。檢查器要求 Python 3.9 或更高版本。
+- 結構檢查不判斷分頁、裁切、字型、圖表外觀或 Excel 重算。
+- 檢查器只接受 DOCX、PPTX 和 XLSX；傳統格式、加密檔案和啟用宏的格式需要合適的其他工作流。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

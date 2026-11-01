@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/browser-use.md
 /browser-use:
   en: c4c91e07977a0d7b
-  zh: ae7bf1da6f4019a5
+  zh: f6205c8e0cf90c8c
 /browser-use/choose-a-provider:
   en: 1e8ff2e03064fcff
-  zh: d7164f738e5b4c5c
+  zh: 5fc5386f133db511
 /browser-use/session-ownership:
   en: a6cd1aa7ea518c3f
-  zh: 44d2b40a15f81ce9
+  zh: 9a6fee5927fda377
 /browser-use/mcp-initialization:
   en: ac4bcaf872ec5ed8
-  zh: 57d699d1b6e07caf
+  zh: 8d847927d73aa905
 /browser-use/tools-and-recorded-results:
   en: 968055589fb64b35
-  zh: d549a52809ddcf58
+  zh: 1d32a8b493461c5c

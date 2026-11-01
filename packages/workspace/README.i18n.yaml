@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/workspace/README.md
 /:
   en: 79b8272a8456d63f
-  zh: f3882bd5e142ef5c
+  zh: b0eb52bf7f56b894
 /packages-workspace:
   en: 18277b1abbfdb875
   zh: 81bc5f86ae94de79
 /packages-workspace/summary:
   en: 0a47673229612c3d
-  zh: a57b8789d68c85f6
+  zh: ab9259d1903a5657
 /packages-workspace/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-workspace/packages:
   en: 35dfc3e7873380fa
-  zh: fa48b9976a592a27
+  zh: 0f179382995b2e2a
 /packages-workspace/related-documentation:
   en: 3d60a9bf7ec74e51
-  zh: 534e123cc6ff0410
+  zh: 89068e99fe5d6768
 /packages-workspace/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

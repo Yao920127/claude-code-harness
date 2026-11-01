@@ -1,54 +1,54 @@
 ---
-description: "在创建 PR 前，本地生成、确认并验证会话持久化类型变更。"
+description: "在建立 PR 前，本地生成、確認並驗證工作階段持久化型別變更。"
 ---
 
-# 实操手册：审阅持久化类型变更
+# 實操手冊：審閱持久化型別變更
 
 [English](reviewing-persistence-type-changes.md) | 中文
 
 ## 概述
 
-在已安装依赖的贡献者检出目录中修改会话持久化类型声明后，使用本教程。提供双语兼容性说明，再用一条命令分类变更并生成记录。[记录参考](../persistence-changes/README.zh.md)解释文件和自动规则。所有比较输入都在检出目录中；不需要基线分支或网络访问。
+在已安裝依賴的貢獻者檢出目錄中修改工作階段持久化型別宣告後，使用本教學。提供雙語相容性說明，再用一條命令分類變更並生成記錄。[記錄參考](../persistence-changes/README.zh.md)解釋檔案和自動規則。所有比較輸入都在檢出目錄中；不需要基線分支或網路存取。
 
-## 目录
+## 目錄
 
-- [可选：检查变更](#generate)
-- [1. 记录变更](#acknowledge)
-- [2. 检查、提交并推送](#verify)
-- [更新尚未接受的记录](#competing-records)
-- [开发备注](#dev-note)
+- [可選：檢查變更](#generate)
+- [1. 記錄變更](#acknowledge)
+- [2. 檢查、提交併推送](#verify)
+- [更新尚未接受的記錄](#competing-records)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="generate"></a>
-## 可选：检查变更
+## 可選：檢查變更
 
-若需在记录前预览，在仓库根目录运行：
+若需在記錄前預覽，在儲存庫根目錄執行：
 
 ```sh
 pnpm --silent run verify-persistence-changes --json
 ```
 
-消费 JSON 时使用 `--silent`：否则 pnpm 会把生命周期失败文本追加到标准输出。失败命令仍以退出码 1 结束。
+消費 JSON 時使用 `--silent`：否則 pnpm 會把生命週期失敗文字追加到標準輸出。失敗命令仍以結束代碼 1 結束。
 
-阅读报告中的根、路径、变更种类和版本要求。被引用类型可能影响多个事件摘要；检查每个受影响的根。在历史覆盖新 schema 之前，验证会失败。陈旧生成清单也会导致验证失败；记录命令会刷新它。若重排字段或联合类型分支后 `changes` 为空，运行 `pnpm run gen-persistence-catalog` 并重新检查。即使复制的声明或源码位置产生目录 diff，未变的摘要也无需新增确认记录。
+閱讀報告中的根、路徑、變更種類和版本要求。被引用型別可能影響多個事件摘要；檢查每個受影響的根。在歷史覆蓋新 schema 之前，驗證會失敗。陳舊生成清單也會導致驗證失敗；記錄命令會重新整理它。若重排欄位或聯合型別分支後 `changes` 為空，執行 `pnpm run gen-persistence-catalog` 並重新檢查。即使複製的宣告或原始碼位置產生目錄 diff，未變的摘要也無需新增確認記錄。
 
-要独立于确认历史评审 PR，先将 base 和 head 的目录保存为本地 JSON 文件，再运行：
+要獨立於確認歷史評審 PR，先將 base 和 head 的目錄儲存為本地 JSON 檔案，再執行：
 
 ```sh
 pnpm --silent run persistence-review --before .artifacts/base.schema.json --after docs/persistence-schema.json
 ```
 
-在报告旁记录这些文件对应的 commit。添加 `--json` 可获取结构化输出。此只读比较将共享变更与受影响的根类型归组，使用实际字面量 `kind`/`form` 值代替联合类型位置。无法唯一匹配的候选项保留为独立的新增与删除。兼容性部分复制每个根类型的权威分类结果；结构说明不替代确认检查。当前目录标签和声明名称是描述元数据；结构锚点和指纹标识类型。
+在報告旁記錄這些檔案對應的 commit。新增 `--json` 可取得結構化輸出。此只讀比較將共享變更與受影響的根型別歸組，使用實際字面量 `kind`/`form` 值代替聯合型別位置。無法唯一匹配的候選項保留為獨立的新增與刪除。相容性部分複製每個根型別的權威分類結果；結構說明不替代確認檢查。目前目錄標籤和宣告名稱是描述中繼資料；結構錨點和指紋標識型別。
 
 <a id="acknowledge"></a>
-## 1. 记录变更
+## 1. 記錄變更
 
-先检查[已接受基线](../session-format-status.zh.md#finalization-record)，保留其锁定记录。向后兼容的演进使用新的同版本确认记录；记录破坏性变更之前，先实现更高的写入器版本。
+先檢查[已接受基線](../session-format-status.zh.md#finalization-record)，保留其鎖定記錄。向後相容的演進使用新的同版本確認記錄；記錄破壞性變更之前，先實作更高的寫入器版本。
 
-编写包含 `en` 和 `zh` 的本地 JSON 文件，两者分别包含 `summary`、`compatibility` 和 `verification` 字符串。以下输入描述一个经过验证的钩子审计字段从必选改为可选的变更。用你所做变更的事实替换说明和测试证据；CLI（命令行界面）不会证明这些声明。
+編寫包含 `en` 和 `zh` 的本地 JSON 檔案，兩者分別包含 `summary`、`compatibility` 和 `verification` 字串。以下輸入描述一個經過驗證的掛鉤審計欄位從必選改為可選的變更。用你所做變更的事實替換說明和測試證據；CLI（命令列介面）不會證明這些宣告。
 
-将输入保存为 `.artifacts/persistence-change.prose.json`，必要时创建该被忽略的目录：
+將輸入儲存為 `.artifacts/persistence-change.prose.json`，必要時建立該被忽略的目錄：
 
 ```json
 {
@@ -58,61 +58,61 @@ pnpm --silent run persistence-review --before .artifacts/base.schema.json --afte
     "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts: 10 tests passed."
   },
   "zh": {
-    "summary": "将持久化的钩子审计决策改为可选。",
-    "compatibility": "已有记录仍然有效。钩子执行消费 HookOutput，不回放此审计字段。写入方仍然记录决策，缺失不代表 pass。",
-    "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts：10 个测试通过。"
+    "summary": "將持久化的掛鉤審計決策改為可選。",
+    "compatibility": "已有記錄仍然有效。掛鉤執行消費 HookOutput，不回放此審計欄位。寫入方仍然記錄決策，缺失不代表 pass。",
+    "verification": "pnpm exec vitest run packages/hooks/hook-protocol/tests/events.spec.ts：10 個測試透過。"
   }
 }
 ```
 
-用日期和描述性短名替换示例 id：
+用日期和描述性短名替換範例 id：
 
 ```sh
 pnpm --silent run persistence-changes --record 2026-09-11-poc-optional --prose .artifacts/persistence-change.prose.json --json
 ```
 
-命令在写入前验证历史和双语说明、推断最低版本决策，并检查所需的头部版本递增。它生成记录对、完整的变更后 schema、两份目录、机器清单和配对记录。提交前审阅说明及返回的 `changes`、`roots` 和 `files`。省略 `--prose` 会创建未完成草稿，验证将拒绝它们，直到说明补齐。
+命令在寫入前驗證歷史和雙語說明、推斷最低版本決策，並檢查所需的頭部版本遞增。它生成記錄對、完整的變更後 schema、兩份目錄、機器清單和配對記錄。提交前審閱說明及返回的 `changes`、`roots` 和 `files`。省略 `--prose` 會建立未完成草稿，驗證將拒絕它們，直到說明補齊。
 
-推断遵循[固定兼容性规则](../persistence-changes/README.zh.md#compatibility-rules)，不会更改源码或放宽规则。需要升版本时，先遵循[添加会话格式版本](adding-a-session-format-version.zh.md)。记录必须包含其自身的 `SessionHeader.version` 递增转换；无关的历史升版本不能授权它。日常变更不创建另一条基线。
+推斷遵循[固定相容性規則](../persistence-changes/README.zh.md#compatibility-rules)，不會更改原始碼或放寬規則。需要升版本時，先遵循[新增工作階段格式版本](adding-a-session-format-version.zh.md)。記錄必須包含其自身的 `SessionHeader.version` 遞增轉換；無關的歷史升版本不能授權它。日常變更不建立另一條基線。
 
 <a id="verify"></a>
-## 2. 检查、提交并推送
+## 2. 檢查、提交併推送
 
-根据[测试政策](../testing.zh.md)选择变更所属模块的行为检查，再运行文档检查：
+根據[測試政策](../testing.zh.md)選擇變更所屬模組的行為檢查，再執行文件檢查：
 
 ```sh
 pnpm run doc-sync
 ```
 
-`doc-sync` 检查持久化清单和目录新鲜度、完整历史及双语配对。记录命令的 `ok: true` 不能替代这些检查，也不能替代所属模块的行为与迁移测试。JSON 失败响应保留 `ok: false`、诊断 `code` 和退出码 1。结构化变更包含稳定种类和逐根的变更前后摘要，自动化无需解析描述文本。
+`doc-sync` 檢查持久化清單和目錄新鮮度、完整歷史及雙語配對。記錄命令的 `ok: true` 不能替代這些檢查，也不能替代所屬模組的行為與遷移測試。JSON 失敗回應保留 `ok: false`、診斷 `code` 和結束代碼 1。結構化變更包含穩定種類和逐根的變更前後摘要，自動化無需解析描述文字。
 
-记录生成负责其目录和记录的双语对；包 README 或其他双语页面的编辑仍遵循常规配对流程。审阅并暂存预期差异，然后正常提交和推送。暂存 lint、配对、空白 hooks，以及 pre-push Host/Client 类型检查仍须执行。
+記錄生成負責其目錄和記錄的雙語對；包 README 或其他雙語頁面的編輯仍遵循常規配對流程。審閱並暫存預期差異，然後正常提交和推送。暫存 lint、配對、空白 hooks，以及 pre-push Host/Client 型別檢查仍須執行。
 
 <a id="competing-records"></a>
-## 更新尚未接受的记录
+## 更新尚未接受的記錄
 
-记录后源码再次变化时，审阅兼容性说明，并刷新同一条尚未接受的末端记录：
+記錄後原始碼再次變化時，審閱相容性說明，並重新整理同一條尚未接受的末端記錄：
 
 ```sh
 pnpm --silent run persistence-changes --update 2026-09-11-poc-optional --prose .artifacts/persistence-change.prose.json --json
 ```
 
-命令刷新机器声明、schema、目录和配对。没有 `--prose` 时，它保留已有说明。更新会拒绝初始基线、其他记录所依赖的记录，以及已被定稿检查点锁定的记录。定稿检查点之外，目录不会推断审阅接受状态：保留已接受历史，并创建后继。
+命令重新整理機器宣告、schema、目錄和配對。沒有 `--prose` 時，它保留已有說明。更新會拒絕初始基線、其他記錄所依賴的記錄，以及已被定稿檢查點鎖定的記錄。定稿檢查點之外，目錄不會推斷審閱接受狀態：保留已接受歷史，並建立後繼。
 
-集成产生竞争末端记录时，根据剩余历史更新尚未接受的记录，再重新评估最终差异。无关根的确认无需刷新。[机制决策](../../.agents/notes/implemented/process/2026-09-11-persistence-type-history.zh.md)解释为何保留完整快照和逐根前驱。
+整合產生競爭末端記錄時，根據剩餘歷史更新尚未接受的記錄，再重新評估最終差異。無關根的確認無需重新整理。[機制決策](../../.agents/notes/implemented/process/2026-09-11-persistence-type-history.zh.md)解釋為何保留完整快照和逐根前驅。
 
-显式 `--decision` 仍是受检查的断言。若已有属性的值类型发生变化，下面这个故意错误的断言会在写入前失败：
+顯式 `--decision` 仍是受檢查的斷言。若已有屬性的值型別發生變化，下面這個故意錯誤的斷言會在寫入前失敗：
 
 ```sh
 pnpm --silent run persistence-changes --update 2026-09-11-poc-optional --decision same-version --json
 ```
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

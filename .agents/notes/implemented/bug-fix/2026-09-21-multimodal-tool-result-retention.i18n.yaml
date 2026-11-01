@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-21-multimodal-tool-result-retention.md
 /agent-note-multimodal-tool-result-retention:
   en: aa04c4148785f8ca
-  zh: b08c44c8484ea5d2
+  zh: 353ea7efbc778b5a
 /agent-note-multimodal-tool-result-retention/problem:
   en: 9e8765ea40441f36
-  zh: 3ca2616499d3c9fc
+  zh: ee27c63fa30591a0
 /agent-note-multimodal-tool-result-retention/decision:
   en: a65eeedad585fc4b
-  zh: 82aae7ef0148282b
+  zh: dcd1fc4ece22c0be
 /agent-note-multimodal-tool-result-retention/alternatives-considered:
   en: c670e96a46c93540
-  zh: efccc4d3423e5ac0
+  zh: 972db03ef4cdc709
 /agent-note-multimodal-tool-result-retention/consequences:
   en: 7fdf51600bb0ffd7
-  zh: 0ad7f06887b1c859
+  zh: 6ddf746408712d51

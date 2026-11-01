@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-09-10-session-developer-transition.md
 /agent-note-session-developer-transition-rules:
   en: e5554b1d8a98818d
-  zh: e1ed935f755924b6
+  zh: dfa05e6ba733b9cd
 /agent-note-session-developer-transition-rules/problem:
   en: bc0c73010718f890
-  zh: a8e3ea46366c1c7a
+  zh: 81c01cf345e8ed7e
 /agent-note-session-developer-transition-rules/proposal:
   en: 1f1df17eaf8f96d8
-  zh: 1b767d61d3e2e641
+  zh: 1e048c2d0881434c
 /agent-note-session-developer-transition-rules/proposal/maintenance-rules:
   en: 269be7b0b4066b52
-  zh: f61684ac468d00ef
+  zh: d028e37ebb6eadcd
 /agent-note-session-developer-transition-rules/proposal/common-operation-migrations:
   en: 62cc198142f1477f
-  zh: 37e806f78817e5e3
+  zh: 2ac941d759527b73
 /agent-note-session-developer-transition-rules/proposal/how-a-new-contributor-starts:
   en: 0fcd7c50d5659978
-  zh: 8ada6e3a6f3d6cb3
+  zh: f7bac22f1c1a4e7b
 /agent-note-session-developer-transition-rules/alternatives-considered:
   en: dc22bb7bfbf8cb80
-  zh: 8c3bcbe5b1caf20e
+  zh: ba9447688b57c665
 /agent-note-session-developer-transition-rules/acceptance-criteria:
   en: 630c5d3985fee1e2
-  zh: cd107c748ec702ef
+  zh: f955c5a51a2c4846
 /agent-note-session-developer-transition-rules/risks:
   en: 4719bc8122ee39fa
-  zh: 30eaecfd796deba8
+  zh: feb6bfb71033fb0b

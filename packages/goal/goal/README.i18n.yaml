@@ -4,70 +4,70 @@
 #   pnpm run verify-translation-pairing --write packages/goal/goal/README.md
 /:
   en: 6509c63744950c59
-  zh: b7d4e056e0591155
+  zh: 4b86428d4f845698
 /deepseek-ai-dsh-goal:
   en: b8f42df479869337
   zh: 76a71bddc87da324
 /deepseek-ai-dsh-goal/summary:
   en: 31ad6391c24650bd
-  zh: e52f84b741d192b4
+  zh: 5e058db550b943de
 /deepseek-ai-dsh-goal/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-goal/use-this-package:
   en: 95829ddf63e72e3e
-  zh: 9bd77a0ce737b2b0
+  zh: e170e679c16cc721
 /deepseek-ai-dsh-goal/use-this-package/when-to-use-it:
   en: 44fbecf68641514a
-  zh: afa1720f5128cf1b
+  zh: 716852aa4dad11ab
 /deepseek-ai-dsh-goal/use-this-package/set-up-the-service:
   en: 81d959eecdec4bbd
-  zh: ff47fb2cba8f1e73
+  zh: 2c5b3321a97f4b29
 /deepseek-ai-dsh-goal/use-this-package/session-projection:
   en: 251f84f8959a2072
-  zh: c57a4d252e12b128
+  zh: 684a3fcc97ddb684
 /deepseek-ai-dsh-goal/use-this-package/drive-the-lifecycle:
   en: 622890ced87a44e9
-  zh: 6ba1f3f872400452
+  zh: c38e523ff92aa1dc
 /deepseek-ai-dsh-goal/use-this-package/what-survives-and-what-does-not:
   en: e5cd2097500a9027
-  zh: 3ecae388f839c944
+  zh: 491c759e2fef8b65
 /deepseek-ai-dsh-goal/use-this-package/observing-a-goal:
   en: 3074e4c76de81d22
-  zh: 10134afe344dafb3
+  zh: 4daa19cd336c3508
 /deepseek-ai-dsh-goal/understand-the-implementation:
   en: 592af7e68423bd1c
-  zh: 9b1f08393db1b14e
+  zh: b66fefa2ec040e9a
 /deepseek-ai-dsh-goal/understand-the-implementation/design:
   en: 6f19e891ffc79754
-  zh: 9599e3b142f1e6b5
+  zh: b30e4db4740b8c78
 /deepseek-ai-dsh-goal/understand-the-implementation/source-map:
   en: f0451101cf73da7d
-  zh: 73176ab69bb63a7f
+  zh: 997392b5c99f7026
 /deepseek-ai-dsh-goal/understand-the-implementation/events-and-attribution:
   en: 502cf61dba8b22ca
-  zh: 2b6f672bb2ac84ba
+  zh: 602f28966e2b397c
 /deepseek-ai-dsh-goal/further-exploration:
   en: d94098c1e3f3c8cf
-  zh: f4be4de55703097a
+  zh: 7fa7a93735358d38
 /deepseek-ai-dsh-goal/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-goal/model-experience/goal-state-mutations:
   en: 6e6274de7991ef9e
-  zh: be2048ca18b3cbab
+  zh: 03062bd57b09ce94
 /deepseek-ai-dsh-goal/model-experience/goal-state-mutations/what-the-model-sees:
   en: 7f3f6cf3e85ca188
-  zh: 758596ce93635eab
+  zh: 3df08950204ed682
 /deepseek-ai-dsh-goal/model-experience/goal-state-mutations/token-effect:
   en: 5c3d2b320679252b
-  zh: 67156a0cec8c8e60
+  zh: d48215078219e22e
 /deepseek-ai-dsh-goal/model-experience/goal-state-mutations/kv-cache-effect:
   en: 5fcc49f70cf6604d
-  zh: 39a3ba8fcdfba009
+  zh: 10f320d2e1ea6f30
 /deepseek-ai-dsh-goal/known-limitations-and-deferred-work:
   en: c116ddcdd86c93df
-  zh: aa0430d35e8604ff
+  zh: bc7e3aa19a19a775
 /deepseek-ai-dsh-goal/known-limitations-and-deferred-work/dev-note:
   en: 0b672d0c3b09cd5d
-  zh: 8f5d79353a6e5d63
+  zh: 19f1ac3053fa0396

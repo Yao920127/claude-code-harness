@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/testing/2026-06-11-deterministic-and-stress-testing.md
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress:
   en: 542fbe788af50a46
-  zh: ac3cd25980079e57
+  zh: 577f51c153dd99fa
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress/problem:
   en: f53f96fa64894350
-  zh: cb24d89ce7ed6d23
+  zh: e0c602d10e340835
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress/proposal:
   en: 634037df9edd48bd
-  zh: 5b0533bfbe315e89
+  zh: 00f07ddec943e2d9
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress/plan:
   en: 35540eefb6f19904
-  zh: 7212368b41786ffc
+  zh: 251c1cc45c01e3cb
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress/acceptance-criteria:
   en: e88b12f0cdc2748a
-  zh: 3a918218fe6e89a7
+  zh: 5aea8f311974200d
 /agent-note-deterministic-tests-the-replay-invariant-fixture-and-race-stress/risks:
   en: 072c15d39395fbde
-  zh: a21a7a21a7879f56
+  zh: 1c498b195481367b

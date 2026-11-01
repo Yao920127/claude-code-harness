@@ -1,5 +1,5 @@
 ---
-description: "面向 web GUI 宿主的工作区目录选择 seam：原生与浏览后端所实现的服务约定、能力词汇与错误码。"
+description: "面向 web GUI 主機的工作區目錄選擇 seam：原生與瀏覽後端所實作的服務約定、能力詞彙與錯誤碼。"
 kind: "package-reference"
 ---
 
@@ -9,105 +9,105 @@ kind: "package-reference"
 
 ## 概述
 
-web GUI 让操作者通过 OS 选择器或应用内浏览器选择工作区目录。操作者能接触宿主屏幕时使用原生选项；远程客户端或需要在应用内列举和创建目录时使用浏览选项。消费方会获得交互类型，并能呈现匹配的工作流。目录选择仅限 GUI 宿主，不会影响 agent loop（智能体循环）。浏览工作流一次只公开一棵目录树；不支持多根目录。
+web GUI 讓操作者透過 OS 選擇器或應用內瀏覽器選擇工作區目錄。操作者能接觸主機螢幕時使用原生選項；遠端用戶端或需要在應用內列舉和建立目錄時使用瀏覽選項。消費方會獲得互動型別，並能呈現匹配的工作流。目錄選擇僅限 GUI 主機，不會影響 agent loop（智慧代理迴圈）。瀏覽工作流一次只公開一棵目錄樹；不支援多根目錄。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-挂载且只挂载一个目录选择后端，然后让工作区流程驱动它：seam 本身只是服务约定，因此没有后端的组合就无从选择目录。
+掛載且只掛載一個目錄選擇後端，然後讓工作區流程驅動它：seam 本身只是服務約定，因此沒有後端的組合就無從選擇目錄。
 
-### 选择后端
+### 選擇後端
 
-当操作者坐在宿主屏幕前时，[原生后端](../directory-picker-native/README.zh.md)是正确选择：`directoryPicker/pick` 打开一个 OS 选择器，返回所选绝对路径，取消时返回 `null`。[浏览后端](../directory-picker-browse/README.zh.md)处处可用——它在浏览器中列举一个目录层级并创建子目录，因此无法触达 OS 对话框的远程客户端依然能选择工作区。当宿主处境在两次启动之间变化时，组合[自适应选择器](../directory-picker-auto/README.zh.md)，它在启动时判定一次处境并挂载匹配的后端。
+當操作者坐在主機螢幕前時，[原生後端](../directory-picker-native/README.zh.md)是正確選擇：`directoryPicker/pick` 開啟一個 OS 選擇器，返回所選絕對路徑，取消時返回 `null`。[瀏覽後端](../directory-picker-browse/README.zh.md)處處可用——它在瀏覽器中列舉一個目錄層級並建立子目錄，因此無法觸達 OS 對話方塊的遠端用戶端依然能選擇工作區。當主機處境在兩次啟動之間變化時，組合[自適應選擇器](../directory-picker-auto/README.zh.md)，它在啟動時判定一次處境並掛載匹配的後端。
 
-### 能力约定
+### 能力約定
 
-`capability()` 返回一个可辨识联合类型，说明操作者如何选择目录：OS 选择器为 `{ kind: 'native', pick(signal) }`，应用内浏览器为 `{ kind: 'browse', list(path?), createDirectory(path, name) }`。消费方按 `kind` 分支；遇到未知能力类型时，界面会隐藏选择入口，而不是失败。浏览失败抛出带类型的 `DirectoryPickerError`，其错误码集合是封闭的——`directory-unreadable`、`directory-exists` 或 `directory-create-failed`——每个都携带出错对象的路径，目录选择 Remote 控制器将其 1:1 映射为协议错误码。
+`capability()` 返回一個可辨識聯合型別，說明操作者如何選擇目錄：OS 選擇器為 `{ kind: 'native', pick(signal) }`，應用內瀏覽器為 `{ kind: 'browse', list(path?), createDirectory(path, name) }`。消費方按 `kind` 分支；遇到未知能力型別時，介面會隱藏選擇入口，而不是失敗。瀏覽失敗丟擲帶型別的 `DirectoryPickerError`，其錯誤碼集合是封閉的——`directory-unreadable`、`directory-exists` 或 `directory-create-failed`——每個都攜帶出錯物件的路徑，目錄選擇 Remote 控制器將其 1:1 對映為協定錯誤碼。
 
-### 行携带什么
+### 行攜帶什麼
 
-`DirectoryEntry` 行暴露绝对 `path` 与宿主判定的 `hidden` 标志（POSIX 上为点前缀约定），展示策略留在客户端；客户端绝不自行拼接路径段。`DirectoryListing.crumbs` 是从文件系统根到被列举目录的祖先链——每个 crumb 都是跳转目标，根 crumb 以完整路径标注。
+`DirectoryEntry` 行暴露絕對 `path` 與主機判定的 `hidden` 標誌（POSIX 上為點字首約定），展示策略留在用戶端；用戶端絕不自行拼接路徑段。`DirectoryListing.crumbs` 是從檔案系統根到被列舉目錄的祖先鏈——每個 crumb 都是跳轉目標，根 crumb 以完整路徑標註。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-### 设计理念
+### 設計理念
 
-该 seam 建立在一个分离之上：后端提供的交互形态是约定，而不是实现细节。`DirectoryPicker` 是只有一个 `capability()` 方法的抽象 Cordis 服务；后端子类以 `ctx.directoryPicker` 注册，加载第二个实现会抛出标准的重复服务错误。能力对象在服务生命周期内必须保持稳定，因为消费方可能跨调用持有它。
+該 seam 建立在一個分離之上：後端提供的互動形態是約定，而不是實作細節。`DirectoryPicker` 是隻有一個 `capability()` 方法的抽象 Cordis 服務；後端子類以 `ctx.directoryPicker` 註冊，載入第二個實作會丟擲標準的重複服務錯誤。能力物件在服務生命週期內必須保持穩定，因為消費方可能跨呼叫持有它。
 
-### 可合并扩展的词汇
+### 可合併擴充功能的詞彙
 
-`DirectoryPickerCapabilities` 是以能力类型为键的可合并扩展映射，`DirectoryPickerCapability` 从它派生联合类型。新后端通过声明合并将其形态加入此映射（条目的 `kind` 字面量必须等于其键），而无需改动本包。每个后端包还随附一个 browser 入口，在 ui-workspace 的 directory-flow slot 中注册匹配的交互，因此一行组合配置同时选择宿主能力与客户端流程。
+`DirectoryPickerCapabilities` 是以能力型別為鍵的可合併擴充功能對映，`DirectoryPickerCapability` 從它派生聯合型別。新後端透過宣告合併將其形態加入此對映（條目的 `kind` 字面量必須等於其鍵），而無需改動本包。每個後端包還隨附一個 browser 入口，在 ui-workspace 的 directory-flow slot 中註冊匹配的互動，因此一行組合設定同時選擇主機能力與用戶端流程。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | Service Definition：抽象 `DirectoryPicker`、能力词汇、类型化错误、Context 合并 |
+| [`src/index.ts`](src/index.ts) | Service Definition：抽象 `DirectoryPicker`、能力詞彙、型別化錯誤、Context 合併 |
 
-### 失败词汇
+### 失敗詞彙
 
-`DirectoryPickerError` 携带封闭的 `DirectoryPickerErrorCode` 加出错对象的绝对路径，消费方无需字符串匹配即可映射业务错误码。设计依据、与 `ctx.fs` 的切分与策略裁决见 seam Agent Note。
+`DirectoryPickerError` 攜帶封閉的 `DirectoryPickerErrorCode` 加出錯物件的絕對路徑，消費方無需字串匹配即可對映業務錯誤碼。設計依據、與 `ctx.fs` 的切分與策略裁決見 seam Agent Note。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当 seam 约定不够用时阅读以下内容：先看决策记录，再看组合它的两个后端与自适应选择器。
+當 seam 約定不夠用時閱讀以下內容：先看決策記錄，再看組合它的兩個後端與自適應選擇器。
 
-- [目录选择能力 seam 决策](../../../.agents/notes/archived/architecture/2026-07-28-directory-picker-capability-seam.md)——设计依据、`ctx.fs` 切分与策略裁决。
-- [原生后端](../directory-picker-native/README.zh.md)——OS 选择器交互及其平台工具。
-- [浏览后端](../directory-picker-browse/README.zh.md)——面向远程客户端的应用内列举与创建交互。
-- [自适应选择器](../directory-picker-auto/README.zh.md)——两个后端之间的启动时判定。
-- [工作区子系统](../../../docs/subsystems/workspace.zh.md)——接收所选目录的工作区记录。
+- [目錄選擇能力 seam 決策](../../../.agents/notes/archived/architecture/2026-07-28-directory-picker-capability-seam.md)——設計依據、`ctx.fs` 切分與策略裁決。
+- [原生後端](../directory-picker-native/README.zh.md)——OS 選擇器互動及其平臺工具。
+- [瀏覽後端](../directory-picker-browse/README.zh.md)——面向遠端用戶端的應用內列舉與建立互動。
+- [自適應選擇器](../directory-picker-auto/README.zh.md)——兩個後端之間的啟動時判定。
+- [工作區子系統](../../../docs/subsystems/workspace.zh.md)——接收所選目錄的工作區記錄。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。GUI 宿主的目录选择 seam 不注册任何面向模型的内容。
+無。GUI 主機的目錄選擇 seam 不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明 seam 约定何时把决定留给未来的消费方。它们是当前包约束，不是任务积压。
+這些限制說明 seam 約定何時把決定留給未來的消費方。它們是目前包約束，不是任務積壓。
 
-- **不支持多根目录**——浏览约定每次列举只公开一条祖先链；按部署限定浏览根（以及在盘符根的上一级枚举 Windows 各盘符根目录）等到出现需要它的消费方再做，见 DirectoryPicker Agent Note。
+- **不支援多根目錄**——瀏覽約定每次列舉只公開一條祖先鏈；按部署限定瀏覽根（以及在磁碟機代號根的上一級列舉 Windows 各磁碟機代號根目錄）等到出現需要它的消費方再做，見 DirectoryPicker Agent Note。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。这个无状态 Service Definition 只定义 capability vocabulary，观察由 backend 与 Remote controller 负责。
+**執行時不變式：** 不釋出伴生入口。這個無狀態 Service Definition 只定義 capability vocabulary，觀察由 backend 與 Remote controller 負責。

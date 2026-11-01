@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/skill/README.md
 /:
   en: b65db52ddcb307fe
-  zh: d599a27c5f80409f
+  zh: 683c9c7cbbfecc6a
 /skill-skill-capability-family:
   en: 0b439cfc74ac0737
   zh: fd4f28f03ac7c06c
 /skill-skill-capability-family/summary:
   en: 3119b70ce39aa67a
-  zh: ca05b86efbf84141
+  zh: f30a3e8e77d7fd2c
 /skill-skill-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /skill-skill-capability-family/packages:
   en: c539cb44637a4415
-  zh: e327e6dc6c84bf60
+  zh: 4b54e22a1a48b06b
 /skill-skill-capability-family/related-documentation:
   en: 98bb14ef9f1ec72d
-  zh: f20309f41603392a
+  zh: beaa768bf760f270
 /skill-skill-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

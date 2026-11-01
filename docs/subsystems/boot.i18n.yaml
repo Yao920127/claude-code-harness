@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/boot.md
 /profile-management:
   en: 962b4398c9052959
-  zh: 14471c340a9f6e60
+  zh: 27a0e70877d55add
 /profile-management/management-records:
   en: c49daf51d1468b37
-  zh: f4964a074ca9002f
+  zh: 621666ea649abc14

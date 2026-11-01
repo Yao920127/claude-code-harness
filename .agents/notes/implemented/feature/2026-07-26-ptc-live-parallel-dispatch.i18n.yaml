@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-26-ptc-live-parallel-dispatch.md
 /agent-note-ptc-mode-live-dispatch-lifecycle-and-native-contract-parallelism:
   en: f546683c54ae7d6b
-  zh: 1c0760c5f49f0188
+  zh: ed53388607892fb8
 /agent-note-ptc-mode-live-dispatch-lifecycle-and-native-contract-parallelism/problem:
   en: ce16b44b1db07ec0
-  zh: 30681dab84948cd8
+  zh: e03284b1cff6cbf6
 /agent-note-ptc-mode-live-dispatch-lifecycle-and-native-contract-parallelism/decision:
   en: 7ac907f773ff9d50
-  zh: 86982428baf83cde
+  zh: e5140ecd2b1fa9a4
 /agent-note-ptc-mode-live-dispatch-lifecycle-and-native-contract-parallelism/alternatives-considered:
   en: b015fa95b46e5fd5
-  zh: b4fe283a1ab598c1
+  zh: b03eaa6c59ec10eb
 /agent-note-ptc-mode-live-dispatch-lifecycle-and-native-contract-parallelism/consequences:
   en: d16ba3a88fa7d528
-  zh: 8c374a14a4f34cfe
+  zh: 40ec99a8cf06d54f

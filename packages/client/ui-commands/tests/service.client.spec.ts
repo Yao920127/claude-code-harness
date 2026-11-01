@@ -378,7 +378,7 @@ describe('candidates', () => {
     const modelContribution = (): CommandContribution => ({
       name: 'model',
       label: () => '模型',
-      description: () => '选择本会话使用的模型',
+      description: () => '選擇本工作階段使用的模型',
       icon: Glyph,
       available: () => true,
       ui: themeUi(),
@@ -405,7 +405,7 @@ describe('candidates', () => {
         section: 'command:section.add',
       })
       expect(rows[0]).toEqual({ name: 'file', label: 'command:label.file', icon: Glyph, section: 'command:section.add' })
-      expect(rows[6]).toMatchObject({ name: 'model', label: '模型', description: '选择本会话使用的模型', icon: Glyph })
+      expect(rows[6]).toMatchObject({ name: 'model', label: '模型', description: '選擇本工作階段使用的模型', icon: Glyph })
       // A third-party command keeps its catalog text and gets no glyph.
       expect(rows[8]).toEqual({ name: 'deploy', description: 'third-party command', section: 'command:section.commands' })
     })
@@ -415,8 +415,8 @@ describe('candidates', () => {
       const { source } = await bench({ commands: () => Promise.resolve({ commands }) })
       const [row] = await source.candidates(proj('s1'), req(''))
       expect(row).toEqual({ name: 'goal', description: en['description.goal'], hint: 'x', section: 'command:section.add' })
-      expect(source.matchSpace!(proj('s1'), '/目标')).toBeUndefined()
-      expect(await source.matchEnter!(proj('s1'), '/目标 x', new AbortController().signal, { attachments: 0 })).toBeUndefined()
+      expect(source.matchSpace!(proj('s1'), '/目標')).toBeUndefined()
+      expect(await source.matchEnter!(proj('s1'), '/目標 x', new AbortController().signal, { attachments: 0 })).toBeUndefined()
       expect(source.matchSpace!(proj('s1'), '/goal')).toHaveProperty('claim.name', 'goal')
     })
 
@@ -486,24 +486,24 @@ describe('candidates', () => {
       const { source, mint, warm, executeCalls } = await bench({ commands: () => Promise.resolve({ commands: SHIPPED }) })
       mint('s1')
       await warm(proj('s1'))
-      const space = source.matchSpace!(proj('s1'), '/计划')
+      const space = source.matchSpace!(proj('s1'), '/計劃')
       if (space === undefined || space === 'handled' || !('claim' in space)) throw new Error('expected the plan claim')
       expect(space.claim.hint).toBe('[off|message]')
       // The claim keeps the typed spelling (the draft carries it and the
       // arguments are read after it); the submission sends the catalog name.
-      expect(space.claim.token).toBe('/计划 ')
+      expect(space.claim.token).toBe('/計劃 ')
       expect(space.claim.name).toBe('plan')
-      const enter = await source.matchEnter!(proj('s1'), '/目标 ship it', new AbortController().signal, { attachments: 0 })
+      const enter = await source.matchEnter!(proj('s1'), '/目標 ship it', new AbortController().signal, { attachments: 0 })
       if (enter === undefined || enter === 'handled' || !('claim' in enter)) throw new Error('expected the goal claim')
       expect(enter.claim.attachments).toBe(true)
-      expect(enter.claim.token).toBe('/目标 ')
+      expect(enter.claim.token).toBe('/目標 ')
       await enter.claim.submit('ship it', new Context(), [])
       expect(executeCalls).toEqual([{ sessionId: sid('s1'), line: '/goal ship it', images: [] }])
       const typed = await source.matchEnter!(proj('s1'), '/plan now', new AbortController().signal, { attachments: 0 })
       if (typed === undefined || typed === 'handled' || !('claim' in typed)) throw new Error('expected the plan claim')
       expect(typed.claim.token).toBe('/plan ')
       executeCalls.length = 0
-      expect(await source.matchEnter!(proj('s1'), '/压缩', new AbortController().signal, { attachments: 0 })).toBe('handled')
+      expect(await source.matchEnter!(proj('s1'), '/壓縮', new AbortController().signal, { attachments: 0 })).toBe('handled')
       await vi.waitFor(() => { expect(executeCalls).toEqual([{ sessionId: sid('s1'), line: '/compact', images: [] }]) })
     })
   })

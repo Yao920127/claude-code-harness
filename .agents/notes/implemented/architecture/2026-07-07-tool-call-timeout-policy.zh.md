@@ -1,24 +1,24 @@
-# Agent Note: 工具调用超时策略作为插件
+# Agent Note: 工具呼叫超時策略作為外掛
 
 Status: implemented
 
 [English](2026-07-07-tool-call-timeout-policy.md) | 中文
 
-## 问题
+## 問題
 
-[超时/截止时间 Agent Note](2026-07-06-timeout-deadline-library.zh.md) 将计时与分类原语提取到了 `@deepseek-ai/dsh-timeout`，但超时策略仍然附着在各个能力和面向模型的 schema 上。`bash` 暴露了 `timeoutMs`；`web_fetch` 暴露了 `timeout_ms`；`web_search` 没有面向模型的超时参数，尽管提供方已经遵循 `exec.signal`；未来的 grep/glob 工具要么直接导入超时库，要么自行发明超时策略。对于一个插件 SDK 来说，这是错误的编写范式：工具作者通常只需将 `exec.signal` 转发给其调用的实现，而部署策略来决定预算。
+[超時/截止時間 Agent Note](2026-07-06-timeout-deadline-library.zh.md) 將計時與分類原語提取到了 `@deepseek-ai/dsh-timeout`，但超時策略仍然附著在各個能力和麵向模型的 schema 上。`bash` 暴露了 `timeoutMs`；`web_fetch` 暴露了 `timeout_ms`；`web_search` 沒有面向模型的超時參數，儘管提供者已經遵循 `exec.signal`；未來的 grep/glob 工具要麼直接匯入超時庫，要麼自行發明超時策略。對於一個外掛 SDK 來說，這是錯誤的編寫正規化：工具作者通常只需將 `exec.signal` 轉發給其呼叫的實作，而部署策略來決定預算。
 
-与此同时，仓库中并非所有超时都是面向模型的工具调用预算。钩子通过直接调用 `ctx.shell` 执行命令钩子，而非通过 `ctx.tools.execute()`；`bash` 模型工具通过同一个后端复用前台执行、后台启动、后台轮询和钩子复用。一步到位地将所有超时移入工具插件会混淆这些路径，并有破坏钩子超时语义的风险。
+與此同時，儲存庫中並非所有超時都是面向模型的工具呼叫預算。掛鉤透過直接呼叫 `ctx.shell` 執行命令掛鉤，而非透過 `ctx.tools.execute()`；`bash` 模型工具透過同一個後端複用前臺執行、後臺啟動、後臺輪詢和掛鉤複用。一步到位地將所有超時移入工具外掛會混淆這些路徑，並有破壞掛鉤超時語義的風險。
 
-## 决策
+## 決策
 
-工具调用超时是仅适用于面向模型的工具执行的策略，由三部分组成：
+工具呼叫超時是僅適用於面向模型的工具執行的策略，由三部分組成：
 
-- `@deepseek-ai/dsh-timeout` 仍是拥有 `deadline()` 和 `timeoutOf()` 的共享库。
-- `@deepseek-ai/dsh-tools` 在 `tools/pre-execute` 和 `tools/post-execute` 之间有一个环绕分发的 waterfall（瀑布式事件）`tools/execute`。
-- [仓库命名约定](../../archived/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md)使用 `@deepseek-ai/dsh-tool-call-timeout-policy`，准确说明该策略所限制的操作。插件从 runtime 读取每个工具声明的 `timeoutMs`，并通过派生新的 `exec.signal` 来包装有此声明的调用。
+- `@deepseek-ai/dsh-timeout` 仍是擁有 `deadline()` 和 `timeoutOf()` 的共享庫。
+- `@deepseek-ai/dsh-tools` 在 `tools/pre-execute` 和 `tools/post-execute` 之間有一個環繞分發的 waterfall（瀑布式事件）`tools/execute`。
+- [儲存庫命名約定](../../archived/architecture/2026-08-11-repository-naming-contract-and-rename-ledger.md)使用 `@deepseek-ai/dsh-tool-call-timeout-policy`，準確說明該策略所限制的操作。外掛從 runtime 讀取每個工具宣告的 `timeoutMs`，並透過派生新的 `exec.signal` 來包裝有此宣告的呼叫。
 
-执行流水线如下：
+執行流水線如下：
 
 ```text
 ctx.tools.execute(exec)
@@ -30,17 +30,17 @@ ctx.tools.execute(exec)
   -> tools/post-execute
 ```
 
-默认行为是保守的：未声明 `timeoutMs` 的工具不会从该插件收到 `TOOL_TIMEOUT` 截止信号。
+預設行為是保守的：未宣告 `timeoutMs` 的工具不會從該外掛收到 `TOOL_TIMEOUT` 截止訊號。
 
-### `tools/execute` 环绕分发扩展点
+### `tools/execute` 環繞分發擴充功能點
 
-`@deepseek-ai/dsh-tools` 声明了一个 `tools/execute` waterfall，其基础 `next()` 是带规范化的分发 thunk——即同一个内部 `try`/`catch`，将抛出的工具错误（或未知工具错误）转换为 `isError` 的 `ToolExecutionResult`。监听器接收 `(exec, next)`：调用 `next()` 委托给分发（返回其结果，可选地包装），或返回替代结果以短路分发。整个流水线仍位于 `execute` 的外层 try/catch 内，因此抛出异常的监听器会变成 `isError` 结果，而非轮次失败。
+`@deepseek-ai/dsh-tools` 宣告瞭一個 `tools/execute` waterfall，其基礎 `next()` 是帶規範化的分發 thunk——即同一個內部 `try`/`catch`，將丟擲的工具錯誤（或未知工具錯誤）轉換為 `isError` 的 `ToolExecutionResult`。監聽器接收 `(exec, next)`：呼叫 `next()` 委託給分發（返回其結果，可選地包裝），或返回替代結果以短路分發。整個流水線仍位於 `execute` 的外層 try/catch 內，因此丟擲異常的監聽器會變成 `isError` 結果，而非輪次失敗。
 
-catch 是基础 `next`（而非 waterfall 之外的东西）这一点至关重要：当提供方看到超时信号并抛出自己的上游中止错误时，注册表分发首先将其转换为普通错误结果，然后 `timeout-policy` 才能将最终结果替换为 `TOOL_TIMEOUT`。
+catch 是基礎 `next`（而非 waterfall 之外的東西）這一點至關重要：當提供者看到超時訊號並丟擲自己的上游中止錯誤時，註冊表分發首先將其轉換為普通錯誤結果，然後 `timeout-policy` 才能將最終結果替換為 `TOOL_TIMEOUT`。
 
-### `timeout-policy` 插件
+### `timeout-policy` 外掛
 
-该插件是 `@deepseek-ai/dsh-tool-call-timeout-policy`，一个零配置的函数/命名空间插件（`name` / `inject` / `apply`），位于 `packages/guard/` 组。每个工具的预算声明在工具自身，而非本插件：`ToolDefinition` 携带一个可选的 `timeoutMs`，由拥有该工具的插件从自身配置中设置。例如 `dsh-tool-web` 将 `fetchTimeoutMs` / `searchTimeoutMs`（默认 30000）解析到 `web_fetch` / `web_search` 的定义上：
+該外掛是 `@deepseek-ai/dsh-tool-call-timeout-policy`，一個零設定的函式/名稱空間外掛（`name` / `inject` / `apply`），位於 `packages/guard/` 組。每個工具的預算宣告在工具自身，而非本外掛：`ToolDefinition` 攜帶一個可選的 `timeoutMs`，由擁有該工具的外掛從自身設定中設定。例如 `dsh-tool-web` 將 `fetchTimeoutMs` / `searchTimeoutMs`（預設 30000）解析到 `web_fetch` / `web_search` 的定義上：
 
 ```yaml
 - id: timeout-policy
@@ -52,11 +52,11 @@ catch 是基础 `next`（而非 waterfall 之外的东西）这一点至关重�
     searchTimeoutMs: 30000
 ```
 
-超时放在工具定义上而非自由文本名称映射中，消除了拼错名称导致策略不生效的问题。`defineTool` 校验预算为正有限数。分发期间，执行器派生截止信号并将其赋给 `exec.signal`；注册表依据[工具取消约定](2026-07-19-cooperative-tool-cancellation.zh.md)，在执行工具体之前将该截止信号与调用方的原始信号融合。执行器随后恢复调用方信号，并将自身的超时转换为 `TOOL_TIMEOUT`；没有预算的工具原样通过。
+超時放在工具定義上而非自由文字名稱對映中，消除了拼錯名稱導致策略不生效的問題。`defineTool` 驗證預算為正有限數。分發期間，執行器派生截止訊號並將其賦給 `exec.signal`；註冊表依據[工具取消約定](2026-07-19-cooperative-tool-cancellation.zh.md)，在執行工具體之前將該截止訊號與呼叫方的原始訊號融合。執行器隨後恢復呼叫方訊號，並將自身的超時轉換為 `TOOL_TIMEOUT`；沒有預算的工具原樣透過。
 
-信号替换采用**就地修改 `exec.signal`** 的方式，而非向 `next()` 传递新对象。Cordis 的 waterfall `next()` 忽略传入的任何参数，并以共享的 payload 数组重新调用下游监听器（`vendor/cordis/src/events.ts`），因此修改共享对象是包装器向注册表提供截止信号的方式。注册表会在进入工具体前再次融合已捕获的调用方信号；插件则在 `finally` 中将 `exec.signal` 恢复为调用方的原始值，使 `tools/post-execute` 永远不会看到本插件的截止信号。
+訊號替換採用**就地修改 `exec.signal`** 的方式，而非向 `next()` 傳遞新物件。Cordis 的 waterfall `next()` 忽略傳入的任何參數，並以共享的 payload 陣列重新呼叫下游監聽器（`vendor/cordis/src/events.ts`），因此修改共享物件是包裝器向註冊表提供截止訊號的方式。註冊表會在進入工具體前再次融合已捕捉的呼叫方訊號；外掛則在 `finally` 中將 `exec.signal` 恢復為呼叫方的原始值，使 `tools/post-execute` 永遠不會看到本外掛的截止訊號。
 
-`timeout-policy` 拥有 `TOOL_TIMEOUT` 代码的两种用途：传递给 `deadline()`/`timeoutOf()` 的内部截止代码（有作用域，使嵌套的外层截止被识别为普通取消）和结构化工具结果错误代码。其替换结果为：
+`timeout-policy` 擁有 `TOOL_TIMEOUT` 程式碼的兩種用途：傳遞給 `deadline()`/`timeoutOf()` 的內部截止程式碼（有作用域，使巢狀的外層截止被識別為普通取消）和結構化工具結果錯誤程式碼。其替換結果為：
 
 ```ts ignore-check
 function toolTimeoutResult(timeoutMs: number): ToolExecutionResult {
@@ -71,43 +71,43 @@ function toolTimeoutResult(timeoutMs: number): ToolExecutionResult {
 }
 ```
 
-这是一个协作式截止。它不会通过竞争工具 promise 来杀死任意工作；工具或其调用的能力必须遵循 `exec.signal` 并达到完全停稳。因此声明 `timeoutMs` 意味着「此工具与 `exec.signal` 协作」，插件 README 将此作为其约定。
+這是一個協作式截止。它不會透過競爭工具 promise 來殺死任意工作；工具或其呼叫的能力必須遵循 `exec.signal` 並達到完全停穩。因此宣告 `timeoutMs` 意味著「此工具與 `exec.signal` 協作」，外掛 README 將此作為其約定。
 
-无需新的会话事件来保证可重建性：`TOOL_TIMEOUT` 是该调用的最终面向模型的 `tool/result`，因此现有会话日志已经记录了下一次模型请求所见的内容和结构化 `{ name, code }` 错误。
+無需新的工作階段事件來保證可重建性：`TOOL_TIMEOUT` 是該呼叫的最終面向模型的 `tool/result`，因此現有工作階段日誌已經記錄了下一次模型請求所見的內容和結構化 `{ name, code }` 錯誤。
 
-### 现有工具适配
+### 現有工具適應
 
-`web_fetch` 和 `web_search` 已迁移。`dsh-tool-web` 保留对其面向模型 schema 的所有权，这些 schema 不暴露超时旋钮：`web_fetch` 没有 `timeout_ms` 参数，`web_search` 接受必填的 `queries` 数组，但不接受超时参数。工具体不导入 `@deepseek-ai/dsh-timeout`；它们将 `exec.signal` 转发给 `ctx.web`。
+`web_fetch` 和 `web_search` 已遷移。`dsh-tool-web` 保留對其面向模型 schema 的所有權，這些 schema 不暴露超時旋鈕：`web_fetch` 沒有 `timeout_ms` 參數，`web_search` 接受必填的 `queries` 陣列，但不接受超時參數。工具體不匯入 `@deepseek-ai/dsh-timeout`；它們將 `exec.signal` 轉發給 `ctx.web`。
 
-`dsh-web-fetch-http` 保留一个在提供方层面配置的 `timeoutMs`，作为较大的资源兜底值，服务于直接调用 `ctx.web.fetch()` 的调用方和配置错误的部署；它不拥有面向模型的超时。当 `TOOL_TIMEOUT` 信号先到达 fetch 提供方时，提供方作用域的分类将其视为上游 `WEB_ABORTED`，而外层 `tools/execute` 包装器将最终工具结果替换为 `TOOL_TIMEOUT`。一个已发布的 web 工具部署将提供方兜底配置为高于 `timeout-policy` 预算，使工具调用策略在模型调用中通常胜出。
+`dsh-web-fetch-http` 保留一個在提供者層面設定的 `timeoutMs`，作為較大的資源後備值，服務於直接呼叫 `ctx.web.fetch()` 的呼叫方和設定錯誤的部署；它不擁有面向模型的超時。當 `TOOL_TIMEOUT` 訊號先到達 fetch 提供者時，提供者作用域的分類將其視為上游 `WEB_ABORTED`，而外層 `tools/execute` 包裝器將最終工具結果替換為 `TOOL_TIMEOUT`。一個已釋出的 web 工具部署將提供者後備設定為高於 `timeout-policy` 預算，使工具呼叫策略在模型呼叫中通常勝出。
 
-`bash` 保持当前的后端超时路径。`dsh-tool-bash` 继续暴露 `timeoutMs` 和 `run_in_background`；`dsh-bash-local` 继续使用 `@deepseek-ai/dsh-timeout` 处理 `BASH_TIMEOUT`；钩子桥接继续调用 `runHook()` 并通过 `ctx.shell` 传递 `timeoutMs`。这保持了前台/后台/钩子行为的稳定。
+`bash` 保持目前的後端超時路徑。`dsh-tool-bash` 繼續暴露 `timeoutMs` 和 `run_in_background`；`dsh-bash-local` 繼續使用 `@deepseek-ai/dsh-timeout` 處理 `BASH_TIMEOUT`；掛鉤橋接繼續呼叫 `runHook()` 並透過 `ctx.shell` 傳遞 `timeoutMs`。這保持了前臺/後臺/掛鉤行為的穩定。
 
-`read`、`write`、`edit`、`todo_write`、`job_list` 和 `job_kill` 不加入工具调用超时。`job_output` 自己拥有有界等待，因为等待超时是成功的实时状态结果，而非工具失败。
+`read`、`write`、`edit`、`todo_write`、`job_list` 和 `job_kill` 不加入工具呼叫超時。`job_output` 自己擁有有界等待，因為等待超時是成功的即時狀態結果，而非工具失敗。
 
-未来面向模型的 grep/glob 工具可以基于 `ctx.shell` 实现而无需导入 `@deepseek-ai/dsh-timeout`：它将 `exec.signal` 转发给 `ctx.shell`，并声明自己的 `timeoutMs`（来自其插件配置）供执行器应用。如果 bash-local 的后端超时对这类工具造成问题，bash seam 可以后续添加调用方自有截止模式；那是一项独立的决策。
+未來面向模型的 grep/glob 工具可以基於 `ctx.shell` 實作而無需匯入 `@deepseek-ai/dsh-timeout`：它將 `exec.signal` 轉發給 `ctx.shell`，並宣告自己的 `timeoutMs`（來自其外掛設定）供執行器應用。如果 bash-local 的後端超時對這類工具造成問題，bash seam 可以後續新增呼叫方自有截止模式；那是一項獨立的決策。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**将插件命名为 `tool-timeout`。** 字面的 Agent Note 名称匹配了 `gen-tool-catalog` 完整性守卫的 `packages/*/tool-*` glob，该 glob 要求每个匹配项注册一个面向模型的工具。本插件不注册任何工具——它是一个 `tools/execute` 包装器——因此 `tool-*` 名称要么导致 `verify-tool-catalog` 失败，要么强制产生一个误导性的启动条目。包为 `@deepseek-ai/dsh-tool-call-timeout-policy`，位于新的 `packages/guard/` 组；cordis.yml 的 `id` 仍可为 `timeout-policy`。
+**將外掛命名為 `tool-timeout`。** 字面的 Agent Note 名稱匹配了 `gen-tool-catalog` 完整性守衛的 `packages/*/tool-*` glob，該 glob 要求每個匹配項註冊一個面向模型的工具。本外掛不註冊任何工具——它是一個 `tools/execute` 包裝器——因此 `tool-*` 名稱要麼導致 `verify-tool-catalog` 失敗，要麼強制產生一個誤導性的啟動條目。包為 `@deepseek-ai/dsh-tool-call-timeout-policy`，位於新的 `packages/guard/` 組；cordis.yml 的 `id` 仍可為 `timeout-policy`。
 
-**仅保留逐工具的超时处理。** 这是 `bash` 和 `web_fetch` 的既有形态，也与 Claude Code 和 Codex 对 shell 命令的做法一致。它对 web 类工具不利，因为每个新的支持超时的工具都必须自行选择校验方式、上限语义、文档、快照和分类。插件集中了策略和分类，让每个工具的 schema 专注于业务输入。
+**僅保留逐工具的超時處理。** 這是 `bash` 和 `web_fetch` 的既有形態，也與 Claude Code 和 Codex 對 shell 命令的做法一致。它對 web 類工具不利，因為每個新的支援超時的工具都必須自行選擇驗證方式、上限語義、文件、快照和分類。外掛集中了策略和分類，讓每個工具的 schema 專注於業務輸入。
 
-**立即将所有超时策略移出 bash-local。** 长期来看更干净——bash-local 将成为纯子进程执行器，所有调用方自行管理截止时间。但作为第一步不合适，因为钩子直接调用 `ctx.shell`，且 bash 模型工具的前台/后台语义与工具调用生命周期不同。保留 `BASH_TIMEOUT` 维持了这些路径的稳定，同时让工具调用超时在更简单的工具上先行验证。
+**立即將所有超時策略移出 bash-local。** 長期來看更乾淨——bash-local 將成為純子程序執行器，所有呼叫方自行管理截止時間。但作為第一步不合適，因為掛鉤直接呼叫 `ctx.shell`，且 bash 模型工具的前臺/後臺語義與工具呼叫生命週期不同。保留 `BASH_TIMEOUT` 維持了這些路徑的穩定，同時讓工具呼叫超時在更簡單的工具上先行驗證。
 
-**为所有工具使用全局默认预算。** 方便，但会让工具作者意外：任何偶然运行超过全局预算的工具在插件加载后就会开始失败。逐工具声明预算使采纳成为有意的行为。
+**為所有工具使用全域預設預算。** 方便，但會讓工具作者意外：任何偶然執行超過全域預算的工具在外掛載入後就會開始失敗。逐工具宣告預算使採納成為有意的行為。
 
-**暴露面向模型的 `timeout_ms` 覆盖参数。** Claude Code 的 `WebFetch`/`WebSearch` 和 Codex 的 web 工具将超时排除在模型调用形状之外。模型覆盖会使超时成为提示词语义的一部分，并迫使 `timeout-policy` 引入 schema/参数剥离规则。Web 超时仅作为部署策略。
+**暴露面向模型的 `timeout_ms` 覆蓋參數。** Claude Code 的 `WebFetch`/`WebSearch` 和 Codex 的 web 工具將超時排除在模型呼叫形狀之外。模型覆蓋會使超時成為提示詞語義的一部分，並迫使 `timeout-policy` 引入 schema/參數剝離規則。Web 超時僅作為部署策略。
 
-**让 `timeout-policy` 自行匹配工具参数。** 诸如「当 `bash.run_in_background` 为 true 时禁用超时」之类的规则引擎会让策略插件了解工具特定的参数语义。通过不将 bash 迁移到工具调用超时来规避此问题。
+**讓 `timeout-policy` 自行匹配工具參數。** 諸如「當 `bash.run_in_background` 為 true 時停用超時」之類的規則引擎會讓策略外掛瞭解工具特定的參數語義。透過不將 bash 遷移到工具呼叫超時來規避此問題。
 
-**使用 `tools/pre-execute` 加 `tools/post-execute` 代替新的环绕分发扩展点。** pre 监听器可以启动截止时间并修改 `exec.signal`；post 监听器可以分类并替换。这样做的问题是截止时间的生命周期会跨越两个独立的 waterfall：需要 call-id 映射、在每条 pre-deny/tool-throw/post-throw/dispose（资源释放）路径上清理，以及与其他监听器的排序规则。`tools/pre-execute` 也是允许/拒绝门禁，而非执行包装器。`tools/execute` 给超时一个词法作用域：启动、委托、分类、释放。
+**使用 `tools/pre-execute` 加 `tools/post-execute` 代替新的環繞分發擴充功能點。** pre 監聽器可以啟動截止時間並修改 `exec.signal`；post 監聽器可以分類並替換。這樣做的問題是截止時間的生命週期會跨越兩個獨立的 waterfall：需要 call-id 對映、在每條 pre-deny/tool-throw/post-throw/dispose（資源釋放）路徑上清理，以及與其他監聽器的排序規則。`tools/pre-execute` 也是允許/拒絕門禁，而非執行包裝器。`tools/execute` 給超時一個詞法作用域：啟動、委託、分類、釋放。
 
-**使用 `Promise.race` 对非协作工具强制超时。** 与超时库 Agent Note 相同的理由否决：它在底层进程、fetch 或提供方操作可能仍在运行时就将控制权返回给调用方。插件只发送信号；终止仍是实现方的责任。
+**使用 `Promise.race` 對非協作工具強制超時。** 與超時庫 Agent Note 相同的理由否決：它在底層程序、fetch 或提供者操作可能仍在執行時就將控制權返回給呼叫方。外掛只傳送訊號；終止仍是實作方的責任。
 
-## 后果
+## 後果
 
-- `@deepseek-ai/dsh-tools` 在拦截点有意拆分 pre/post 工具钩子之后，获得了一个环绕分发接口。其约定范围很窄——包装注册表分发，而非替代 pre 门禁或 post 结果策略——且基础 `next()` 是带规范化的分发，因此包装器永远不会看到未经处理的工具异常。
-- 多个 `tools/execute` 监听器按普通 Cordis waterfall 顺序组合：调用 `next()` 的监听器包装下游监听器加分发；不调用 `next()` 直接返回的监听器短路它们。一个同时组合超时与未来重试/沙箱/指标包装器的部署通过注册顺序选择语义（「超时覆盖整个重试」vs「超时覆盖每次尝试」）。
-- 通过声明选择加入会带来一种有意接受的误配置风险：工具可以声明 `timeoutMs` 但不遵循 `exec.signal`，这样的工具在超时时不会停止。注册表会等待这个尚未完全停稳的工具体结束，而不是与它竞速；同时插件约定声明：声明预算意味着协作；web 工具在已转发信号的工具上验证了这一模式。
-- 过渡期间 `bash` 和已迁移的 web 工具有意使用不同的超时路径：`TOOL_TIMEOUT` 是面向模型的工具调用预算，而 `BASH_TIMEOUT` 仍是 bash 和钩子使用的 bash 后端超时。
+- `@deepseek-ai/dsh-tools` 在攔截點有意拆分 pre/post 工具掛鉤之後，獲得了一個環繞分發介面。其約定範圍很窄——包裝註冊表分發，而非替代 pre 門禁或 post 結果策略——且基礎 `next()` 是帶規範化的分發，因此包裝器永遠不會看到未經處理的工具異常。
+- 多個 `tools/execute` 監聽器按普通 Cordis waterfall 順序組合：呼叫 `next()` 的監聽器包裝下游監聽器加分發；不呼叫 `next()` 直接返回的監聽器短路它們。一個同時組合超時與未來重試/沙箱/指標包裝器的部署透過註冊順序選擇語義（「超時覆蓋整個重試」vs「超時覆蓋每次嘗試」）。
+- 透過宣告選擇加入會帶來一種有意接受的誤設定風險：工具可以宣告 `timeoutMs` 但不遵循 `exec.signal`，這樣的工具在超時時不會停止。註冊表會等待這個尚未完全停穩的工具體結束，而不是與它競速；同時外掛約定宣告：宣告預算意味著協作；web 工具在已轉發訊號的工具上驗證了這一模式。
+- 過渡期間 `bash` 和已遷移的 web 工具有意使用不同的超時路徑：`TOOL_TIMEOUT` 是面向模型的工具呼叫預算，而 `BASH_TIMEOUT` 仍是 bash 和掛鉤使用的 bash 後端超時。

@@ -1,14 +1,14 @@
-# 权限预设
+# 權限預設
 
 [English](permission-presets.md) | 中文
 
-[dsh-permission-presets](../../packages/interaction/permission-presets) 的权限预设层（`ctx.permissionPresets`，`PermissionPresetService`）把两个相互独立的强制执行 knob，即[沙箱模式](sandbox.zh.md)（`sandbox/mode`）与[审批策略](approval.zh.md)（`approval/policy`），捆绑成具名预设，供客户端作为单个 Permissions 选择器提供。配置表拥有未来会话默认值，而固定的 `registerAuto(admit)` 钩子让 [Auto review](../../packages/experimental/auto-review/README.zh.md) integration 在一个 effect 生命周期内发布仅限当前会话的选项。该层是可选能力，且不拥有执行策略：提示词叙述与回放仍读取各自 knob 的折叠结果，额外强制执行由 Auto review 拥有。[包 README](../../packages/interaction/permission-presets/README.zh.md)负责组合状态与限制；[沙箱切换设计](../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)负责原始旋钮依据。
+[dsh-permission-presets](../../packages/interaction/permission-presets) 的權限預設層（`ctx.permissionPresets`，`PermissionPresetService`）把兩個相互獨立的強制執行 knob，即[沙箱模式](sandbox.zh.md)（`sandbox/mode`）與[審批策略](approval.zh.md)（`approval/policy`），捆綁成具名預設，供用戶端作為單個 Permissions 選擇器提供。設定表擁有未來工作階段預設值，而固定的 `registerAuto(admit)` 掛鉤讓 [Auto review](../../packages/experimental/auto-review/README.zh.md) integration 在一個 effect 生命週期內釋出僅限目前工作階段的選項。該層是可選能力，且不擁有執行策略：提示詞敘述與回放仍讀取各自 knob 的摺疊結果，額外強制執行由 Auto review 擁有。[包 README](../../packages/interaction/permission-presets/README.zh.md)負責組合狀態與限制；[沙箱切換設計](../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)負責原始旋鈕依據。
 
-源码：[`packages/interaction/permission-presets/src/index.ts`](../../packages/interaction/permission-presets/src/index.ts)
+原始碼：[`packages/interaction/permission-presets/src/index.ts`](../../packages/interaction/permission-presets/src/index.ts)
 
-## 预设表
+## 預設表
 
-预设把一个稳定 key 映射到一组沙箱／审批组合，外加可选的客户端展示信息。默认配置表自带 `workspace-write`（`workspace-write` + `ask`）和 `danger-full-access`（`danger-full-access` + `never`）；`custom` 与 `auto` 是保留名称，不能配置。
+預設把一個穩定 key 對映到一組沙箱／審批組合，外加可選的用戶端展示資訊。預設設定表自帶 `workspace-write`（`workspace-write` + `ask`）和 `danger-full-access`（`danger-full-access` + `never`）；`custom` 與 `auto` 是保留名稱，不能設定。
 
 ```ts type-equiv
 /** One preset's sandbox/approval bundle and optional client presentation. */
@@ -42,19 +42,19 @@ interface Config {
 }
 ```
 
-该服务要求一个施加隔离的 `ctx.shell` 执行器和 `ctx.approval`，配置错误在插件加载时即失败：名为 `custom` 或 `auto` 的配置条目会抛出异常；在不施加隔离的 bash 执行器（没有 `sandboxMode` 能力事实）之上组合同样抛出异常，因为预设捆绑了一个沙箱模式。
+該服務要求一個施加隔離的 `ctx.shell` 執行器和 `ctx.approval`，設定錯誤在外掛載入時即失敗：名為 `custom` 或 `auto` 的設定條目會丟擲異常；在不施加隔離的 bash 執行器（沒有 `sandboxMode` 能力事實）之上組合同樣丟擲異常，因為預設捆綁了一個沙箱模式。
 
-## 固定的当前会话 Auto 注册
+## 固定的目前工作階段 Auto 註冊
 
-Auto integration 会在自身 effect 生命周期内调用 `registerAuto(admit)`。本服务固定 `auto` 身份以及 `danger-full-access` 加 `ask` 的组合，已记录的 Auto 选择也匹配委派子会话固定的 `never` 策略；shipped 客户端的 locale 字典拥有 Auto 的 label 与 description，而配置预设的展示信息仍归 Host 所有。调用方不能通过通用 contribution API 发布其他预设。Auto 排列在配置预设之后，绝不会进入 `permission.defaultPreset` 设置 schema，并在 effect dispose 时消失。同步 `admit` 回调会在 Auto 选择修改 Session 前，以及存储的 Auto Session 发布前运行，因此 integration 缺失或正在关闭时不会改写持久身份。
+Auto integration 會在自身 effect 生命週期內呼叫 `registerAuto(admit)`。本服務固定 `auto` 身份以及 `danger-full-access` 加 `ask` 的組合，已記錄的 Auto 選擇也匹配委派子工作階段固定的 `never` 策略；shipped 用戶端的 locale 字典擁有 Auto 的 label 與 description，而設定預設的展示資訊仍歸 Host 所有。呼叫方不能透過通用 contribution API 釋出其他預設。Auto 排列在設定預設之後，絕不會進入 `permission.defaultPreset` 設定 schema，並在 effect dispose 時消失。同步 `admit` 回呼會在 Auto 選擇修改 Session 前，以及儲存的 Auto Session 釋出前執行，因此 integration 缺失或正在關閉時不會改寫持久身份。
 
-注册或移除 Auto 会发出无 payload 的 `permission-presets/catalog-changed` 通知。进程级消费方先订阅，再调用 `catalog()`；每次收到通知后重新读取完整的可选目录。`permissions` Session 投影只包含 `currentValue`，因此目录变化不会追加 Session 事件、发布 Session 投影帧或改变 Session 序列。
+註冊或移除 Auto 會發出無 payload 的 `permission-presets/catalog-changed` 通知。程序級消費方先訂閱，再呼叫 `catalog()`；每次收到通知後重新讀取完整的可選目錄。`permissions` Session 投影只包含 `currentValue`，因此目錄變化不會追加 Session 事件、釋出 Session 投影幀或改變 Session 序列。
 
-## 当前预设与派生的 `custom`
+## 目前預設與派生的 `custom`
 
-`current(session)` 从必需的 `permissions` 投影派生实际生效的预设。该单元折叠会话的沙箱模式、审批策略和已记录选择；状态内部的缺失值回退到执行器配置的模式与审批服务配置，最后回退到 `ask`。投影 key 缺失时会显式失败。服务优先取仍然匹配的选择（包括 `never` 审批策略下已记录的 Auto 选择），其次取第一个匹配的配置条目，否则返回 `CUSTOM_PRESET`（`'custom'`）。`custom` 只是派生值：客户端可以把它显示为当前值，但它绝不是切换目标，也绝不出现在事件 payload 中。
+`current(session)` 從必需的 `permissions` 投影派生實際生效的預設。該單元摺疊工作階段的沙箱模式、審批策略和已記錄選擇；狀態內部的缺失值退回到執行器設定的模式與審批服務設定，最後退回到 `ask`。投影 key 缺失時會顯式失敗。服務優先取仍然匹配的選擇（包括 `never` 審批策略下已記錄的 Auto 選擇），其次取第一個匹配的設定條目，否則返回 `CUSTOM_PRESET`（`'custom'`）。`custom` 只是派生值：用戶端可以把它顯示為目前值，但它絕不是切換目標，也絕不出現在事件 payload 中。
 
-`names` 先按声明顺序列出配置预设，再在 Auto integration 存活时列出 Auto。`catalog()` 把这些可选条目作为一份进程级快照返回。`optionOf(name)` 为可用条目（label 回退为该 key）或派生的 `custom` 展示构建选项，传入其他任何名称都会抛出异常。客户端把目录与 Session 投影合并；`custom` 可以标记当前值，但绝不会成为目录条目。
+`names` 先按宣告順序列出設定預設，再在 Auto integration 存活時列出 Auto。`catalog()` 把這些可選條目作為一份程序級快照返回。`optionOf(name)` 為可用條目（label 退回為該 key）或派生的 `custom` 展示建置選項，傳入其他任何名稱都會丟擲異常。用戶端把目錄與 Session 投影合併；`custom` 可以標記目前值，但絕不會成為目錄條目。
 
 ```ts type-equiv
 /** Presentation for an available preset or the derived `custom` current value. */
@@ -68,11 +68,11 @@ interface PresetOption {
 }
 ```
 
-## 切换与 `permission/preset` 事件
+## 切換與 `permission/preset` 事件
 
-`set(session, name)` 解析预设（未知名称抛出异常），在适用时运行 Auto 准入，在 `name` 尚不是生效预设时追加一条仅记日志的 `permission/preset` 事件，然后通过各旋钮自己的 setter（[dsh-sandbox-policy](../../packages/sandbox/sandbox-policy) 的 `setSandboxMode` 与 [dsh-user-approval](../../packages/interaction/user-approval) 的 `setApprovalPolicy`）写入，且仅当该 knob 的生效值发生变化时才写。同一轮次内，选择事件先于旋钮事件出现；重新选择当前生效的预设则什么都不追加。
+`set(session, name)` 解析預設（未知名稱丟擲異常），在適用時執行 Auto 准入，在 `name` 尚不是生效預設時追加一條僅記日誌的 `permission/preset` 事件，然後透過各旋鈕自己的 setter（[dsh-sandbox-policy](../../packages/sandbox/sandbox-policy) 的 `setSandboxMode` 與 [dsh-user-approval](../../packages/interaction/user-approval) 的 `setApprovalPolicy`）寫入，且僅當該 knob 的生效值發生變化時才寫。同一輪次內，選擇事件先於旋鈕事件出現；重新選擇目前生效的預設則什麼都不追加。
 
-`permission/preset` 是持久、仅记日志的用户意图：它不进入模型 transcript（文本记录），模型可见的后果由 knob 事件经各自消费方承担；它存在是为了在两个预设共享同一个旋钮组合时，让 `current()` 仍能保住用户选择的究竟是哪一个预设。`permissions` 投影把该选择与两个 knob 事件一同折叠，并保留用于区分空恢复 seed 与新会话的 `session/end-seed` 边界；回放不需要任何追赶状态或原始日志重扫。恢复的 `auto` 选择在 agent 发布前必须存在 live Auto 注册。完整事件声明见[持久化日志事件目录](../persistence-catalog.zh.md)；方法签名见生成的[服务目录](#ctxpermissionpresets--permissionpresetservice)。
+`permission/preset` 是持久、僅記日誌的使用者意圖：它不進入模型 transcript（文字記錄），模型可見的後果由 knob 事件經各自消費方承擔；它存在是為了在兩個預設共享同一個旋鈕組合時，讓 `current()` 仍能保住使用者選擇的究竟是哪一個預設。`permissions` 投影把該選擇與兩個 knob 事件一同摺疊，並保留用於區分空恢復 seed 與新工作階段的 `session/end-seed` 邊界；回放不需要任何追趕狀態或原始日誌重掃。恢復的 `auto` 選擇在 agent 釋出前必須存在 live Auto 註冊。完整事件宣告見[持久化日誌事件目錄](../persistence-catalog.zh.md)；方法簽名見生成的[服務目錄](#ctxpermissionpresets--permissionpresetservice)。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

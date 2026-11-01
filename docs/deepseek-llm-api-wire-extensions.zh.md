@@ -1,46 +1,46 @@
-# DeepSeek 官方 LLM API 协议扩展
+# DeepSeek 官方 LLM API 協定擴充功能
 
 [English](deepseek-llm-api-wire-extensions.md) | 中文
 
-本参考定义 [`@deepseek-ai/dsh-llm-deepseek`](../packages/llm/llm-deepseek/README.zh.md) 在 `deepseek-official` Messages 请求中发送的全部 DeepSeek Harness 专用 HTTP 标头与附加 JSON 字段。它不重新定义上游 DeepSeek API 自有字段。提供方无关的 LLM 接口与 `llm-pi-ai` 不实现这些扩展。
+本參考定義 [`@deepseek-ai/dsh-llm-deepseek`](../packages/llm/llm-deepseek/README.zh.md) 在 `deepseek-official` Messages 請求中傳送的全部 DeepSeek Harness 專用 HTTP 標頭與附加 JSON 欄位。它不重新定義上游 DeepSeek API 自有欄位。提供者無關的 LLM 介面與 `llm-pi-ai` 不實作這些擴充功能。
 
-适配器将这些扩展发送至已解析的 `baseURL`，包括已配置的网关。扩展位于 `messages`、系统提示词和工具 schema 之外，因此不会增加模型输入 token，也不会改变模型可见前缀。
+介面卡將這些擴充功能傳送至已解析的 `baseURL`，包括已設定的閘道。擴充功能位於 `messages`、系統提示詞和工具 schema 之外，因此不會增加模型輸入 token，也不會改變模型可見字首。
 
-## 协议命名空间与版本
+## 協定名稱空間與版本
 
-| 位置 | 命名方式 | 示例 |
+| 位置 | 命名方式 | 範例 |
 |---|---|---|
-| HTTP 字段名 | 小写 kebab-case；HTTP 匹配仍不区分大小写 | `user-agent`, `x-deepseek-harness-session-id` |
-| DeepSeek 请求正文扩展字段 | 使用保留 `dsh_` 前缀的 snake case | `dsh_plugin_packages`, `dsh_session_log` |
-| DSH 持有的嵌套 JSON 成员 | Camel case | `afterSeq`, `throughSeq`, `sessionId` |
-| 带标签的值 | 使用 kebab-case 字符串；持久事件采用 `domain/action` | `session-log-deepseek/delivery-accepted` |
+| HTTP 欄位名 | 小寫 kebab-case；HTTP 匹配仍不區分大小寫 | `user-agent`, `x-deepseek-harness-session-id` |
+| DeepSeek 請求正文擴充功能欄位 | 使用保留 `dsh_` 字首的 snake case | `dsh_plugin_packages`, `dsh_session_log` |
+| DSH 持有的巢狀 JSON 成員 | Camel case | `afterSeq`, `throughSeq`, `sessionId` |
+| 帶標籤的值 | 使用 kebab-case 字串；持久事件採用 `domain/action` | `session-log-deepseek/delivery-accepted` |
 
-每个正文扩展独立持有自身的 `version`。版本仅适用于包含该字段的对象；不同字段的版本之间不存在兼容或排序关系。JSON 成员顺序不属于协议。
+每個正文擴充功能獨立持有自身的 `version`。版本僅適用於包含該欄位的物件；不同欄位的版本之間不存在相容或排序關係。JSON 成員順序不屬於協定。
 
-[`DeepSeekLlmApiExtensionRegistry`](../packages/llm/deepseek-llm-api-extensions/README.zh.md) 为每个顶层扩展名保留一个提供方。空名称、两端带空白的名称、重复注册以及与 DeepSeek 基础请求冲突的名称都会在 HTTP 分派前失败。
+[`DeepSeekLlmApiExtensionRegistry`](../packages/llm/deepseek-llm-api-extensions/README.zh.md) 為每個頂層副檔名保留一個提供者。空名稱、兩端帶空白的名稱、重複註冊以及與 DeepSeek 基礎請求衝突的名稱都會在 HTTP 分派前失敗。
 
-## 请求标头
+## 請求標頭
 
-| 标头 | 出现条件 | 值 |
+| 標頭 | 出現條件 | 值 |
 |---|---|---|
-| `user-agent` | 每个提供方 HTTP 请求，包括 Files API 操作 | 采用 `product/version (+url)` 形式的应用身份；默认产品为 `deepseek-harness` |
-| `x-deepseek-harness-user-id` | 每个已授权的模型请求 | 已解析 Harness home 的稳定匿名 UUID |
-| `x-deepseek-harness-session-id` | 携带会话 id 的模型请求 | 确切的请求 `sessionId` 字符串 |
-| `x-deepseek-harness-compact` | 用途为 `compaction` 的模型请求 | 字面字符串 `1` |
+| `user-agent` | 每個提供者 HTTP 請求，包括 Files API 操作 | 採用 `product/version (+url)` 形式的應用身份；預設產品為 `deepseek-harness` |
+| `x-deepseek-harness-user-id` | 每個已授權的模型請求 | 已解析 Harness home 的穩定匿名 UUID |
+| `x-deepseek-harness-session-id` | 攜帶工作階段 id 的模型請求 | 確切的請求 `sessionId` 字串 |
+| `x-deepseek-harness-compact` | 用途為 `compaction` 的模型請求 | 字面字串 `1` |
 
-凭据失败发生在解析匿名用户 id 之前，因此未授权请求既不会发送这些标头，也不会创建身份文件。没有会话的直接请求会省略 `x-deepseek-harness-session-id`。会话标题请求没有额外的用途标头；请求携带 `sessionId` 时，仍然适用普通的会话 id 规则。
+憑證失敗發生在解析匿名使用者 id 之前，因此未授權請求既不會傳送這些標頭，也不會建立身份檔案。沒有工作階段的直接請求會省略 `x-deepseek-harness-session-id`。工作階段標題請求沒有額外的用途標頭；請求攜帶 `sessionId` 時，仍然適用普通的工作階段 id 規則。
 
-## 正文扩展事务
+## 正文擴充功能事務
 
-适配器先序列化包括确切 `messages` 在内的完整基础正文，再让已注册提供方准备字段。提供方会收到该不可变正文、请求取消信号，以及可选的 `sessionId` 和辅助调用 `purpose`。提供方返回 `undefined` 时，本次请求会省略其字段。
+介面卡先序列化包括確切 `messages` 在內的完整基礎正文，再讓已註冊提供者準備欄位。提供者會收到該不可變正文、請求取消訊號，以及可選的 `sessionId` 和輔助呼叫 `purpose`。提供者返回 `undefined` 時，本次請求會省略其欄位。
 
-系统将已准备的 JSON 值与提供方持有的状态分离，再将其作为基础字段的顶层同级成员合并，并序列化到同一个 HTTP 正文中。准备失败或冲突会阻止请求。合并后的正文无法序列化时，适配器发送不含任何扩展字段的基础正文，跳过接受事务，让贡献方在之后的请求中重发自身状态，并记录被省略的字段名。组合未挂载注册表时，适配器发送未经扩展的基础正文。
+系統將已準備的 JSON 值與提供者持有的狀態分離，再將其作為基礎欄位的頂層同級成員合併，並序列化到同一個 HTTP 正文中。準備失敗或衝突會阻止請求。合併後的正文無法序列化時，介面卡傳送不含任何擴充功能欄位的基礎正文，跳過接受事務，讓貢獻方在之後的請求中重發自身狀態，並記錄被省略的欄位名。組合未掛載註冊表時，介面卡傳送未經擴充功能的基礎正文。
 
-已配置端点返回 HTTP 2xx 后，适配器会在读取 SSE 正文之前运行已准备的 `accept()` 事务。传输失败和非 2xx 响应不会接受任何贡献。即使端点返回 2xx，接受失败仍会使模型请求失败。接受仅记录端点级 HTTP 成功，不表示 SSE 流已完整结束，也不表示端点已持久化扩展。
+已設定端點返回 HTTP 2xx 後，介面卡會在讀取 SSE 正文之前執行已準備的 `accept()` 事務。傳輸失敗和非 2xx 回應不會接受任何貢獻。即使端點返回 2xx，接受失敗仍會使模型請求失敗。接受僅記錄端點級 HTTP 成功，不表示 SSE 流已完整結束，也不表示端點已持久化擴充功能。
 
 ## `dsh_plugin_packages`
 
-[`@deepseek-ai/dsh-plugin-package-inventory-deepseek`](../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 贡献完整存活的 Loader-backed 插件包清单。该字段默认启用。
+[`@deepseek-ai/dsh-plugin-package-inventory-deepseek`](../packages/llm/plugin-package-inventory-deepseek/README.zh.md) 貢獻完整存活的 Loader-backed 外掛包清單。該欄位預設啟用。
 
 ```json
 {
@@ -56,24 +56,24 @@
 }
 ```
 
-| 成员 | 类型 | 含义 |
+| 成員 | 型別 | 含義 |
 |---|---|---|
 | `version` | `1` | `dsh_plugin_packages` 的 schema 版本 |
-| `packages` | 数组 | 本次请求的完整存活集合 |
-| `packages[].name` | 字符串 | 来自所属 manifest（元数据清单）的确切非空 npm 包名 |
-| `packages[].version` | 字符串 | 来自同一 manifest 的确切非空包版本 |
+| `packages` | 陣列 | 本次請求的完整存活集合 |
+| `packages[].name` | 字串 | 來自所屬 manifest（中繼資料清單）的確切非空 npm 包名 |
+| `packages[].version` | 字串 | 來自同一 manifest 的確切非空包版本 |
 
-每个请求都会重新读取宿主树中的存活非分组 Loader 配置项；请求会话存在 standing agent-preset 树时，也会读取该树。相对与绝对模块使用距离自身最近的所属 manifest；裸包配置项使用激活自身的 Loader 解析基准。具名 manifest 未提供非空版本时，请求准备会失败。
+每個請求都會重新讀取主機樹中的存活非分組 Loader 設定項；請求工作階段存在 standing agent-preset 樹時，也會讀取該樹。相對與絕對模組使用距離自身最近的所屬 manifest；裸包設定項使用啟用自身的 Loader 解析基準。具名 manifest 未提供非空版本時，請求準備會失敗。
 
-发送方会对确切 `(name, version)` 组合去重，并使用与 locale 无关的文本比较，先按 `name`、再按 `version` 排序。同一包的多个同时存活版本会保留为独立配置项。接收方不得按包名折叠该数组，也不得根据数组顺序推断包的激活关系。
+傳送方會對確切 `(name, version)` 組合去重，並使用與 locale 無關的文字比較，先按 `name`、再按 `version` 排序。同一包的多個同時存活版本會保留為獨立設定項。接收方不得按包名摺疊該陣列，也不得根據陣列順序推斷包的啟用關係。
 
-该清单不包含已禁用、pending、failed、unloading、disposed 和结构性 Loader 配置项。普通依赖、没有具名所属包的松散模块、以编程方式挂载的子 fiber，以及内存动态插件也不在其中，因为它们没有权威的 Loader 包来源信息。
+該清單不包含已停用、pending、failed、unloading、disposed 和結構性 Loader 設定項。普通依賴、沒有具名所屬包的鬆散模組、以程式設計方式掛載的子 fiber，以及記憶體動態外掛也不在其中，因為它們沒有權威的 Loader 包來源資訊。
 
-清单已启用但没有符合条件的配置项时，系统发送 `packages: []`；禁用贡献插件时，系统省略整个 `dsh_plugin_packages` 字段。包身份属于提供方元数据，绝不进入模型输入。
+清單已啟用但沒有符合條件的設定項時，系統傳送 `packages: []`；停用貢獻外掛時，系統省略整個 `dsh_plugin_packages` 欄位。包身份屬於提供者中繼資料，絕不進入模型輸入。
 
 ## `dsh_session_log`
 
-[`@deepseek-ai/dsh-session-log-deepseek`](../packages/session/session-log-deepseek/README.zh.md) 贡献权威会话日志的一段连续后缀。该字段默认启用。它适用于携带存活会话且至少存在一个事件的请求；直接请求、陈旧会话 id 或空日志会省略该字段，第一条待发事件本身超过 `maxBytes` 或无法序列化的请求也会省略该字段；组合可用 `enabled: false` 禁用它。下方示例使用逻辑 Session 格式 2 仅为说明协议字段，并不标识[当前写入格式](session-format-status.zh.md)。
+[`@deepseek-ai/dsh-session-log-deepseek`](../packages/session/session-log-deepseek/README.zh.md) 貢獻權威工作階段日誌的一段連續字尾。該欄位預設啟用。它適用於攜帶存活工作階段且至少存在一個事件的請求；直接請求、陳舊工作階段 id 或空日誌會省略該欄位，第一條待發事件本身超過 `maxBytes` 或無法序列化的請求也會省略該欄位；組合可用 `enabled: false` 停用它。下方範例使用邏輯 Session 格式 2 僅為說明協定欄位，並不標識[目前寫入格式](session-format-status.zh.md)。
 
 ```json
 {
@@ -101,40 +101,40 @@
 }
 ```
 
-| 成员 | 类型 | 含义 |
+| 成員 | 型別 | 含義 |
 |---|---|---|
 | `version` | `1` | `dsh_session_log` 的 schema 版本 |
-| `sessionFormatVersion` | 非负整数 | 该后缀所表示的 Session 格式 generation |
-| `session` | 对象 | 当前 Session header 的不可变协议投影 |
-| `afterSeq` | 整数 | 本次请求前记录为已接受的最大序号，或 `-1` |
-| `throughSeq` | 非负整数 | 本次请求所表示的最大序号 |
-| `events` | 数组 | 从 `afterSeq + 1` 到 `throughSeq` 的连续事件 |
+| `sessionFormatVersion` | 非負整數 | 該字尾所表示的 Session 格式 generation |
+| `session` | 物件 | 目前 Session header 的不可變協定投影 |
+| `afterSeq` | 整數 | 本次請求前記錄為已接受的最大序號，或 `-1` |
+| `throughSeq` | 非負整數 | 本次請求所表示的最大序號 |
+| `events` | 陣列 | 從 `afterSeq + 1` 到 `throughSeq` 的連續事件 |
 
-首次上传使用 `afterSeq: -1`，此后每次上传都从同一会话 id 的最大已接受水位（watermark）之后开始。每次上传携带从该位置起、序列化后能放进 `maxBytes` 的最长连续事件段；`maxBytes` 默认 8 MiB，按 UTF-8 字节计算，包括 header 与数值字段，因此超过上限的积压会分多次已接受的请求传完。发送方为每次请求仅快照一次事件数组；快照后的追加内容属于后续请求。
+首次上傳使用 `afterSeq: -1`，此後每次上傳都從同一工作階段 id 的最大已接受水位（watermark）之後開始。每次上傳攜帶從該位置起、序列化後能放進 `maxBytes` 的最長連續事件段；`maxBytes` 預設 8 MiB，按 UTF-8 位元組計算，包括 header 與數值欄位，因此超過上限的積壓會分多次已接受的請求傳完。傳送方為每次請求僅快照一次事件陣列；快照後的追加內容屬於後續請求。
 
-### Session 协议 header
+### Session 協定 header
 
-`session` 成员将逻辑 Session 元数据投影为原始 JSON 基元。seeded Session 以 `seedLength` 发送确切的 `Session.inheritedEventCount`；未 seeded 的 Session 省略该字段。逻辑 `isSeeded` 标志不出现在此协议中。外层 `dsh_session_log.version` 选择本扩展 schema，`session.version` 则选择逻辑 Session 格式。即使嵌入的逻辑格式同时变化，只要 Session header 投影变化，扩展 schema 也必须升版。
+`session` 成員將邏輯 Session 中繼資料投影為原始 JSON 基元。seeded Session 以 `seedLength` 傳送確切的 `Session.inheritedEventCount`；未 seeded 的 Session 省略該欄位。邏輯 `isSeeded` 標誌不出現在此協定中。外層 `dsh_session_log.version` 選擇本擴充功能 schema，`session.version` 則選擇邏輯 Session 格式。即使嵌入的邏輯格式同時變化，只要 Session header 投影變化，擴充功能 schema 也必須升版。
 
-| 成员 | 出现条件 | 含义 |
+| 成員 | 出現條件 | 含義 |
 |---|---|---|
-| `version` | 必需 | 来自 `Session.header` 的逻辑 Session 格式版本；见[格式状态](session-format-status.zh.md) |
-| `id` | 必需 | 确切的会话 id |
-| `createdAt` | 必需 | 非负安全整数 Unix epoch 毫秒数 |
-| `cwd` | 可选 | 创建会话时记录的绝对工作目录 |
-| `parentSession` | 可选 | fork 的父会话 id |
-| `seedLength` | 仅 seeded Session | 确切的继承事件数量；空的继承前缀使用零 |
-| `origin` | 可选 | subagent 子项使用的字面值 `subagent` |
-| `delegationDepth` | 可选 | 持久化的非负 subagent 委派深度 |
-| `agentPreset` | 可选 | 用于组合该会话的 agent preset id |
+| `version` | 必需 | 來自 `Session.header` 的邏輯 Session 格式版本；見[格式狀態](session-format-status.zh.md) |
+| `id` | 必需 | 確切的工作階段 id |
+| `createdAt` | 必需 | 非負安全整數 Unix epoch 毫秒數 |
+| `cwd` | 可選 | 建立工作階段時記錄的絕對工作目錄 |
+| `parentSession` | 可選 | fork 的父工作階段 id |
+| `seedLength` | 僅 seeded Session | 確切的繼承事件數量；空的繼承字首使用零 |
+| `origin` | 可選 | subagent 子項使用的字面值 `subagent` |
+| `delegationDepth` | 可選 | 持久化的非負 subagent 委派深度 |
+| `agentPreset` | 可選 | 用於組合該工作階段的 agent preset id |
 
-### 权威事件信封
+### 權威事件信封
 
-每个 `events` 元素以原始 JSON 基元承载规范事件，不依赖任何其他请求字段。每个事件包含 `type`、数值型 `seq`、`time` 与 `data`，存在 `ignorable: true` 时保留该值。表层事件必须携带 `surfaceOp`；替换范围使用数值型 `startSeq` 与 `endSeq`，system、user 和 tool 事件还可携带数值型 `sourceEventSeqs`。assistant 的提供方元数据保留在内嵌流中。已知的仅日志事件省略表层元数据；恢复的未知可忽略记录保留不透明元数据，但不将其解释为表层操作。
+每個 `events` 元素以原始 JSON 基元承載規範事件，不依賴任何其他請求欄位。每個事件包含 `type`、數值型 `seq`、`time` 與 `data`，存在 `ignorable: true` 時保留該值。表層事件必須攜帶 `surfaceOp`；替換範圍使用數值型 `startSeq` 與 `endSeq`，system、user 和 tool 事件還可攜帶數值型 `sourceEventSeqs`。assistant 的提供者中繼資料保留在內嵌流中。已知的僅日誌事件省略表層中繼資料；恢復的未知可忽略記錄保留不透明中繼資料，但不將其解釋為表層操作。
 
-### 接受水位与至少一次交付
+### 接受水位與至少一次交付
 
-端点返回 HTTP 2xx 后，该贡献会向同一会话追加以下权威事件：
+端點返回 HTTP 2xx 後，該貢獻會向同一工作階段追加以下權威事件：
 
 ```json
 {
@@ -149,14 +149,14 @@
 }
 ```
 
-`delivery-accepted` 表示已配置端点为包含该字段的 LLM 请求返回 HTTP 2xx。它不表示 SSE 已完整结束，也不表示远端已经持久化。该事件的 `throughSeq` 必须标识一项更早的事件，`sessionId` 标识已发送后缀所属的 Session，`sessionFormatVersion` 则把水位绑定到该逻辑 generation。缺少该字段表示历史格式 v0。
+`delivery-accepted` 表示已設定端點為包含該欄位的 LLM 請求返回 HTTP 2xx。它不表示 SSE 已完整結束，也不表示遠端已經持久化。該事件的 `throughSeq` 必須標識一項更早的事件，`sessionId` 標識已傳送字尾所屬的 Session，`sessionFormatVersion` 則把水位繫結到該邏輯 generation。缺少該欄位表示歷史格式 v0。
 
-发送方只会为当前 Session id 与格式 generation 折叠最大的匹配 `throughSeq`，因此并发已接受请求无法使游标倒退，其他 generation 的水位也不能授权当前后缀。恢复后的进程会从持久日志重建游标。fork 会忽略命名其他 Session 的继承水位，因此从序号零开始、按 `maxBytes` 分多次请求上传自身的继承前缀，再以子会话 id 推进。水位事件自身属于下一段未发送后缀。
+傳送方只會為目前 Session id 與格式 generation 摺疊最大的匹配 `throughSeq`，因此並行已接受請求無法使遊標倒退，其他 generation 的水位也不能授權目前字尾。恢復後的程序會從持久日誌重建遊標。fork 會忽略命名其他 Session 的繼承水位，因此從序號零開始、按 `maxBytes` 分多次請求上傳自身的繼承字首，再以子工作階段 id 推進。水位事件自身屬於下一段未傳送字尾。
 
-传输失败、非 2xx 响应，以及序列化失败后不带扩展字段发出的请求，都不会追加水位。端点接受后、本地持久化前发生崩溃时，系统可能重新发送已接受范围；不确定性只会产生重复，绝不会产生序号缺口。系统没有独立上传存储或截断路径；`maxBytes` 负责限制每次请求的字段大小。
+傳輸失敗、非 2xx 回應，以及序列化失敗後不帶擴充功能欄位發出的請求，都不會追加水位。端點接受後、本地持久化前發生崩潰時，系統可能重新傳送已接受範圍；不確定性只會產生重複，絕不會產生序號缺口。系統沒有獨立上傳儲存或截斷路徑；`maxBytes` 負責限制每次請求的欄位大小。
 
-## 暴露内容与接收方要求
+## 暴露內容與接收方要求
 
-请求标头会暴露 Harness 应用版本、一个匿名 Harness-home 身份和可选的会话身份。`dsh_plugin_packages` 会暴露存活 npm 包的名称与版本。除非组合禁用该字段，`dsh_session_log` 可能暴露会话工作目录、系统提示词快照、用户与 Assistant 内容、嵌入式 Assistant stream、失败 attempt 输出、工具参数与结果、压缩摘要、反馈和插件持有的事件。适配器 API key 不是会话事件，因此不会进入该字段。通过 `baseURL` 选择的网关会收到与官方端点相同的值。
+請求標頭會暴露 Harness 應用版本、一個匿名 Harness-home 身份和可選的工作階段身份。`dsh_plugin_packages` 會暴露存活 npm 包的名稱與版本。除非組合停用該欄位，`dsh_session_log` 可能暴露工作階段工作目錄、系統提示詞快照、使用者與 Assistant 內容、嵌入式 Assistant stream、失敗 attempt 輸出、工具參數與結果、壓縮摘要、回饋和外掛持有的事件。介面卡 API key 不是工作階段事件，因此不會進入該欄位。透過 `baseURL` 選擇的閘道會收到與官方端點相同的值。
 
-接收方按名称定位扩展字段，按各字段自己的 `version` 分派，保留不同的包版本，并忽略 JSON 成员顺序。会话日志接收方必须先校验连续序号范围，再解释事件类型。遇到不带 `ignorable: true` 的未知权威事件时，接收方无法进行无损重建。即使缺少注册表或某项贡献，基础请求仍然可用；字段缺失表示该项贡献不适用于本次请求。会话日志积压补传期间，`throughSeq` 落后于会话的最新事件，因此 2xx 并不表示接收方已持有当前完整日志。
+接收方按名稱定位擴充功能欄位，按各欄位自己的 `version` 分派，保留不同的包版本，並忽略 JSON 成員順序。工作階段日誌接收方必須先驗證連續序號範圍，再解釋事件型別。遇到不帶 `ignorable: true` 的未知權威事件時，接收方無法進行無損重建。即使缺少註冊表或某項貢獻，基礎請求仍然可用；欄位缺失表示該項貢獻不適用於本次請求。工作階段日誌積壓補傳期間，`throughSeq` 落後於工作階段的最新事件，因此 2xx 並不表示接收方已持有目前完整日誌。

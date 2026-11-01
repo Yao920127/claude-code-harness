@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write docs/cookbook/reviewing-persistence-type-changes.md
 /:
   en: 81db5d0ea2dbd0e2
-  zh: 2eb04cd5b470fd53
+  zh: 32ff1f7accd74ff8
 /cookbook-reviewing-persistence-type-changes:
   en: 50fa0e1367687c7d
-  zh: cd76f6e9649351c9
+  zh: 7f3a76e06429f2bb
 /cookbook-reviewing-persistence-type-changes/summary:
   en: 58040d6422d9ef9d
-  zh: 7deda8fc45752e8c
+  zh: 507ce230c307ca0c
 /cookbook-reviewing-persistence-type-changes/table-of-contents:
   en: 5fca19ac2bb1ddac
-  zh: 00d78fe7e80ba4f7
+  zh: 941e506cd78129f5
 /cookbook-reviewing-persistence-type-changes/optional-inspect-the-change:
   en: 6e2c03bf51b3c400
-  zh: 2545a193c89bbf1c
+  zh: 49208b8b1f4f8a6f
 /cookbook-reviewing-persistence-type-changes/1-record-the-change:
   en: 342bd49412db070e
-  zh: a8d14958e9a637d9
+  zh: 3ed510613bec4bd6
 /cookbook-reviewing-persistence-type-changes/2-check-commit-and-push:
   en: 91d39719ec40b0f7
-  zh: 405116ae4c91b100
+  zh: 0fa1e1339ff070ae
 /cookbook-reviewing-persistence-type-changes/update-an-unaccepted-record:
   en: 4fd3f48761f7909f
-  zh: 69af35c41656fa17
+  zh: e97f19ed779c85ce
 /cookbook-reviewing-persistence-type-changes/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

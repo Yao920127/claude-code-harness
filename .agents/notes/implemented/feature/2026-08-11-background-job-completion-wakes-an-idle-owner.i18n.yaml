@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-11-background-job-completion-wakes-an-idle-owner.md
 /agent-note-background-job-completion-wakes-an-idle-owner:
   en: b761777a02303d0e
-  zh: a65eb415e75bcac5
+  zh: cc9ba95fd07adaa5
 /agent-note-background-job-completion-wakes-an-idle-owner/problem:
   en: da112fe20077acdf
-  zh: b0e3e099c3aacde5
+  zh: 20730f29d77d93e3
 /agent-note-background-job-completion-wakes-an-idle-owner/decision:
   en: c5d7901d87803d0c
-  zh: 8a1e473e88f3e400
+  zh: 3b2ad62ab4e216f0
 /agent-note-background-job-completion-wakes-an-idle-owner/decision/the-busy-owner-keeps-injection:
   en: 841588bc73fc4613
-  zh: 7fb4095bd55ee241
+  zh: 82d7ec502c8a5862
 /agent-note-background-job-completion-wakes-an-idle-owner/decision/the-cap-on-consecutive-wakes-is-opt-in-and-it-is-not-time:
   en: fa9f572f763bc6b0
-  zh: f3924fa49d2be22d
+  zh: 8cb1468b648d4042
 /agent-note-background-job-completion-wakes-an-idle-owner/decision/teardown-claims-the-report:
   en: f79257596c755a32
-  zh: 856bf42492425f9c
+  zh: 6e0ec4251b1f0f45
 /agent-note-background-job-completion-wakes-an-idle-owner/decision/completion-is-announced-last:
   en: 9cab013b3513f1e0
-  zh: 78ea1b05df94d8a8
+  zh: ba5379f1c23d516d
 /agent-note-background-job-completion-wakes-an-idle-owner/alternatives-considered:
   en: debb2c9b924474c3
-  zh: 90e2cefc230e3ec8
+  zh: 70f4ee34b6b31d05
 /agent-note-background-job-completion-wakes-an-idle-owner/consequences:
   en: a2a6f76c8cc92d57
-  zh: 6eed3e6a5c75dfb9
+  zh: e96bfeca0eb12e09
 /agent-note-background-job-completion-wakes-an-idle-owner/consequences/accepted-risks:
   en: 2141374aa4f79a2b
-  zh: acff1b68abf2db7e
+  zh: cbc39025217aefe8

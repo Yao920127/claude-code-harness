@@ -1,12 +1,12 @@
-# 消息反馈
+# 訊息回饋
 
 [English](feedback.md) | 中文
 
-[`@deepseek-ai/dsh-message-feedback`](../../packages/feedback/message-feedback)拥有针对单条 assistant 消息的可编辑反馈。权威 Session 日志保存 `feedback/message-put` 和 `feedback/message-delete`；不可变的 Session 级备注仍使用 `feedback/record`，由 [`@deepseek-ai/dsh-command-feedback`](../../packages/feedback/command-feedback) 连同两种反馈共用的 `FeedbackCategory` 分类表一起拥有。三者都是仅写日志的事件，绝不进入模型上下文。
+[`@deepseek-ai/dsh-message-feedback`](../../packages/feedback/message-feedback)擁有針對單條 assistant 訊息的可編輯回饋。權威 Session 日誌儲存 `feedback/message-put` 和 `feedback/message-delete`；不可變的 Session 級備註仍使用 `feedback/record`，由 [`@deepseek-ai/dsh-command-feedback`](../../packages/feedback/command-feedback) 連同兩種回饋共用的 `FeedbackCategory` 分類表一起擁有。三者都是僅寫日誌的事件，絕不進入模型上下文。
 
-来源：[`packages/feedback/message-feedback/src/types.ts`](../../packages/feedback/message-feedback/src/types.ts)
+來源：[`packages/feedback/message-feedback/src/types.ts`](../../packages/feedback/message-feedback/src/types.ts)
 
-## 公开类型
+## 公開型別
 
 ```ts type-equiv
 /** Opaque compare-and-set token for one exact feedback item revision. */
@@ -207,9 +207,9 @@ type MessageFeedbackDeleteResult =
   | MessageFeedbackRejected<MessageFeedbackSessionNotFound | MessageFeedbackVersionConflict>
 ```
 
-## Session 反馈类型
+## Session 回饋型別
 
-来源：[`packages/feedback/command-feedback/src/types.ts`](../../packages/feedback/command-feedback/src/types.ts)
+來源：[`packages/feedback/command-feedback/src/types.ts`](../../packages/feedback/command-feedback/src/types.ts)
 
 ```ts type-equiv
 /** One of the fixed feedback categories; the ids are durable log vocabulary. */
@@ -272,47 +272,47 @@ type SessionFeedbackRecordResult =
   | { readonly ok: false; readonly error: SessionFeedbackSessionNotFound }
 ```
 
-## 数据与并发
+## 資料與並行
 
-当前条目由 payload 中 `sessionId` 与所属 Session 匹配的权威反馈事件归约得到。每个条目携带好评或差评、可选备注、可选分类、Host 分配的 `createdAt`/`updatedAt` 时间戳及自己的 opaque version。version 只能用于相等比较，且只与目标消息比较；调用方不能排序或自行合成它。
+目前條目由 payload 中 `sessionId` 與所屬 Session 匹配的權威回饋事件歸約得到。每個條目攜帶好評或差評、可選備註、可選分類、Host 分配的 `createdAt`/`updatedAt` 時間戳及自己的 opaque version。version 只能用於相等比較，且只與目標訊息比較；呼叫方不能排序或自行合成它。
 
-`put` 采用严格乐观并发：已有条目的每次请求都必须匹配当前 `ifVersion`，即使请求不会改变目标值（重复已存评分、备注与分类的 put）。冲突会返回权威当前条目（不存在时为 `null`），因此调用方无需额外读取，即可协调丢失响应或并发编辑。删除已经不存在的条目同样成功。按 Session 划分的队列串行执行读取与变更；cold 变更在读取、比较、追加和 flush 期间持有持久化写句柄。匹配版本的无变更操作不追加事件。
+`put` 採用嚴格樂觀並行：已有條目的每次請求都必須匹配目前 `ifVersion`，即使請求不會改變目標值（重複已存評分、備註與分類的 put）。衝突會返回權威目前條目（不存在時為 `null`），因此呼叫方無需額外讀取，即可協調丟失回應或並行編輯。刪除已經不存在的條目同樣成功。按 Session 劃分的佇列序列執行讀取與變更；cold 變更在讀取、比較、追加和 flush 期間持有持久化寫控制代碼。匹配版本的無變更操作不追加事件。
 
-## 目标与生命周期权威
+## 目標與生命週期權威
 
-live 持有者的内存日志直接提供目标 Session 的观测；cold 读取使用 `SessionPersistence.open(id, 'read')` 句柄，变更则使用写句柄。两条路径都不构造 Session 或 Agent。先由 `stat(id)` 预检明确不存在；`stat` 已确认存在的 Session 若读取失败，会按基础设施故障原样传播。`put` 只接受具有指定 `MessageId` 的非空、append-origin `assistant/message`；replacement-origin、仅承载 usage 的空记录和非 assistant 记录都不是反馈目标。
+live 持有者的記憶體日誌直接提供目標 Session 的觀測；cold 讀取使用 `SessionPersistence.open(id, 'read')` 控制代碼，變更則使用寫控制代碼。兩條路徑都不建構 Session 或 Agent。先由 `stat(id)` 預檢明確不存在；`stat` 已確認存在的 Session 若讀取失敗，會按基礎設施故障原樣傳播。`put` 只接受具有指定 `MessageId` 的非空、append-origin `assistant/message`；replacement-origin、僅承載 usage 的空記錄和非 assistant 記錄都不是回饋目標。
 
-fork 种子可以包含父 Session 的反馈事件，但 payload 保留父级 `sessionId`，因此不会成为子 Session 的当前反馈。删除条目会追加删除标记；早先的评分与备注仍保留在日志中。
+fork 種子可以包含父 Session 的回饋事件，但 payload 保留父級 `sessionId`，因此不會成為子 Session 的目前回饋。刪除條目會追加刪除標記；早先的評分與備註仍保留在日誌中。
 
-## 持久化与 Remote 约定
+## 持久化與 Remote 約定
 
-成功的消息反馈变更会等待权威持久化完成：live 操作通过所属 Session 追加，并要求有 `ctx.sessions.flush` 监听器参与；cold 操作通过写句柄追加并 flush。持久化故障会原样传播，不会报告成功。`maxNoteBytes` 为必填项，按 UTF-8 字节限制备注文本；Web Host 组合将其设为 `8192`。该包通过 `TypertRemoteService` 与 `@Remote` 发布 Host `messageFeedback.list`、`messageFeedback.put` 和 `messageFeedback.delete` 一元 Remote 约定；`command-feedback` 以同样方式发布面向 live Session 的 Session 级备注 `sessionFeedback.record`。下方生成的 Cordis API 是方法级权威。
+成功的訊息回饋變更會等待權威持久化完成：live 操作透過所屬 Session 追加，並要求有 `ctx.sessions.flush` 監聽器參與；cold 操作透過寫控制代碼追加並 flush。持久化故障會原樣傳播，不會報告成功。`maxNoteBytes` 為必填項，按 UTF-8 位元組限制備註文字；Web Host 組合將其設為 `8192`。該包透過 `TypertRemoteService` 與 `@Remote` 釋出 Host `messageFeedback.list`、`messageFeedback.put` 和 `messageFeedback.delete` 一元 Remote 約定；`command-feedback` 以同樣方式釋出面向 live Session 的 Session 級備註 `sessionFeedback.record`。下方生成的 Cordis API 是方法級權威。
 
-插件释放会关闭操作接纳，并排空已进入各 Session 队列的工作。
+外掛釋放會關閉操作接納，並排空已進入各 Session 佇列的工作。
 
-默认情况下，[`session-log-deepseek`](../../packages/session/session-log-deepseek/README.zh.md) 会在后续符合条件的 DeepSeek 请求中，把反馈作为普通 `dsh_session_log` 后缀的一部分传送；组合可用 `enabled: false` 禁用它。记录反馈不会触发 LLM 请求，也不会单独上传 `dsh_feedback`。对于非 DeepSeek 路由，[OTel 后端](../../packages/session/session-telemetry-otel/README.zh.md)可以将权威日志前缀释放至已记录的反馈。命令确认文本确认记录并标识 Session 与匿名用户，不报告遥测策略或投递结果。
+預設情況下，[`session-log-deepseek`](../../packages/session/session-log-deepseek/README.zh.md) 會在後續符合條件的 DeepSeek 請求中，把回饋作為普通 `dsh_session_log` 字尾的一部分傳送；組合可用 `enabled: false` 停用它。記錄回饋不會觸發 LLM 請求，也不會單獨上傳 `dsh_feedback`。對於非 DeepSeek 路由，[OTel 後端](../../packages/session/session-telemetry-otel/README.zh.md)可以將權威日誌字首釋放至已記錄的回饋。命令確認文字確認記錄並標識 Session 與匿名使用者，不報告遙測策略或投遞結果。
 
-## Web 界面
+## Web 介面
 
-[`@deepseek-ai/dsh-client-ui-message-feedback`](../../packages/client/ui-message-feedback) 是浏览器侧消费方。`@deepseek-ai/dsh-api-remotes` 挂载生成的 `messageFeedback` 与 `sessionFeedback` 贡献，因此该插件调用 `ctx.remote.messageFeedback` 与 `ctx.remote.sessionFeedback`，不接触传输层。
+[`@deepseek-ai/dsh-client-ui-message-feedback`](../../packages/client/ui-message-feedback) 是瀏覽器側消費方。`@deepseek-ai/dsh-api-remotes` 掛載生成的 `messageFeedback` 與 `sessionFeedback` 貢獻，因此該外掛呼叫 `ctx.remote.messageFeedback` 與 `ctx.remote.sessionFeedback`，不接觸傳輸層。
 
-控件是 `conversation.chat.assistant-actions` list slot 的 `feedback` 条目（order 10），该 slot 由 `ui-conversation` 声明，并渲染在已定稿助手消息的 IconActions 行内。`AssistantMessageNode` 携带来自 `assistant/message` 事件的可选 `messageId`。被中断冻结的部分输出没有该字段，渲染点在字段缺失时跳过该 slot。该操作栏每个 Turn 渲染一次，位于收尾的助手消息上：Host 接受每条 append-origin 步骤消息作为目标，但多步骤 Turn 中较早的步骤渲染的是工具行而非可评分正文，因此 UI 暴露的范围比 Host 约定允许的更窄。
+控制元件是 `conversation.chat.assistant-actions` list slot 的 `feedback` 條目（order 10），該 slot 由 `ui-conversation` 宣告，並渲染在已定稿助手訊息的 IconActions 行內。`AssistantMessageNode` 攜帶來自 `assistant/message` 事件的可選 `messageId`。被中斷凍結的部分輸出沒有該欄位，渲染點在欄位缺失時跳過該 slot。該操作欄每個 Turn 渲染一次，位於收尾的助手訊息上：Host 接受每條 append-origin 步驟訊息作為目標，但多步驟 Turn 中較早的步驟渲染的是工具行而非可評分正文，因此 UI 暴露的範圍比 Host 約定允許的更窄。
 
-每个 Session 一个 `MessageFeedbackController`，支撑该 Session 内所有消息的控件：一次 `list` 读取即填充整段对话，且延迟到首次 hover 或 focus 才发起，而非挂载时触发。每次变更把该 controller 最后观察到的版本作为 `ifVersion` 发送；`version-conflict` 响应携带权威条目，controller 据此对账而不重新拉取。变更按 Session 串行，排队操作与已提交版本比较。注入的 `retract` 操作会在该队列内重新检查已提交评分，并在并发变更后变为无操作，因此陈旧 UI 无法绕过弹窗记录裸评分。`connection/reset` 只刷新已读取过的 Session。
+每個 Session 一個 `MessageFeedbackController`，支撐該 Session 內所有訊息的控制元件：一次 `list` 讀取即填充整段對話，且延遲到首次 hover 或 focus 才發起，而非掛載時觸發。每次變更把該 controller 最後觀察到的版本作為 `ifVersion` 傳送；`version-conflict` 回應攜帶權威條目，controller 據此對帳而不重新拉取。變更按 Session 序列，排隊操作與已提交版本比較。注入的 `retract` 操作會在該佇列內重新檢查已提交評分，並在並行變更後變為無操作，因此陳舊 UI 無法繞過彈出視窗記錄裸評分。`connection/reset` 只重新整理已讀取過的 Session。
 
-任一未记录的评分都会打开该 Session 的反馈弹窗，即 `conversation.input.overlay` 的 `feedback-dialog` 条目：共用的 Modal 卡片，里面是七个分类标签和一个详情框。提交会 put 所选评分，带上所选分类与去除首尾空白的描述，两者也可都不带；成功会关闭弹窗并显示确认 toast，失败则保留弹窗与草稿并显示警告 toast。不带文本的 `/feedback`（`ui-commands` 以 `action` 路由的一个装饰）为 Session 打开同一个弹窗，随后通过 `sessionFeedback.record` 记录；`/feedback <text>` 仍走宿主命令路径。再次点击已记录的评分会直接撤回，不打开弹窗。
+任一未記錄的評分都會開啟該 Session 的回饋彈出視窗，即 `conversation.input.overlay` 的 `feedback-dialog` 條目：共用的 Modal 卡片，裡面是七個分類標籤和一個詳情框。提交會 put 所選評分，帶上所選分類與去除首尾空白的描述，兩者也可都不帶；成功會關閉彈出視窗並顯示確認 toast，失敗則保留彈出視窗與草稿並顯示警告 toast。不帶文字的 `/feedback`（`ui-commands` 以 `action` 路由的一個裝飾）為 Session 開啟同一個彈出視窗，隨後透過 `sessionFeedback.record` 記錄；`/feedback <text>` 仍走主機命令路徑。再次點選已記錄的評分會直接撤回，不開啟彈出視窗。
 
-## 边界与限制
+## 邊界與限制
 
-- 操作队列仅在进程内生效；cold 写入排他性依赖所选持久化提供方。
-- 删除只移除当前条目，不会抹除 append-only 日志或已投递后缀中的早先备注。
-- 请求若恰好落在 live detach 之后、persistence catalog 物化 header 之前的极短窗口，可能收到 `session-not-found`；调用方应在 retirement materialization 后重试。
-- cold 请求读取完整日志；服务没有条目数或聚合字节上限。`maxNoteBytes` 只限制每条备注。
-- Host 约定不记录已认证的 actor 或审计身份，因此假设调用方边界可信。
-- Web 控件只出现在对话视图。trajectory 与 waterfall 视图不渲染反馈条目，尽管它们的助手节点携带相同的 `messageId`。
-- Web 控制器不消费反馈日志事件，因此另一个标签页的评分要等到重连或下一次冲突响应才可见，不会立即出现。
-- 弹窗不预先校验 `maxNoteBytes`；针对消息的超长描述在提交时以 `note-too-large` 失败，而不是在输入过程中。Session 级备注没有大小上限，`/feedback` 命令从来也没有。
-- `sessionFeedback.record` 只服务 live Session，否则回答 `session-not-found`；弹窗打开期间 Session 退役时，弹窗会报告该失败。
+- 操作佇列僅在程序內生效；cold 寫入排他性依賴所選持久化提供者。
+- 刪除只移除目前條目，不會抹除 append-only 日誌或已投遞字尾中的早先備註。
+- 請求若恰好落在 live detach 之後、persistence catalog 物化 header 之前的極短視窗，可能收到 `session-not-found`；呼叫方應在 retirement materialization 後重試。
+- cold 請求讀取完整日誌；服務沒有條目數或聚合位元組上限。`maxNoteBytes` 只限制每條備註。
+- Host 約定不記錄已認證的 actor 或審計身份，因此假設呼叫方邊界可信。
+- Web 控制元件只出現在對話檢視。trajectory 與 waterfall 檢視不渲染回饋條目，儘管它們的助手節點攜帶相同的 `messageId`。
+- Web 控制器不消費回饋日誌事件，因此另一個標籤頁的評分要等到重連或下一次衝突回應才可見，不會立即出現。
+- 彈出視窗不預先驗證 `maxNoteBytes`；針對訊息的超長描述在提交時以 `note-too-large` 失敗，而不是在輸入過程中。Session 級備註沒有大小上限，`/feedback` 命令從來也沒有。
+- `sessionFeedback.record` 只服務 live Session，否則回答 `session-not-found`；彈出視窗開啟期間 Session 退役時，彈出視窗會報告該失敗。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

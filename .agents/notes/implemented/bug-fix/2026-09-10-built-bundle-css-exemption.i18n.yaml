@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-10-built-bundle-css-exemption.md
 /agent-note-built-bundle-exemption-for-a-failing-stylesheet:
   en: 7eea80c07cea261d
-  zh: 936523023c0b527d
+  zh: 19a5ee9d23a69a38
 /agent-note-built-bundle-exemption-for-a-failing-stylesheet/problem:
   en: ca5c97dd0ad51b66
-  zh: 8491ee495b0c625e
+  zh: 9ef86d04727672a1
 /agent-note-built-bundle-exemption-for-a-failing-stylesheet/decision:
   en: cd272aa1bfd34a14
-  zh: d184be63053f73b8
+  zh: 8982ff2c6eb57b94
 /agent-note-built-bundle-exemption-for-a-failing-stylesheet/alternatives-considered:
   en: 7f0eb995b7f00d73
-  zh: aaf7b18f7bb2c20d
+  zh: 7f331445378d7d3c
 /agent-note-built-bundle-exemption-for-a-failing-stylesheet/consequences:
   en: 767857f0bbd93ca8
-  zh: f49bf34e304a7dee
+  zh: 4e5bbf00ab86d3e6

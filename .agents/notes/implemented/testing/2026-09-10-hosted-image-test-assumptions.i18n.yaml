@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-10-hosted-image-test-assumptions.md
 /agent-note-hosted-image-assumptions-in-the-coverage-suite:
   en: b9e6c590cb18c637
-  zh: 02591776cec956ea
+  zh: 03575df04cd41a88
 /agent-note-hosted-image-assumptions-in-the-coverage-suite/problem:
   en: c1299114bcbbbbc2
-  zh: 1b38aa9c8b0a4eef
+  zh: 7fa705c0dd4dd27e
 /agent-note-hosted-image-assumptions-in-the-coverage-suite/decision:
   en: 00b0e2ef25435ad3
-  zh: 9bf59f5ca765a94b
+  zh: c30ea80f23790bb7
 /agent-note-hosted-image-assumptions-in-the-coverage-suite/alternatives-considered:
   en: 7cc99ab98600ed3f
-  zh: c302b579791a403d
+  zh: c180753460ddcc80
 /agent-note-hosted-image-assumptions-in-the-coverage-suite/consequences:
   en: 96ad46667a025f85
-  zh: ba04b1436b82a620
+  zh: 640199d530b3947e

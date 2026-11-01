@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/goal.md
 /same-session-goals:
   en: f76138e8235819ce
-  zh: fdb595b0451cd8f7
+  zh: 30933415e71fe93f
 /same-session-goals/identity-and-lifecycle:
   en: 539925bba84c069e
-  zh: 2f8ca46c076a393d
+  zh: df9eec4316bb55ef
 /same-session-goals/durable-changes:
   en: c23e38f00f1d8a55
-  zh: 69c53f7e3ee505e1
+  zh: 0717412290ef4f4c
 /same-session-goals/requests-and-notifications:
   en: 2148e6a388284de0
-  zh: 6293130430f483c3
+  zh: 7c1195e7cf9bb614
 /same-session-goals/service-behavior:
   en: cf0ca472e061e794
-  zh: aa6e9ee22a6a3ee6
+  zh: 5a7df25194c98724

@@ -6,7 +6,7 @@
           #text "ts"
         <div class="_action_9aea57">
           <button class="_copyButton_9aea57" type="button">
-            #text "复制"
+            #text "複製"
     <div class="_content_9aea57" data-code-block-content="true">
       <pre class="shiki css-variables" style="background-color: var(--shiki-background); color: var(--shiki-foreground);" tabindex="0">
         <code>
@@ -29,7 +29,7 @@
         <div class="_infostring_9aea57">
         <div class="_action_9aea57">
           <button class="_copyButton_9aea57" type="button">
-            #text "复制"
+            #text "複製"
     <div class="_content_9aea57" data-code-block-content="true">
       <pre class="_plain_9aea57">
         <code>
@@ -41,7 +41,7 @@
           #text "unknown-lang"
         <div class="_action_9aea57">
           <button class="_copyButton_9aea57" type="button">
-            #text "复制"
+            #text "複製"
     <div class="_content_9aea57" data-code-block-content="true">
       <pre class="_plain_9aea57">
         <code>
@@ -53,7 +53,7 @@
           #text "ts"
         <div class="_action_9aea57">
           <button class="_copyButton_9aea57" type="button">
-            #text "复制"
+            #text "複製"
     <div class="_content_9aea57" data-code-block-content="true">
       <pre class="shiki css-variables" style="background-color: var(--shiki-background); color: var(--shiki-foreground);" tabindex="0">
         <code>
@@ -74,7 +74,7 @@
         <div class="_infostring_9aea57">
         <div class="_action_9aea57">
           <button class="_copyButton_9aea57" type="button">
-            #text "复制"
+            #text "複製"
     <div class="_content_9aea57" data-code-block-content="true">
       <pre class="_plain_9aea57">
         <code>

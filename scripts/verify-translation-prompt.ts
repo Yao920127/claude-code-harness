@@ -61,7 +61,7 @@ try {
   if (example === undefined) throw new Error('rendered prompt has no three-section response example')
   parseTranslationResponse(example)
 
-  const roundTrip = { translation: 'first pass\n\nwith **markdown**', review: '- 无修正', final: 'final text' }
+  const roundTrip = { translation: 'first pass\n\nwith **markdown**', review: '- 無修正', final: 'final text' }
   const parsed = parseTranslationResponse(renderTranslationResponse(roundTrip))
   if (JSON.stringify(parsed) !== JSON.stringify(roundTrip)) throw new Error('three-section response does not round-trip')
 
@@ -77,7 +77,7 @@ try {
     'layout: doc',
     '---',
     '',
-    '# 快照说明',
+    '# 快照說明',
     '',
     '[English](snapshot-note.md) | 中文',
     '',

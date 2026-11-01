@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-19-session-projection-mandatory-seam.md
 /agent-note-session-projections-as-a-required-reader-seam:
   en: 41f30d473ff53ce2
-  zh: 6851c4414f5331c1
+  zh: 66b8e65183461726
 /agent-note-session-projections-as-a-required-reader-seam/problem:
   en: c0c779c717cad546
-  zh: 5d2916ac86bf5d84
+  zh: cfa5145361b11d93
 /agent-note-session-projections-as-a-required-reader-seam/decision:
   en: a1c50d2f43334a88
-  zh: d7736994733454b4
+  zh: 3a4c47addfb6b472
 /agent-note-session-projections-as-a-required-reader-seam/alternatives-considered:
   en: aea3da939c90d240
-  zh: 21e91c481cdd23b7
+  zh: 7e281afed620b054
 /agent-note-session-projections-as-a-required-reader-seam/consequences:
   en: 73325513ec70fbb2
-  zh: 610bf34b9f9db420
+  zh: a1f57d32c6e7e35e

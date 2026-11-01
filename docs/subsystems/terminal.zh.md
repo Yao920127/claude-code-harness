@@ -1,14 +1,14 @@
-# 持久 PTY 会话
+# 持久 PTY 工作階段
 
 [English](terminal.md) | 中文
 
-PTY 后端、`ctx.terminals` 与面向模型的消费方共享的类型。[持久 PTY Agent Note](../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md) 负责记录决策依据；本页记录来自 [`packages/terminal/terminal/src/types.ts`](../../packages/terminal/terminal/src/types.ts) 的跨包词汇。
+PTY 後端、`ctx.terminals` 與面向模型的消費方共享的型別。[持久 PTY Agent Note](../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md) 負責記錄決策依據；本頁記錄來自 [`packages/terminal/terminal/src/types.ts`](../../packages/terminal/terminal/src/types.ts) 的跨包詞彙。
 
-## 标识与就绪
+## 標識與就緒
 
-`TerminalSessionId` 是由服务铸造的branded id。可选名称是拥有者本地的显示元数据；授权比较的是拥有该会话的确切 `Agent`，而不是名称或猜测的 id。
+`TerminalSessionId` 是由服務鑄造的branded id。可選名稱是擁有者本地的顯示中繼資料；授權比較的是擁有該工作階段的確切 `Agent`，而不是名稱或猜測的 id。
 
-`TerminalWaitReason` 说明一次发送为何返回。它与 `TerminalSessionStatus` 无关：一次发送可能因静默或超时而返回，但顶层 shell 仍然存活；`session_exit` 表示该 shell 已退出，而不是某个任意的前台子进程已退出。
+`TerminalWaitReason` 說明一次傳送為何返回。它與 `TerminalSessionStatus` 無關：一次傳送可能因靜默或超時而返回，但頂層 shell 仍然存活；`session_exit` 表示該 shell 已退出，而不是某個任意的前臺子程序已退出。
 
 ```ts type-equiv
 /** Why one interactive send returned control to its caller. */
@@ -22,9 +22,9 @@ type TerminalSessionStatus =
   | { kind: 'exited'; exitCode: number | null; signal: NodeJS.Signals | null }
 ```
 
-## 后端与活跃会话
+## 後端與活躍工作階段
 
-后端负责启动某种已注册类型的会话并检测其就绪状态。`TerminalSessionService` 只在初始化成功后才发布返回的会话，随后负责 id 授权与清理。无法清理部分启动资源时，后端会以 `TerminalBackendCleanupError` 拒绝启动；这样，资源释放流程既能保留清理失败，也不会用它替换调用方的取消原因。后端会话拥有终端状态，并负责让已捕获的资源完全停稳。
+後端負責啟動某種已註冊型別的工作階段並檢測其就緒狀態。`TerminalSessionService` 只在初始化成功後才釋出返回的工作階段，隨後負責 id 授權與清理。無法清理部分啟動資源時，後端會以 `TerminalBackendCleanupError` 拒絕啟動；這樣，資源釋放流程既能保留清理失敗，也不會用它替換呼叫方的取消原因。後端工作階段擁有終端狀態，並負責讓已捕捉的資源完全停穩。
 
 ```ts type-equiv
 /** Replaceable provider for one PTY session type. */
@@ -56,9 +56,9 @@ interface TerminalBackendSession {
 }
 ```
 
-## 发送与保留输出
+## 傳送與保留輸出
 
-一个活跃会话同时只接受一个活动发送。该操作向通用后台任务提供读取后即推进的输出游标，并向前台调用方提供最终结果。`TerminalReadResult` 则为有界的会话 scrollback 单独分页。
+一個活躍工作階段同時只接受一個活動傳送。該操作向通用後臺任務提供讀取後即推進的輸出遊標，並向前臺呼叫方提供最終結果。`TerminalReadResult` 則為有界的工作階段 scrollback 單獨分頁。
 
 ```ts type-equiv
 /** Live backend-owned send; exactly one may be active per PTY session. */
@@ -86,9 +86,9 @@ interface TerminalSendResult {
 }
 ```
 
-## 归属与持久性
+## 歸屬與永續性
 
-`TerminalSessionService` 会将一项等待完成的清理附加到确切的拥有者作用域，拒绝其他拥有者的操作，并让会话在后端或工具插件重载期间保持存活。PTY 状态与原始字节仍局限在进程内。模型输入与有界返回输出通过现有 `tool/call`、`tool/result` 和任务结果路径持久保存，而不是重复记录 PTY 会话事件。
+`TerminalSessionService` 會將一項等待完成的清理附加到確切的擁有者作用域，拒絕其他擁有者的操作，並讓工作階段在後端或工具外掛過載期間保持存活。PTY 狀態與原始位元組仍侷限在程序內。模型輸入與有界返回輸出透過現有 `tool/call`、`tool/result` 和任務結果路徑持久儲存，而不是重複記錄 PTY 工作階段事件。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

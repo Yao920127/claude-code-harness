@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-approval/README.md
 /:
   en: a16f3a25592b9a2d
-  zh: 6be5e99282ce23d9
+  zh: c7e64c8d7739d842
 /deepseek-ai-dsh-client-ui-approval:
   en: b2f2246f0d0ce69c
   zh: e4919920818c09b5
 /deepseek-ai-dsh-client-ui-approval/summary:
   en: 8d6c7c6e63f849f6
-  zh: d89fa273e30b99d3
+  zh: 975e77faf2bb66b0
 /deepseek-ai-dsh-client-ui-approval/table-of-contents:
   en: 2bfa677a50bd924c
-  zh: 2f4b55ab42747bea
+  zh: 62b365d3581963a8
 /deepseek-ai-dsh-client-ui-approval/model-experience:
   en: 8161dce49e9f899c
-  zh: a17401e1e78ba6be
+  zh: f3b8ce841f19edd5
 /deepseek-ai-dsh-client-ui-approval/model-experience/kv-cache-effect:
   en: adf7112e0691b89e
-  zh: 14eeddcff985119f
+  zh: 6a47543c488417f3
 /deepseek-ai-dsh-client-ui-approval/known-limitations-and-deferred-work:
   en: ae644102ed52f7ee
-  zh: e109de1d517a3a94
+  zh: 5e93c19df85a7eb5
 /deepseek-ai-dsh-client-ui-approval/known-limitations-and-deferred-work/dev-note:
   en: 240c92ce5e544116
-  zh: 5bfae598cc20a3af
+  zh: c4f1e6e0840a3333

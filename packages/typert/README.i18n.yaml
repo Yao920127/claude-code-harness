@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/typert/README.md
 /:
   en: 43fe34a7197464c7
-  zh: daece7b90e4daad9
+  zh: 5443f17d09023e6f
 /packages-typert:
   en: e40877a2c7aa409f
   zh: 4c8399e41b2530b3
 /packages-typert/summary:
   en: 0d9c8dbe70597f50
-  zh: 44e0f56a1140b912
+  zh: cf3a14b3312652ea
 /packages-typert/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-typert/packages:
   en: 02a7abfa8c4d5283
-  zh: d98c274255478861
+  zh: fc1234b5a0af32b1
 /packages-typert/related-documentation:
   en: 579a757871b6cec6
-  zh: 7a559d7661631629
+  zh: b1c3ec041f7d58b3
 /packages-typert/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

@@ -1,37 +1,37 @@
-# Agent Note: 基于隔离 App 副本的并行 macOS 公证
+# Agent Note: 基於隔離 App 副本的並行 macOS 公證
 
 Status: implemented
 
 [English](2026-09-09-parallel-macos-notarization.md) | 中文
 
-## 问题
+## 問題
 
-Desktop 发布同时提供用于安装的 DMG 和用于更新的 ZIP。等待 App 公证完成后才创建 DMG，会让两次 Apple 提交串行执行。代理可以提高上传吞吐量，但不能让两个独立的服务等待过程重叠。钉票会修改 App，因此并发公证和打包不能安全地共享同一个可写目录。
+Desktop 釋出同時提供用於安裝的 DMG 和用於更新的 ZIP。等待 App 公證完成後才建立 DMG，會讓兩次 Apple 提交序列執行。代理可以提高上傳吞吐量，但不能讓兩個獨立的服務等待過程重疊。釘票會修改 App，因此並行公證和打包不能安全地共享同一個可寫目錄。
 
-## 决策
+## 決策
 
-固定目标安装包命令先组装一个 App，写入并验证其中的 `app-update.yml`，随后签名，再通过 `ditto` 创建两个独立副本。必须显式写入该配置，因为初始构建只有目录目标时，electron-builder 会跳过 macOS 更新配置钩子，而后续 `--prepackaged` 调用不会重新组装 App。App 路线公证其副本并钉票，验证签名、票据、Gatekeeper 接受状态与更新配置，再由 electron-builder 生成 ZIP 和更新元数据。DMG 路线验证其副本的更新配置，随后立即封装副本、签署映像，再通过现有 artifact-completion hook 公证映像、钉票并验证。每个 electron-builder 进程都通过 `--prepackaged` 接收真正的 `.app` 路径、独立的输出目录和 `--publish never`。
+固定目標安裝檔命令先組裝一個 App，寫入並驗證其中的 `app-update.yml`，隨後簽名，再透過 `ditto` 建立兩個獨立副本。必須顯式寫入該設定，因為初始建置只有目錄目標時，electron-builder 會跳過 macOS 更新設定掛鉤，而後續 `--prepackaged` 呼叫不會重新組裝 App。App 路線公證其副本並釘票，驗證簽名、票據、Gatekeeper 接受狀態與更新設定，再由 electron-builder 生成 ZIP 和更新中繼資料。DMG 路線驗證其副本的更新設定，隨後立即封裝副本、簽署映像，再透過現有 artifact-completion hook 公證映像、釘票並驗證。每個 electron-builder 程序都透過 `--prepackaged` 接收真正的 `.app` 路徑、獨立的輸出目錄和 `--publish never`。
 
-ZIP 包含已单独钉票的 App。DMG 包含已签名但未单独附加票据的 App；根据 Apple 的[容器说明](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)，外层票据覆盖内嵌代码。Apple 还说明了 [Gatekeeper 检查外层容器时接收票据的行为](https://developer.apple.com/forums/thread/125512)。单独提取未钉票 App 依赖在线或缓存票据；ZIP 则提供内嵌票据。仅生成目录的命令仍会公证 App 并钉票。
+ZIP 包含已單獨釘票的 App。DMG 包含已簽名但未單獨附加票據的 App；根據 Apple 的[容器說明](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution)，外層票據覆蓋內嵌程式碼。Apple 還說明了 [Gatekeeper 檢查外層容器時接收票據的行為](https://developer.apple.com/forums/thread/125512)。單獨提取未釘票 App 依賴線上或快取票據；ZIP 則提供內嵌票據。僅生成目錄的命令仍會公證 App 並釘票。
 
-错误传播和临时目录清理前必须等待两路均结束。只有两路均成功且使用已配置更新源时，才允许移入 DMG、ZIP、ZIP blockmap 和频道元数据。已钉票的 App 替换签名目录构建，调用方最后写入发布完成记录。App 更新配置缺失或不匹配会在移入前失败；任何错误都会使该记录保持缺失，现有上传校验因而会拒绝不完整发布。独立输出目录还避免了 electron-builder 诊断文件与频道元数据的并发写入。
+錯誤傳播和臨時目錄清理前必須等待兩路均結束。只有兩路均成功且使用已設定更新源時，才允許移入 DMG、ZIP、ZIP blockmap 和頻道中繼資料。已釘票的 App 替換籤名目錄建置，呼叫方最後寫入釋出完成記錄。App 更新設定缺失或不匹配會在移入前失敗；任何錯誤都會使該記錄保持缺失，現有上傳驗證因而會拒絕不完整發布。獨立輸出目錄還避免了 electron-builder 診斷檔案與頻道中繼資料的並行寫入。
 
-本决策细化了 [Desktop 打包决策](../architecture/2026-08-25-electron-desktop-packaging-and-updates.zh.md)中的公证顺序；原决策继续负责发布身份、签名、更新归属与发布要求。
+本決策細化了 [Desktop 打包決策](../architecture/2026-08-25-electron-desktop-packaging-and-updates.zh.md)中的公證順序；原決策繼續負責釋出身份、簽名、更新歸屬與釋出要求。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**两路共享一个 App。** DMG 读取可能与 `stapler` 写入重叠，使 bundle 内容不确定。独立副本使每条路线中提交与分发的字节保持稳定。
+**兩路共享一個 App。** DMG 讀取可能與 `stapler` 寫入重疊，使 bundle 內容不確定。獨立副本使每條路線中提交與分發的位元組保持穩定。
 
-**只公证 DMG。** ZIP 更新独立分发，需要已钉票的 App。保留两次提交可以明确维持这项独立验收。
+**只公證 DMG。** ZIP 更新獨立分發，需要已釘票的 App。保留兩次提交可以明確維持這項獨立驗收。
 
-**保留串行公证，仅使用代理。** 同一个 214.84 MiB DMG 直连上传耗时 203.83 秒，通过所测系统代理上传耗时 38.59 秒，但两种网络路径都不能消除 Apple 提交间的串行依赖。代理配置仍由构建主机负责；打包脚本不修改主机网络设置。
+**保留序列公證，僅使用代理。** 同一個 214.84 MiB DMG 直連上傳耗時 203.83 秒，透過所測系統代理上傳耗時 38.59 秒，但兩種網路路徑都不能消除 Apple 提交間的序列依賴。代理設定仍由建置主機負責；打包腳本不修改主機網路設定。
 
-**App 公证结束前，在同一次 electron-builder 调用中运行两个目标。** ZIP 必须读取已钉票副本。独立的 prepackaged 调用可以保留 electron-builder 自己的归档、blockmap 和元数据实现，无需修改目标调度或给依赖打补丁。
+**App 公證結束前，在同一次 electron-builder 呼叫中執行兩個目標。** ZIP 必須讀取已釘票副本。獨立的 prepackaged 呼叫可以保留 electron-builder 自己的歸檔、blockmap 和中繼資料實作，無需修改目標排程或給依賴打補丁。
 
-## 影响
+## 影響
 
-2026-09-09，在同一台 Mac、同一系统代理下，arm64 完整打包在并行公证时耗时 490.78 秒，串行时耗时 751.33 秒，缩短 34.7%。两条产物路线相隔 8 毫秒启动，App/ZIP 耗时 307.36 秒，DMG 耗时 268.54 秒。Apple 接受了两次提交，两者上传完成时间仅相差约一秒。每种配置只有一次完整构建样本，缓存与 Apple 队列变化使我们不能将全部差值归因于并发。
+2026-09-09，在同一臺 Mac、同一系統代理下，arm64 完整打包在並行公證時耗時 490.78 秒，序列時耗時 751.33 秒，縮短 34.7%。兩條產物路線相隔 8 毫秒啟動，App/ZIP 耗時 307.36 秒，DMG 耗時 268.54 秒。Apple 接受了兩次提交，兩者上傳完成時間僅相差約一秒。每種設定只有一次完整建置樣本，快取與 Apple 佇列變化使我們不能將全部差值歸因於並行。
 
-两个临时 App 副本与独立产物目录增加了磁盘峰值占用。两次上传可能争用网络带宽，Apple 也可能分别排队处理；阶段计时记录实际行为，不构成 CI 延迟预算。一路失败后会等待另一路结束再清理，这可能延迟错误报告，但能避免删除仍由子进程持有的文件。
+兩個臨時 App 副本與獨立產物目錄增加了磁碟峰值佔用。兩次上傳可能爭用網路頻寬，Apple 也可能分別排隊處理；階段計時記錄實際行為，不構成 CI 延遲預算。一路失敗後會等待另一路結束再清理，這可能延遲錯誤報告，但能避免刪除仍由子程式持有的檔案。
 
-[编排测试](../../../../apps/desktop/tests/package-macos.spec.ts)通过同步屏障验证重叠执行、票据隔离、收集两路错误、强制检查更新配置，以及拒绝移入不完整产物。聚焦配置测试覆盖固定更新源的写入，并拒绝缺失、不匹配或字段不完整的配置。受控的串行回归会使重叠断言失败。真实签名 macOS 打包、ZIP 解压后验证、DMG 完整性与内嵌签名检查、最终上传计划验证用于验收平台工具；跨版本已安装应用更新和干净 Mac 上的离线安装仍属于发布验收工作。
+[編排測試](../../../../apps/desktop/tests/package-macos.spec.ts)透過同步屏障驗證重疊執行、票據隔離、收集兩路錯誤、強制檢查更新設定，以及拒絕移入不完整產物。聚焦設定測試覆蓋固定更新源的寫入，並拒絕缺失、不匹配或欄位不完整的設定。受控的序列迴歸會使重疊斷言失敗。真實簽名 macOS 打包、ZIP 解壓後驗證、DMG 完整性與內嵌簽名檢查、最終上傳計劃驗證用於驗收平臺工具；跨版本已安裝應用更新和乾淨 Mac 上的離線安裝仍屬於釋出驗收工作。

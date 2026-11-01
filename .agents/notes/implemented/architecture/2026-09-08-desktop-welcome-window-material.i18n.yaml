@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-08-desktop-welcome-window-material.md
 /agent-note-desktop-welcome-window-material:
   en: a362add86cddc144
-  zh: c6f482e5f9a66bdf
+  zh: d936ce945bad1207
 /agent-note-desktop-welcome-window-material/problem:
   en: 8578b584bda3abdc
-  zh: 85dcf44aab2cfd51
+  zh: 7b7478542e74a165
 /agent-note-desktop-welcome-window-material/decision:
-  en: df7f9dc0c48769ab
-  zh: 5e667c736dd58a1c
+  en: 82499401c00ca63e
+  zh: 9f670022118c0ea1
 /agent-note-desktop-welcome-window-material/alternatives-considered:
   en: cf42e200b1d0f00a
-  zh: de96b5647f5ffb23
+  zh: dad789b43e79b2b5
 /agent-note-desktop-welcome-window-material/consequences:
   en: fd2533d63d9a1e4e
-  zh: 5cb602962608f5de
+  zh: e0c578ad22110b41

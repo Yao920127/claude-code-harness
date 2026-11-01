@@ -1,7 +1,7 @@
-# 活跃 Assistant 重连基准
+# 活躍 Assistant 重連基準
 
 [English](README.md) | 中文
 
-[reconnect.bench.client.ts](reconnect.bench.client.ts) 测量重连携带一个包含 100,000 个 delta、尚未完成的 reasoning 前缀时，生产 Client 的折叠成本。编译后的私有适配器调用 `ClientAssistantStream.replace()`，不增加产品导出。三个全新的纯 Node worker 在计时前合成紧凑基线；替换时间与强制 GC 后的保留堆分别执行中位数预算检查。下一个稠密序号的实时 frame 仍须被接受。标准托管 CI 使用 50 ms 替换预期及共享的 1.25× 余量（上限为 63 ms）；保留 heap 预算仍为 30 MiB。实测样本和合成回归对照使用与 worker 判定相同的时间断言。
+[reconnect.bench.client.ts](reconnect.bench.client.ts) 測量重連攜帶一個包含 100,000 個 delta、尚未完成的 reasoning 字首時，生產 Client 的摺疊成本。編譯後的私有介面卡呼叫 `ClientAssistantStream.replace()`，不增加產品匯出。三個全新的純 Node worker 在計時前合成緊湊基線；替換時間與強制 GC 後的保留堆分別執行中位數預算檢查。下一個稠密序號的即時 frame 仍須被接受。標準託管 CI 使用 50 ms 替換預期及共享的 1.25× 餘量（上限為 63 ms）；保留 heap 預算仍為 30 MiB。實測樣本和合成迴歸對照使用與 worker 判定相同的時間斷言。
 
-通过 `pnpm run build:bench` 构建，再在 `vitest.bench.config.ts` 中选择 `benchmarks/active-stream-reconnect`。这项针对 Node 的工作负载既不构建也不测量浏览器渲染。[前端性能预算](../../.agents/notes/implemented/testing/2026-09-06-frontend-performance-budgets.zh.md)记录校准与排除项。
+透過 `pnpm run build:bench` 建置，再在 `vitest.bench.config.ts` 中選擇 `benchmarks/active-stream-reconnect`。這項針對 Node 的工作負載既不建置也不測量瀏覽器渲染。[前端效能預算](../../.agents/notes/implemented/testing/2026-09-06-frontend-performance-budgets.zh.md)記錄校準與排除項。

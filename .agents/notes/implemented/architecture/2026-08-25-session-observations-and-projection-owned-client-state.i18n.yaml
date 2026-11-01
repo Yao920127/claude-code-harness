@@ -4,55 +4,55 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-25-session-observations-and-projection-owned-client-state.md
 /agent-note-session-observations-and-projection-owned-client-state:
   en: 00b84161c373744e
-  zh: 7243e7f32ae1fa3f
+  zh: 2771a0dd395dab65
 /agent-note-session-observations-and-projection-owned-client-state/problem:
   en: af1f72affe6ae77e
-  zh: 3d76b6310bc572b1
+  zh: 34e5d6a1ca9baf5d
 /agent-note-session-observations-and-projection-owned-client-state/decision:
   en: 00e13f9c63b7820a
-  zh: b043556c3b8d9f50
+  zh: fb3d44a9fe60ae22
 /agent-note-session-observations-and-projection-owned-client-state/decision/data-flow:
   en: 480284ae1a6ce210
-  zh: d42c72ada9f019f8
+  zh: 1f0140c0afe5f77b
 /agent-note-session-observations-and-projection-owned-client-state/decision/observation-is-the-point-read-unit:
   en: fac92f8547482a49
-  zh: 60240c47fbe4611f
+  zh: aa7f00f3e2afa1c0
 /agent-note-session-observations-and-projection-owned-client-state/decision/source-resolution-and-lifetime:
   en: e550ae9892474276
-  zh: fb6a2d9e91ebd4d9
+  zh: 193563f9c640cc04
 /agent-note-session-observations-and-projection-owned-client-state/decision/projection-execution-boundary:
   en: 148de86941b90f41
-  zh: c065a8e96e28b9d7
+  zh: b568ad16cbf6a4ef
 /agent-note-session-observations-and-projection-owned-client-state/decision/read-audiences:
   en: 888f62659f4d868d
-  zh: e74491e8c85046ee
+  zh: d27e337405f68680
 /agent-note-session-observations-and-projection-owned-client-state/decision/replayable-client-facts-are-projection-owned:
   en: efded09f0cd30a8e
-  zh: 5e16580a39ff3359
+  zh: d9bde6dafe27fbdf
 /agent-note-session-observations-and-projection-owned-client-state/decision/client-merge-rules:
   en: fb8740be674e4708
-  zh: 7dc0c89558f51792
+  zh: 82b1745028ae7238
 /agent-note-session-observations-and-projection-owned-client-state/decision/domain-applications:
   en: 4dcae9e00148b11e
-  zh: acfd1b6831cf50fe
+  zh: c30aebad05678c5a
 /agent-note-session-observations-and-projection-owned-client-state/decision/failure-and-readiness-boundaries:
   en: 0f90a8bccedf9e71
-  zh: 8452dfdf0af00fb3
+  zh: abf4a440af208543
 /agent-note-session-observations-and-projection-owned-client-state/decision/ownership-matrix:
   en: 4f25ea5ac5b18fb3
-  zh: 30af4b15936fc455
+  zh: 28636ab4fc317af5
 /agent-note-session-observations-and-projection-owned-client-state/decision/extension-rules:
   en: 110ca8005f618ad1
-  zh: 8f3e83d59334b278
+  zh: 1be50da515494c78
 /agent-note-session-observations-and-projection-owned-client-state/decision/relationship-to-existing-decisions:
   en: 8d699dfc22ab5c5f
-  zh: 8dcd9fc6bd1594db
+  zh: d5a400fc69d8c780
 /agent-note-session-observations-and-projection-owned-client-state/verification:
   en: df17217023668428
-  zh: 88f7da4deffc6bf9
+  zh: bad64b319c73ea28
 /agent-note-session-observations-and-projection-owned-client-state/alternatives-considered:
   en: a25138b4298cda16
-  zh: 92799a9bd8867d47
+  zh: fb13dcef87d9223e
 /agent-note-session-observations-and-projection-owned-client-state/consequences:
   en: e1f8bd8fa68de603
-  zh: 5afcd06f2611bc1e
+  zh: 05d50fee6b399feb

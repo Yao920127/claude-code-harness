@@ -1,5 +1,5 @@
 ---
-description: "构建时 Typert 生成器：源代码类型分析、与编译器无关的模型与产物生成，供接入 Typert 发布或消费生成产物的维护者阅读。"
+description: "建置時 Typert 生成器：原始碼型別分析、與編譯器無關的模型與產物生成，供接入 Typert 釋出或消費生成產物的維護者閱讀。"
 kind: "package-library"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-library"
 
 ## 概述
 
-`dsh-typert-generator` 让维护者把公开的 TypeScript 类型转换为构建产物和与编译器无关的模型。包通过 `./typert` 和可选的 `./client/typert` 导出选择加入；如果声明、发布清单、Remote 导出或 Zod 投影无法被正确表示，生成过程就会失败。仓库构建会生成可执行 schema factory 与配套声明，工具也可以调用 `WorkspaceAnalyzer` 完成检查或目录生成而不发布产物。生成过程只在构建时运行，绝不会进入实时 agent（智能体）会话。
+`dsh-typert-generator` 讓維護者把公開的 TypeScript 型別轉換為建置產物和與編譯器無關的模型。包透過 `./typert` 和可選的 `./client/typert` 匯出選擇加入；如果宣告、釋出清單、Remote 匯出或 Zod 投影無法被正確表示，生成過程就會失敗。儲存庫建置會生成可執行 schema factory 與配套宣告，工具也可以呼叫 `WorkspaceAnalyzer` 完成檢查或目錄生成而不釋出產物。生成過程只在建置時執行，絕不會進入即時 agent（智慧代理）工作階段。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-本包供把 Typert 生成接入构建或消费生成产物的包维护者与仓库维护者使用。发布是选择加入的：声明导出入口、运行构建，产物即出现在 `lib/` 中；静态分析则不需要产物。
+本包供把 Typert 生成接入建置或消費生成產物的包維護者與儲存庫維護者使用。釋出是選擇加入的：宣告匯出入口、執行建置，產物即出現在 `lib/` 中；靜態分析則不需要產物。
 
-### 从包中发布 Typert 产物
+### 從包中釋出 Typert 產物
 
-参与贡献的包在 `package.json` 中声明宿主侧产物导出；同时贡献两侧的包还要声明 `./client/typert`，含 Remote 方法的包还要声明 `./remote`：
+參與貢獻的包在 `package.json` 中宣告主機側產物匯出；同時貢獻兩側的包還要宣告 `./client/typert`，含 Remote 方法的包還要宣告 `./remote`：
 
 ```yaml
 exports:
@@ -41,105 +41,105 @@ files:
   - "lib/typert.host.d.ts"
 ```
 
-构建完成后，`lib/typert.host.js` 与 `lib/typert.host.d.ts` 即存在，[loader](../loader/README.zh.md) 会在 Loader 组合中注册该贡献。生成的声明文件把 `TYPERT` 暴露为 `unknown`，因此参与贡献的包永远不会依赖运行时注册表。当声明缺失、指向错误文件，或在没有 Remote 方法的情况下发布 Remote 产物时，生成器会使构建失败；不支持的 Zod 投影会以 `TypertEmitError` 指明具体构造并失败，而不会展平或弱化源类型。
+建置完成後，`lib/typert.host.js` 與 `lib/typert.host.d.ts` 即存在，[loader](../loader/README.zh.md) 會在 Loader 組合中註冊該貢獻。生成的宣告檔案把 `TYPERT` 暴露為 `unknown`，因此參與貢獻的包永遠不會依賴執行時註冊表。當宣告缺失、指向錯誤檔案，或在沒有 Remote 方法的情況下發布 Remote 產物時，生成器會使建置失敗；不支援的 Zod 投影會以 `TypertEmitError` 指明具體建構並失敗，而不會展平或弱化源型別。
 
-### 静态分析工作区
+### 靜態分析工作區
 
-静态消费方直接针对工作区的 `tsconfig.host.json` 与 `tsconfig.client.json` 聚合配置调用 `WorkspaceAnalyzer`，选择 face 与包子集，并在不生成或加载运行时产物的前提下读取生成的 `FaceModel` 与类型图。`analyzeInBatches()` 通过有界的编译器程序处理大批量包选择，模型形态保持一致；`discoverPackages()` 无需构建类型检查程序即可找出参与贡献的包。
+靜態消費方直接針對工作區的 `tsconfig.host.json` 與 `tsconfig.client.json` 聚合設定呼叫 `WorkspaceAnalyzer`，選擇 face 與包子集，並在不生成或載入執行時產物的前提下讀取生成的 `FaceModel` 與型別圖。`analyzeInBatches()` 透過有界的編譯器程式處理大批次包選擇，模型形態保持一致；`discoverPackages()` 無需建置型別檢查程式即可找出參與貢獻的包。
 
-### 在 tsdown 构建中运行生成
+### 在 tsdown 建置中執行生成
 
-包的 `./tsdown` 子路径为根 tsdown 配置提供 `typertPlugin()`：它在打包前转换 TypeScript 依赖中的标准装饰器，并在包输出根目录生成模型驱动的 face 产物。`package` 模式只生成当前打包的包；`workspace` 模式对每个显式贡献方各生成一次。
+包的 `./tsdown` 子路徑為根 tsdown 設定提供 `typertPlugin()`：它在打包前轉換 TypeScript 依賴中的標準裝飾器，並在包輸出根目錄生成模型驅動的 face 產物。`package` 模式只生成目前打包的包；`workspace` 模式對每個顯式貢獻方各生成一次。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释生成器如何得到与编译器无关的模型以及它生成什么；可观察的构建行为已在[使用本包](#use-this-package)中说明。
+本節解釋生成器如何得到與編譯器無關的模型以及它生成什麼；可觀察的建置行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-生成器遵循一项核心分离原则：提取与生成通过与编译器无关的模型解耦。`WorkspaceAnalyzer` 读取以 face aggregate tsconfig 为种子的 TypeScript 程序，产出 `FaceModel` 与 `TypeGraph` 数据；`FaceModelEmitter` 只消费该模型，绝不接收编译器节点。模型保留声明标识、泛型参数及应用、显式继承、条件类型与映射类型、导入属性、abstract 修饰符与源码 JSDoc，并排除构造函数、静态成员与非公共成员。
+生成器遵循一項核心分離原則：提取與生成透過與編譯器無關的模型解耦。`WorkspaceAnalyzer` 讀取以 face aggregate tsconfig 為種子的 TypeScript 程式，產出 `FaceModel` 與 `TypeGraph` 資料；`FaceModelEmitter` 只消費該模型，絕不接收編譯器節點。模型保留宣告標識、泛型參數及應用、顯式繼承、條件型別與對映型別、匯入屬性、abstract 修飾符與原始碼 JSDoc，並排除建構函式、靜態成員與非公共成員。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 公共 API：分析器、生成器、工作区生成器、渲染器、目录投影 |
-| [`src/analyzer.ts`](src/analyzer.ts) | `WorkspaceAnalyzer`：face 程序、check/write 模式、分批、发现、源码索引 |
-| [`src/model.ts`](src/model.ts) | 与编译器无关的模型类型 |
-| [`src/emitter.ts`](src/emitter.ts) | `FaceModelEmitter`：Zod schema 与声明生成、Remote 声明 |
-| [`src/workspace.ts`](src/workspace.ts) | `WorkspaceTypertGenerator`：发现、生成、导出与文件清单校验 |
-| [`src/tsdown-plugin.ts`](src/tsdown-plugin.ts) | tsdown 插件面：装饰器转换与产物生成 |
-| [`src/cordis-catalog.ts`](src/cordis-catalog.ts) | 生成 Cordis 目录所用的目录投影 |
+| [`src/index.ts`](src/index.ts) | 公共 API：分析器、生成器、工作區生成器、渲染器、目錄投影 |
+| [`src/analyzer.ts`](src/analyzer.ts) | `WorkspaceAnalyzer`：face 程式、check/write 模式、分批、發現、原始碼索引 |
+| [`src/model.ts`](src/model.ts) | 與編譯器無關的模型型別 |
+| [`src/emitter.ts`](src/emitter.ts) | `FaceModelEmitter`：Zod schema 與宣告生成、Remote 宣告 |
+| [`src/workspace.ts`](src/workspace.ts) | `WorkspaceTypertGenerator`：發現、生成、匯出與檔案清單驗證 |
+| [`src/tsdown-plugin.ts`](src/tsdown-plugin.ts) | tsdown 外掛面：裝飾器轉換與產物生成 |
+| [`src/cordis-catalog.ts`](src/cordis-catalog.ts) | 生成 Cordis 目錄所用的目錄投影 |
 
-### 分析与 face
+### 分析與 face
 
-Host 与 Client 是两个独立的 TypeScript 程序。直接项目引用确定编译器 face 的成员归属，`dsh.client` 包子路径则确定运行时 face 的贡献；`package.json#exports` 划定所有跨包公开边界，跨 face 的边只能来自导入或重新导出。解析到本包内部模块的相对导入会沿该模块的重新导出继续追踪，直到出现包说明符，因此包内转发模块保留原始声明引用；解析到其他包的相对导入会失败。`check` 模式遇到语法或语义诊断、缺失的公开类型标注、跨包私有引用，以及模型无法无损保留的可达声明合并时都会失败；`write` 模式插入类型检查器推导出的标注，并返回无诊断的 check 模式模型。NPM 依赖拥有的类型继续以 `external` 引用表示，不会被展开。流方法的返回类型可以是 `Iterable<Out>`、`AsyncIterable<Out>` 或协议包的 `RemoteStream<Out, In>`，后者与标准库包装器一样按符号名与声明所在包识别；第二个类型参数不为 `never` 时产出描述符的上行编解码器，生成的 Client 签名则返回 `RemoteStreamHandle<Out, In>`。
+Host 與 Client 是兩個獨立的 TypeScript 程式。直接專案引用確定編譯器 face 的成員歸屬，`dsh.client` 包子路徑則確定執行時 face 的貢獻；`package.json#exports` 劃定所有跨包公開邊界，跨 face 的邊只能來自匯入或重新匯出。解析到本包內部模組的相對匯入會沿該模組的重新匯出繼續追蹤，直到出現包說明符，因此包內轉發模組保留原始宣告引用；解析到其他包的相對匯入會失敗。`check` 模式遇到語法或語義診斷、缺失的公開型別標註、跨包私有引用，以及模型無法無損保留的可達宣告合併時都會失敗；`write` 模式插入型別檢查器推匯出的標註，並返回無診斷的 check 模式模型。NPM 依賴擁有的型別繼續以 `external` 引用表示，不會被展開。流方法的返回型別可以是 `Iterable<Out>`、`AsyncIterable<Out>` 或協定包的 `RemoteStream<Out, In>`，後者與標準庫包裝器一樣按符號名與宣告所在包識別；第二個型別參數不為 `never` 時產出描述符的上行編解碼器，生成的 Client 簽名則返回 `RemoteStreamHandle<Out, In>`。
 
-### 生成与发布约定
+### 生成與釋出約定
 
-`FaceModelEmitter` 输出包含只缓存成功结果的 Zod schema factory 与 `TYPERT` 贡献的可执行 JavaScript，以及把 factory 通过包的公开导出标注为返回 `z.ZodType<SourceType>` 的声明文件；不支持的 Zod 投影会失败。含 Remote 方法的 Host face 还会额外为 Client 生成 Host Remote 约定的 `typert.remote-client.*` 投影。`WorkspaceTypertGenerator` 校验每个贡献方的 `package.json`：`./typert` 与 `./client/typert`（存在 Remote 方法时还有 `./remote`）必须指向精确的生成文件，且 `files` 清单必须包含它们。
+`FaceModelEmitter` 輸出包含只快取成功結果的 Zod schema factory 與 `TYPERT` 貢獻的可執行 JavaScript，以及把 factory 透過包的公開匯出標註為返回 `z.ZodType<SourceType>` 的宣告檔案；不支援的 Zod 投影會失敗。含 Remote 方法的 Host face 還會額外為 Client 生成 Host Remote 約定的 `typert.remote-client.*` 投影。`WorkspaceTypertGenerator` 驗證每個貢獻方的 `package.json`：`./typert` 與 `./client/typert`（存在 Remote 方法時還有 `./remote`）必須指向精確的生成檔案，且 `files` 清單必須包含它們。
 
-[一元二进制结果](../protocol/README.zh.md)在泛型类型解析后被识别。其 codec 校验字节数组类型与 JSON 元数据，不遍历、复制或冻结字节载荷；生成的 Client 声明保留原有元数据类型，并将字节的底层缓冲区收窄为 `ArrayBuffer`。
+[一元二進位制結果](../protocol/README.zh.md)在泛型型別解析後被識別。其 codec 驗證位元組陣列型別與 JSON 中繼資料，不遍歷、複製或凍結位元組載荷；生成的 Client 宣告保留原有中繼資料型別，並將位元組的底層緩衝區收窄為 `ArrayBuffer`。
 
-### 目录投影
+### 目錄投影
 
-运行时类型闭包索引导出的 workspace 声明和被引用的框架 enum。Vendor 声明不参与业务 API 发现；公共结果引用其中 enum 时，目录仍提供其定义。
+執行時型別閉包索引匯出的 workspace 宣告和被引用的框架 enum。Vendor 宣告不參與業務 API 發現；公共結果引用其中 enum 時，目錄仍提供其定義。
 
-根导出包含本仓库 Cordis 目录使用的模型驱动提取逻辑、完整性检查与确定性文本渲染器。它们接受 `CordisCatalogPolicy`；由仓库持有的类型链接、基础类型／豁免分类与继承的 Cordis 条目仍位于 `scripts/gen-cordis-catalog.ts`，由调用方显式传入，因此本包只包含投影机制，不会隐式复制仓库的文档分类体系。
+根匯出包含本儲存庫 Cordis 目錄使用的模型驅動提取邏輯、完整性檢查與確定性文字渲染器。它們接受 `CordisCatalogPolicy`；由儲存庫持有的型別連結、基礎型別／豁免分類與繼承的 Cordis 條目仍位於 `scripts/gen-cordis-catalog.ts`，由呼叫方顯式傳入，因此本包只包含投影機制，不會隱式複製儲存庫的文件分類體系。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从生成模型逐步进入运行时与 Remote 调用路径。
+當包級約定不夠用時閱讀以下頁面；它們從生成模型逐步進入執行時與 Remote 呼叫路徑。
 
-- [Typert 子系统参考](../../../docs/subsystems/typert.zh.md)——生成器建模的 Remote 约定与注册表接口。
-- [Typert 协议](../protocol/README.zh.md)——生成产物所扩展并消费的声明。
-- [Typert 注册表](../registry/README.zh.md)——生成产物所供给的运行时存储。
-- [API 网关参考](../../../docs/api-gateway.zh.md)——生成的 Remote 描述符如何端到端被调用。
-- [与编译器无关的模型 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-27-compiler-independent-typert-model.zh.md)——模型设计、备选方案与后果。
+- [Typert 子系統參考](../../../docs/subsystems/typert.zh.md)——生成器建模的 Remote 約定與註冊表介面。
+- [Typert 協定](../protocol/README.zh.md)——生成產物所擴充功能並消費的宣告。
+- [Typert 註冊表](../registry/README.zh.md)——生成產物所供給的執行時儲存。
+- [API 閘道參考](../../../docs/api-gateway.zh.md)——生成的 Remote 描述符如何端到端被呼叫。
+- [與編譯器無關的模型 Agent Note](../../../.agents/notes/implemented/architecture/2026-07-27-compiler-independent-typert-model.zh.md)——模型設計、備選方案與後果。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为构建时生成器在任何 agent 运行时之外运行，不触及任何模型请求。
+無，因為建置時生成器在任何 agent 執行時之外執行，不觸及任何模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；生成产物只有在消费方将其放入请求时才会触及请求。
+無直接影響；生成產物只有在消費方將其放入請求時才會觸及請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明生成器无法建模或生成的构造；它们是当前包约束，不是任务积压。
+這些限制說明生成器無法建模或生成的建構；它們是目前包約束，不是任務積壓。
 
-- **包导出模式会被跳过**——参与贡献的包需要具体的导出目标；通配符导出模式不会被分析。
-- **跨 face 的命名空间重新导出会失败**——具名与星号重新导出会生成链接，但在 `TypeTargetModel` 能够不经展平表示模块命名空间之前，命名空间重新导出无法表示。
-- **Zod 生成器只支持有意限定的子集**——泛型 schema 声明，以及以条件类型或映射类型为 schema 根的计算构造，都会失败，直到存在明确的 schema 工厂策略。
-- **没有生成的 schema 跨 face 导入**——跨 face 链接会在模型中表示以供分析，但生成的 schema 均不需要跨 face 的运行时 Zod 导入。
-- **发现范围只覆盖具体公开导出**——既未导出、也未由可达图导入的声明按设计排除在包模型之外。
+- **包匯出模式會被跳過**——參與貢獻的包需要具體的匯出目標；萬用字元匯出模式不會被分析。
+- **跨 face 的名稱空間重新匯出會失敗**——具名與星號重新匯出會生成連結，但在 `TypeTargetModel` 能夠不經展平表示模組名稱空間之前，名稱空間重新匯出無法表示。
+- **Zod 生成器只支援有意限定的子集**——泛型 schema 宣告，以及以條件型別或對映型別為 schema 根的計算建構，都會失敗，直到存在明確的 schema 工廠策略。
+- **沒有生成的 schema 跨 face 匯入**——跨 face 連結會在模型中表示以供分析，但生成的 schema 均不需要跨 face 的執行時 Zod 匯入。
+- **發現範圍只覆蓋具體公開匯出**——既未匯出、也未由可達圖匯入的宣告按設計排除在包模型之外。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。源码项目分析器与构建时 emitter 均不在任何 Cordis 运行时中运行；模型快照、可执行产物与消费方包的类型检查会强制执行其输出约定。
+**執行時不變式：** 不釋出伴生入口。原始碼專案分析器與建置時 emitter 均不在任何 Cordis 執行時中執行；模型快照、可執行產物與消費方包的型別檢查會強制執行其輸出約定。

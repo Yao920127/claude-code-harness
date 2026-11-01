@@ -4,13 +4,13 @@
 #   pnpm run verify-translation-pairing --write docs/cookbook/responding-to-pr-review-on-a-stack.md
 /responding-to-review-across-a-stacked-pr-chain:
   en: f41561de1c6dbfef
-  zh: 83b863e1ac91d913
+  zh: 8fcb219260316dc4
 /responding-to-review-across-a-stacked-pr-chain/ground-rules:
   en: 5545e41aea74b5d6
-  zh: 7105f51939753a1a
+  zh: efc53657983e7585
 /responding-to-review-across-a-stacked-pr-chain/resolve-comments-through-the-stack:
   en: 4d58b207c8ecbcaa
-  zh: 38673a460674b8d6
+  zh: 9184f4761e228189
 /responding-to-review-across-a-stacked-pr-chain/verify:
   en: 07cfbae7602fc30e
-  zh: 19782f06ee3c4a74
+  zh: c01c2948515349fd

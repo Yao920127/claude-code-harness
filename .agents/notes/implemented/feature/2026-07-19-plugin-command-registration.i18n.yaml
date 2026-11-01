@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-07-19-plugin-command-registration.md
 /agent-note-plugin-owned-human-command-registration:
   en: f1509f79bd9e2445
-  zh: 30f62b9b4f611f9d
+  zh: 3666f492aa7e28e4
 /agent-note-plugin-owned-human-command-registration/problem:
   en: 628dcc0bda181677
-  zh: 71b110588f89c2b4
+  zh: 12af1ddf7f43aac7
 /agent-note-plugin-owned-human-command-registration/decision:
   en: acf2742722ab7c85
-  zh: e0bdbd6fd0bf51b1
+  zh: b4ea6ff874e95fbf
 /agent-note-plugin-owned-human-command-registration/decision/registry-contract:
   en: 1b3daffaa9a8b56e
-  zh: fa99bb6bc553cafb
+  zh: fb3615609fcd204d
 /agent-note-plugin-owned-human-command-registration/decision/scope-and-lifecycle:
   en: 6d55a0d4b1b9606a
-  zh: 34bf959ef332630f
+  zh: 69de3951e51c8410
 /agent-note-plugin-owned-human-command-registration/decision/direct-dispatch-and-cancellation:
   en: 074ee61a689493cb
-  zh: 580035e2a4c82d4f
+  zh: fe1e16551f50a0b1
 /agent-note-plugin-owned-human-command-registration/decision/tui-mapping:
   en: 00f0f8b697d9e1ff
-  zh: 9c4ceb0024e50835
+  zh: 87112d543fc685f8
 /agent-note-plugin-owned-human-command-registration/testing:
   en: 0679c206796636a6
-  zh: ca2cc5df6aa3aa2e
+  zh: 4ed281509b87f446
 /agent-note-plugin-owned-human-command-registration/alternatives-considered:
   en: ffb2f060314a17b2
-  zh: e7707cf5faf80227
+  zh: f2ec701ee5464e1c
 /agent-note-plugin-owned-human-command-registration/consequences:
   en: 6b8525a4ca3213a8
-  zh: 286a336a68669f72
+  zh: 85efd0645610f43e
 /agent-note-plugin-owned-human-command-registration/known-limitations-and-deferred-work:
   en: 5e2417d5b1237526
-  zh: dbfeea7c7ac38cf0
+  zh: 3b60d0405c71be50

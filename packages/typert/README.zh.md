@@ -1,5 +1,5 @@
 ---
-description: "Typert 组地图：构建时类型图生成器、运行时注册表、Loader 集成与共享 Remote 协议，它们共同支撑类型化的 Host 到 Client 调用。"
+description: "Typert 組地圖：建置時型別圖生成器、執行時註冊表、Loader 整合與共享 Remote 協定，它們共同支撐型別化的 Host 到 Client 呼叫。"
 kind: "package-group"
 ---
 
@@ -9,44 +9,44 @@ kind: "package-group"
 
 ## 概述
 
-借助 Typert 组，Client 环境能以类型化方法调用 Host 能力，并在无需手写协议代码的情况下共享生成的 schema 与反射信息。构建时生成器把源代码类型声明转换为与编译器无关的模型与运行时产物，运行时注册表保存这些产物，Loader 集成则在 Loader 组合中自动注册它们。共享的协议包提供 Remote 调用声明——装饰器、wire 描述符、编解码器与提供方约定——供业务包、生成产物、Host Gateway 与 Client API 共同消费。本页是四个包的索引；每个包的 README 负责各自的配置、用法与限制。
+藉助 Typert 組，Client 環境能以型別化方法呼叫 Host 能力，並在無需手寫協定程式碼的情況下共享生成的 schema 與反射資訊。建置時生成器把原始碼型別宣告轉換為與編譯器無關的模型與執行時產物，執行時註冊表儲存這些產物，Loader 整合則在 Loader 組合中自動註冊它們。共享的協定包提供 Remote 呼叫宣告——裝飾器、wire 描述符、編解碼器與提供者約定——供業務包、生成產物、Host Gateway 與 Client API 共同消費。本頁是四個包的索引；每個包的 README 負責各自的設定、用法與限制。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`generator/`](generator/README.zh.md) | 在构建时分析源代码类型，并生成运行时加载所需的反射、schema 与 Remote 描述符 | — |
-| [`loader/`](loader/README.zh.md) | 把 Loader 组合中已生成的 Typert 产物自动注册到运行时注册表 | 消费 `ctx.loader` 与 `ctx.typert` |
-| [`protocol/`](protocol/README.zh.md) | 声明 Host 与 Client 共享的 Remote 装饰器、wire 描述符、编解码器与提供方约定 | — |
-| [`registry/`](registry/README.zh.md) | 在运行时保存生成的包反射与实时 Zod schema，并提供 lookup 与 Context 提供方注册表 | `ctx.typert` |
+| [`generator/`](generator/README.zh.md) | 在建置時分析原始碼型別，並生成執行時載入所需的反射、schema 與 Remote 描述符 | — |
+| [`loader/`](loader/README.zh.md) | 把 Loader 組合中已生成的 Typert 產物自動註冊到執行時註冊表 | 消費 `ctx.loader` 與 `ctx.typert` |
+| [`protocol/`](protocol/README.zh.md) | 宣告 Host 與 Client 共享的 Remote 裝飾器、wire 描述符、編解碼器與提供者約定 | — |
+| [`registry/`](registry/README.zh.md) | 在執行時儲存生成的包反射與即時 Zod schema，並提供 lookup 與 Context 提供者註冊表 | `ctx.typert` |
 
 -----
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [Typert 子系统参考](../../docs/subsystems/typert.zh.md)——从协议与注册表类型中原样记录的公共约定。
-- [API Gateway 参考](../../docs/api-gateway.zh.md)——生成的 Remote 描述符如何成为实际的 Host 到 Client 调用。
-- [Remote 调用 Agent Note](../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md)——Remote 调用背后的架构与传输决策。
-- [包工作区地图](../README.zh.md)——工作区中的每个组及其职责。
+- [Typert 子系統參考](../../docs/subsystems/typert.zh.md)——從協定與註冊表型別中原樣記錄的公共約定。
+- [API Gateway 參考](../../docs/api-gateway.zh.md)——生成的 Remote 描述符如何成為實際的 Host 到 Client 呼叫。
+- [Remote 呼叫 Agent Note](../../.agents/notes/implemented/architecture/2026-08-02-typert-remote-method-calls.zh.md)——Remote 呼叫背後的架構與傳輸決策。
+- [包工作區地圖](../README.zh.md)——工作區中的每個組及其職責。
 
 -----
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

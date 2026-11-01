@@ -47,14 +47,14 @@ def main():
             assert restored.size == (80, 40)
 
         document = Document()
-        document.add_heading("Office 文档", 0)
+        document.add_heading("Office 文件", 0)
         document.add_paragraph("Editable text")
         document.add_table(rows=2, cols=2).cell(1, 1).text = "42"
         document.add_picture(str(image), width=DocxInches(1))
         document.save(root / "document.docx")
         reopened_document = Document(root / "document.docx")
         assert reopened_document.tables[0].cell(1, 1).text == "42"
-        assert reopened_document.paragraphs[0].text == "Office 文档"
+        assert reopened_document.paragraphs[0].text == "Office 文件"
 
         presentation = Presentation()
         slide = presentation.slides.add_slide(presentation.slide_layouts[6])
@@ -85,7 +85,7 @@ def main():
             reopened_workbook.close()
         assert pandas.read_excel(root / "workbook.xlsx")["Value"].iloc[0] == 42
         for file, arguments in [
-            ("document.docx", ["--contains", "Office 文档"]),
+            ("document.docx", ["--contains", "Office 文件"]),
             ("presentation.pptx", ["--contains", "Office 演示", "--count", "1"]),
             ("workbook.xlsx", ["--contains", "Value", "--count", "1"]),
         ]:

@@ -1,5 +1,5 @@
 ---
-description: "具名实验性转写 Provider 及取消操作的所有权。"
+description: "具名實驗性轉寫 Provider 及取消操作的所有權。"
 kind: "package-reference"
 ---
 
@@ -9,74 +9,74 @@ kind: "package-reference"
 
 ## 概述
 
-此服务定义通过 `ctx.speechToText` 选择具名语音识别器。消费者先解析请求再执行，Provider 独立注册。
+此服務定義透過 `ctx.speechToText` 選擇具名語音識別器。消費者先解析請求再執行，Provider 獨立註冊。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与后续工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與後續工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-通过[语音输入 Bundle](../voice-input-bundle/README.zh.md)加载，或组合此服务、Provider 与消费者。`defaultProvider` 为必填项，选择确切的注册 id；Bundle 提供 `sensevoice-local`。`language` 提供省略的语言提示。缺失或重复的 Provider 会明确报错。
+透過[語音輸入 Bundle](../voice-input-bundle/README.zh.md)載入，或組合此服務、Provider 與消費者。`defaultProvider` 為必填項，選擇確切的註冊 id；Bundle 提供 `sensevoice-local`。`language` 提供省略的語言提示。缺失或重複的 Provider 會明確報錯。
 
-提供方通过 `downloadSources` 公布准备阶段可用的源。`prepare(id, options)` 为单次任务转发可选的 `downloadSource`；提供方校验选择，并拒绝在准备期间改源。省略时沿用提供方策略。下载源选择不属于持久化的识别偏好。
+提供者透過 `downloadSources` 公佈準備階段可用的源。`prepare(id, options)` 為單次任務轉發可選的 `downloadSource`；提供者驗證選擇，並拒絕在準備期間改源。省略時沿用提供者策略。下載源選擇不屬於持久化的識別偏好。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>维护者信息 — 点击展开</summary>
+<summary>維護者資訊 — 點選展開</summary>
 
-`resolve()` 捕获 Provider 实例、录音和语言。`transcribe()` 拒绝已撤销或替换的注册。注册的清理函数先拒绝新请求，再取消已接收的请求并等待 Provider 完成；Provider 必须响应取消。服务不会回退到其他识别器或上传音频。不发布运行时不变量伴随模块，因为注册表是 Provider 与准备状态观测的唯一来源。
+`resolve()` 捕捉 Provider 實例、錄音和語言。`transcribe()` 拒絕已撤銷或替換的註冊。註冊的清理函式先拒絕新請求，再取消已接收的請求並等待 Provider 完成；Provider 必須回應取消。服務不會退回到其他識別器或上傳音訊。不釋出執行時不變數伴隨模組，因為註冊表是 Provider 與準備狀態觀測的唯一來源。
 
-`defaultProvider` 与 `language` 是 volatile Config 字段：`configure()` 通过 `settings` 服务把传入的字段写入本插件的 profile 条目，运行中的实例无需重挂载即可读到更新值；保存覆盖值之前使用组合配置默认值。Settings 使用条目配置中的 id（`entry.options.id`）定位条目，不包含 Loader 的 Include 路径。没有 `settings` 或 profile 条目时 `configure()` 失败，并在保存前拒绝所选 Provider 不支持的语言。Provider 通过 `languages` 公布支持的语言提示；`resolve()` 在转写前校验所选提示。观察者通过完整 `SpeechSnapshot` 接收 Provider 拥有的准备状态；关闭观察者不会取消准备。
+`defaultProvider` 與 `language` 是 volatile Config 欄位：`configure()` 透過 `settings` 服務把傳入的欄位寫入本外掛的 profile 條目，執行中的實例無需重掛載即可讀到更新值；儲存覆蓋值之前使用組合設定預設值。Settings 使用條目設定中的 id（`entry.options.id`）定位條目，不包含 Loader 的 Include 路徑。沒有 `settings` 或 profile 條目時 `configure()` 失敗，並在儲存前拒絕所選 Provider 不支援的語言。Provider 透過 `languages` 公佈支援的語言提示；`resolve()` 在轉寫前驗證所選提示。觀察者透過完整 `SpeechSnapshot` 接收 Provider 擁有的準備狀態；關閉觀察者不會取消準備。
 
-`./wave` 辅助函数为 Remote 消费者与原生识别进程校验规范的 16 kHz 单声道 PCM16 WAV。两者均在解码采样前拒绝不一致的头部和长度。
+`./wave` 輔助函式為 Remote 消費者與原生識別程序驗證規範的 16 kHz 單聲道 PCM16 WAV。兩者均在解碼取樣前拒絕不一致的頭部和長度。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-[语音输入子系统](../../../docs/subsystems/voice-input.zh.md)
+[語音輸入子系統](../../../docs/subsystems/voice-input.zh.md)
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为录音与准备不进入模型请求；之后的文字由普通用户提交拥有。
+無，因為錄音與準備不進入模型請求；之後的文字由普通使用者提交擁有。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-没有直接影响；普通提交拥有消息内容。
+沒有直接影響；普通提交擁有訊息內容。
 
-## 已知限制与后续工作
+## 已知限制與後續工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 仅支持完整录音转写。服务没有流式识别或语音合成方法。
+- 僅支援完整錄音轉寫。服務沒有流式識別或語音合成方法。
 
 -----
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者信息 — 点击展开</summary>
+<summary>維護者資訊 — 點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-24-project-session-directories.md
 /agent-note-project-grouped-session-directories:
   en: c8960daf61fa50fa
-  zh: d8c7c844180fcaae
+  zh: 0c13094608b4ab2a
 /agent-note-project-grouped-session-directories/problem:
   en: 7df6078347bd7176
-  zh: bb769760d7abc903
+  zh: 64526acdf9c124ee
 /agent-note-project-grouped-session-directories/decision:
   en: cdefd1f4d9d0a55a
-  zh: 5916d456f3faab2b
+  zh: 1c10f448342e2aa0
 /agent-note-project-grouped-session-directories/alternatives-considered:
   en: ba4657ba95479806
-  zh: 5c53c5c964efa932
+  zh: c1ac48f2398d855d
 /agent-note-project-grouped-session-directories/consequences:
   en: 228c46a599899be1
-  zh: 265a233cd41b5c05
+  zh: 340220b0c4db5c68

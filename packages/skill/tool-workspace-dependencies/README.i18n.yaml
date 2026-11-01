@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/skill/tool-workspace-dependencies/README.md
 /:
   en: e562521af5095c9b
-  zh: f879f7db6ee3c2b9
+  zh: 54d8aa2f86fed1c9
 /deepseek-ai-dsh-tool-workspace-dependencies:
   en: 36dcf46cd91bba1f
   zh: 576d796ea71f640c
 /deepseek-ai-dsh-tool-workspace-dependencies/summary:
   en: 564382de2022c781
-  zh: 22657ad5d2c8efd2
+  zh: d9a31aa53773114a
 /deepseek-ai-dsh-tool-workspace-dependencies/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 43ad67236ccda19a
+  zh: 129ffe43949691de
 /deepseek-ai-dsh-tool-workspace-dependencies/use-this-package:
   en: 5e244ff5e354bc47
-  zh: 2ab0c4288708a59c
+  zh: 334cc45d5dced545
 /deepseek-ai-dsh-tool-workspace-dependencies/use-this-package/minimal-configuration:
   en: 97b1f99b4e9c2569
-  zh: bf6c6ce74073413f
+  zh: 4d2b1725f32f0b6f
 /deepseek-ai-dsh-tool-workspace-dependencies/use-this-package/payload-layout:
   en: 0ba9c7e3b9738e4d
-  zh: a98344644ac55182
+  zh: f913beefcb0096a4
 /deepseek-ai-dsh-tool-workspace-dependencies/use-this-package/build-a-carrier-payload:
   en: 0f3e570525053f09
-  zh: 1b0cd3b653e1bd5d
+  zh: e516637e17ed8e6d
 /deepseek-ai-dsh-tool-workspace-dependencies/understand-the-implementation:
   en: 6483ea7f648cf57f
-  zh: 772c40e5cbed21f7
+  zh: 440046cd1a1377c7
 /deepseek-ai-dsh-tool-workspace-dependencies/further-exploration:
   en: e78508a7d92652c4
-  zh: 5788b94b7af15ada
+  zh: 3df42ab94ad8f43c
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-schema:
   en: e4c7376d4f29dbd5
   zh: 6b7a9eaf69c9ea53
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-schema/what-the-model-sees:
   en: 5e004798009885c4
-  zh: e80c616c7ece2b08
+  zh: 0c5627d55a461d05
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-schema/token-effect:
   en: 615cce9c7fcb746d
-  zh: 6b9f58e263a38d61
+  zh: 704f6dc5b04857bf
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-schema/kv-cache-effect:
   en: 4ee92571a5f8a71a
-  zh: 6fa2a5b21b9f0150
+  zh: 65ff9d6d38a5aa4b
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-result:
   en: f8ffc2b983f05ffc
-  zh: 8573891441963be4
+  zh: f83cbfb268f7d0ea
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-result/what-the-model-sees:
   en: c25c9db51e7d06da
-  zh: a4cdcd37bd501503
+  zh: 8fe5e8bb2a6bc2e3
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-result/token-effect:
   en: 0efada793d1e65b1
-  zh: 3eed908f43174b88
+  zh: 78ee3d70d726afc9
 /deepseek-ai-dsh-tool-workspace-dependencies/model-experience/tool-result/kv-cache-effect:
   en: 42325f307b6c259d
-  zh: d53a45f1c00ba16f
+  zh: 822df330c9507fd5
 /deepseek-ai-dsh-tool-workspace-dependencies/known-limitations-and-deferred-work:
   en: 8aeacc5404854231
-  zh: 43d970fa23ac2473
+  zh: ad09f9fd3a45f819
 /deepseek-ai-dsh-tool-workspace-dependencies/known-limitations-and-deferred-work/dev-note:
   en: 1978677ea2592fc1
-  zh: e85358cf79eb1fe0
+  zh: 8184e77934fbdb42

@@ -1,95 +1,95 @@
-# Agent Note: 单文件可执行的 SDK 运行时分发（single-exe）
+# Agent Note: 單檔案可執行的 SDK 執行時分發（single-exe）
 
 Status: implemented
 
 [English](2026-07-10-single-file-executable-sdk-runtime-distribution.md) | 中文
 
-## 问题
+## 問題
 
-DeepSeek Harness 需要为 Python 库专门提供一种无需安装 Node、可直接在目标平台运行的 SDK 分发形态：一个单文件可执行程序（下称 exe），通过 stdio 提供 JSON-RPC 对外服务接口（`HarnessSdkJsonRpcServer`，Python SDK 的对端），且实际启动的插件与配置完全由 exe 外部输入的 `cordis.yml` 决定。
+DeepSeek Harness 需要為 Python 庫專門提供一種無需安裝 Node、可直接在目標平臺執行的 SDK 分發形態：一個單檔案可執行程式（下稱 exe），透過 stdio 提供 JSON-RPC 對外服務介面（`HarnessSdkJsonRpcServer`，Python SDK 的對端），且實際啟動的外掛與設定完全由 exe 外部輸入的 `cordis.yml` 決定。
 
-- 与 Python SDK 通信的 JSON-RPC 协议已经过验证
-- 需要提供一种让 `cordis.yml` 加载所有插件（ES 模块）的标准方式
-- 分发物要自带 Node 运行时，并支持本地源码链接的调试模式
+- 與 Python SDK 通訊的 JSON-RPC 協定已經過驗證
+- 需要提供一種讓 `cordis.yml` 載入所有外掛（ES 模組）的標準方式
+- 分發物要自帶 Node 執行時，並支援本地原始碼連結的除錯模式
 
-## 决策
+## 決策
 
-### 打包路线：@yao-pkg/pkg 的 `--sea` 模式
+### 打包路線：@yao-pkg/pkg 的 `--sea` 模式
 
-exe 使用 [@yao-pkg/pkg](https://github.com/yao-pkg/pkg)（vercel/pkg 归档后的活跃维护 fork）的 **`--sea`（enhanced SEA）模式**打包。相比 Node 原生 SEA，pkg 在其上增加 `/snapshot` 虚拟文件系统（VFS）与运行时模块钩子，将 ESM 入口原样交给 Node 默认的 ESM loader，不依赖任何 ESM→CJS 转译。
-> 实测（macos-arm64、node24 构建目标、pkg 6.21.0）：VFS 内裸包名 ESM 动态 `import()`（含顶层 `await`）、CJS 互操作、`node:sqlite`、集合外包名明确报错、VFS 外磁盘 ESM `import()` 全部通过，`import.meta.url` 原样为 `file:///snapshot/...`。
+exe 使用 [@yao-pkg/pkg](https://github.com/yao-pkg/pkg)（vercel/pkg 歸檔後的活躍維護 fork）的 **`--sea`（enhanced SEA）模式**打包。相比 Node 原生 SEA，pkg 在其上增加 `/snapshot` 虛擬檔案系統（VFS）與執行時模組掛鉤，將 ESM 入口原樣交給 Node 預設的 ESM loader，不依賴任何 ESM→CJS 轉譯。
+> 實測（macos-arm64、node24 建置目標、pkg 6.21.0）：VFS 內裸包名 ESM 動態 `import()`（含頂層 `await`）、CJS 互操作、`node:sqlite`、集合外包名明確報錯、VFS 外磁碟 ESM `import()` 全部透過，`import.meta.url` 原樣為 `file:///snapshot/...`。
 
-`--sea` 要求构建目标 ≥ node22，exe 统一以 node24 为构建目标；每次 pkg 调用只打包一个构建目标，多平台各调用一次。
+`--sea` 要求建置目標 ≥ node22，exe 統一以 node24 為建置目標；每次 pkg 呼叫只打包一個建置目標，多平臺各呼叫一次。
 
-`@yao-pkg/pkg` 是精确钉版的根 `devDependency`，经 `pnpm exec pkg` 调用，并以 [`patches/@yao-pkg__pkg@6.21.0.patch`](../../../../patches/@yao-pkg__pkg@6.21.0.patch) 移除 SEA bootstrap 中的 `patchChildProcess` 调用。未打补丁时，pkg 会把 spawn 的 `node` 命令——包括 `-c`/`/c` 标志后的命令串，恰是 Bash 工具的 `bash -c` 形态——改写为 exe 自身，并向每个子进程环境注入 `PKG_EXECPATH`，模型下发的 `node --version` 会静默启动 dsh CLI；Node 自身的 SEA 层没有这种改写，且 SEA 二进制永远启动内嵌应用、无法充当纯 Node。移除该调用后，子进程像普通进程一样经 PATH 解析 `node`（无 Node 的机器如实报 command not found），子进程环境不再出现 `PKG_EXECPATH`，以 `process.execPath` 绝对路径 spawn 的重入不受影响，worker 线程本来就未应用该钩子，`process.pkg` 侧车选择也不受影响。
+`@yao-pkg/pkg` 是精確釘版的根 `devDependency`，經 `pnpm exec pkg` 呼叫，並以 [`patches/@yao-pkg__pkg@6.21.0.patch`](../../../../patches/@yao-pkg__pkg@6.21.0.patch) 移除 SEA bootstrap 中的 `patchChildProcess` 呼叫。未打補丁時，pkg 會把 spawn 的 `node` 命令——包括 `-c`/`/c` 標誌後的命令串，恰是 Bash 工具的 `bash -c` 形態——改寫為 exe 自身，並向每個子程序環境注入 `PKG_EXECPATH`，模型下發的 `node --version` 會靜默啟動 dsh CLI；Node 自身的 SEA 層沒有這種改寫，且 SEA 二進位制永遠啟動內嵌應用、無法充當純 Node。移除該呼叫後，子程序像普通程序一樣經 PATH 解析 `node`（無 Node 的機器如實報 command not found），子程序環境不再出現 `PKG_EXECPATH`，以 `process.execPath` 絕對路徑 spawn 的重入不受影響，worker 執行緒本來就未應用該掛鉤，`process.pkg` 側車選擇也不受影響。
 
-同一补丁还把 SEA bootstrap 的原生插件解包改成原子写入。VFS 内的插件首次 `dlopen` 时，pkg 的 `patchDlopen` 会把该插件所在的包目录整棵拷到 `$PKG_NATIVE_CACHE_PATH/pkg/<.node 文件的 sha256>/`（默认 `~/.cache/pkg/...`），这是同一个 exe 的所有并发进程共用的按用户目录；上游用 `writeFileSync` 直接写目标路径，会把另一个进程可能已经映射的文件截断，并让该进程的 `existsSync`/哈希比对读到写了一半的文件。因此并发首次启动在 Linux 上以 SIGBUS 崩溃，在 macOS 上对 sharp 的 libvips 报 `ERR_DLOPEN_FAILED: Library not loaded`（#4664）。补丁让三处写入都经过同目录临时文件加 `renameSync`，于是缓存路径要么不存在、要么完整，每个进程都在加载前走完自己的拷贝，相同内容的并发 rename 不需要锁。缓存位置、哈希键与逐文件比对均未改变，通过 `PKG_NATIVE_CACHE_PATH` 按实例隔离缓存的消费方照常工作；worker 线程只定义该钩子而从不安装。 实测（linux-x64、node24 构建目标、pkg 6.21.0，一个加载 sharp 及其 18 MB libvips 库的探针，16 个进程对同一个空缓存并发首次启动，跑五轮）：改动前 80 个进程中 39 个以 SIGBUS 崩溃，改动后 80 个全部正常，且无残留临时文件。
+同一補丁還把 SEA bootstrap 的原生外掛解包改成原子寫入。VFS 內的外掛首次 `dlopen` 時，pkg 的 `patchDlopen` 會把該外掛所在的包目錄整棵拷到 `$PKG_NATIVE_CACHE_PATH/pkg/<.node 檔案的 sha256>/`（預設 `~/.cache/pkg/...`），這是同一個 exe 的所有並行程序共用的按使用者目錄；上游用 `writeFileSync` 直接寫目標路徑，會把另一個程序可能已經對映的檔案截斷，並讓該程序的 `existsSync`/雜湊比對讀到寫了一半的檔案。因此並行首次啟動在 Linux 上以 SIGBUS 崩潰，在 macOS 上對 sharp 的 libvips 報 `ERR_DLOPEN_FAILED: Library not loaded`（#4664）。補丁讓三處寫入都經過同目錄臨時檔案加 `renameSync`，於是快取路徑要麼不存在、要麼完整，每個程序都在載入前走完自己的複製，相同內容的並行 rename 不需要鎖。快取位置、雜湊鍵與逐檔案比對均未改變，透過 `PKG_NATIVE_CACHE_PATH` 按實例隔離快取的消費方照常工作；worker 執行緒只定義該掛鉤而從不安裝。 實測（linux-x64、node24 建置目標、pkg 6.21.0，一個載入 sharp 及其 18 MB libvips 庫的探針，16 個程序對同一個空快取並行首次啟動，跑五輪）：改動前 80 個程序中 39 個以 SIGBUS 崩潰，改動後 80 個全部正常，且無殘留臨時檔案。
 
-术语提醒：pkg 的 `/snapshot` VFS 与本仓库测试体系的「快照」（ACP（Agent Client Protocol）回放预期输出、`$DSH_SNAPSHOT`）无关，本文用「VFS」指前者。
+術語提醒：pkg 的 `/snapshot` VFS 與本儲存庫測試體系的「快照」（ACP（Agent Client Protocol）回放預期輸出、`$DSH_SNAPSHOT`）無關，本文用「VFS」指前者。
 
-### 对外服务接口是 dsh 应用中的插件
+### 對外服務介面是 dsh 應用中的外掛
 
-确定性服务接口由打包后的 `dsh` 应用选择为插件：
+確定性服務介面由打包後的 `dsh` 應用選擇為外掛：
 
-- [`packages/sdk/server`](../../../../packages/sdk/server/README.zh.md)（`@deepseek-ai/dsh-sdk-jsonrpc-server`）：纯协议插件；执行 `apply` 时，在进程 stdio 上挂载 `HarnessSdkJsonRpcServer` 与按行分隔的 JSON-RPC 传输层，资源释放走 `ctx.effect()`。是否提供服务由 `cordis.yml` 决定；未挂载该插件的配置会启动一个不提供此服务的合法进程。协议级退出归插件所有（应答并确保 `shutdown` 响应发送完毕后，对根运行时执行 dispose（资源释放），让待处理的持久化操作完成，再调用 `exit(0)`；HMR（热模块替换）式卸载只停止服务，不退出进程）。
-- [`apps/cli`](../../../../apps/cli/README.zh.md)（`@deepseek-ai/dsh`）：打包后的应用入口；其 `sdk` profile 挂载 `dsh-sdk-jsonrpc-server`，CLI 负责环境分层、profile 组合、stdin／signal 关闭与进程退出。
+- [`packages/sdk/server`](../../../../packages/sdk/server/README.zh.md)（`@deepseek-ai/dsh-sdk-jsonrpc-server`）：純協定外掛；執行 `apply` 時，在程序 stdio 上掛載 `HarnessSdkJsonRpcServer` 與按行分隔的 JSON-RPC 傳輸層，資源釋放走 `ctx.effect()`。是否提供服務由 `cordis.yml` 決定；未掛載該外掛的設定會啟動一個不提供此服務的合法程序。協定級退出歸外掛所有（應答並確保 `shutdown` 回應傳送完畢後，對根執行時執行 dispose（資源釋放），讓待處理的持久化操作完成，再呼叫 `exit(0)`；HMR（熱模組替換）式解除安裝只停止服務，不退出程序）。
+- [`apps/cli`](../../../../apps/cli/README.zh.md)（`@deepseek-ai/dsh`）：打包後的應用入口；其 `sdk` profile 掛載 `dsh-sdk-jsonrpc-server`，CLI 負責環境分層、profile 組合、stdin／signal 關閉與程序退出。
 
-Python 客户端提供显式 Harness home，并选择 `sdk` profile 与有序 patch 文件。缺失 home、profile、bundle 或 server 配置项都会明确失败；不存在外部完整配置回退。[docs/architecture.md](../../../../docs/architecture.zh.md)负责该应用接口。
+Python 用戶端提供顯式 Harness home，並選擇 `sdk` profile 與有序 patch 檔案。缺失 home、profile、bundle 或 server 設定項都會明確失敗；不存在外部完整設定退回。[docs/architecture.md](../../../../docs/architecture.zh.md)負責該應用介面。
 
-### 插件解析：VFS 装载真实包树，闭包 manifest（元数据清单）就是部署根目录
+### 外掛解析：VFS 裝載真實包樹，閉包 manifest（中繼資料清單）就是部署根目錄
 
-exe 的 VFS 内是**构建产物形态的真实包树**（各包的 `lib/` + 真实 `node_modules`）。打包专用 JSON-RPC 入口会向 app-boot 的根 Include 提供自身已安装 harness 的基准位置：相对插件说明符从外部配置目录解析，裸包名则从 VFS 解析，因此位于另一个 Node 项目内的配置无法遮蔽已打包的插件集合。普通开发 bin 仍由配置项目提供裸包。打包入口中的裸包名从该入口在 VFS 内的位置沿 `node_modules` 向上解析，自然落在 VFS 内。封闭集不需要白名单代码——VFS 中安装了什么，集合中就有什么；`import()` 集合外的名称会失败。
+exe 的 VFS 內是**建置產物形態的真實包樹**（各包的 `lib/` + 真實 `node_modules`）。打包專用 JSON-RPC 入口會向 app-boot 的根 Include 提供自身已安裝 harness 的基準位置：相對外掛說明符從外部設定目錄解析，裸包名則從 VFS 解析，因此位於另一個 Node 專案內的設定無法遮蔽已打包的外掛集合。普通開發 bin 仍由設定專案提供裸包。打包入口中的裸包名從該入口在 VFS 內的位置沿 `node_modules` 向上解析，自然落在 VFS 內。封閉集不需要白名單程式碼——VFS 中安裝了什麼，集合中就有什麼；`import()` 集合外的名稱會失敗。
 
-部署根目录是 [`python/sdk-runtime/package.json`](../../../../python/sdk-runtime/package.json)（`dsh-python-runtime-closure`，pnpm 工作区成员、零代码纯依赖 manifest），也是「exe 安装哪些插件」与「Python 运行时分发什么」的统一真源。向 exe 添加插件，就是在 manifest 中增加一行依赖后重新打包。[`scripts/verify-runtime-closure.ts`](../../../../scripts/verify-runtime-closure.ts) 读取每个已发布的 `packages/bundle/web-app/cordis.patch.yml*/agent.cordis.yml`，针对 `python/sdk-runtime/platforms.json` 中的每个目标解析比较 `process.platform` 的 `disabled` 条件，并要求该目标启用的每个工作区插件都通过显式的 `workspace:` 依赖列在运行时根目录。它还遍历该 manifest 覆盖的全部工作区包，要求每个非可选的工作区对等依赖（peer dependency）都显式列出，并报告“preset 或引用包 → 缺失依赖”的完整链路；无法识别的平台条件会保持启用，避免因不支持的表达式遗漏插件。`pnpm run hygiene`、CI 静态检查与 single-exe 构建都会在打包前运行该门禁。部署还会依据各包的 `files` 字段打包，因此 tsdown 拆出的共享分片必须被 `files` 覆盖。
+部署根目錄是 [`python/sdk-runtime/package.json`](../../../../python/sdk-runtime/package.json)（`dsh-python-runtime-closure`，pnpm 工作區成員、零程式碼純依賴 manifest），也是「exe 安裝哪些外掛」與「Python 執行時分發什麼」的統一真源。向 exe 新增外掛，就是在 manifest 中增加一行依賴後重新打包。[`scripts/verify-runtime-closure.ts`](../../../../scripts/verify-runtime-closure.ts) 讀取每個已釋出的 `packages/bundle/web-app/cordis.patch.yml*/agent.cordis.yml`，針對 `python/sdk-runtime/platforms.json` 中的每個目標解析比較 `process.platform` 的 `disabled` 條件，並要求該目標啟用的每個工作區外掛都透過顯式的 `workspace:` 依賴列在執行時根目錄。它還遍歷該 manifest 覆蓋的全部工作區包，要求每個非可選的工作區對等依賴（peer dependency）都顯式列出，並報告“preset 或引用包 → 缺失依賴”的完整鏈結；無法識別的平臺條件會保持啟用，避免因不支援的表示式遺漏外掛。`pnpm run hygiene`、CI 靜態檢查與 single-exe 建置都會在打包前執行該門禁。部署還會依據各包的 `files` 欄位打包，因此 tsdown 拆出的共享分片必須被 `files` 覆蓋。
 
-部署根目录显式包含 `@deepseek-ai/dsh-mcp-client`，将其作为自定义配置可用的插件，即使随附 preset 均未挂载该插件。外部配置因此可以连接由用户提供的 stdio 与 Streamable HTTP MCP server 并注册其工具；分发物不包含这些 server。可选资源服务提供 MCP Resources；MCP Prompts 仍不受支持。可执行程序与已安装 wheel 包的冒烟测试会启动临时 stdio server，发现其工具，并完成一次由模型请求的调用。
+部署根目錄顯式包含 `@deepseek-ai/dsh-mcp-client`，將其作為自定義設定可用的外掛，即使隨附 preset 均未掛載該外掛。外部設定因此可以連線由使用者提供的 stdio 與 Streamable HTTP MCP server 並註冊其工具；分發物不包含這些 server。可選資源服務提供 MCP Resources；MCP Prompts 仍不受支援。可執行程式與已安裝 wheel 包的冒煙測試會啟動臨時 stdio server，發現其工具，並完成一次由模型請求的呼叫。
 
-[Office kit](2026-09-14-independent-libreoffice-kit.zh.md) 及其已安装依赖树位于 `<executable-stem>-office/node_modules`，保留完整包内容与辅助程序权限。顶层 `pkg.ignore` 从 SEA 归档排除 kit 包，包括依赖 `files` 字段选中的资源；与其他使用方共享的小型依赖仍可在 VFS 中使用。Python 私有 bootstrap 使用 Node `registerHooks` 从真实目录解析 kit 入口及其包清单。因此原生可执行程序与 URL Worker 保留普通文件路径，无需修改 kit 或公开 CLI。必需包缺失或已安装包缺少清单会使复制失败；未安装的可选包保留 kit 自身的引擎选择规则。
+[Office kit](2026-09-14-independent-libreoffice-kit.zh.md) 及其已安裝依賴樹位於 `<executable-stem>-office/node_modules`，保留完整包內容與輔助程式權限。頂層 `pkg.ignore` 從 SEA 歸檔排除 kit 包，包括依賴 `files` 欄位選中的資源；與其他使用方共享的小型依賴仍可在 VFS 中使用。Python 私有 bootstrap 使用 Node `registerHooks` 從真實目錄解析 kit 入口及其包清單。因此原生可執行程式與 URL Worker 保留普通檔案路徑，無需修改 kit 或公開 CLI。必需包缺失或已安裝檔缺少清單會使複製失敗；未安裝的可選包保留 kit 自身的引擎選擇規則。
 
-### 构建流水线与产物
+### 建置流水線與產物
 
-[`scripts/build-exe-for-python-sdk.ts`](../../../../scripts/build-exe-for-python-sdk.ts)：运行时闭包校验 → `pnpm run build` →（清空后）`pnpm --filter dsh-python-runtime-closure deploy --legacy --prod --config.allow-unused-patches=true --config.node-linker=hoisted --config.auto-install-peers=false --config.link-workspace-packages=true` **直接写入** `python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/`，其中包含作为载体根目录 `runtime-bootstrap.mjs` 的 [`python/sdk-runtime/runtime-bootstrap.mjs`](../../../../python/sdk-runtime/runtime-bootstrap.mjs) → 恢复 legacy deploy 遗漏的直接工作区包，并拒绝剩余的 manifest 缺口 → 将暂存依赖中的符号链接替换为目标文件内容，删除包管理器的 `.bin` 链接，并在仍有任何符号链接时失败 → 验证已部署的 bootstrap，并注入以该文件为 bin 的 pkg 配置及覆盖动态读取 profile、bundle、前端、preset、原生库与配置文件的 assets → 暂存目标平台的 `node-pty` addon → 每个构建目标调用一次 `pkg --sea` → 将 `deepseek-harness-sdk-runtime-<platform>-<arch>` 写入 `dist-exe/`，并将它与对应目标的 Office 目录一同拷回运行时目录。该 bootstrap 由 Python runtime 拥有；普通启动时它调用公开 CLI export，而提供方私有选择会分派到同一个 `@deepseek-ai/dsh-subprocess-local/runner` 核心，不改变 CLI 语法，也不增加另一个可执行文件；[原生 containment 决策](2026-08-28-subprocess-native-containment.zh.md)负责这条私有路径。Linux CI 会在匹配的 manylinux 2.28 容器中重新构建 `pty.node`，因为 legacy deploy 会遗漏这一安装副作用。每个目标都会把对应的原生 `@vscode/ripgrep` 二进制复制到可执行文件旁，作为必需的 `-rg` 伴随文件；pkg 运行时通过 `process.pkg` 选择该伴随文件，普通 Node 执行则直接使用 `@vscode/ripgrep`。macOS 使用对应目标的预构建产物，并额外生成所需的 `-spawn-helper`。部署标志都有实测依据：未启用 `inject-workspace-packages` 时必须使用 `--legacy`；`hoisted` 为 pkg 提供稳定的单实例布局，再由显式物化步骤消除符号链接；关闭对等依赖自动安装可防止未声明的对等依赖扩大闭包；`link-workspace-packages` 选择直接工作区依赖。[`pnpm-workspace.yaml`](../../../../pnpm-workspace.yaml) 将传递的 `@deepseek-ai/cosmokit` 与 `@deepseek-ai/schemastery` semver 请求覆盖到固定的 vendor 源码，使 legacy deploy 不会从注册表解析这些未发布名称。 生产部署允许未使用的工作区补丁，因为开发工具可能不属于运行时闭包；闭包内包的补丁应用失败仍会中止部署。工作区安装继续严格校验未使用的补丁。
+[`scripts/build-exe-for-python-sdk.ts`](../../../../scripts/build-exe-for-python-sdk.ts)：執行時閉包驗證 → `pnpm run build` →（清空後）`pnpm --filter dsh-python-runtime-closure deploy --legacy --prod --config.allow-unused-patches=true --config.node-linker=hoisted --config.auto-install-peers=false --config.link-workspace-packages=true` **直接寫入** `python/sdk-runtime/src/deepseek_harness_runtime/runtime/node/`，其中包含作為載體根目錄 `runtime-bootstrap.mjs` 的 [`python/sdk-runtime/runtime-bootstrap.mjs`](../../../../python/sdk-runtime/runtime-bootstrap.mjs) → 恢復 legacy deploy 遺漏的直接工作區包，並拒絕剩餘的 manifest 缺口 → 將暫存依賴中的符號連結替換為目標檔案內容，刪除包管理器的 `.bin` 連結，並在仍有任何符號連結時失敗 → 驗證已部署的 bootstrap，並注入以該檔案為 bin 的 pkg 設定及覆蓋動態讀取 profile、bundle、前端、preset、原生庫與設定檔的 assets → 暫存目標平臺的 `node-pty` addon → 每個建置目標呼叫一次 `pkg --sea` → 將 `deepseek-harness-sdk-runtime-<platform>-<arch>` 寫入 `dist-exe/`，並將它與對應目標的 Office 目錄一同拷回執行時目錄。該 bootstrap 由 Python runtime 擁有；普通啟動時它呼叫公開 CLI export，而提供者私有選擇會分派到同一個 `@deepseek-ai/dsh-subprocess-local/runner` 核心，不改變 CLI 語法，也不增加另一個可執行檔案；[原生 containment 決策](2026-08-28-subprocess-native-containment.zh.md)負責這條私有路徑。Linux CI 會在匹配的 manylinux 2.28 容器中重新建置 `pty.node`，因為 legacy deploy 會遺漏這一安裝副作用。每個目標都會把對應的原生 `@vscode/ripgrep` 二進位制複製到可執行檔案旁，作為必需的 `-rg` 伴隨檔案；pkg 執行時透過 `process.pkg` 選擇該伴隨檔案，普通 Node 執行則直接使用 `@vscode/ripgrep`。macOS 使用對應目標的預建置產物，並額外生成所需的 `-spawn-helper`。部署標誌都有實測依據：未啟用 `inject-workspace-packages` 時必須使用 `--legacy`；`hoisted` 為 pkg 提供穩定的單實例佈局，再由顯式物化步驟消除符號連結；關閉對等依賴自動安裝可防止未宣告的對等依賴擴大閉包；`link-workspace-packages` 選擇直接工作區依賴。[`pnpm-workspace.yaml`](../../../../pnpm-workspace.yaml) 將傳遞的 `@deepseek-ai/cosmokit` 與 `@deepseek-ai/schemastery` semver 請求覆蓋到固定的 vendor 原始碼，使 legacy deploy 不會從註冊表解析這些未釋出名稱。 生產部署允許未使用的工作區補丁，因為開發工具可能不屬於執行時閉包；閉包內包的補丁應用失敗仍會中止部署。工作區安裝繼續嚴格驗證未使用的補丁。
 
-CI 使用 [`.github/workflows/build-exe-for-python-sdk.yml`](../../../../.github/workflows/build-exe-for-python-sdk.yml)：[安装后 wheel 包验证](../testing/2026-08-23-installed-python-wheel-black-box-ci.zh.md)在拉取请求上运行 Linux/Windows x64，在 master 推送上运行 Linux ARM64 与两种 macOS 架构。[公开发布工作流](../../archived/process/2026-08-11-python-publication-workflow.md)调用它构建全部五个目标；`workflow_dispatch` 仍可选择部分目标。linux-x64、linux-arm64（`ubuntu-24.04-arm`）、macos-arm64、macos-x64（`macos-15-intel`）与 win-x64（`windows-2025`）分别进行原生构建，并在适用平台缓存 `~/.pkg-cache`；macOS 的 ad-hoc 签名由 pkg 处理。每个平台都把发布形态的 SDK wheel 包与运行时 wheel 包安装到 checkout 外的干净 venv，证明包与可执行文件来源，再通过公开 SDK 与直接 NDJSON JSON-RPC 运行完整 keyless 场景。可信拉取请求与 master 推送还会在各自选定的目标上运行真实 DeepSeek 双轮工具冒烟测试；fork 与 Dependabot head 不会获得密钥。Linux 会检查可执行文件和原生 addon 各自的 GLIBC 依赖，并额外运行 manylinux 2.28 冒烟测试；macOS 则检查 runtime、ripgrep 与 PTY helper 的架构，并验证三个载荷的部署目标都符合 wheel 包标签。完整构建五个目标时保留 6 个产物，每个产物只含一个发布文件：平台无关的 SDK wheel 包与 5 个原生运行时 wheel 包；手动选择部分目标时保留 SDK wheel 与所选运行时 wheel。裸 exe 与源码包只作为测试中间输入。[`python/sdk-runtime` README](../../../../python/sdk-runtime/README.zh.md)负责 Windows 目标及对 Windows arm64 的明确排除。
+CI 使用 [`.github/workflows/build-exe-for-python-sdk.yml`](../../../../.github/workflows/build-exe-for-python-sdk.yml)：[安裝後 wheel 包驗證](../testing/2026-08-23-installed-python-wheel-black-box-ci.zh.md)在拉取請求上執行 Linux/Windows x64，在 master 推送上執行 Linux ARM64 與兩種 macOS 架構。[公開發布工作流](../../archived/process/2026-08-11-python-publication-workflow.md)呼叫它建置全部五個目標；`workflow_dispatch` 仍可選擇部分目標。linux-x64、linux-arm64（`ubuntu-24.04-arm`）、macos-arm64、macos-x64（`macos-15-intel`）與 win-x64（`windows-2025`）分別進行原生建置，並在適用平臺快取 `~/.pkg-cache`；macOS 的 ad-hoc 簽名由 pkg 處理。每個平臺都把釋出形態的 SDK wheel 包與執行時 wheel 包安裝到 checkout 外的乾淨 venv，證明包與可執行檔案來源，再透過公開 SDK 與直接 NDJSON JSON-RPC 執行完整 keyless 情境。可信拉取請求與 master 推送還會在各自選定的目標上執行真實 DeepSeek 雙輪工具冒煙測試；fork 與 Dependabot head 不會獲得金鑰。Linux 會檢查可執行檔案和原生 addon 各自的 GLIBC 依賴，並額外執行 manylinux 2.28 冒煙測試；macOS 則檢查 runtime、ripgrep 與 PTY helper 的架構，並驗證三個載荷的部署目標都符合 wheel 包標籤。完整建置五個目標時保留 6 個產物，每個產物只含一個釋出檔案：平臺無關的 SDK wheel 包與 5 個原生執行時 wheel 包；手動選擇部分目標時保留 SDK wheel 與所選執行時 wheel。裸 exe 與原始碼包只作為測試中間輸入。[`python/sdk-runtime` README](../../../../python/sdk-runtime/README.zh.md)負責 Windows 目標及對 Windows arm64 的明確排除。
 
-### Python SDK 分发：双载体，exe 用于生产，`node` 用于开发
+### Python SDK 分發：雙載體，exe 用於生產，`node` 用於開發
 
-Python SDK 位于 [`python/`](../../../../python/README.zh.md)：`python/sdk` 是客户端，`python/sdk-runtime` 是运行时载体包。运行时包的数据目录包含构建注入的平台可执行文件及其必需的 `-rg` 伴随文件、`-office/` 目录和可选的 macOS helper，以及供仓库开发使用的构建注入 `runtime/node/` 闭包树。`resolve_bundled_launch_args()` 默认选择可执行文件；显式设置 `DSH_RUNTIME_MODE=node` 会在系统 Node 22.19 或更高版本上运行 `runtime/node/node_modules/@deepseek-ai/dsh/lib/bin.js`。node 载体从不进入 wheel 分发，两种载体都不使用检入的完整 `cordis.yml`。
+Python SDK 位於 [`python/`](../../../../python/README.zh.md)：`python/sdk` 是用戶端，`python/sdk-runtime` 是執行時載體包。執行時包的資料目錄包含建置注入的平臺可執行檔案及其必需的 `-rg` 伴隨檔案、`-office/` 目錄和可選的 macOS helper，以及供儲存庫開發使用的建置注入 `runtime/node/` 閉包樹。`resolve_bundled_launch_args()` 預設選擇可執行檔案；顯式設定 `DSH_RUNTIME_MODE=node` 會在系統 Node 22.19 或更高版本上執行 `runtime/node/node_modules/@deepseek-ai/dsh/lib/bin.js`。node 載體從不進入 wheel 分發，兩種載體都不使用檢入的完整 `cordis.yml`。
 
-[`scripts/build-python-release.py`](../../../../scripts/build-python-release.py) 从仓库根目录的 `package.json` 读取权威的 `X.Y.Z` 或预发布版本，把预发布版本转换为 PEP 440 写法，并以该 wheel 包版本暂存两个包，让 `deepseek-harness-sdk` 精确依赖匹配版本的 `deepseek-harness-runtime-bin`。可选的 `python-v<repository-version>` 发布标签只是一项一致性断言，与仓库版本不同时会被拒绝；源码 `pyproject.toml` 中的开发占位版本从不决定发布版本。暂存过程还会把仓库许可证放入两个 wheel 包，并把第三方声明放入内置运行时 wheel 包。SDK 是 `py3-none-any` wheel 包；每个只提供 wheel 包的运行时包都包含一个 exe、其 Office 目录及架构匹配的 ripgrep 伴随文件，macOS wheel 包还包含与其架构匹配的 spawn helper。运行时 wheel 包使用 `py3-none-manylinux_2_28_x86_64`、`py3-none-manylinux_2_28_aarch64`、`py3-none-macosx_14_0_arm64`、`py3-none-macosx_14_0_x86_64` 或 `py3-none-win_amd64`；Hatch 钩子拒绝 sdist、通用标签、混合平台载荷、伴随文件缺失或多余，以及不支持的平台。两个 macOS 标签都会特意声明保守的 14.0 安装下限：打包后的 Node 24 可执行文件声明 macOS 13.5，x64 PTY helper 声明 10.7，但发布验证只按照 14.0 wheel 声明证明完整载荷，不会把各组件实测的最低版本承诺为受支持宿主。两个 macOS wheel 包仍按架构分别发布，不发布 universal2 wheel 包。
+[`scripts/build-python-release.py`](../../../../scripts/build-python-release.py) 從儲存庫根目錄的 `package.json` 讀取權威的 `X.Y.Z` 或預釋出版本，把預釋出版本轉換為 PEP 440 寫法，並以該 wheel 包版本暫存兩個包，讓 `deepseek-harness-sdk` 精確依賴匹配版本的 `deepseek-harness-runtime-bin`。可選的 `python-v<repository-version>` 釋出標籤只是一項一致性斷言，與儲存庫版本不同時會被拒絕；原始碼 `pyproject.toml` 中的開發佔位版本從不決定釋出版本。暫存過程還會把儲存庫許可證放入兩個 wheel 包，並把第三方宣告放入內建執行時 wheel 包。SDK 是 `py3-none-any` wheel 包；每個只提供 wheel 包的執行時包都包含一個 exe、其 Office 目錄及架構匹配的 ripgrep 伴隨檔案，macOS wheel 包還包含與其架構匹配的 spawn helper。執行時 wheel 包使用 `py3-none-manylinux_2_28_x86_64`、`py3-none-manylinux_2_28_aarch64`、`py3-none-macosx_14_0_arm64`、`py3-none-macosx_14_0_x86_64` 或 `py3-none-win_amd64`；Hatch 掛鉤拒絕 sdist、通用標籤、混合平臺載荷、伴隨檔案缺失或多餘，以及不支援的平臺。兩個 macOS 標籤都會特意宣告保守的 14.0 安裝下限：打包後的 Node 24 可執行檔案宣告 macOS 13.5，x64 PTY helper 宣告 10.7，但釋出驗證只按照 14.0 wheel 宣告證明完整載荷，不會把各元件實測的最低版本承諾為受支援主機。兩個 macOS wheel 包仍按架構分別釋出，不釋出 universal2 wheel 包。
 
-Python 客户端使用所选 profile（默认 `sdk`）、有序 patch 文件和显式 Harness home 启动打包后的 `dsh` 命令。Profile 负责 JSON-RPC 服务和应用组合；缺失 home、profile、bundle、patch 或 server 配置项都会失败，不存在外部完整配置回退。
+Python 用戶端使用所選 profile（預設 `sdk`）、有序 patch 檔案和顯式 Harness home 啟動打包後的 `dsh` 命令。Profile 負責 JSON-RPC 服務和應用組合；缺失 home、profile、bundle、patch 或 server 設定項都會失敗，不存在外部完整設定退回。
 
-### 命名血统
+### 命名血統
 
-`dsh-python-runtime-closure` 是私有部署 manifest，`deepseek-harness-sdk-runtime-<platform>-<arch>` 是可执行文件族。协议字段 `serverInfo.name` 是 `deepseek-harness-sdk-runtime`；Python 分发包名是 `deepseek-harness-sdk` / `deepseek-harness-runtime-bin`，导入模块名是 `deepseek_harness` / `deepseek_harness_runtime`。
+`dsh-python-runtime-closure` 是私有部署 manifest，`deepseek-harness-sdk-runtime-<platform>-<arch>` 是可執行檔案族。協定欄位 `serverInfo.name` 是 `deepseek-harness-sdk-runtime`；Python 分發包名是 `deepseek-harness-sdk` / `deepseek-harness-runtime-bin`，匯入模組名是 `deepseek_harness` / `deepseek_harness_runtime`。
 
-## 打包后的工作流与代码执行
+## 打包後的工作流與程式碼執行
 
-`dsh-workflow-ptc` 通过 `dsh-ptc-runtime-node` 发送自包含 guest 程序。共享提供方通过可执行文件的私有 Node bootstrap 分派启动受管子进程，并使用专用控制通道；不需要独立的工作流 worker 资源。[沙箱 Node 决策](2026-09-11-sandboxed-node-ptc-runtime.zh.md)负责进程与策略生命周期，[工作流沙箱复用](2026-09-13-workflow-ptc-sandbox-reuse.zh.md)负责工作流适配器。
+`dsh-workflow-ptc` 透過 `dsh-ptc-runtime-node` 傳送自包含 guest 程式。共享提供者透過可執行檔案的私有 Node bootstrap 分派啟動受管子程序，並使用專用控制通道；不需要獨立的工作流 worker 資源。[沙箱 Node 決策](2026-09-11-sandboxed-node-ptc-runtime.zh.md)負責程序與策略生命週期，[工作流沙箱複用](2026-09-13-workflow-ptc-sandbox-reuse.zh.md)負責工作流介面卡。
 
-## 测试
+## 測試
 
-验证面分三层。机制层：`--sea` 链路的实测结论内嵌在「决策」各节（VFS 内 ESM 动态 `import()`、单一 Cordis 实例、明确报错的配置链路、`node:sqlite`、macOS ad-hoc 签名可运行）。SDK 层：完整的无密钥 pytest 套件以 mock 运行时对端覆盖客户端协议、子进程清理、绝对 `cwd` 传递、双载体启动与载体解析；根 CI 在 Python 3.10 上运行全部用例。端到端层：每个平台构建都会把两个 wheel 包安装进 checkout 外的干净 venv，证明版本相同以及已安装模块／可执行文件的位置，再通过默认 SDK 路径、自定义配置、仓库内置的独立 minimal 组合和直接二进制协议，对 mock 端点完成轮次，并校验最终文本与 JSONL。minimal 运行会断言其精确系统提示词与单个 shell 工具目录，并跨调用保留 shell 状态。自定义配置还会通过共享的打包后 Node 进程 bootstrap 执行 `run_code` 和不启动 agent 的 `workflow`。文件系统搜索场景要求模型通过目标平台的 `-rg` 伴随文件调用 `glob` 与 `grep`。spawn-node 场景驱动平台 shell 工具执行以 `node` 开头的命令，要求工具结果给出机器自身的 Node 版本且子进程环境中无 `PKG_EXECPATH`，把打包运行时钉死在「pkg 升级重录 child_process 补丁也不得回归」的行为上。MCP 场景会启动临时外部 stdio server，刻意延迟首次 `tools/list` 响应，随后立即启动第一个 SDK 提示词；该提示词必须看到并调用已发现的工具，从而证明 `initialize` 是真正以 Loader 插件树完全稳定为准的就绪边界，而不是依赖定时 sleep。同一项安装后运行还会经 Python SDK 比较一组检入的 exe 专用快照：无密钥脚本化模型挂载一个会注册工具的 Cordis 插件，从 `run_code` 调用该工具，运行一个直接 spawn 的 subagent 和一个会通过 spawn 启动第二个 subagent 的工作流，随后卸载该插件。该 fixture（测试前置数据）会显式禁用组合包中未使用的 Bash 和本地 skill（技能）发现，使其工具集不依赖仓库外部状态；比较时会规范化 SDK 结果与通知流，以及父会话和两个子会话 JSONL 日志中不透明的消息、agent、工作流运行与会话 ID。可信拉取请求会增加真实提供方双轮文件写入／读取，并要求外部字节、工具调用、已完成原因与持久化日志一致。该 harness 与 ACP 的 `pnpm run test:snapshot` 保持独立，因为二者的协议和构建产物不同。
+驗證面分三層。機制層：`--sea` 鏈結的實測結論內嵌在「決策」各節（VFS 內 ESM 動態 `import()`、單一 Cordis 實例、明確報錯的設定鏈結、`node:sqlite`、macOS ad-hoc 簽名可執行）。SDK 層：完整的無金鑰 pytest 套件以 mock 執行時對端覆蓋用戶端協定、子程序清理、絕對 `cwd` 傳遞、雙載體啟動與載體解析；根 CI 在 Python 3.10 上執行全部案例。端到端層：每個平臺建置都會把兩個 wheel 包安裝進 checkout 外的乾淨 venv，證明版本相同以及已安裝模組／可執行檔案的位置，再透過預設 SDK 路徑、自定義設定、儲存庫內建的獨立 minimal 組合和直接二進位制協定，對 mock 端點完成輪次，並驗證最終文字與 JSONL。minimal 執行會斷言其精確系統提示詞與單個 shell 工具目錄，並跨呼叫保留 shell 狀態。自定義設定還會透過共享的打包後 Node 程序 bootstrap 執行 `run_code` 和不啟動 agent 的 `workflow`。檔案系統搜尋情境要求模型透過目標平臺的 `-rg` 伴隨檔案呼叫 `glob` 與 `grep`。spawn-node 情境驅動平臺 shell 工具執行以 `node` 開頭的命令，要求工具結果給出機器自身的 Node 版本且子程序環境中無 `PKG_EXECPATH`，把打包執行時釘死在「pkg 升級重錄 child_process 補丁也不得迴歸」的行為上。MCP 情境會啟動臨時外部 stdio server，刻意延遲首次 `tools/list` 回應，隨後立即啟動第一個 SDK 提示詞；該提示詞必須看到並呼叫已發現的工具，從而證明 `initialize` 是真正以 Loader 外掛樹完全穩定為準的就緒邊界，而不是依賴定時 sleep。同一項安裝後執行還會經 Python SDK 比較一組檢入的 exe 專用快照：無金鑰腳本化模型掛載一個會註冊工具的 Cordis 外掛，從 `run_code` 呼叫該工具，執行一個直接 spawn 的 subagent 和一個會透過 spawn 啟動第二個 subagent 的工作流，隨後解除安裝該外掛。該 fixture（測試前置資料）會顯式停用組合包中未使用的 Bash 和本地 skill（技能）發現，使其工具集不依賴儲存庫外部狀態；比較時會規範化 SDK 結果與通知流，以及父工作階段和兩個子工作階段 JSONL 日誌中不透明的訊息、agent、工作流執行與工作階段 ID。可信拉取請求會增加真實提供者雙輪檔案寫入／讀取，並要求外部位元組、工具呼叫、已完成原因與持久化日誌一致。該 harness 與 ACP 的 `pnpm run test:snapshot` 保持獨立，因為二者的協定和建置產物不同。
 
-手工驱动注意：`bin` 将 stdin EOF 视为「客户端已离开」并立即 dispose，生命周期较短的管道会中止进行中的轮次——管道驱动必须保持 stdin 打开，直到轮次结束。
+手工驅動注意：`bin` 將 stdin EOF 視為「用戶端已離開」並立即 dispose，生命週期較短的管道會中止進行中的輪次——管道驅動必須保持 stdin 開啟，直到輪次結束。
 
-安装后 wheel 的 `sdk-office` 场景会将目标的完整载荷复制到私有临时目录，要求仅存在一个目标后端（使用已声明的原生目标，未声明原生目标时使用 WASM），并通过随附 SDK profile 使用该引擎转换一次 DOCX。它检查 kit 模块确实解析到迁移后的目录、转换报告预期后端，且输出包含 PDF 字节。wheel 校验会检查声明的引擎资源与原生辅助程序执行位；CI 上传已完成的 wheel，因此嵌套辅助程序权限保留在 ZIP 归档中。
+安裝後 wheel 的 `sdk-office` 情境會將目標的完整載荷複製到私有臨時目錄，要求僅存在一個目標後端（使用已宣告的原生目標，未宣告原生目標時使用 WASM），並透過隨附 SDK profile 使用該引擎轉換一次 DOCX。它檢查 kit 模組確實解析到遷移後的目錄、轉換報告預期後端，且輸出包含 PDF 位元組。wheel 驗證會檢查宣告的引擎資源與原生輔助程式執行位；CI 上傳已完成的 wheel，因此巢狀輔助程式權限保留在 ZIP 歸檔中。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**裸用 Node 原生 SEA。** 注入的主脚本必须是 CJS 单文件，blob 内没有文件系统与模块解析，因此动态 `import()` 无法解析裸包名；只能把插件静态编译进主脚本并手工注册。这会绕过标准模块解析并硬编码插件集合，与「配置决定一切」相悖。最终路线实际是「官方 SEA 基础 + pkg 的 VFS/模块钩子层」；否决的是裸用方式，而不是 SEA 本身。
+**裸用 Node 原生 SEA。** 注入的主腳本必須是 CJS 單檔案，blob 內沒有檔案系統與模組解析，因此動態 `import()` 無法解析裸包名；只能把外掛靜態編譯進主腳本並手工註冊。這會繞過標準模組解析並硬編碼外掛集合，與「設定決定一切」相悖。最終路線實際是「官方 SEA 基礎 + pkg 的 VFS/模組掛鉤層」；否決的是裸用方式，而不是 SEA 本身。
 
-**pkg 标准模式。** PoC 证明该模式不可行，而非权衡后放弃：它通过 esbuild 将 ESM 转为 CJS + V8 字节码，但运行时 VM 编译没有接入动态 `import()` 回调，任何 `import()` 都会抛出 `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`，`--options experimental-require-module` 也无效；此外，它依赖社区补丁版 Node 二进制（macos-arm64 没有预编译版本，现场从源码编译约需 10 分钟）。该模式不适用于本仓库架构。
+**pkg 標準模式。** PoC 證明該模式不可行，而非權衡後放棄：它透過 esbuild 將 ESM 轉為 CJS + V8 位元組碼，但執行時 VM 編譯沒有接入動態 `import()` 回呼，任何 `import()` 都會丟擲 `ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`，`--options experimental-require-module` 也無效；此外，它依賴社群補丁版 Node 二進位制（macos-arm64 沒有預編譯版本，現場從原始碼編譯約需 10 分鐘）。該模式不適用於本儲存庫架構。
 
-**每包 ESM→CJS 预打包进 VFS。** 保持真实解析语义、只降级模块格式的折中；`--sea` 直接通过实测，这层构建复杂度无需引入。
+**每包 ESM→CJS 預打包進 VFS。** 保持真實解析語義、只降級模組格式的折中；`--sea` 直接透過實測，這層建置複雜度無需引入。
 
-**让 jsonrpc-agent 承担完整闭包依赖。** 应用入口将声明 53 个以上自身并不 `import()` 的依赖，使「打包 manifest」伪装成真实依赖关系，还会迫使 `constraints` 为其增加 `cordis-in-dependencies` 与 `files` 通配符两个例外。将闭包 manifest 放在 Python 侧的 manifest 包后，`constraints` 不需要任何例外，`bin` 也能保持与 acp-agent 同构的正常包形状。
+**讓 jsonrpc-agent 承擔完整閉包依賴。** 應用入口將宣告 53 個以上自身並不 `import()` 的依賴，使「打包 manifest」偽裝成真實依賴關係，還會迫使 `constraints` 為其增加 `cordis-in-dependencies` 與 `files` 萬用字元兩個例外。將閉包 manifest 放在 Python 側的 manifest 包後，`constraints` 不需要任何例外，`bin` 也能保持與 acp-agent 同構的正常包形狀。
 
-**开放插件集（从磁盘加载用户插件）。** 交付的集合是封闭的；PoC 同时证实，可以通过 `ctx.baseUrl` 相对路径通道从 VFS 外的磁盘 `import()` ESM。该能力列为后续演进，届时还需解决外部插件与 exe 内 Cordis 实例的共享问题。
+**開放外掛集（從磁碟載入使用者外掛）。** 交付的集合是封閉的；PoC 同時證實，可以透過 `ctx.baseUrl` 相對路徑通道從 VFS 外的磁碟 `import()` ESM。該能力列為後續演進，屆時還需解決外部外掛與 exe 內 Cordis 實例的共享問題。
 
-## 后果
+## 後果
 
-**买到的**：受支持目标无需依赖系统 Node.js；插件语义与源码运行严格一致（同一棵真实包树，无转译、无注册表）；对外服务接口、插件集与配置全部收敛到 `cordis.yml` 和一份依赖 manifest 这两个真源；exe 与 `node` 双载体使用同一棵树和相同语义，开发验证无需等待打包；官方 Node 二进制消除了补丁版二进制的供应链顾虑。
+**買到的**：受支援目標無需依賴系統 Node.js；外掛語義與原始碼執行嚴格一致（同一棵真實包樹，無轉譯、無註冊表）；對外服務介面、外掛集與設定全部收斂到 `cordis.yml` 和一份依賴 manifest 這兩個真源；exe 與 `node` 雙載體使用同一棵樹和相同語義，開發驗證無需等待打包；官方 Node 二進位制消除了補丁版二進位制的供應鏈顧慮。
 
-**付出的**：大型 Office 引擎资源保留在 SEA 归档之外，可执行文件必须与必需的伴随文件一起迁移；源码原样进入分发物（没有字节码混淆；闭源分发诉求需要另行评估）；pkg 的 VFS/模块钩子层仍由社区维护（`@yao-pkg/pkg` 为精确钉版、带 pnpm 补丁的根 devDependency，升级需重录补丁，属显式改动）；`--sea` 每个构建目标调用一次（与 CI 每个平台一个任务相匹配，本地多平台构建串行执行）。
+**付出的**：大型 Office 引擎資源保留在 SEA 歸檔之外，可執行檔案必須與必需的伴隨檔案一起遷移；原始碼原樣進入分發物（沒有位元組碼混淆；閉源分發訴求需要另行評估）；pkg 的 VFS/模組掛鉤層仍由社群維護（`@yao-pkg/pkg` 為精確釘版、帶 pnpm 補丁的根 devDependency，升級需重錄補丁，屬顯式改動）；`--sea` 每個建置目標呼叫一次（與 CI 每個平臺一個任務相匹配，本地多平臺建置序列執行）。

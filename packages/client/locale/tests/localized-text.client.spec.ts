@@ -21,7 +21,7 @@ describe('package text resolution', () => {
 
   it('keeps strings verbatim without common lookup or interpolation', () => {
     const { ctx, locale } = make()
-    ctx.effect(() => locale.register('common', 'zh', { retry: '重试' }), 'test: common dictionary')
+    ctx.effect(() => locale.register('common', 'zh', { retry: '重試' }), 'test: common dictionary')
     locale.setLocale('zh')
 
     expect(locale.resolveText('retry')).toBe('retry')

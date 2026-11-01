@@ -312,7 +312,7 @@ describe('rewriteMarkdown', () => {
     ))
     paired.push(
       {
-        locale: 'root', contentLocale: 'zh-CN', source: 'docs/a.zh.md', sourceAliases: ['docs/a.md'],
+        locale: 'root', contentLocale: 'zh-TW', source: 'docs/a.zh.md', sourceAliases: ['docs/a.md'],
         route: 'guide/a.md', label: 'A', sidebar: 'zh-guide', section: 'Test', order: 1,
       },
       {
@@ -371,9 +371,9 @@ describe('docsPages locale routes', () => {
       const counterpart = byRoute.get(`en/${page.route}`)
       expect(counterpart, page.route).toBeDefined()
       expect(counterpart?.locale).toBe('en')
-      if (page.contentLocale === 'zh-CN') {
+      if (page.contentLocale === 'zh-TW') {
         expect(page.source).toMatch(/\.zh\.md$/)
-        expect(page.contentLocale).toBe('zh-CN')
+        expect(page.contentLocale).toBe('zh-TW')
         expect(counterpart?.source).toBe(page.source.replace(/\.zh\.md$/, '.md'))
         expect(counterpart?.contentLocale).toBe('en-US')
       } else {
@@ -447,7 +447,7 @@ describe('docsPages locale routes', () => {
     const rootPages = docsPages.filter(page => (
       page.locale === 'root' && page.route.startsWith('reference/subsystems/')
     ))
-    const translated = rootPages.filter(page => page.contentLocale === 'zh-CN')
+    const translated = rootPages.filter(page => page.contentLocale === 'zh-TW')
     const fallbacks = rootPages.filter(page => page.contentLocale === 'en-US')
 
     expect(translated).toHaveLength(48)
@@ -461,7 +461,7 @@ describe('docsPages locale routes', () => {
       const root = docsPages.find(page => page.route === `reference/cordis-api/${file}`)
       const english = docsPages.find(page => page.route === `en/reference/cordis-api/${file}`)
       expect(root?.source).toBe(`docs/cordis-api/${file.replace(/\.md$/, '.zh.md')}`)
-      expect(root?.contentLocale).toBe('zh-CN')
+      expect(root?.contentLocale).toBe('zh-TW')
       expect(root?.section).toBe('Cordis API')
       expect(english?.source).toBe(`docs/cordis-api/${file}`)
       expect(english?.contentLocale).toBe('en-US')
@@ -502,7 +502,7 @@ describe('docsPages locale routes', () => {
       'reference/cordis-api/service.md',
     ]
     const pages = routes.map(route => docsPages.find(page => page.route === route))
-    expect(pages.every(page => page?.contentLocale === 'zh-CN')).toBe(true)
+    expect(pages.every(page => page?.contentLocale === 'zh-TW')).toBe(true)
     expect(pages.every(page => page?.source.endsWith('.zh.md'))).toBe(true)
   })
 })
@@ -516,16 +516,16 @@ describe('sidebar ordering', () => {
   })
 
   it('refuses a section with no declared placement', () => {
-    expect(() => sectionSpec('root', '数据结构'))
-      .toThrow('Sidebar section "数据结构" has no placement in the root locale.')
+    expect(() => sectionSpec('root', '資料結構'))
+      .toThrow('Sidebar section "資料結構" has no placement in the root locale.')
   })
 
   it('declares placements per locale rather than in one shared list', () => {
     // `SDK` labels a group in both locales, so one shared list would have to
-    // rank it against `入门` and against `Guide` at the same position.
-    expect(sectionSpec('root', 'SDK').index).toBeGreaterThan(sectionSpec('root', '入门').index)
+    // rank it against `入門` and against `Guide` at the same position.
+    expect(sectionSpec('root', 'SDK').index).toBeGreaterThan(sectionSpec('root', '入門').index)
     expect(sectionSpec('en', 'SDK').index).toBeGreaterThan(sectionSpec('en', 'Guide').index)
-    expect(() => sectionSpec('en', '入门')).toThrow()
+    expect(() => sectionSpec('en', '入門')).toThrow()
     expect(() => sectionSpec('root', 'Guide')).toThrow()
   })
 
@@ -543,7 +543,7 @@ describe('sidebar ordering', () => {
   })
 
   it('collapses the subsystem groups and leaves the smaller ones open', () => {
-    expect(sectionSpec('root', '执行与工具').collapsed).toBe(true)
+    expect(sectionSpec('root', '執行與工具').collapsed).toBe(true)
     expect(sectionSpec('en', 'Execution and tools').collapsed).toBe(true)
     expect(sectionSpec('root', '概念').collapsed).toBeUndefined()
   })
@@ -592,7 +592,7 @@ describe('addProjectionFrontmatter', () => {
 describe('projectedPageContent', () => {
   const page = (sidebar: DocsPage['sidebar']): DocsPage => ({
     locale: 'root',
-    contentLocale: 'zh-CN',
+    contentLocale: 'zh-TW',
     source: 'docs/index.zh.md',
     route: 'index.md',
     label: 'Home',
@@ -686,7 +686,7 @@ describe('emitRawMarkdownPages', () => {
     const { root, pages } = fixture()
     writeFileSync(join(root, 'docs/home.md'), '---\nlayout: false\n---\n\n# Home\n\n[A](a.md)\n')
     pages.push({
-      locale: 'root', contentLocale: 'zh-CN', source: 'docs/home.md', route: 'index.md',
+      locale: 'root', contentLocale: 'zh-TW', source: 'docs/home.md', route: 'index.md',
       label: 'Home', sidebar: null, section: 'Home', order: 0,
     })
     const out = mirrorDir()
@@ -815,7 +815,7 @@ function relativeTargets(markdown: string): string[] {
 }
 
 describe('llmsTxt', () => {
-  const site = { base: '/x/', title: 'DeepSeek Harness', description: '插件化 SDK' }
+  const site = { base: '/x/', title: 'DeepSeek Harness', description: '外掛化 SDK' }
 
   it('lists every sidebar page as a base-prefixed raw-Markdown link', () => {
     const text = llmsTxt(site)
@@ -827,14 +827,14 @@ describe('llmsTxt', () => {
 
   it('groups the two locale trees under their own headings', () => {
     const text = llmsTxt(site)
-    expect(text.indexOf('## 简体中文')).toBeGreaterThan(-1)
-    expect(text.indexOf('## English')).toBeGreaterThan(text.indexOf('## 简体中文'))
+    expect(text.indexOf('## 繁體中文')).toBeGreaterThan(-1)
+    expect(text.indexOf('## English')).toBeGreaterThan(text.indexOf('## 繁體中文'))
   })
 
   it('carries the site identity and the raw-Markdown convention', () => {
     const text = llmsTxt(site)
     expect(text.startsWith('# DeepSeek Harness\n')).toBe(true)
-    expect(text).toContain('> 插件化 SDK')
+    expect(text).toContain('> 外掛化 SDK')
     expect(text).toMatch(/`\.md`/)
   })
 })

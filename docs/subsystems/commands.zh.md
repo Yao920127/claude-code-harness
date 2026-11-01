@@ -1,14 +1,14 @@
-# 用户命令
+# 使用者命令
 
 [English](commands.md) | 中文
 
-[`dsh-commands`](../../packages/interaction/commands) 提供的用户命令注册表服务。交互式适配器用它发现插件拥有的命令，并针对确切的 agent（智能体）直接执行这些命令，而不创建模型消息。[命令 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md) 负责分发与生命周期的决策依据；[包 README](../../packages/interaction/commands/README.zh.md) 负责组合方式与限制。
+[`dsh-commands`](../../packages/interaction/commands) 提供的使用者命令註冊表服務。互動式介面卡用它發現外掛擁有的命令，並針對確切的 agent（智慧代理）直接執行這些命令，而不建立模型訊息。[命令 Agent Note](../../.agents/notes/implemented/feature/2026-07-19-plugin-command-registration.zh.md) 負責分發與生命週期的決策依據；[包 README](../../packages/interaction/commands/README.zh.md) 負責組合方式與限制。
 
-来源：[`packages/interaction/commands/src/index.ts`](../../packages/interaction/commands/src/index.ts)
+來源：[`packages/interaction/commands/src/index.ts`](../../packages/interaction/commands/src/index.ts)
 
-## 输入元数据
+## 輸入中繼資料
 
-该服务公开一个可选的非结构化输入描述符：提示文本加附件接受标志。命令的可用性由插件组合决定：每个消费注册表的适配器都会看到全部生效定义。
+該服務公開一個可選的非結構化輸入描述符：提示文字加附件接受標誌。命令的可用性由外掛組合決定：每個消費註冊表的介面卡都會看到全部生效定義。
 
 ```ts type-equiv
 /** Immutable metadata for a command's optional unstructured input. */
@@ -26,9 +26,9 @@ interface CommandInputDescriptor {
 }
 ```
 
-## 定义
+## 定義
 
-`CommandDefinition` 是由插件编写的注册定义。注册表会验证并冻结一份与原始注册对象脱离的生效定义。
+`CommandDefinition` 是由外掛編寫的註冊定義。註冊表會驗證並凍結一份與原始註冊物件脫離的生效定義。
 
 ```ts type-equiv
 /** Plugin-owned command registration. */
@@ -52,9 +52,9 @@ interface CommandDefinition {
 }
 ```
 
-## 调用与结果
+## 呼叫與結果
 
-取消由适配器负责，适配器会传入确切的目标 agent。`rawInput` 紧接在解析后的名称之后，并保留适配器传入的分隔符与后缀。结果会直接呈现给 UI，而不是工具结果或会话事件。
+取消由介面卡負責，介面卡會傳入確切的目標 agent。`rawInput` 緊接在解析後的名稱之後，並保留介面卡傳入的分隔符與字尾。結果會直接呈現給 UI，而不是工具結果或工作階段事件。
 
 ```ts type-equiv
 /** Invocation passed to one registered command handler. */
@@ -90,11 +90,11 @@ type CommandResult =
   | { readonly kind: 'error'; readonly text: string }
 ```
 
-`sourceEventSeq` 是可选字段，且只用于成功结果。存在时，它指向接收会话日志中更早的一条非命令事件；`command/done` 会持久化同一引用，让客户端能够将命令生命周期与该领域投影合并，而无须解析 `text` 或依赖相邻行。
+`sourceEventSeq` 是可選欄位，且只用於成功結果。存在時，它指向接收工作階段日誌中更早的一條非命令事件；`command/done` 會持久化同一引用，讓用戶端能夠將命令生命週期與該領域投影合併，而無須解析 `text` 或依賴相鄰行。
 
-## 发现与解析视图
+## 發現與解析檢視
 
-作用域解析后，适配器会获得不含处理器的不可变描述符。`parseCommand()` 在注册表解析前返回 `ParsedCommand`；语法有效的输入仍可能指向不可用的命令。
+作用域解析後，介面卡會獲得不含處理器的不可變描述符。`parseCommand()` 在註冊表解析前返回 `ParsedCommand`；語法有效的輸入仍可能指向不可用的命令。
 
 ```ts type-equiv
 /** Handler-free immutable command view returned to UI adapters. */

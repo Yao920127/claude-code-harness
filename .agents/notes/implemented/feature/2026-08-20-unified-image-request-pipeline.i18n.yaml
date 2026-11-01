@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-20-unified-image-request-pipeline.md
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files:
   en: 79d1a6f50ac76c3d
-  zh: 9af0070009537602
+  zh: 56413bbe3ccc5b7c
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/problem:
   en: 7ce3a351a1492dd0
-  zh: 7c7e3bb6799822f8
+  zh: 57a6a7c3eb54fffb
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision:
   en: 98e7aad889f5b79c
-  zh: 84b24f6fd9209fcf
+  zh: 59dc019a35f6ea8c
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision/provider-independent-normalized-attachment:
   en: 75b1d3732f3a9d05
-  zh: c8683df3c6f0c989
+  zh: da1aead4a9039d84
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision/deterministic-request-versions:
   en: 8afa51d02643bd40
-  zh: d27d9a5b09fc6d74
+  zh: 019df82904514d65
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision/stable-handles:
   en: 1b204c138b0d8e6c
-  zh: 3d6a2e82372e6825
+  zh: 00a753cc19996736
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision/deepseek-files-lifecycle:
   en: b35a18963d122b21
-  zh: faa21c45cef3555a
+  zh: 42412bcd60ee0bd3
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/decision/diagnostics:
   en: e4c79434bedfc385
-  zh: 9e7de1061629ef5e
+  zh: 12cfe0d9ea507d39
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/alternatives-considered:
   en: 7bfd39c761549b85
-  zh: 6ac48c5842f7df91
+  zh: 835d608d607951e9
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/verification:
   en: 7697f72ce5a7d969
-  zh: 733ca1e0a05ae4ed
+  zh: 4d83481dfa1c65fc
 /agent-note-unified-normalized-attachments-request-versions-and-provider-files/consequences:
   en: 1a6ef14a3e13b502
-  zh: bc4ab273755b2739
+  zh: b65c365027796554

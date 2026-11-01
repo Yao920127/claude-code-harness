@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/typert.md
 /typert-remote-calls:
   en: ccc2694e359c2333
-  zh: cd68bf5e74e2d685
+  zh: 77e399bda968ea91
 /typert-remote-calls/lookup-and-context-declarations:
   en: 8725fa62f36364d7
-  zh: 0f2ff4bdf13ff55b
+  zh: 53e05c9677f04fee
 /typert-remote-calls/invocation-descriptors:
   en: 6417ffb792fd5385
-  zh: c012707075a0b21f
+  zh: f82417b722087049
 /typert-remote-calls/typert-registry:
   en: 29f578ba733cfd5a
-  zh: c486ff4ac2d1e3b4
+  zh: 0f216fe52501648d
 /typert-remote-calls/host-gateway:
   en: 90fab88fe51d17bb
-  zh: 2d4c3849cf2dc7d3
+  zh: 24c12fc9a55d7bf0
 /typert-remote-calls/consumer-remote:
   en: 4836f8f44fef8fd3
-  zh: 51f3ab2462a08ff4
+  zh: acbd612e47fdda41

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-20-desktop-browser-webview.md
 /agent-note-retained-desktop-browser-webviews:
   en: 59456b799c9d5d5e
-  zh: 19a88c553986b463
+  zh: 2d7c3960e49986de
 /agent-note-retained-desktop-browser-webviews/problem:
   en: c6abffbd4077e427
-  zh: a7a0a2c2a99cc70b
+  zh: fca44a81ad0bbdd0
 /agent-note-retained-desktop-browser-webviews/decision:
   en: 9636698995731270
-  zh: 8ac0951114aa9523
+  zh: bf21ce5f31e9e1f0
 /agent-note-retained-desktop-browser-webviews/decision/storage-ownership:
   en: 7a0c203990fcf83c
-  zh: 2ee1de0c183d4312
+  zh: 7ec870fadf28d285
 /agent-note-retained-desktop-browser-webviews/decision/initial-guest-policy:
   en: 21ab346f9a98863c
-  zh: efa115f530d22de3
+  zh: 2d68ed0631dc3b24
 /agent-note-retained-desktop-browser-webviews/alternatives-considered:
   en: 884daa089df32dcc
-  zh: 7e16d740897555c9
+  zh: 3740ec8916471afe
 /agent-note-retained-desktop-browser-webviews/consequences:
   en: 4ffc55e96add3047
-  zh: 2fdaf3d00d2abc07
+  zh: 81bf6d85bcce55e3

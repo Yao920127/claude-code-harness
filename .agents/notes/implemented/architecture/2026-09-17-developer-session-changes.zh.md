@@ -1,4 +1,4 @@
-# Agent Note：使用 developer 消息记录增量 Session 变更
+# Agent Note：使用 developer 訊息記錄增量 Session 變更
 
 Status: implemented
 
@@ -6,30 +6,30 @@ Status: implemented
 
 ## Problem
 
-动态工具变更需要持久且有序的记录，提供方才能在改变可用工具时保留对话的缓存前缀。将这些变更编码为自由文本提醒会丢失结构化的工具身份，并将 Session 状态与提示词措辞耦合。
+動態工具變更需要持久且有序的記錄，提供者才能在改變可用工具時保留對話的快取字首。將這些變更編碼為自由文字提醒會丟失結構化的工具身份，並將 Session 狀態與提示詞措辭耦合。
 
 ## Decision
 
-`DeveloperMessage` 按对话顺序记录已接纳且模型可见的 Session 变更。添加块仅存储 `toolName`；所在事件的 `headerSeq` 选择更早的完整 `request/header`，其中每个添加名称必须恰好对应一个模式。同一事件的所有添加绑定到同一个请求头版本。添加替换当前同名定义；移除仅记录名称，不重复模式。没有添加块的消息不携带请求头引用。同名替换、重启、fork 和 surface 替换保留历史定义身份，不查询当前注册表或最新请求头。没有被任何已接纳请求暴露的中间注册表变更无需 developer 记录。
+`DeveloperMessage` 按對話順序記錄已接納且模型可見的 Session 變更。新增塊僅儲存 `toolName`；所在事件的 `headerSeq` 選擇更早的完整 `request/header`，其中每個新增名稱必須恰好對應一個模式。同一事件的所有新增繫結到同一個請求頭版本。新增替換目前同名定義；移除僅記錄名稱，不重複模式。沒有新增塊的訊息不攜帶請求頭引用。同名替換、重新啟動、fork 和 surface 替換保留歷史定義身份，不查詢目前註冊表或最新請求頭。沒有被任何已接納請求暴露的中間註冊表變更無需 developer 記錄。
 
-`developer/message` 携带消息及其接纳 turn/step 坐标。原生读取方和 Session 接纳逻辑拒绝缺失、前向、未知、非请求头及歧义模式引用、不完整的被引用定义，并拒绝已退役的内嵌定义，同时保留无关 JSON 字段。`sourceEventSeqs` 保持为独立的派生元数据。替换保留选定的请求头，并引用被覆盖的 surface 节点；不同请求头版本的添加必须分属不同事件。fork 保留所引用的前缀，压缩不删除请求头事件。未来改变事件数量的迁移必须将 `headerSeq` 作为同一文件内的事件引用重映射。空 developer 内容保留其 surface 位置，不添加模型消息，也不能覆盖受保护的 system 头节点。tools 包按照[生产者自有来源规则](2026-09-09-producer-owned-message-sources.zh.md)拥有 `tool-registry` 来源种类。
+`developer/message` 攜帶訊息及其接納 turn/step 座標。原生讀取方和 Session 接納邏輯拒絕缺失、前向、未知、非請求頭及歧義模式引用、不完整的被引用定義，並拒絕已退役的內嵌定義，同時保留無關 JSON 欄位。`sourceEventSeqs` 保持為獨立的派生中繼資料。替換保留選定的請求頭，並引用被覆蓋的 surface 節點；不同請求頭版本的新增必須分屬不同事件。fork 保留所引用的字首，壓縮不刪除請求頭事件。未來改變事件數量的遷移必須將 `headerSeq` 作為同一檔案內的事件引用重對映。空 developer 內容保留其 surface 位置，不新增模型訊息，也不能覆蓋受保護的 system 頭節點。tools 包按照[生產者自有來源規則](2026-09-09-producer-owned-message-sources.zh.md)擁有 `tool-registry` 來源種類。
 
-`ToolAdditionBlock.tool` 声明为可选的 `never`，并标注 `@persistenceReserved`。模式历史因此记录这个被拒绝的字段：后续允许任何值都会改变现有值类型并要求格式递增，无关的可选元数据仍属于可兼容添加。
+`ToolAdditionBlock.tool` 宣告為可選的 `never`，並標註 `@persistenceReserved`。模式歷史因此記錄這個被拒絕的欄位：後續允許任何值都會改變現有值型別並要求格式遞增，無關的可選中繼資料仍屬於可相容新增。
 
-`ToolSchema.deferLoading` 请求延迟加载工具定义，与工具添加历史相互独立。工具构造、注册表投影与提示词组装保留该标记。动态添加与定义加载是不同事实；预先声明的延迟加载定义无需虚构添加记录。
+`ToolSchema.deferLoading` 請求延遲載入工具定義，與工具新增歷史相互獨立。工具建構、註冊表投影與提示片語裝保留該標記。動態新增與定義載入是不同事實；預先宣告的延遲載入定義無需虛構新增記錄。
 
-V4 编解码器将 developer 角色限定在 `developer/message` 字段内，并拒绝 inbox 与标题请求数组中的该角色。原生验证检查 developer 必需字段、历史请求头绑定及工具变更块仅限 developer 的约束，同时保留附加 JSON 属性。因此，可选元数据添加符合持久化检查器的可选属性规则，仍可读取；附加字段不能削弱必需字段、角色或打开 step 的检查。可忽略标记不代表读取方支持该事件：物理解码保留 developer 载荷，直到按词表执行接纳；写入方和原生读取方仍拒绝格式错误的已知数据。developer 接纳逻辑将格式错误的普通消息字段留给解码器恢复。已安装的 Session 接纳逻辑验证 surface 关系，不把 developer 记录转换为已发布 V3 的 user 记录。[已发布格式迁移规则](2026-08-31-released-session-format-migrations.zh.md)继续保护已提交的前代文件。
+V4 編解碼器將 developer 角色限定在 `developer/message` 欄位內，並拒絕 inbox 與標題請求陣列中的該角色。原生驗證檢查 developer 必需欄位、歷史請求頭繫結及工具變更塊僅限 developer 的約束，同時保留附加 JSON 屬性。因此，可選中繼資料新增符合持久化檢查器的可選屬性規則，仍可讀取；附加欄位不能削弱必需欄位、角色或開啟 step 的檢查。可忽略標記不代表讀取方支援該事件：物理解碼保留 developer 載荷，直到按詞表執行接納；寫入方和原生讀取方仍拒絕格式錯誤的已知資料。developer 接納邏輯將格式錯誤的普通訊息欄位留給解碼器恢復。已安裝的 Session 接納邏輯驗證 surface 關係，不把 developer 記錄轉換為已釋出 V3 的 user 記錄。[已釋出格式遷移規則](2026-08-31-released-session-format-migrations.zh.md)繼續保護已提交的前代檔案。
 
-Session V4 预留 issue #4146 所需的持久表示。生产发出、提供方投影、UI 展示和压缩集成见[动态工具更新决策](2026-09-20-dynamic-tool-updates.zh.md)。
+Session V4 預留 issue #4146 所需的持久表示。生產發出、提供者投影、UI 展示和壓縮整合見[動態工具更新決策](2026-09-20-dynamic-tool-updates.zh.md)。
 
 ## Alternatives considered
 
-**将文本提醒作为 developer 内容。** 此格式表示结构化 Session 变更；模型指令属于 system 消息。未来的 developer 内容尚未指定，不将其限制为提醒。
+**將文字提醒作為 developer 內容。** 此格式表示結構化 Session 變更；模型指令屬於 system 訊息。未來的 developer 內容尚未指定，不將其限制為提醒。
 
-**在每次添加中重复定义。** 完整请求头已经保留精确模式。历史引用避免第二份持久化副本，同时保留同名替换的身份。若绑定到最新请求头或注册表，则会重新解释较早的添加。
+**在每次新增中重複定義。** 完整請求頭已經保留精確模式。歷史引用避免第二份持久化副本，同時保留同名替換的身份。若繫結到最新請求頭或註冊表，則會重新解釋較早的新增。
 
-**将延迟加载视为存在工具添加记录的证据。** 这会阻止预先声明的延迟工具。模式标记描述加载方式，内容块记录动态添加。
+**將延遲載入視為存在工具新增記錄的證據。** 這會阻止預先宣告的延遲工具。模式標記描述載入方式，內容塊記錄動態新增。
 
 ## Consequences
 
-Session V4 持久化 issue #4146 的工具变更表示。发出、路由投影、DeepSeek 序列化及 Chat 和 Trajectory 展示由[动态工具更新决策](2026-09-20-dynamic-tool-updates.zh.md)负责。
+Session V4 持久化 issue #4146 的工具變更表示。發出、路由投影、DeepSeek 序列化及 Chat 和 Trajectory 展示由[動態工具更新決策](2026-09-20-dynamic-tool-updates.zh.md)負責。

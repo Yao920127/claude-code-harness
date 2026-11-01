@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-31-cross-process-session-write-lease.md
 /agent-note-cross-process-session-write-lease:
   en: 700d2cb4cbf2ba75
-  zh: 04a6283f685f4b8a
+  zh: a1543c67cc1e79ed
 /agent-note-cross-process-session-write-lease/problem:
   en: fa5063a7f8ec786f
-  zh: f3f7f955d146f00c
+  zh: 1f482897588be3cf
 /agent-note-cross-process-session-write-lease/decision:
   en: fd3a65b3d53ad2d7
-  zh: a795f9665045966a
+  zh: ce480845d1133feb
 /agent-note-cross-process-session-write-lease/alternatives-considered:
   en: c67ce2d14445140a
-  zh: dd0f531b6e540f9e
+  zh: 473b56a323ae5242
 /agent-note-cross-process-session-write-lease/consequences:
   en: d2a681fa574ebd04
-  zh: 4af2e372011bbd59
+  zh: d5fd8094d3de0701

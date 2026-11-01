@@ -1,5 +1,5 @@
 ---
-description: "Web 客户端插件的动态图同步与开发时 bundle 重载。"
+description: "Web 用戶端外掛的動態圖同步與開發時 bundle 過載。"
 kind: "package-reference"
 ---
 
@@ -9,120 +9,120 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-client-hmr` 让已打开的 Web 页面与 Host 插件图保持同步，并重载重建后的浏览器 bundle。普通插件的启停无需刷新页面或重启 Host 即可生效。代码重建会替换受影响插件并重置其组件状态。模型不会收到新的输入或输出。
+`dsh-client-hmr` 讓已開啟的 Web 頁面與 Host 外掛圖保持同步，並過載重建後的瀏覽器 bundle。普通外掛的啟停無需重新整理頁面或重新啟動 Host 即可生效。程式碼重建會替換受影響外掛並重置其元件狀態。模型不會收到新的輸入或輸出。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-随包提供的 Web 组合挂载此传输，以交付插件动态变更。开发时，bundle watcher 还会提供代码重建。停用此传输会停止向已打开的页面交付图更新。
+隨包提供的 Web 組合掛載此傳輸，以交付外掛動態變更。開發時，bundle watcher 還會提供程式碼重建。停用此傳輸會停止向已開啟的頁面交付圖更新。
 
-### 启动重载链路
+### 啟動過載鏈結
 
-运行 `pnpm run dev:web`，它会同时启动宿主与重建 watcher（`--no-serve` 则只把 watcher 接到别处启动的宿主上，使用共享 Client tsdown 预设的任何 watch 进程亦然）；重建后的插件随后会被自动逐个替换进运行中的浏览器。该预设会在所有包内 chunk 写完后标记 `lib/client.js`，因此仅 chunk 发生重建也会推进包 revision，无需 Host 扫描 chunk。
+執行 `pnpm run dev:web`，它會同時啟動主機與重建 watcher（`--no-serve` 則只把 watcher 接到別處啟動的主機上，使用共享 Client tsdown 預設的任何 watch 程序亦然）；重建後的外掛隨後會被自動逐個替換進執行中的瀏覽器。該預設會在所有包內 chunk 寫完後標記 `lib/client.js`，因此僅 chunk 發生重建也會推進包 revision，無需 Host 掃描 chunk。
 
-### 一次重载做什么
+### 一次過載做什麼
 
-每次成功的重载都会重新执行插件 bundle，并用全新状态重新挂载插件。依赖被重载插件的插件会随之自动重载。失败会显示在插件列表中，可直接重试，无需等待下一次重建。
+每次成功的過載都會重新執行外掛 bundle，並用全新狀態重新掛載外掛。依賴被過載外掛的外掛會隨之自動過載。失敗會顯示在外掛列表中，可直接重試，無需等待下一次重建。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `pollIntervalMs` | `500` | bundle stat 轮询间隔，单位为毫秒 |
+| `pollIntervalMs` | `500` | bundle stat 輪詢間隔，單位為毫秒 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-hmr)是所有受支持字段及其 JSDoc 的完整真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-hmr)是所有受支援欄位及其 JSDoc 的完整真源。
 
-### 观察成功
+### 觀察成功
 
-成功的替换会立即显示编辑后的 UI，无需页面重载，且插件在替换后继续工作。请记住权衡：被重载插件内的 React 状态会丢失，而会话、工作区与连接状态会保留。
+成功的替換會立即顯示編輯後的 UI，無需頁面過載，且外掛在替換後繼續工作。請記住權衡：被過載外掛內的 React 狀態會丟失，而工作階段、工作區與連線狀態會保留。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释重载链路的构建方式；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋過載鏈結的建置方式；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-Host 半侧监听每个包带完成标记的入口产物，并提供 `/plugins/events`。它转发现有的图变化与重建通知；每个新连接都会收到当前完整图。图描述浏览器的目标条目，不保证 Host 清理已经完成。Host 的激活与清理仍由 Host 生命周期管理。入口的 mtime、ctime 和大小共同标识 revision，无需对其内容求哈希；元数据未变时无需读取内容。Host 重启时若产物未变，revision 保持不变，因此图流重连不会替换浏览器插件。浏览器半侧将两种帧都交给 Client Modules，由它串行处理条目变更并等待浏览器资源清理。
+Host 半側監聽每個包帶完成標記的入口產物，並提供 `/plugins/events`。它轉發現有的圖變化與重建通知；每個新連線都會收到目前完整圖。圖描述瀏覽器的目標條目，不保證 Host 清理已經完成。Host 的啟用與清理仍由 Host 生命週期管理。入口的 mtime、ctime 和大小共同標識 revision，無需對其內容求雜湊；中繼資料未變時無需讀取內容。Host 重新啟動時若產物未變，revision 保持不變，因此圖流重連不會替換瀏覽器外掛。瀏覽器半側將兩種幀都交給 Client Modules，由它序列處理條目變更並等待瀏覽器資源清理。
 
-### 浏览器侧替换
+### 瀏覽器側替換
 
-收到 `rebuilt` 帧后，控制器使旧模块失效，并在旧 fiber 仍然服务时预取其单资源脚本。随后删除注册表 runtime、等待旧 fiber 清理、清除条目中的 fiber 引用并移除自身样式。模块系统先物化新导出，再由 `entry.refresh()` 通过 Loader 挂载；这样即使 Loader 只记录导入错误，页面诊断仍能获得失败原因。CSS 在旧 effect 完成清理后注入。
+收到 `rebuilt` 幀後，控制器使舊模組失效，並在舊 fiber 仍然服務時預取其單資源腳本。隨後刪除註冊表 runtime、等待舊 fiber 清理、清除條目中的 fiber 引用並移除自身樣式。模組系統先物化新匯出，再由 `entry.refresh()` 透過 Loader 掛載；這樣即使 Loader 只記錄匯入錯誤，頁面診斷仍能獲得失敗原因。CSS 在舊 effect 完成清理後注入。
 
-### 级联与自重载
+### 級聯與自過載
 
-fiber 的激活 epoch 会串联其服务提供方的 uid，因此替换提供方 fiber 会通过 Cordis 自身级联重载所有依赖方，无需 HMR（热模块替换）侧维护任何簿记信息。本插件本身也是一个图 entry，因此 `rebuilt` 帧可能点名它；进行中的重载在旧 bundle 的闭包中继续运行，新 bundle 的 apply 会打开全新通道。
+fiber 的啟用 epoch 會串聯其服務提供者的 uid，因此替換提供者 fiber 會透過 Cordis 自身級聯過載所有依賴方，無需 HMR（熱模組替換）側維護任何簿記資訊。本外掛本身也是一個圖 entry，因此 `rebuilt` 幀可能點名它；進行中的過載在舊 bundle 的閉包中繼續執行，新 bundle 的 apply 會開啟全新通道。
 
-### 失败策略
+### 失敗策略
 
-下载失败时，正在运行的插件保持活动。旧 fiber 被卸载后，导入或激活失败不会恢复先前的 bundle。失败会显示为当前页面的同步错误。「设置 → 插件 → 插件列表」会针对最新图重试，即使其 revision 未变化；后续重建也会重试受影响的插件。无关且已成功运行的插件保持活动。
+下載失敗時，正在執行的外掛保持活動。舊 fiber 被解除安裝後，匯入或啟用失敗不會恢復先前的 bundle。失敗會顯示為目前頁面的同步錯誤。「設定 → 外掛 → 外掛列表」會針對最新圖重試，即使其 revision 未變化；後續重建也會重試受影響的外掛。無關且已成功執行的外掛保持活動。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | node 半侧：bundle stat 轮询、`rebuilt` 上报、`/plugins/events` SSE 通道 |
-| [`src/client/index.ts`](src/client/index.ts) | 浏览器半侧：SSE 订阅与共享条目控制器调用 |
-| [`src/events.ts`](src/events.ts) | 共享帧类型（`graph` / `rebuilt`）与端点常量 |
+| [`src/index.ts`](src/index.ts) | node 半側：bundle stat 輪詢、`rebuilt` 上報、`/plugins/events` SSE 通道 |
+| [`src/client/index.ts`](src/client/index.ts) | 瀏覽器半側：SSE 訂閱與共享條目控制器呼叫 |
+| [`src/events.ts`](src/events.ts) | 共享幀型別（`graph` / `rebuilt`）與端點常數 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当重载约定不够用时阅读以下页面：提供 bundle 的模块系统、启动它们的外壳，以及 external 背后的模块图规则。
+當過載約定不夠用時閱讀以下頁面：提供 bundle 的模組系統、啟動它們的外殼，以及 external 背後的模組圖規則。
 
-- [客户端模块系统](../modules/README.zh.md)——本驱动器驱动的惰性 CJS 模块表与 `invalidate`/`prefetch` 钩子。
-- [Web 启动内核](../web/README.zh.md)——启动插件树并展示 entry 状态的外壳。
-- [客户端组地图](../README.zh.md)——本包重载的浏览器半侧。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-hmr)——每个受支持配置字段及其源声明。
+- [用戶端模組系統](../modules/README.zh.md)——本驅動器驅動的惰性 CJS 模組表與 `invalidate`/`prefetch` 掛鉤。
+- [Web 啟動核心](../web/README.zh.md)——啟動外掛樹並展示 entry 狀態的外殼。
+- [用戶端組地圖](../README.zh.md)——本包過載的瀏覽器半側。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-client-hmr)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。重载驱动器属于浏览器侧 UI 插件层，不注册任何面向模型的内容。
+無。過載驅動器屬於瀏覽器側 UI 外掛層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明重载驱动器不会保留或恢复什么。它们是当前包约束，不是任务积压。
+這些限制說明過載驅動器不會保留或恢復什麼。它們是目前包約束，不是任務積壓。
 
-- **重载有意保持粗粒度**——全新 fiber 与全新组件；被重载插件内的 React 状态会丢失，而数据层（连接 fiber、运行时 fiber、Session 对象）不受影响。react-refresh 级状态保留与重新执行 bundle 冲突，因此有意排除。
-- **失败时不回滚**——旧 fiber 被卸载后，替换失败不会恢复先前的 bundle。
-- **仅负责 Web 传输**——Electron 的安装和后端重启流程不使用此 SSE 路径。条目对账本身不依赖传输。
+- **過載有意保持粗粒度**——全新 fiber 與全新元件；被過載外掛內的 React 狀態會丟失，而資料層（連線 fiber、執行時 fiber、Session 物件）不受影響。react-refresh 級狀態保留與重新執行 bundle 衝突，因此有意排除。
+- **失敗時不復原**——舊 fiber 被解除安裝後，替換失敗不會恢復先前的 bundle。
+- **僅負責 Web 傳輸**——Electron 的安裝和後端重新啟動流程不使用此 SSE 路徑。條目對帳本身不依賴傳輸。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

@@ -6,7 +6,7 @@ English | [中文](2026-09-23-language-neutral-default-workspace-naming.zh.md)
 
 ## Problem
 
-[First-use default Workspace](2026-09-20-default-workspace.md) let the Client pick both the directory name and the stored title from its startup language: Chinese installations created `默认工作区`, English ones `Default workspace`, everything else `default-workspace`. The name a reader sees and the name written to disk were the same string, so one product decision carried two incompatible requirements. A path is addressed by shell commands, tool arguments, `@path` references, session logs, and backups, and must not depend on which language happened to be active when the installation started. A label is read, and should be in the reader's language. Switching language afterwards satisfied neither: the path was already fixed, and so was the label derived from it.
+[First-use default Workspace](2026-09-20-default-workspace.md) let the Client pick both the directory name and the stored title from its startup language: Chinese installations created `預設工作區`, English ones `Default workspace`, everything else `default-workspace`. The name a reader sees and the name written to disk were the same string, so one product decision carried two incompatible requirements. A path is addressed by shell commands, tool arguments, `@path` references, session logs, and backups, and must not depend on which language happened to be active when the installation started. A label is read, and should be in the reader's language. Switching language afterwards satisfied neither: the path was already fixed, and so was the label derived from it.
 
 ## Decision
 

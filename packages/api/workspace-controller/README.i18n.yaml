@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/api/workspace-controller/README.md
 /:
   en: a080cd1633a6f3a9
-  zh: a54cb4fb9d9f15b2
+  zh: 31d2b6ed8f9ac221
 /workspace-controller:
   en: b9d615d0df92cbb7
   zh: 5ecd432522478c8a
 /workspace-controller/summary:
   en: b7822e9ab1f26abf
-  zh: b052a3d4a20d26a3
+  zh: de565bbdab292f54
 /workspace-controller/table-of-contents:
   en: 4e53164159b5ce41
-  zh: 89582dc0294d0776
+  zh: 23e6fbceb637807b
 /workspace-controller/use-this-package:
   en: aa0d93826ab685fe
-  zh: 144e48d49020f5a4
+  zh: 55adcd3ea9e2993d
 /workspace-controller/use-this-package/default-workspace:
   en: 73761baa0fe29b29
-  zh: 3a93b1645fb50052
+  zh: b40f75fafacf8c89
 /workspace-controller/model-experience:
   en: 4f399d6a27daf683
-  zh: 13811489fe636127
+  zh: e611aa13c405a449
 /workspace-controller/model-experience/kv-cache-effect:
   en: f38466c42287d3db
-  zh: 692eb6e5806fe865
+  zh: 6809c3a9507fc589
 /workspace-controller/known-limitations-and-deferred-work:
   en: 43b497c19779532e
-  zh: c6d9d3afff774219
+  zh: e2ed866aa4194daa
 /workspace-controller/known-limitations-and-deferred-work/dev-note:
   en: 0f74591fc1097e46
-  zh: f4df9e5617a50a9f
+  zh: b36c8e239e08265b

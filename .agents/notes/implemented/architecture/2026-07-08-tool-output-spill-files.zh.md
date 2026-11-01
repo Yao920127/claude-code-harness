@@ -1,32 +1,32 @@
-# Agent Note: 工具输出 spill 策略
+# Agent Note: 工具輸出 spill 策略
 
 Status: implemented
 
 [English](2026-07-08-tool-output-spill-files.md) | 中文
 
-## 问题
+## 問題
 
-工具输出需要有界的模型可见预览，但部分超大结果仍可能在之后有用。抓取的页面正文或冗长的工具响应不应完整占用下一次模型请求，但模型应能使用现有文件读取工具，在之后查看经过格式化的完整结果。
+工具輸出需要有界的模型可見預覽，但部分超大結果仍可能在之後有用。抓取的頁面正文或冗長的工具回應不應完整佔用下一次模型請求，但模型應能使用現有檔案讀取工具，在之後檢視經過格式化的完整結果。
 
-这项改动之前的行为并不一致。`dsh-bash-local` 已经会在内存尾部溢出时，把完整 stdout／stderr 流写入私有的临时 spill 文件；普通文本工具结果则仍以内联形式返回，除非工具自行实现上限。[工具结果保留库](../../archived/architecture/2026-07-06-tool-result-retention-library.md)负责预览机制，但不负责存储，也不负责把这些机制应用于最终工具结果的执行流水线策略。
+這項改動之前的行為並不一致。`dsh-bash-local` 已經會在記憶體尾部溢位時，把完整 stdout／stderr 流寫入私有的臨時 spill 檔案；普通文字工具結果則仍以內聯形式返回，除非工具自行實作上限。[工具結果保留庫](../../archived/architecture/2026-07-06-tool-result-retention-library.md)負責預覽機制，但不負責儲存，也不負責把這些機制應用於最終工具結果的執行流水線策略。
 
-其形态与超时策略设计一致：工具作者声明规范值与 Native renderer（原生渲染器），由策略插件在渲染后的内容上执行部署默认的上下文预算。工具仍可在提供方采集上限处提前 spill；由工具负责的展示 spill 可以保留已完整采集的规范值，而只替换展示内容。[规范工具输出约定](2026-07-20-canonical-tool-output-contract.zh.md)规定了这项区分。
+其形態與超時策略設計一致：工具作者宣告規範值與 Native renderer（原生渲染器），由策略外掛在渲染後的內容上執行部署預設的上下文預算。工具仍可在提供者採集上限處提前 spill；由工具負責的展示 spill 可以保留已完整採集的規範值，而只替換展示內容。[規範工具輸出約定](2026-07-20-canonical-tool-output-contract.zh.md)規定了這項區分。
 
-## 决策
+## 決策
 
-在新的 `packages/spill/` 分组下增加一层轻量 spill 存储 seam 和一个默认 spill 策略插件：
+在新的 `packages/spill/` 分組下增加一層輕量 spill 儲存 seam 和一個預設 spill 策略外掛：
 
 | 包 | 角色 |
 |---|---|
-| `@deepseek-ai/dsh-spill` | 接口：`ctx.spillStore`、词汇类型，不包含存储实现。 |
-| `@deepseek-ai/dsh-spill-local` | 本地后端：在宿主文件系统中提供私有、会话作用域的文件存储。 |
-| `@deepseek-ai/dsh-spill-policy` | 工具结果策略插件：包装分发后的最终文本结果，并以保留预览和 spill 定位符替换超大结果。 |
+| `@deepseek-ai/dsh-spill` | 介面：`ctx.spillStore`、詞彙型別，不包含儲存實作。 |
+| `@deepseek-ai/dsh-spill-local` | 本地後端：在主機檔案系統中提供私有、工作階段作用域的檔案儲存。 |
+| `@deepseek-ai/dsh-spill-policy` | 工具結果策略外掛：包裝分發後的最終文字結果，並以保留預覽和 spill 定位符替換超大結果。 |
 
-工具结果消费方是 `dsh-spill-policy`，它通过 `tools/post-execute` waterfall（瀑布式事件）使用最终工具结果。模型按照后端随定位符返回的检索提示读取内容。[会话引用 spill 复用](../bug-fix/2026-09-05-session-reference-spill-reuse.zh.md)增加一个直接存储消费方，采用独立的预览、来源信息与失败语义；它不改变工具结果策略。
+工具結果消費方是 `dsh-spill-policy`，它透過 `tools/post-execute` waterfall（瀑布式事件）使用最終工具結果。模型按照後端隨定位符返回的檢索提示讀取內容。[工作階段引用 spill 複用](../bug-fix/2026-09-05-session-reference-spill-reuse.zh.md)增加一個直接儲存消費方，採用獨立的預覽、來源資訊與失敗語義；它不改變工具結果策略。
 
 ### spill seam
 
-存储 seam 保持最小化：保存文本，并返回定位符与检索提示。
+儲存 seam 保持最小化：儲存文字，並返回定位符與檢索提示。
 
 ```ts ignore-check
 interface SpillStore {
@@ -60,17 +60,17 @@ interface SpillRef {
 }
 ```
 
-`SpillLocator` 是一个[品牌化的](../../../../packages/util/brand)模型可见句柄，由后端返回。本地后端将其渲染为文件系统路径；远程或数据库后端可以渲染 URI、键或命令 token。消费方把它视为不透明值，并使用 `retrievalHint` 渲染，而不是假定 `read` 始终是正确的检索机制。`SpillOwner.sessionId` 是保存时的存储命名空间：fork 后的会话会从种子日志继承已有的 spill 定位符，无需复制它们或重新取得所有权；fork 后的新 spill 使用子会话 id。保留期清理可以连同其他旧会话产物一起使旧定位符失效；spill seam 不定义逐会话的清理策略。
+`SpillLocator` 是一個[品牌化的](../../../../packages/util/brand)模型可見控制代碼，由後端返回。本地後端將其渲染為檔案系統路徑；遠端或資料庫後端可以渲染 URI、鍵或命令 token。消費方把它視為不透明值，並使用 `retrievalHint` 渲染，而不是假定 `read` 始終是正確的檢索機制。`SpillOwner.sessionId` 是儲存時的儲存名稱空間：fork 後的工作階段會從種子日誌繼承已有的 spill 定位符，無需複製它們或重新取得所有權；fork 後的新 spill 使用子工作階段 id。保留期清理可以連同其他舊工作階段產物一起使舊定位符失效；spill seam 不定義逐工作階段的清理策略。
 
-`dsh-spill-local` 负责存储细节：选择会话作用域的目录、安全名称、防止路径遍历、执行写入、本地产物生命周期，以及返回 `{ locator, bytes, retrievalHint }`。它不负责工具结果替换、模型可见的预览策略、搜索、文件检查，也不定义 seam 级或逐会话保留策略。文件写入 `<root>/session-<hash>/<random>-<safeName>`：`root` 是配置路径，或延迟创建的私有（0700）进程级临时目录；会话子目录是 `sha256(sessionId)` 的短前缀；叶节点由随机十六进制前缀与调用方的 `suggestedName` 组成，后者会被清理成单一路径段（与 JSONL 后端的 `encodeSegment` 一致）。系统使用 `open(path, 'wx', 0o600)` 写入，确保独占且仅所有者可访问，因此预先植入的符号链接无法重定向写入。定位符就是该路径，检索提示则告知模型可以在该路径上使用 `read` 或 `grep`。它的一次性启动清理会应用[本地 spill 清理说明](../../archived/architecture/2026-07-17-local-spill-startup-cleanup.md)所述的后端专属产物生命周期。
+`dsh-spill-local` 負責儲存細節：選擇工作階段作用域的目錄、安全名稱、防止路徑遍歷、執行寫入、本地產物生命週期，以及返回 `{ locator, bytes, retrievalHint }`。它不負責工具結果替換、模型可見的預覽策略、搜尋、檔案檢查，也不定義 seam 級或逐工作階段保留策略。檔案寫入 `<root>/session-<hash>/<random>-<safeName>`：`root` 是設定路徑，或延遲建立的私有（0700）程序級臨時目錄；工作階段子目錄是 `sha256(sessionId)` 的短字首；葉節點由隨機十六進位制字首與呼叫方的 `suggestedName` 組成，後者會被清理成單一路徑段（與 JSONL 後端的 `encodeSegment` 一致）。系統使用 `open(path, 'wx', 0o600)` 寫入，確保獨佔且僅所有者可存取，因此預先植入的符號連結無法重定向寫入。定位符就是該路徑，檢索提示則告知模型可以在該路徑上使用 `read` 或 `grep`。它的一次性啟動清理會應用[本地 spill 清理說明](../../archived/architecture/2026-07-17-local-spill-startup-cleanup.md)所述的後端專屬產物生命週期。
 
 ### spill 策略
 
-`dsh-spill-policy` 在执行后策略接受结果之后，按 `maxInlineTokens` 对文字和图片共同计量并保留首尾。完整结果仍通过 `saveText()` 保存，图片本体留在附件存储，结果文件记录可读取路径。图片投影顺序、整图省略和模型计量由[图文结果保留决策](../../implemented/bug-fix/2026-09-21-multimodal-tool-result-retention.zh.md)负责。省略配置时不安装监听器，存储失败时保留原结果；`read` 的模型可见结果跳过自动省略，避免重复读取产生循环。
+`dsh-spill-policy` 在執行後策略接受結果之後，按 `maxInlineTokens` 對文字和圖片共同計量並保留首尾。完整結果仍透過 `saveText()` 儲存，圖片本體留在附件儲存，結果檔案記錄可讀取路徑。圖片投影順序、整圖省略和模型計量由[圖文結果保留決策](../../implemented/bug-fix/2026-09-21-multimodal-tool-result-retention.zh.md)負責。省略設定時不安裝監聽器，儲存失敗時保留原結果；`read` 的模型可見結果跳過自動省略，避免重複讀取產生迴圈。
 
-## 示例：web_fetch
+## 範例：web_fetch
 
-`web_fetch` 是首个示例，因为它天然会返回较大的文本结果，而且无需工具专用的 spill 代码。该工具本身无需特殊处理：
+`web_fetch` 是首個範例，因為它天然會返回較大的文字結果，而且無需工具專用的 spill 程式碼。該工具本身無需特殊處理：
 
 ```ts ignore-check
 ctx.tools.register(defineTool({
@@ -86,7 +86,7 @@ ctx.tools.register(defineTool({
 }))
 ```
 
-配置 `dsh-spill-policy` 后，格式化后的大型 fetch 结果会自动保留并 spill。部署通过把提供方资源上限设得高于策略上限来展示此行为：
+設定 `dsh-spill-policy` 後，格式化後的大型 fetch 結果會自動保留並 spill。部署透過把提供者資源上限設得高於策略上限來展示此行為：
 
 ```yaml
 - id: web-fetch-http
@@ -103,70 +103,70 @@ ctx.tools.register(defineTool({
     maxInlineTokens: 12500
 ```
 
-这项分离很重要。`web-fetch-http` 仍负责资源上限（`maxResponseBytes`、`maxBodyChars`），用来保护网络、内存和解码工作。`spill-policy` 只负责结果已经存在后针对模型上下文的上限。如果提供方已经返回 `truncated: true`，spill 文件包含的是工具返回的完整格式化结果，而不是原始网页全文；策略不会做出其他承诺。
+這項分離很重要。`web-fetch-http` 仍負責資源上限（`maxResponseBytes`、`maxBodyChars`），用來保護網路、記憶體和解碼工作。`spill-policy` 只負責結果已經存在後針對模型上下文的上限。如果提供者已經返回 `truncated: true`，spill 檔案包含的是工具返回的完整格式化結果，而不是原始網頁全文；策略不會做出其他承諾。
 
-## 与保留和提前 spill 的关系
+## 與保留和提前 spill 的關係
 
-保留与 spill 存储相互独立：
+保留與 spill 儲存相互獨立：
 
-- `@deepseek-ai/dsh-output-retention` 负责预览机制（`TextRetainer`、`ItemRetainer` 和省略元数据）。
-- `@deepseek-ai/dsh-spill` 负责保存最终文本，并返回定位符与检索提示。
-- `@deepseek-ai/dsh-spill-policy` 在工具流水线中应用默认的最终结果策略，将前两者组合起来。
+- `@deepseek-ai/dsh-output-retention` 負責預覽機制（`TextRetainer`、`ItemRetainer` 和省略中繼資料）。
+- `@deepseek-ai/dsh-spill` 負責儲存最終文字，並返回定位符與檢索提示。
+- `@deepseek-ai/dsh-spill-policy` 在工具流水線中應用預設的最終結果策略，將前兩者組合起來。
 
-最终结果策略不能取代由工具负责的提前 spill。部分有用内容并不存在于最终 `ToolExecutionResult.content` 中：
+最終結果策略不能取代由工具負責的提前 spill。部分有用內容並不存在於最終 `ToolExecutionResult.content` 中：
 
-- `bash` 的最终输出已经是尾部内容加临时 spill 路径；完整的 stdout／stderr 流位于执行器文件中。
-- `subagent` 的最终输出是 subagent 的最终回答，而不是 subagent 的执行轨迹。
-- 未来的工具可能生成从未出现在最终 `ToolExecutionResult.content` 中的运行时产物。
+- `bash` 的最終輸出已經是尾部內容加臨時 spill 路徑；完整的 stdout／stderr 流位於執行器檔案中。
+- `subagent` 的最終輸出是 subagent 的最終回答，而不是 subagent 的執行軌跡。
+- 未來的工具可能生成從未出現在最終 `ToolExecutionResult.content` 中的執行時產物。
 
-这些场景可以在后续工作中直接使用 `ctx.spillStore`，不属于首个示例的范围。
+這些情境可以在後續工作中直接使用 `ctx.spillStore`，不屬於首個範例的範圍。
 
-## 非目标
+## 非目標
 
-- 本决策不增加面向模型的 `artifact_read` 或 `artifact_search` 工具。
-- 本决策不增加逐工具的保留配置。
-- 不增加面向模型的超时／截断参数。
-- 不把 `read` 输出迁移到 spill 文件。
-- 不取代 `web-fetch-http.maxBodyChars` 等提供方／资源上限。
-- 第一版不统一 bash 临时文件，也不采集 subagent 执行轨迹。
+- 本決策不增加面向模型的 `artifact_read` 或 `artifact_search` 工具。
+- 本決策不增加逐工具的保留設定。
+- 不增加面向模型的超時／截斷參數。
+- 不把 `read` 輸出遷移到 spill 檔案。
+- 不取代 `web-fetch-http.maxBodyChars` 等提供者／資源上限。
+- 第一版不統一 bash 臨時檔案，也不採集 subagent 執行軌跡。
 
-## 延后事项
+## 延後事項
 
-- 用于现有执行器 spill 文件的 `saveFile()`／`linkOrCopy`，这是统一 bash 行为所必需的。
-- 由工具负责的 subagent 执行轨迹 spill（`await run.result`，在 `run.dispose()` 前读取进程内子会话，保存 JSONL）。
-- 如果内置的 `read` 跳过规则不足，再增加逐工具选择退出或逐工具策略声明。
-- 面向 ACP（Agent Client Protocol）或远程环境的远程／数据库存储后端，因为本地路径在这些环境中没有意义。
+- 用於現有執行器 spill 檔案的 `saveFile()`／`linkOrCopy`，這是統一 bash 行為所必需的。
+- 由工具負責的 subagent 執行軌跡 spill（`await run.result`，在 `run.dispose()` 前讀取程序內子工作階段，儲存 JSONL）。
+- 如果內建的 `read` 跳過規則不足，再增加逐工具選擇退出或逐工具策略宣告。
+- 面向 ACP（Agent Client Protocol）或遠端環境的遠端／資料庫儲存後端，因為本地路徑在這些環境中沒有意義。
 
-本地后端通过一次性启动扫描清理旧文件，而不是绑定到会话删除——参见[启动清理 Agent Note](../../archived/architecture/2026-07-17-local-spill-startup-cleanup.md)。seam 仍未定义逐会话清理策略；保留策略属于后端。
+本地後端透過一次性啟動掃描清理舊檔案，而不是繫結到工作階段刪除——參見[啟動清理 Agent Note](../../archived/architecture/2026-07-17-local-spill-startup-cleanup.md)。seam 仍未定義逐工作階段清理策略；保留策略屬於後端。
 
-## 测试
+## 測試
 
-- `dsh-spill` 单元测试锁定 seam 约定：注册为 `ctx.spillStore`、每个上下文只允许一种实现，并在 dispose（资源释放）时释放。
-- `dsh-spill-local` 单元测试覆盖 `saveText`、`encodeSegment` 清理（分隔符／波浪号／完整路径段的点／空值）、会话哈希目录、仅所有者权限、每次保存生成不同路径、配置根目录／私有根目录，以及存储失败时的拒绝。
-- `dsh-spill-policy` 单元测试通过 `ctx.tools.execute` 驱动真实工具：禁用模式下无操作、替换超大文本、小结果／非文本结果保持不变、跳过 `read`、尽力回退（保存失败／无后端／无所有者），以及下游组合（限制已替换结果、保留 `additionalContexts`）。
-- `dsh-tool-web` 集成测试驱动 `web_fetch`，其实际执行路径经过 `ctx.tools.execute`，并使用真实的 `spill-local` 后端与策略；测试证明只有刻意加入的 spill 提示会改变模型可见文本，而 spill 文件保存完整的格式化结果。
-- `tui-agent` 示例加载 `spill-local` 与 `spill-policy`，因此其无密钥 Loader／PTY 冒烟测试会执行真实加载路径（namespace-plugin 导出形态与 `inject`）。
+- `dsh-spill` 單元測試鎖定 seam 約定：註冊為 `ctx.spillStore`、每個上下文只允許一種實作，並在 dispose（資源釋放）時釋放。
+- `dsh-spill-local` 單元測試覆蓋 `saveText`、`encodeSegment` 清理（分隔符／波浪號／完整路徑段的點／空值）、工作階段雜湊目錄、僅所有者權限、每次儲存生成不同路徑、設定根目錄／私有根目錄，以及儲存失敗時的拒絕。
+- `dsh-spill-policy` 單元測試透過 `ctx.tools.execute` 驅動真實工具：停用模式下無操作、替換超大文字、小結果／非文字結果保持不變、跳過 `read`、盡力退回（儲存失敗／無後端／無所有者），以及下游組合（限制已替換結果、保留 `additionalContexts`）。
+- `dsh-tool-web` 整合測試驅動 `web_fetch`，其實際執行路徑經過 `ctx.tools.execute`，並使用真實的 `spill-local` 後端與策略；測試證明只有刻意加入的 spill 提示會改變模型可見文字，而 spill 檔案儲存完整的格式化結果。
+- `tui-agent` 範例載入 `spill-local` 與 `spill-policy`，因此其無金鑰 Loader／PTY 冒煙測試會執行真實載入路徑（namespace-plugin 匯出形態與 `inject`）。
 
-## 影响
+## 影響
 
-默认策略只能看见最终格式化文本。它无法保留已经由提供方限制的内部内容，也无法保留从未成为结果一部分的运行时产物。第一版聚焦最终结果 spill 而不是提前 spill，因此可以接受这一限制；由工具负责的提前 spill 仍属于后续工作。
+預設策略只能看見最終格式化文字。它無法保留已經由提供者限制的內部內容，也無法保留從未成為結果一部分的執行時產物。第一版聚焦最終結果 spill 而不是提前 spill，因此可以接受這一限制；由工具負責的提前 spill 仍屬於後續工作。
 
-本地后端返回真实路径，使其保持简单并符合已经验证的 agent（智能体）工具行为；seam 本身只承诺一个不透明定位符加检索提示，所以远程后端可以返回非文件定位符。
+本地後端返回真實路徑，使其保持簡單並符合已經驗證的 agent（智慧代理）工具行為；seam 本身只承諾一個不透明定位符加檢索提示，所以遠端後端可以返回非檔案定位符。
 
-本地后端的价值取决于现有 `read`／`grep` 工具能否检查返回的本地路径，即使 spill 目录位于会话 cwd 之外。这一条件成立，因为文件系统策略会记录观察结果并设置写保护，但不会把读取限制在工作区内。未来的工作区限制策略必须显式允许本地 spill 路径，或改用检索提示指向受支持读取器的非文件 spill 后端。
+本地後端的價值取決於現有 `read`／`grep` 工具能否檢查返回的本地路徑，即使 spill 目錄位於工作階段 cwd 之外。這一條件成立，因為檔案系統策略會記錄觀察結果並設定防寫，但不會把讀取限制在工作區內。未來的工作區限制策略必須顯式允許本地 spill 路徑，或改用檢索提示指向受支援讀取器的非檔案 spill 後端。
 
-**快照缺口。** 目前没有 ACP 快照场景覆盖 transcript（文本记录）可见的 `web_fetch` spill 提示。ACP 快照 harness 在无密钥环境中回放，无法访问实时 web，而 `web_fetch` spill 需要一个真实的超上限 HTTP 正文；确定性场景需要一个预置的 loopback fetch 目标，但当前回放树尚未接线（示例根本没有加载 `tool-web`）。该行为改由 `dsh-tool-web` 针对 loopback server 的集成测试覆盖。弥补该缺口属于后续工作：把 `tool-web` 和预置 fetch 目标接入 ACP 示例，然后录制 `web-fetch-spill` 场景。
+**快照缺口。** 目前沒有 ACP 快照情境覆蓋 transcript（文字記錄）可見的 `web_fetch` spill 提示。ACP 快照 harness 在無金鑰環境中回放，無法存取即時 web，而 `web_fetch` spill 需要一個真實的超上限 HTTP 正文；確定性情境需要一個預置的 loopback fetch 目標，但目前回放樹尚未接線（範例根本沒有載入 `tool-web`）。該行為改由 `dsh-tool-web` 針對 loopback server 的整合測試覆蓋。彌補該缺口屬於後續工作：把 `tool-web` 和預置 fetch 目標接入 ACP 範例，然後錄製 `web-fetch-spill` 情境。
 
-如果策略开始负责工具专用语义，就会膨胀得过大。它处理已接受的图文序列，不解释工具专用的文字语义。由工具负责的提前 spill 仍留作未来工作。
+如果策略開始負責工具專用語義，就會膨脹得過大。它處理已接受的圖文序列，不解釋工具專用的文字語義。由工具負責的提前 spill 仍留作未來工作。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**要求每个工具通过保留声明选择加入。**不予采纳，因为目标是实现类似 Claude Code 通用工具结果持久化的默认行为。只需一个 `maxInlineTokens` 部署配置项即可验证该形态。
+**要求每個工具透過保留宣告選擇加入。**不予採納，因為目標是實作類似 Claude Code 通用工具結果持久化的預設行為。只需一個 `maxInlineTokens` 部署設定項即可驗證該形態。
 
-**把 `tool-results` 建成宽泛的工具结果平台。** 不予采纳：宽泛的包名会诱使系统把保留策略、结果替换、预览措辞、搜索和提前 spill 合并进一个 seam。可共享的存储部分更小：保存文本，并返回定位符与检索提示。
+**把 `tool-results` 建成寬泛的工具結果平臺。** 不予採納：寬泛的包名會誘使系統把保留策略、結果替換、預覽措辭、搜尋和提前 spill 合併進一個 seam。可共享的儲存部分更小：儲存文字，並返回定位符與檢索提示。
 
-**使用 `ctx.fs.writeText` 或面向模型的 `write` 工具。** 不予采纳：工作区文件系统写入带有项目文件语义、写入／编辑策略、观察状态和面向用户的副作用。spill 文件是运行时产物，不是由模型编写的工作区改动。现有 `read` 工具之后可以检查它们，但创建操作属于运行时 spill seam。
+**使用 `ctx.fs.writeText` 或面向模型的 `write` 工具。** 不予採納：工作區檔案系統寫入帶有專案檔案語義、寫入／編輯策略、觀察狀態和麵向使用者的副作用。spill 檔案是執行時產物，不是由模型編寫的工作區改動。現有 `read` 工具之後可以檢查它們，但建立操作屬於執行時 spill seam。
 
-**让 `web-fetch-http` 不受限地抓取，只依靠 spill-policy。** 不予采纳：spill-policy 在最终工具结果已经存在之后才运行，无法保护网络、内存或解码资源。提供方资源上限仍然必须存在。
+**讓 `web-fetch-http` 不受限地抓取，只依靠 spill-policy。** 不予採納：spill-policy 在最終工具結果已經存在之後才執行，無法保護網路、記憶體或解碼資源。提供者資源上限仍然必須存在。
 
-**把保留合并进 spill 机制。** 不予采纳：保留与 spill 职责不同。`TextRetainer`／`ItemRetainer` 决定保留哪部分预览、又省略了什么；spill 存储只负责保存策略要求的最终文本。
+**把保留合併進 spill 機制。** 不予採納：保留與 spill 職責不同。`TextRetainer`／`ItemRetainer` 決定保留哪部分預覽、又省略了什麼；spill 儲存只負責儲存策略要求的最終文字。

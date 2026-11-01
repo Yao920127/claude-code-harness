@@ -1,5 +1,5 @@
 ---
-description: "面向模型的 skill（技能）目录与加载工具，供希望了解 agent（智能体）看到的内容或配置会话 skill 目录的用户与维护者阅读。"
+description: "面向模型的 skill（技能）目錄與載入工具，供希望瞭解 agent（智慧代理）看到的內容或設定工作階段 skill 目錄的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-agent 可以在会话期间发现并加载 skill。在首次请求前，如果存在模型可调用 skill 且 `skill` 工具可见，agent 会收到一份持久目录，列出可用 skill 的名称与有长度上限的描述，并可用 `skill` 工具加载完整指令。用户可以用 `/name` 调用某个用户可调用的 skill，把相同的指令注入该步骤。目录变更会追加一份完整替换，其中空目录会停用旧名称；可配置 `catalogDescriptionMaxLength` 来限制每条描述的长度。
+agent 可以在工作階段期間發現並載入 skill。在首次請求前，如果存在模型可呼叫 skill 且 `skill` 工具可見，agent 會收到一份持久目錄，列出可用 skill 的名稱與有長度上限的描述，並可用 `skill` 工具載入完整指令。使用者可以用 `/name` 呼叫某個使用者可呼叫的 skill，把相同的指令注入該步驟。目錄變更會追加一份完整替換，其中空目錄會停用舊名稱；可設定 `catalogDescriptionMaxLength` 來限制每條描述的長度。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-与 skill 注册表一起挂载该插件，即可让 agent 拥有会话 skill 目录和 `skill` 加载工具。它需要 `ctx.agents`、`ctx.tools` 与 `ctx.skills`。
+與 skill 註冊表一起掛載該外掛，即可讓 agent 擁有工作階段 skill 目錄和 `skill` 載入工具。它需要 `ctx.agents`、`ctx.tools` 與 `ctx.skills`。
 
-### 何时选择
+### 何時選擇
 
-当 agent 应在会话期间发现并加载 skill 时使用它。当 skill 加载由其他消费方处理或完全不需要时，请跳过——没有它，提供方与注册表仍可工作，但不会有任何东西为模型渲染目录或工具。
+當 agent 應在工作階段期間發現並載入 skill 時使用它。當 skill 載入由其他消費方處理或完全不需要時，請跳過——沒有它，提供者與註冊表仍可工作，但不會有任何東西為模型渲染目錄或工具。
 
-### 挂载与配置
+### 掛載與設定
 
-与 skill 注册表和至少一个提供方一起加载该插件。唯一配置项限制目录中渲染的规范化描述长度。
+與 skill 註冊表和至少一個提供者一起載入該外掛。唯一設定項限制目錄中渲染的規範化描述長度。
 
 ```yaml
 - name: '@deepseek-ai/dsh-skill'
@@ -41,78 +41,78 @@ agent 可以在会话期间发现并加载 skill。在首次请求前，如果�
 - name: '@deepseek-ai/dsh-tool-skill'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `catalogDescriptionMaxLength` | `500` | 会话目录中渲染的规范化描述最大长度；最小为 3 |
+| `catalogDescriptionMaxLength` | `500` | 工作階段目錄中渲染的規範化描述最大長度；最小為 3 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-skill)是每个受支持字段的穷尽式真源。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-tool-skill)是每個受支援欄位的窮盡式真源。
 
-### 模型得到什么
+### 模型得到什麼
 
-- **会话目录。** 当存在模型可调用 skill 且 `skill` 工具可见时，agent 会在首次请求前收到一条持久的用户角色消息，列出每个 skill 的名称与有长度上限的描述；该消息告诉模型在着手任务前先用工具加载 skill，且绝不能仅凭摘要推断指令。
-- **加载工具。** 模型以精确的 skill 名称调用 `skill`，并收到完整指令正文以及规范的 `<skill_content>` 块中的资源指引；该结果作为普通工具历史保留。
-- **用户显式调用。** 直接用户输入中的 `/name` token 若指名某个用户可调用 skill，会把该 skill 的指令注入该步骤，而无需模型自行加载。
-- **实时目录更新。** 后续成员关系、描述或可见性变化会追加完整的替换目录；删除全部 skill 时会追加空目录，停用较早的名称。
+- **工作階段目錄。** 當存在模型可呼叫 skill 且 `skill` 工具可見時，agent 會在首次請求前收到一條持久的使用者角色訊息，列出每個 skill 的名稱與有長度上限的描述；該訊息告訴模型在著手任務前先用工具載入 skill，且絕不能僅憑摘要推斷指令。
+- **載入工具。** 模型以精確的 skill 名稱呼叫 `skill`，並收到完整指令正文以及規範的 `<skill_content>` 塊中的資源指引；該結果作為普通工具歷史保留。
+- **使用者顯式呼叫。** 直接使用者輸入中的 `/name` token 若指名某個使用者可呼叫 skill，會把該 skill 的指令注入該步驟，而無需模型自行載入。
+- **即時目錄更新。** 後續成員關係、描述或可見性變化會追加完整的替換目錄；刪除全部 skill 時會追加空目錄，停用較早的名稱。
 
-### 可观察的成功与失败
+### 可觀察的成功與失敗
 
-加载列出的 skill 会返回其完整指令；无论加载来自工具还是用户的显式调用，模型看到的都是同一种规范形态。无效名称会报告 `Error: invalid skill name "<name>"`，未知名称会报告该 skill 未知或已不可用，被禁用模型调用的 skill 会报告其不可用于模型调用。如果从未发布过目录，并且不存在模型可调用 skill，或 `skill` 工具被隐藏或遮蔽，则会整体省略目录；目录发布后，无论可见性丧失——`skill` 工具被隐藏或被同名作用域工具遮蔽——还是删除全部 skill，都会改为追加空目录来停用旧名称。
+載入列出的 skill 會返回其完整指令；無論載入來自工具還是使用者的顯式呼叫，模型看到的都是同一種規範形態。無效名稱會報告 `Error: invalid skill name "<name>"`，未知名稱會報告該 skill 未知或已不可用，被停用模型呼叫的 skill 會報告其不可用於模型呼叫。如果從未釋出過目錄，並且不存在模型可呼叫 skill，或 `skill` 工具被隱藏或遮蔽，則會整體省略目錄；目錄釋出後，無論可見性喪失——`skill` 工具被隱藏或被同名作用域工具遮蔽——還是刪除全部 skill，都會改為追加空目錄來停用舊名稱。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释目录与调用边界如何构建；可观察行为已在[使用本包](#use-this-package)和下方模型体验章节中完整说明。
+本節解釋目錄與呼叫邊界如何建置；可觀察行為已在[使用本包](#use-this-package)和下方模型體驗章節中完整說明。
 
-### 设计理念
+### 設計理念
 
-本包建立在两个想法之上。第一，目录是一种持久投影，按已发布条目的 digest 而非渲染后的正文做差异比较，因此 `<system-reminder>` 包装永远不会强制重新发布，消费方也不需要重新解析 `<available_skills>` 块。第二，一条规范渲染服务两条加载路径——工具结果与用户显式注入——经由共享自 `dsh-skill` 的 `renderSkillContent`，因此无论加载由谁发起，模型看到的都是同一种 `<skill_content>` 形态。
+本包建立在兩個想法之上。第一，目錄是一種持久投影，按已釋出條目的 digest 而非渲染後的正文做差異比較，因此 `<system-reminder>` 包裝永遠不會強制重新發布，消費方也不需要重新解析 `<available_skills>` 塊。第二，一條規範渲染服務兩條載入路徑——工具結果與使用者顯式注入——經由共享自 `dsh-skill` 的 `renderSkillContent`，因此無論載入由誰發起，模型看到的都是同一種 `<skill_content>` 形態。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：工具注册、目录与手势 pre-step 监听器、渲染与 digest |
-| — | 不发布运行时不变式伴生入口；这个面向模型的适配器没有独立的生命周期流；执行关系由它调用的能力 seam 负责。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：工具註冊、目錄與手勢 pre-step 監聽器、渲染與 digest |
+| — | 不釋出執行時不變式伴生入口；這個面向模型的介面卡沒有獨立的生命週期流；執行關係由它呼叫的能力 seam 負責。 |
 
-### 目录生命周期
+### 目錄生命週期
 
-在每次符合条件的 `agent/pre-step`，插件都会快照调用会话的 skill 目录，应用 `skill` 工具的精确可见性，过滤出模型可调用的 skill，并把条目 digest 与会话日志中最新可见的 `skill-catalog` 消息做比较。digest 变化时，它把包含完整替换目录的持久用户角色消息交给 `enter` 决策；空替换会显式停用较早的名称。提供方快照不完整时不发送任何内容，并为下一次 pre-step 保留最后一份可用视图。可见性检查针对本插件所注册的精确工具定义，因此作用域内同名的遮蔽项会同时移除 schema 及其指引；该插件既可全局挂载，也可挂在单个 agent 的组合内。
+在每次符合條件的 `agent/pre-step`，外掛都會快照呼叫工作階段的 skill 目錄，應用 `skill` 工具的精確可見性，過濾出模型可呼叫的 skill，並把條目 digest 與工作階段日誌中最新可見的 `skill-catalog` 訊息做比較。digest 變化時，它把包含完整替換目錄的持久使用者角色訊息交給 `enter` 決策；空替換會顯式停用較早的名稱。提供者快照不完整時不傳送任何內容，併為下一次 pre-step 保留最後一份可用檢視。可見性檢查針對本外掛所註冊的精確工具定義，因此作用域內同名的遮蔽項會同時移除 schema 及其指引；該外掛既可全域掛載，也可掛在單個 agent 的組合內。
 
-### 调用边界
+### 呼叫邊界
 
-`/name` 手势监听器只扫描已认领的用户消息：若某个以空白为界、指名工作区目录中用户可调用 skill 的 token 出现，则把同一份 `<skill_content>` 渲染作为 `user` 角色的指令上下文注入，追加在该步骤所有其他注入之后。未知名称与用户不可调用的名称保持为普通行文。这是 `disable-model-invocation` skill 唯一的入口，目录与 `skill` 工具永不暴露这类 skill。
+`/name` 手勢監聽器只掃描已認領的使用者訊息：若某個以空白為界、指名工作區目錄中使用者可呼叫 skill 的 token 出現，則把同一份 `<skill_content>` 渲染作為 `user` 角色的指令上下文注入，追加在該步驟所有其他注入之後。未知名稱與使用者不可呼叫的名稱保持為普通行文。這是 `disable-model-invocation` skill 唯一的入口，目錄與 `skill` 工具永不暴露這類 skill。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从目录背后的注册表词汇逐步进入精确工具 schema 与设计依据。
+當包級約定不夠用時閱讀以下頁面。它們從目錄背後的註冊表詞彙逐步進入精確工具 schema 與設計依據。
 
-- [skill 子系统参考](../../../docs/subsystems/skills.zh.md)——目录背后的注册表与提供方词汇。
-- [skill 包](../skill/README.zh.md)——注册表与共享的 `renderSkillContent` 渲染。
-- [生成工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-skill)——模型接收的精确 `skill` schema。
-- [用户显式 skill 调用 Agent Note](../../../.agents/notes/archived/feature/2026-08-08-user-explicit-skill-invocation.md)——`/name` 手势设计。
+- [skill 子系統參考](../../../docs/subsystems/skills.zh.md)——目錄背後的註冊表與提供者詞彙。
+- [skill 包](../skill/README.zh.md)——註冊表與共享的 `renderSkillContent` 渲染。
+- [生成工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-skill)——模型接收的精確 `skill` schema。
+- [使用者顯式 skill 呼叫 Agent Note](../../../.agents/notes/archived/feature/2026-08-08-user-explicit-skill-invocation.md)——`/name` 手勢設計。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 会话目录
+### 工作階段目錄
 
-#### 模型看到什么
+#### 模型看到什麼
 
-如果存在模型可调用 skill，且可见的正是这个 `skill` 工具，agent 会在第一个请求之前收到下方目录模板，其中包含每个已排序 skill 的一条随数据而定的条目。该目录是一条持久的用户角色消息。后续成员关系、描述或可见性的变化会使用同一个 `<available_skills>` 信封追加完整替换；删除所有 skill 时，会追加一个空信封，并明确指示不得使用旧名称。模板的结尾一句是防止双重加载的规则：用户显式的手势边界（下文的 pre-step 监听器）会把同一份 `renderSkillContent` 输出（共享自 `@deepseek-ai/dsh-skill`）内联注入，目录则告诉模型遵循该块，而不是再经工具重新加载该 skill；替换目录模板的两个分支——包括清空后的目录——都携带同一条防双重加载规则。
+如果存在模型可呼叫 skill，且可見的正是這個 `skill` 工具，agent 會在第一個請求之前收到下方目錄範本，其中包含每個已排序 skill 的一條隨資料而定的條目。該目錄是一條持久的使用者角色訊息。後續成員關係、描述或可見性的變化會使用同一個 `<available_skills>` 信封追加完整替換；刪除所有 skill 時，會追加一個空信封，並明確指示不得使用舊名稱。範本的結尾一句是防止雙重載入的規則：使用者顯式的手勢邊界（下文的 pre-step 監聽器）會把同一份 `renderSkillContent` 輸出（共享自 `@deepseek-ai/dsh-skill`）內聯注入，目錄則告訴模型遵循該塊，而不是再經工具重新載入該 skill；替換目錄範本的兩個分支——包括清空後的目錄——都攜帶同一條防雙重載入規則。
 
-##### Skill 目录模板
+##### Skill 目錄範本
 
 ```markdown
 <system-reminder>
@@ -127,35 +127,35 @@ A user may also invoke a skill directly; its <skill_content> block then appears 
 </system-reminder>
 ```
 
-#### Token 影响
+#### Token 影響
 
-重复输入成本随 skill 数量和 `catalogDescriptionMaxLength` 增长；当列表为空或工具被隐藏或遮蔽时，不会发送初始目录 token。每次实际目录变更都会添加一条保留的完整替换消息。
+重複輸入成本隨 skill 數量和 `catalogDescriptionMaxLength` 增長；當列表為空或工具被隱藏或遮蔽時，不會傳送初始目錄 token。每次實際目錄變更都會新增一條保留的完整替換訊息。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-初始持久目录追加在现有可重用前缀之后。动态变更作为该目录之后的仅追加历史，因此较早的可重用 token 保持不变，每条新追加的目录和后续轮次都会形成新的后缀。新建或恢复的实例如果 digest 发生变化，可能会从新追加的目录位置起影响缓存重用。
+初始持久目錄追加在現有可重用字首之後。動態變更作為該目錄之後的僅追加歷史，因此較早的可重用 token 保持不變，每條新追加的目錄和後續輪次都會形成新的字尾。新建或恢復的實例如果 digest 發生變化，可能會從新追加的目錄位置起影響快取重用。
 
 ### 工具 schema
 
-#### 模型看到什么
+#### 模型看到什麼
 
-模型会看到生成的 [`skill` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-skill)。
+模型會看到生成的 [`skill` schema](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-skill)。
 
-#### Token 影响
+#### Token 影響
 
-工具可见时，每次请求都有固定的 schema token 开销。
+工具可見時，每次請求都有固定的 schema token 開銷。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-工具定义和可见性不变时，前缀稳定。遮蔽、限制或插件生命周期变更可能从该 schema 起使重用失效。
+工具定義和可見性不變時，字首穩定。遮蔽、限制或外掛生命週期變更可能從該 schema 起使重用失效。
 
-### 工具结果
+### 工具結果
 
-#### 模型看到什么
+#### 模型看到什麼
 
-成功调用使用下方结果模板，以及提供方管理的资源指引、目录资源指引、URL 资源指引或不透明资源指引。
+成功呼叫使用下方結果範本，以及提供者管理的資源指引、目錄資源指引、URL 資源指引或不透明資源指引。
 
-##### Skill 结果模板
+##### Skill 結果範本
 
 ```markdown
 <skill_content name="<escaped-name>">
@@ -169,90 +169,90 @@ A user may also invoke a skill directly; its <skill_content> block then appears 
 </skill_content>
 ```
 
-##### 提供方管理的资源指引
+##### 提供者管理的資源指引
 
 ```markdown
 Resources for this skill are managed by provider "<provider>".
 Load referenced resources only as needed.
 ```
 
-##### 目录资源指引
+##### 目錄資源指引
 
 ```markdown
 Base directory for this skill: <path>
 Resolve relative paths mentioned by this skill against the base directory before using them. Load referenced resources only as needed.
 ```
 
-##### URL 资源指引
+##### URL 資源指引
 
 ```markdown
 Base URL for this skill: <url>
 Resolve relative URLs mentioned by this skill against the base URL before using them. Load referenced resources only as needed.
 ```
 
-##### 不透明资源指引
+##### 不透明資源指引
 
 ```markdown
 Resources for this skill: <description>
 Load referenced resources only as needed.
 ```
 
-#### Token 影响
+#### Token 影響
 
-已加载指令是取决于数据的工具结果 token，并在后续步骤中重新发送，直到压缩；不会制作重复的 `agent.inject()` 副本。
+已載入指令是取決於資料的工具結果 token，並在後續步驟中重新傳送，直到壓縮；不會製作重複的 `agent.inject()` 副本。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可重用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可重用請求字首之後，不會使現有 KV Cache 條目失效。
 
-### 工具错误
+### 工具錯誤
 
-#### 模型看到什么
+#### 模型看到什麼
 
-无效或陈旧选择会精确返回 `Error: invalid skill name "<name>"`、`Error: skill "<name>" is unknown or no longer available` 或 `Error: skill "<name>" is not available for model invocation`。提供方抛出的查找文本取决于数据，并套用同一个 `Error: <message>` 包装层。
+無效或陳舊選擇會精確返回 `Error: invalid skill name "<name>"`、`Error: skill "<name>" is unknown or no longer available` 或 `Error: skill "<name>" is not available for model invocation`。提供者丟擲的查詢文字取決於資料，並套用同一個 `Error: <message>` 包裝層。
 
-#### Token 影响
+#### Token 影響
 
-只有失败调用会添加这些已保留 token。
+只有失敗呼叫會新增這些已保留 token。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可重用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可重用請求字首之後，不會使現有 KV Cache 條目失效。
 
-### 用户显式调用注入
+### 使用者顯式呼叫注入
 
-#### 模型看到什么
+#### 模型看到什麼
 
-已认领用户消息中任意位置、以空白为界、指名工作区目录中某个用户可调用 skill 的 `/name` token，会把该 skill 的完整 `<skill_content>` 渲染（与上文结果模板完全相同的形态）作为 `user` 角色的指令上下文注入，追加在该步骤所有其他注入之后——背景在前，模型要着手处理的材料在最后。只扫描直接的用户输入，检查在已加载定义上进行，未知名称和用户不可调用的名称保持为普通行文。这是 `disable-model-invocation` skill 唯一的入口，目录和 `skill` 工具永不暴露这类 skill；目录的结尾一句会告诉模型遵循注入块，而不是重新加载它。
+已認領使用者訊息中任意位置、以空白為界、指名工作區目錄中某個使用者可呼叫 skill 的 `/name` token，會把該 skill 的完整 `<skill_content>` 渲染（與上文結果範本完全相同的形態）作為 `user` 角色的指令上下文注入，追加在該步驟所有其他注入之後——背景在前，模型要著手處理的材料在最後。只掃描直接的使用者輸入，檢查在已載入定義上進行，未知名稱和使用者不可呼叫的名稱保持為普通行文。這是 `disable-model-invocation` skill 唯一的入口，目錄和 `skill` 工具永不暴露這類 skill；目錄的結尾一句會告訴模型遵循注入塊，而不是重新載入它。
 
-#### Token 影响
+#### Token 影響
 
-每次手势会把一份渲染后的 skill 正文作为注入上下文加进该轮次——尺寸与同一 skill 的工具结果相同，该成本会随用户请求必然产生，而非由模型自行决定。同一步骤内对同一 skill 的重复手势只注入一次。
+每次手勢會把一份渲染後的 skill 正文作為注入上下文加進該輪次——尺寸與同一 skill 的工具結果相同，該成本會隨使用者請求必然產生，而非由模型自行決定。同一步驟內對同一 skill 的重複手勢只注入一次。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；注入落在该步骤的消息批次中、可重用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；注入落在該步驟的訊息批次中、可重用請求字首之後，不會使現有 KV Cache 條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明目录或加载器何时不合适。它们是当前包约束，不是任务积压。
+這些限制說明目錄或載入器何時不合適。它們是目前包約束，不是任務積壓。
 
-- **目录省略 `whenToUse`、来源和提供方元数据**——路由只基于名称和有长度上限的描述；`whenToUse` 仍是提供方元数据，加载后的包装层也不渲染它。
-- **已加载指令正文没有大小上限**——提供方可返回足以占用大量下一步上下文的 skill；只有目录描述会被截断。
-- **资源是指引，而非附件**——工具报告基础目录/URL/不透明提示，但既不列举也不为模型获取引用文件。
-- **加载是一次性文本**——远程提供方缓慢或 skill 正文很大时，不提供部分内容、流式输出或缓存内容句柄。
-- **目录替换采用全量列表**——一个名称或描述发生变化，就会追加所有可见摘要；这样能显式停用陈旧名称，但 token 成本与目录大小成正比。
-- **正文不做版本化**——仅修改正文不会改变目录 digest，也不会通知模型；后续工具调用会读取提供方的当前内容，而先前工具结果仍是历史事实。
+- **目錄省略 `whenToUse`、來源和提供者中繼資料**——路由只基於名稱和有長度上限的描述；`whenToUse` 仍是提供者中繼資料，載入後的包裝層也不渲染它。
+- **已載入指令正文沒有大小上限**——提供者可返回足以佔用大量下一步上下文的 skill；只有目錄描述會被截斷。
+- **資源是指引，而非附件**——工具報告基礎目錄/URL/不透明提示，但既不列舉也不為模型取得引用檔案。
+- **載入是一次性文字**——遠端提供者緩慢或 skill 正文很大時，不提供部分內容、流式輸出或快取內容控制代碼。
+- **目錄替換採用全量列表**——一個名稱或描述發生變化，就會追加所有可見摘要；這樣能顯式停用陳舊名稱，但 token 成本與目錄大小成正比。
+- **正文不做版本化**——僅修改正文不會改變目錄 digest，也不會通知模型；後續工具呼叫會讀取提供者的目前內容，而先前工具結果仍是歷史事實。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

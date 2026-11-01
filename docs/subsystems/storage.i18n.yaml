@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/storage.md
 /storage:
   en: ca316310c10348c3
-  zh: 066885a031d283cc
+  zh: 62c4d279b8d6a757
 /storage/the-hub-ctx-storage:
   en: b11e06e7c0e0fd13
-  zh: 4585f26ff416cb41
+  zh: d9dcf3f355b85168
 /storage/the-backend-contract:
   en: 2316787902c6a94e
-  zh: e3bda06e1c33acac
+  zh: 2a1c64373d8ad60b
 /storage/declaring-a-domain:
   en: 775cce941500f01f
-  zh: 78acbc67f48574cb
+  zh: ac1e7770fc6848d6
 /storage/the-open-domain:
   en: 2468b5df66c49b51
-  zh: 1587f460e9769db2
+  zh: a7c076c791b17890
 /storage/the-domain-facility-ctx-storagedomain:
   en: deed74fcd4506ef4
-  zh: 8e3e6e5d2dc2e989
+  zh: ae1a4ad59abe0a94
 /storage/the-change-event-domain-changed:
   en: 2488ccd675624561
-  zh: 6db32b6c7715e428
+  zh: 3a9180500d17533b

@@ -4,70 +4,70 @@
 #   pnpm run verify-translation-pairing --write packages/shell/pwsh-sandbox/README.md
 /:
   en: d42333572a114759
-  zh: 7de2bc8a30baf573
+  zh: dd77872b5e315ec9
 /deepseek-ai-dsh-pwsh-sandbox:
   en: e31fa5a5c2977440
   zh: 72eac87630e20992
 /deepseek-ai-dsh-pwsh-sandbox/summary:
   en: b628a56aa2afe34b
-  zh: a6759e4d067f2e22
+  zh: 570003b48ec18f7c
 /deepseek-ai-dsh-pwsh-sandbox/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package:
   en: 665eb9d5f77bcfe5
-  zh: 0fc5adf8b49167e2
+  zh: f2f9f03c2fb9b8c1
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package/when-to-choose-it:
   en: 8a43fa466bcf6fc7
-  zh: 28d2381299d1e592
+  zh: b4d10563bd2a48ac
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package/modes-and-file-effects:
   en: a097100674539423
-  zh: 6c25043f90650113
+  zh: 9524aff7500c158c
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package/minimal-configuration:
   en: b025d0473f259364
-  zh: 3c6f2153a68189e1
+  zh: 56080a2c7aff09be
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package/denials-and-escalation:
   en: b3deb62991a7388a
-  zh: 2b500e1912f95f28
+  zh: 9738c0e22274b23a
 /deepseek-ai-dsh-pwsh-sandbox/use-this-package/failures-and-recovery:
   en: 0d5b6818c3dad919
-  zh: e1d21581d66efb78
+  zh: 53c54a37d221fd97
 /deepseek-ai-dsh-pwsh-sandbox/understand-the-implementation:
   en: 05e2abe4a25886fd
-  zh: 3f7f1326dc3c1d3f
+  zh: b054bda04723ca23
 /deepseek-ai-dsh-pwsh-sandbox/understand-the-implementation/design-concept:
   en: 0209cfdeae41c9b5
-  zh: f968694c21c96ec2
+  zh: c8358460dee4b5c3
 /deepseek-ai-dsh-pwsh-sandbox/understand-the-implementation/source-map:
   en: 71709a90dada216b
-  zh: 3679af6c61d08487
+  zh: 6cbaf1cd69a70c63
 /deepseek-ai-dsh-pwsh-sandbox/understand-the-implementation/main-flow:
   en: 93f0842800cb0e52
-  zh: cfde2946230560ee
+  zh: b5ad3dd0f46fd989
 /deepseek-ai-dsh-pwsh-sandbox/understand-the-implementation/invariants:
   en: 56b6b8d45b5fc463
-  zh: fe1a53e4ad514bc6
+  zh: 9a52d188a710c655
 /deepseek-ai-dsh-pwsh-sandbox/further-exploration:
   en: ff69a14d11ec46e4
-  zh: fd4994f0796fb9d2
+  zh: 6f45c9f7d8d59530
 /deepseek-ai-dsh-pwsh-sandbox/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-pwsh-sandbox/model-experience/confinement-works-denial-surfaces-as-command-failure:
   en: 2348d676f74cc6fc
-  zh: 845691fedce1e35c
+  zh: 6f4a39a8b5ad3e35
 /deepseek-ai-dsh-pwsh-sandbox/model-experience/confinement-works-denial-surfaces-as-command-failure/what-the-model-sees:
   en: 0faadadd5c52f3d2
-  zh: 28eec841864921d2
+  zh: eb5ea0835a13f1b9
 /deepseek-ai-dsh-pwsh-sandbox/model-experience/confinement-works-denial-surfaces-as-command-failure/token-effect:
   en: 7a9e4f861d7ede15
-  zh: da79315a26df214b
+  zh: 61437579eeede20d
 /deepseek-ai-dsh-pwsh-sandbox/model-experience/confinement-works-denial-surfaces-as-command-failure/kv-cache-effect:
   en: 796af37d6f6add68
-  zh: 7975ff2a21c1b4f3
+  zh: fbc38b4e9f7e7546
 /deepseek-ai-dsh-pwsh-sandbox/known-limitations-and-deferred-work:
   en: 9afb663f40e5b8fd
-  zh: 76ceb6bfb2a5148e
+  zh: 3253356a3096c7dc
 /deepseek-ai-dsh-pwsh-sandbox/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

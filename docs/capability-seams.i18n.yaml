@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write docs/capability-seams.md
 /:
   en: 41d772192075e133
-  zh: 5ef3da69b4de1d8a
+  zh: a8d01d9ce1c20a0a
 /capability-seams-and-core-services:
   en: 01879bbf0b0b88ee
-  zh: 4032c51b442e0c56
+  zh: 70c026da72c45354

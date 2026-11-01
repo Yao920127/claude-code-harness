@@ -4,55 +4,55 @@
 #   pnpm run verify-translation-pairing --write packages/session/session-stats/README.md
 /:
   en: 8c7837378d8b72ab
-  zh: b51c4d53251ef19e
+  zh: cedafa608f3d5bf3
 /deepseek-ai-dsh-session-stats:
   en: ad6bf372ea5d088f
   zh: bb976e446cc0648f
 /deepseek-ai-dsh-session-stats/summary:
   en: 29638613271193ab
-  zh: 5ea89b571b7d15e2
+  zh: c80213d3c51ecf2f
 /deepseek-ai-dsh-session-stats/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-session-stats/use-this-package:
   en: 2db3db321c81b26d
-  zh: 9f1037d209279c02
+  zh: ebbe67f18724c5fe
 /deepseek-ai-dsh-session-stats/use-this-package/composition:
   en: 1ff253c3946b4ebe
-  zh: 103f66630a01e5f8
+  zh: ba00aeb4b4c0f238
 /deepseek-ai-dsh-session-stats/use-this-package/what-the-figures-mean:
   en: 178378a39ffcb22f
-  zh: 0143db1591f66f00
+  zh: acd742cf0aed159e
 /deepseek-ai-dsh-session-stats/use-this-package/failures-and-recovery:
   en: 7dc55c15b7201cb3
-  zh: da36bf1bd77c5eef
+  zh: 80d01c1ea64f0f92
 /deepseek-ai-dsh-session-stats/understand-the-implementation:
   en: 5ff52cd012b71778
-  zh: 96b2e0eafa20f3d0
+  zh: 8241cbc64bc797fd
 /deepseek-ai-dsh-session-stats/understand-the-implementation/design-concept:
   en: 820099cdc96eba35
-  zh: 23793632f93476cb
+  zh: b4ecf647ae462748
 /deepseek-ai-dsh-session-stats/understand-the-implementation/source-map:
   en: 49a9eaf7a65dbca5
-  zh: 7ca852895aef70b5
+  zh: 5becbd87e82c9fac
 /deepseek-ai-dsh-session-stats/understand-the-implementation/data-model:
   en: c6ecd89375983aaf
-  zh: e3b95e175b45ccdc
+  zh: 83814da2786a57ad
 /deepseek-ai-dsh-session-stats/understand-the-implementation/fold-rules:
   en: 19fa8e3c3a22610c
-  zh: b538777c3a4b3d17
+  zh: 824ab2e2c0597a3b
 /deepseek-ai-dsh-session-stats/further-exploration:
   en: 39e2876d4cea3c71
-  zh: 55916dda642538dc
+  zh: e9a6d068cb586bec
 /deepseek-ai-dsh-session-stats/model-experience:
   en: 53488853449684df
-  zh: 697e1bbb3f3a1dd2
+  zh: 9a2b3f155d1bf972
 /deepseek-ai-dsh-session-stats/model-experience/kv-cache-effect:
   en: 47f982e326fe77fd
-  zh: c2241315dc0c89c9
+  zh: 721674eb7d29ac17
 /deepseek-ai-dsh-session-stats/known-limitations-and-deferred-work:
   en: 60c96507fc36d60e
-  zh: 06b05dd61bd20ee4
+  zh: 5126ed9cff6b4395
 /deepseek-ai-dsh-session-stats/known-limitations-and-deferred-work/dev-note:
   en: 2e77468b18faa618
-  zh: 22215b9ec8883d88
+  zh: 5e9eb03726697ae7

@@ -13,7 +13,7 @@ import { generationLogPath, scanLog, type JsonlCompression } from '../src/format
 import { compressZstdFrame, decompressZstdFrame, scanZstdFrames } from '../src/zstd.ts'
 
 const id = SessionId('content-admission')
-const text = { type: 'text', text: 'Keep tool/code-dispatch and tools-code-mode literal. 图片' }
+const text = { type: 'text', text: 'Keep tool/code-dispatch and tools-code-mode literal. 圖片' }
 const unknown = { type: 'future-block', seq: 2, text: 'Do not discard this content.' }
 const prefix: readonly (SessionFormatJsonObject & { readonly type: string })[] = [
   { type: 'turn/start', data: { turn: 1 } },

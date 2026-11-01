@@ -1,5 +1,5 @@
 ---
-description: "通过 Config 派生表单查看和编辑插件的即时配置。"
+description: "透過 Config 派生表單檢視和編輯外掛的即時設定。"
 kind: "package-reference"
 ---
 
@@ -9,76 +9,76 @@ kind: "package-reference"
 
 ## 概述
 
-编辑插件通过 `.volatile()` 声明的字段，并查看其实际值。表单以 profile 条目 id 标识插件、保留秘密值，并拒绝过期写入。更改通过当前 profile 的 Cordis patch 持久化。
+編輯外掛透過 `.volatile()` 宣告的欄位，並檢視其實際值。表單以 profile 條目 id 標識外掛、保留秘密值，並拒絕過期寫入。更改透過目前 profile 的 Cordis patch 持久化。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延后工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延後工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-将此插件与 Loader 和 [config-editor](../../boot/config-editor/README.zh.md) 一起挂载。基础组合包提供此组合。
+將此外掛與 Loader 和 [config-editor](../../boot/config-editor/README.zh.md) 一起掛載。基礎組合包提供此組合。
 
 ```yaml
 - id: settings
   name: '@deepseek-ai/dsh-settings'
 ```
 
-此插件没有配置字段。表单只展示活动且可唯一定位的 profile 条目中的 volatile 字段。普通配置仍通过 Cordis 配置文件编辑。
+此外掛沒有設定欄位。表單只展示活動且可唯一定位的 profile 條目中的 volatile 欄位。普通設定仍透過 Cordis 設定檔編輯。
 
-Settings 启动后、Loader 完成所有条目的加载时，早期版本留在 harness home 中的 `settings.yaml` 会被导入一次：每个 section 写入同名条目（`ui-developer-tools` → `ui-settings`、`ui-onboarding` → `ui-settings-general`、`shell` → 当前平台的 shell 执行器条目），文件在第一次写入前改名为 `settings.yaml.imported`，被当前组合拒绝的 section 会记录日志并只保留在改名后的文件中。
+Settings 啟動後、Loader 完成所有條目的載入時，早期版本留在 harness home 中的 `settings.yaml` 會被匯入一次：每個 section 寫入同名條目（`ui-developer-tools` → `ui-settings`、`ui-onboarding` → `ui-settings-general`、`shell` → 目前平臺的 shell 執行器條目），檔案在第一次寫入前改名為 `settings.yaml.imported`，被目前組合拒絕的 section 會記錄日誌並只保留在改名後的檔案中。
 
-重置恢复 profile 覆盖层以下的值，包括 schema 默认值。Home patch 和命令行 overlay 优先级更高；表单写入若会被它们覆盖，则被拒绝。
+重置恢復 profile 覆蓋層以下的值，包括 schema 預設值。Home patch 和命令列 overlay 優先順序更高；表單寫入若會被它們覆蓋，則被拒絕。
 
-每个表单报告 `autoGenerate`（默认开启），供按 schema 生成页面的客户端使用；目前没有已发布的客户端这样做。自带页面的插件在 `apply` 中于可选的 `ctx.inject(['settings'], ...)` 子级内以 effect 注册 `configure({ auto: false }, ctx.fiber)`：子级指明策略所属的插件 fiber，迟加载或被替换的 Settings 服务也会采用该策略，业务插件无需 Settings 即可运行。策略不移除配置读写。
+每個表單報告 `autoGenerate`（預設開啟），供按 schema 生成頁面的用戶端使用；目前沒有已釋出的用戶端這樣做。自帶頁面的外掛在 `apply` 中於可選的 `ctx.inject(['settings'], ...)` 子級內以 effect 註冊 `configure({ auto: false }, ctx.fiber)`：子級指明策略所屬的外掛 fiber，遲載入或被替換的 Settings 服務也會採用該策略，業務外掛無需 Settings 即可執行。策略不移除設定讀寫。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现内部细节——点击展开</summary>
+<summary>實作內部細節——點選展開</summary>
 
-[表单投影](src/schema.ts) 去除运行时引用和普通字段。[服务](src/index.ts) 提供带修订号的描述符，在委托持久化前按完整插件 Config 验证编辑。业务插件直接读取自己的 Config 引用。
+[表單投影](src/schema.ts) 去除執行時引用和普通欄位。[服務](src/index.ts) 提供帶修訂號的描述符，在委託持久化前按完整外掛 Config 驗證編輯。業務外掛直接讀取自己的 Config 引用。
 
-秘密角色从实际值、继承值、profile 覆盖值和 schema 默认值中隐藏；客户端接收存在性标记。路径编辑保留客户端未收到的字段。此服务投影 Loader 配置，不维护独立的权威值，因此不发布 invariant companion。
+秘密角色從實際值、繼承值、profile 覆蓋值和 schema 預設值中隱藏；使用者端接收存在性標記。路徑編輯保留使用者端未收到的欄位。此服務投影 Loader 設定，不維護獨立的權威值，因此不釋出 invariant companion。
 
 </details>
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [设置参考](../../../docs/subsystems/settings.zh.md)——表单值与修改。
-- [Volatile 配置](../../../vendor/loader/README.md)——引用生命周期与通知。
-- [配置编辑器](../../boot/config-editor/README.zh.md)——持久化与重载顺序。
+- [設定參考](../../../docs/subsystems/settings.zh.md)——表單值與修改。
+- [Volatile 設定](../../../vendor/loader/README.md)——引用生命週期與通知。
+- [設定編輯器](../../boot/config-editor/README.zh.md)——持久化與過載順序。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过面向模型的插件读取的配置值间接影响模型。
+透過面向模型的外掛讀取的設定值間接影響模型。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-改变请求前缀的消费者决定缓存影响。
+改變請求字首的消費者決定快取影響。
 
-## 已知限制与延后工作
+## 已知限制與延後工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 嵌套 Include 独立拥有配置，不能通过当前 profile 的表单编辑。
-- 字段重置恢复继承值，不能删除下层配置提供的值。取消设置数组索引会移除该元素。
+- 巢狀 Include 獨立擁有設定，不能透過目前 profile 的表單編輯。
+- 欄位重置恢復繼承值，不能刪除下層設定提供的值。取消設定陣列索引會移除該元素。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

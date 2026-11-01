@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Stack `dsh-cch` after `dsh-base` and `dsh-web-app` to make a profile a CCH profile: new Sessions start on the Claude Code model route, which signs in with the host's own Claude Code login, and the DeepSeek model routes, DeepSeek account settings, and official DeepSeek brand occupants stay unmounted. The bundle depends on [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.md), [`dsh-client-locale-zh-hant`](../../client/locale-zh-hant/README.md), and [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.md); list those bundles before it. The CCH Desktop build lists all four in every new Desktop profile, and the shipped `cch` CLI profile composes the same list, so `pnpm cch web` serves the Web application Desktop shows.
+Stack `dsh-cch` after `dsh-base` and `dsh-web-app` to make a profile a CCH profile: new Sessions start on the Claude Code model route, which signs in with the host's own Claude Code login, and the DeepSeek model routes, DeepSeek account settings, and official DeepSeek brand occupants stay unmounted. The bundle depends on [`dsh-llm-claude-code`](../../llm/llm-claude-code/README.md) and [`dsh-client-ui-brand-claude`](../../client/ui-brand-claude/README.md); list those bundles before it. The CCH Desktop build lists all three in every new Desktop profile, and the shipped `cch` CLI profile composes the same list, so `pnpm cch web` serves the Web application Desktop shows.
 
 ## Table of Contents
 
@@ -28,13 +28,13 @@ Stack `dsh-cch` after `dsh-base` and `dsh-web-app` to make a profile a CCH profi
 Install the four CCH bundles into a Profile in this order, then restart it:
 
 ```sh
-dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/dsh-client-locale-zh-hant @deepseek-ai/dsh-client-ui-brand-claude @deepseek-ai/dsh-cch
+dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code @deepseek-ai/dsh-client-ui-brand-claude @deepseek-ai/dsh-cch
 ```
 
 | Row | Change |
 |---|---|
 | `agent-default-model` | Default model `claude-code` / `default`, the model your Claude Code settings select |
-| `locale` | Interface language `zh-TW` (Traditional Chinese) until a language is chosen in Settings |
+| `locale` | Interface language `zh` (Traditional Chinese) until a language is chosen in Settings |
 | `llm-deepseek`, `llm-deepseek-account` | Disabled, so the model selector lists only Claude models |
 | `ui-brand-official` | Disabled, so the Claude brand occupies the sidebar in official builds |
 | `ui-settings-account` | Disabled, so Settings offers no DeepSeek account sign-in |

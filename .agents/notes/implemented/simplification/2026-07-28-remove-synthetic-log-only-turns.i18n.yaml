@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-07-28-remove-synthetic-log-only-turns.md
 /agent-note-remove-synthetic-turns-for-log-only-events:
   en: 558a3b8b47acfec2
-  zh: 9e6cc6443e468745
+  zh: 85f5ac61f285d0d1
 /agent-note-remove-synthetic-turns-for-log-only-events/problem:
   en: 33413b092d535f4f
-  zh: 02f79f372227c104
+  zh: ba96fef63eddd8c7
 /agent-note-remove-synthetic-turns-for-log-only-events/decision:
   en: a49da9273f224a87
-  zh: 870ffea9aacca6c7
+  zh: babc3ab4ba8bdb6c
 /agent-note-remove-synthetic-turns-for-log-only-events/alternatives-considered:
   en: fbee860bf43530a7
-  zh: 276647ba5402d6a8
+  zh: 0f2a9f8dbb73b56a
 /agent-note-remove-synthetic-turns-for-log-only-events/verification:
   en: bb7b19f80c4fbed6
-  zh: ef06defe5b745e38
+  zh: c01f8e1c056afc7e
 /agent-note-remove-synthetic-turns-for-log-only-events/consequences:
   en: 0c636b744dfa4ca9
-  zh: 05f409a4fd962015
+  zh: f03f6fe6247fbcf3

@@ -1,23 +1,23 @@
-# 打包与安装插件
+# 打包與安裝外掛
 
 [English](publish.md) | 中文
 
-前几篇教程通过 `--patch` overlay 加载本地插件。本教程把它打包成可安装的**组合包**（bundle），用 `dsh plugin add` 安装进一个 **profile**，并解释决定组合后配置的层顺序。本文假设 `dsh` CLI 已安装。请先完成[插件配置](./config.zh.md)。
+前幾篇教學透過 `--patch` overlay 載入本地外掛。本教學把它打包成可安裝的**組合包**（bundle），用 `dsh plugin add` 安裝進一個 **profile**，並解釋決定組合後設定的層順序。本文假設 `dsh` CLI 已安裝。請先完成[外掛設定](./config.zh.md)。
 
-如果改用全新的源码 checkout，请先按照[从源码运行章节](../../../../README.zh.md#run-from-source)完成准备，将本教程的 `hello-plugin` 目录放在仓库根目录，并从该目录把下文的 `dsh ...` 命令改为 `pnpm dsh ...`。构建与启动器行为见[源码执行](../../../../apps/cli/reference/README.zh.md#source-execution)。
+如果改用全新的原始碼 checkout，請先按照[從原始碼執行章節](../../../../README.zh.md#run-from-source)完成準備，將本教學的 `hello-plugin` 目錄放在儲存庫根目錄，並從該目錄把下文的 `dsh ...` 命令改為 `pnpm dsh ...`。建置與啟動器行為見[原始碼執行](../../../../apps/cli/reference/README.zh.md#source-execution)。
 
-## 两个概念，两种 manifest
+## 兩個概念，兩種 manifest
 
-安装机制建立在两个概念之上。二者都由一份 `package.json` 描述，但它们在 `dsh` 键下携带的 manifest（元数据清单）种类不同，回答的问题也不同：
+安裝機制建立在兩個概念之上。二者都由一份 `package.json` 描述，但它們在 `dsh` 鍵下攜帶的 manifest（中繼資料清單）種類不同，回答的問題也不同：
 
-- **组合包**是附带一个配置层的 npm 包。它的 manifest 声明 `dsh.bundle`，回答的是"这个包贡献什么？"：一个插入或覆盖插件行的 patch 文件。
-- **profile** 是位于 `$DSH_HOME/profiles/<name>` 下、描述一份可启动组合的目录。它的 manifest 声明 `dsh.profile`，回答的是"这套配置由哪些组合包按什么顺序组成？"。
+- **組合包**是附帶一個設定層的 npm 包。它的 manifest 宣告 `dsh.bundle`，回答的是"這個包貢獻什麼？"：一個插入或覆蓋外掛行的 patch 檔案。
+- **profile** 是位於 `$DSH_HOME/profiles/<name>` 下、描述一份可啟動組合的目錄。它的 manifest 宣告 `dsh.profile`，回答的是"這套設定由哪些組合包按什麼順序組成？"。
 
-组合包是你编写并分发的东西；profile 是用户用 `dsh --profile <name>` 启动的东西。没有东西同时是两者。
+組合包是你編寫並分發的東西；profile 是使用者用 `dsh --profile <name>` 啟動的東西。沒有東西同時是兩者。
 
-### 组合包 manifest
+### 組合包 manifest
 
-创建包目录：
+建立包目錄：
 
 ```sh
 mkdir -p hello-plugin
@@ -30,7 +30,7 @@ hello-plugin/
 └── index.js           # plugin modules the patch rows reference
 ```
 
-创建 `hello-plugin/package.json`：
+建立 `hello-plugin/package.json`：
 
 ```json
 {
@@ -43,7 +43,7 @@ hello-plugin/
 }
 ```
 
-创建 `hello-plugin/index.js`，写入插件入口：
+建立 `hello-plugin/index.js`，寫入外掛入口：
 
 ```js
 export const name = 'hello-plugin'
@@ -53,7 +53,7 @@ export function apply() {
 }
 ```
 
-创建 `hello-plugin/cordis.patch.yml`。这个 patch 与你写过的 `--patch` overlay 一样，是一个 patch 条目的 YAML 数组；区别是插件行按包名而不是相对源码路径引用这个包，这样 Node 的模块解析才能找到已安装的代码：
+建立 `hello-plugin/cordis.patch.yml`。這個 patch 與你寫過的 `--patch` overlay 一樣，是一個 patch 條目的 YAML 陣列；區別是外掛行按包名而不是相對原始碼路徑引用這個包，這樣 Node 的模組解析才能找到已安裝的程式碼：
 
 ```yaml
 - insert:
@@ -61,26 +61,26 @@ export function apply() {
       name: dsh-hello-plugin
 ```
 
-`patch` 也接受一个有序的文件列表，例如 `["./base.patch.yml", "./web.patch.yml"]`；launcher 按该顺序把它们作为同一层应用，每个文件中的相对插件路径相对于该文件解析。没有 `dsh.bundle` 声明的包仍然可以安装，但只作为普通依赖：`dsh plugin` 会打印警告，且不激活任何层。如果一个库供插件包 import，而不是供用户启用，就使用这种包格式。
+`patch` 也接受一個有序的檔案列表，例如 `["./base.patch.yml", "./web.patch.yml"]`；launcher 按該順序把它們作為同一層應用，每個檔案中的相對外掛路徑相對於該檔案解析。沒有 `dsh.bundle` 宣告的包仍然可以安裝，但只作為普通依賴：`dsh plugin` 會列印警告，且不啟用任何層。如果一個庫供外掛包 import，而不是供使用者啟用，就使用這種包格式。
 
 ### profile manifest
 
-profile 目录包含两个文件：
+profile 目錄包含兩個檔案：
 
-- `package.json` — profile 的树外插件依赖（由 pnpm 管理），加上 `dsh.profile` manifest 及其有序的 `bundles` 列表。
-- `cordis.patch.yml` — 用户自己的 patch 层，在每个组合包层之后应用。
+- `package.json` — profile 的樹外外掛依賴（由 pnpm 管理），加上 `dsh.profile` manifest 及其有序的 `bundles` 列表。
+- `cordis.patch.yml` — 使用者自己的 patch 層，在每個組合包層之後應用。
 
-profile manifest 从不需要手写：`dsh --profile <name> --from-default-profile <template>` 可以从随附应用模板创建 profile，`dsh plugin` 则创建一个以 base 为基础的 profile，并维护其中已安装的 bundle 列表。创建规则以 [CLI（命令行界面）行为参考](../../../../apps/cli/reference/README.zh.md#profile-boot)为准；下一节展示插件路径。
+profile manifest 從不需要手寫：`dsh --profile <name> --from-default-profile <template>` 可以從隨附應用範本建立 profile，`dsh plugin` 則建立一個以 base 為基礎的 profile，並維護其中已安裝的 bundle 列表。建立規則以 [CLI（命令列介面）行為參考](../../../../apps/cli/reference/README.zh.md#profile-boot)為準；下一節展示外掛路徑。
 
-## 安装进 profile
+## 安裝進 profile
 
-`dsh plugin --profile <name> <args...>` 在 profile 目录内转发给 pnpm，因此所有 pnpm 子命令都可用。在包含 `hello-plugin` 的目录中安装该包的 checkout：
+`dsh plugin --profile <name> <args...>` 在 profile 目錄內轉發給 pnpm，因此所有 pnpm 子命令都可用。在包含 `hello-plugin` 的目錄中安裝該包的 checkout：
 
 ```sh
 dsh plugin --profile demo add ./hello-plugin
 ```
 
-首次使用会初始化 profile（`@deepseek-ai/dsh-base` 作为它的第一个组合包），pnpm 链接该 checkout，而 `dsh` 因为这个包声明了 `dsh.bundle`，把它追加进 `dsh.profile.bundles`：
+首次使用會初始化 profile（`@deepseek-ai/dsh-base` 作為它的第一個組合包），pnpm 連結該 checkout，而 `dsh` 因為這個包宣告瞭 `dsh.bundle`，把它追加進 `dsh.profile.bundles`：
 
 ```json
 {
@@ -100,51 +100,51 @@ dsh plugin --profile demo add ./hello-plugin
 }
 ```
 
-通过链接安装的 checkout 保留自己的 `node_modules`。与 harness 自身的包一样，需要与宿主共享实例的 dsh 包同时声明在 `peerDependencies` 与 `devDependencies` 中。在该 manifest 的查询位置，运行中 dsh 的 runtime resolution 已包含的 peer 使用安装中的副本；devDependency 副本供类型检查和独立测试使用。需要独立版本的第三方依赖和无状态 dsh 工具包放在 `dependencies` 中。
+透過連結安裝的 checkout 保留自己的 `node_modules`。與 harness 自身的包一樣，需要與主機共享實例的 dsh 包同時宣告在 `peerDependencies` 與 `devDependencies` 中。在該 manifest 的查詢位置，執行中 dsh 的 runtime resolution 已包含的 peer 使用安裝中的副本；devDependency 副本供型別檢查和獨立測試使用。需要獨立版本的第三方依賴和無狀態 dsh 工具包放在 `dependencies` 中。
 
-普通 linked import 遵循 Node 的祖先顺序，检查每个目录当前的 peer 声明。更近的物理包先于更高的 peer 声明。link 目标可以没有 `package.json`，祖先 peer 仍可生效，即使该 manifest 旁没有物理 `node_modules`。显式 `require.resolve(..., { paths })` 始终是原生查询，包括指向 profile 内的路径。npm、Desktop 与源码启动共用这些规则；规则不会使已加载模块失效，也不校验 peer 版本范围。作用域和文件查询行为见[解析规则](../../../../.agents/notes/implemented/architecture/2026-09-19-profile-resolution-lookup-order.zh.md)。
+普通 linked import 遵循 Node 的祖先順序，檢查每個目錄目前的 peer 宣告。更近的物理包先於更高的 peer 宣告。link 目標可以沒有 `package.json`，祖先 peer 仍可生效，即使該 manifest 旁沒有物理 `node_modules`。顯式 `require.resolve(..., { paths })` 始終是原生查詢，包括指向 profile 內的路徑。npm、Desktop 與原始碼啟動共用這些規則；規則不會使已載入模組失效，也不驗證 peer 版本範圍。作用域和檔案查詢行為見[解析規則](../../../../.agents/notes/implemented/architecture/2026-09-19-profile-resolution-lookup-order.zh.md)。
 
-链接整个 checkout 不会对运行中安装自身的包目录应用 peer 拦截。目标仍位于 profile 内的链接（包括它的 pnpm store）属于 profile 自己安装的内容，不算外部 linked root。外部链接互相重叠也不改变查找顺序，每个请求仍从其 importer 所在目录开始。
+連結整個 checkout 不會對執行中安裝自身的包目錄應用 peer 攔截。目標仍位於 profile 內的連結（包括它的 pnpm store）屬於 profile 自己安裝的內容，不算外部 linked root。外部連結互相重疊也不改變查詢順序，每個請求仍從其 importer 所在目錄開始。
 
-先不启动、只验证该层，再启动：
+先不啟動、只驗證該層，再啟動：
 
 ```sh
 dsh --profile demo --dump-config   # shows a "# == dsh-hello-plugin" layer
 dsh --profile demo
 ```
 
-`dsh plugin --profile demo remove dsh-hello-plugin` 会同时移除依赖和对应的层。
+`dsh plugin --profile demo remove dsh-hello-plugin` 會同時移除依賴和對應的層。
 
-## 加载顺序
+## 載入順序
 
-生效配置在空根之上按以下顺序逐层组合：
+生效設定在空根之上按以下順序逐層組合：
 
-1. profile 的 `dsh.profile.bundles` 列表所列的各个组合包 patch，按列表顺序——先是 `@deepseek-ai/dsh-base`，然后是每个已安装组合包，按其加入顺序。
+1. profile 的 `dsh.profile.bundles` 列表所列的各個組合包 patch，按列表順序——先是 `@deepseek-ai/dsh-base`，然後是每個已安裝組合包，按其加入順序。
 2. profile 自己的 `cordis.patch.yml`。
-3. home 级的 `$DSH_HOME/cordis.patch.yml`——各 profile 共享的机器本地偏好。
-4. 每个 `--patch <path>` overlay，按 argv 顺序。
+3. home 級的 `$DSH_HOME/cordis.patch.yml`——各 profile 共享的機器本地偏好。
+4. 每個 `--patch <path>` overlay，按 argv 順序。
 
-应用参数不是另一层 patch。表层组合包可以通过下文所述的普通应用自有服务解析它们。
+應用參數不是另一層 patch。表層組合包可以透過下文所述的普通應用自有服務解析它們。
 
-后应用的层按行胜出，且 patch 会替换目标行的整个 `config` 值，而不是深度合并各键。这给组合包作者带来两个推论：
+後應用的層按行勝出，且 patch 會替換目標行的整個 `config` 值，而不是深度合併各鍵。這給組合包作者帶來兩個推論：
 
-- 你的 patch 可以按 `id` 覆盖前面各层的行——就像 [`dsh-web-app` 组合包](../../../../packages/bundle/web-app/cordis.patch.yml)覆盖 `dsh-base` 的行那样——但必须重述该行需要的每一个键，而不是只写改动的那个。
-- 用户可以在自己 profile 的 `cordis.patch.yml` 中覆盖你的行，无需改动你的包，所以优先给出用户大概率会保留的配置默认值，其余交给 schema 承担。
+- 你的 patch 可以按 `id` 覆蓋前面各層的行——就像 [`dsh-web-app` 組合包](../../../../packages/bundle/web-app/cordis.patch.yml)覆蓋 `dsh-base` 的行那樣——但必須重述該行需要的每一個鍵，而不是隻寫改動的那個。
+- 使用者可以在自己 profile 的 `cordis.patch.yml` 中覆蓋你的行，無需改動你的包，所以優先給出使用者大機率會保留的設定預設值，其餘交給 schema 承擔。
 
-内置组合包名称始终从 dsh 安装目录本身解析；pnpm 只管理树外的包，所以你的组合包可以放心依赖 `@deepseek-ai/dsh-base` 存在且与安装保持一致。
+內建組合包名稱始終從 dsh 安裝目錄本身解析；pnpm 只管理樹外的包，所以你的組合包可以放心依賴 `@deepseek-ai/dsh-base` 存在且與安裝保持一致。
 
-## 让表层组合包持有自己的命令行
+## 讓表層組合包持有自己的命令列
 
-定义了可运行应用的组合包挂载一个普通提供方插件：
+定義了可執行應用的組合包掛載一個普通提供者外掛：
 
 ```yaml
 - id: hello-startup
   name: 'dsh-hello-plugin/startup'
 ```
 
-该插件导出 `inject = ['cmdlineArgs']`，使用自己的 commander program 调用 [`@deepseek-ai/dsh-cmdline`](../../../../packages/boot/cmdline/README.zh.md) 中的 `parseCmdline`，再在 program 自己的 action 中把应用自有服务提供出去。启动器把自身 flag 之后的同一份不可变参数交给每个插件，因此添加应用专属 flag 无需修改启动器，多个插件也可以解析该快照。Loader 行不需要启动器标记或特殊类型。
+該外掛匯出 `inject = ['cmdlineArgs']`，使用自己的 commander program 呼叫 [`@deepseek-ai/dsh-cmdline`](../../../../packages/boot/cmdline/README.zh.md) 中的 `parseCmdline`，再在 program 自己的 action 中把應用自有服務提供出去。啟動器把自身 flag 之後的同一份不可變參數交給每個外掛，因此新增應用專屬 flag 無需修改啟動器，多個外掛也可以解析該快照。Loader 行不需要啟動器標記或特殊型別。
 
-受这些参数配置的行会注入提供方服务，并在自己的 `!!js` 选项中读取它，同时把部署取值写在旁边作为回退：
+受這些參數設定的行會注入提供者服務，並在自己的 `!!js` 選項中讀取它，同時把部署取值寫在旁邊作為退回：
 
 ```yaml
 - id: my-app
@@ -154,36 +154,36 @@ dsh --profile demo
     port: !!js ctx.myAppStartup.port ?? 8080
 ```
 
-遇到 `--help` 时，提供方不会发布该服务，所以这些行不会激活。Loader 只挂载一次组合，等待每一行的普通注入，再基于其已注入的上下文求值该行的 `!!js` 配置。
+遇到 `--help` 時，提供者不會發布該服務，所以這些行不會啟用。Loader 只掛載一次組合，等待每一行的普通注入，再基於其已注入的上下文求值該行的 `!!js` 設定。
 
-## 从 GitHub 安装：构建脚本这道坎
+## 從 GitHub 安裝：建置腳本這道坎
 
-发布到注册表不是必须的——用户可以直接从 git 托管安装：
+釋出到註冊表不是必須的——使用者可以直接從 git 託管安裝：
 
 ```sh
 dsh plugin --profile demo add github:you/hello-plugin
 ```
 
-但 git 安装拉取的是**源码，不是构建产物**：没有任何环节运行你的 `build` 脚本，因此 TypeScript 包到手时没有 `lib/` 输出，加载会失败。必须两边各做一件事：
+但 git 安裝拉取的是**原始碼，不是建置產物**：沒有任何環節執行你的 `build` 腳本，因此 TypeScript 包到手時沒有 `lib/` 輸出，載入會失敗。必須兩邊各做一件事：
 
-- **作者**提供一个 `prepare` 脚本——pnpm 在 git 安装后运行它——从源码构建出发布入口，且必须自包含：不能假设仅开发环境才有的上下文，例如旁边有一份 monorepo checkout。专用的 tsdown 配置可以直接转译 `src/`，不用项目引用，也不做类型检查。
-- **用户**为构建授权。pnpm ≥10 在得到显式允许之前拒绝运行 git 依赖的 `prepare` 脚本，所以第一次 `add` 会失败；`dsh` 会指出修法——把 pnpm 打印的确切包键复制进该 profile 的 `pnpm-workspace.yaml`：
+- **作者**提供一個 `prepare` 腳本——pnpm 在 git 安裝後執行它——從原始碼建置出釋出入口，且必須自包含：不能假設僅開發環境才有的上下文，例如旁邊有一份 monorepo checkout。專用的 tsdown 設定可以直接轉譯 `src/`，不用專案引用，也不做型別檢查。
+- **使用者**為建置授權。pnpm ≥10 在得到顯式允許之前拒絕執行 git 依賴的 `prepare` 腳本，所以第一次 `add` 會失敗；`dsh` 會指出修法——把 pnpm 列印的確切包鍵複製進該 profile 的 `pnpm-workspace.yaml`：
 
   ```yaml
   allowBuilds:
     dsh-hello-plugin: true
   ```
 
-  然后重新执行 `add`。
+  然後重新執行 `add`。
 
-请把这项授权视为**允许该包的代码在安装时于你的机器上执行**，且不在 agent 运行的任何沙箱之内。只对源码可信的包授权，并锁定 commit（`github:you/hello-plugin#<sha>`），让后续推送无法悄悄改变实际运行的内容。
+請把這項授權視為**允許該包的程式碼在安裝時於你的機器上執行**，且不在 agent 執行的任何沙箱之內。只對原始碼可信的包授權，並鎖定 commit（`github:you/hello-plugin#<sha>`），讓後續推送無法悄悄改變實際執行的內容。
 
-如果不想让用户做这项授权，就改为分发构建产物——以下两种形式都不需要任何构建权限：
+如果不想讓使用者做這項授權，就改為分發建置產物——以下兩種形式都不需要任何建置權限：
 
-- **发布到 npm**，在 `pnpm publish` 时构建好 `lib/`；`dsh plugin add your-package` 安装的就是预构建代码。
-- **交付 tarball**：用 `pnpm pack` 打包；用户执行 `dsh plugin add ./hello-plugin-0.1.0.tgz`。
+- **釋出到 npm**，在 `pnpm publish` 時建置好 `lib/`；`dsh plugin add your-package` 安裝的就是預建置程式碼。
+- **交付 tarball**：用 `pnpm pack` 打包；使用者執行 `dsh plugin add ./hello-plugin-0.1.0.tgz`。
 
 ## 下一步
 
-- [插件与生命周期](../framework/index.zh.md) — 插件的完整生命周期
-- [CLI（命令行界面）行为参考](../../../../apps/cli/reference/README.zh.md) — 确切的层优先级、flag 与 profile 机制
+- [外掛與生命週期](../framework/index.zh.md) — 外掛的完整生命週期
+- [CLI（命令列介面）行為參考](../../../../apps/cli/reference/README.zh.md) — 確切的層優先順序、flag 與 profile 機制

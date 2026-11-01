@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-plugin-manager/README.md
 /:
   en: 65c981be6a40344b
-  zh: 468873de4e2db85f
+  zh: 197c5d72793b46af
 /deepseek-ai-dsh-client-ui-plugin-manager:
   en: cab59fd44398760a
   zh: ccc3e3809c2bc634
 /deepseek-ai-dsh-client-ui-plugin-manager/summary:
   en: 0dc67850ca5358de
-  zh: 4ff1bb5bdc184e3e
+  zh: 3dd59b80aedf6657
 /deepseek-ai-dsh-client-ui-plugin-manager/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package:
   en: ca2748d14de42df7
-  zh: 51225f56acb1bada
+  zh: 9855edf2964b75d5
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package/installing-a-bundle:
   en: 130b84453fcb0f8c
-  zh: f03976813657b35b
+  zh: 22256c37c450cb8f
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package/switching-a-bundle:
   en: abc90531efa889d5
-  zh: 0562570f85e69c35
+  zh: f767729cb361bc11
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package/switching-one-row-of-a-bundle:
   en: 620c6a3ee20848bd
-  zh: a9429f047a12bb4c
+  zh: e65e6ac1b8ee3dd9
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package/configuration-pages:
   en: d5886086a3ff0b41
-  zh: 7e9bf11f50c7ae3f
+  zh: 8ffaf2c9cc1cec0e
 /deepseek-ai-dsh-client-ui-plugin-manager/use-this-package/detail-page-extension-points:
   en: 87f6d96467dc2383
-  zh: e0fb91aa4c4d5a12
+  zh: 77de919728e1b07a
 /deepseek-ai-dsh-client-ui-plugin-manager/understand-the-implementation:
   en: 8ca48e1365f18adf
-  zh: 91eadd683d2d8b5b
+  zh: 546fc08d91fd5368
 /deepseek-ai-dsh-client-ui-plugin-manager/understand-the-implementation/registration:
   en: c5a1f14d37433d07
-  zh: 75014f10a155fadb
+  zh: b2e0807f16ace52b
 /deepseek-ai-dsh-client-ui-plugin-manager/understand-the-implementation/the-store:
   en: 21a0bbe8eb92229c
-  zh: 096ff63db61992bb
+  zh: ac779c85b7aeeb89
 /deepseek-ai-dsh-client-ui-plugin-manager/understand-the-implementation/configuration-slots:
   en: f2bfff32346015bf
-  zh: b9aedc96182004ae
+  zh: 6016ea1258c55335
 /deepseek-ai-dsh-client-ui-plugin-manager/further-exploration:
   en: f9a42dfed0360d6a
-  zh: 455a70bcb6c69624
+  zh: fa4a5dd83dfea0b8
 /deepseek-ai-dsh-client-ui-plugin-manager/model-experience:
   en: 8dcc6c6fbfb567d2
-  zh: 43690ae350f1d6a7
+  zh: ea6f47ed227a5f38
 /deepseek-ai-dsh-client-ui-plugin-manager/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: 2064958b0754647e
+  zh: 7701ab463755d867
 /deepseek-ai-dsh-client-ui-plugin-manager/known-limitations-and-deferred-work:
   en: 92180961af39c5a4
-  zh: bfbfae303c5dfd72
+  zh: 9e0925fb36b09962
 /deepseek-ai-dsh-client-ui-plugin-manager/known-limitations-and-deferred-work/dev-note:
   en: 3856b8f32b9d2655
-  zh: 8eae0dd37f198555
+  zh: 3352711528a7deff

@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write docs/cordis-tutorial/03-services.md
 /3-services:
   en: 15915c1948e99dcd
-  zh: 769f50dcd06a1c6e
+  zh: e19c2768ac619cc3
 /3-services/provide-a-service:
   en: dafc130ada001863
-  zh: 820921c32e8ce5fe
+  zh: 5d6a0cbb1130ebc9
 /3-services/consume-a-service-with-inject:
   en: 1b4faa79ebc5e3d7
-  zh: 5170a8291e4aaf34
+  zh: 2793803ababc02a3
 /3-services/dependencies-are-tracked-after-load:
   en: 5cadb845bd8ebdb3
-  zh: cce559c73d7bda66
+  zh: bc0cfa5e7e8bc1aa
 /3-services/optional-dependencies:
   en: f765739ab1e2061a
-  zh: 71ddc054022b66a9
+  zh: b854288923a1d673
 /3-services/naming:
   en: 11dfa5c4f8aed0e0
-  zh: d28f7c86f58cdf3e
+  zh: 3b530cb5bebd0213

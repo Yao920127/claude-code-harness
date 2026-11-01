@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.md
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer:
   en: e940be9ef95509ff
-  zh: c06cea53bb49c718
+  zh: 5ce9be9c602e18a8
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/problem:
   en: c5a3dda6ccd57c9e
-  zh: 122307b113bb1c09
+  zh: 7a6e97b6cefefd36
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/decision:
   en: 29742775aee9fbc3
-  zh: 54a2df8816e2ea2e
+  zh: 31713aa44dd13e9c
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/the-client-cordis-tree-and-the-loading-chain:
   en: 23b0b6c3f29e4f5e
-  zh: 53bf897b502c645b
+  zh: 1d421b763139faab
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/the-slot-system-how-the-page-composes:
   en: 1661f3dd74dc9df6
-  zh: 3152467c7dd8e6ef
+  zh: 41410a07b986070e
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/services-and-scope-addressing:
   en: 9da9311f677c5da6
-  zh: 9cb16a92cee87055
+  zh: 5a2162fd0dd82b8c
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/the-data-object-layer-packages-api-session-controller-src-client:
   en: 909682e20c0d23a1
-  zh: ed1defbcf7745e8e
+  zh: ecb2dc17956add20
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/the-react-face-packages-client-ui-renderer:
   en: 0971d6196b5358fd
-  zh: 26175d648feccfd9
+  zh: b0b779a41ea31f2a
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/directory-shape:
   en: 74c45680c8aab51c
-  zh: fd431ae5d3656038
+  zh: 081887e22cad37b3
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/how-to-develop:
   en: cbc6abcd9f291868
-  zh: 0078f15f2d08a02e
+  zh: dbe97d851987bf60
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/consequences:
   en: 56a9086da5783306
-  zh: 8147576101d22aa0
+  zh: e0e39f218bda5239
 /agent-note-web-client-architecture-the-client-cordis-plugin-tree-the-slot-system-and-the-react-free-object-layer/alternatives-considered:
   en: 8bedf2e688b14322
-  zh: 7cda12f7474832ee
+  zh: c9de63603c92a545

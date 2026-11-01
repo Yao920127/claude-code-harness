@@ -4,58 +4,58 @@
 #   pnpm run verify-translation-pairing --write packages/session/session-telemetry-otel/README.md
 /:
   en: 356614b4af1ad375
-  zh: f76a068b5f056574
+  zh: e41a79b67e41af79
 /deepseek-ai-dsh-session-telemetry-otel:
   en: f8ea869792c8b207
   zh: bc076172ce22ba9b
 /deepseek-ai-dsh-session-telemetry-otel/summary:
   en: 1c5d2f15cb13e318
-  zh: 5e061a16cd38c4c5
+  zh: ae9803991150dab3
 /deepseek-ai-dsh-session-telemetry-otel/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-session-telemetry-otel/use-this-package:
   en: 9b82f2819ddaa3f4
-  zh: b6ad90b11e7e0ef7
+  zh: b7afb15c2e4ac6ef
 /deepseek-ai-dsh-session-telemetry-otel/use-this-package/modes:
   en: bc7e598148a7f8c3
-  zh: 0209c6aa258ec134
+  zh: 0d7ffcec0ec9a6a8
 /deepseek-ai-dsh-session-telemetry-otel/use-this-package/minimal-configuration:
   en: 3de0d5db3156a7e4
-  zh: 71199133cd9998c4
+  zh: f26ace17f98c7aff
 /deepseek-ai-dsh-session-telemetry-otel/use-this-package/what-leaves-the-machine:
   en: b94ca8299ad60c5d
-  zh: 3791131f3440e3b3
+  zh: 807c11b4f2437157
 /deepseek-ai-dsh-session-telemetry-otel/use-this-package/failures-and-shutdown:
   en: 20c6e78df8ad2c2a
-  zh: fd6a00f98c4cc05c
+  zh: e9894d9e84c17a45
 /deepseek-ai-dsh-session-telemetry-otel/understand-the-implementation:
   en: ee672a6a6f0fa02d
-  zh: c3bab8e6b60e768c
+  zh: 037a43589bec2718
 /deepseek-ai-dsh-session-telemetry-otel/understand-the-implementation/design-concept:
   en: d5e1f8249d3eea34
-  zh: 7a6915e33390f4ae
+  zh: 5fc9f67099dd1a12
 /deepseek-ai-dsh-session-telemetry-otel/understand-the-implementation/source-map:
   en: 0b99d2e5c27213cd
-  zh: 3cbdaa7f6a45d81a
+  zh: b02b4332cf41fc1e
 /deepseek-ai-dsh-session-telemetry-otel/understand-the-implementation/capture-wiring:
   en: 9bdc01d0fa130b3a
-  zh: 63bf30c4cc983ca0
+  zh: 53d74689e6668f38
 /deepseek-ai-dsh-session-telemetry-otel/understand-the-implementation/field-mapping:
   en: 38590f3afee40bb8
-  zh: b2fc1f4341008d79
+  zh: b63b586a369497c6
 /deepseek-ai-dsh-session-telemetry-otel/further-exploration:
   en: 155b75490ec65d86
-  zh: 07d37d6e4ac90c89
+  zh: 9a0814b56019dee0
 /deepseek-ai-dsh-session-telemetry-otel/model-experience:
   en: a5a1c890ddacd9a9
-  zh: 019c0d113e141853
+  zh: 0e30eaf2b69c151e
 /deepseek-ai-dsh-session-telemetry-otel/model-experience/kv-cache-effect:
   en: 7593cf5d0d2cedd6
-  zh: f57cc48a1b5cbfa9
+  zh: fa87630fc3310087
 /deepseek-ai-dsh-session-telemetry-otel/known-limitations-and-deferred-work:
   en: e43087aea7af4c9e
-  zh: f8b529e2012b4c63
+  zh: 2497e7f744b9dbbe
 /deepseek-ai-dsh-session-telemetry-otel/known-limitations-and-deferred-work/dev-note:
   en: a770daec456212ab
-  zh: 1b861566d591837d
+  zh: ce62321ad9298930

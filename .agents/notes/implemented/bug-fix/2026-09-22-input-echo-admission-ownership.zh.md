@@ -1,54 +1,54 @@
-# Agent Note: 输入回显在入档期间保持展示归属
+# Agent Note: 輸入回顯在入檔期間保持展示歸屬
 
 Status: implemented
 
 [English](2026-09-22-input-echo-admission-ownership.md) | 中文
 
-## 问题
+## 問題
 
-空闲时提交的输入可能先显示为 Chat 本地回显，再变为 QueueDock 的 Inbox 行，最后才显示为持久用户消息。Inbox 投影与会话历史独立到达：受理时回收回显会在入档前留下空档，迟到的 Inbox 投影又可能重复显示已经入档的消息。此外，turn/start 先于 user/message，因此空过程标题可能先出现在回显前面，真实输入到达时再与它交换位置。
+空閒時提交的輸入可能先顯示為 Chat 本地回顯，再變為 QueueDock 的 Inbox 行，最後才顯示為持久使用者訊息。Inbox 投影與工作階段歷史獨立到達：受理時回收回顯會在入檔前留下空檔，遲到的 Inbox 投影又可能重複顯示已經入檔的訊息。此外，turn/start 先於 user/message，因此空過程標題可能先出現在回顯前面，真實輸入到達時再與它交換位置。
 
-这些转换涉及展示归属，而非滚动或 composer 几何。延迟不能判断哪种表示已经成为权威，将所有回显移到过程标题前又会把运行中的 steering 移到已有工作之前。
+這些轉換涉及展示歸屬，而非滾動或 composer 幾何。延遲不能判斷哪種表示已經成為權威，將所有回顯移到過程標題前又會把執行中的 steering 移到已有工作之前。
 
-## 决策
+## 決策
 
-- 提交保留本地发送时选择的 placement：空闲输入留在 Chat，运行中的 steering 留在过程末尾，明确排队的输入留在 QueueDock。Inbox 受理不改变展示归属。
-- Chat 在同一次渲染中按持久输入的 rpcId 隐藏回显，并排除匹配已入档本地 Chat 提交的旧 next-step Inbox 行。QueueDock 只排除匹配本地 transcript 回显的 Inbox 行；其他排队消息仍可见且可操作。
-- Session 保留已入档 transcript 或 steering 提交的本地排除身份，直到 Inbox 投影水位达到其领取序号。随后，较高序号投影优先的规则阻止旧受理行在该身份回收后重新出现。领取跟踪和取消共用已有逐提交 receipt，并覆盖两种 Inbox target；不新增 SessionSnapshot 字段、Host 事件或持久格式。
-- Chat 末尾为进行中且没有真实输入的过程控制行时，第一条 transcript 回显显示在控制行前，其他回显留在末尾。最后输入的轮次信息复用现有 rpcId 扫描，不新增历史遍历，也不预测未来轮次序列。
-- 待处理气泡与持久节点容器共用一个 keyed React 列表。插入过程标题保留回显气泡的挂载身份。入档后，由持久节点决定排序及普通 Group 切分。
+- 提交保留本地傳送時選擇的 placement：空閒輸入留在 Chat，執行中的 steering 留在過程末尾，明確排隊的輸入留在 QueueDock。Inbox 受理不改變展示歸屬。
+- Chat 在同一次渲染中按持久輸入的 rpcId 隱藏回顯，並排除匹配已入檔本地 Chat 提交的舊 next-step Inbox 行。QueueDock 只排除匹配本地 transcript 回顯的 Inbox 行；其他排隊訊息仍可見且可操作。
+- Session 保留已入檔 transcript 或 steering 提交的本地排除身份，直到 Inbox 投影水位達到其領取序號。隨後，較高序號投影優先的規則阻止舊受理行在該身份回收後重新出現。領取跟蹤和取消共用已有逐提交 receipt，並覆蓋兩種 Inbox target；不新增 SessionSnapshot 欄位、Host 事件或持久格式。
+- Chat 末尾為進行中且沒有真實輸入的過程控制行時，第一條 transcript 回顯顯示在控制行前，其他回顯留在末尾。最後輸入的輪次資訊複用現有 rpcId 掃描，不新增歷史遍歷，也不預測未來輪次序列。
+- 待處理氣泡與持久節點容器共用一個 keyed React 列表。插入過程標題保留回顯氣泡的掛載身份。入檔後，由持久節點決定排序及普通 Group 切分。
 
-[持久 Inbox 恢复决策](2026-08-17-durable-web-queue-recovery.zh.md)仍负责冷读取、重建与投影传输。[通用文件上传决策](../feature/2026-08-26-generic-file-upload.zh.md)仍负责附件准备及草稿恢复；回收按附件顺序返回各提交的持久引用，且只回调一次。
+[持久 Inbox 恢復決策](2026-08-17-durable-web-queue-recovery.zh.md)仍負責冷讀取、重建與投影傳輸。[通用檔案上傳決策](../feature/2026-08-26-generic-file-upload.zh.md)仍負責附件準備及草稿恢復；回收按附件順序返回各提交的持久引用，且只回呼一次。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**固定延迟 QueueDock 或回显回收。** CPU 降速、传输批处理与投影到达顺序都可能超过该间隔。时间不能证明入档，也不能确认过期队列状态已经消失。
+**固定延遲 QueueDock 或回顯回收。** CPU 降速、傳輸批處理與投影到達順序都可能超過該間隔。時間不能證明入檔，也不能確認過期佇列狀態已經消失。
 
-**只延长回显生命周期，不调整其他读取方。** Chat 侧按 Inbox 去重仍会移除回显，QueueDock 仍可能展示同一消息。Session 生命周期、Chat 接管和 Dock 排除必须一致。
+**只延長回顯生命週期，不調整其他讀取方。** Chat 側按 Inbox 去重仍會移除回顯，QueueDock 仍可能展示同一訊息。Session 生命週期、Chat 接管和 Dock 排除必須一致。
 
-**user/message 到达后立即删除排除身份。** 较晚的 Inbox 受理投影会复活 Dock 行或待处理 steering 行。领取水位提供必要的排序依据，不要求两条流同时发布。
+**user/message 到達後立即刪除排除身份。** 較晚的 Inbox 受理投影會復活 Dock 行或待處理 steering 行。領取水位提供必要的排序依據，不要求兩條流同時釋出。
 
-**把全部待处理输入移到最新 Turn 控制行前。** 运行中的 steering 属于已有过程内容之后，多条普通提交也可能属于不同轮次。只有第一条本地 transcript 回显参与空控制行前的定位调整。
+**把全部待處理輸入移到最新 Turn 控制行前。** 執行中的 steering 屬於已有過程內容之後，多條普通提交也可能屬於不同輪次。只有第一條本地 transcript 回顯參與空控制行前的定位調整。
 
-**新增 Host 关联事件或客户端 Turn 调度器。** 精确预测跨客户端竞争和请求乱序会超出本地乐观展示的范围。持久入档仍是权威；这些竞争场景中的乐观排序有意保持近似。
+**新增 Host 關聯事件或用戶端 Turn 排程器。** 精確預測跨用戶端競爭和請求亂序會超出本地樂觀展示的範圍。持久入檔仍是權威；這些競爭情境中的樂觀排序有意保持近似。
 
-## 验证
+## 驗證
 
-| 证据 | 覆盖行为 |
+| 證據 | 覆蓋行為 |
 |---|---|
-| [Session 提交](../../../../packages/api/session-controller/tests/session-pending-submissions.client.spec.ts) | 投影先到与历史先到的接管、领取水位、开场/排队/steering 身份交错、附件回调、取消、未入档结束、重连基线及销毁。 |
-| [投影存储](../../../../packages/api/session-controller/tests/projection-store.client.spec.ts) | 缺失或缓存水位、单调序号保留及清理。 |
-| [Chat 渲染](../../../../packages/client/ui-chat/tests/chat-view.client.spec.tsx) | 同帧 rpcId 替换、回显稳定挂载、三种模式下标题先于输入到达、steering 留在标题之后、历史空轮次及六种本地与 Host 排列。 |
-| [QueueDock](../../../../packages/client/ui-conversation/tests/queue-dock.client.spec.tsx) | 本地 transcript 排除、其他行及操作、三条消息的全部六种受理顺序及后续 FIFO 领取。 |
-| [录制 Web 回放](../../../../apps/web/tests/idle-submission-handoff.e2e.ts) | 真实 Web 装配配合保留 FIFO 的投递屏障：6× CPU 降速下的 Inbox/历史两种到达顺序、明确的 turn/start 至 user/message 空档，以及六种请求排列的完整三轮接管。 |
-| [Steering Web 回放](../../../../apps/web/tests/steering.e2e.ts) | 本地快捷键 steering 的持久入档先于 Inbox 领取投影到达时，仍只显示一份。 |
+| [Session 提交](../../../../packages/api/session-controller/tests/session-pending-submissions.client.spec.ts) | 投影先到與歷史先到的接管、領取水位、開場/排隊/steering 身份交錯、附件回呼、取消、未入檔結束、重連基線及銷燬。 |
+| [投影儲存](../../../../packages/api/session-controller/tests/projection-store.client.spec.ts) | 缺失或快取水位、單調序號保留及清理。 |
+| [Chat 渲染](../../../../packages/client/ui-chat/tests/chat-view.client.spec.tsx) | 同幀 rpcId 替換、回顯穩定掛載、三種模式下標題先於輸入到達、steering 留在標題之後、歷史空輪次及六種本地與 Host 排列。 |
+| [QueueDock](../../../../packages/client/ui-conversation/tests/queue-dock.client.spec.tsx) | 本地 transcript 排除、其他行及操作、三條訊息的全部六種受理順序及後續 FIFO 領取。 |
+| [錄製 Web 回放](../../../../apps/web/tests/idle-submission-handoff.e2e.ts) | 真實 Web 裝配配合保留 FIFO 的投遞屏障：6× CPU 降速下的 Inbox/歷史兩種到達順序、明確的 turn/start 至 user/message 空檔，以及六種請求排列的完整三輪接管。 |
+| [Steering Web 回放](../../../../apps/web/tests/steering.e2e.ts) | 本地快捷鍵 steering 的持久入檔先於 Inbox 領取投影到達時，仍只顯示一份。 |
 
-单条输入回归在修复前失败：Inbox 受理将气泡移入 Dock，单独交付的 Turn 标题又会出现在回显之前。修复后的路径保留唯一的 Chat 表示，且纵向位置稳定。多输入回放验证持久顺序及无重复、无残留回显，不断言乐观排列可以预测 Host 顺序。
+單條輸入迴歸在修復前失敗：Inbox 受理將氣泡移入 Dock，單獨交付的 Turn 標題又會出現在回顯之前。修復後的路徑保留唯一的 Chat 表示，且縱向位置穩定。多輸入回放驗證持久順序及無重複、無殘留回顯，不斷言樂觀排列可以預測 Host 順序。
 
-## 后果
+## 後果
 
-- 没有本地提交身份的 steering 仍按 Inbox 投影显示；投影迟到时可能短暂与持久节点重复。本地去重不为其他客户端的提交增加历史扫描。
-- 重连可撤销已有接收回执的乐观回显，并展示新的权威基线。已领取但不在该基线中的输入可能短暂无气泡；重连不保证 DOM 连续性。
-- 本地 running 更新前连续提交的消息可能都留为 transcript 回显。若本地按 A、B、C 提交，但 B 或 C 先入档，持久接管会调整可见顺序。即使 A 先入档，其余本地回显也可能与 Host 队列顺序不同。
-- 跨客户端竞争和请求准备的先后差异可能改变实际开场输入。客户端不会仅因 Host 将输入排在另一轮后面，就把已按空闲分类的回显迁入 Dock。
-- 这些改动消除普通在线路径中表示切换带来的抖动，不改变模型输入、Inbox 调度、滚动跟随规则或已发布 Session 数据。浏览器屏障证明行为，不代表普遍的延迟或吞吐提升。
+- 沒有本地提交身份的 steering 仍按 Inbox 投影顯示；投影遲到時可能短暫與持久節點重複。本地去重不為其他用戶端的提交增加歷史掃描。
+- 重連可撤銷已有接收回執的樂觀回顯，並展示新的權威基線。已領取但不在該基線中的輸入可能短暫無氣泡；重連不保證 DOM 連續性。
+- 本地 running 更新前連續提交的訊息可能都留為 transcript 回顯。若本地按 A、B、C 提交，但 B 或 C 先入檔，持久接管會調整可見順序。即使 A 先入檔，其餘本地回顯也可能與 Host 佇列順序不同。
+- 跨用戶端競爭和請求準備的先後差異可能改變實際開場輸入。用戶端不會僅因 Host 將輸入排在另一輪後面，就把已按空閒分類的回顯遷入 Dock。
+- 這些改動消除普通線上路徑中表示切換帶來的抖動，不改變模型輸入、Inbox 排程、滾動跟隨規則或已釋出 Session 資料。瀏覽器屏障證明行為，不代表普遍的延遲或吞吐提升。

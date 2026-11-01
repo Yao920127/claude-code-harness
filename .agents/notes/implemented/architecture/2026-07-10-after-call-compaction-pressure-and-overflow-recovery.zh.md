@@ -1,61 +1,61 @@
-# Agent Note: 调用后压缩压力与上下文溢出恢复
+# Agent Note: 呼叫後壓縮壓力與上下文溢位恢復
 
 Status: implemented
 
 [English](2026-07-10-after-call-compaction-pressure-and-overflow-recovery.md) | 中文
 
-## 问题
+## 問題
 
-`agent/pre-step` 运行在最终请求路由之前，也早于 assistant 输出、工具结果、缓冲上下文与 steering（中途引导）的产生。即使它接收已装配提示词与会话前缀，压力视图仍是临时的，因为 `agent/request` 还可以改变路由或调用配置，工具 schema 也没有与这些输入一同冻结。增加字段无法让调用前状态描述已完成调用，还会把通用扩展点与压缩（compaction）耦合。
+`agent/pre-step` 執行在最終請求路由之前，也早於 assistant 輸出、工具結果、緩衝上下文與 steering（中途引導）的產生。即使它接收已裝配提示詞與工作階段字首，壓力檢視仍是臨時的，因為 `agent/request` 還可以改變路由或呼叫設定，工具 schema 也沒有與這些輸入一同凍結。增加欄位無法讓呼叫前狀態描述已完成呼叫，還會把通用擴充功能點與壓縮（compaction）耦合。
 
-成功调用也不是唯一的压力信号。提供方可能在返回 usage 之前就因上下文窗口超限拒绝请求，一些成功调用也不提供 usage。因此，系统需要可回放的调用后压力，以及一条狭窄的失败恢复路径；当压缩无法证明取得有效进展时，必须保留原始提供方错误。
+成功呼叫也不是唯一的壓力訊號。提供者可能在返回 usage 之前就因上下文視窗超限拒絕請求，一些成功呼叫也不提供 usage。因此，系統需要可回放的呼叫後壓力，以及一條狹窄的失敗恢復路徑；當壓縮無法證明取得有效進展時，必須保留原始提供者錯誤。
 
-## 决策
+## 決策
 
-### 成功压力在下一个 pre-step 边界运行
+### 成功壓力在下一個 pre-step 邊界執行
 
-`agent/pre-step` 接收独占的已领取消息批次与 `{ turn, step, signal }`，并返回最终 reject/enter 决策。它不携带压缩专用的提示词或前缀字段。
+`agent/pre-step` 接收獨佔的已領取訊息批次與 `{ turn, step, signal }`，並返回最終 reject/enter 決策。它不攜帶壓縮專用的提示詞或字首欄位。
 
-Compact-basic 会在每个拟议请求之前包装 `agent/pre-step`。在续步边界，前一条 assistant 输出、所有已分发或合成的工具结果、工具后上下文与 steering 都已经持久化，因此压力策略能看到完整的成功调用状态，同时不会拆开 assistant 工具调用与其结果。初始边界上的无 header 会话尚无已完成路由请求，因此不执行压力工作。Compact-basic 会在内部处理操作性失败、发出警告并继续委托，不会 reject 拟议步骤。
+Compact-basic 會在每個擬議請求之前包裝 `agent/pre-step`。在續步邊界，前一條 assistant 輸出、所有已分發或合成的工具結果、工具後上下文與 steering 都已經持久化，因此壓力策略能看到完整的成功呼叫狀態，同時不會拆開 assistant 工具呼叫與其結果。初始邊界上的無 header 工作階段尚無已完成路由請求，因此不執行壓力工作。Compact-basic 會在內部處理操作性失敗、發出警告並繼續委託，不會 reject 擬議步驟。
 
-`dsh-compaction-basic` 从持久请求头读取精确的最新实际路由模型，只用它确认已经存在已完成的路由，随后让单例 `ctx.tokenMeter` 计量规范日志信封与当前表层。自动压力不会回退到 `AgentOptions.model`。没有请求头的会话尚无已完成路由请求可供判断，因此不执行工作；任意持久记录的非空模型名都使用同一个估算器。操作性的计量或摘要失败会发出警告，并从最新持久表层继续：任何替换发生前使用完整历史；若剪枝已经落盘，则使用已剪枝表层。
+`dsh-compaction-basic` 從持久請求頭讀取精確的最新實際路由模型，只用它確認已經存在已完成的路由，隨後讓單例 `ctx.tokenMeter` 計量規範日誌信封與目前表層。自動壓力不會退回到 `AgentOptions.model`。沒有請求頭的工作階段尚無已完成路由請求可供判斷，因此不執行工作；任意持久記錄的非空模型名都使用同一個估算器。操作性的計量或摘要失敗會發出警告，並從最新持久表層繼續：任何替換髮生前使用完整歷史；若剪枝已經寫入磁碟，則使用已剪枝表層。
 
-### 请求恢复只覆盖最终模型边界
+### 請求恢復只覆蓋最終模型邊界
 
-`agent/request-error` 表示来自最终适配器边界的终止失败。适配器选择、分发、iterator 构造与迭代抛出会在 agent loop（智能体循环）消费前成为终止 `error` 或 `aborted` finish；适配器直接发出的终止 finish 进入同一路径。提示词装配、请求 middleware、请求日志、结果处理、工具、step 监听器与清理仍属于普通失败。[LLM（大语言模型）流的终止失败](2026-07-29-terminal-llm-stream-failures.zh.md)规定这一规范化边界。
+`agent/request-error` 表示來自最終介面卡邊界的終止失敗。介面卡選擇、分發、iterator 建構與迭代丟擲會在 agent loop（智慧代理迴圈）消費前成為終止 `error` 或 `aborted` finish；介面卡直接發出的終止 finish 進入同一路徑。提示詞裝配、請求 middleware、請求日誌、結果處理、工具、step 監聽器與清理仍屬於普通失敗。[LLM（大語言模型）流的終止失敗](2026-07-29-terminal-llm-stream-failures.zh.md)規定這一規範化邊界。
 
-恢复运行前，失败 step 已经关闭。负责处理的监听器修复持久状态、返回 `{ kind: 'retry' }`，并停止 waterfall（瀑布式事件）委托。循环随后关闭失败 turn，并从持久日志开启一个重试 turn，中间不发布空闲通知。重试策略与尝试计数由插件自己拥有；compaction-basic 在链路到达终态 `agent/settled` 时清除对应 agent 的溢出计数。两个 DeepSeek 适配器都把识别出的提供方上下文限制错误规范化为 `CONTEXT_WINDOW_EXCEEDED`。[重试动作决策](../simplification/2026-07-27-request-error-retry-action.zh.md)规定这一返回边界。
+恢復執行前，失敗 step 已經關閉。負責處理的監聽器修復持久狀態、返回 `{ kind: 'retry' }`，並停止 waterfall（瀑布式事件）委託。迴圈隨後關閉失敗 turn，並從持久日誌開啟一個重試 turn，中間不釋出空閒通知。重試策略與嘗試計數由外掛自己擁有；compaction-basic 在鏈結到達終態 `agent/settled` 時清除對應 agent 的溢位計數。兩個 DeepSeek 介面卡都把識別出的提供者上下文限制錯誤規範化為 `CONTEXT_WINDOW_EXCEEDED`。[重試動作決策](../simplification/2026-07-27-request-error-retry-action.zh.md)規定這一返回邊界。
 
-如果取消发生在 assistant 工具调用已经持久化之后、所有调用完成分发之前，循环会为每个尚未分发的调用记录一对合成的 `tool/call` 与 aborted `tool/result`，随后进入正常中止路径。因此，表层不会仅因取消赢得竞态而留下孤立的持久工具调用。
+如果取消發生在 assistant 工具呼叫已經持久化之後、所有呼叫完成分發之前，迴圈會為每個尚未分發的呼叫記錄一對合成的 `tool/call` 與 aborted `tool/result`，隨後進入正常中止路徑。因此，表層不會僅因取消贏得競態而留下孤立的持久工具呼叫。
 
-### CompactionEngine 暴露意图，而不拥有 token 核算
+### CompactionEngine 暴露意圖，而不擁有 token 核算
 
-`CompactionEngine.compactIfNeeded(agent, trigger, signal)` 接收 `trigger: 'pressure' | 'context-overflow'`。接口不增加估算方法或 token 类型；`ctx.tokenMeter` 继续作为可复用的核算所有者。
+`CompactionEngine.compactIfNeeded(agent, trigger, signal)` 接收 `trigger: 'pressure' | 'context-overflow'`。介面不增加估算方法或 token 型別；`ctx.tokenMeter` 繼續作為可複用的核算所有者。
 
-对于 `pressure`，compaction-basic 先解析持久提供方/模型目标对应适配器所维护的容量与精确目标策略，再把得到的阈值与保留尾部预算应用到一次统一的 `ctx.tokenMeter.measure()` 结果。未达到压力阈值时直接返回，不执行剪枝。压力达到条件后，可选的 `ctx.toolResultPruner` 会改写当前表层中过大的工具结果，compaction-basic 再通过同一个 meter 重新计量；若压力已降至安全水平则跳过模型调用，否则从已剪枝表层选择范围并生成摘要。范围定价、引用的源事件计量、被遮蔽 token 数与非缩小摘要拒绝也由同一个单例 meter 完成。通用默认值保持为阈值比例 `0.8`、保留历史比例 `0.16`、摘要提供方/模型 `''`、`maxTokens: 8192`、`compactionRetries: 1` 与 `auto: true`；可选 `modelPolicies` 项可以按精确提供方/模型组合覆盖这些值。
+對於 `pressure`，compaction-basic 先解析持久提供者/模型目標對應介面卡所維護的容量與精確目標策略，再把得到的閾值與保留尾部預算應用到一次統一的 `ctx.tokenMeter.measure()` 結果。未達到壓力閾值時直接返回，不執行剪枝。壓力達到條件後，可選的 `ctx.toolResultPruner` 會改寫目前表層中過大的工具結果，compaction-basic 再透過同一個 meter 重新計量；若壓力已降至安全水平則跳過模型呼叫，否則從已剪枝表層選擇範圍並生成摘要。範圍定價、引用的源事件計量、被遮蔽 token 數與非縮小摘要拒絕也由同一個單例 meter 完成。通用預設值保持為閾值比例 `0.8`、保留歷史比例 `0.16`、摘要提供者/模型 `''`、`maxTokens: 8192`、`compactionRetries: 1` 與 `auto: true`；可選 `modelPolicies` 項可以按精確提供者/模型組合覆蓋這些值。
 
-对于规范化溢出，compaction-basic 不要求容量元数据，并绕过标量压力与普通保留 token 预算。它先执行剪枝，再在保留最新不可分割单元的同时选择最大的工具配对平衡头部范围；存在范围时，才在同一 signal 下尝试一次缩小摘要压缩。自动监听器先对 `session.surface.replaceGeneration` 建立快照，剪枝或摘要让 generation 增加时就返回 `{ kind: 'retry' }`。即使剪枝先落盘而后续摘要工作抛错，这条规则仍然成立；取消依然优先。后端若只返回结果但没有替换表层，不能授权重试；只有剪枝取得进展时，即使没有 `CompactionResult` 也可以授权重试。
+對於規範化溢位，compaction-basic 不要求容量中繼資料，並繞過標量壓力與普通保留 token 預算。它先執行剪枝，再在保留最新不可分割單元的同時選擇最大的工具配對平衡頭部範圍；存在範圍時，才在同一 signal 下嘗試一次縮小摘要壓縮。自動監聽器先對 `session.surface.replaceGeneration` 建立快照，剪枝或摘要讓 generation 增加時就返回 `{ kind: 'retry' }`。即使剪枝先寫入磁碟而後續摘要工作拋錯，這條規則仍然成立；取消依然優先。後端若只返回結果但沒有替換表層，不能授權重試；只有剪枝取得進展時，即使沒有 `CompactionResult` 也可以授權重試。
 
-`maxOverflowRetries` 可选且默认为 `1`；`0` 只禁用溢出恢复，不会禁用压力检查。`auto: false` 不注册任何自动监听器。非规范化错误、尝试耗尽、已经中止的 signal、缺失路由模型、没有安全范围、generation 未变化，以及在任何替换之前恢复抛错，都会委托给下一个监听器。若没有后续恢复，循环报告原始提供方错误对象与代码。generation 增加后的恢复抛错会基于持久进展授权重试；即使恢复工作并发完成，取消或 dispose（资源释放）仍具有最终优先级。
+`maxOverflowRetries` 可選且預設為 `1`；`0` 只停用溢位恢復，不會停用壓力檢查。`auto: false` 不註冊任何自動監聽器。非規範化錯誤、嘗試耗盡、已經中止的 signal、缺失路由模型、沒有安全範圍、generation 未變化，以及在任何替換之前恢復拋錯，都會委託給下一個監聽器。若沒有後續恢復，迴圈報告原始提供者錯誤物件與程式碼。generation 增加後的恢復拋錯會基於持久進展授權重試；即使恢復工作並行完成，取消或 dispose（資源釋放）仍具有最終優先順序。
 
-默认摘要器依次解析显式配置、最近记录的路由与 agent options。因为直接 `llm/stream` 中间件可以重新路由该辅助调用，`compaction/summary.{provider, model}` 记录分发后观察到的可变 `GenerateOptions` 最终目标，而不是 waterfall 之前的候选值。
+預設摘要器依次解析顯式設定、最近記錄的路由與 agent options。因為直接 `llm/stream` 中介軟體可以重新路由該輔助呼叫，`compaction/summary.{provider, model}` 記錄分發後觀察到的可變 `GenerateOptions` 最終目標，而不是 waterfall 之前的候選值。
 
-## 测试
+## 測試
 
-单元测试覆盖最终适配器规范化边界、已关闭 turn 的重试编号与重置、取消与 dispose、step 边界顺序、已路由信封压力、压力门控剪枝、剪枝独立解除压力、从已剪枝输入生成摘要、平衡溢出缩减、后续失败前已落盘的剪枝进展、generation 证明、上限、委托与辅助调用路由。真实循环测试覆盖抛出式和带内溢出在经剪枝或摘要压缩后重建重试请求的过程。
+單元測試覆蓋最終介面卡規範化邊界、已關閉 turn 的重試編號與重置、取消與 dispose、step 邊界順序、已路由信封壓力、壓力門控剪枝、剪枝獨立解除壓力、從已剪枝輸入生成摘要、平衡溢位縮減、後續失敗前已寫入磁碟的剪枝進展、generation 證明、上限、委託與輔助呼叫路由。真實迴圈測試覆蓋丟擲式和帶內溢位在經剪枝或摘要壓縮後重建重試請求的過程。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **向 pre-step 增加压缩专用字段**——不予采纳，因为规范持久会话与 token meter 已拥有计量输入；通用生命周期不需要携带第二份信封。
-- **重试相同编号的 step**——不予采纳，因为恢复会在失败边界之后追加持久事件。新 step 保持平衡嵌套与可重建性。
-- **只要 `compactIfNeeded` 返回结果就重试**——不予采纳，因为自定义后端可能报告成功却没有改变模型可见状态。`replaceGeneration` 才是权威证明。
-- **让 compaction-basic 解析提供方措辞**——不予采纳，因为分类属于适配器，而且必须同时覆盖抛出式与带内交付。
-- **没有持久路由时回退到 `AgentOptions.model`**——不予采纳，因为自动策略必须描述已完成且已记录的请求。没有请求头的压力检查与恢复会原样委托。
+- **向 pre-step 增加壓縮專用欄位**——不予採納，因為規範持久工作階段與 token meter 已擁有計量輸入；通用生命週期不需要攜帶第二份信封。
+- **重試相同編號的 step**——不予採納，因為恢復會在失敗邊界之後追加持久事件。新 step 保持平衡巢狀與可重建性。
+- **只要 `compactIfNeeded` 返回結果就重試**——不予採納，因為自定義後端可能報告成功卻沒有改變模型可見狀態。`replaceGeneration` 才是權威證明。
+- **讓 compaction-basic 解析提供者措辭**——不予採納，因為分類屬於介面卡，而且必須同時覆蓋丟擲式與帶內交付。
+- **沒有持久路由時退回到 `AgentOptions.model`**——不予採納，因為自動策略必須描述已完成且已記錄的請求。沒有請求頭的壓力檢查與恢復會原樣委託。
 
-## 后果
+## 後果
 
-下一个 pre-step 的压力检查描述前一个已完成的路由请求，包括持久工具结果与新领取输入。可选的无模型剪枝会在选择摘要前移除可预测的工具输出体积，也能独立产生足以重试的进展。当成功 usage 锚点不存在时，规范化溢出提供兜底路径。恢复有明确上限、以取消为准，并保持单调：只有模型可见的表层 generation 变化后才重试。
+下一個 pre-step 的壓力檢查描述前一個已完成的路由請求，包括持久工具結果與新領取輸入。可選的無模型剪枝會在選擇摘要前移除可預測的工具輸出體積，也能獨立產生足以重試的進展。當成功 usage 錨點不存在時，規範化溢位提供後備路徑。恢復有明確上限、以取消為準，並保持單調：只有模型可見的表層 generation 變化後才重試。
 
-代价是在共享 pre-step waterfall 中执行压力工作，并需要适配器持续维护溢出分类。提供方措辞与启发式字符密度仍是维护风险。表层压缩依然无法修复仅信封本身就超出窗口的情况，也不能拆分不可分割的非工具节点，或修复不可剪枝的剩余部分仍然过大的工具单元。若可移除的文本工具结果是主要体积，可选剪枝器仍可修复原本不可分割的工具配对。
+代價是在共享 pre-step waterfall 中執行壓力工作，並需要介面卡持續維護溢位分類。提供者措辭與啟發式字元密度仍是維護風險。表層壓縮依然無法修復僅信封本身就超出視窗的情況，也不能拆分不可分割的非工具節點，或修復不可剪枝的剩餘部分仍然過大的工具單元。若可移除的文字工具結果是主要體積，可選剪枝器仍可修復原本不可分割的工具配對。
 
-[已领取 pre-step 生命周期](2026-07-31-claimed-pre-step-inbox-lifecycle.zh.md)取代了本记录原先的 post-step 触发方式。服务拆分、独立 token meter、平衡范围约定、日志中记录的锁、摘要替换与唯一 `summarize()` 子类 hook 均保持不变。
+[已領取 pre-step 生命週期](2026-07-31-claimed-pre-step-inbox-lifecycle.zh.md)取代了本記錄原先的 post-step 觸發方式。服務拆分、獨立 token meter、平衡範圍約定、日誌中記錄的鎖、摘要替換與唯一 `summarize()` 子類 hook 均保持不變。

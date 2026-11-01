@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write packages/util/brand/README.md
 /:
   en: 9c53a07c1a04a19a
-  zh: 1fd4666fbc6c39a8
+  zh: 9ba76a2965fdc3d6
 /deepseek-ai-dsh-brand:
   en: 7c38b29da46ac02f
   zh: 4548a6802dc98508
 /deepseek-ai-dsh-brand/summary:
   en: a6ee5719ee74cc75
-  zh: 329397be6f7228be
+  zh: 8a33e0376a6a1062
 /deepseek-ai-dsh-brand/table-of-contents:
   en: c992e0cd2e7042d6
-  zh: 2e8cd826664632d1
+  zh: b260474086291763
 /deepseek-ai-dsh-brand/use-this-package:
   en: abdf7a28d3af06f0
-  zh: 8d68807326b03898
+  zh: d01054b3fcba5337
 /deepseek-ai-dsh-brand/use-this-package/branding-a-string:
   en: 49b137dc146f5c0a
-  zh: 7fe82acb5ba633e8
+  zh: 37d5451b7d5f110a
 /deepseek-ai-dsh-brand/use-this-package/branding-a-number:
   en: fd9617ca2804f47b
-  zh: cd3c0e6bda613509
+  zh: c4ec7228f5123f45
 /deepseek-ai-dsh-brand/use-this-package/when-to-brand:
   en: 4c8008d670bf2b4d
-  zh: 1bd3dcebe557f7b0
+  zh: 46d9eb8b42badaa8
 /deepseek-ai-dsh-brand/understand-the-implementation:
   en: 98a62299f46d5050
-  zh: 042d3c626e1fbe34
+  zh: af7cce1faa2a703b
 /deepseek-ai-dsh-brand/understand-the-implementation/source-map:
   en: 4adda24125bd07aa
-  zh: bfcc7be63f134658
+  zh: ac6bd37dd758882e
 /deepseek-ai-dsh-brand/understand-the-implementation/how-values-stay-portable:
   en: 6a126aa2e31591c0
-  zh: c85e395cdb0bbb0e
+  zh: 066ce82c60312518
 /deepseek-ai-dsh-brand/understand-the-implementation/why-it-stays-dependency-free:
   en: d9731342b094bbe7
-  zh: 81d9f2e0e359d2e7
+  zh: bc4df5450374a562
 /deepseek-ai-dsh-brand/further-exploration:
   en: 4213546b8b921601
-  zh: ba6a6fe0ef44aabf
+  zh: 8588b7de851b7844
 /deepseek-ai-dsh-brand/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

@@ -91,7 +91,7 @@ describe('AssistantMarkdown local-path images', () => {
 
 it('decodes Markdown URL escapes once before encoding the file query', () => {
   for (const [authored, path] of [
-    ['/work/test%20workspace/图.png', '/work/test workspace/图.png'],
+    ['/work/test%20workspace/圖.png', '/work/test workspace/圖.png'],
     ['/work/100%25%23.png', '/work/100%#.png'],
     ['/work/literal%2520.png', '/work/literal%20.png'],
   ]) expect(new URL(localPathMediaUrl(BASE, authored!)!).searchParams.get('path')).toBe(path)

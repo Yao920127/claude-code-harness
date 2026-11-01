@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-10-cancelled-stream-prefix-finalize.md
 /agent-note-cancelled-streams-finalize-their-delivered-prefix:
   en: d727a01958e5724c
-  zh: b2d11741f70caf24
+  zh: ae6282e0cda2604c
 /agent-note-cancelled-streams-finalize-their-delivered-prefix/problem:
   en: 142c716d174403a5
-  zh: bbb906ca25d7c9f4
+  zh: 3ec2260b2e2eef7a
 /agent-note-cancelled-streams-finalize-their-delivered-prefix/decision:
   en: 28e166977c0dffde
-  zh: d7c6b175984627fc
+  zh: b25892de3c80981d
 /agent-note-cancelled-streams-finalize-their-delivered-prefix/alternatives-considered:
   en: ca4363e11e8eff48
-  zh: 834152cbe57e1f3e
+  zh: bdba5c695db9589a
 /agent-note-cancelled-streams-finalize-their-delivered-prefix/consequences:
   en: 2d58504acfc4fffe
-  zh: a6a7ca872c003099
+  zh: 74bc900029e4e019
 /agent-note-cancelled-streams-finalize-their-delivered-prefix/testing:
   en: 241507aff996c16a
-  zh: 599eed3162f3ba8d
+  zh: 77575d2df174fca6

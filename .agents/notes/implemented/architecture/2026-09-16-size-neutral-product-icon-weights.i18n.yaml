@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-16-size-neutral-product-icon-weights.md
 /agent-note-size-neutral-product-icon-weights:
   en: f0d742af33e3297e
-  zh: 5db6cdc26635d843
+  zh: 22fe2fe236ee85c9
 /agent-note-size-neutral-product-icon-weights/problem:
   en: aae2bf56f8695ee8
-  zh: 491fa683d7cc580f
+  zh: c8157080ce4cad92
 /agent-note-size-neutral-product-icon-weights/decision:
   en: c0680b384d4198c8
-  zh: a34f4481b7784b4f
+  zh: c95132e6c5ce31ff
 /agent-note-size-neutral-product-icon-weights/alternatives-considered:
   en: bda83cdc7a7c59a9
-  zh: d3592cdf068556ea
+  zh: 6e9bdec7bc0f8e9a
 /agent-note-size-neutral-product-icon-weights/consequences:
   en: bceee31f65a32e69
-  zh: d8fad0a01f1a7e7a
+  zh: a57eef24a04a767a

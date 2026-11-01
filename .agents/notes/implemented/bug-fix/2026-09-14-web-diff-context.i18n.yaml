@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-14-web-diff-context.md
 /agent-note-web-diff-cards-compare-contextual-content:
   en: 2dc5ae1577ba6173
-  zh: 0b580f4e70eddc72
+  zh: ed21cb4c8ff6b89f
 /agent-note-web-diff-cards-compare-contextual-content/problem:
   en: 73aa63782984835f
-  zh: 41982214968dcca8
+  zh: 9714fd4ad403453d
 /agent-note-web-diff-cards-compare-contextual-content/decision:
   en: d8c9e2af5843c87d
-  zh: 5487925fa1a66da8
+  zh: 3e997d6ca81c979f
 /agent-note-web-diff-cards-compare-contextual-content/alternatives-considered:
   en: b5d00cc913db27c9
-  zh: ef72c91cff5ebcce
+  zh: 3402d3e708802321
 /agent-note-web-diff-cards-compare-contextual-content/measurement:
   en: 839be054edf51392
-  zh: 3d2a51e634b39eb2
+  zh: 912f7514108bf221
 /agent-note-web-diff-cards-compare-contextual-content/consequences:
   en: 1900b6984a59765c
-  zh: 8f3755fcdf8f2562
+  zh: 287c16a7d481dfbb

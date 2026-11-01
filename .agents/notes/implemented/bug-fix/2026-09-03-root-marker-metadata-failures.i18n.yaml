@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-03-root-marker-metadata-failures.md
 /agent-note-root-marker-metadata-failures:
   en: c351be96177b2ea5
-  zh: a094d77aaffd1fbe
+  zh: c62868fd84feb523
 /agent-note-root-marker-metadata-failures/problem:
   en: 3d88594600ede55b
-  zh: fd9e36f5b72d8aee
+  zh: f4ce2ca4620abcc4
 /agent-note-root-marker-metadata-failures/decision:
   en: 8131fbf06980774f
-  zh: 21a3c48edbe9ab99
+  zh: 321aa4e52893c4f2
 /agent-note-root-marker-metadata-failures/alternatives-considered:
   en: 2070e244fd8ffc91
-  zh: 31324cd0d5ace0a9
+  zh: c5d32a4e0f73a3c6
 /agent-note-root-marker-metadata-failures/consequences:
   en: a459fc1a7a8353a3
-  zh: 144b373b0988b633
+  zh: 19a75beb73b57fdf
 /agent-note-root-marker-metadata-failures/verification:
   en: 4c912e5effdaedb7
-  zh: 1b28ba3dea9170dd
+  zh: ba451bae69fd75b5

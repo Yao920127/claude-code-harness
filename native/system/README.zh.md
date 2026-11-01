@@ -1,5 +1,5 @@
 ---
-description: "为 Linux 进程隔离与 POSIX 会话写锁提供预编译系统原语。"
+description: "為 Linux 程序隔離與 POSIX 工作階段寫鎖提供預編譯系統原語。"
 kind: "package-library"
 ---
 # @deepseek-ai/node-addon-system
@@ -8,34 +8,34 @@ kind: "package-library"
 
 ## Summary
 
-使用 Linux `landlock-run` 可执行文件限制子进程，或通过 `./flock` 入口获取 POSIX 写锁。平台包包含预编译二进制；消费方安装时不会构建原生代码。Landlock 策略与会话生命周期仍由调用方负责。
+使用 Linux `landlock-run` 可執行檔案限制子程序，或透過 `./flock` 入口取得 POSIX 寫鎖。平臺包包含預編譯二進位制；消費方安裝時不會建置原生程式碼。Landlock 策略與工作階段生命週期仍由呼叫方負責。
 
 ## Table of Contents
 
 - [使用](#use)
-- [支持范围](#support)
-- [开发](#development)
+- [支援範圍](#support)
+- [開發](#development)
 
 ## Use
 
-`@deepseek-ai/node-addon-system/landlock-run` 为 Landlock 导出 `launcherPath`、`probe` 和 `grantArgs`。其可执行文件名、参数和失败语义由 [CLI 约定](docs/cli-contract.md) 定义。
+`@deepseek-ai/node-addon-system/landlock-run` 為 Landlock 匯出 `launcherPath`、`probe` 和 `grantArgs`。其可執行檔名、參數和失敗語義由 [CLI 約定](docs/cli-contract.md) 定義。
 
-[flock 行为约定](docs/flock-contract.md) 将描述符、进程和咨询式锁语义对应到独立原生测试。
+[flock 行為約定](docs/flock-contract.md) 將描述符、程序和諮詢式鎖語義對應到獨立原生測試。
 
-`@deepseek-ai/node-addon-system/flock` 导出 `tryLockExclusive(fd): Promise<void>`。在调用完成前保持描述符打开。获取操作使用非阻塞独占 flock；发生竞争时，返回的 Promise 会以 `EAGAIN` 或 `EWOULDBLOCK` 拒绝，关闭该打开文件描述的最后一个描述符即释放锁。参见[入口 README](packages/entry/README.zh.md)。
+`@deepseek-ai/node-addon-system/flock` 匯出 `tryLockExclusive(fd): Promise<void>`。在呼叫完成前保持描述符開啟。取得操作使用非阻塞獨佔 flock；發生競爭時，返回的 Promise 會以 `EAGAIN` 或 `EWOULDBLOCK` 拒絕，關閉該開啟檔案描述的最後一個描述符即釋放鎖。參見[入口 README](packages/entry/README.zh.md)。
 
-导入任一入口都不会加载 addon。Landlock 可执行文件缺失时探测为不可用；flock 绑定缺失时拒绝获取。两条路径都不会进行编译，也不会静默允许不受支持的行为。
+匯入任一入口都不會載入 addon。Landlock 可執行檔案缺失時探測為不可用；flock 繫結缺失時拒絕取得。兩條路徑都不會進行編譯，也不會靜默允許不受支援的行為。
 
 ## Support
 
-Linux x64/arm64 包包含静态 Landlock 可执行文件，以及分别用于 glibc/musl 的 `system.node` 文件。macOS x64/arm64 包仅包含 `system.node`。Landlock 还需要支持强制执行的 Linux 内核；Windows 使用 Harness 既有锁实现。[支持矩阵](docs/support-matrix.md) 指定构建者与验证负责人。
+Linux x64/arm64 包包含靜態 Landlock 可執行檔案，以及分別用於 glibc/musl 的 `system.node` 檔案。macOS x64/arm64 包僅包含 `system.node`。Landlock 還需要支援強制執行的 Linux 核心；Windows 使用 Harness 既有鎖實作。[支援矩陣](docs/support-matrix.md) 指定建置者與驗證負責人。
 
 ## Development
 
-在本目录运行 `pnpm build:ts` 构建入口、`pnpm build:native` 构建当前宿主声明的原生产物、`pnpm build:test-oracle` 构建独立的 flock 系统调用 fixture（测试前置数据）。随后用 `pnpm test` 验证入口、锁、打包及可用的内核行为。Linux 完整构建需要 musl-gcc；macOS 使用 cc。根目录 `pnpm run build:native-system` 只构建源码测试所需的当前宿主 addon。
+在本目錄執行 `pnpm build:ts` 建置入口、`pnpm build:native` 建置目前主機宣告的原生產物、`pnpm build:test-oracle` 建置獨立的 flock 系統呼叫 fixture（測試前置資料）。隨後用 `pnpm test` 驗證入口、鎖、打包及可用的核心行為。Linux 完整建置需要 musl-gcc；macOS 使用 cc。根目錄 `pnpm run build:native-system` 只建置原始碼測試所需的目前主機 addon。
 
-[架构](docs/architecture.md)、[打包](docs/packaging.md)和[发布流程](docs/release.md)分别负责实现与发布细节。
+[架構](docs/architecture.md)、[打包](docs/packaging.md)和[釋出流程](docs/release.md)分別負責實作與釋出細節。
 
 ### Dev Note
 
-无。
+無。

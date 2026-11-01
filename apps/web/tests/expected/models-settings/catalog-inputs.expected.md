@@ -1,62 +1,62 @@
-- dialog "设置":
+- dialog "設定":
   - navigation:
-    - text: 设置
-    - button "通用设置"
+    - text: 設定
+    - button "通用設定"
     - button "模型"
-    - button "内置插件"
-    - button "Agent 预设"
-  - button "打开配置文件"
-  - button "关闭"
+    - button "內建外掛"
+    - button "Agent 預設"
+  - button "開啟設定檔"
+  - button "關閉"
   - heading "模型" [level=2]
-  - paragraph: 填入各提供商的 API 密钥即可使用其模型。
+  - paragraph: 填入各提供商的 API 金鑰即可使用其模型。
   - list:
     - listitem:
       - text: minimax-cn
-      - img "API 密钥已配置"
-      - button "编辑 minimax-cn": 编辑
-      - button "删除 minimax-cn": 删除
+      - img "API 金鑰已設定"
+      - button "編輯 minimax-cn": 編輯
+      - button "刪除 minimax-cn": 刪除
     - listitem:
       - text: openai
-      - button "编辑 openai": 编辑
-      - button "删除 openai": 删除
-      - text: openai API 密钥
-      - textbox "API 密钥":
-        - /placeholder: 输入 API 密钥，或留空使用环境认证
+      - button "編輯 openai": 編輯
+      - button "刪除 openai": 刪除
+      - text: openai API 金鑰
+      - textbox "API 金鑰":
+        - /placeholder: 輸入 API 金鑰，或留空使用環境認證
       - group:
-        - text: 自定义设置 API 地址
+        - text: 自定義設定 API 地址
         - textbox "API 地址":
-          - /placeholder: 提供商默认
-        - region "模型目录":
-          - text: 模型目录 已自定义模型目录
-          - button "恢复默认模型"
-          - button "获取可用模型"
+          - /placeholder: 提供商預設
+        - region "模型目錄":
+          - text: 模型目錄 已自定義模型目錄
+          - button "恢復預設模型"
+          - button "取得可用模型"
           - textbox "模型 ID 1":
             - /placeholder: 模型 ID
             - text: gpt-6-astra
-          - textbox "显示名称 1":
-            - /placeholder: 显示名称
+          - textbox "顯示名稱 1":
+            - /placeholder: 顯示名稱
             - text: GPT-6 Astra
-          - button "模型选项 1" [expanded]
-          - button "删除模型 1"
-          - text: 上下文窗口
-          - textbox "上下文窗口 1":
+          - button "模型選項 1" [expanded]
+          - button "刪除模型 1"
+          - text: 上下文視窗
+          - textbox "上下文視窗 1":
             - /placeholder: 256K
             - text: 272K
-          - text: 最大输出 token 数
-          - textbox "最大输出 token 数 1":
+          - text: 最大輸出 token 數
+          - textbox "最大輸出 token 數 1":
             - /placeholder: 32K
             - text: 128K
-          - group "输入类型 1":
-            - text: 输入类型
-            - checkbox "文本" [checked]
-            - text: 文本
-            - checkbox "图片" [checked]
-            - text: 图片
-          - button "添加模型"
+          - group "輸入型別 1":
+            - text: 輸入型別
+            - checkbox "文字" [checked]
+            - text: 文字
+            - checkbox "圖片" [checked]
+            - text: 圖片
+          - button "新增模型"
       - button "取消"
-      - button "保存"
+      - button "儲存"
     - listitem:
-      - text: Acme 网关 自定义
-      - button "编辑 Acme 网关 (acme-gateway)": 编辑
-      - button "删除 Acme 网关 (acme-gateway)": 删除
-  - button "添加模型提供商"
+      - text: Acme 閘道 自定義
+      - button "編輯 Acme 閘道 (acme-gateway)": 編輯
+      - button "刪除 Acme 閘道 (acme-gateway)": 刪除
+  - button "新增模型提供商"

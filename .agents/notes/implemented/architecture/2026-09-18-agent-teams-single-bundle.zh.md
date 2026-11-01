@@ -1,33 +1,33 @@
-# Agent Note: 通过一个组合包启用 Agent Teams
+# Agent Note: 透過一個組合包啟用 Agent Teams
 
 Status: implemented
 
 [English](2026-09-18-agent-teams-single-bundle.md) | 中文
 
-## 问题
+## 問題
 
-独立的 Agent Teams 与 Agent Teams Web 开关要求用户自行发现：工具与浏览器控件需要同时选中两项。包的拆分把组合细节暴露在插件页上，却没有帮助用户选择不同的 Team 能力。
+獨立的 Agent Teams 與 Agent Teams Web 開關要求使用者自行發現：工具與瀏覽器控制元件需要同時選中兩項。包的拆分把組合細節暴露在外掛頁上，卻沒有幫助使用者選擇不同的 Team 能力。
 
-## 决策
+## 決策
 
-`@deepseek-ai/dsh-experimental-agent-team-profile` 在一个可选组合包中携带 Team 服务、工具与浏览器 UI。其 patch 保留 `agent-team`、`tool-agent-team` 与 `ui-agent-team` 配置行 id，因此 profile patch 仍可单独配置各行。UI 包的 Host 入口不执行逻辑；其浏览器入口只在 Web 客户端中挂载，headless 不会启动 Web 服务。
+`@deepseek-ai/dsh-experimental-agent-team-profile` 在一個可選組合包中攜帶 Team 服務、工具與瀏覽器 UI。其 patch 保留 `agent-team`、`tool-agent-team` 與 `ui-agent-team` 設定行 id，因此 profile patch 仍可單獨設定各行。UI 包的 Host 入口不執行邏輯；其瀏覽器入口只在 Web 用戶端中掛載，headless 不會啟動 Web 服務。
 
-独立的 `@deepseek-ai/dsh-experimental-agent-team-web-profile` 包不在 workspace 与发布系列中。插件页提供一个 Team 选项，默认关闭。
+獨立的 `@deepseek-ai/dsh-experimental-agent-team-web-profile` 包不在 workspace 與釋出系列中。外掛頁提供一個 Team 選項，預設關閉。
 
-本决策取代[包发布记录](2026-08-18-experimental-agent-teams-packages.zh.md)中的独立 Host/Web 组合方式，以及[可选组合包记录](../process/2026-09-15-shipped-optional-bundles.zh.md)中的两个 Team 选项。两条记录仍负责发布、依赖隔离、promotion 与安装方所有权。[已归档的 Web 控件记录](../../archived/feature/2026-08-06-agent-teams-web.md)记载原始拆分方式，其历史文本保持冻结。
+本決策取代[包釋出記錄](2026-08-18-experimental-agent-teams-packages.zh.md)中的獨立 Host/Web 組合方式，以及[可選組合包記錄](../process/2026-09-15-shipped-optional-bundles.zh.md)中的兩個 Team 選項。兩條記錄仍負責釋出、依賴隔離、promotion 與安裝方所有權。[已歸檔的 Web 控制元件記錄](../../archived/feature/2026-08-06-agent-teams-web.md)記載原始拆分方式，其歷史文字保持凍結。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**保留两个开关并解释依赖关系。** 用户仍须为一个功能选中两项，单独选中任意一项都不能提供完整的浏览器体验。
+**保留兩個開關並解釋依賴關係。** 使用者仍須為一個功能選中兩項，單獨選中任意一項都不能提供完整的瀏覽器體驗。
 
-**在通用 profile loader 或插件管理器中合并入口。** 在这些位置识别 Team 包名会让共用的加载或展示代码负责功能特定的组合。组合包 patch 已能声明所需配置行与依赖。
+**在通用 profile loader 或外掛管理器中合併入口。** 在這些位置識別 Team 包名會讓共用的載入或展示程式碼負責功能特定的組合。組合包 patch 已能宣告所需設定行與依賴。
 
-## 后果
+## 後果
 
-用户同时启用工具与浏览器控件。安装层面不再提供仅选择 Team UI 组合包的入口；自定义 profile 仍能单独控制 patch 配置行。headless 安装包含 UI 依赖图，但不会挂载其浏览器入口。
+使用者同時啟用工具與瀏覽器控制元件。安裝層面不再提供僅選擇 Team UI 組合包的入口；自定義 profile 仍能單獨控制 patch 設定行。headless 安裝檔含 UI 依賴圖，但不會掛載其瀏覽器入口。
 
-选中了已移除 Web 组合包的已有 profile 存在升级兼容性缺口：无法解析该包时，启动会失败。组合包本身不会自动改写这些已保存的选择。兼容性处理与本组合决策分开。
+選中了已移除 Web 組合包的已有 profile 存在升級相容性缺口：無法解析該包時，啟動會失敗。組合包本身不會自動改寫這些已儲存的選擇。相容性處理與本組合決策分開。
 
-## 验证
+## 驗證
 
-插件管理器浏览器测试观察一次开关后 Team 控件出现，通过 Remote 读取成员列表与任务看板，并观察关闭组合包后控件移除。Team 面板浏览器测试覆盖只读任务看板；构建后的 headless CLI 测试覆盖无需 Web 服务的委派。这些场景不覆盖仍选中已移除 Web 组合包的 profile 升级。
+外掛管理器瀏覽器測試觀察一次開關後 Team 控制元件出現，透過 Remote 讀取成員列表與任務看板，並觀察關閉組合包後控制元件移除。Team 面板瀏覽器測試覆蓋只讀任務看板；建置後的 headless CLI 測試覆蓋無需 Web 服務的委派。這些情境不覆蓋仍選中已移除 Web 組合包的 profile 升級。

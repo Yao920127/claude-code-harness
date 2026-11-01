@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write packages/util/native-command/README.md
 /:
   en: 3e0acbcc586810bb
-  zh: 688d34f126d1450e
+  zh: dcb5edc9cafdf931
 /deepseek-ai-dsh-native-command:
   en: 5ebca99c0488e1c8
   zh: 24b2f8f341ff648d
 /deepseek-ai-dsh-native-command/summary:
   en: 18e2f1f3798079dd
-  zh: 6f5579374e208624
+  zh: 277f6fc87f6a7caf
 /deepseek-ai-dsh-native-command/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-native-command/use-this-package:
   en: aba695cba233905f
-  zh: c6359da30eb8e372
+  zh: e2d60be7e55841e6
 /deepseek-ai-dsh-native-command/use-this-package/running-a-command:
   en: 3a499bda33e33102
-  zh: d01abbf863810607
+  zh: 0731f9b059400613
 /deepseek-ai-dsh-native-command/use-this-package/injecting-the-command-boundary:
   en: 987bed629737b59d
-  zh: 258e30f813b0edcb
+  zh: 2f92029ee3adb620
 /deepseek-ai-dsh-native-command/use-this-package/opening-a-host-path:
   en: b4ec677605b12ff8
-  zh: f35256957eea141a
+  zh: 33b2f9080b80f63b
 /deepseek-ai-dsh-native-command/understand-the-implementation:
   en: 78e86818bea36f9f
-  zh: 71dc1ad3e4cbe9f1
+  zh: 842449a2c2a23838
 /deepseek-ai-dsh-native-command/understand-the-implementation/source-map:
   en: a19bb4cb9f6de785
-  zh: cc930d8facf1ca07
+  zh: 5333658a6eb21cf6
 /deepseek-ai-dsh-native-command/understand-the-implementation/what-execfile-gives-the-runner:
   en: b16da99b2ed73bfd
-  zh: 5e806c31a6296366
+  zh: f0bda44e5b5eb8a0
 /deepseek-ai-dsh-native-command/further-exploration:
   en: a3af562edb6e0385
-  zh: e26e2c311c07d1c5
+  zh: dcef9c74ca5e0d2e
 /deepseek-ai-dsh-native-command/model-experience:
   en: d478457568b9517e
-  zh: 0460368e7567a13f
+  zh: b03bf0e3322d7c1a
 /deepseek-ai-dsh-native-command/model-experience/kv-cache-effect:
   en: 296c060e95197cc5
-  zh: b9d3fdf11b5ebe1e
+  zh: 736ea7358e18ce28
 /deepseek-ai-dsh-native-command/known-limitations-and-deferred-work:
   en: d3af15e86d679b8e
-  zh: ee5aa3c8cbd9d2db
+  zh: b5b09dea1ba6af7d
 /deepseek-ai-dsh-native-command/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

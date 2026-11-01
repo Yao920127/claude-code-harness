@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-14-composer-selection-keyboard.md
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys:
   en: d3af1337a24bd411
-  zh: ebf464a7f3d9b5c3
+  zh: 980fdd78f37a9afb
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys/problem:
   en: e5f4084d8eda4d0e
-  zh: 4dc98999d008fecd
+  zh: acc71146504ba5b9
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys/decision:
   en: d6a84d4b3d935fbb
-  zh: b842b20d197fc1a6
+  zh: 94fcc33bb0f45c2f
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys/alternatives-considered:
   en: f062131fb8b9cbcf
-  zh: a14b718ed6381b3f
+  zh: bb1766022b6d6525
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys/verification:
   en: 81508f6216c1cde0
-  zh: 764a8cafea8594e5
+  zh: 28b58d80c28a55d0
 /agent-note-composer-selection-surfaces-mirror-the-composer-s-enter-and-escape-keys/consequences:
   en: 1310807e3a7a259d
-  zh: c35aca580ee553b7
+  zh: 345007e899cdbf5a

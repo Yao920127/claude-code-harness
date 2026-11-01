@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-08-web-background-job-display.md
 /agent-note-web-background-job-display:
   en: 78eff738bc5ed554
-  zh: c8a8a83853fa806b
+  zh: a279c91a16df0f3d
 /agent-note-web-background-job-display/problem:
   en: 41ddca92193cbbf1
-  zh: ec8f39ad20044d1c
+  zh: ee5e16ac9866d947
 /agent-note-web-background-job-display/decision:
   en: 50058c6557e05f15
-  zh: bbf35bb475474cd8
+  zh: fed59c108f1be390
 /agent-note-web-background-job-display/decision/wire-shape:
   en: 4d6b92cbfde80add
-  zh: d32e0421100eeb71
+  zh: 3d59b8af5a41b76b
 /agent-note-web-background-job-display/decision/the-task-registry-change-feed:
   en: a7a9416ab3b325dc
-  zh: 448820bad0224785
+  zh: 0d362379967d127d
 /agent-note-web-background-job-display/decision/the-session-controller-carrier:
   en: e9ef574e65e8fb7d
-  zh: d1a6e446c48a0921
+  zh: a4c46ef3350bf780
 /agent-note-web-background-job-display/decision/the-client-mirror:
   en: 6185994020e639ee
-  zh: df9b464f95c0f3e2
+  zh: 1868323635470d64
 /agent-note-web-background-job-display/decision/the-header-action:
   en: 8985aa8f6ade32c3
-  zh: 94ea0844ed8649b5
+  zh: b5668e39e50a5244
 /agent-note-web-background-job-display/decision/what-this-deliberately-does-not-do:
   en: c9ff2d1fec1459d9
-  zh: b28a573ca9fbb1c2
+  zh: 4daf34e15ce17796
 /agent-note-web-background-job-display/alternatives-considered:
   en: a648d1748674d866
-  zh: 0f68b82476121c38
+  zh: f04293e5e58aa0c0
 /agent-note-web-background-job-display/testing:
   en: f41d5017ea4beabb
-  zh: cb216dd1d802ebe2
+  zh: 144421ff0196ed41
 /agent-note-web-background-job-display/consequences:
   en: 5204e04c3ed02d53
-  zh: 9eaa9b52b69be7b2
+  zh: 86fbb13f24be62f9

@@ -1,5 +1,5 @@
 ---
-description: "账号页面使用经过认证的 Remote 操作和快照流。控制器提供登录状态，不返回 token 或 PKCE 私密数据。"
+description: "帳號頁面使用經過認證的 Remote 操作和快照流。控制器提供登入狀態，不返回 token 或 PKCE 私密資料。"
 kind: "package-reference"
 ---
 
@@ -9,51 +9,51 @@ kind: "package-reference"
 
 ## 概述
 
-账号页面使用经过认证的 Remote 操作和快照流。控制器提供登录状态，不返回 token 或 PKCE 私密数据。
+帳號頁面使用經過認證的 Remote 操作和快照流。控制器提供登入狀態，不返回 token 或 PKCE 私密資料。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [模型体验](#model-experience)
-- [已知限制与后续工作](#known-limitations-and-deferred-work)
+- [模型體驗](#model-experience)
+- [已知限制與後續工作](#known-limitations-and-deferred-work)
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-account 命名空间提供 getState、getProfile / getBalance、getUnnotifiedBonuses、ackBonusNotified、startSignIn、cancelSignIn、signOut 和 watch。watch 先发送完整初始状态，随后发送完整状态变化；断开连接只停止观察，不取消登录。取消操作必须指定尝试 ID，防止旧页面取消新登录。账号缺失或已切换时 getUnnotifiedBonuses 返回 null、ackBonusNotified 返回 false；需要调用方重试的失败以抛出的 Remote 错误返回。
+account 名稱空間提供 getState、getProfile / getBalance、getUnnotifiedBonuses、ackBonusNotified、startSignIn、cancelSignIn、signOut 和 watch。watch 先傳送完整初始狀態，隨後傳送完整狀態變化；斷開連線只停止觀察，不取消登入。取消操作必須指定嘗試 ID，防止舊頁面取消新登入。帳號缺失或已切換時 getUnnotifiedBonuses 返回 null、ackBonusNotified 返回 false；需要呼叫方重試的失敗以丟擲的 Remote 錯誤返回。
 
-到达 Platform 的每个操作都接收调用界面的 `AccountClientMetadata`——客户端版本、当前语言和以秒为单位的 UTC 偏移——因此 Host 报告的是发起请求的界面，而不是它上一次见到的调用方。取消和 watch 不接该参数，因为它们不会到达 Platform。
+到達 Platform 的每個操作都接收呼叫介面的 `AccountClientMetadata`——用戶端版本、目前語言和以秒為單位的 UTC 偏移——因此 Host 報告的是發起請求的介面，而不是它上一次見到的呼叫方。取消和 watch 不接該參數，因為它們不會到達 Platform。
 
-`watchExpiry` 仅发送实时凭据失效通知，不发送初始值，也不重放历史通知。桌面端通过该流，在切换到 Welcome 时交接一次性 toast。
+`watchExpiry` 僅傳送即時憑證失效通知，不傳送初始值，也不重放歷史通知。桌面端透過該流，在切換到 Welcome 時交接一次性 toast。
 
-`hasRunningAccountTasks` 通过账号模块的判断函数，检查运行中 Agent 最近记录的请求上下文，包括工具和重试阶段。空闲 Agent 及 API key 上下文不计入。移除凭据时，账号提供方独立取消匹配任务。
+`hasRunningAccountTasks` 透過帳號模組的判斷函式，檢查執行中 Agent 最近記錄的請求上下文，包括工具和重試階段。空閒 Agent 及 API key 上下文不計入。移除憑證時，帳號提供者獨立取消匹配任務。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-控制器向账号服务转发操作，不维护独立的账号状态，因此不发布 invariant。
+控制器向帳號服務轉發操作，不維護獨立的帳號狀態，因此不釋出 invariant。
 
 <a id="further-exploration"></a>
 ## 深入探索
 
-[凭证子系统](../../../docs/subsystems/credentials.zh.md)定义存储接口；[架构](../../../docs/architecture.zh.md)说明应用组合。
+[憑證子系統](../../../docs/subsystems/credentials.zh.md)定義儲存介面；[架構](../../../docs/architecture.zh.md)說明應用組合。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为账号凭证只影响 HTTP 认证，不进入模型提示、Session 日志或工具结果。
+無，因為帳號憑證隻影響 HTTP 認證，不進入模型提示、Session 日誌或工具結果。
 
 #### KV Cache effect
 
-不改变模型请求前缀。
+不改變模型請求字首。
 
-## 已知限制与后续工作
+## 已知限制與後續工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- UI 断线后可通过 watch 恢复状态，但不能在 Host 退出后恢复登录尝试。凭证和请求 token 解析不对 Remote 暴露。
+- UI 斷線後可透過 watch 恢復狀態，但不能在 Host 退出後恢復登入嘗試。憑證和請求 token 解析不對 Remote 暴露。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-[桌面登录决策](../../../.agents/notes/implemented/architecture/2026-09-14-deepseek-account-login.zh.md)记录取消和存储的职责。
+[桌面登入決策](../../../.agents/notes/implemented/architecture/2026-09-14-deepseek-account-login.zh.md)記錄取消和儲存的職責。

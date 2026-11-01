@@ -1,4 +1,4 @@
-# Agent Note: 运行中插件 Config 检查取代 Host Builtin provider
+# Agent Note: 執行中外掛 Config 檢查取代 Host Builtin provider
 
 Status: implemented
 
@@ -6,20 +6,20 @@ Status: implemented
 
 ## Problem
 
-创造模式的 agent 为已安装插件编写 `config:` 行时，没有任何运行时的 Config schema 来源。CLI 的 `--dump-config-schema` 参考在运行中的会话里不可达，而 `Builtin` Host 检查 provider 宣告的是模型已无法定义的动态 Host half 的沙箱符号。
+創造模式的 agent 為已安裝外掛編寫 `config:` 行時，沒有任何執行時的 Config schema 來源。CLI 的 `--dump-config-schema` 參考在執行中的工作階段裡不可達，而 `Builtin` Host 檢查 provider 宣告的是模型已無法定義的動態 Host half 的沙箱符號。
 
 ## Decision
 
-`@deepseek-ai/dsh-tool-cordis/host` 注册 `Config` 检查 provider，不再注册 `Builtin` provider。`Config.listConfigs` 读取运行中的 Loader 树：无输入时返回每个 entry 的 id、插件名和 Config 状态；给定 entry id 时，通过 app-boot 的投影器把该 entry 的原生 Schemastery Config 投影为一份自包含的 JSON Schema 文档。未激活的 entry 报告 `inactive` 且不带 schema。
+`@deepseek-ai/dsh-tool-cordis/host` 註冊 `Config` 檢查 provider，不再註冊 `Builtin` provider。`Config.listConfigs` 讀取執行中的 Loader 樹：無輸入時返回每個 entry 的 id、外掛名和 Config 狀態；給定 entry id 時，透過 app-boot 的投影器把該 entry 的原生 Schemastery Config 投影為一份自包含的 JSON Schema 文件。未啟用的 entry 報告 `inactive` 且不帶 schema。
 
-provider 遍历 `ctx.loader.entries()` 和每个 fiber 的运行时 Config，而不是运行免启动的收集器，因为运行中的 profile 已持有收集器要安装且禁止重叠的模块解析拦截。app-boot 为此导出投影器、原生 schema 判定和共享的 `loaderExpression` 定义；CLI dump 保留其 profile 组合语义。
+provider 遍歷 `ctx.loader.entries()` 和每個 fiber 的執行時 Config，而不是執行免啟動的收集器，因為執行中的 profile 已持有收集器要安裝且禁止重疊的模組解析攔截。app-boot 為此匯出投影器、原生 schema 判定和共享的 `loaderExpression` 定義；CLI dump 保留其 profile 組合語義。
 
 ## Alternatives considered
 
-**在 Host 内重跑 `generateConfigSchema`。** 它会在第二层拦截下重新导入每个插件模块，而收集器禁止在已安装拦截时重叠，并且它描述的是 profile 文件而非已挂载的树。
+**在 Host 內重跑 `generateConfigSchema`。** 它會在第二層攔截下重新匯入每個外掛模組，而收集器禁止在已安裝攔截時重疊，並且它描述的是 profile 檔案而非已掛載的樹。
 
-**让出货的 skill 去运行 CLI dump。** 它需要 agent 的 shell 里有 profile 名和 PATH 上的 `dsh` 可执行文件，会话都不保证，而且输出无界。
+**讓出貨的 skill 去執行 CLI dump。** 它需要 agent 的 shell 裡有 profile 名和 PATH 上的 `dsh` 可執行檔案，工作階段都不保證，而且輸出無界。
 
 ## Consequences
 
-agent 可以在编写 patch 前读取已挂载插件的 Config schema。运行时生成的 Agent preset 树仍在 Loader 之外，不会被列出。Client 的 `Builtin` provider 不变：Client 插件代码仍运行在它所描述的浏览器模块加载器中。
+agent 可以在編寫 patch 前讀取已掛載外掛的 Config schema。執行時生成的 Agent preset 樹仍在 Loader 之外，不會被列出。Client 的 `Builtin` provider 不變：Client 外掛程式碼仍執行在它所描述的瀏覽器模組載入器中。

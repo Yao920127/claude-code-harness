@@ -1,5 +1,5 @@
 ---
-description: "记录持久化类型更改及其兼容性确认。"
+description: "記錄持久化型別更改及其相容性確認。"
 kind: persistence-change
 ---
 
@@ -9,17 +9,17 @@ kind: persistence-change
 
 ## 概述
 
-为持久化的 PTC dispatch 增加可选的结构化错误元数据，并为持久化的原生工具错误增加可选的用户可见理由。两项新增字段均保持 Session 格式版本。
+為持久化的 PTC dispatch 增加可選的結構化錯誤中繼資料，併為持久化的原生工具錯誤增加可選的使用者可見理由。兩項新增欄位均保持 Session 格式版本。
 
-## 目录
+## 目錄
 
-- [声明](#declaration)
-- [兼容性](#compatibility)
-- [验证](#verification)
-- [开发备注](#dev-note)
+- [宣告](#declaration)
+- [相容性](#compatibility)
+- [驗證](#verification)
+- [開發備註](#dev-note)
 
 <a id="declaration"></a>
-## 声明
+## 宣告
 
 ```yaml persistence-change
 schemaVersion: 1
@@ -37,16 +37,16 @@ changes:
 ```
 
 <a id="compatibility"></a>
-## 兼容性
+## 相容性
 
-已有 tool/ptc-dispatch 事件可以省略 error，已有 tool/result 错误可以省略 reason。PTC dispatch 事件不进入模型历史；原生工具结果回放只投影 data.message，不包含错误元数据。旧读取方可以忽略新增字段，不改变模型回放。当前 Web 读取方接受缺失的理由，并且只有记录中的错误标识匹配时才显示 Auto review 拒绝详情。权限模式在已有事件中仍为字符串；选择 auto 不引入已声明持久化类型的变更。Session header、事件信封和已有值类型均未改变，无需相邻迁移。
+已有 tool/ptc-dispatch 事件可以省略 error，已有 tool/result 錯誤可以省略 reason。PTC dispatch 事件不進入模型歷史；原生工具結果回放只投影 data.message，不包含錯誤中繼資料。舊讀取方可以忽略新增欄位，不改變模型回放。目前 Web 讀取方接受缺失的理由，並且只有記錄中的錯誤標識匹配時才顯示 Auto review 拒絕詳情。權限模式在已有事件中仍為字串；選擇 auto 不引入已宣告持久化型別的變更。Session header、事件信封和已有值型別均未改變，無需相鄰遷移。
 
 <a id="verification"></a>
-## 验证
+## 驗證
 
-pnpm exec vitest run scripts/persistence-changes.spec.ts scripts/persistence-schema.spec.ts 通过 64 个测试。权限、Auto review、工具执行、agent loop（智能体循环）、subagent 继承和 TypeScript SDK 的定向测试共 10 个文件、390 个测试通过，覆盖原生与 PTC 拒绝元数据。uv run --python 3.10 --group test --project python/sdk pytest python/sdk/tests/test_client.py -k preserves_auto_review_errors 通过 1 个测试。持久化预览仅识别出这两项可选字段新增，均无需提升版本。
+pnpm exec vitest run scripts/persistence-changes.spec.ts scripts/persistence-schema.spec.ts 透過 64 個測試。權限、Auto review、工具執行、agent loop（智慧代理迴圈）、subagent 繼承和 TypeScript SDK 的定向測試共 10 個檔案、390 個測試透過，覆蓋原生與 PTC 拒絕中繼資料。uv run --python 3.10 --group test --project python/sdk pytest python/sdk/tests/test_client.py -k preserves_auto_review_errors 透過 1 個測試。持久化預覽僅識別出這兩項可選欄位新增，均無需提升版本。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

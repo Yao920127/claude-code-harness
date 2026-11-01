@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write packages/util/time/README.md
 /:
   en: 1816778111548561
-  zh: 460c67cc44e59372
+  zh: b23de760f5970061
 /dsh-util-time:
   en: bc299a9b8fe7717f
   zh: 896661ee0c4edf25
 /dsh-util-time/summary:
   en: f37c9eb6571622ac
-  zh: d782978ff11bd40f
+  zh: 6d1093231f1a29af
 /dsh-util-time/table-of-contents:
   en: cd2a60a905c978d6
-  zh: cc71d387d0cbd442
+  zh: 4f3dbfce258328f2
 /dsh-util-time/use-this-package:
   en: 1472cf19b0bd7447
-  zh: 73bf36759bc2d492
+  zh: 22a3ff6b2eb650e6
 /dsh-util-time/api:
   en: cbb4b726e939fc03
-  zh: e9df4a7487433146
+  zh: 9eaeec8b6ed150b6
 /dsh-util-time/model-experience:
   en: 02d997b5c1318f27
-  zh: 5c55d060adea756d
+  zh: 7e8399f4620b4fd0
 /dsh-util-time/model-experience/kv-cache-effect:
   en: f63edbd9621eee70
-  zh: 5e3982508b32b039
+  zh: e44a2d279988772b
 /dsh-util-time/known-limitations-and-deferred-work:
   en: 130db809b9a6db90
-  zh: 5b0b72ada5b131dd
+  zh: ec6c6610cea4a2c8
 /dsh-util-time/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: e88aeb617ffb74ea
+  zh: bb8387ee0e2ab0bd

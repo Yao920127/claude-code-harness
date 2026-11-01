@@ -1,34 +1,34 @@
-# Agent Note: 被委派的 subagent 以钉定为 `'never'` 的审批策略运行
+# Agent Note: 被委派的 subagent 以釘定為 `'never'` 的審批策略執行
 
 Status: implemented
 
 [English](2026-08-10-subagent-approval-pinned-never.md) | 中文
 
-## 问题
+## 問題
 
-被委派的子 agent 发起审批请求时无人可问。在交互式父级（`'ask'`）之下，后台子 agent 的升级请求会变成一个任何产品界面都不展示的挂起问题——subagent 会话不进入 Web 侧边栏，父级的 `list_agents` 只报告普通的 `running`／`idle`，目录树的行也只显示活动状态——因此被权限拦住的子 agent 与正常干活的子 agent 无法区分；headless 与无应答者的组合则让同一次 ask 以 `'unavailable'` 失败关闭。拒绝的审计记录只落在子 agent 自己的日志里，而且没有任何工具参数或 Web 控件能调整一个正在运行的子会话的沙箱模式或审批策略（Issue #1723）。机制繁重的修复方案——持久化的受阻状态投影、父级通知、目录树徽标，以及穿过 subagent 所有权围栏的权限写入路径——在临近发布时代价不成比例。
+被委派的子 agent 發起審批請求時無人可問。在互動式父級（`'ask'`）之下，後臺子 agent 的升級請求會變成一個任何產品介面都不展示的掛起問題——subagent 工作階段不進入 Web 側邊欄，父級的 `list_agents` 只報告普通的 `running`／`idle`，目錄樹的行也只顯示活動狀態——因此被權限攔住的子 agent 與正常幹活的子 agent 無法區分；headless 與無應答者的組合則讓同一次 ask 以 `'unavailable'` 失敗關閉。拒絕的審計記錄只落在子 agent 自己的日誌裡，而且沒有任何工具參數或 Web 控制元件能調整一個正在執行的子工作階段的沙箱模式或審批策略（Issue #1723）。機制繁重的修復方案——持久化的受阻狀態投影、父級通知、目錄樹徽標，以及穿過 subagent 所有權圍欄的權限寫入路徑——在臨近釋出時代價不成比例。
 
-## 决策
+## 決策
 
-被委派的子 agent 只在委派时固定的权限范围内行动，审批提示则从它的世界中彻底移除：`captureDelegatedPolicyOverrides(parent)`（`dsh-subagent/src/child-agent.ts`）仍对父会话的显式沙箱覆盖项建立快照，但只要审批能力已组合，就把 `approvalPolicy: 'never'` 钉定下来——不再读取父级自身的审批策略。`appendDelegatedPolicyOverrides()` 把这个钉定作为持久化的 `approval/policy { policy: 'never', source: 'delegation' }` 事件写入子 agent 的日志，与沙箱快照走完全相同的一次性与可继续委派路径，因此冷恢复会重放它，fork 种子中陈旧的父级策略也会输给它。
+被委派的子 agent 只在委派時固定的權限範圍內行動，審批提示則從它的世界中徹底移除：`captureDelegatedPolicyOverrides(parent)`（`dsh-subagent/src/child-agent.ts`）仍對父工作階段的顯式沙箱覆蓋項建立快照，但只要審批能力已組合，就把 `approvalPolicy: 'never'` 釘定下來——不再讀取父級自身的審批策略。`appendDelegatedPolicyOverrides()` 把這個釘定作為持久化的 `approval/policy { policy: 'never', source: 'delegation' }` 事件寫入子 agent 的日誌，與沙箱快照走完全相同的一次性與可繼續委派路徑，因此冷恢復會重放它，fork 種子中陳舊的父級策略也會輸給它。
 
-强制执行沿用既有的 `ApprovalService` `'never'` 语义，落在裁决 ask 的唯一操作上：子 agent 的每次 ask——bash 或 fs 的 `sandbox_permissions` 升级、hook 驱动的权限询问、任何未来的请求方——都在咨询任何应答者之前确定性地解析为 `'rejected'`，同时仍在子日志上留下 `approval/asked`／`approval/decided` 审计对。子 agent 的全部权限故事因此就是它的沙箱范围：`danger-full-access` 父级委派出的子 agent 无需任何审批，`read-only` 父级委派出的子 agent 没有任何逃生通道，而放宽的决定始终属于父级一侧（先放宽父会话，再重新委派或继续 follow-up）。
+強制執行沿用既有的 `ApprovalService` `'never'` 語義，落在裁決 ask 的唯一操作上：子 agent 的每次 ask——bash 或 fs 的 `sandbox_permissions` 升級、hook 驅動的權限詢問、任何未來的請求方——都在諮詢任何應答者之前確定性地解析為 `'rejected'`，同時仍在子日誌上留下 `approval/asked`／`approval/decided` 審計對。子 agent 的全部權限故事因此就是它的沙箱範圍：`danger-full-access` 父級委派出的子 agent 無需任何審批，`read-only` 父級委派出的子 agent 沒有任何逃生通道，而放寬的決定始終屬於父級一側（先放寬父工作階段，再重新委派或繼續 follow-up）。
 
-每个进程内子 agent 都被告知而非被困住：`applyChildComposition` 注册作用域内的 `subagent:delegation` 运行时上下文声明（order 120，位于 `sandbox:policy` 与 `approval:policy` 语句之后），声明权限范围已在启动时固定、需要审批的操作会被自动拒绝、需要更宽访问的任务应以上报限制收尾而不是重试。该声明是运行时上下文贡献而非系统提示词 section，因此部署的系统提示词在父子之间保持统一（快照测试套件钉住了这一统一性），该事实也随策略语句乘坐同一份持久化快照。
+每個程序內子 agent 都被告知而非被困住：`applyChildComposition` 註冊作用域內的 `subagent:delegation` 執行時上下文宣告（order 120，位於 `sandbox:policy` 與 `approval:policy` 語句之後），宣告權限範圍已在啟動時固定、需要審批的操作會被自動拒絕、需要更寬存取的任務應以上報限制收尾而不是重試。該宣告是執行時上下文貢獻而非系統提示詞 section，因此部署的系統提示詞在父子之間保持統一（快照測試套件釘住了這一統一性），該事實也隨策略語句乘坐同一份持久化快照。
 
-本决策取代[进程内委派策略决策](2026-07-25-subagent-policy-inheritance.zh.md)中的审批一半，并推翻其「强制 `'never'` 会排除未来的子 agent 应答器」的结论：审批继承已经落地，产生的正是上述不可见的受阻状态；未来若要引入子 agent 应答器，必须先推翻本 note。
+本決策取代[程序內委派策略決策](2026-07-25-subagent-policy-inheritance.zh.md)中的審批一半，並推翻其「強制 `'never'` 會排除未來的子 agent 應答器」的結論：審批繼承已經落實，產生的正是上述不可見的受阻狀態；未來若要引入子 agent 應答器，必須先推翻本 note。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-- **继承父级的审批覆盖项**（先前的行为）：不予采纳。只有已处于 `'never'` 的父级才产生确定性的子 agent；交互式父级种出的子 agent，其 ask 要么等待一个无人在看的提示，要么以 `'unavailable'` 失败关闭，结果取决于当时恰好接入了哪些界面。
-- **受阻状态可见性与逐子级权限调整**（#1723 原有的验收）：延后而非否决。`list_agents` 的受阻标注、经由结算投递 seam 的父级通知、目录树徽标，以及 subagent 专用的权限通道仍是更完整的设计，但每一项都需要独立的 seam 工作；一旦子 agent 不可能进入等待审批的受阻状态，这些都不再是必需。
-- **把子 agent 的 ask 路由到父控制器**：仍按[审批 seam Agent Note](2026-07-06-approval-seam.zh.md) 延后。它需要父链所有权与发起 spawn 的 `callId`。
-- **在 `ApprovalService` 内按会话来源钉定**：不予采纳。这会让审批包耦合委派词汇，并重复一个委派边界已经拥有的决定；委派种入的事件之所以可强制执行，是因为当前不存在任何能切换子会话策略的写入路径（`/permission` 命令要求通用 Host 路由，而 subagent 所有权围栏对子会话拒绝该路由）。
+- **繼承父級的審批覆蓋項**（先前的行為）：不予採納。只有已處於 `'never'` 的父級才產生確定性的子 agent；互動式父級種出的子 agent，其 ask 要麼等待一個無人在看的提示，要麼以 `'unavailable'` 失敗關閉，結果取決於當時恰好接入了哪些介面。
+- **受阻狀態可見性與逐子級權限調整**（#1723 原有的驗收）：延後而非否決。`list_agents` 的受阻標註、經由結算投遞 seam 的父級通知、目錄樹徽標，以及 subagent 專用的權限通道仍是更完整的設計，但每一項都需要獨立的 seam 工作；一旦子 agent 不可能進入等待審批的受阻狀態，這些都不再是必需。
+- **把子 agent 的 ask 路由到父控制器**：仍按[審批 seam Agent Note](2026-07-06-approval-seam.zh.md) 延後。它需要父鏈所有權與發起 spawn 的 `callId`。
+- **在 `ApprovalService` 內按工作階段來源釘定**：不予採納。這會讓審批包耦合委派詞彙，並重復一個委派邊界已經擁有的決定；委派種入的事件之所以可強制執行，是因為目前不存在任何能切換子工作階段策略的寫入路徑（`/permission` 命令要求通用 Host 路由，而 subagent 所有權圍欄對子工作階段拒絕該路由）。
 
-## 后果
+## 後果
 
-- 子 agent 的沙箱继承就是委派权限模型的全部；`DelegatedPolicyOverrides.approvalPolicy` 字段收窄为 `'never' | undefined`（仅在未组合审批能力时为 `undefined`）。
-- 模型可见：每个子 agent 的运行时上下文快照携带 `subagent:delegation` 声明以及固定的审批已禁用语句；父级请求不变。executor 边界测试证明：即使根部有一个本会批准的应答者，子 agent 的升级仍被拒绝且不咨询该应答者，审计对照常落日志。
-- 边界：进程内一次性、可继续以及 workflow 派生的子 agent 都经由共享辅助函数强制执行；`subagent-acp` 子 agent 保留该提供方显式的机器 `permission` 策略；`claude-code`、`codex` 与 `dsh-sdk` 子 agent 运行在外部进程中，由各自的组合决定。
-- 在钉定之前持久化的子 agent 冷恢复时折叠到部署审批默认值；处于预发布阶段，不添加迁移。
-- 快照夹具记录了该钉定：每个进程内子日志都新增委派 `approval/policy` 事件，`subagent-published-run-failure` 现在会持久化一份单事件子日志，而此前该子 agent 不留任何持久化事件。
+- 子 agent 的沙箱繼承就是委派權限模型的全部；`DelegatedPolicyOverrides.approvalPolicy` 欄位收窄為 `'never' | undefined`（僅在未組合審批能力時為 `undefined`）。
+- 模型可見：每個子 agent 的執行時上下文快照攜帶 `subagent:delegation` 宣告以及固定的審批已停用語句；父級請求不變。executor 邊界測試證明：即使根部有一個本會批准的應答者，子 agent 的升級仍被拒絕且不諮詢該應答者，審計對照常落日誌。
+- 邊界：程序內一次性、可繼續以及 workflow 派生的子 agent 都經由共享輔助函式強制執行；`subagent-acp` 子 agent 保留該提供者顯式的機器 `permission` 策略；`claude-code`、`codex` 與 `dsh-sdk` 子 agent 執行在外部程序中，由各自的組合決定。
+- 在釘定之前持久化的子 agent 冷恢復時摺疊到部署審批預設值；處於預釋出階段，不新增遷移。
+- 快照夾具記錄了該釘定：每個程序內子日誌都新增委派 `approval/policy` 事件，`subagent-published-run-failure` 現在會持久化一份單事件子日誌，而此前該子 agent 不留任何持久化事件。

@@ -1,5 +1,5 @@
 ---
-description: "面向部署方与维护者的沙箱 PowerShell 执行器说明，用于选择、配置或排查受限 PowerShell 命令执行及其拒绝事实。"
+description: "面向部署方與維護者的沙箱 PowerShell 執行器說明，用於選擇、設定或排查受限 PowerShell 命令執行及其拒絕事實。"
 kind: "package-reference"
 ---
 
@@ -9,39 +9,39 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-pwsh-sandbox` 是沙箱消费型 PowerShell 执行器：每条命令都以全新的 `pwsh -Command` 进程运行，经 `ctx.sandbox` 能力隔离，并在每个已结算的结果上标记所选模式、强制执行完整度与拒绝事实。在 Windows 上，沙箱 seam 解析到 ACL 受限令牌 runner 链；在 Linux 与 macOS 上则使用 bwrap、Landlock 或 Seatbelt。当没有 runner 能强制执行受限模式时，调用按失败关闭原则抛结构化 `SANDBOX_UNAVAILABLE` 错误，绝不无隔离地运行。它是 `dsh-bash-sandbox` 的 pwsh 孪生，逐调用镜像。
+`dsh-pwsh-sandbox` 是沙箱消費型 PowerShell 執行器：每條命令都以全新的 `pwsh -Command` 程序執行，經 `ctx.sandbox` 能力隔離，並在每個已結算的結果上標記所選模式、強制執行完整度與拒絕事實。在 Windows 上，沙箱 seam 解析到 ACL 受限權杖 runner 鏈；在 Linux 與 macOS 上則使用 bwrap、Landlock 或 Seatbelt。當沒有 runner 能強制執行受限模式時，呼叫按失敗關閉原則拋結構化 `SANDBOX_UNAVAILABLE` 錯誤，絕不無隔離地執行。它是 `dsh-bash-sandbox` 的 pwsh 孿生，逐呼叫映像。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当 PowerShell 命令不得以 harness 进程的完整文件权限运行时，用本执行器替代 `dsh-pwsh-local`。它注册为 `ctx.shell`，继承 `dsh-pwsh-local` 的进程机制，并要求一个 `ctx.sandbox` 提供方加上 `ctx.sandboxPolicy`。
+當 PowerShell 命令不得以 harness 程序的完整檔案權限執行時，用本執行器替代 `dsh-pwsh-local`。它註冊為 `ctx.shell`，繼承 `dsh-pwsh-local` 的程序機制，並要求一個 `ctx.sandbox` 提供者加上 `ctx.sandboxPolicy`。
 
-### 何时选择
+### 何時選擇
 
-当部署需要为 PowerShell 命令提供文件级隔离时选择它，通常是在 Windows 上。隔离实体本身是平台无关的：沙箱 seam 选择平台的 runner——Windows 上是 ACL 受限令牌链，其他平台是 bwrap/Landlock/Seatbelt——而本执行器只负责 pwsh 侧。沙箱策略（模式加工作区根目录）不是本包的配置：它随每次调用从 `ctx.sandboxPolicy` 而来，工具调用传调用会话解析后的策略，直接调用回退到部署策略。
+當部署需要為 PowerShell 命令提供檔案級隔離時選擇它，通常是在 Windows 上。隔離實體本身是平臺無關的：沙箱 seam 選擇平臺的 runner——Windows 上是 ACL 受限權杖鏈，其他平臺是 bwrap/Landlock/Seatbelt——而本執行器只負責 pwsh 側。沙箱策略（模式加工作區根目錄）不是本包的設定：它隨每次呼叫從 `ctx.sandboxPolicy` 而來，工具呼叫傳呼叫工作階段解析後的策略，直接呼叫退回到部署策略。
 
-### 模式与文件影响
+### 模式與檔案影響
 
-| 模式 | 文件影响 |
+| 模式 | 檔案影響 |
 |---|---|
-| `read-only`（默认） | 写入被拒绝；边界仍受共享的硬链接、读取不受限与 AppContainer ACL 限制 |
-| `workspace-write` | 只能写入策略的工作区根目录加一个私有临时目录；spawn 前 `TMP`/`TEMP` 会被重写到该目录 |
-| `danger-full-access` | 不作限制；绝不咨询提供方，结果携带 `sandbox: { mode, denied: false }` |
+| `read-only`（預設） | 寫入被拒絕；邊界仍受共享的硬連結、讀取不受限與 AppContainer ACL 限制 |
+| `workspace-write` | 只能寫入策略的工作區根目錄加一個私有臨時目錄；spawn 前 `TMP`/`TEMP` 會被重寫到該目錄 |
+| `danger-full-access` | 不作限制；絕不諮詢提供者，結果攜帶 `sandbox: { mode, denied: false }` |
 
-### 最小配置
+### 最小設定
 
-在 Windows 上挂载 ACL 受限令牌提供方；在 Linux 与 macOS 上则改挂本地 runner 提供方。执行器自身的配置与本地 pwsh 执行器的配置项完全相同；生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-pwsh-sandbox)是完整真源。
+在 Windows 上掛載 ACL 受限權杖提供者；在 Linux 與 macOS 上則改掛本地 runner 提供者。執行器自身的設定與本地 pwsh 執行器的設定項完全相同；生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-pwsh-sandbox)是完整真源。
 
 ```yaml
 - id: sandbox
@@ -55,99 +55,99 @@ kind: "package-reference"
   name: '@deepseek-ai/dsh-pwsh-sandbox'
 ```
 
-### 拒绝与升权
+### 拒絕與升權
 
-被拒绝的命令作为事实被报告：结果携带 `sandbox: { mode, denied: true }`，工具层把它转成标准的权限拒绝面——与 bash 工具使用同一个。当升权可用时，模型可以使用范围最小的更宽松模式并附上一句理由，对同一条命令重试一次；批准提示会询问用户，获得批准前不会执行任何命令。本执行器自身绝不协商权限。
+被拒絕的命令作為事實被報告：結果攜帶 `sandbox: { mode, denied: true }`，工具層把它轉成標準的權限拒絕面——與 bash 工具使用同一個。當升權可用時，模型可以使用範圍最小的更寬鬆模式並附上一句理由，對同一條命令重試一次；批准提示會詢問使用者，獲得批准前不會執行任何命令。本執行器自身絕不協商權限。
 
-### 失败与恢复
+### 失敗與恢復
 
-如果没有 runner 能强制执行受限模式，前台调用以 `SANDBOX_UNAVAILABLE` 失败，后台进程则记录 runner 失败事实——绝不会静默无隔离运行。只有当提供方拒绝中的 `ENOENT`/`EACCES` 路径或 syscall 独立指向 `argv[0]` 时，才将其归因于隔离 runner；否则仍沿用本地执行器不区分阶段的提供方失败语义。
+如果沒有 runner 能強制執行受限模式，前臺呼叫以 `SANDBOX_UNAVAILABLE` 失敗，後臺程序則記錄 runner 失敗事實——絕不會靜默無隔離執行。只有當提供者拒絕中的 `ENOENT`/`EACCES` 路徑或 syscall 獨立指向 `argv[0]` 時，才將其歸因於隔離 runner；否則仍沿用本地執行器不區分階段的提供者失敗語義。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释执行器的设计并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋執行器的設計並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计概念
+### 設計概念
 
-本执行器是 `dsh-bash-sandbox` 的 pwsh 孪生：它继承 `dsh-pwsh-local` 的进程机制，消费其 argv 级 seam（`argv()`/`executeArgv()`/`onProcessDone()`），并在 spawn 前把精确的 pwsh 调用经 `ctx.sandbox.confine()` 包装。隔离实体本身是平台无关的——沙箱 seam 解析到平台的 runner——而本包只负责 pwsh 侧：所选模式、强制执行完整度，以及结果上的拒绝分类。
+本執行器是 `dsh-bash-sandbox` 的 pwsh 孿生：它繼承 `dsh-pwsh-local` 的程序機制，消費其 argv 級 seam（`argv()`/`executeArgv()`/`onProcessDone()`），並在 spawn 前把精確的 pwsh 呼叫經 `ctx.sandbox.confine()` 包裝。隔離實體本身是平臺無關的——沙箱 seam 解析到平臺的 runner——而本包只負責 pwsh 側：所選模式、強制執行完整度，以及結果上的拒絕分類。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`SandboxPwshExecutor`、按进程保留事实、执行准备 |
-| [`src/helpers.ts`](src/helpers.ts) | 拒绝、runner 失败与 runner spawn 失败分类 |
-| — | 不发布运行时不变式伴生入口；除所属 seam 所执行的约定外，本包不暴露独立事件序列或可变数据关系；分类可在结果中观察。 |
-| `tests/` | 跨 ACL 与平台 runner 演练的行为 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`SandboxPwshExecutor`、按程序保留事實、執行準備 |
+| [`src/helpers.ts`](src/helpers.ts) | 拒絕、runner 失敗與 runner spawn 失敗分類 |
+| — | 不釋出執行時不變式伴生入口；除所屬 seam 所執行的約定外，本包不暴露獨立事件序列或可變資料關係；分類可在結果中觀察。 |
+| `tests/` | 跨 ACL 與平臺 runner 演練的行為 |
 
 ### 主要流程
 
-对受限模式，`resolve()` 标记每次调用的策略；`execute` 把 pwsh argv 经提供方包装，再把受限 argv 交给继承的子进程路径。结算时执行器对结果分类：runner 失败优先于拒绝（命令从未运行），stderr 携带 runner 拒绝方言的失败运行报告 `denied: true`，每次受限运行都携带模式与强制执行事实。`danger-full-access` 完全绕过提供方，并标记 `denied: false`。
+對受限模式，`resolve()` 標記每次呼叫的策略；`execute` 把 pwsh argv 經提供者包裝，再把受限 argv 交給繼承的子程序路徑。結算時執行器對結果分類：runner 失敗優先於拒絕（命令從未執行），stderr 攜帶 runner 拒絕方言的失敗執行報告 `denied: true`，每次受限執行都攜帶模式與強制執行事實。`danger-full-access` 完全繞過提供者，並標記 `denied: false`。
 
-### 不变式
+### 不變式
 
-- **失败关闭**——受限模式没有可用 runner 时以 `SANDBOX_UNAVAILABLE` 拒绝；受限策略绝不会出现无隔离直通。
-- **seam 只报告拒绝**——本执行器从不授予权限；批准流程位于工具层。
-- **按进程保留事实**——隔离事实在结算前按句柄保留，因为提供方在不同的重叠调用中可能采用不同的强制执行方式。
+- **失敗關閉**——受限模式沒有可用 runner 時以 `SANDBOX_UNAVAILABLE` 拒絕；受限策略絕不會出現無隔離直通。
+- **seam 只報告拒絕**——本執行器從不授予權限；批准流程位於工具層。
+- **按程序保留事實**——隔離事實在結算前按控制代碼保留，因為提供者在不同的重疊呼叫中可能採用不同的強制執行方式。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当执行器约定不够用时阅读以下页面。它们从 seam 进入隔离后端与 pwsh 工具。
+當執行器約定不夠用時閱讀以下頁面。它們從 seam 進入隔離後端與 pwsh 工具。
 
-- [shell seam](../shell/README.zh.md) —— 本提供方实现的执行器约定，包括请求/spec 拆分。
-- [bash-sandbox](../bash-sandbox/README.zh.md) —— 本执行器的 bash 孪生，共享拒绝与升权面。
-- [pwsh-local](../pwsh-local/README.zh.md) —— 本执行器继承的进程机制。
-- [sandbox-windows-acl](../../sandbox/sandbox-windows-acl/README.zh.md) —— Windows 受限令牌 runner 链。
-- [Bash 执行器子系统](../../../docs/subsystems/shell.zh.md) —— 请求/spec 词汇、结果与完整的服务约定。
-- [pwsh 执行器与工具笔记](../../../.agents/notes/archived/feature/2026-08-01-pwsh-tool-and-executor.md) —— pwsh 执行器与工具这一对背后的决策。
+- [shell seam](../shell/README.zh.md) —— 本提供者實作的執行器約定，包括請求/spec 拆分。
+- [bash-sandbox](../bash-sandbox/README.zh.md) —— 本執行器的 bash 孿生，共享拒絕與升權面。
+- [pwsh-local](../pwsh-local/README.zh.md) —— 本執行器繼承的程序機制。
+- [sandbox-windows-acl](../../sandbox/sandbox-windows-acl/README.zh.md) —— Windows 受限權杖 runner 鏈。
+- [Bash 執行器子系統](../../../docs/subsystems/shell.zh.md) —— 請求/spec 詞彙、結果與完整的服務約定。
+- [pwsh 執行器與工具筆記](../../../.agents/notes/archived/feature/2026-08-01-pwsh-tool-and-executor.md) —— pwsh 執行器與工具這一對背後的決策。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 隔离生效，拒绝以命令失败呈现
+### 隔離生效，拒絕以命令失敗呈現
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-受限命令自身的 stderr——例如 Windows ACL runner 下的 `Access to the path '...' is denied.`；工具层把分类后的拒绝转成标准权限拒绝面，与 bash 工具完全一致。
+受限命令自身的 stderr——例如 Windows ACL runner 下的 `Access to the path '...' is denied.`；工具層把分類後的拒絕轉成標準權限拒絕面，與 bash 工具完全一致。
 
-#### Token 影响
+#### Token 影響
 
-除命令 stderr 与工具层标准拒绝面外，无额外模型可见文本。
+除命令 stderr 與工具層標準拒絕面外，無額外模型可見文字。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；拒绝呈现面属于工具层。
+無直接影響；拒絕呈現面屬於工具層。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本执行器在 Windows 上只是不完整的边界。它们是当前包约束，不是路线图。
+這些限制說明本執行器在 Windows 上只是不完整的邊界。它們是目前包約束，不是路線圖。
 
-- **Windows 上读不受限**——ACL runner 只限写；读边界文档在 `@deepseek-ai/dsh-sandbox-windows-acl`。
-- **Windows workspace-write 的临时权限按每个活跃的会话/工作区对私有**——无 agent（智能体）的调用每次都获得一个新的私有目录；环境临时根目录绝不会被授权，runner 会在 spawn 前将 `TMP`/`TEMP` 重写为该私有目录。
-- **Windows read-only 不授予任何显式可写根目录，但仍为部分强制执行**——NTFS 硬链接会把同一文件对象别名为多个路径、读取仍不受限，且被其他 AppContainer 工具以包 SID 标记过的目录树对 Low 完整性子进程不可读。NUL 在两种模式下仍可写，因为设备 DACL 向 Everyone 授予写权限且不带更高的标签；PowerShell 的 `> $null` 重定向仍然工作，且不会打开 NUL。
+- **Windows 上讀不受限**——ACL runner 只限寫；讀邊界文件在 `@deepseek-ai/dsh-sandbox-windows-acl`。
+- **Windows workspace-write 的臨時權限按每個活躍的工作階段/工作區對私有**——無 agent（智慧代理）的呼叫每次都獲得一個新的私有目錄；環境臨時根目錄絕不會被授權，runner 會在 spawn 前將 `TMP`/`TEMP` 重寫為該私有目錄。
+- **Windows read-only 不授予任何顯式可寫根目錄，但仍為部分強制執行**——NTFS 硬連結會把同一檔案物件別名為多個路徑、讀取仍不受限，且被其他 AppContainer 工具以包 SID 標記過的目錄樹對 Low 完整性子程序不可讀。NUL 在兩種模式下仍可寫，因為裝置 DACL 向 Everyone 授予寫權限且不帶更高的標籤；PowerShell 的 `> $null` 重定向仍然工作，且不會開啟 NUL。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

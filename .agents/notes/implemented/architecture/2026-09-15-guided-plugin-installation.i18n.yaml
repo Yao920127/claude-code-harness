@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-15-guided-plugin-installation.md
 /agent-note-guided-plugin-installation:
   en: 6b8375e59efb720e
-  zh: d94f130f72639233
+  zh: 0623e1660671f070
 /agent-note-guided-plugin-installation/problem:
   en: edefff7cd986a509
-  zh: a270839fa86976a2
+  zh: 36f0d825a439c81d
 /agent-note-guided-plugin-installation/decision:
   en: b661fb786e7182c5
-  zh: 4cdeb584639fda23
+  zh: c8c32cafddfdc77b
 /agent-note-guided-plugin-installation/alternatives-considered:
   en: be64b541f4d81e7c
-  zh: 8600531c08ab4288
+  zh: b5663a7d2c929a1c
 /agent-note-guided-plugin-installation/consequences:
   en: e4536b20f3587497
-  zh: a8eeb1d3c578b785
+  zh: 44219eb3f3d90810
 /agent-note-guided-plugin-installation/testing:
   en: 1e121dca5f7dc572
-  zh: bcdb1b6482cc1af6
+  zh: a95b2ec81dab4c53

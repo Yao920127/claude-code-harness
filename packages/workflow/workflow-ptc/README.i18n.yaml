@@ -4,76 +4,76 @@
 #   pnpm run verify-translation-pairing --write packages/workflow/workflow-ptc/README.md
 /:
   en: c38b437e7e319d4b
-  zh: 2da5213a6120586c
+  zh: 5395da5d0cf23d39
 /deepseek-ai-dsh-workflow-ptc:
   en: 9f43ea90b0eb3f34
   zh: dc0afea0b135f671
 /deepseek-ai-dsh-workflow-ptc/summary:
   en: 9b6df6defa779ce7
-  zh: 43db3d8918707117
+  zh: 2d152bae99d6f424
 /deepseek-ai-dsh-workflow-ptc/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-workflow-ptc/use-this-package:
   en: 83b0c102b3c07260
-  zh: 7890bb8609063777
+  zh: da84453cdc8f6fe7
 /deepseek-ai-dsh-workflow-ptc/use-this-package/minimal-configuration:
   en: 9c31c6e17ba018ed
-  zh: 85ffe20ce8a5a371
+  zh: df82118dd495edb9
 /deepseek-ai-dsh-workflow-ptc/use-this-package/results-and-failures:
   en: 483134c11525910a
-  zh: d2ad48023e4a4be9
+  zh: 6ca9a2cf7019f8ce
 /deepseek-ai-dsh-workflow-ptc/use-this-package/file-policy-and-cancellation:
   en: abc56c2117c83d1c
-  zh: 4574a44302f70c20
+  zh: 61072297782e1cd8
 /deepseek-ai-dsh-workflow-ptc/understand-the-implementation:
   en: 52aee3bea250e968
-  zh: d606ae0fbb5c97b4
+  zh: f8afbd34437bdc8d
 /deepseek-ai-dsh-workflow-ptc/understand-the-implementation/design-concept:
   en: 9b3beda22fb408f7
-  zh: ac8701b4a7591b0e
+  zh: b2ad24e5367eff8b
 /deepseek-ai-dsh-workflow-ptc/understand-the-implementation/source-map:
   en: 5196e336f2c9323c
-  zh: 6663f239334ee9fe
+  zh: 7625305c666378d1
 /deepseek-ai-dsh-workflow-ptc/understand-the-implementation/values-and-child-ownership:
   en: 4e866f00a49d76e7
-  zh: 15a02d9ccc33d08f
+  zh: 4511bc167019901f
 /deepseek-ai-dsh-workflow-ptc/understand-the-implementation/cancellation-and-outcomes:
   en: 8b8806d701e3d32d
-  zh: cfa21c4962be2fa4
+  zh: 9fa4963d7ad58528
 /deepseek-ai-dsh-workflow-ptc/further-exploration:
   en: 8fa36196dfbb0906
-  zh: 301c6efb8a7dfffe
+  zh: 5d8ad361ce30dd25
 /deepseek-ai-dsh-workflow-ptc/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-workflow-ptc/model-experience/child-agent-requests:
   en: 8f3d45818caf7681
-  zh: 2b05d2b97bfa67da
+  zh: 951ccebbbbc0001d
 /deepseek-ai-dsh-workflow-ptc/model-experience/child-agent-requests/what-the-model-sees:
   en: 207131ad9d942e73
-  zh: 482dc514468f6adf
+  zh: 11a7550ec71b49e2
 /deepseek-ai-dsh-workflow-ptc/model-experience/child-agent-requests/token-effect:
   en: 1bae55249b0f3074
-  zh: dc173f1b0d84e4ae
+  zh: a336fd5c92523310
 /deepseek-ai-dsh-workflow-ptc/model-experience/child-agent-requests/kv-cache-effect:
   en: 69bb287c8fb3fa53
-  zh: 5601479497ae38f2
+  zh: 9bf73cedb948b131
 /deepseek-ai-dsh-workflow-ptc/model-experience/parent-tool-result-indirectly:
   en: 75d061c2151624a7
-  zh: 71e58e020b60ff90
+  zh: 5407dadc5ff7e076
 /deepseek-ai-dsh-workflow-ptc/model-experience/parent-tool-result-indirectly/what-the-model-sees:
   en: 0bcd125dbda955d8
-  zh: b92b5a58e3630522
+  zh: 8ddc089b7a8714b8
 /deepseek-ai-dsh-workflow-ptc/model-experience/parent-tool-result-indirectly/token-effect:
   en: 4de147b4a1fd87cb
-  zh: 772f8777b67ebbb1
+  zh: 559cc0b789352589
 /deepseek-ai-dsh-workflow-ptc/model-experience/parent-tool-result-indirectly/kv-cache-effect:
   en: 19f4d26f590d11ac
-  zh: 64e6e18b2a8a8395
+  zh: c2c14d6d9c7ecf21
 /deepseek-ai-dsh-workflow-ptc/known-limitations-and-deferred-work:
   en: b95d53d19ceb44ff
-  zh: 082d51f78b68aea5
+  zh: e1efcddb9b727fc0
 /deepseek-ai-dsh-workflow-ptc/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

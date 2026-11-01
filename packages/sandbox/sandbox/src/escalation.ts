@@ -192,7 +192,7 @@ export async function approveEscalation<A, C>(request: EscalationRequest, approv
     reason: `escalate sandbox to ${mode}: ${justification}`,
     displayReason: {
       en: `Allow this operation with ${mode} permissions: ${justification}`,
-      zh: `允许本次操作使用 ${mode} 权限：${justification}`,
+      zh: `允許本次操作使用 ${mode} 權限：${justification}`,
     },
     ...approval.signal ? { signal: approval.signal } : {},
   })

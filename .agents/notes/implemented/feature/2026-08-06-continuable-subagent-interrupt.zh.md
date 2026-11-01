@@ -1,48 +1,48 @@
-# Agent Note: Continuable subagent 当前轮次中断
+# Agent Note: Continuable subagent 目前輪次中斷
 
 Status: implemented
 
 [English](2026-08-06-continuable-subagent-interrupt.md) | 中文
 
-## 问题
+## 問題
 
-一个正在运行的 continuable subagent 无法在不销毁它的前提下被停止。继续执行管理器只在整个 Activation 拆除（结算、drain、scoped drain）内部取消子 Agent，`send_message`／`subagent.prompt` 只能增加工作，而 Web composer 的 Stop 按钮被刻意限制在普通会话。用户看到 continuable child 在错误路径上持续消耗 token 时，除了终止整个 parent 树别无手段；当直接 parent Agent 离线时，即使 child 的 Activation 仍然在线，也完全无法对其进行控制。一次性运行有持有方拥有的 disposal 和 task-kill；continuable child 没有对应的当前轮次控制。
+一個正在執行的 continuable subagent 無法在不銷燬它的前提下被停止。繼續執行管理器只在整個 Activation 拆除（結算、drain、scoped drain）內部取消子 Agent，`send_message`／`subagent.prompt` 只能增加工作，而 Web composer 的 Stop 按鈕被刻意限制在普通工作階段。使用者看到 continuable child 在錯誤路徑上持續消耗 token 時，除了終止整個 parent 樹別無手段；當直接 parent Agent 離線時，即使 child 的 Activation 仍然線上，也完全無法對其進行控制。一次性執行有持有方擁有的 disposal 和 task-kill；continuable child 沒有對應的目前輪次控制。
 
-## 决策
+## 決策
 
-`ctx.subagents.interrupt(targetSessionId, authority)` 只停止在线目标的当前轮次。管理器原语同步完成鉴权，调用现有的 `Agent.cancel(cause, { keepInbox: true })`，然后返回 `void`——fire-and-return：保证取消信号已发出，但不等待目标完全停稳。其余一切不变：不 dispose Activation、不释放 handle、不级联后代、不清空 inbox，也不改动 `AgentLoop` 或 `CancelOptions`。由于 `keepInbox` 让尚未领取的待处理队列停在 idle，中断绝不会自动启动下一个排队的 follow-up；已被领取进入中断轮次的工作属于该轮次，不会重新入队。被中断的 driver 进入 idle 后，一次显式唤醒发送会按保留的 FIFO 顺序恢复。
+`ctx.subagents.interrupt(targetSessionId, authority)` 只停止線上目標的目前輪次。管理器原語同步完成授權驗證，呼叫現有的 `Agent.cancel(cause, { keepInbox: true })`，然後返回 `void`——fire-and-return：保證取消訊號已發出，但不等待目標完全停穩。其餘一切不變：不 dispose Activation、不釋放 handle、不級聯後代、不清空 inbox，也不改動 `AgentLoop` 或 `CancelOptions`。由於 `keepInbox` 讓尚未領取的待處理佇列停在 idle，中斷絕不會自動啟動下一個排隊的 follow-up；已被領取進入中斷輪次的工作屬於該輪次，不會重新入隊。被中斷的 driver 進入 idle 後，一次顯式喚醒傳送會按保留的 FIFO 順序恢復。
 
-授权是一个封闭的双变体 union，刻意比投递权限更宽，因为停止一个轮次是幂等的且不投递任何内容：
+授權是一個封閉的雙變體 union，刻意比投遞權限更寬，因為停止一個輪次是冪等的且不投遞任何內容：
 
-- `{ kind: 'user', parentSessionId }`——人类出示持久化直接 parent 地址。在线目标的 `session.header.parentSession` 必须匹配；不涉及在线 parent Agent、目录读取或持久化访问，这正是 parent Agent 离线时在线 child 仍可被停止的原因。取消 cause 为 `user`。
-- `{ kind: 'ancestor', agent }`——一个确切在线的 ancestor Agent（直接 parent 或更深）。调用方必须是注册表中其 id 的当前条目（过期调用方即使目标不存在也被拒绝），不得是目标本身，并且必须出现在 Activation 物化时记录的 `ancestry` WeakSet 中。取消 cause 为 `parent`。
+- `{ kind: 'user', parentSessionId }`——人類出示持久化直接 parent 地址。線上目標的 `session.header.parentSession` 必須匹配；不涉及線上 parent Agent、目錄讀取或持久化存取，這正是 parent Agent 離線時線上 child 仍可被停止的原因。取消 cause 為 `user`。
+- `{ kind: 'ancestor', agent }`——一個確切線上的 ancestor Agent（直接 parent 或更深）。呼叫方必須是註冊表中其 id 的目前條目（過期呼叫方即使目標不存在也被拒絕），不得是目標本身，並且必須出現在 Activation 物化時記錄的 `ancestry` WeakSet 中。取消 cause 為 `parent`。
 
-目标只在管理器进程本地的 Activation map 中解析。不存在的 id——未知、一次性或已自然结算——是被接受的 no-op，统一覆盖完成竞态和重复请求而不泄露持久化目录信息；disposal 事务已打开的目标在鉴权后同样是被接受的 no-op。一次性生命周期（持有方 `dispose()`、task-kill）不受影响。`SubagentRuntime.interrupt()` 把未绑定管理器的组合视为被接受的 no-op 而不是 `CONTINUATION_UNAVAILABLE`，因为没有管理器就不可能存在管理器拥有的在线 Activation。
+目標只在管理器程序本地的 Activation map 中解析。不存在的 id——未知、一次性或已自然結算——是被接受的 no-op，統一覆蓋完成競態和重複請求而不洩露持久化目錄資訊；disposal 事務已開啟的目標在授權驗證後同樣是被接受的 no-op。一次性生命週期（持有方 `dispose()`、task-kill）不受影響。`SubagentRuntime.interrupt()` 把未繫結管理器的組合視為被接受的 no-op 而不是 `CONTINUATION_UNAVAILABLE`，因為沒有管理器就不可能存在管理器擁有的線上 Activation。
 
-Host RPC `subagent.interrupt` 接收 continuable 的 `SubagentAddress` 并返回 `{ accepted: true }`。它的实现只以 `user` 授权调用核心原语——刻意不调用 `catalogChild()`、`listChildren()`、`sessionQuery` 或 parent 注册表查找。parent 地址不匹配的在线目标映射为 `subagent-unauthorized`；意外失败映射为 `internal`，不把错误文本泄漏到 wire。
+Host RPC `subagent.interrupt` 接收 continuable 的 `SubagentAddress` 並返回 `{ accepted: true }`。它的實作只以 `user` 授權呼叫核心原語——刻意不呼叫 `catalogChild()`、`listChildren()`、`sessionQuery` 或 parent 註冊表查詢。parent 地址不匹配的線上目標對映為 `subagent-unauthorized`；意外失敗對映為 `internal`，不把錯誤文字洩漏到 wire。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**让人类中断走 `session.cancel`。** 通用会话取消要求附着的普通会话并拒绝 subagent 拥有的会话；放宽它会把 subagent 权限规则缠进普通会话路由。subagent 域的 RPC 让基于地址的鉴权和 parent 离线保证保持显式。
+**讓人類中斷走 `session.cancel`。** 通用工作階段取消要求附著的普通工作階段並拒絕 subagent 擁有的工作階段；放寬它會把 subagent 權限規則纏進普通工作階段路由。subagent 域的 RPC 讓基於地址的授權驗證和 parent 離線保證保持顯式。
 
-**等待目标静止并返回轮次结果。** 取消是协作式的，静止时间无上界；让 RPC（以及一个 `ChildLock` 槽位）保持打开会招致超时并与投递、disposal 形成排队。调用方需要的唯一事实是信号已被接受，而竞态（自然完成、disposal）本就幂等收敛。
+**等待目標靜止並返回輪次結果。** 取消是協作式的，靜止時間無上界；讓 RPC（以及一個 `ChildLock` 槽位）保持開啟會招致超時並與投遞、disposal 形成排隊。呼叫方需要的唯一事實是訊號已被接受，而競態（自然完成、disposal）本就冪等收斂。
 
-**复用整个 Activation 的 disposal 来做中断。** disposal 的取消不带 `keepInbox`，还会 flush、capture 并释放 handle——它销毁排队工作和 child 的驻留。中断是针对一个轮次的控制操作，不是针对 Activation 的生命周期操作。
+**複用整個 Activation 的 disposal 來做中斷。** disposal 的取消不帶 `keepInbox`，還會 flush、capture 並釋放 handle——它銷燬排隊工作和 child 的駐留。中斷是針對一個輪次的控制操作，不是針對 Activation 的生命週期操作。
 
-**顺手把 `send_message`／`followup` 权限扩展到 ancestor。** 投递向对话注入内容且不幂等；其确切直接 parent 权限保持不变。只有中断获得更宽的 ancestor 与基于地址的用户授权。
+**順手把 `send_message`／`followup` 權限擴充功能到 ancestor。** 投遞向對話注入內容且不冪等；其確切直接 parent 權限保持不變。只有中斷獲得更寬的 ancestor 與基於地址的使用者授權。
 
-**中断后自动恢复被暂停的队列。** 在中止 A 后立即启动排队的 follow-up B 会让中断看起来被忽略，并夺走人类重新引导 child 的窗口。暂停到显式唤醒发送为止，让停止可观察且 FIFO 顺序完整。
+**中斷後自動恢復被暫停的佇列。** 在中止 A 後立即啟動排隊的 follow-up B 會讓中斷看起來被忽略，並奪走人類重新引導 child 的視窗。暫停到顯式喚醒傳送為止，讓停止可觀察且 FIFO 順序完整。
 
-## 后果
+## 後果
 
-人类或 ancestor 可以停止一个失控的 continuable 轮次，而不丢失 child、其尚未领取的排队工作或正在运行的后代；代价是一个刻意保持弱的后置条件（`accepted` 表示“信号已发出”，目标在观察到信号前可能仍显示 `running`），客户端必须如实呈现。暂停队列规则意味着被中断的 child 会带着保留的工作停在 idle，直到 driver 进入 idle 后收到唤醒消息——这是有意的 human-in-the-loop 暂停，不是调度器缺陷。在 abort 收敛期间被接受的唤醒发送目前会保持排队而不锁存 wake；Issue #1838 跟踪共享的 agent-loop 修正。
+人類或 ancestor 可以停止一個失控的 continuable 輪次，而不丟失 child、其尚未領取的排隊工作或正在執行的後代；代價是一個刻意保持弱的後置條件（`accepted` 表示“訊號已發出”，目標在觀察到訊號前可能仍顯示 `running`），用戶端必須如實呈現。暫停佇列規則意味著被中斷的 child 會帶著保留的工作停在 idle，直到 driver 進入 idle 後收到喚醒訊息——這是有意的 human-in-the-loop 暫停，不是排程器缺陷。在 abort 收斂期間被接受的喚醒傳送目前會保持排隊而不鎖存 wake；Issue #1838 跟蹤共享的 agent-loop 修正。
 
-仅凭地址的 RPC 会暴露一项关于在线驻留状态的二值信息：不存在的目标会被接受，而 parent 不匹配的在线目标会返回 `subagent-unauthorized`。单用户本地 Host 的信任模型接受这种可观察性；未来的多主体 Host 必须重新审视权限和响应不可区分性。
+僅憑地址的 RPC 會暴露一項關於線上駐留狀態的二值資訊：不存在的目標會被接受，而 parent 不匹配的線上目標會返回 `subagent-unauthorized`。單使用者本地 Host 的信任模型接受這種可觀察性；未來的多主體 Host 必須重新審視權限和回應不可區分性。
 
-在 Web 侧，正在运行的 continuable child 使用相互独立的 Send 与 Stop 操作：客户端 `Session.cancel()` 将 Stop 路由到 `subagent.interrupt`（one-shot 地址保持不可取消，普通会话仍通过 `session.cancel` 保留既有的 primary Send/Stop 切换），同时 Send 按繁忙态 Enter 设置的模式投递后续消息——默认 Queue，选择后为 Steer——与 plain Enter 完全一致（[繁忙态 Send 按钮](../bug-fix/2026-09-04-busy-send-button-follows-enter-setting.zh.md)）。parent 离线但仍在运行的 continuable child 保留默认 composer，禁用输入区与 Send，但 Stop 仍然可达；停止后恢复为只读接管界面（周边目录与 composer 约定由 [Web subagent 对话](2026-07-27-web-subagent-conversations.zh.md)拥有）。
+在 Web 側，正在執行的 continuable child 使用相互獨立的 Send 與 Stop 操作：用戶端 `Session.cancel()` 將 Stop 路由到 `subagent.interrupt`（one-shot 地址保持不可取消，普通工作階段仍透過 `session.cancel` 保留既有的 primary Send/Stop 切換），同時 Send 按繁忙態 Enter 設定的模式投遞後續訊息——預設 Queue，選擇後為 Steer——與 plain Enter 完全一致（[繁忙態 Send 按鈕](../bug-fix/2026-09-04-busy-send-button-follows-enter-setting.zh.md)）。parent 離線但仍在執行的 continuable child 保留預設 composer，停用輸入區與 Send，但 Stop 仍然可達；停止後恢復為只讀接管介面（周邊目錄與 composer 約定由 [Web subagent 對話](2026-07-27-web-subagent-conversations.zh.md)擁有）。
 
-`dsh-tool-subagent-control` 中面向模型的 `interrupt_agent(agent_id)` 工具把 `exec.agent` 作为 `ancestor` 授权传入，自身不增加任何权限：核心原语校验在线注册表身份与记录的 lineage，因此该工具可以用同一个通用 `agent_id` 参数指定直接 child 或更深的后代——刻意不用会暗示仅限直接 child 的 `subagent_id`。发现依赖 `list_agents({ scope: 'descendants' })`，其底层是 `SubagentRuntime.listDescendants()` 递归目录遍历，每个条目带 `parentId`／`depth`（发现机制由[父目录 note](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)拥有）；发现只是提示，绝非权限。`send_message` 保持其确切直接 parent 权限——只有中断是 ancestor 级的。
+`dsh-tool-subagent-control` 中面向模型的 `interrupt_agent(agent_id)` 工具把 `exec.agent` 作為 `ancestor` 授權傳入，自身不增加任何權限：核心原語驗證線上註冊表身份與記錄的 lineage，因此該工具可以用同一個通用 `agent_id` 參數指定直接 child 或更深的後代——刻意不用會暗示僅限直接 child 的 `subagent_id`。發現依賴 `list_agents({ scope: 'descendants' })`，其底層是 `SubagentRuntime.listDescendants()` 遞迴目錄遍歷，每個條目帶 `parentId`／`depth`（發現機制由[父目錄 note](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md)擁有）；發現只是提示，絕非權限。`send_message` 保持其確切直接 parent 權限——只有中斷是 ancestor 級的。
 
-## 测试
+## 測試
 
-`packages/subagent/subagent/tests/continuation.spec.ts` 中的核心覆盖证明了持久化 `turn/end` 中止、队列先暂停后按 FIFO 恢复、后代不受影响、两种授权及其取消 cause、self/sibling/stale/非 ancestor 拒绝、absent/一次性/disposal 竞态 no-op，以及 `keepInbox` 循环行为不变。`packages/subagent/subagent/tests/control.spec.ts` 中的 Remote 覆盖证明 Remote 只调用核心原语（不读 agents/目录/历史）、映射 `subagent-unauthorized` 与 `internal`，并执行 continuable 模式围栏；`packages/api/session-controller/tests/transport.host.spec.ts` 固定传输校验。`packages/api/session-controller/tests/session.client.spec.ts` 中的客户端覆盖固定按地址路由的 `Session.cancel()`；InputBar 套件覆盖独立的 Send 与 Stop 操作、parent 离线时锁定输入区和 Send 的状态，以及只读 composer selector 的运行例外。keyless 组装 Web 场景（`apps/web/tests/subagent-interrupt.e2e.ts`、`subagent-interrupt-ui.e2e.ts`）通过多条 replay hang 条目保持多个真实 child 轮次打开，端到端证明 parent 离线时从 UI 到 RPC 的中止路径、Send 入队、follow-up 暂停以及 FIFO 恢复。`packages/subagent/tool-subagent-control/tests` 中的工具覆盖证明直接与更深 ancestor 以 `parent` cause 中断并暂停队列、self/sibling/陌生调用方被拒绝且不触碰目标、目标不存在时 no-op 且不冷恢复，以及 descendants 列表的 pre-order 位置；keyless ACP 快照通过组装应用，针对一个已结算的 child 执行 `list_agents({ scope: 'descendants' })` 与 `interrupt_agent`，同时已录制的请求 header 仍固定这两个 schema。
+`packages/subagent/subagent/tests/continuation.spec.ts` 中的核心覆蓋證明了持久化 `turn/end` 中止、佇列先暫停後按 FIFO 恢復、後代不受影響、兩種授權及其取消 cause、self/sibling/stale/非 ancestor 拒絕、absent/一次性/disposal 競態 no-op，以及 `keepInbox` 迴圈行為不變。`packages/subagent/subagent/tests/control.spec.ts` 中的 Remote 覆蓋證明 Remote 只呼叫核心原語（不讀 agents/目錄/歷史）、對映 `subagent-unauthorized` 與 `internal`，並執行 continuable 模式圍欄；`packages/api/session-controller/tests/transport.host.spec.ts` 固定傳輸驗證。`packages/api/session-controller/tests/session.client.spec.ts` 中的用戶端覆蓋固定按地址路由的 `Session.cancel()`；InputBar 套件覆蓋獨立的 Send 與 Stop 操作、parent 離線時鎖定輸入區和 Send 的狀態，以及只讀 composer selector 的執行例外。keyless 組裝 Web 情境（`apps/web/tests/subagent-interrupt.e2e.ts`、`subagent-interrupt-ui.e2e.ts`）透過多條 replay hang 條目保持多個真實 child 輪次開啟，端到端證明 parent 離線時從 UI 到 RPC 的中止路徑、Send 入隊、follow-up 暫停以及 FIFO 恢復。`packages/subagent/tool-subagent-control/tests` 中的工具覆蓋證明直接與更深 ancestor 以 `parent` cause 中斷並暫停佇列、self/sibling/陌生呼叫方被拒絕且不觸碰目標、目標不存在時 no-op 且不冷恢復，以及 descendants 列表的 pre-order 位置；keyless ACP 快照透過組裝應用，針對一個已結算的 child 執行 `list_agents({ scope: 'descendants' })` 與 `interrupt_agent`，同時已錄製的請求 header 仍固定這兩個 schema。

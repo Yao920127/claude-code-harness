@@ -58,11 +58,11 @@ describe('BrowserTerminal', () => {
   it('preserves split UTF-8, gives the newest attachment input, and resizes both PTY and recovery screen', async () => {
     const { terminal, output, handle } = fixture()
     const first = await attach(terminal)
-    const encoded = Buffer.from('终端')
+    const encoded = Buffer.from('終端')
     output.write(encoded.subarray(0, 2))
     await expect.poll(() => output.readableLength).toBe(0)
     output.write(encoded.subarray(2))
-    expect(await readFrame(first.iterator)).toMatchObject({ type: 'output', data: '终端' })
+    expect(await readFrame(first.iterator)).toMatchObject({ type: 'output', data: '終端' })
     const second = await attach(terminal, 'second')
     await expect(terminal.write(attachment('first'), 'ignored')).rejects.toMatchObject({ code: 'terminal/control-unavailable', details: { reason: 'read-only' } })
     await terminal.write(attachment('second'), '\t')
@@ -199,8 +199,8 @@ describe('BrowserTerminal', () => {
   it('preserves a leading UTF-8 BOM in the terminal output stream', async () => {
     const { terminal, output } = fixture()
     const first = await attach(terminal)
-    output.write(Buffer.from('\uFEFF终端'))
-    expect(await readFrame(first.iterator)).toMatchObject({ type: 'output', data: '\uFEFF终端' })
+    output.write(Buffer.from('\uFEFF終端'))
+    expect(await readFrame(first.iterator)).toMatchObject({ type: 'output', data: '\uFEFF終端' })
   })
 
   it('shares concurrent close attempts and permits retry after termination fails', async () => {

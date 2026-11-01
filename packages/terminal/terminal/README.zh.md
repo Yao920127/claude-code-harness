@@ -1,5 +1,5 @@
 ---
-description: "面向部署方与消费方的持久终端会话说明，用于选择、组合或扩展限定所有者范围的 ctx.terminals 服务。"
+description: "面向部署方與消費方的持久終端工作階段說明，用於選擇、組合或擴充功能限定所有者範圍的 ctx.terminals 服務。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-terminal` 为 harness 提供持久且限定所有者范围的终端会话：会话让 shell 或 REPL 状态跨工具调用存活，且每个操作都被限制在创建它的那个确切 agent（智能体）内。本包提供 `ctx.terminals` 服务，负责生成不透明的会话 id、通过已注册的后端路由会话创建，并在所有者或服务 dispose（资源释放）时等待完全停稳的清理。它本身不定义任何终端机制：`dsh-terminal-bash` 之类的后端负责启动与就绪检测，`dsh-tool-terminal` 中的面向模型工具负责呈现。会话只存在于进程本地：harness 重启后不会恢复。
+`dsh-terminal` 為 harness 提供持久且限定所有者範圍的終端工作階段：工作階段讓 shell 或 REPL 狀態跨工具呼叫存活，且每個操作都被限制在建立它的那個確切 agent（智慧代理）內。本包提供 `ctx.terminals` 服務，負責生成不透明的工作階段 id、透過已註冊的後端路由工作階段建立，並在所有者或服務 dispose（資源釋放）時等待完全停穩的清理。它本身不定義任何終端機制：`dsh-terminal-bash` 之類的後端負責啟動與就緒檢測，`dsh-tool-terminal` 中的面向模型工具負責呈現。工作階段只存在於程序本地：harness 重新啟動後不會恢復。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当组合需要状态跨工具调用存活的终端会话时，挂载 `@deepseek-ai/dsh-terminal`。单独的服务本身没有用处：请与 `@deepseek-ai/dsh-terminal-bash` 之类的后端、`@deepseek-ai/dsh-tool-terminal` 之类的工具包配对，并在同一个组合中一起加载。
+當組合需要狀態跨工具呼叫存活的終端工作階段時，掛載 `@deepseek-ai/dsh-terminal`。單獨的服務本身沒有用處：請與 `@deepseek-ai/dsh-terminal-bash` 之類的後端、`@deepseek-ai/dsh-tool-terminal` 之類的工具包配對，並在同一個組合中一起載入。
 
-### 何时选择
+### 何時選擇
 
-当工作状态存在于终端而非文件时，选择持久终端：在调试器中单步执行、在 Python 或 Node REPL 中探索，或中断前台命令后回到 shell。对于有界操作，请选择单次 bash、read、write 与 edit 工具——它们保留更强的校验、审批、输出上限与回放约定。会话只存在于进程本地：harness 进程退出时它们会消失，因此需要持久的工作应写入文件或其他持久系统。
+當工作狀態存在於終端而非檔案時，選擇持久終端：在偵錯程式中單步執行、在 Python 或 Node REPL 中探索，或中斷前臺命令後回到 shell。對於有界操作，請選擇單次 bash、read、write 與 edit 工具——它們保留更強的驗證、審批、輸出上限與回放約定。工作階段只存在於程序本地：harness 程序退出時它們會消失，因此需要持久的工作應寫入檔案或其他持久系統。
 
-### 组合方式
+### 組合方式
 
-将会话服务与后端、工具包一起加载：
+將工作階段服務與後端、工具包一起載入：
 
 ```yaml
 - name: '@deepseek-ai/dsh-terminal'
@@ -41,112 +41,112 @@ kind: "package-reference"
 - name: '@deepseek-ai/dsh-tool-terminal'
 ```
 
-后端提供一个稳定类型——随附的 shell 后端提供 `shell`——工具按该类型打开会话。shell 后端还额外要求沙箱、沙箱策略与子进程提供方；完整组合见其 [README](../terminal-bash/README.zh.md)。
+後端提供一個穩定型別——隨附的 shell 後端提供 `shell`——工具按該型別開啟工作階段。shell 後端還額外要求沙箱、沙箱策略與子程序提供者；完整組合見其 [README](../terminal-bash/README.zh.md)。
 
-### 会话能做什么
+### 工作階段能做什麼
 
-会话存在后，消费方可以：打开会话并获得其 id 与有界启动输出；发送文本（可选地提交 Enter）并等待 shell 再次就绪或发送超时；读取有界保留输出；向前台进程组投递一个允许的信号；关闭会话并等待其进程树结束；以及列出调用方拥有的会话。每个会话同一时间最多有一个活跃发送；第二次发送会失败，直到第一次结算。
+工作階段存在後，消費方可以：開啟工作階段並獲得其 id 與有界啟動輸出；傳送文字（可選地提交 Enter）並等待 shell 再次就緒或傳送超時；讀取有界保留輸出；向前臺程序組投遞一個允許的訊號；關閉工作階段並等待其程序樹結束；以及列出呼叫方擁有的工作階段。每個工作階段同一時間最多有一個活躍傳送；第二次傳送會失敗，直到第一次結算。
 
-### 所有权与隔离
+### 所有權與隔離
 
-每个会话都由打开它的确切 agent 拥有。凡是指名会话的操作，只要调用方不是该 agent 就会被拒绝，因此即使模型获知另一个 agent 的会话 id，也无法操作其终端。可选的会话 `name` 是所有者本地的显示元数据——例如 `main` 或 `gdb` 这样的标签——并且只在所有者范围内唯一。
+每個工作階段都由開啟它的確切 agent 擁有。凡是指名工作階段的操作，只要呼叫方不是該 agent 就會被拒絕，因此即使模型獲知另一個 agent 的工作階段 id，也無法操作其終端。可選的工作階段 `name` 是所有者本地的顯示中繼資料——例如 `main` 或 `gdb` 這樣的標籤——並且只在所有者範圍內唯一。
 
-### 可观察结果与失败
+### 可觀察結果與失敗
 
-成功打开会返回会话 id、类型、后端提供的 pid（如有）、状态与有界启动消息。发送以等待原因结算：`stdin_read`（shell 正在等待输入）、`inferred_idle`（输出静默）、`timeout` 或 `session_exit`（顶层 shell 已退出）。失败携带稳定的机器可路由错误码：后端类型缺失（`NO_BACKEND`）、会话未知（`NO_SESSION`）、属于其他 agent 的会话（`FOREIGN_SESSION`）、并发第二次发送（`SEND_ACTIVE`），或所有者不再存活（`OWNER_NOT_LIVE`）。后端设置失败会在发布任何内容之前拒绝打开；清理失败会拒绝关闭，而不是声称成功。
+成功開啟會返回工作階段 id、型別、後端提供的 pid（如有）、狀態與有界啟動訊息。傳送以等待原因結算：`stdin_read`（shell 正在等待輸入）、`inferred_idle`（輸出靜默）、`timeout` 或 `session_exit`（頂層 shell 已退出）。失敗攜帶穩定的機器可路由錯誤碼：後端型別缺失（`NO_BACKEND`）、工作階段未知（`NO_SESSION`）、屬於其他 agent 的工作階段（`FOREIGN_SESSION`）、並行第二次傳送（`SEND_ACTIVE`），或所有者不再存活（`OWNER_NOT_LIVE`）。後端設定失敗會在釋出任何內容之前拒絕開啟；清理失敗會拒絕關閉，而不是聲稱成功。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释服务背后的设计并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋服務背後的設計並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-服务拥有终端机制以外的一切：会话身份、发布、授权与清理。后端负责会话如何启动、检测就绪、保留输出与关闭；服务只在后端设置成功后发布会话。这个拆分让同一个注册表可用于不同的终端基底。
+服務擁有終端機制以外的一切：工作階段身份、釋出、授權與清理。後端負責工作階段如何啟動、檢測就緒、保留輸出與關閉；服務只在後端設定成功後釋出工作階段。這個拆分讓同一個註冊表可用於不同的終端基底。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | `TerminalSessionService`：后端注册表、spawn/send/read/signal/kill/list、所有者清理与 dispose |
-| [`src/types.ts`](src/types.ts) | 共享约定：后端接口、会话类型、等待原因、信号集合、错误码 |
-| — | 不发布运行时不变式伴生入口；后端与限定所有者范围的会话注册表均为私有可变状态，且服务既不暴露独立的生命周期流，也不暴露不限定范围的快照。 |
+| [`src/index.ts`](src/index.ts) | `TerminalSessionService`：後端註冊表、spawn/send/read/signal/kill/list、所有者清理與 dispose |
+| [`src/types.ts`](src/types.ts) | 共享約定：後端介面、工作階段型別、等待原因、訊號集合、錯誤碼 |
+| — | 不釋出執行時不變式伴生入口；後端與限定所有者範圍的工作階段註冊表均為私有可變狀態，且服務既不暴露獨立的生命週期流，也不暴露不限定範圍的快照。 |
 
-### 数据模型与生命周期
+### 資料模型與生命週期
 
-每个已发布会话是一条记录，包含其 id、所有者、可选名称、后端类型、后端会话，以及当前唯一的活跃发送。未发布的 spawn 按所有者以预留形式跟踪，并持有服务拥有的中止信号。dispose 会中止待完成的 spawn、等待其结算与回滚，然后关闭每个拥有的会话并等待完全停稳，最后运行所有者分离器；清理失败会拒绝生命周期，而不是声称成功。
+每個已釋出工作階段是一條記錄，包含其 id、所有者、可選名稱、後端型別、後端工作階段，以及目前唯一的活躍傳送。未釋出的 spawn 按所有者以預留形式跟蹤，並持有服務擁有的中止訊號。dispose 會中止待完成的 spawn、等待其結算與復原，然後關閉每個擁有的工作階段並等待完全停穩，最後執行所有者分離器；清理失敗會拒絕生命週期，而不是聲稱成功。
 
-### 所有权与清理规则
+### 所有權與清理規則
 
-- 限制基于确切的 `Agent` 对象：`hasOwnerActivity(owner)` 覆盖从尚未发布的设置到最终关闭的全过程，没有发布竞态，因此生命周期策略可以精确限制所有者。
-- 无法清理部分启动资源的后端会以 `TerminalBackendCleanupError` 拒绝；服务会将该失败保留为受跟踪的所有者活动，直到所有者或服务 dispose 消费并报告它。
-- 调用方取消保留其确切的 `AbortSignal.reason`；`kill()` 与 dispose 只在后端捕获的进程树完全停稳后完成。
+- 限制基於確切的 `Agent` 物件：`hasOwnerActivity(owner)` 覆蓋從尚未釋出的設定到最終關閉的全過程，沒有釋出競態，因此生命週期策略可以精確限制所有者。
+- 無法清理部分啟動資源的後端會以 `TerminalBackendCleanupError` 拒絕；服務會將該失敗保留為受跟蹤的所有者活動，直到所有者或服務 dispose 消費並報告它。
+- 呼叫方取消保留其確切的 `AbortSignal.reason`；`kill()` 與 dispose 只在後端捕捉的程序樹完全停穩後完成。
 
-### 发送预留
+### 傳送預留
 
-服务在返回操作之前同步为一个活跃发送预留会话，包括在后台任务的 job id 可见之前；第二次发送会以 `SEND_ACTIVE` 失败，因此输出与取消永远不会跨操作所有权。
+服務在返回操作之前同步為一個活躍傳送預留工作階段，包括在後臺任務的 job id 可見之前；第二次傳送會以 `SEND_ACTIVE` 失敗，因此輸出與取消永遠不會跨操作所有權。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从共享终端模型进入随附后端、工具与设计证据。
+當包級約定不夠用時閱讀以下頁面。它們從共享終端模型進入隨附後端、工具與設計證據。
 
-- [终端子系统参考](../../../docs/subsystems/terminal.zh.md)——共享类型、后端与会话约定，以及生成的 `ctx.terminals` 接口面。
-- [terminal/ 包映射](../README.zh.md)——三包家族及其组合方式。
-- [terminal-bash 后端](../terminal-bash/README.zh.md)——提供 `shell` 类型的随附 shell 后端。
-- [tool-terminal 工具](../tool-terminal/README.zh.md)——操作会话的 6 个面向模型工具。
-- [持久 PTY Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——设计理由、备选方案与暂缓边界。
+- [終端子系統參考](../../../docs/subsystems/terminal.zh.md)——共享型別、後端與工作階段約定，以及生成的 `ctx.terminals` 介面面。
+- [terminal/ 包對映](../README.zh.md)——三包家族及其組合方式。
+- [terminal-bash 後端](../terminal-bash/README.zh.md)——提供 `shell` 型別的隨附 shell 後端。
+- [tool-terminal 工具](../tool-terminal/README.zh.md)——操作工作階段的 6 個面向模型工具。
+- [持久 PTY Agent Note](../../../.agents/notes/implemented/feature/2026-07-16-persistent-pty-sessions.zh.md)——設計理由、備選方案與暫緩邊界。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 间接消费方
+### 間接消費方
 
-#### 模型看到什么
+#### 模型看到什麼
 
-没有直接可见内容。此包不注册提示词或工具；可见 schema 与结果文本由 `@deepseek-ai/dsh-tool-terminal` 负责。
+沒有直接可見內容。此包不註冊提示詞或工具；可見 schema 與結果文字由 `@deepseek-ai/dsh-tool-terminal` 負責。
 
-#### Token 影响
+#### Token 影響
 
-没有直接影响。活跃会话状态保留在进程本地，直到消费方返回有界结果。
+沒有直接影響。活躍工作階段狀態保留在程序本地，直到消費方返回有界結果。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接失效；请求前缀变更由 `@deepseek-ai/dsh-tool-terminal` 负责。
+不會直接失效；請求字首變更由 `@deepseek-ai/dsh-tool-terminal` 負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明服务何时不合适。它们是当前包约束，不是任务积压。
+這些限制說明服務何時不合適。它們是目前包約束，不是任務積壓。
 
-- **进程本地会话**——会话与原始 scrollback 只存在于本进程中，harness 重启后不会恢复；需要持久的工作必须写入文件或其他持久系统。
-- **不支持跨 agent 共享**——会话有意保持单一所有者，没有共享或转移会话的途径。
-- **没有声明式自动启动**——会话只在 agent 工具调用期间创建。
+- **程序本地工作階段**——工作階段與原始 scrollback 只存在於本程序中，harness 重新啟動後不會恢復；需要持久的工作必須寫入檔案或其他持久系統。
+- **不支援跨 agent 共享**——工作階段有意保持單一所有者，沒有共享或轉移工作階段的途徑。
+- **沒有宣告式自動啟動**——工作階段只在 agent 工具呼叫期間建立。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性：已交付的行为、限制与既定理由以本文档上文、包代码与所链接的 Agent Note 为准。
+本開發備註是維護者的工作上下文，明確不具權威性：已交付的行為、限制與既定理由以本文件上文、包程式碼與所連結的 Agent Note 為準。
 
-#### 未决方向
+#### 未決方向
 
-- 共享会话设计需要独立的权限约定。
-- 声明式自动启动功能需要通过尚未发布的 agent 设置组合而成。
+- 共享工作階段設計需要獨立的權限約定。
+- 宣告式自動啟動功能需要透過尚未釋出的 agent 設定組合而成。
 
 </details>

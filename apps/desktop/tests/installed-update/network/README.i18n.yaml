@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write apps/desktop/tests/installed-update/network/README.md
 /:
   en: ff33c1d52077d4b7
-  zh: d82f73667883db1d
+  zh: 20f5057c4b402c3e
 /test-application-network-fault:
   en: 4aee13c0f4d9b27b
-  zh: 925cd9bf0cc662a8
+  zh: 5862434beee66eb2
 /test-application-network-fault/summary:
   en: 04c1e1ee9a99d15f
-  zh: b618af65f0be079c
+  zh: 713f329759c32ffe
 /test-application-network-fault/table-of-contents:
   en: 8cdb903f0292dff0
-  zh: 2d94d8b3d46e9d75
+  zh: 099842899560ac93
 /test-application-network-fault/prepare:
   en: 013ceb8d01e604e2
-  zh: 9ca5a8d75e3db8b6
+  zh: 876169864cda9164
 /test-application-network-fault/block-and-restore:
   en: 8754037c16032fca
-  zh: 844e28c5b3d2de26
+  zh: 77c33c29c208fbb5
 /test-application-network-fault/evidence-and-limitations:
   en: 0325ef6b06fd3518
-  zh: 20123cfc13fc488e
+  zh: 2a0c8d1504213a04
 /test-application-network-fault/dev-note:
   en: 10c2c43f94c40d8a
-  zh: dea0798ceb5553c1
+  zh: d984eda4e1436f56

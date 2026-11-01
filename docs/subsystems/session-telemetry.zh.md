@@ -1,12 +1,12 @@
-# 遥测（telemetry）
+# 遙測（telemetry）
 
 [English](session-telemetry.md) | 中文
 
-对外的会话上报拆分为一项[能力 seam](../capability-seams.zh.md)：Service Definition 与捕获协调器（[dsh-session-telemetry](../../packages/session/session-telemetry)，`ctx.sessionTelemetry`）拥有完整的权威事件捕获、`session-telemetry/record` 脱敏 waterfall（瀑布式事件）、handoff 游标与最小后端约定；部署方加载的 Service Provider（[dsh-session-telemetry-otel](../../packages/session/session-telemetry-otel)）则是原样配置的 OpenTelemetry JS SDK 日志流水线。它是一项可选能力，不属于 agent loop（智能体循环）主干，这里也没有任何内容会进入模型请求。边界公理（harness 的职责止于 `emit()`；批处理、重试、排队与丢失策略都属于上报 SDK）连同被否决的替代方案，均已在[复活 Agent Note](../../.agents/notes/implemented/feature/2026-07-23-session-telemetry-otel-revival.zh.md)中定案；捕获与游标约定见 [Service Definition README](../../packages/session/session-telemetry/README.zh.md)。
+對外的工作階段上報拆分為一項[能力 seam](../capability-seams.zh.md)：Service Definition 與捕捉協調器（[dsh-session-telemetry](../../packages/session/session-telemetry)，`ctx.sessionTelemetry`）擁有完整的權威事件捕捉、`session-telemetry/record` 脫敏 waterfall（瀑布式事件）、handoff 遊標與最小後端約定；部署方載入的 Service Provider（[dsh-session-telemetry-otel](../../packages/session/session-telemetry-otel)）則是原樣設定的 OpenTelemetry JS SDK 日誌流水線。它是一項可選能力，不屬於 agent loop（智慧代理迴圈）主幹，這裡也沒有任何內容會進入模型請求。邊界公理（harness 的職責止於 `emit()`；批處理、重試、排隊與丟失策略都屬於上報 SDK）連同被否決的替代方案，均已在[復活 Agent Note](../../.agents/notes/implemented/feature/2026-07-23-session-telemetry-otel-revival.zh.md)中定案；捕捉與遊標約定見 [Service Definition README](../../packages/session/session-telemetry/README.zh.md)。
 
-源码：[`packages/session/session-telemetry/src/index.ts`](../../packages/session/session-telemetry/src/index.ts)
+原始碼：[`packages/session/session-telemetry/src/index.ts`](../../packages/session/session-telemetry/src/index.ts)
 
-## 逻辑记录
+## 邏輯記錄
 
 ```ts type-equiv
 /**
@@ -55,11 +55,11 @@ interface SessionTelemetryRecord {
 }
 ```
 
-每条权威[会话事件](session.zh.md)都会完整透传为一条有序 ledger 记录，包括每个携带完整紧凑 stream 的 `assistant/message` 或 `assistant/attempt`，以及该 seam 从未听说过、由插件合并进来的类型。进程本地 `agent/assistant-stream` frame 不进入该持久 feed。新 fork 从子会话自有后缀开始，包括继承标记和 fork 结束事件；恢复的 Session 从已存储前缀之后开始，包括恢复的 fork。后端可以选择 `includeHistory` 来包含完整前缀；重新收养同一对象时会从 handoff 游标之后继续。投递是尽力而为的：游标标记的是「已交接」而非「已送达」，记录可能丢失（崩溃、重载窗口）也可能重复（新对象回放、SDK 重试），因此接收端对 ledger 记录基于 `(session.id, session.format_version, event.seq)` 去重；ops 记录刻意省略这类标识——它们是用于告警的信号，而非用于累加的条目，重复被容忍而非被去重。
+每條權威[工作階段事件](session.zh.md)都會完整直接傳遞為一條有序 ledger 記錄，包括每個攜帶完整緊湊 stream 的 `assistant/message` 或 `assistant/attempt`，以及該 seam 從未聽說過、由外掛合並進來的型別。程序本地 `agent/assistant-stream` frame 不進入該持久 feed。新 fork 從子工作階段自有字尾開始，包括繼承標記和 fork 結束事件；恢復的 Session 從已儲存字首之後開始，包括恢復的 fork。後端可以選擇 `includeHistory` 來包含完整字首；重新收養同一物件時會從 handoff 遊標之後繼續。投遞是盡力而為的：遊標標記的是「已交接」而非「已送達」，記錄可能丟失（崩潰、過載視窗）也可能重複（新物件回放、SDK 重試），因此接收端對 ledger 記錄基於 `(session.id, session.format_version, event.seq)` 去重；ops 記錄刻意省略這類標識——它們是用於告警的訊號，而非用於累加的條目，重複被容忍而非被去重。
 
 ## 共享披露
 
-每个后端都通过 `ctx.sessionTelemetry` 上必需的抽象 `sharing` 成员暴露其部署级模式（[Service Definition README](../../packages/session/session-telemetry/README.zh.md#the-sharing-disclosure)）。它既不是逐 Session 的接纳决定，也不是投递回执。`/feedback` 确认文本不查询它。
+每個後端都透過 `ctx.sessionTelemetry` 上必需的抽象 `sharing` 成員暴露其部署級模式（[Service Definition README](../../packages/session/session-telemetry/README.zh.md#the-sharing-disclosure)）。它既不是逐 Session 的接納決定，也不是投遞迴執。`/feedback` 確認文字不查詢它。
 
 ```ts type-equiv
 /**
@@ -68,7 +68,7 @@ interface SessionTelemetryRecord {
 type SessionTelemetrySharingStatus = 'full' | 'feedback-only' | 'disabled'
 ```
 
-## 捕获策略
+## 捕捉策略
 
 ```ts type-equiv
 /** Whether capture follows live events or reads the canonical log only when requested. */
@@ -85,9 +85,9 @@ interface SessionTelemetryCaptureOptions {
 }
 ```
 
-`includeHistory` 允许捕获存储与继承的记录，但本身不授权捕获。[OTel 后端](../../packages/session/session-telemetry-otel/README.zh.md)使用按需捕获，并要求新的自身显式反馈；它只释放截至该反馈的完整前缀，适用于所有提供方。
+`includeHistory` 允許捕捉儲存與繼承的記錄，但本身不授權捕捉。[OTel 後端](../../packages/session/session-telemetry-otel/README.zh.md)使用按需捕捉，並要求新的自身顯式回饋；它只釋放截至該回饋的完整字首，適用於所有提供者。
 
-## 后端约定
+## 後端約定
 
 ```ts type-equiv
 /**
@@ -135,11 +135,11 @@ interface SessionTelemetrySink {
 }
 ```
 
-`SessionTelemetryBackend`（`ctx.sessionTelemetry`，[签名](#ctxsessiontelemetry--sessiontelemetrybackend-abstract-seam)）是该约定的可加载形态：每个上下文只允许一个实现，重复加载会抛出异常；后端在其构造函数中组合 seam 的 `SessionTelemetryCoordinator`，以此装配捕获侧。
+`SessionTelemetryBackend`（`ctx.sessionTelemetry`，[簽名](#ctxsessiontelemetry--sessiontelemetrybackend-abstract-seam)）是該約定的可載入形態：每個上下文只允許一個實作，重複載入會丟擲異常；後端在其建構函式中組合 seam 的 `SessionTelemetryCoordinator`，以此裝配捕捉側。
 
-## 脱敏 waterfall：`session-telemetry/record`
+## 脫敏 waterfall：`session-telemetry/record`
 
-每条记录在权威事件副本与 `emit()` 之间都要经过 `session-telemetry/record` [waterfall](../cordis-primer.zh.md#cordis-waterfall-semantics)（[事件条目](#session-telemetryrecord--waterfall)）。seam 自身不带任何规则：未挂载监听器时，记录以捕获时的原样到达后端；导出数据能干净到什么程度，恰恰取决于部署方挂载了什么规则。监听器通过变换 `next()` 的返回值来堆叠；不调用 `next()` 就返回，即替换其下方的全部逻辑；抛出异常的监听器会在协调器的隔离范围内以 fail-closed 方式扣下这一条记录。脱敏只作用于导出副本；权威会话日志永不改写。
+每條記錄在權威事件副本與 `emit()` 之間都要經過 `session-telemetry/record` [waterfall](../cordis-primer.zh.md#cordis-waterfall-semantics)（[事件條目](#session-telemetryrecord--waterfall)）。seam 自身不帶任何規則：未掛載監聽器時，記錄以捕捉時的原樣到達後端；匯出資料能幹淨到什麼程度，恰恰取決於部署方掛載了什麼規則。監聽器透過變換 `next()` 的回傳值來堆疊；不呼叫 `next()` 就返回，即替換其下方的全部邏輯；丟擲異常的監聽器會在協調器的隔離範圍內以 fail-closed 方式扣下這一條記錄。脫敏只作用於匯出副本；權威工作階段日誌永不改寫。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

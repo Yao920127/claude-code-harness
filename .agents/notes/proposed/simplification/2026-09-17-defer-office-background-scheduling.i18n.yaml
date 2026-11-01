@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-17-defer-office-background-scheduling.md
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it:
   en: 9966b1c4fdb2585b
-  zh: 4eb24c283facf38d
+  zh: 408aa61aa5b4d375
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it/problem:
   en: bb725ab25ff39f86
-  zh: d198514119b31a61
+  zh: c1ca1e5245d6ee22
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it/proposal:
   en: e33db390dbbcc86c
-  zh: 890df8891260103a
+  zh: 1ba5b9b7f6bf3a34
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it/alternatives-considered:
   en: 597346036314c907
-  zh: 91661d961623c7cd
+  zh: 7e685d65f5755190
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it/acceptance-criteria:
   en: b475d4e83972fa02
-  zh: 43de8f23a9346708
+  zh: 4cc3a83115b4e5a9
 /agent-note-defer-office-background-scheduling-until-a-consumer-needs-it/risks:
   en: 4c2324c00381cbc7
-  zh: dfe6d1068ac7560c
+  zh: 9eec25b79189333c

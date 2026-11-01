@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-15-linear-session-list-cache.md
 /agent-note-linear-session-list-cache-reconciliation:
   en: 7b6289de90982e71
-  zh: 0c020de607402bbd
+  zh: 4471882f2d512aa8
 /agent-note-linear-session-list-cache-reconciliation/problem:
   en: b94ff168ba0310a8
-  zh: 8d9fe4af8b047c86
+  zh: dc0cdeececb27335
 /agent-note-linear-session-list-cache-reconciliation/decision:
   en: 1d85980590014837
-  zh: 2e03befc8ac84f0e
+  zh: 93a0e5bd6f3f1ba3
 /agent-note-linear-session-list-cache-reconciliation/alternatives-considered:
   en: 2085e3ccec11084a
-  zh: 55f5f5156d03e20c
+  zh: cb74cb4ea76f13f8
 /agent-note-linear-session-list-cache-reconciliation/consequences:
   en: 54f1788954da5704
-  zh: dad3478c7f3b46f6
+  zh: 775dd37f098aa220

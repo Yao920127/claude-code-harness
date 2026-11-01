@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/util/package-manifest/README.md
 /:
   en: 8cffb2f57844db66
-  zh: 20b158511886ac50
+  zh: 1a475135b83d52f5
 /deepseek-ai-dsh-package-manifest:
   en: 90fdf4daddb42135
   zh: 42350a2d78d2bd81
 /deepseek-ai-dsh-package-manifest/summary:
   en: f68bfdd934eb4af6
-  zh: 41a873a9f251c814
+  zh: 5902565798b37cd8
 /deepseek-ai-dsh-package-manifest/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 1db86285abf6c499
+  zh: ecfaee3b1e390537
 /deepseek-ai-dsh-package-manifest/use-this-package:
   en: 43fb882676bf22dd
-  zh: 04e512bc4059e5d4
+  zh: b81bb33fb45b1884
 /deepseek-ai-dsh-package-manifest/understand-the-implementation:
   en: 64e1e57d1c3761e0
-  zh: 9fc039770ce43c63
+  zh: 844c031cd054e93a
 /deepseek-ai-dsh-package-manifest/further-exploration:
   en: f2352ec5d94ac3bd
-  zh: c2eb0889554f1a7f
+  zh: 03b38540c7084f73
 /deepseek-ai-dsh-package-manifest/model-experience:
   en: 0b5aaa4787068a57
-  zh: bdb5dabe0b33ff9d
+  zh: ea613c9b710e77b0
 /deepseek-ai-dsh-package-manifest/model-experience/kv-cache-effect:
   en: 2ed74a2a33958543
-  zh: 7d63c3a3801bef13
+  zh: 0b207283f02e635c
 /deepseek-ai-dsh-package-manifest/known-limitations-and-deferred-work:
   en: e64464780f3e36b6
-  zh: fec64944da4710ce
+  zh: 8efa81786e299373
 /deepseek-ai-dsh-package-manifest/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

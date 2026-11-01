@@ -1,31 +1,31 @@
-# Agent Note: 反馈门控的会话遥测默认值
+# Agent Note: 回饋門控的工作階段遙測預設值
 
 Status: implemented
 
 [English](2026-08-25-feedback-gated-telemetry-default.md) | 中文
 
-## 问题
+## 問題
 
-诊断一条 `/feedback` 报告需要报告所描述的会话数据。共享基础配置把未设置的 `DSH_TELEMETRY_MODE` 解析为 `DISABLED`，因此默认安装发出的反馈到达接收方时不带任何会话数据，报告者在求助的那一刻也没有授权共享的途径；只有事先导出了 `DSH_TELEMETRY_MODE` 的部署才能交付可诊断的报告。
+診斷一條 `/feedback` 報告需要報告所描述的工作階段資料。共享基礎設定把未設定的 `DSH_TELEMETRY_MODE` 解析為 `DISABLED`，因此預設安裝發出的回饋到達接收方時不帶任何工作階段資料，報告者在求助的那一刻也沒有授權共享的途徑；只有事先匯出了 `DSH_TELEMETRY_MODE` 的部署才能交付可診斷的報告。
 
-## 决定
+## 決定
 
-[显式反馈 OTel 决策](../architecture/2026-09-05-nonofficial-feedback-otel.zh.md)负责所有用户的上传授权，包括 `deepseek-official`。本记录保留基础默认值的理由：选择反馈门控释放而非持续导出。
+[顯式回饋 OTel 決策](../architecture/2026-09-05-nonofficial-feedback-otel.zh.md)負責所有使用者的上傳授權，包括 `deepseek-official`。本記錄保留基礎預設值的理由：選擇回饋門控釋放而非持續匯出。
 
-共享基础配置把未设置或为空的 `DSH_TELEMETRY_MODE` 解析为 `FEEDBACK_ONLY`。插件自身省略 `mode` 的默认值是 `DISABLED`；`FULL` 被拒绝，非空 `DSH_TELEMETRY_DISABLED` 是加载前的强制关闭开关。新的自身文本反馈、消息评分编辑和撤回释放尚未交接的权威前缀，截止该事件，包含存储的上下文。继承的父会话反馈不授权子会话导出。
+共享基礎設定把未設定或為空的 `DSH_TELEMETRY_MODE` 解析為 `FEEDBACK_ONLY`。外掛自身省略 `mode` 的預設值是 `DISABLED`；`FULL` 被拒絕，非空 `DSH_TELEMETRY_DISABLED` 是載入前的強制關閉開關。新的自身文字回饋、訊息評分編輯和撤回釋放尚未交接的權威字首，截止該事件，包含儲存的上下文。繼承的父工作階段回饋不授權子工作階段匯出。
 
-反馈门控释放让报告者无需复现问题就能共享出问题的 Session。它用显式反馈触发取代持续导出。[已归档默认关闭](../../archived/feature/2026-08-10-telemetry-default-off.md)与[默认挂载](../../archived/feature/2026-07-31-web-telemetry-default-mount.md)记录记载早期组合；当前配置由[基础补丁](../../../../packages/bundle/base/cordis.patch.yml)与 [OTel README](../../../../packages/session/session-telemetry-otel/README.zh.md) 持有。
+回饋門控釋放讓報告者無需復現問題就能共享出問題的 Session。它用顯式回饋觸發取代持續匯出。[已歸檔預設關閉](../../archived/feature/2026-08-10-telemetry-default-off.md)與[預設掛載](../../archived/feature/2026-07-31-web-telemetry-default-mount.md)記錄記載早期組合；目前設定由[基礎補丁](../../../../packages/bundle/base/cordis.patch.yml)與 [OTel README](../../../../packages/session/session-telemetry-otel/README.zh.md) 持有。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**要求报告者启用遥测后重跑。** 不作为反馈门控工作流：值得保留的证据是出问题的那个 Session，重跑会丢掉它。
+**要求報告者啟用遙測後重跑。** 不作為回饋門控工作流：值得保留的證據是出問題的那個 Session，重跑會丟掉它。
 
-**允许持续导出。** 否决：部署配置不授权没有显式反馈的捕获。
+**允許持續匯出。** 否決：部署設定不授權沒有顯式回饋的捕捉。
 
-**仅通过后续 DeepSeek 请求投递。** 独立的需显式启用的贡献可传送权威反馈，但最终反馈之后可能没有请求。OTel 为每个提供方释放反馈，无需发起另一个 LLM 请求。
+**僅透過後續 DeepSeek 請求投遞。** 獨立的需顯式啟用的貢獻可傳送權威回饋，但最終回饋之後可能沒有請求。OTel 為每個提供者釋放回饋，無需發起另一個 LLM 請求。
 
-## 后果
+## 後果
 
-- 随附基础配置仅在新的显式反馈时释放有界前缀。普通请求、生命周期事件和已存储反馈不触发捕获。后续记录等待下一次显式反馈。
-- 按需捕获在反馈时复制权威日志并脱敏。部署未挂载脱敏规则时，导出数据可能包含消息文本、工具参数和结果，以及 workspace 路径。
-- 命令确认文本确认记录，而非共享或投递。要求事先知情同意的部署必须在启用上传前提供该步骤；OTel 交接仍受 SDK 的批处理、重试与丢失策略约束。
+- 隨附基礎設定僅在新的顯式回饋時釋放有界字首。普通請求、生命週期事件和已儲存回饋不觸發捕捉。後續記錄等待下一次顯式回饋。
+- 按需捕捉在回饋時複製權威日誌並脫敏。部署未掛載脫敏規則時，匯出資料可能包含訊息文字、工具參數和結果，以及 workspace 路徑。
+- 命令確認文字確認記錄，而非共享或投遞。要求事先知情同意的部署必須在啟用上傳前提供該步驟；OTel 交接仍受 SDK 的批處理、重試與丟失策略約束。

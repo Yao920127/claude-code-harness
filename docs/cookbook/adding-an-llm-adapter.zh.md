@@ -1,10 +1,10 @@
-# 实操手册：添加 LLM（大语言模型）适配器
+# 實操手冊：新增 LLM（大語言模型）介面卡
 
 [English](adding-an-llm-adapter.md) | 中文
 
-如何接入一个新的模型提供方。参考实现：`packages/llm/llm-deepseek`（直接 HTTP，SSE（Server-Sent Events）由 `eventsource-parser` 分帧）与 `packages/llm/llm-pi-ai`（封装 LLM 库）。请先阅读 `packages/llm/llm/src/types.ts` 中的 `StreamChunk` 文档——它记录了两个适配器都经过验证的协议约定。
+如何接入一個新的模型提供者。參考實作：`packages/llm/llm-deepseek`（直接 HTTP，SSE（Server-Sent Events）由 `eventsource-parser` 分幀）與 `packages/llm/llm-pi-ai`（封裝 LLM 庫）。請先閱讀 `packages/llm/llm/src/types.ts` 中的 `StreamChunk` 文件——它記錄了兩個介面卡都經過驗證的協定約定。
 
-## 基本形态
+## 基本形態
 
 ```ts ignore-check
 class MyAdapter extends LlmAdapter {
@@ -20,24 +20,24 @@ export function apply(ctx: Context, config: Config) {
 }
 ```
 
-注册基于副作用，可安全支持 HMR（热模块替换）；每个提供方路由仅对应一个适配器，重复注册会抛出异常，多路由注册要么全部成功，要么全部失败。`options.provider` 用于选择适配器，`options.model` 是提供方模型 ID，因此动态模型目录适配器无需重新配置生命周期即可提供新模型。密钥采用 Cordis 原生方式管理：schemastery Config 带环境变量回退，通过 cordis.yml 的 `!!js process.env.MY_KEY` 注入。切勿在代码中读取自行约定的密钥文件。
+註冊基於副作用，可安全支援 HMR（熱模組替換）；每個提供者路由僅對應一個介面卡，重複註冊會丟擲異常，多路由註冊要麼全部成功，要麼全部失敗。`options.provider` 用於選擇介面卡，`options.model` 是提供者模型 ID，因此動態模型目錄介面卡無需重新設定生命週期即可提供新模型。金鑰採用 Cordis 原生方式管理：schemastery Config 帶環境變數退回，透過 cordis.yml 的 `!!js process.env.MY_KEY` 注入。切勿在程式碼中讀取自行約定的金鑰檔案。
 
-## 协议义务（两个实现共同验证的约定）
+## 協定義務（兩個實作共同驗證的約定）
 
-- 在 `finish` **之前**发出 `usage`；`finish` 之后**不再发出任何内容**。稳健做法：缓冲 finish/usage 直到提供方的流结束标记，再统一 flush（可处理提供方在末尾发送仅含 usage 的分片的情况）。
-- 工具调用的 `arguments` 全程为原始 JSON 字符串；流式片段以 `argumentsDelta` 发送。如果你的提供方返回已解析的对象，请在 `block-end` 时重新 stringify。
-- 按首次出现的流顺序分配块 `index`；同一个块的每次 delta 复用该 index。
-- 错误有且仅有两条合法路径：从 `stream()` **抛出**（传输与协议故障——使用带稳定 code 的 `LlmError`），或以 `finish {kind: 'error' | 'aborted'}` 结束流（提供方带内故障）。消费方两者都处理；按故障类别选择路径并加以文档化。
-- 遵守 `options.signal`（将其传递给 fetch 或你的 SDK）。
-- 如果 `GenerateOptions` 中某个字段你的提供方无法支持（例如提供方不支持 stop sequences 时收到 `stop` 列表）：抛出 `LlmError(..., 'UNSUPPORTED_OPTION')`，而非静默丢弃。
-- 如果提供方在后续调用中需要响应 ID、签名或其他原生元数据，请将其最小无损 JSON 投影作为 `finish.replayState` 发出。重建历史时验证该状态。只有历史提供方路由和目标提供方路由当前由完全相同的适配器实例拥有时，`LlmRuntime` 才会传递该状态；由适配器决定同模型、跨模型或跨提供方恢复是否合法。状态缺失时，切勿仅根据提供方/模型名称推断原生回放。
+- 在 `finish` **之前**發出 `usage`；`finish` 之後**不再發出任何內容**。穩健做法：緩衝 finish/usage 直到提供者的流結束標記，再統一 flush（可處理提供者在末尾傳送僅含 usage 的分片的情況）。
+- 工具呼叫的 `arguments` 全程為原始 JSON 字串；流式片段以 `argumentsDelta` 傳送。如果你的提供者返回已解析的物件，請在 `block-end` 時重新 stringify。
+- 按首次出現的流順序分配塊 `index`；同一個塊的每次 delta 複用該 index。
+- 錯誤有且僅有兩條合法路徑：從 `stream()` **丟擲**（傳輸與協定故障——使用帶穩定 code 的 `LlmError`），或以 `finish {kind: 'error' | 'aborted'}` 結束流（提供者帶內故障）。消費方兩者都處理；按故障類別選擇路徑並加以文件化。
+- 遵守 `options.signal`（將其傳遞給 fetch 或你的 SDK）。
+- 如果 `GenerateOptions` 中某個欄位你的提供者無法支援（例如提供者不支援 stop sequences 時收到 `stop` 列表）：丟擲 `LlmError(..., 'UNSUPPORTED_OPTION')`，而非靜默丟棄。
+- 如果提供者在後續呼叫中需要回應 ID、簽名或其他原生中繼資料，請將其最小無損 JSON 投影作為 `finish.replayState` 發出。重建歷史時驗證該狀態。只有歷史提供者路由和目標提供者路由目前由完全相同的介面卡實例擁有時，`LlmRuntime` 才會傳遞該狀態；由介面卡決定同模型、跨模型或跨提供者恢復是否合法。狀態缺失時，切勿僅根據提供者/模型名稱推斷原生回放。
 
-提供方特有的思考模式开关仍放在适配器的 Config 中。确切模型元数据使用一处提供方无关的能力 seam：实现 `resolveModel()`，返回提供方/模型身份以及可选的 `context` 和 `reasoning` 字段；仅当存在配置指定的默认值时才声明 `defaultEffort`；遵守解析模型时传入的可选 `AbortSignal`。推理（reasoning）强度是由适配器映射到提供方请求的有序不透明 ID。请保留适配器给出的权威可选列表，包括适配器在支持时定义的 `off`；不得暴露最终协议值的具体拼写，也不得自动调整不支持的值。ID 无需与其协议表示相同。
+提供者特有的思考模式開關仍放在介面卡的 Config 中。確切模型中繼資料使用一處提供者無關的能力 seam：實作 `resolveModel()`，返回提供者/模型身份以及可選的 `context` 和 `reasoning` 欄位；僅當存在設定指定的預設值時才宣告 `defaultEffort`；遵守解析模型時傳入的可選 `AbortSignal`。推理（reasoning）強度是由介面卡對映到提供者請求的有序不透明 ID。請保留介面卡給出的權威可選列表，包括介面卡在支援時定義的 `off`；不得暴露最終協定值的具體拼寫，也不得自動調整不支援的值。ID 無需與其協定表示相同。
 
-## 实现结构
+## 實作結構
 
-让协议格式（wire format）类型、请求序列化、传输解析、分片转换和适配器类分别承担独立职责；[`llm-deepseek`](../../packages/llm/llm-deepseek/README.zh.md) 是参考布局。
+讓協定格式（wire format）型別、請求序列化、傳輸解析、分片轉換和介面卡類分別承擔獨立職責；[`llm-deepseek`](../../packages/llm/llm-deepseek/README.zh.md) 是參考佈局。
 
-## 验证
+## 驗證
 
-遵循[仓库测试策略](../testing.zh.md)，该策略负责适配器覆盖、真实提供方检查和已发布入口要求。
+遵循[儲存庫測試策略](../testing.zh.md)，該策略負責介面卡覆蓋、真實提供者檢查和已釋出入口要求。

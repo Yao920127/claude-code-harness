@@ -228,10 +228,10 @@ describe('ui-model-selection dual entry', () => {
     ])
     expect(options[0]).toMatchObject({
       active: true,
-      detail: 'DeepSeek · 快速、高效且经济；适合目标明确、常规或并行任务。',
+      detail: 'DeepSeek · 快速、高效且經濟；適合目標明確、常規或並行任務。',
     })
     expect(options[1]?.detail)
-      .toBe('DeepSeek · 更强的自主编码、知识与复杂推理能力；适合复杂或质量优先的任务，但成本更高。')
+      .toBe('DeepSeek · 更強的自主編碼、知識與複雜推理能力；適合複雜或品質優先的任務，但成本更高。')
     expect(options[2]?.detail).toBe('External Provider · Provider-authored description.')
     expect(options[1]?.active).toBeUndefined()
   })
@@ -292,7 +292,7 @@ describe('ui-model-selection dual entry', () => {
       b.remote.emit('llm/adapters-updated', [])
       b.mint('s1')
       const options = await b.popup().options(projection('s1'), new AbortController().signal)
-      expect(options[0]?.detail).toContain(locale === 'zh' ? 'DeepSeek 账号' : 'DeepSeek Account')
+      expect(options[0]?.detail).toContain(locale === 'zh' ? 'DeepSeek 帳號' : 'DeepSeek Account')
     } finally {
       await b.ctx.fiber.dispose()
     }

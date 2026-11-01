@@ -304,7 +304,7 @@ describe('Messages request conversion', () => {
     expect(() => body(messages)).toThrow(/tool/)
   })
 
-  it.each(['{', '', '[]', 'null', '42', 'true', '"text"', '{"description":"最快，但"某个说法"没有证据。"}'])('uses empty input for malformed or non-object historical tool arguments %s', (arguments_) => {
+  it.each(['{', '', '[]', 'null', '42', 'true', '"text"', '{"description":"最快，但"某個說法"沒有證據。"}'])('uses empty input for malformed or non-object historical tool arguments %s', (arguments_) => {
     const message = assistant([{ type: 'tool-call', id: ToolCallId('a'), name: 'read', arguments: arguments_ }])
     const history = [user(), message, createToolResultMessage({ callId: ToolCallId('a'), content: [{ type: 'text', text: 'Invalid arguments' }], isError: true }), user('Continue')]
     const saved = JSON.stringify(history)

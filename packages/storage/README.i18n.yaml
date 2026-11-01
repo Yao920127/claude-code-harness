@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/storage/README.md
 /:
   en: 919996d8e0d75b41
-  zh: 326639b9a528917d
+  zh: e03fd032d16c82cc
 /packages-storage:
   en: 7fb10039cf470970
   zh: 1ceec1df26a8b61b
 /packages-storage/summary:
   en: 589f00d7bbaa296f
-  zh: 9fce30d02e7b5f1b
+  zh: 84d091955c1641ca
 /packages-storage/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /packages-storage/packages:
   en: 770491561a697bed
-  zh: ac61f655b921e690
+  zh: ceb0f0b37aa1c296
 /packages-storage/related-documentation:
   en: b7300f09b12dc383
-  zh: abae37e079b7f5bc
+  zh: 9ceee61d2567ee0a
 /packages-storage/dev-note:
   en: 4ac0fbe6dc61795e
-  zh: d92bf6b0a5ddaea4
+  zh: d8fd78a5b9aa0a34

@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/skills.md
 /skills:
   en: dfadaef222efffb5
-  zh: 309c88debfe92ce6
+  zh: 590dab07ca0017bd
 /skills/provider-registry:
   en: abe338b6c6d1ebd1
-  zh: c604db2de10a23c4
+  zh: 74924fed67521b9e
 /skills/local-discovery-priority:
   en: accf8ad4c73c41ad
-  zh: 141294fe8dab8ecf
+  zh: 8fe3da00f8233fd8
 /skills/skill-identity:
   en: 61295a9cf1c51588
-  zh: 1c4c1582688d2310
+  zh: ad5f88633d23435a
 /skills/summaries-candidates-and-complete-definitions:
   en: 8819c25fac497a1f
-  zh: 5795f0d16f09750e
+  zh: 0de246a4962c1c2b
 /skills/lookup-and-configuration:
   en: e60215d73b0abe75
-  zh: a086985044324141
+  zh: ef4d74c00e39f933
 /skills/session-catalog-and-tool-contract:
   en: 5d5c36b1843a9d7d
-  zh: cd92ab1545e65722
+  zh: 3de009fe192e08f7
 /skills/browser-session-catalog:
   en: 1209dc6ee65fd476
-  zh: af3b7ef836564d05
+  zh: 86f6f5d3d0177c6a

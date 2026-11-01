@@ -2,11 +2,11 @@
 
 [English](todo.md) | 中文
 
-本页记录 [`@deepseek-ai/dsh-tool-todo`](../../packages/todo/tool-todo/README.zh.md) 拥有的持久 todo 词汇。面向模型的工具会整体替换一个 agent（智能体）会话的列表；该包还拥有事件声明、回放投影和不变量配套插件。工具行为与配置见[包 README](../../packages/todo/tool-todo/README.zh.md)。
+本頁記錄 [`@deepseek-ai/dsh-tool-todo`](../../packages/todo/tool-todo/README.zh.md) 擁有的持久 todo 詞彙。面向模型的工具會整體替換一個 agent（智慧代理）工作階段的列表；該包還擁有事件宣告、回放投影和不變數配套外掛。工具行為與設定見[包 README](../../packages/todo/tool-todo/README.zh.md)。
 
-源码：[`packages/todo/tool-todo/src/types.ts`](../../packages/todo/tool-todo/src/types.ts)
+原始碼：[`packages/todo/tool-todo/src/types.ts`](../../packages/todo/tool-todo/src/types.ts)
 
-## `TodoItem`：一条列表项
+## `TodoItem`：一條列表項
 
 ```ts type-equiv
 /**
@@ -27,6 +27,6 @@ interface TodoItem {
 }
 ```
 
-## 持久事件与不变量
+## 持久事件與不變數
 
-该包通过声明合并把 `todo/write: { todos: TodoItem[] }` 加入 `SessionEventMap`。此事件仅写入日志，并携带完整替换列表；生成的[持久化目录](../persistence-catalog.zh.md#todowrite--log-only)会记录其声明位置。该包的不变量配套插件会单次遍历校验现有会话和新发布的会话，随后增量追踪已提交的轮次边界，使每个实时 `todo/write` 都能在追加前得到校验，而无需重新扫描日志。
+該包透過宣告合併把 `todo/write: { todos: TodoItem[] }` 加入 `SessionEventMap`。此事件僅寫入日誌，並攜帶完整替換列表；生成的[持久化目錄](../persistence-catalog.zh.md#todowrite--log-only)會記錄其宣告位置。該包的不變數配套外掛會單次遍歷驗證現有工作階段和新發布的工作階段，隨後增量追蹤已提交的輪次邊界，使每個即時 `todo/write` 都能在追加前得到驗證，而無需重新掃描日誌。

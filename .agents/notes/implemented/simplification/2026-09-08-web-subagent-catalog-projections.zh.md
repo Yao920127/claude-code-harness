@@ -1,31 +1,31 @@
-# Agent Note：Web 子代理目录消费共享 projection
+# Agent Note：Web 子代理目錄消費共享 projection
 
 Status: implemented
 
 [English](2026-09-08-web-subagent-catalog-projections.md) | 中文
 
-## 问题
+## 問題
 
-父目录 projection 已通过 Session control stream 发布完整成员关系。独立的目录变化事件、重复 RPC 读取与第二份成员缓存重复传递同一数据，并要求协调响应与后续事件。历史 Session 的 projection 缺席时仍需初始加载，父 Agent 可用性也独立于持久成员关系。
+父目錄 projection 已透過 Session control stream 釋出完整成員關係。獨立的目錄變化事件、重複 RPC 讀取與第二份成員快取重複傳遞同一資料，並要求協調回應與後續事件。歷史 Session 的 projection 缺席時仍需初始載入，父 Agent 可用性也獨立於持久成員關係。
 
-## 决策
+## 決策
 
-Client 仅在标准逐 Session projection store 中保留目录成员关系。初始 `session.projections` 读取通过一次 live-preferred Session observation 返回完整 projection 基线。endpoint 接受任意 Session id，不含目录专用依赖或校验。值与序号游标来自同一次 observation。初始基线与实时 control 帧使用 store 既有的序号排序，因此旧响应不能替换新值。该 endpoint 不激活 Agent，也不采样子代理活动状态。打开会话时使用其 follow baseline，不再额外调度一次投影读取；未打开的目录分支仍使用显式读取。
+Client 僅在標準逐 Session projection store 中保留目錄成員關係。初始 `session.projections` 讀取透過一次 live-preferred Session observation 返回完整 projection 基線。endpoint 接受任意 Session id，不含目錄專用依賴或驗證。值與序號遊標來自同一次 observation。初始基線與即時 control 幀使用 store 既有的序號排序，因此舊回應不能替換新值。該 endpoint 不啟用 Agent，也不取樣子代理活動狀態。開啟工作階段時使用其 follow baseline，不再額外排程一次投影讀取；未開啟的目錄分支仍使用顯式讀取。
 
-功能消费者从 `projectionsBySession` 中选择 `subagentCatalog`，并从 Session 列表基线与状态事件派生行活动状态。Session 摘要单独报告 Agent 可用性；Agent 创建与销毁重新发布已有摘要事件。完成的子代理在移除后保留摘要与展示 projection。通用 projection 读取拥有加载与错误状态；父 Agent 可用性来自 Session 列表，独立于成员关系。打开已加载目录会复用数据，初始失败可以重试。重连取消此前的读取，并为已请求的目录重新读取。Session 移除会取消其待完成读取并将父 Agent 可用性标为 false；projection 响应不能改变 Agent 可用性。
+功能消費者從 `projectionsBySession` 中選擇 `subagentCatalog`，並從 Session 列表基線與狀態事件派生行活動狀態。Session 摘要單獨報告 Agent 可用性；Agent 建立與銷燬重新發布已有摘要事件。完成的子代理在移除後保留摘要與展示 projection。通用 projection 讀取擁有載入與錯誤狀態；父 Agent 可用性來自 Session 列表，獨立於成員關係。開啟已載入目錄會複用資料，初始失敗可以重試。重連取消此前的讀取，併為已請求的目錄重新讀取。Session 移除會取消其待完成讀取並將父 Agent 可用性標為 false；projection 回應不能改變 Agent 可用性。
 
-[父目录决策](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 说明持久创建事实与顺序。本决策取代 [Web 子代理会话](../feature/2026-07-27-web-subagent-conversations.zh.md) 中的专用成员刷新机制；该记录继续保留导航、控制与展示决策。
+[父目錄決策](../architecture/2026-09-01-parent-owned-subagent-catalog.zh.md) 說明持久建立事實與順序。本決策取代 [Web 子代理工作階段](../feature/2026-07-27-web-subagent-conversations.zh.md) 中的專用成員重新整理機制；該記錄繼續保留導航、控制與展示決策。
 
-Host 摘要替换运行状态与可用性；本地 create/fork 占位摘要只补充缺失的元数据。若共用覆盖行为，晚到的本地响应会抹去较新的 Host 状态，并生成虚假的完成提醒。普通 Session 移除后，仅为非空子目录保留 store；空目录没有需要保留的导航关系。面包屑 selector 从 Session 列表快照推导地址，使订阅涵盖全部依赖。
+Host 摘要替換執行狀態與可用性；本地 create/fork 佔位摘要只補充缺失的中繼資料。若共用覆蓋行為，晚到的本地回應會抹去較新的 Host 狀態，並生成虛假的完成提醒。普通 Session 移除後，僅為非空子目錄保留 store；空目錄沒有需要保留的導航關係。麵包屑 selector 從 Session 列表快照推導地址，使訂閱涵蓋全部依賴。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**保留通知驱动的读取。** 不采用，因为共享流已经传递变化后的值。菜单订阅、请求内活动状态回放与尾随成员读取没有提供额外的必要传递能力。
+**保留通知驅動的讀取。** 不採用，因為共享流已經傳遞變化後的值。選單訂閱、請求內活動狀態回放與尾隨成員讀取沒有提供額外的必要傳遞能力。
 
-**删除初始读取 endpoint。** 暂缓。Session 列表 projection 是可能缺席的缓存提示；跟随会话还会传输历史并保留 observation 状态。轻量读取保留历史目录访问能力，无需建立会话跟随流。父 Agent 可用性是实时投递提示，而非持久 projection 事实。
+**刪除初始讀取 endpoint。** 暫緩。Session 列表 projection 是可能缺席的快取提示；跟隨工作階段還會傳輸歷史並保留 observation 狀態。輕量讀取保留歷史目錄存取能力，無需建立工作階段跟隨流。父 Agent 可用性是即時投遞提示，而非持久 projection 事實。
 
-## 影响
+## 影響
 
-成员变化使用既有 control stream，无需额外目录通知或读取。对 D 个子级发布完整 projection 值仍需 O(D)；本变更不引入增量传输。初始读取返回 observation 的完整 projection 基线，其中包括目录以外的值，以额外初始载荷换取标准基线语义的复用。Session 序号排序不确立复用 Session id 之间的身份关系。
+成員變化使用既有 control stream，無需額外目錄通知或讀取。對 D 個子級釋出完整 projection 值仍需 O(D)；本變更不引入增量傳輸。初始讀取返回 observation 的完整 projection 基線，其中包括目錄以外的值，以額外初始載荷換取標準基線語義的複用。Session 序號排序不確立複用 Session id 之間的身份關係。
 
-Manager 测试覆盖成员推送、过时初始响应、按需加载、状态组合、完成元数据保留、重试、空目录移除、晚到的 create/fork 响应与重连取消。Host 测试覆盖共享 control stream 与冷 observation。持久化子代理 Web 场景通过发布应用验证嵌套历史导航与续传。
+Manager 測試覆蓋成員推送、過時初始回應、按需載入、狀態組合、完成中繼資料保留、重試、空目錄移除、晚到的 create/fork 回應與重連取消。Host 測試覆蓋共享 control stream 與冷 observation。持久化子代理 Web 情境透過釋出應用驗證巢狀歷史導航與續傳。

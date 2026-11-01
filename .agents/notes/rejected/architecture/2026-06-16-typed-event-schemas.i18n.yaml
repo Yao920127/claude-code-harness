@@ -4,37 +4,37 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/rejected/architecture/2026-06-16-typed-event-schemas.md
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern:
   en: 63685a0c0afc3f07
-  zh: 8f7e06562771ee1d
+  zh: a5fc27df9213c379
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/problem:
   en: 6bea9eb883f324d2
-  zh: 2bef9b9fa5233d09
+  zh: 6f0c41a66eba687a
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/why-this-is-not-a-persistence-change:
   en: 42d48e48d694d3de
-  zh: f556f4624b55a480
+  zh: 1364eb0f458bb273
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/blast-radius-measured:
   en: ec70e76b82ba21b5
-  zh: 25fb4a60f8da5cb5
+  zh: 3a2eb30cbe83113e
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/alternatives-considered:
   en: 6119e2aff3b6be5a
-  zh: 76136ef5249c23eb
+  zh: 1e7ac42370899b04
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/alternatives-considered/a-status-quo-merge-extensible-types-isjsonvalue-at-the-durable-boundary:
   en: d5ea1b3124b341a7
-  zh: 766ed3689efc1802
+  zh: 87f53d27bd298cb2
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/alternatives-considered/b-header-closed-shape-validation-only-schemastery-events-stay-opaque:
   en: 5120fc56473696d1
-  zh: 611d6f53efa282f0
+  zh: 66bdc2feae9b6a42
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/alternatives-considered/c-runtime-schema-registry-for-the-whole-vocabulary-zod-or-schemastery:
   en: db3cebf2efcf1fcd
-  zh: 631a39e8900c0e1d
+  zh: 2b2e9a39c8423f61
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/proposal:
   en: 33078a5945dc2aa3
-  zh: 32baff49e47e9823
+  zh: 3e8be2b28114d53c
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/acceptance-criteria:
   en: 37626ef8a2dcd7e0
-  zh: 0b215089ce58e65d
+  zh: 65aa4fcb08e451fd
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/risks:
   en: 79e720cfffe60257
-  zh: b4aea0d52f3ee072
+  zh: c8e6b6f07b4c7502
 /agent-note-runtime-schemas-for-the-event-vocabulary-zod-vs-the-merge-extensible-map-pattern/open-questions:
   en: afc8275e1598eb34
-  zh: f3684ee3aba33cf1
+  zh: 750d927ceb9edd54

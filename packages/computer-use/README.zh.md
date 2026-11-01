@@ -1,5 +1,5 @@
 ---
-description: "用于选择并注册一个桌面提供方的计算机操作能力包。"
+description: "用於選擇並註冊一個桌面提供者的計算機操作能力包。"
 kind: "package-group"
 ---
 
@@ -9,32 +9,32 @@ kind: "package-group"
 
 ## 概述
 
-计算机操作提供方让模型观察并操作桌面。本组负责提供方的独占注册。各提供方拥有自己的操作、工具和平台要求；实验性 Cua Driver 提供方位于 experimental 组。
+計算機操作提供者讓模型觀察並操作桌面。本組負責提供者的獨佔註冊。各提供者擁有自己的操作、工具和平臺要求；實驗性 Cua Driver 提供者位於 experimental 組。
 
-## 目录
+## 目錄
 
 - [包](#packages)
-- [相关文档](#related-documentation)
-- [开发备注](#dev-note)
+- [相關文件](#related-documentation)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="packages"></a>
 ## 包
 
-选择一个提供方并挂载共享注册服务。
+選擇一個提供者並掛載共享註冊服務。
 
-| 包 | 职责 | ctx 键 |
+| 包 | 職責 | ctx 鍵 |
 |---|---|---|
-| [`computer-use`](computer-use/README.zh.md) | 按名称独占注册提供方 | `ctx.computerUse` |
+| [`computer-use`](computer-use/README.zh.md) | 按名稱獨佔註冊提供者 | `ctx.computerUse` |
 
 <a id="related-documentation"></a>
-## 相关文档
+## 相關文件
 
-- [计算机操作](../../docs/subsystems/computer-use.zh.md) — 能力归属和提供方选择。
-- [实验性包](../experimental/README.zh.md) — Cua Driver MCP 和原生提供方。
+- [計算機操作](../../docs/subsystems/computer-use.zh.md) — 能力歸屬和提供者選擇。
+- [實驗性包](../experimental/README.zh.md) — Cua Driver MCP 和原生提供者。
 
 <a id="dev-note"></a>
-## 开发备注
+## 開發備註
 
-无。
+無。

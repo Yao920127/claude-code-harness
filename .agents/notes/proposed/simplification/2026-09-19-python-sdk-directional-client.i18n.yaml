@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-python-sdk-directional-client.md
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction:
   en: 29c6b53f7f81bfd8
-  zh: 94139164373cda91
+  zh: 86db819904bd55c2
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction/problem:
   en: e8779fc70adce0e4
-  zh: 288565d427fe65ae
+  zh: 1c6a54bffcc4febb
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction/proposal:
   en: 508671a9a29a8f2a
-  zh: 750587c118eb7450
+  zh: 0f3ee96764c90522
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction/alternatives-considered:
   en: 2fb93911daacf365
-  zh: 4c2e2599283cab94
+  zh: 08bfa52da14d2dd4
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction/acceptance-criteria:
   en: bbfd9485fbe4e523
-  zh: 283486f66c96b447
+  zh: a73aa3d7db8ccf1b
 /agent-note-remove-the-python-sdk-s-unused-reverse-rpc-direction/risks:
   en: d0a75f4fa88d4bf7
-  zh: 9a7635d8040d8068
+  zh: 1a84fc3d3a107f26

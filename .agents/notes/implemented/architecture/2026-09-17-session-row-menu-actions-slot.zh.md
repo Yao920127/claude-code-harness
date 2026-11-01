@@ -4,32 +4,32 @@ Status: implemented
 
 [English](2026-09-17-session-row-menu-actions-slot.md) | 中文
 
-## 问题
+## 問題
 
-Session 行的 "..." 菜单和行尾悬停按钮原本是 `ui-workspace` 持有的封闭列表：browser 按行状态拼菜单 `items`、自己渲染置顶和归档按钮、把每个动作的回调一路传下去，连这些动作需要的 toast 和重命名对话框也由它持有。客户端插件可以自己添加侧边栏控件，却无法在不修改 owner 包或复制菜单交互的情况下把 action 放到内置项旁边。
+Session 行的 "..." 選單和行尾懸停按鈕原本是 `ui-workspace` 持有的封閉列表：browser 按行狀態拼選單 `items`、自己渲染置頂和歸檔按鈕、把每個動作的回呼一路傳下去，連這些動作需要的 toast 和重新命名對話方塊也由它持有。用戶端外掛可以自己新增側邊欄控制元件，卻無法在不修改 owner 包或複製選單互動的情況下把 action 放到內建項旁邊。
 
-## 决策
+## 決策
 
-`ui-workspace` 在其 `sidebar.workspaces` 注册项下声明两个 root-scoped `list` slot——菜单行用 `sidebar.workspaces.session.menu.item`，悬停按钮用 `sidebar.workspaces.session.row.action`——并在 `apply` 里以客户端插件的同一方式注册自己的 action：`pin`（菜单 100、按钮 200）、`rename`（200）、`fork`（300）、`archive`（菜单 400、按钮 100）。列表就是菜单和按钮条：条目按 `order` 升序渲染，插件 action 落在其 order 所指的位置，以另一个 `priority` 复用内置 id 则按注册表的普通 cell 规则遮蔽。没有单独的"扩展分组"：owner 不画分隔线，分组起点是条目自己的 `separatorBefore`。
+`ui-workspace` 在其 `sidebar.workspaces` 註冊項下宣告兩個 root-scoped `list` slot——選單行用 `sidebar.workspaces.session.menu.item`，懸停按鈕用 `sidebar.workspaces.session.row.action`——並在 `apply` 裡以用戶端外掛的同一方式註冊自己的 action：`pin`（選單 100、按鈕 200）、`rename`（200）、`fork`（300）、`archive`（選單 400、按鈕 100）。列表就是選單和按鈕條：條目按 `order` 升序渲染，外掛 action 落在其 order 所指的位置，以另一個 `priority` 複用內建 id 則按註冊表的普通 cell 規則遮蔽。沒有單獨的"擴充功能分組"：owner 不畫分隔線，分組起點是條目自己的 `separatorBefore`。
 
-条目只接收行身份 `{ sessionId, displayTitle }`，其余一切自己负责。它用自己 face 注入的 hook 读自己关心的 Host 状态（`usePinned` 与 `useArchived`，每次 Workspace 快照只派生一次的 Set），并据此决定是否显示：Host 规定两个集合互斥，所以 pin 在归档行上不渲染；archive 从不参考 pin。整套行为放在注册项自己的 `inject` face 里，组件只调一个回调：`pinSession` 委托给 `uiWorkspace.pinSession`——先做 Host 置顶，成功后用 `pinSessionOrder` 把会话推到其记账保存顺序的最前，成员关系在完成时刻从对象层快照读取（`pin-order.ts`）——和这个服务原本就持有的 `archiveSession` 并列；归档 action 的回调在此之上加上提示。服务经 apply 自己创建、并作为 handle 交给 browser 注册项的那个 viewing store 实例写入视图顺序，与 `ui-layout` 处理 layout store 的方式相同。置顶与归档集合以 Set 形式经 face 的 `hooks` 到达条目，每次 Workspace 快照变化只重建一次，行读自己那一位只需一次查找。
+條目只接收行身份 `{ sessionId, displayTitle }`，其餘一切自己負責。它用自己 face 注入的 hook 讀自己關心的 Host 狀態（`usePinned` 與 `useArchived`，每次 Workspace 快照只派生一次的 Set），並據此決定是否顯示：Host 規定兩個集合互斥，所以 pin 在歸檔行上不渲染；archive 從不參考 pin。整套行為放在註冊項自己的 `inject` face 裡，元件只調一個回呼：`pinSession` 委託給 `uiWorkspace.pinSession`——先做 Host 置頂，成功後用 `pinSessionOrder` 把工作階段推到其記帳儲存順序的最前，成員關係在完成時刻從物件層快照讀取（`pin-order.ts`）——和這個服務原本就持有的 `archiveSession` 並列；歸檔 action 的回呼在此之上加上提示。服務經 apply 自己建立、並作為 handle 交給 browser 註冊項的那個 viewing store 實例寫入檢視順序，與 `ui-layout` 處理 layout store 的方式相同。置頂與歸檔集合以 Set 形式經 face 的 `hooks` 到達條目，每次 Workspace 快照變化只重建一次，行讀自己那一位只需一次查詢。
 
-action 发起的浮层必须活得比行菜单久，所以它们是本包注册在 `shell.overlay` 的条目：重命名对话框和行 action 提示。action 经本插件 apply 闭包里的观察源到达自己的浮层：action 一侧注入为回调（`requestSessionRename`、`notify`），浮层一侧注入为 `hooks` 源（`useRenameRequest`、`useToast`）。browser 在标题双击时发出同一个重命名请求，在点击归档行时发出同一种提示；归档提示的第二个动作经同一个 store 实例把归档筛选切到"显示"，因为 browser 的视图选项菜单已不在链路上。
+action 發起的浮層必須活得比行選單久，所以它們是本包註冊在 `shell.overlay` 的條目：重新命名對話方塊和行 action 提示。action 經本外掛 apply 閉包裡的觀察源到達自己的浮層：action 一側注入為回呼（`requestSessionRename`、`notify`），浮層一側注入為 `hooks` 源（`useRenameRequest`、`useToast`）。browser 在標題雙擊時發出同一個重新命名請求，在點選歸檔行時發出同一種提示；歸檔提示的第二個動作經同一個 store 實例把歸檔篩選切到"顯示"，因為 browser 的檢視選項選單已不在鏈結上。
 
-本包自己的菜单条目渲染 `MenuItemButton`——`ui-primitives` 为"行是组件"的菜单提供的行组件，只是一行普通 markup 与样式。任何 `role="menuitem"` 的按钮都能加入菜单的键盘走位、子菜单互斥与焦点归还，因为 `Menu` 从 DOM 上统一决定这三件事（方向键走位查询行元素；子菜单收起与选中后的焦点归还都在列表自己的冒泡上执行，数据行与组件行一视同仁）——无法 import 该 primitive 的 `cordis-client-runner` 闭包直接渲染这样一个按钮。两类行的关闭都是 owner 的状态：数据行通过 owner 的 `onSelect`，组件行通过 slot 级 `useMenuOpenState` hook——声明带 `inject: { hooks: { menuOpenState } }`，`SessionNodeItem` 把自己的 `[open, setOpen]` 作为该次渲染的 `hookContext` 传入，factory 把这一对原样交回。这正是 `sidebar.right.pane.tab` 用于 `useTabInfo` 的通道。
+本包自己的選單條目渲染 `MenuItemButton`——`ui-primitives` 為"行是元件"的選單提供的行元件，只是一行普通 markup 與樣式。任何 `role="menuitem"` 的按鈕都能加入選單的鍵盤走位、子選單互斥與焦點歸還，因為 `Menu` 從 DOM 上統一決定這三件事（方向鍵走位查詢行元素；子選單收起與選中後的焦點歸還都在列表自己的冒泡上執行，資料行與元件行一視同仁）——無法 import 該 primitive 的 `cordis-client-runner` 閉包直接渲染這樣一個按鈕。兩類行的關閉都是 owner 的狀態：資料行透過 owner 的 `onSelect`，元件行透過 slot 級 `useMenuOpenState` hook——宣告帶 `inject: { hooks: { menuOpenState } }`，`SessionNodeItem` 把自己的 `[open, setOpen]` 作為該次渲染的 `hookContext` 傳入，factory 把這一對原樣交回。這正是 `sidebar.right.pane.tab` 用於 `useTabInfo` 的通道。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**在 `Menu` 与行组件之间放一个 React context。** 否决：业务组件不接触任何 React context（[client 规则](../../../../packages/client/AGENTS.md)）；Menu 与行是经 slot 系统建立的父子关系，控制权就该走 slot 的通道。
+**在 `Menu` 與行元件之間放一個 React context。** 否決：業務元件不接觸任何 React context（[client 規則](../../../../packages/client/AGENTS.md)）；Menu 與行是經 slot 系統建立的父子關係，控制權就該走 slot 的通道。
 
-**由 owner 提供行能力。** 把 `pinned`/`archived` 和 `pin`/`archive`/`rename`/`fork` 回调经 owner props 或 slot 级 hook 交给条目，会让 browser 继续拥有每个动作，内置 action 沦为薄封装。否决：这些不是菜单的能力，每个 action 的行为属于它自己，需要的 Host 状态条目可以直接读。
+**由 owner 提供行能力。** 把 `pinned`/`archived` 和 `pin`/`archive`/`rename`/`fork` 回呼經 owner props 或 slot 級 hook 交給條目，會讓 browser 繼續擁有每個動作，內建 action 淪為薄封裝。否決：這些不是選單的能力，每個 action 的行為屬於它自己，需要的 Host 狀態條目可以直接讀。
 
-**在内置行下方追加一个专用 slot。** 否决：它把内置行变成插件只能跟在后面的特权分组，还要在 primitive 里为本来只是一个有序列表的东西开第二条渲染路径。
+**在內建行下方追加一個專用 slot。** 否決：它把內建行變成外掛只能跟在後面的特權分組，還要在 primitive 裡為本來只是一個有序列表的東西開第二條渲染路徑。
 
-**让条目自己算置顶顺序写入。** pin 条目为了拼 `pinSessionOrder` 的输入订阅整个 Session 列表和 Workspace 快照，列表一变所有可见行都重渲染，排序细节还进了菜单行。否决：写入归注入的回调，在完成时刻读一次快照。
+**讓條目自己算置頂順序寫入。** pin 條目為了拼 `pinSessionOrder` 的輸入訂閱整個 Session 列表和 Workspace 快照，列表一變所有可見行都重渲染，排序細節還進了選單行。否決：寫入歸注入的回呼，在完成時刻讀一次快照。
 
-**用声明式共享 store 传重命名请求与提示。** 请求与提示是本插件自己的瞬时事实，所以经条目自己的 inject face 以 apply 闭包观察源传递。
+**用宣告式共享 store 傳重新命名請求與提示。** 請求與提示是本外掛自己的瞬時事實，所以經條目自己的 inject face 以 apply 閉包觀察源傳遞。
 
-## 后果
+## 後果
 
-插件无需修改 `ui-workspace` 即可在菜单和悬停条里添加、重排或遮蔽 Session 行 action，内置 action 遵循相同规则、走相同注册路径。`WorkspaceBrowser` 不再传递 action 回调、渲染 toast 或承载重命名对话框；`Menu` 新增 `children`，`items`/`onSelect` 变为可选；`shell.overlay` 多了两个 `ui-workspace` 条目。归档提示直接应用"显示已归档"筛选，不再打开视图选项菜单。
+外掛無需修改 `ui-workspace` 即可在選單和懸停條裡新增、重排或遮蔽 Session 行 action，內建 action 遵循相同規則、走相同註冊路徑。`WorkspaceBrowser` 不再傳遞 action 回呼、渲染 toast 或承載重新命名對話方塊；`Menu` 新增 `children`，`items`/`onSelect` 變為可選；`shell.overlay` 多了兩個 `ui-workspace` 條目。歸檔提示直接應用"顯示已歸檔"篩選，不再開啟檢視選項選單。

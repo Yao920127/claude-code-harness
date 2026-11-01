@@ -1,31 +1,31 @@
-# Agent Note: 功能路由遵循文档 base，并由门禁维持
+# Agent Note: 功能路由遵循文件 base，並由門禁維持
 
 Status: implemented
 
 [English](2026-09-17-web-feature-routes-and-route-gate.md) | 中文
 
-## 问题
+## 問題
 
-[Web 应用自有路由相对文档寻址](2026-09-14-web-document-relative-app-routes.zh.md)让外壳、插件 bundle 与流在任一挂载下到达同一监听端口。功能包自有的路由仍寻址源站根：`/open-in-app/...`、deliverables 的 `present.*` 与 `changes.*` 路由、会话日志导出下载、上传 worker 的 `/api/session/uploadFileBinary` 提交，以及本地 markdown 图片路径背后的 `/api/file` 路由。在剥离前缀的代理之后，这些请求全部落空。也没有任何机制阻止新的浏览器侧引用再次把 bundle 绑定到单一挂载。
+[Web 應用自有路由相對文件定址](2026-09-14-web-document-relative-app-routes.zh.md)讓外殼、外掛 bundle 與流在任一掛載下到達同一監聽埠。功能包自有的路由仍定址源站根：`/open-in-app/...`、deliverables 的 `present.*` 與 `changes.*` 路由、工作階段日誌匯出下載、上傳 worker 的 `/api/session/uploadFileBinary` 提交，以及本地 markdown 圖片路徑背後的 `/api/file` 路由。在剝離字首的代理之後，這些請求全部落空。也沒有任何機制阻止新的瀏覽器側引用再次把 bundle 繫結到單一掛載。
 
-## 决策
+## 決策
 
-每个功能生产者保留其绝对注册键，并在旁边派生浏览器形式：`OPEN_IN_APP_*_PATH`/`*_ROUTE`、`PRESENT_*_PATH`/`*_ROUTE`、`CHANGED_FILES_PATH` 与 `CHANGES_*_PATH`/`*_ROUTE`、`SESSION_LOG_EXPORT_PATH`/`_ROUTE`、`FILE_UPLOAD_PATH`/`_ROUTE`。浏览器代码只寻址 `*_ROUTE` 形式；页面安装的 Fetch 形载体（`FileUploadFetch`、`RpcFetch`）收到该相对路由，并相对自身基准解析。
+每個功能生產者保留其絕對註冊鍵，並在旁邊派生瀏覽器形式：`OPEN_IN_APP_*_PATH`/`*_ROUTE`、`PRESENT_*_PATH`/`*_ROUTE`、`CHANGED_FILES_PATH` 與 `CHANGES_*_PATH`/`*_ROUTE`、`SESSION_LOG_EXPORT_PATH`/`_ROUTE`、`FILE_UPLOAD_PATH`/`_ROUTE`。瀏覽器程式碼只定址 `*_ROUTE` 形式；頁面安裝的 Fetch 形載體（`FileUploadFetch`、`RpcFetch`）收到該相對路由，並相對自身基準解析。
 
-两个消费方需要绝对 URL，并相对 `document.baseURI` 解析：上传 worker（其自身基准是 `blob:` URL）与 markdown 图片词汇表（只输出绝对的 `http(s)`、`blob` 或 `data` 目标）。
+兩個消費方需要絕對 URL，並相對 `document.baseURI` 解析：上傳 worker（其自身基準是 `blob:` URL）與 markdown 圖片詞彙表（只輸出絕對的 `http(s)`、`blob` 或 `data` 目標）。
 
-`verify-client-route-resolution` 在 `hygiene` 与 CI 静态检查中运行，覆盖 client 编译面编译的每个浏览器源文件。它治理请求目标——请求构造器、`fetch` 形调用或动态 import 的第一个参数；赋值的资源属性；JSX 的 `src`/`href` 属性——拒绝根绝对、协议相对或绝对的应用路由（`api`、`plugins`、`open-in-app` 前缀），以及相对 `location` 读取解析的相对应用路由。作为请求目标使用的共享 `*_PATH`/`*_ENDPOINT` 键必须先剥去前导斜杠。同一遍检查还覆盖宿主侧浏览器引用的生产者：以根绝对应用路由写入的 `url`、`src` 或 `href` 字段被拒绝，而路由键与响应表键保持绝对，不在范围内。
+`verify-client-route-resolution` 在 `hygiene` 與 CI 靜態檢查中執行，覆蓋 client 編譯面編譯的每個瀏覽器原始檔。它治理請求目標——請求建構器、`fetch` 形呼叫或動態 import 的第一個參數；賦值的資源屬性；JSX 的 `src`/`href` 屬性——拒絕根絕對、協定相對或絕對的應用路由（`api`、`plugins`、`open-in-app` 字首），以及相對 `location` 讀取解析的相對應用路由。作為請求目標使用的共享 `*_PATH`/`*_ENDPOINT` 鍵必須先剝去前導斜槓。同一遍檢查還覆蓋主機側瀏覽器引用的生產者：以根絕對應用路由寫入的 `url`、`src` 或 `href` 欄位被拒絕，而路由鍵與回應表鍵保持絕對，不在範圍內。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**在浏览器代码中禁止一切 `location` 读取。** 否决：身份比较、preview 自身查询读取、worker tunnel 的宿主相对映射都属正当。门禁治理请求目标——绑定挂载点的路由真正出现的位置。
+**在瀏覽器程式碼中禁止一切 `location` 讀取。** 否決：身份比較、preview 自身查詢讀取、worker tunnel 的主機相對對映都屬正當。門禁治理請求目標——繫結掛載點的路由真正出現的位置。
 
-**在代理中改写功能响应。** 否决：这会为代理并不知晓的每条路由在部署配置里重复挂载点，而文档本就能解析相对引用。
+**在代理中改寫功能回應。** 否決：這會為代理並不知曉的每條路由在部署設定裡重複掛載點，而文件本就能解析相對引用。
 
-## 后果
+## 後果
 
-门禁只读取内联字面片段，因此组合出来的引用（`comboReference(...)`、`artifact.url.slice(1)`）不被追踪；组合而成的启动图 row、批次描述符与 source-map trailer 的回归信号由 `packages/client/modules/tests/node-half.client.spec.ts` 持有。Preview 页面不会在文档 URL 下暴露其 worker 的文件 API，因此 markdown 本地文件图片 URL 无法到达该 Host。[会话正文本地媒体展示](../feature/2026-09-07-session-prose-local-media-display.zh.md)持有图片词汇表。
+門禁只讀取內聯字面片段，因此組合出來的引用（`comboReference(...)`、`artifact.url.slice(1)`）不被追蹤；組合而成的啟動圖 row、批次描述符與 source-map trailer 的迴歸訊號由 `packages/client/modules/tests/node-half.client.spec.ts` 持有。Preview 頁面不會在文件 URL 下暴露其 worker 的檔案 API，因此 markdown 本地檔案圖片 URL 無法到達該 Host。[工作階段正文本地媒體展示](../feature/2026-09-07-session-prose-local-media-display.zh.md)持有圖片詞彙表。
 
-## 测试
+## 測試
 
-门禁自身的 spec 为每条规则固定了负向对照：插值目标（`${origin}/api/file`）、协议相对与绝对形式、未剥前导斜杠的共享键、相对路由相对 `location` 读取解析，以及生产者中根绝对的引用字段。各功能包的 spec 断言其浏览器半侧发出的相对路由；`markdown-images.e2e.ts` 端到端维持本地图片路径的覆盖。发现逻辑的 spec 固定了哪些 client 项目贡献浏览器源文件：同时被 Host 聚合编译的 DOM 项目，若没有 `src/client` 半边，则其整个 `src/` 都计入。
+門禁自身的 spec 為每條規則固定了負向對照：插值目標（`${origin}/api/file`）、協定相對與絕對形式、未剝前導斜槓的共享鍵、相對路由相對 `location` 讀取解析，以及生產者中根絕對的引用欄位。各功能包的 spec 斷言其瀏覽器半側發出的相對路由；`markdown-images.e2e.ts` 端到端維持本地圖片路徑的覆蓋。發現邏輯的 spec 固定了哪些 client 專案貢獻瀏覽器原始檔：同時被 Host 聚合編譯的 DOM 專案，若沒有 `src/client` 半邊，則其整個 `src/` 都計入。

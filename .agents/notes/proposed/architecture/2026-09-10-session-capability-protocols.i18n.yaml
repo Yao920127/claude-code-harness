@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/architecture/2026-09-10-session-capability-protocols.md
 /agent-note-session-capability-protocols:
   en: ca990e74165b25e8
-  zh: f6749481ec3787e9
+  zh: 116eb6935f1f0b01
 /agent-note-session-capability-protocols/problem:
   en: dc259b9d03444112
-  zh: 3f7ea3fc166f4f8d
+  zh: 469de28892235bfb
 /agent-note-session-capability-protocols/proposal:
   en: 31089a7378fdbbae
-  zh: e4aa40eb444526d0
+  zh: 988b25024ed6b7c7
 /agent-note-session-capability-protocols/proposal/developer-convention-during-migration:
   en: 0756ce3afbe3837a
-  zh: 22ab431cb95405a7
+  zh: 7442258f48517b77
 /agent-note-session-capability-protocols/proposal/logicalsession:
   en: f20d151670c882c5
-  zh: 91eeebffb10341b8
+  zh: b14f5453e8c5e702
 /agent-note-session-capability-protocols/proposal/sessionservice:
   en: ab0c6458dc1b1fc6
-  zh: bf42ff2c99045342
+  zh: 561c83db61cc344c
 /agent-note-session-capability-protocols/proposal/sessionstorage:
   en: 2090c7003fe92f52
-  zh: 4d84b58cc91b73cc
+  zh: 56c23784fabf40f5
 /agent-note-session-capability-protocols/proposal/sessionprojectionport:
   en: 030ee3198b7b9e68
-  zh: 4267622d67cfd5a1
+  zh: 815cb354131c94e4
 /agent-note-session-capability-protocols/proposal/sessionquery:
   en: 6da206b02c1eb698
-  zh: 347248e3fa322df9
+  zh: d83f3a1215053d0e
 /agent-note-session-capability-protocols/proposal/overall-architecture:
   en: 68e046f0f22eb8d6
-  zh: 851c3034df623b3a
+  zh: 0b34e7dd9404233b
 /agent-note-session-capability-protocols/proposal/dependency-rule:
   en: 6ce178b8e50dbbf4
-  zh: 60e0a37b1caa2d3f
+  zh: a891d8b95022d64e
 /agent-note-session-capability-protocols/alternatives-considered:
   en: 4dd5911de0859b8f
-  zh: 5ba12aa6ba4effbb
+  zh: 43fa1854bda91a92
 /agent-note-session-capability-protocols/acceptance-criteria:
   en: 82bfc842f7a0e82e
-  zh: 1d7bcd72be514e25
+  zh: b23d843ad3d0b260
 /agent-note-session-capability-protocols/risks:
   en: f8c5864d4518322b
-  zh: 619ef9e236515bf8
+  zh: a5fae70483e01187

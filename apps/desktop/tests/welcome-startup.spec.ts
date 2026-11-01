@@ -227,9 +227,9 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
   expect(state.loadWorkspace).toHaveBeenCalledExactlyOnceWith('dsh-app://app/')
   expect(state.showWorkspace).not.toHaveBeenCalled()
   state.loadWorkspace.mockClear()
-  expect(state.welcomeLocale).toMatchObject({ id: 'zh-CN' })
+  expect(state.welcomeLocale).toMatchObject({ id: 'zh-TW' })
   expect(await state.operations!.takeNotice()).toBeUndefined()
-  expect(state.dialogLocale!().id).toBe('zh-CN')
+  expect(state.dialogLocale!().id).toBe('zh-TW')
   const attemptId = 'login' as NonNullable<AccountView['attempt']>['id']
   const account: AccountView = { status: 'signed-out', links: { usageUrl: '', topUpUrl: '' },
     attempt: { id: attemptId, phase: 'waiting-browser', authorizeUrl: 'https://example.test/login' } }

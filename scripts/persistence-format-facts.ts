@@ -22,7 +22,7 @@ function historicalSchema(entry: PersistenceFormatEntry, language: Language): st
   const schema = basename(entry.schemaPath)
   const introduction = language === 'en'
     ? `The [complete machine inventory](${schema}) contains ${entry.inventory.roots.length} roots and ${entry.inventory.types.length} reachable types. Digests include all referenced fields; source names and paths describe the selected historical tree.`
-    : `[完整机器目录](${schema})包含 ${entry.inventory.roots.length} 个根类型和 ${entry.inventory.types.length} 种可达类型。摘要包含所有引用字段；源码名称和路径描述所选的历史源码树。`
+    : `[完整機器目錄](${schema})包含 ${entry.inventory.roots.length} 個根型別和 ${entry.inventory.types.length} 種可達型別。摘要包含所有引用欄位；原始碼名稱和路徑描述所選的歷史原始碼樹。`
   return [
     '<a id="schema"></a>',
     language === 'en' ? '## Complete schemas' : '## 完整 schema',
@@ -31,7 +31,7 @@ function historicalSchema(entry: PersistenceFormatEntry, language: Language): st
     '',
     renderPersistenceSchemaIndex(entry.inventory, language, [], 3),
     '<details>',
-    language === 'en' ? '<summary>Complete resolved types</summary>' : '<summary>完整解析类型</summary>',
+    language === 'en' ? '<summary>Complete resolved types</summary>' : '<summary>完整解析型別</summary>',
     '',
     renderPersistenceSchemaDefinitions(entry.inventory, language, () => undefined, 3),
     '</details>',
@@ -42,12 +42,12 @@ function formatIndex(formats: PersistenceFormats, language: Language): string {
   const path = (target: string): string => posix.relative('docs/persistence-changes/historical-formats',
     language === 'zh' && target.endsWith('.md') ? target.replace(/\.md$/u, '.zh.md') : target)
   return [
-    language === 'en' ? '| Format | Source | Reference | Machine schema | Roots / types |' : '| 格式 | 来源 | 参考文档 | 机器 schema | 根类型 / 类型 |',
+    language === 'en' ? '| Format | Source | Reference | Machine schema | Roots / types |' : '| 格式 | 來源 | 參考文件 | 機器 schema | 根型別 / 型別 |',
     '|---|---|---|---|---|',
     ...formats.entries.map((entry) => {
-      const source = entry.source === undefined ? language === 'en' ? 'Current checkout' : '当前工作树'
+      const source = entry.source === undefined ? language === 'en' ? 'Current checkout' : '目前工作樹'
         : 'tag' in entry.source ? `\`${entry.source.tag}\`` : `PR #${entry.source.pullRequest}`
-      const label = entry.version === formats.currentVersion ? language === 'en' ? 'Current catalog' : '当前目录' : `V${entry.version}`
+      const label = entry.version === formats.currentVersion ? language === 'en' ? 'Current catalog' : '目前目錄' : `V${entry.version}`
       return `| ${entry.version} | ${source} | [${label}](${path(entry.document)}) | [JSON](${path(entry.schemaPath)}) | ${entry.inventory.roots.length} / ${entry.inventory.types.length} |`
     }),
   ].join('\n')

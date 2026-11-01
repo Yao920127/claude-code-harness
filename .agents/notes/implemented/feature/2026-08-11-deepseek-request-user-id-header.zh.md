@@ -1,44 +1,44 @@
-# Agent Note: DeepSeek 请求用户与会话身份头部
+# Agent Note: DeepSeek 請求使用者與工作階段身份頭部
 
 Status: implemented
 
 [English](2026-08-11-deepseek-request-user-id-header.md) | 中文
 
-## 问题
+## 問題
 
-当调用方提供 `GenerateOptions.sessionId` 时，直连 DeepSeek 请求已携带 `x-deepseek-harness-session-id`，让提供方侧支持与诊断可以关联同一对话中的多个轮次。但请求缺少跨会话的稳定身份，而 harness 已为遥测与反馈持久化匿名用户 id。另行生成 id 会破坏关联；把它放进提供方无关的归属辅助函数，则会让每个 HTTP 适配器都发送稳定的逐用户标识。
+當呼叫方提供 `GenerateOptions.sessionId` 時，直連 DeepSeek 請求已攜帶 `x-deepseek-harness-session-id`，讓提供者側支援與診斷可以關聯同一對話中的多個輪次。但請求缺少跨工作階段的穩定身份，而 harness 已為遙測與回饋持久化匿名使用者 id。另行生成 id 會破壞關聯；把它放進提供者無關的歸屬輔助函式，則會讓每個 HTTP 介面卡都傳送穩定的逐使用者標識。
 
-用户 id 是传输元数据，不是模型输入。它不得进入请求体、提示词、token 计量、KV cache 身份或会话日志。发送目标是适配器解析后的 `baseURL`，既可能是 DeepSeek 自身，也可能是配置的网关，因此必须明确隐私边界。
+使用者 id 是傳輸中繼資料，不是模型輸入。它不得進入請求體、提示詞、token 計量、KV cache 身份或工作階段日誌。傳送目標是介面卡解析後的 `baseURL`，既可能是 DeepSeek 自身，也可能是設定的閘道，因此必須明確隱私邊界。
 
-## 决策
+## 決策
 
-`dsh-llm-deepseek` 在凭据解析成功后发出的每个提供方请求上发送 `x-deepseek-harness-user-id`。该值来自 `@deepseek-ai/dsh-anonymous-user-id`，因此与同一 `$DSH_HOME` 的 OpenTelemetry Resource `user.id` 及 `/feedback` 确认一致。适配器继续仅在存在 `GenerateOptions.sessionId` 时发送 `x-deepseek-harness-session-id`；普通 agent、标题生成与压缩请求由 agent loop 提供当前持久化 `Session.id`。
+`dsh-llm-deepseek` 在憑證解析成功後發出的每個提供者請求上傳送 `x-deepseek-harness-user-id`。該值來自 `@deepseek-ai/dsh-anonymous-user-id`，因此與同一 `$DSH_HOME` 的 OpenTelemetry Resource `user.id` 及 `/feedback` 確認一致。介面卡繼續僅在存在 `GenerateOptions.sessionId` 時傳送 `x-deepseek-harness-session-id`；普通 agent、標題生成與壓縮請求由 agent loop 提供目前持久化 `Session.id`。
 
-插件在凭据解析成功后惰性获取用户 id，并在该插件实例内缓存。缺少凭据不会创建 `.anonymous-user-id`；即使设置了 `DSH_TELEMETRY_DISABLED`，首个已授权的提供方请求仍可能创建它。直连适配器构造函数接收 `resolveUserId` 依赖，使线路行为可在单元测试中保持确定性。
+外掛在憑證解析成功後惰性取得使用者 id，並在該外掛實例內快取。缺少憑證不會建立 `.anonymous-user-id`；即使設定了 `DSH_TELEMETRY_DISABLED`，首個已授權的提供者請求仍可能建立它。直連介面卡建構函式接收 `resolveUserId` 依賴，使線路行為可在單元測試中保持確定性。
 
-两个头部都是发送到解析后 `baseURL` 的模型不可见 HTTP 元数据。身份值不在 JSON 请求体中，也不会成为模型可见输入或会话事件。配置的网关会收到它们。提供方特定正文扩展由 [DeepSeek LLM API 扩展决策](../architecture/2026-08-21-deepseek-llm-api-request-extensions.zh.md)单独拥有。遥测共享只控制遥测导出，不会禁用提供方请求身份。
+兩個頭部都是傳送到解析後 `baseURL` 的模型不可見 HTTP 中繼資料。身份值不在 JSON 請求體中，也不會成為模型可見輸入或工作階段事件。設定的閘道會收到它們。提供者特定正文擴充功能由 [DeepSeek LLM API 擴充功能決策](../architecture/2026-08-21-deepseek-llm-api-request-extensions.zh.md)單獨擁有。遙測共享只控制遙測匯出，不會停用提供者請求身份。
 
-## 验证
+## 驗證
 
-- mock 提供方断言已授权请求携带 `getOrCreateAnonymousUserId()` 返回的同一用户 id，并在未提供会话 id 时省略会话头部。
-- 会话身份线路测试断言两个头部都存在，并原样保留传入的会话 id。
-- 直连适配器测试断言每条 stream 仅解析一次用户 id，keyless 配置测试则证明凭据失败不会创建 `.anonymous-user-id`。
-- 真实 Loader 组合测试断言组装后的插件使用共享 user-id 包，而非测试专用值。
-- 无需修改 keyless snapshot，因为这些头部不是模型可见或用户可见的 transcript 内容。
+- mock 提供者斷言已授權請求攜帶 `getOrCreateAnonymousUserId()` 返回的同一使用者 id，並在未提供工作階段 id 時省略工作階段頭部。
+- 工作階段身份線路測試斷言兩個頭部都存在，並原樣保留傳入的工作階段 id。
+- 直連介面卡測試斷言每條 stream 僅解析一次使用者 id，keyless 設定測試則證明憑證失敗不會建立 `.anonymous-user-id`。
+- 真實 Loader 組合測試斷言組裝後的外掛使用共享 user-id 包，而非測試專用值。
+- 無需修改 keyless snapshot，因為這些頭部不是模型可見或使用者可見的 transcript 內容。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-| 已否决 | 原因 |
+| 已否決 | 原因 |
 |---|---|
-| 把 id 加进通用 `attributionHeaders()` | 该辅助函数是提供方无关且静态的；加入逐用户值会把它发送给无关提供方，并违反其应用身份隐私契约 |
-| 在 `cordis.yml` 中配置固定自定义头部 | 部署配置无法推导当前会话 id，且会把稳定身份暴露为可变配置，而不是使用其所属运行时契约 |
-| 生成 DeepSeek 专用用户 id | 提供方请求将无法与同一 harness home 的遥测和反馈关联 |
-| 随遥测共享关闭该头部 | 提供方请求身份与遥测导出的接收方和目的不同；共用开关会掩盖真实隐私边界 |
-| 把 id 放进 OpenAI 兼容的 `user` 或 `metadata` 请求字段 | body 字段可能影响提供方 schema、日志、缓存、token 化或模型可见重建；HTTP 元数据可保留预期边界 |
+| 把 id 加進通用 `attributionHeaders()` | 該輔助函式是提供者無關且靜態的；加入逐使用者值會把它傳送給無關提供者，並違反其應用身份隱私契約 |
+| 在 `cordis.yml` 中設定固定自定義頭部 | 部署設定無法推導目前工作階段 id，且會把穩定身份暴露為可變設定，而不是使用其所屬執行時契約 |
+| 生成 DeepSeek 專用使用者 id | 提供者請求將無法與同一 harness home 的遙測和回饋關聯 |
+| 隨遙測共享關閉該頭部 | 提供者請求身份與遙測匯出的接收方和目的不同；共用開關會掩蓋真實隱私邊界 |
+| 把 id 放進 OpenAI 相容的 `user` 或 `metadata` 請求欄位 | body 欄位可能影響提供者 schema、日誌、快取、token 化或模型可見重建；HTTP 中繼資料可保留預期邊界 |
 
-## 后果
+## 後果
 
-- DeepSeek 支持可以通过一个匿名 harness-home id 跨会话关联请求，并通过持久化 session id 关联同一对话。
-- 首个已授权 DeepSeek 请求可独立于遥测导出创建 `$DSH_HOME/.anonymous-user-id`。
-- 自定义 DeepSeek 网关会收到稳定用户 id 与可用的会话 id，因此运维方必须将配置的 `baseURL` 视为身份接收方。
-- 身份头部不会改变请求体、提示词、token 数、KV cache 身份或会话日志；单独注册的 DeepSeek 正文扩展保留各自约定。
+- DeepSeek 支援可以透過一個匿名 harness-home id 跨工作階段關聯請求，並透過持久化 session id 關聯同一對話。
+- 首個已授權 DeepSeek 請求可獨立於遙測匯出建立 `$DSH_HOME/.anonymous-user-id`。
+- 自定義 DeepSeek 閘道會收到穩定使用者 id 與可用的工作階段 id，因此運維方必須將設定的 `baseURL` 視為身份接收方。
+- 身份頭部不會改變請求體、提示詞、token 數、KV cache 身份或工作階段日誌；單獨註冊的 DeepSeek 正文擴充功能保留各自約定。

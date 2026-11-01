@@ -1,5 +1,5 @@
 ---
-description: "使用并排查实验性 Web Agent Teams roster、共享任务板与 teammate 导航面板。"
+description: "使用並排查實驗性 Web Agent Teams roster、共享任務板與 teammate 導航面板。"
 kind: "package-reference"
 ---
 
@@ -9,96 +9,96 @@ kind: "package-reference"
 
 ## 概述
 
-本包向 Web 会话页头添加 Agent Teams action，让用户检查当前 roster、查看共享任务板并导航到 teammate 会话。它从共享 Session store 读取 Lead Session 的 `agentTeam` 投影，Host 投影 frame 使其保持最新而无需刷新控件，并让普通 child history 导航继续使用稳定的 addressed-subagent 路径。通过公开发布的实验性 Agent Teams bundle 选择本包。这个浏览器 projection 不扩展稳定 API Proxy、不存储 Team 状态，也不注册面向模型的输入。
+本包向 Web 工作階段頁頭新增 Agent Teams action，讓使用者檢查目前 roster、檢視共享任務板並導航到 teammate 工作階段。它從共享 Session store 讀取 Lead Session 的 `agentTeam` 投影，Host 投影 frame 使其保持最新而無需重新整理控制元件，並讓普通 child history 導航繼續使用穩定的 addressed-subagent 路徑。透過公開發布的實驗性 Agent Teams bundle 選擇本包。這個瀏覽器 projection 不擴充功能穩定 API Proxy、不儲存 Team 狀態，也不註冊面向模型的輸入。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-通过 [`@deepseek-ai/dsh-experimental-agent-team-profile`](../agent-team-profile/README.zh.md) 启用本包。这个组合包同时提供团队服务、工具与 Web 界面。Web Client loader 挂载 `/client` export；root Host export 不执行行为，本包也没有用户配置字段。
+透過 [`@deepseek-ai/dsh-experimental-agent-team-profile`](../agent-team-profile/README.zh.md) 啟用本包。這個組合包同時提供團隊服務、工具與 Web 介面。Web Client loader 掛載 `/client` export；root Host export 不執行行為，本包也沒有使用者設定欄位。
 
-### 检查并导航 roster
+### 檢查並導航 roster
 
-面板从共享 Session store 展示 Lead Session 的 roster 与任务板。面板保持打开时，任务和成员更新会直接出现。打开面板不发起投影请求。会话或 Session 列表正在加载时，面板显示加载提示；加载结束后仍无 Team 值时，显示不可用提示。
+面板從共享 Session store 展示 Lead Session 的 roster 與任務板。面板保持開啟時，任務和成員更新會直接出現。開啟面板不發起投影請求。工作階段或 Session 列表正在載入時，面板顯示載入提示；載入結束後仍無 Team 值時，顯示不可用提示。
 
-Roster 行展示持久名称与阶段。provisioning 和 running 成员使用共享 ongoing loading，inactive 成员使用人物图标，failed 成员使用 error 红点。实时 Session 状态提供运行活动；共享 `modelSelection` 投影在可用时提供模型。当前会话带有“当前会话”标签且不可选择。在 teammate 会话中选择 Lead 会直接打开 Lead Session。选择 active teammate 会打开其普通 continuable 子会话地址。Host 在打开历史时校验 parent、child 与 mode；后续人类提示词使用同一 addressed-subagent 会话。
+Roster 行展示持久名稱與階段。provisioning 和 running 成員使用共享 ongoing loading，inactive 成員使用人物圖示，failed 成員使用 error 紅點。即時 Session 狀態提供執行活動；共享 `modelSelection` 投影在可用時提供模型。目前工作階段帶有“目前工作階段”標籤且不可選擇。在 teammate 工作階段中選擇 Lead 會直接開啟 Lead Session。選擇 active teammate 會開啟其普通 continuable 子工作階段地址。Host 在開啟歷史時驗證 parent、child 與 mode；後續人類提示詞使用同一 addressed-subagent 工作階段。
 
-### 查看任务板
+### 檢視任務板
 
-可开始的 pending 任务使用 idle 灰点，被依赖阻塞的 pending 任务使用 warning 橙点，in-progress 任务使用 ongoing loading，completed 任务使用 done 绿点。
+可開始的 pending 任務使用 idle 灰點，被依賴阻塞的 pending 任務使用 warning 橙點，in-progress 任務使用 ongoing loading，completed 任務使用 done 綠點。
 
-只读任务板展示任务标识、负责人、依赖、就绪状态、提示性写入范围与重叠警告。超过两行的描述提供展开按钮。分区标题显示成员与任务数量；空任务板显示简短描述，只有一名成员且无任务时采用单列面板。Team agent 通过工具创建和更新任务；面板不提供任务修改控件。当投影报告某条持久 Team 记录被拒绝时，面板在最后有效的 roster 与任务上方显示该失败。
+只讀任務板展示任務標識、負責人、依賴、就緒狀態、提示性寫入範圍與重疊警告。超過兩行的描述提供展開按鈕。分割槽標題顯示成員與任務數量；空任務板顯示簡短描述，只有一名成員且無任務時採用單列面板。Team agent 透過工具建立和更新任務；面板不提供任務修改控制元件。當投影報告某條持久 Team 記錄被拒絕時，面板在最後有效的 roster 與任務上方顯示該失敗。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-Client export 通过 Cordis effect 注册 locale dictionary 与一个 conversation-header slot；它不挂载任何 Remote namespace。Dispose plugin fiber 会移除这两项 registration。
+Client export 透過 Cordis effect 註冊 locale dictionary 與一個 conversation-header slot；它不掛載任何 Remote namespace。Dispose plugin fiber 會移除這兩項 registration。
 
-面板渲染在会话容器外，并保持在视口范围内。成员卡片在静止、选中和悬停状态下均使用共享 elevation 描边绘制轮廓。悬停触发按钮 150ms 后打开面板；指针离开触发按钮和面板后，经过 120ms 宽限关闭。点击触发按钮会固定面板并将焦点移入其中。点击外部或按 Escape 可关闭面板；仅当焦点原本位于面板内时，Escape 才将焦点返回触发按钮。页头较窄时触发按钮折叠为图标，只响应点击打开。组件从 `useSessions`、`useSessionStatus` 与 `useSession` 座位派生每一行：Lead 身份来自当前 Session 的 subagent address，Team 视图来自 `projectionsBySession[lead].values.agentTeam`，成员活动来自 Session 状态并以列表摘要为后备，model 来自 `projectionsBySession[member].values.modelSelection.next`。每个 roster 行只选择自己的运行状态。唯一的注入回调通过当前与目标 Session 的 id 打开 roster Session。切换会话会关闭面板并清除导航失败。
+面板渲染在工作階段容器外，並保持在視口範圍內。成員卡片在靜止、選中和懸停狀態下均使用共享 elevation 描邊繪製輪廓。懸停觸發按鈕 150ms 後開啟面板；指標離開觸發按鈕和麵板後，經過 120ms 寬限關閉。點選觸發按鈕會固定面板並將焦點移入其中。點選外部或按 Escape 可關閉面板；僅當焦點原本位於面板內時，Escape 才將焦點返回觸發按鈕。頁頭較窄時觸發按鈕摺疊為圖示，只回應點選開啟。元件從 `useSessions`、`useSessionStatus` 與 `useSession` 座位派生每一行：Lead 身份來自目前 Session 的 subagent address，Team 檢視來自 `projectionsBySession[lead].values.agentTeam`，成員活動來自 Session 狀態並以列表摘要為後備，model 來自 `projectionsBySession[member].values.modelSelection.next`。每個 roster 行只選擇自己的執行狀態。唯一的注入回呼透過目前與目標 Session 的 id 開啟 roster Session。切換工作階段會關閉面板並清除導航失敗。
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/client/mount.ts`](src/client/mount.ts) | locale、导航与 slot registration |
-| [`src/client/TeamAction.tsx`](src/client/TeamAction.tsx) | 由投影派生的 roster 与任务板及面板交互状态 |
+| [`src/client/mount.ts`](src/client/mount.ts) | locale、導航與 slot registration |
+| [`src/client/TeamAction.tsx`](src/client/TeamAction.tsx) | 由投影派生的 roster 與任務板及面板互動狀態 |
 | [`src/client/locales.ts`](src/client/locales.ts) | 中英文 panel 文案 |
-| [`src/index.ts`](src/index.ts) | 不执行行为的 Host entry |
+| [`src/index.ts`](src/index.ts) | 不執行行為的 Host entry |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [Agent Teams bundle](../agent-team-profile/README.zh.md)——挂载本 Client plugin 的公开 opt-in bundle。
-- [Agent Teams service](../agent-team/README.zh.md)——权威 roster、task 与投影行为。
-- [会话 UI](../../client/ui-conversation/README.zh.md)——稳定 header slot 与 addressed-subagent 导航表层。
-- [实验性包](../README.zh.md)——孵化状态与发布规则。
+- [Agent Teams bundle](../agent-team-profile/README.zh.md)——掛載本 Client plugin 的公開 opt-in bundle。
+- [Agent Teams service](../agent-team/README.zh.md)——權威 roster、task 與投影行為。
+- [工作階段 UI](../../client/ui-conversation/README.zh.md)——穩定 header slot 與 addressed-subagent 導航表層。
+- [實驗性包](../README.zh.md)——孵化狀態與釋出規則。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无直接影响，因为该浏览器 projection 不注册面向模型的输入。
+無直接影響，因為該瀏覽器 projection 不註冊面向模型的輸入。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无直接影响；Team 工具与普通会话提交负责后续任何模型可见用途。
+無直接影響；Team 工具與普通工作階段提交負責後續任何模型可見用途。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **没有 mailbox timeline**——投影视图只承载 roster 与任务；不显示 peer 消息。
-- **晚启用插件** — 在已经打开的会话中启用 Agent Teams 后，需要刷新页面才能接收其 Team 投影。
-- **模型可用性** — 仅当共享 store 包含该成员的持久选择或请求时才显示模型。冷缓存中缺少的值会保持缺失，直到正常 Session 加载或实时更新提供它们。
-- **普通 child continuation**——导航后发送的人类消息使用稳定 addressed-subagent 提示词路径，而不是 Team peer mailbox。
-- **没有 lifecycle 或 workspace control**——panel 不能 spawn、rename、delete 或 interrupt teammate，write scope 仍只是提示性 metadata。
+- **沒有 mailbox timeline**——投影檢視只承載 roster 與任務；不顯示 peer 訊息。
+- **晚啟用外掛** — 在已經開啟的工作階段中啟用 Agent Teams 後，需要重新整理頁面才能接收其 Team 投影。
+- **模型可用性** — 僅當共享 store 包含該成員的持久選擇或請求時才顯示模型。冷快取中缺少的值會保持缺失，直到正常 Session 載入或即時更新提供它們。
+- **普通 child continuation**——導航後傳送的人類訊息使用穩定 addressed-subagent 提示詞路徑，而不是 Team peer mailbox。
+- **沒有 lifecycle 或 workspace control**——panel 不能 spawn、rename、delete 或 interrupt teammate，write scope 仍只是提示性 metadata。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。Host 投影是权威来源，本包只持有一个可释放的 slot 注册。
+**執行時不變式：** 不釋出伴生入口。Host 投影是權威來源，本包只持有一個可釋放的 slot 註冊。

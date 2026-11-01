@@ -1,5 +1,5 @@
 ---
-description: "本地文件系统 skill 提供方，供编写本地 skill 或配置项目、自定义与用户 skill 根目录如何被发现与监视的用户与维护者阅读。"
+description: "本地檔案系統 skill 提供者，供編寫本地 skill 或設定專案、自定義與使用者 skill 根目錄如何被發現與監視的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,43 +9,43 @@ kind: "package-reference"
 
 ## 概述
 
-agent（智能体）可以使用来自仓库、自定义目录或用户 agent 配置的本地 skill（技能）：把 skill 编写为任一被扫描根目录下的目录 bundle（内含 `SKILL.md`）或平铺 `<name>.md` 文件，它就会出现在会话目录中。该提供方发现项目、自定义与用户根目录，解析每个 skill 的 YAML frontmatter，并监视这些目录，因此新增、改名或删除的 skill 无需重启即可到达 agent。当 skill 存放在磁盘上时选择它——注册表（`dsh-skill`）接受任意提供方，其他提供方可以从别处提供 skill。
+agent（智慧代理）可以使用來自儲存庫、自定義目錄或使用者 agent 設定的本地 skill（技能）：把 skill 編寫為任一被掃描根目錄下的目錄 bundle（內含 `SKILL.md`）或平鋪 `<name>.md` 檔案，它就會出現在工作階段目錄中。該提供者發現專案、自定義與使用者根目錄，解析每個 skill 的 YAML frontmatter，並監視這些目錄，因此新增、改名或刪除的 skill 無需重新啟動即可到達 agent。當 skill 存放在磁碟上時選擇它——註冊表（`dsh-skill`）接受任意提供者，其他提供者可以從別處提供 skill。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-挂载插件即可让本地 skill 对 agent 可用。它扫描下方的项目、自定义与用户 skill 根目录，把每个 skill 的 frontmatter 解析为目录条目，并按需加载正文；它还会监视这些根目录，使新增、改名或删除的 skill 无需重启即可进入下一次目录。
+掛載外掛即可讓本地 skill 對 agent 可用。它掃描下方的專案、自定義與使用者 skill 根目錄，把每個 skill 的 frontmatter 解析為目錄條目，並按需載入正文；它還會監視這些根目錄，使新增、改名或刪除的 skill 無需重新啟動即可進入下一次目錄。
 
-### 何时选择
+### 何時選擇
 
-当 skill 存放在磁盘上——仓库、自定义目录或用户的 agent 配置中——时，使用此提供方。当 skill 来自远程注册表或嵌入式插件数据时，请避免使用：注册表接受任意提供方，本包只是其中一种实现。
+當 skill 存放在磁碟上——儲存庫、自定義目錄或使用者的 agent 設定中——時，使用此提供者。當 skill 來自遠端註冊表或嵌入式外掛資料時，請避免使用：註冊表接受任意提供者，本包只是其中一種實作。
 
 ### skill 格式
 
-skill 可以是被扫描根目录顶层的目录 bundle `<name>/SKILL.md`，也可以是平铺文件 `<name>.md`；刻意不支持发现嵌套的 `**/SKILL.md`。文件以 YAML frontmatter 开头：必填 `name` 与 `description`，另有可选 `whenToUse`、`metadata`、`disable-model-invocation` 与 `user-invocable`。
+skill 可以是被掃描根目錄頂層的目錄 bundle `<name>/SKILL.md`，也可以是平鋪檔案 `<name>.md`；刻意不支援發現巢狀的 `**/SKILL.md`。檔案以 YAML frontmatter 開頭：必填 `name` 與 `description`，另有可選 `whenToUse`、`metadata`、`disable-model-invocation` 與 `user-invocable`。
 
-`disable-model-invocation: true` 会把 skill 从面向模型的目录和 loader 中排除；`user-invocable: false` 会把它从面向用户的命令中排除，省略的字段默认允许对应接口调用。这两个键接受 YAML 布尔值，以及不区分大小写的 `true`/`false`、`yes`/`no`、`on`/`off` 和 `1`/`0` 形式；被拒绝的拼写或非布尔值会让整个 skill 随警告一起被丢弃，而不会静默允许某个接口。
+`disable-model-invocation: true` 會把 skill 從面向模型的目錄和 loader 中排除；`user-invocable: false` 會把它從面向使用者的命令中排除，省略的欄位預設允許對應介面呼叫。這兩個鍵接受 YAML 布林值，以及不區分大小寫的 `true`/`false`、`yes`/`no`、`on`/`off` 和 `1`/`0` 形式；被拒絕的拼寫或非布林值會讓整個 skill 隨警告一起被丟棄，而不會靜默允許某個介面。
 
-目录条目和已加载 skill 提供解析后的指令文件路径，使符号链接目录和扁平文件都能作为普通文件预览。重新加载的定位信息和资源根保留发现时的路径，包括符号链接。
+目錄條目和已載入 skill 提供解析後的指令檔案路徑，使符號連結目錄和扁平檔案都能作為普通檔案預覽。重新載入的定位資訊和資源根保留髮現時的路徑，包括符號連結。
 
-目录与正文具有独立的生命周期：发现阶段把 frontmatter 解析进目录条目，每次加载都会重新读取当前文件，因此编辑 skill 正文无需版本化或缓存失效。
+目錄與正文具有獨立的生命週期：發現階段把 frontmatter 解析進目錄條目，每次載入都會重新讀取目前檔案，因此編輯 skill 正文無需版本化或快取失效。
 
-### 根目录与优先级
+### 根目錄與優先順序
 
-默认根按该提供方的 rank 顺序扫描：
+預設根按該提供者的 rank 順序掃描：
 
-| Rank | 来源 | 路径 |
+| Rank | 來源 | 路徑 |
 |---|---|---|
 | 100 | `project-dsh` | `<projectRoot>/.dsh/skills` |
 | 200 | `project-agents` | `<projectRoot>/.agents/skills` |
@@ -53,110 +53,110 @@ skill 可以是被扫描根目录顶层的目录 bundle `<name>/SKILL.md`，也�
 | 400 | `user-dsh` | `<dshHome>/skills` |
 | 500 | `user-agents` | `<agentsHome>/skills` |
 
-项目根目录是包含 `.git` 的最近祖先目录；如果不存在，则使用当前 cwd。用户 DSH 根目录会跳过其 `.system` 子目录。`includeDefaultRoots: false` 会省略项目根、用户根以及 `$DSH_BUNDLED_SKILL_DIR` 默认值，使隔离提供方只看到自身配置的根；`bundledSkillDir` 会按 rank 600 添加一个随包提供的根目录。
+專案根目錄是包含 `.git` 的最近祖先目錄；如果不存在，則使用目前 cwd。使用者 DSH 根目錄會跳過其 `.system` 子目錄。`includeDefaultRoots: false` 會省略專案根、使用者根以及 `$DSH_BUNDLED_SKILL_DIR` 預設值，使隔離提供者只看到自身設定的根；`bundledSkillDir` 會按 rank 600 新增一個隨包提供的根目錄。
 
-### 挂载与配置
+### 掛載與設定
 
-与 skill 注册表一起加载该插件；它需要 `ctx.skills`。
+與 skill 註冊表一起載入該外掛；它需要 `ctx.skills`。
 
 ```yaml
 - name: '@deepseek-ai/dsh-skill'
 - name: '@deepseek-ai/dsh-skill-filesystem'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `providerName` | `filesystem` | 注册到 `ctx.skills` 的唯一提供方名称 |
-| `includeDefaultRoots` | `true` | 在 `customSkillDirs` 周围包含项目根与用户根 |
-| `dshHome` | `$DSH_HOME` 或 `~/.dsh` | Harness 配置根目录；扫描其 `skills` 子目录 |
-| `agentsHome` | `$DSH_AGENTS_HOME` 或 `~/.agents` | 为兼容 skill 扫描的共享 agent 配置根目录 |
-| `customSkillDirs` | `[]` | 其他本地 skill 根目录，位于项目根之后、用户根之前 |
-| `watch` | `true` | 监视本地根，并在目录可能变化时使提供方失效 |
-| `bundledSkillDir` | — | 配置后按 rank 600 扫描的随包提供的 skill 根目录 |
+| `providerName` | `filesystem` | 註冊到 `ctx.skills` 的唯一提供者名稱 |
+| `includeDefaultRoots` | `true` | 在 `customSkillDirs` 周圍包含專案根與使用者根 |
+| `dshHome` | `$DSH_HOME` 或 `~/.dsh` | Harness 設定根目錄；掃描其 `skills` 子目錄 |
+| `agentsHome` | `$DSH_AGENTS_HOME` 或 `~/.agents` | 為相容 skill 掃描的共享 agent 設定根目錄 |
+| `customSkillDirs` | `[]` | 其他本地 skill 根目錄，位於專案根之後、使用者根之前 |
+| `watch` | `true` | 監視本地根，並在目錄可能變化時使提供者失效 |
+| `bundledSkillDir` | — | 設定後按 rank 600 掃描的隨包提供的 skill 根目錄 |
 
-其余 `watch*` 字段用于调节 Chokidar 行为——轮询、稳定窗口、间隔、项目上限与符号链接跟随。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-skill-filesystem)完整列出了所有字段，是这些字段的真源。
+其餘 `watch*` 欄位用於調節 Chokidar 行為——輪詢、穩定視窗、間隔、專案上限與符號連結跟隨。生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-skill-filesystem)完整列出了所有欄位，是這些欄位的真源。
 
-### 变更检测
+### 變更檢測
 
-现有根目录会被监视，因此新增、改名或删除 skill（或编辑其 frontmatter）会在下一个模型步骤触发目录刷新；`references`、`scripts`、`assets` 等 bundle 资源下的编辑不会触发。当第一方 `write` 与 `edit` 工具的目标可能影响受监视的 skill 时，它们会直接使提供方失效，因此模型无需等待宿主 watcher 即可观察到自身的文件系统变更。外部 IDE、Git 与 shell 变更由宿主 watcher 捕获；尚不存在的根目录会被探测，直至其出现。
+現有根目錄會被監視，因此新增、改名或刪除 skill（或編輯其 frontmatter）會在下一個模型步驟觸發目錄重新整理；`references`、`scripts`、`assets` 等 bundle 資源下的編輯不會觸發。當第一方 `write` 與 `edit` 工具的目標可能影響受監視的 skill 時，它們會直接使提供者失效，因此模型無需等待主機 watcher 即可觀察到自身的檔案系統變更。外部 IDE、Git 與 shell 變更由主機 watcher 捕捉；尚不存在的根目錄會被探測，直至其出現。
 
-### 可观察的成功与失败
+### 可觀察的成功與失敗
 
-任一被扫描根目录下的有效 skill 都会按名称排序出现在会话目录中，加载它即可返回当前文件正文。缺少有效 frontmatter、名称无效或调用值无效的文件会随警告被跳过，因此模型目录不会收到逐 skill 诊断，也无法区分缺失的 skill 与无效的 skill。意外的发现或读取失败会让目录观测保持不完整，而不会用看似发生删除的结果替换最后一份可用视图。
+任一被掃描根目錄下的有效 skill 都會按名稱排序出現在工作階段目錄中，載入它即可返回目前檔案正文。缺少有效 frontmatter、名稱無效或呼叫值無效的檔案會隨警告被跳過，因此模型目錄不會收到逐 skill 診斷，也無法區分缺失的 skill 與無效的 skill。意外的發現或讀取失敗會讓目錄觀測保持不完整，而不會用看似發生刪除的結果替換最後一份可用檢視。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释发现与监视如何组织；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋發現與監視如何組織；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该提供方采用两项职责分离。第一，目录与正文分离：发现阶段把 frontmatter 解析为摘要，而每次加载都重新读取文件，因此正文编辑无需 hash、修订号或缓存失效。第二，发现与监视分离：`list()` 在存在文件系统服务时通过 `ctx.fs` 扫描根目录并解析项目根（否则回退到可中止的 Node I/O），而独立的监视管理器负责 Chokidar 句柄、缺失根探测与失效。
+該提供者採用兩項職責分離。第一，目錄與正文分離：發現階段把 frontmatter 解析為摘要，而每次載入都重新讀取檔案，因此正文編輯無需 hash、修訂號或快取失效。第二，發現與監視分離：`list()` 在存在檔案系統服務時透過 `ctx.fs` 掃描根目錄並解析專案根（否則退回到可中止的 Node I/O），而獨立的監視管理器負責 Chokidar 控制代碼、缺失根探測與失效。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口、提供方、根解析、frontmatter 解析、监视管理器 |
-| — | 不发布运行时不变式伴生入口；本包没有独立事件序列或可变数据关系，相关约定在所属 seam 强制执行。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口、提供者、根解析、frontmatter 解析、監視管理器 |
+| — | 不釋出執行時不變式伴生入口；本包沒有獨立事件序列或可變資料關係，相關約定在所屬 seam 強制執行。 |
 
-### 发现流程
+### 發現流程
 
-发现过程先为查找 cwd 解析根列表，让监视管理器附加到每个根，再扫描每个根的直接条目：目录 bundle 解析为 `<name>/SKILL.md`，平铺文件解析为 `<name>.md`。每个文件都会解析 frontmatter——`name` 必须为 kebab-case，`description` 必填，调用键按严格布尔语法解析——候选项携带根目录的来源标签与 rank，供注册表与其他提供方合并。已确认缺失的路径属于有效空状态；格式错误或非文本条目会随警告跳过。
+發現過程先為查詢 cwd 解析根列表，讓監視管理器附加到每個根，再掃描每個根的直接條目：目錄 bundle 解析為 `<name>/SKILL.md`，平鋪檔案解析為 `<name>.md`。每個檔案都會解析 frontmatter——`name` 必須為 kebab-case，`description` 必填，呼叫鍵按嚴格布林語法解析——候選項攜帶根目錄的來源標籤與 rank，供註冊表與其他提供者合併。已確認缺失的路徑屬於有效空狀態；格式錯誤或非文字條目會隨警告跳過。
 
-### 监视与失效
+### 監視與失效
 
-现有根目录由 Chokidar 以深度 1 监视；不存在的根会从最近的现有祖先开始，借助 `fs.watchFile` 每次沿一个缺失路径段跟踪。相关事件——直属 bundle 添加/移除、平铺 `.md` 添加/移除、直接 `SKILL.md` 添加/移除/变更——会在每个微任务批次合并为一次提供方失效，资源子树下的变更则被忽略。监视管理器受 `watchMaxProjects` 限制，会记录启动失败并重试，并在释放时关闭所有句柄。第一方 `write`/`edit` 变更通过 `fs/observed` 事件同步失效。
+現有根目錄由 Chokidar 以深度 1 監視；不存在的根會從最近的現有祖先開始，藉助 `fs.watchFile` 每次沿一個缺失路徑段跟蹤。相關事件——直屬 bundle 新增/移除、平鋪 `.md` 新增/移除、直接 `SKILL.md` 新增/移除/變更——會在每個微任務批次合併為一次提供者失效，資源子樹下的變更則被忽略。監視管理器受 `watchMaxProjects` 限制，會記錄啟動失敗並重試，並在釋放時關閉所有控制代碼。第一方 `write`/`edit` 變更透過 `fs/observed` 事件同步失效。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从注册表约定逐步进入渲染已发现 skill 的消费方，以及配置默认值使用的 home 路径解析。
+當包級約定不夠用時閱讀以下頁面。它們從註冊表約定逐步進入渲染已發現 skill 的消費方，以及設定預設值使用的 home 路徑解析。
 
-- [skill 子系统参考](../../../docs/subsystems/skills.zh.md)——注册表约定与本地发现优先级表。
-- [skill 包](../skill/README.zh.md)——该提供方注册到的注册表。
-- [tool-skill 包](../tool-skill/README.zh.md)——已发现 skill 如何到达会话目录与模型。
-- [home-paths 包](../../util/home-paths/README.zh.md)——`dshHome` 与 `agentsHome` 如何解析。
+- [skill 子系統參考](../../../docs/subsystems/skills.zh.md)——註冊表約定與本地發現優先順序表。
+- [skill 包](../skill/README.zh.md)——該提供者註冊到的註冊表。
+- [tool-skill 包](../tool-skill/README.zh.md)——已發現 skill 如何到達工作階段目錄與模型。
+- [home-paths 包](../../util/home-paths/README.zh.md)——`dshHome` 與 `agentsHome` 如何解析。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过 `dsh-tool-skill` 间接影响模型；它把该提供方的可调用名称和有长度上限的描述渲染到初始目录或替换目录中，并把所选的当前指令正文与资源基底指引渲染到已保留工具历史中；路径、提供方 rank 与已禁用 skill 仍被隐藏。
+透過 `dsh-tool-skill` 間接影響模型；它把該提供者的可呼叫名稱和有長度上限的描述渲染到初始目錄或替換目錄中，並把所選的目前指令正文與資源基底指引渲染到已保留工具歷史中；路徑、提供者 rank 與已停用 skill 仍被隱藏。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-watcher 触发的失效可促使上述消费方在现有请求历史中追加替换目录。仅涉及正文的编辑不会改变目录 digest。
+watcher 觸發的失效可促使上述消費方在現有請求歷史中追加替換目錄。僅涉及正文的編輯不會改變目錄 digest。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该提供方何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是任务积压。
+這些限制說明該提供者何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是任務積壓。
 
-- **发现深度为一层**——只识别 `<root>/<name>/SKILL.md` 与 `<root>/<name>.md`；忽略嵌套 skill 树与包 manifest（元数据清单）。
-- **项目范围为最近 `.git` 祖先**——没有该标记的工作区回退到提供的 cwd，不支持其他项目根标记或 monorepo 子项目选择。
-- **格式错误的条目随警告消失**——模型目录不会收到逐 skill 诊断，无法区分缺失的 skill 与无效的 skill；意外的 I/O 失败则会保留最后一份可用目录。
-- **缺失根观察每次轮询一个路径段**——启动时不存在的根会使用 `fs.watchFile` 按 `watchPollIntervalMs` 轮询，直至 Chokidar 可以附加；这以有界检测延迟换取跨 IDE、Git 与 shell 工作流的可靠创建检测。
-- **无正文修订协议**——已加载正文是普通的已保留工具历史；后续文件编辑会影响后续调用，但既不会改写旧结果，也不会通知正文已变化。
+- **發現深度為一層**——只識別 `<root>/<name>/SKILL.md` 與 `<root>/<name>.md`；忽略巢狀 skill 樹與包 manifest（中繼資料清單）。
+- **專案範圍為最近 `.git` 祖先**——沒有該標記的工作區退回到提供的 cwd，不支援其他專案根標記或 monorepo 子專案選擇。
+- **格式錯誤的條目隨警告消失**——模型目錄不會收到逐 skill 診斷，無法區分缺失的 skill 與無效的 skill；意外的 I/O 失敗則會保留最後一份可用目錄。
+- **缺失根觀察每次輪詢一個路徑段**——啟動時不存在的根會使用 `fs.watchFile` 按 `watchPollIntervalMs` 輪詢，直至 Chokidar 可以附加；這以有界檢測延遲換取跨 IDE、Git 與 shell 工作流的可靠建立檢測。
+- **無正文修訂協定**——已載入正文是普通的已保留工具歷史；後續檔案編輯會影響後續呼叫，但既不會改寫舊結果，也不會通知正文已變化。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性——已交付的行为与限制以上文和代码为准。`src/index.ts` 中的一条 TODO 提议把 Chokidar 与缺失根观察提取为 Cordis 文件监视服务，把 skill 过滤与失效保留在此处；上文记录的缺失根轮询取舍是该开放设计的一部分。
+本開發備註是維護者的工作上下文，明確不具權威性——已交付的行為與限制以上文和程式碼為準。`src/index.ts` 中的一條 TODO 提議把 Chokidar 與缺失根觀察提取為 Cordis 檔案監視服務，把 skill 過濾與失效保留在此處；上文記錄的缺失根輪詢取捨是該開放設計的一部分。
 
 </details>

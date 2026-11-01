@@ -1,56 +1,56 @@
-# Agent Note: Web 与 headless 的有界信号关闭和重复信号强制退出
+# Agent Note: Web 與 headless 的有界訊號關閉和重複訊號強制退出
 
 Status: implemented
 
 [English](2026-08-03-cli-signal-shutdown-escalation.md) | 中文
 
-## 问题
+## 問題
 
-默认挂载遥测后，`dsh web` 与 headless 命令（现为 `dsh --profile headless`）新增了 SIGINT/SIGTERM 处理器，使进程退出时可以排空 Cordis 插件树，而不是丢弃排队中的遥测数据。每个处理器都使用单向布尔闩锁（latch），并且只有在 `ctx.fiber.dispose()` 结算后才退出。headless 正常完成时同样会无界等待整棵树执行 dispose（资源释放）。
+預設掛載遙測後，`dsh web` 與 headless 命令（現為 `dsh --profile headless`）新增了 SIGINT/SIGTERM 處理器，使程序退出時可以排空 Cordis 外掛樹，而不是丟棄排隊中的遙測資料。每個處理器都使用單向布林閂鎖（latch），並且只有在 `ctx.fiber.dispose()` 結算後才退出。headless 正常完成時同樣會無界等待整棵樹執行 dispose（資源釋放）。
 
-随后有用户复现，headless 命令在打印观察 URL 后立即卡死，重复按 `Ctrl+C` 也没有反应；设置 `DSH_TELEMETRY_DISABLED=1` 后不再卡死，而同一 Linux 沙箱中的独立 Node 信号处理器能够收到 SIGINT。这将待结算的 disposer 定位到遥测，而非终端信号转发。OTel 的 `BatchLogRecordProcessor.shutdown()` 会先等待 `exporter.forceFlush()`，再等待受 `exportTimeoutMillis` 限制的完成 Promise；OTLP 导出器的 `forceFlush()` 则直接等待正在进行的 HTTP Promise。因此，代理／沙箱连接始终无法取得 socket 时，即使已经配置两项 SDK 超时，也会让提供方关闭一直待结算。
+隨後有使用者復現，headless 命令在列印觀察 URL 後立即卡死，重複按 `Ctrl+C` 也沒有反應；設定 `DSH_TELEMETRY_DISABLED=1` 後不再卡死，而同一 Linux 沙箱中的獨立 Node 訊號處理器能夠收到 SIGINT。這將待結算的 disposer 定位到遙測，而非終端訊號轉發。OTel 的 `BatchLogRecordProcessor.shutdown()` 會先等待 `exporter.forceFlush()`，再等待受 `exportTimeoutMillis` 限制的完成 Promise；OTLP 匯出器的 `forceFlush()` 則直接等待正在進行的 HTTP Promise。因此，代理／沙箱連線始終無法取得 socket 時，即使已經設定兩項 SDK 超時，也會讓提供者關閉一直待結算。
 
-闩锁随后把这个遥测缺陷变成无法终止的 CLI（命令行界面）：正常完成流程已经在等待单次根级 dispose；第一次 SIGINT 会加入同一个待结算的 dispose，并设置信号闩锁；后续 SIGINT 在闩锁处直接返回，因此进程再无退出途径。正常完成之前收到信号时，同样会陷入无界等待。Web 使用的闩锁结构与此相同。
+閂鎖隨後把這個遙測缺陷變成無法終止的 CLI（命令列介面）：正常完成流程已經在等待單次根級 dispose；第一次 SIGINT 會加入同一個待結算的 dispose，並設定訊號閂鎖；後續 SIGINT 在閂鎖處直接返回，因此程序再無退出途徑。正常完成之前收到訊號時，同樣會陷入無界等待。Web 使用的閂鎖結構與此相同。
 
-遥测自身的超时无法证明整棵插件树都能结算。任何当前或未来的 disposer 都可能卡死；进程边界既要保留第一次优雅关闭的机会，也必须给用户留下强制退出的途径。
+遙測自身的超時無法證明整棵外掛樹都能結算。任何目前或未來的 disposer 都可能卡死；程序邊界既要保留第一次優雅關閉的機會，也必須給使用者留下強制退出的途徑。
 
-## 决策
+## 決策
 
-修复分为两层归属。OTel 后端围绕 SDK 提供方的完整关闭 Promise 增加 `shutdownTimeoutMillis`（默认值和交付值均为 3 秒）。超过该截止时间时会以拒绝状态结算，并进入遥测协调器现有的失败隔离路径，使 Cordis 插件树能够完成 dispose；由于 OTel 未公开取消传输 Promise 的能力，待处理记录可能丢失。
+修復分為兩層歸屬。OTel 後端圍繞 SDK 提供者的完整關閉 Promise 增加 `shutdownTimeoutMillis`（預設值和交付值均為 3 秒）。超過該截止時間時會以拒絕狀態結算，並進入遙測協調器現有的失敗隔離路徑，使 Cordis 外掛樹能夠完成 dispose；由於 OTel 未公開取消傳輸 Promise 的能力，待處理記錄可能丟失。
 
-Web 与 headless 共用 `createProcessShutdown`，它是围绕根级 dispose 建立的进程级控制器：
+Web 與 headless 共用 `createProcessShutdown`，它是圍繞根級 dispose 建立的程序級控制器：
 
-- 多次正常关闭调用会汇合到同一次 dispose，并保留首次请求的退出码；这些调用不会相互触发强制退出。dispose 成功后，控制器通过 `process.exitCode` 记录该退出码，让 Node 自然排空剩余句柄；dispose 失败时仍强制退出，因为启动器不能假定失败的插件树已经完全停稳。
-- 第一个信号会启动同一次优雅 dispose，并设置一个带引用的 5 秒退出兜底。dispose 无论成功或失败都会触发且仅触发一次退出；任何一种结果都无法取消进程退出。
-- 关闭待结算期间收到信号时，会立即按该信号路径的退出码强制退出。这既包括 headless 正常完成已经进入 dispose 后收到的第一次 `Ctrl+C`，也包括由信号启动排空后收到的第二个信号。
-- 5 秒上限是进程安全不变式，而不是部署调节项。它足以覆盖遥测部署的常规排空时限，同时仍在启动器边界为任何卡死的 disposer 设置等待上限。
+- 多次正常關閉呼叫會匯合到同一次 dispose，並保留首次請求的結束代碼；這些呼叫不會相互觸發強制退出。dispose 成功後，控制器透過 `process.exitCode` 記錄該結束代碼，讓 Node 自然排空剩餘控制代碼；dispose 失敗時仍強制退出，因為啟動器不能假定失敗的外掛樹已經完全停穩。
+- 第一個訊號會啟動同一次優雅 dispose，並設定一個帶引用的 5 秒退出後備。dispose 無論成功或失敗都會觸發且僅觸發一次退出；任何一種結果都無法取消程序退出。
+- 關閉待結算期間收到訊號時，會立即按該訊號路徑的結束代碼強制退出。這既包括 headless 正常完成已經進入 dispose 後收到的第一次 `Ctrl+C`，也包括由訊號啟動排空後收到的第二個訊號。
+- 5 秒上限是程序安全不變式，而不是部署調節項。它足以覆蓋遙測部署的常規排空時限，同時仍在啟動器邊界為任何卡死的 disposer 設定等待上限。
 
-正常完成会刻意避免调用 `process.exit()`：Undici 请求刚完成后立即强制退出，可能会在原生句柄清理尚未排空时触发 Node 的 [Windows libuv 异步句柄断言](https://github.com/nodejs/node/issues/56645)。如果正常 dispose 已经完成，但仍有其他句柄让进程保持存活，信号依然可以强制退出。
+正常完成會刻意避免呼叫 `process.exit()`：Undici 請求剛完成後立即強制退出，可能會在原生控制代碼清理尚未排空時觸發 Node 的 [Windows libuv 非同步控制代碼斷言](https://github.com/nodejs/node/issues/56645)。如果正常 dispose 已經完成，但仍有其他控制代碼讓程序保持存活，訊號依然可以強制退出。
 
-headless 对完成的轮次仍以 0 退出，对其他轮次结束原因或 API 业务错误仍以 1 退出，对 SIGINT 以 130 退出，对 SIGTERM 以 143 退出。Web 保留现有行为：SIGTERM 以 0 退出，SIGINT 以 130 退出。
+headless 對完成的輪次仍以 0 退出，對其他輪次結束原因或 API 業務錯誤仍以 1 退出，對 SIGINT 以 130 退出，對 SIGTERM 以 143 退出。Web 保留現有行為：SIGTERM 以 0 退出，SIGINT 以 130 退出。
 
-这项决策取代了[遥测部署 Agent Note](../../archived/feature/2026-07-31-web-telemetry-default-mount.md) 中 SDK 导出器／处理器超时能够限制提供方完整关闭流程的假设，也取代了其中暂缓进程级退出兜底的决定。后端负责导出数据丢失与延迟策略，并封住已知的 SDK `forceFlush()` 缺口；启动器负责最外层保证，确保任何插件都无法无限期困住进程。
+這項決策取代了[遙測部署 Agent Note](../../archived/feature/2026-07-31-web-telemetry-default-mount.md) 中 SDK 匯出器／處理器超時能夠限制提供者完整關閉流程的假設，也取代了其中暫緩程序級退出後備的決定。後端負責匯出資料丟失與延遲策略，並封住已知的 SDK `forceFlush()` 缺口；啟動器負責最外層保證，確保任何外掛都無法無限期困住程序。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**只限制遥测后端的 `shutdown()`。** 仍不充分：它能保护已知的 OTel 等待，但无法保护启动器免受其他插件 disposer 的影响。
+**只限制遙測後端的 `shutdown()`。** 仍不充分：它能保護已知的 OTel 等待，但無法保護啟動器免受其他外掛 disposer 的影響。
 
-**恢复 Node 默认的信号即时退出。** 不予采纳：收到第一个信号时，健康流程仍应刷新遥测数据并释放其他资源。即时退出是显式的强制退出路径，而非默认行为。
+**恢復 Node 預設的訊號即時退出。** 不予採納：收到第一個訊號時，健康流程仍應重新整理遙測資料並釋放其他資源。即時退出是顯式的強制退出路徑，而非預設行為。
 
-**只增加 5 秒超时。** 不予采纳：用户再次按下 `Ctrl+C`，就是要求立即停止等待。若在剩余宽限期内继续吞掉这一意图，只是缩短了报告中故障的持续时间，并未解决问题。
+**只增加 5 秒超時。** 不予採納：使用者再次按下 `Ctrl+C`，就是要求立即停止等待。若在剩餘寬限期內繼續吞掉這一意圖，只是縮短了報告中故障的持續時間，並未解決問題。
 
-**dispose 成功后仍总是调用 `process.exit()`。** 不予采纳：根级 dispose 只能证明应用插件树已经完全停稳，不能证明 Node 及其原生依赖已经回收所有异步句柄。设置 `process.exitCode` 既保留请求的状态码，也允许运行时完成这部分工作。
+**dispose 成功後仍總是呼叫 `process.exit()`。** 不予採納：根級 dispose 只能證明應用外掛樹已經完全停穩，不能證明 Node 及其原生依賴已經回收所有非同步控制代碼。設定 `process.exitCode` 既保留請求的狀態碼，也允許執行時完成這部分工作。
 
-## 后果
+## 後果
 
-健康的正常退出流程仍会对整棵 Cordis 插件树执行 dispose，随后等待 Node 事件循环自然排空。已知的遥测等待最多会在 3 秒后解除；其他退出流程卡死时，如无进一步输入，最多等待 5 秒；收到信号时，仍在排空句柄的正常完成流程或待结算的关闭流程都会立即结束进程。强制退出或受截止时间限制的退出可能中断遥测导出或尚未完成的清理工作；只有优雅关闭约定已经失败，或用户明确要求强制退出时，才会有意接受这一结果。
+健康的正常退出流程仍會對整棵 Cordis 外掛樹執行 dispose，隨後等待 Node 事件迴圈自然排空。已知的遙測等待最多會在 3 秒後解除；其他退出流程卡死時，如無進一步輸入，最多等待 5 秒；收到訊號時，仍在排空控制代碼的正常完成流程或待結算的關閉流程都會立即結束程序。強制退出或受截止時間限制的退出可能中斷遙測匯出或尚未完成的清理工作；只有優雅關閉約定已經失敗，或使用者明確要求強制退出時，才會有意接受這一結果。
 
-该控制器属于启动器基础设施，而不是 Cordis 插件：它不会声称 dispose 已经完成，也不会削弱普通 disposer 必须达到完全停稳状态的生命周期规则。
+該控制器屬於啟動器基礎設施，而不是 Cordis 外掛：它不會聲稱 dispose 已經完成，也不會削弱普通 disposer 必須達到完全停穩狀態的生命週期規則。
 
-## 测试
+## 測試
 
-`apps/cli/tests/process-shutdown.spec.ts` 固定了 dispose 成功后的自然完成、dispose 失败后的强制退出、5 秒退出兜底、正常调用汇合、由信号发起的 dispose、信号中断正常 dispose 或 dispose 后句柄排空，以及第二次信号强制退出的行为。
+`apps/cli/tests/process-shutdown.spec.ts` 固定了 dispose 成功後的自然完成、dispose 失敗後的強制退出、5 秒退出後備、正常呼叫匯合、由訊號發起的 dispose、訊號中斷正常 dispose 或 dispose 後控制代碼排空，以及第二次訊號強制退出的行為。
 
-`apps/cli/tests/headless-shutdown.e2e.ts` 在 PTY 中启动真实交付的 Web/headless Loader 插件树，并挂载一个仅用于测试的插件；该插件的 disposer 会声明已经进入清理流程，但永不结算。测试在观察地址出现后发送 SIGINT，等待 dispose 已启动的证据，再次发送 SIGINT，并要求进程以 130 退出。源码／产物启动解析器使两个执行平面都覆盖同一项回归。该 PTY 用例覆盖用户可见的进程状态；模型输出快照没有变化。
+`apps/cli/tests/headless-shutdown.e2e.ts` 在 PTY 中啟動真實交付的 Web/headless Loader 外掛樹，並掛載一個僅用於測試的外掛；該外掛的 disposer 會宣告已經進入清理流程，但永不結算。測試在觀察地址出現後傳送 SIGINT，等待 dispose 已啟動的證據，再次傳送 SIGINT，並要求程序以 130 退出。原始碼／產物啟動解析器使兩個執行平面都覆蓋同一項迴歸。該 PTY 案例覆蓋使用者可見的程序狀態；模型輸出快照沒有變化。
 
-`packages/session/session-telemetry-otel/tests/otel.spec.ts` 在定时器导出开始后保持一条真实 OTLP 请求打开，并固定以下行为：即使 SDK 的 `forceFlush()` 仍待结算，Cordis dispose 也会在 `shutdownTimeoutMillis` 到期时返回。随后测试释放 collector，使仍受观察的提供方 Promise 干净结算。
+`packages/session/session-telemetry-otel/tests/otel.spec.ts` 在定時器匯出開始後保持一條真實 OTLP 請求開啟，並固定以下行為：即使 SDK 的 `forceFlush()` 仍待結算，Cordis dispose 也會在 `shutdownTimeoutMillis` 到期時返回。隨後測試釋放 collector，使仍受觀察的提供者 Promise 乾淨結算。

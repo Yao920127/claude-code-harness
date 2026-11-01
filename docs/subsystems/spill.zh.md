@@ -1,14 +1,14 @@
-# spill 存储
+# spill 儲存
 
 [English](spill.md) | 中文
 
-spill 存储[能力 seam](../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)持久保存调用方提供的文本，并返回面向模型的定位符与检索指引。其 Service Definition 是 [dsh-spill](../../packages/spill/spill)（`ctx.spillStore`），本地 Service Provider 是 [dsh-spill-local](../../packages/spill/spill-local)。消费方包括[工具结果策略](../../packages/spill/spill-policy)与[会话引用](../../packages/context/session-reference/README.zh.md)。spill 是可选能力，不属于[智能体循环主干](core.zh.md)；预览与 spill 决策由消费方负责，存储则原样保存所提供的文本。
+spill 儲存[能力 seam](../../.agents/notes/implemented/architecture/2026-07-08-tool-output-spill-files.zh.md)持久儲存呼叫方提供的文字，並返回面向模型的定位符與檢索指引。其 Service Definition 是 [dsh-spill](../../packages/spill/spill)（`ctx.spillStore`），本地 Service Provider 是 [dsh-spill-local](../../packages/spill/spill-local)。消費方包括[工具結果策略](../../packages/spill/spill-policy)與[工作階段引用](../../packages/context/session-reference/README.zh.md)。spill 是可選能力，不屬於[智慧代理迴圈主幹](core.zh.md)；預覽與 spill 決策由消費方負責，儲存則原樣儲存所提供的文字。
 
-源码：[`packages/spill/spill/src/types.ts`](../../packages/spill/spill/src/types.ts)
+原始碼：[`packages/spill/spill/src/types.ts`](../../packages/spill/spill/src/types.ts)
 
-## 保存请求
+## 儲存請求
 
-`saveText` 是唯一的服务操作：原样持久保存 `content`，并返回不透明的定位符、后端提供的检索提示和精确字节数。请求携带保存时的存储命名空间（`owner`）、描述性的生产者来源信息（`source`，绝非访问控制）以及后端可用作命名提示而非路径的 `suggestedName`。工具来源标识实际工具调用；会话引用来源标识被捕获的源会话，而其归属是接收上下文的目标会话。
+`saveText` 是唯一的服務操作：原樣持久儲存 `content`，並返回不透明的定位符、後端提供的檢索提示和精確位元組數。請求攜帶儲存時的儲存名稱空間（`owner`）、描述性的生產者來源資訊（`source`，絕非存取控制）以及後端可用作命名提示而非路徑的 `suggestedName`。工具來源標識實際工具呼叫；工作階段引用來源標識被捕捉的源工作階段，而其歸屬是接收上下文的目標工作階段。
 
 ```ts type-equiv
 /** One request to persist text to a spill artifact. */
@@ -38,7 +38,7 @@ interface SpillOwner {
 }
 ```
 
-保留期清理可以连同其他旧会话产物一起使旧定位符失效；spill seam 不定义逐会话的清理策略。
+保留期清理可以連同其他舊工作階段產物一起使舊定位符失效；spill seam 不定義逐工作階段的清理策略。
 
 ```ts type-equiv
 /**
@@ -63,7 +63,7 @@ type SpillSource = {
 }
 ```
 
-## 结果
+## 結果
 
 ```ts type-equiv
 /** A saved spill artifact: its locator, byte length, and backend-specific retrieval guidance. */
@@ -74,7 +74,7 @@ interface SpillRef {
 }
 ```
 
-`SpillLocator` 是后端返回的[品牌化](core.zh.md#branded-ids)面向模型句柄。本地后端将它渲染为文件系统路径；远程或数据库后端可以渲染 URI、键或命令 token。消费方将它视为不透明值，并使用 `retrievalHint` 渲染，而不是假定 `read` 始终是正确的检索机制。
+`SpillLocator` 是後端返回的[品牌化](core.zh.md#branded-ids)面向模型控制代碼。本地後端將它渲染為檔案系統路徑；遠端或資料庫後端可以渲染 URI、鍵或命令 token。消費方將它視為不透明值，並使用 `retrievalHint` 渲染，而不是假定 `read` 始終是正確的檢索機制。
 
 ```ts type-equiv
 /**
@@ -85,11 +85,11 @@ interface SpillRef {
 type SpillLocator = Branded<'SpillLocator'>
 ```
 
-## 服务
+## 服務
 
-`SpillStore`（`ctx.spillStore`，定义于 [`packages/spill/spill/src/index.ts`](../../packages/spill/spill/src/index.ts)）是只有一个方法的抽象服务：`saveText(input) → Promise<SpillRef>`。它持久保存完整的 `content`，并在实际存储失败（权限、ENOSPC、后端不可用）时拒绝。该 seam 只负责存储：不负责保留策略、工具结果替换或检索／搜索 API。
+`SpillStore`（`ctx.spillStore`，定義於 [`packages/spill/spill/src/index.ts`](../../packages/spill/spill/src/index.ts)）是隻有一個方法的抽象服務：`saveText(input) → Promise<SpillRef>`。它持久儲存完整的 `content`，並在實際儲存失敗（權限、ENOSPC、後端不可用）時拒絕。該 seam 只負責儲存：不負責保留策略、工具結果替換或檢索／搜尋 API。
 
-本地后端（[dsh-spill-local](../../packages/spill/spill-local)）写入 `<root>/session-<hash>/<random>-<safeName>`：根目录是已配置或延迟创建的私有（0700）目录，会话子目录采用 `sha256(sessionId)`，并通过排他且仅所有者可访问的写入（`open(path, 'wx', 0o600)`）防止预先植入的符号链接重定向写入。其 `locator` 是本地路径，`retrievalHint` 则告知模型在该路径上使用 `read` 或 `grep`。策略消费方（[dsh-spill-policy](../../packages/spill/spill-policy)）会把超过 `maxInlineTokens` 的图文结果替换为按原顺序保留的首尾内容和 spill 地址；该过程尽力而为：保存失败时保留原始内联结果，而不会把成功的调用变成 `isError`。
+本地後端（[dsh-spill-local](../../packages/spill/spill-local)）寫入 `<root>/session-<hash>/<random>-<safeName>`：根目錄是已設定或延遲建立的私有（0700）目錄，工作階段子目錄採用 `sha256(sessionId)`，並透過排他且僅所有者可存取的寫入（`open(path, 'wx', 0o600)`）防止預先植入的符號連結重定向寫入。其 `locator` 是本地路徑，`retrievalHint` 則告知模型在該路徑上使用 `read` 或 `grep`。策略消費方（[dsh-spill-policy](../../packages/spill/spill-policy)）會把超過 `maxInlineTokens` 的圖文結果替換為按原順序保留的首尾內容和 spill 地址；該過程盡力而為：儲存失敗時保留原始內聯結果，而不會把成功的呼叫變成 `isError`。
 
 <!-- BEGIN GENERATED cordis-surface (gen-cordis-catalog.ts) — do not edit between markers -->
 

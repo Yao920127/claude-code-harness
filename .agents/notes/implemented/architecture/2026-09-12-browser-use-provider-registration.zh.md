@@ -1,53 +1,53 @@
-# Agent Note: 浏览器操作提供方注册与 Session 所有权
+# Agent Note: 瀏覽器操作提供者註冊與 Session 所有權
 
 Status: implemented
 
 [English](2026-09-12-browser-use-provider-registration.md) | 中文
 
-## 问题
+## 問題
 
-浏览器控制后端暴露不同的操作与观测格式。在可移植消费方存在之前，通用浏览器动作 API 会约束这些实验。浏览器会话可以隔离，而附加现有已登录浏览器必须保留其状态，并防止一个提供方内出现并发所有权。
+瀏覽器控制後端暴露不同的操作與觀測格式。在可移植消費方存在之前，通用瀏覽器動作 API 會約束這些實驗。瀏覽器工作階段可以隔離，而附加現有已登入瀏覽器必須保留其狀態，並防止一個提供者內出現並行所有權。
 
-## 决策
+## 決策
 
-[`dsh-browser-use`](../../../../packages/browser-use/browser-use/README.zh.md) 拥有 `ctx.browserUse`，注册一个提供方拥有的名称并返回其 effect 清理器。第二次注册无论名称为何都会失败。服务不包含浏览器对象、共享操作类型、分派方法、资源生命周期或运行时选择器。[计算机操作注册决策](2026-09-12-computer-use-provider-registration.zh.md)仍独立拥有桌面提供方注册与共享桌面协调规则。
+[`dsh-browser-use`](../../../../packages/browser-use/browser-use/README.zh.md) 擁有 `ctx.browserUse`，註冊一個提供者擁有的名稱並返回其 effect 清理器。第二次註冊無論名稱為何都會失敗。服務不包含瀏覽器物件、共享操作型別、分派方法、資源生命週期或執行時選擇器。[計算機操作註冊決策](2026-09-12-computer-use-provider-registration.zh.md)仍獨立擁有桌面提供者註冊與共享桌面協調規則。
 
-[Playwright MCP](../../../../packages/experimental/browser-use-playwright-mcp/README.zh.md)、[Chrome DevTools MCP](../../../../packages/experimental/browser-use-chrome-devtools-mcp/README.zh.md) 与[原生 Stagehand](../../../../packages/experimental/browser-use-stagehand-native/README.zh.md) 拥有自己的浏览器工具，并通过常规 DSH 工具管线集成。它们是公共实验性可选功能。DSH 拥有任务规划与任务循环；Stagehand 提供单项 AI（人工智能）辅助操作。Profile 或 preset 配置为每次提供方激活选择启动或附加模式。
+[Playwright MCP](../../../../packages/experimental/browser-use-playwright-mcp/README.zh.md)、[Chrome DevTools MCP](../../../../packages/experimental/browser-use-chrome-devtools-mcp/README.zh.md) 與[原生 Stagehand](../../../../packages/experimental/browser-use-stagehand-native/README.zh.md) 擁有自己的瀏覽器工具，並透過常規 DSH 工具管線整合。它們是公共實驗性可選功能。DSH 擁有任務規劃與任務迴圈；Stagehand 提供單項 AI（人工智慧）輔助操作。Profile 或 preset 設定為每次提供者啟用選擇啟動或附加模式。
 
-浏览器资源属于确切的实时 Agent 与 Session，而非仅凭可复用的 Session id。调用跨轮次保留状态。运行时释放会关闭启动的资源，重新加载或 fork 不会继承启动的 profile。附加保留现有浏览器状态，并在该提供方实例内将外部浏览器独占保留给一个 Session。清理断开连接而不关闭外部浏览器。
+瀏覽器資源屬於確切的即時 Agent 與 Session，而非僅憑可複用的 Session id。呼叫跨輪次保留狀態。執行時釋放會關閉啟動的資源，重新載入或 fork 不會繼承啟動的 profile。附加保留現有瀏覽器狀態，並在該提供者實例內將外部瀏覽器獨佔保留給一個 Session。清理斷開連線而不關閉外部瀏覽器。
 
-[实验性运行时辅助库](../../../../packages/experimental/browser-use-runtime/README.zh.md)拥有共享资源生命周期与附加保留机制，而不向浏览器操作服务引入这些方法。取消调用方对资源获取的等待后，初始化及其保留仍归 Session 所有。活动操作收到 Agent 释放的取消信号时，在 Agent 等待空闲之前启动资源关闭，因为浏览器调用可能只有在连接关闭后才能结束。提供方清理停止接收工具调用，并保留注册，直到资源清理与活动调用完成。服务保持独立于所有实验包。
+[實驗性執行時輔助庫](../../../../packages/experimental/browser-use-runtime/README.zh.md)擁有共享資源生命週期與附加保留機制，而不向瀏覽器操作服務引入這些方法。取消呼叫方對資源取得的等待後，初始化及其保留仍歸 Session 所有。活動操作收到 Agent 釋放的取消訊號時，在 Agent 等待空閒之前啟動資源關閉，因為瀏覽器呼叫可能只有在連線關閉後才能結束。提供者清理停止接收工具呼叫，並保留註冊，直到資源清理與活動呼叫完成。服務保持獨立於所有實驗包。
 
-Stagehand 的启动器继承其进程环境，SDK 初始化可能在清理完成前超时。提供方 Host 使用 `@puppeteer/browsers` 在 CDP 或 SDK 就绪前取得所启动 Chromium 及其临时 profile 的所有权，并清理子进程环境。启动和附加模式都由隔离的 Worker 运行 SDK，且只通过 CDP 连接。原生推理不接受 abort signal。SDK 关闭会等待活动工作；清理成功后可重新连接并保留浏览器状态。SDK 工作未能结束时，只要 Chromium 仍在运行，就阻止复用。最终清理可在自有 Chromium 和 Worker 终止后释放启动浏览器的占用。附加模式下 SDK 工作未能结束、Worker 终止失败或自有进程清理失败时，保留占用。Host 仅终止自己拥有的 Chromium 进程，等待子进程关闭后才删除 profile；外部拥有的浏览器保持运行。
+Stagehand 的啟動器繼承其程序環境，SDK 初始化可能在清理完成前超時。提供者 Host 使用 `@puppeteer/browsers` 在 CDP 或 SDK 就緒前取得所啟動 Chromium 及其臨時 profile 的所有權，並清理子程序環境。啟動和附加模式都由隔離的 Worker 執行 SDK，且只透過 CDP 連線。原生推理不接受 abort signal。SDK 關閉會等待活動工作；清理成功後可重新連線並保留瀏覽器狀態。SDK 工作未能結束時，只要 Chromium 仍在執行，就阻止複用。最終清理可在自有 Chromium 和 Worker 終止後釋放啟動瀏覽器的佔用。附加模式下 SDK 工作未能結束、Worker 終止失敗或自有程序清理失敗時，保留佔用。Host 僅終止自己擁有的 Chromium 程序，等待子程序關閉後才刪除 profile；外部擁有的瀏覽器保持執行。
 
-Stagehand 使用显式配置的固定版本 SDK 目录内原生模型。配置的 API 密钥与可选请求头会转发到浏览器扩展，由 Stagehand 在扩展内执行推理。浏览器工具输入和返回数据使用现有 Session 日志，包括 SDK 结果元数据。DSH 模型路由、凭据复用、底层推理请求/响应捕获，以及与 Session 用量计量的集成仍属暂缓工作；本集成不增加持久化事件或 Session schema 变更。
+Stagehand 使用顯式設定的固定版本 SDK 目錄內原生模型。設定的 API 金鑰與可選請求頭會轉發到瀏覽器擴充功能，由 Stagehand 在擴充功能內執行推理。瀏覽器工具輸入和返回資料使用現有 Session 日誌，包括 SDK 結果中繼資料。DSH 模型路由、憑證複用、底層推理請求/回應捕捉，以及與 Session 用量計量的整合仍屬暫緩工作；本整合不增加持久化事件或 Session schema 變更。
 
-MCP 客户端激活会等待连接和工具发现，但提供方可能在任何 Session 存在之前就完成激活。该激活 promise 无法代表未来各 Session 拥有的客户端。每个 MCP 浏览器提供方在现有的串行 `agent/created` 事件中等待一次客户端启动尝试。[等待 Agent 创建的决策](2026-09-09-awaited-agent-creation.zh.md)负责排队输入顺序与创建回滚。创建或恢复成功后，提示词组装与直接调用方即可读取完整目录。
+MCP 用戶端啟用會等待連線和工具發現，但提供者可能在任何 Session 存在之前就完成啟用。該啟用 promise 無法代表未來各 Session 擁有的用戶端。每個 MCP 瀏覽器提供者在現有的序列 `agent/created` 事件中等待一次用戶端啟動嘗試。[等待 Agent 建立的決策](2026-09-09-awaited-agent-creation.zh.md)負責排隊輸入順序與建立復原。建立或恢復成功後，提示片語裝與直接呼叫方即可讀取完整目錄。
 
-启动失败或取消会拒绝创建或恢复，并触发 Agent 及其客户端资源的回滚。附加连接被占用时，本次激活永久跳过启动，但其他工作继续运行；连接释放后，新创建或恢复的 Agent 可以获取连接。较晚安装和重新加载只作用于后续激活，与 [Schedule 的挂载策略](../../../../packages/schedule/schedule/README.zh.md#use-this-package)一致。成功客户端的浏览器工具与资源请求共享 Session 队列；其他 Session 不能执行这些请求，也不能收到该服务器的指导。
+啟動失敗或取消會拒絕建立或恢復，並觸發 Agent 及其用戶端資源的復原。附加連線被佔用時，本次啟用永久跳過啟動，但其他工作繼續執行；連線釋放後，新建立或恢復的 Agent 可以取得連線。較晚安裝和重新載入只作用於後續啟用，與 [Schedule 的掛載策略](../../../../packages/schedule/schedule/README.zh.md#use-this-package)一致。成功用戶端的瀏覽器工具與資源請求共享 Session 佇列；其他 Session 不能執行這些請求，也不能收到該伺服器的指導。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**统一浏览器动作 API。** Playwright、Chrome DevTools 与 Stagehand 的原生语义不同。当前没有消费方要求可互换的动作方法，因此由提供方拥有工具以保留这些语义。
+**統一瀏覽器動作 API。** Playwright、Chrome DevTools 與 Stagehand 的原生語義不同。目前沒有消費方要求可互換的動作方法，因此由提供者擁有工具以保留這些語義。
 
-**提供方自有的启动阶段。** 现有的串行 `agent/created` 等待 Session 自有设置，并向创建方报告失败。独立维护任务会重复这份生命周期所有权。
+**提供者自有的啟動階段。** 現有的序列 `agent/created` 等待 Session 自有設定，並向建立方報告失敗。獨立維護任務會重複這份生命週期所有權。
 
-**在提示词组装期间发现。** 提示词和工具收集需要已就绪的注册。此时启动发现要么暴露不完整目录，要么要求再次收集；等待创建会在轮次开始前完成发现。
+**在提示片語裝期間發現。** 提示詞和工具收集需要已就緒的註冊。此時啟動發現要麼暴露不完整目錄，要麼要求再次收集；等待建立會在輪次開始前完成發現。
 
-**多个 Session 共享一个浏览器。** 浏览器标签页、导航与登录状态可以按 Session 隔离。共享它们会引入桌面集成通常无法避免的跨 Session 干扰。
+**多個 Session 共享一個瀏覽器。** 瀏覽器標籤頁、導航與登入狀態可以按 Session 隔離。共享它們會引入桌面整合通常無法避免的跨 Session 干擾。
 
-**附加时创建全新 context。** 新浏览器 context 不继承现有登录状态。独占使用附加的浏览器可保留附加所支持的工作流。
+**附加時建立全新 context。** 新瀏覽器 context 不繼承現有登入狀態。獨佔使用附加的瀏覽器可保留附加所支援的工作流。
 
-**随 Session 恢复浏览器 profile。** 持久浏览器状态引入 Session 日志之外的 profile 存储与迁移所有权。启动的状态仅在实时运行时存续；外部拥有的浏览器保留自己的持久化策略。
+**隨 Session 恢復瀏覽器 profile。** 持久瀏覽器狀態引入 Session 日誌之外的 profile 儲存與遷移所有權。啟動的狀態僅在即時執行時存續；外部擁有的瀏覽器保留自己的持久化策略。
 
-**仅支持隔离启动。** 用户既需要干净的浏览器会话，也需要访问现有身份验证状态。配置显式选择所有权策略。
+**僅支援隔離啟動。** 使用者既需要乾淨的瀏覽器工作階段，也需要存取現有身份驗證狀態。設定顯式選擇所有權策略。
 
-**委托浏览器 agent。** 这些实验比较浏览器控制后端。将整个任务委托给另一规划器会改变 DSH 对任务循环的控制。
+**委託瀏覽器 agent。** 這些實驗比較瀏覽器控制後端。將整個任務委託給另一規劃器會改變 DSH 對任務迴圈的控制。
 
-**DSH 模型桥接。** 原生 Stagehand 配置使浏览器集成独立于 DSH 模型请求适配和持久化。Session 模型选择、凭据复用、底层推理捕获与 Session 用量计量作为一个协调集成暂缓。
+**DSH 模型橋接。** 原生 Stagehand 設定使瀏覽器整合獨立於 DSH 模型請求適應和持久化。Session 模型選擇、憑證複用、底層推理捕捉與 Session 用量計量作為一個協調整合暫緩。
 
-## 影响
+## 影響
 
-提供方独立演进自己的工具，而共享服务保持仅注册名称。三个提供方及其运行时辅助库作为实验性包发布，但不在内置默认配置中启用。浏览器包组不依赖实验性运行时代码。
+提供者獨立演進自己的工具，而共享服務保持僅註冊名稱。三個提供者及其執行時輔助庫作為實驗性包釋出，但不在內建預設設定中啟用。瀏覽器包組不依賴實驗性執行時程式碼。
 
-附加保留机制作用于单个提供方实例；它不协调独立 DSH 进程或外部浏览器客户端。Session 重放不包含浏览器状态，取消不会撤销已交付的浏览器操作。提供方 README 拥有引擎支持、模型要求与上游限制。
+附加保留機制作用於單個提供者實例；它不協調獨立 DSH 程序或外部瀏覽器用戶端。Session 重放不包含瀏覽器狀態，取消不會撤銷已交付的瀏覽器操作。提供者 README 擁有引擎支援、模型要求與上游限制。

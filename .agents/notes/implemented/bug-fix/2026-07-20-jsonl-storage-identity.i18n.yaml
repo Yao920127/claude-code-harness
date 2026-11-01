@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-07-20-jsonl-storage-identity.md
 /agent-note-bind-jsonl-session-identity-before-mutation:
   en: 1d52db2391f1433e
-  zh: 3bcb9dca6b77bfdd
+  zh: 60cd20e0302d937b
 /agent-note-bind-jsonl-session-identity-before-mutation/problem:
   en: 960d783083269ddd
-  zh: ef52b53d99b520d1
+  zh: be4cd425ce8db191
 /agent-note-bind-jsonl-session-identity-before-mutation/decision:
   en: 3fc8ab92d1f0f98b
-  zh: 855b863c7d90cdd9
+  zh: d4762b127b873b65
 /agent-note-bind-jsonl-session-identity-before-mutation/alternatives-considered:
   en: 5269f154c37cb8de
-  zh: 983f18775457361a
+  zh: ed1cac561f308d5d
 /agent-note-bind-jsonl-session-identity-before-mutation/consequences:
   en: 2c88ff974542760f
-  zh: 489996a16ba6907b
+  zh: 29cff71f4a35423c

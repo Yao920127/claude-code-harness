@@ -1,5 +1,5 @@
 ---
-description: "子进程服务的本地宿主提供方：在宿主机器上运行由 OS 所有的受管范围与真实终端会话，并明确披露较弱的 fallback。"
+description: "子程序服務的本地主機提供者：在主機器上執行由 OS 所有的受管範圍與真實終端工作階段，並明確披露較弱的 fallback。"
 kind: "package-reference"
 ---
 
@@ -9,160 +9,160 @@ kind: "package-reference"
 
 ## 概述
 
-在任何于宿主机上运行子进程的组合中挂载 `dsh-subprocess-local`。它解析本地可执行文件，为普通 Linux 与 Windows 命令以及受支持的 Linux 终端会话提供由 OS 所有的受管范围，并通过 `node-pty` 提供真实终端会话；不受支持的宿主使用明确披露的较弱 fallback。它没有任何配置，因此每项处置方式、限制、终端尺寸与宽限期都随 spawn 请求来自调用方能力 seam。输出收集在内存中保留一段有界尾部，并可选地用 spill 文件恢复完整流；子进程从清理后的环境起步；dispose（资源释放）会终止并等待每个选定范围或会话完全停稳。
+在任何於主機上執行子程序的組合中掛載 `dsh-subprocess-local`。它解析本地可執行檔案，為普通 Linux 與 Windows 命令以及受支援的 Linux 終端工作階段提供由 OS 所有的受管範圍，並透過 `node-pty` 提供真實終端工作階段；不受支援的主機使用明確披露的較弱 fallback。它沒有任何設定，因此每項處置方式、限制、終端尺寸與寬限期都隨 spawn 請求來自呼叫方能力 seam。輸出收集在記憶體中保留一段有界尾部，並可選地用 spill 檔案恢復完整流；子程序從清理後的環境起步；dispose（資源釋放）會終止並等待每個選定範圍或工作階段完全停穩。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-把提供方与它的消费方挂载在同一组合中，并完全按子进程服务的规定启动进程；本包只决定这些进程在宿主机上如何运行。在 Windows 上，非终端子进程与 `taskkill` 辅助进程会隐藏窗口，因此后台操作不会抢占焦点。遵循进程启动可见性设置的 GUI 窗口也会被隐藏。
+把提供者與它的消費方掛載在同一組閤中，並完全按子程序服務的規定啟動程序；本包只決定這些程序在主機上如何執行。在 Windows 上，非終端子程序與 `taskkill` 輔助程序會隱藏視窗，因此後臺操作不會搶佔焦點。遵循程序啟動可見性設定的 GUI 視窗也會被隱藏。
 
-### 挂载提供方
+### 掛載提供者
 
-在与消费方相同的组合中加载本提供方。它没有任何配置字段：每项选择都随 spawn 请求到达，因此随部署变化的决策留在调用方的配置里。 `terminalEnvironment()` 在 POSIX 读取非空的 `SHELL`，缺失时使用账户登录 shell；在 Windows 读取非空的 `ComSpec`。空值会被省略，由消费者选择平台回退。
+在與消費方相同的組合中載入本提供者。它沒有任何設定欄位：每項選擇都隨 spawn 請求到達，因此隨部署變化的決策留在呼叫方的設定裡。 `terminalEnvironment()` 在 POSIX 讀取非空的 `SHELL`，缺失時使用帳戶登入 shell；在 Windows 讀取非空的 `ComSpec`。空值會被省略，由消費者選擇平臺退回。
 
 ```yaml
 - name: '@deepseek-ai/dsh-subprocess-local'
 - name: '@deepseek-ai/dsh-bash-local'
 ```
 
-### 解析可执行文件
+### 解析可執行檔案
 
-绝对可执行文件路径会被验证；裸名称根据清理后的 PATH 并以平台感知的可执行文件扩展名（Windows 上为 `.COM`/`.EXE`/`.BAT`/`.CMD`）解析。含分隔符的相对路径会被拒绝——请提供绝对路径或裸 PATH 名称——相对 PATH 条目从宿主进程 cwd 解析。
+絕對可執行檔案路徑會被驗證；裸名稱根據清理後的 PATH 並以平臺感知的可執行副檔名（Windows 上為 `.COM`/`.EXE`/`.BAT`/`.CMD`）解析。含分隔符的相對路徑會被拒絕——請提供絕對路徑或裸 PATH 名稱——相對 PATH 條目從主機程序 cwd 解析。
 
-Windows 普通子进程通过 `windowsHide` 启动私有 Job runner，并为原生目标请求隐藏初始窗口。标准流和 Job 归属不依赖窗口可见性；显式创建自身窗口的命令不在此保证范围内。
+Windows 普通子程序透過 `windowsHide` 啟動私有 Job runner，併為原生目標請求隱藏初始視窗。標準流和 Job 歸屬不依賴視窗可見性；顯式建立自身視窗的命令不在此保證範圍內。
 
-### 收集输出
+### 收集輸出
 
-收集模式在内存中保留一条流的最后 `maxBytes`——错误与最终结果通常聚集在末尾——并在配置了 `spill` 上限时把完整流追加到 OS 临时目录下每进程目录中的私有文件（`0700` 目录、`0600` 随机命名文件）。某条流大于 spill 上限时，会丢弃不完整的 spill，只返回带截断标记的尾部。spill 是尽力而为：当 spill 文件无法打开或追加（每进程目录被临时文件清理工具删除、`EACCES`、`EMFILE`、`ENOSPC`）时，收集器丢弃该 spill，通过插件 logger 记录一条 `error`，并继续收集内存尾部，因此结果带截断标记且没有 spill 路径。读取基于偏移量且从不消费，因此后台读取与批量读取在退出前后都可以共存。
+收集模式在記憶體中保留一條流的最後 `maxBytes`——錯誤與最終結果通常聚集在末尾——並在設定了 `spill` 上限時把完整流追加到 OS 臨時目錄下每程序目錄中的私有檔案（`0700` 目錄、`0600` 隨機命名檔案）。某條流大於 spill 上限時，會丟棄不完整的 spill，只返回帶截斷標記的尾部。spill 是盡力而為：當 spill 檔案無法開啟或追加（每程序目錄被臨時檔案清理工具刪除、`EACCES`、`EMFILE`、`ENOSPC`）時，收集器丟棄該 spill，透過外掛 logger 記錄一條 `error`，並繼續收集記憶體尾部，因此結果帶截斷標記且沒有 spill 路徑。讀取基於偏移量且從不消費，因此後臺讀取與批次讀取在退出前後都可以共存。
 
-`./output` 导出向进程适配器共享该收集器与保留 spill 的存储。`snapshot()` 返回保留的原始字节及总字节数，使远程适配器能够保留偏移量，而无需转发完整的流。
+`./output` 匯出向程序介面卡共享該收集器與保留 spill 的儲存。`snapshot()` 返回保留的原始位元組及總位元組數，使遠端介面卡能夠保留偏移量，而無需轉發完整的流。
 
-### 控制传输
+### 控制傳輸
 
-普通 spawn 可以请求 [subprocess 控制管道](../subprocess/README.zh.md#using-a-control-pipe)。Node 目标在所有受支持的宿主上均收到 fd 7；Windows 描述符编号依赖 CRT 初始化。POSIX runner 在 `execve` 时保留该描述符；Windows Job 和 ACL runner 在 Node 初始化前通过子进程的 CRT 启动表建立它，并在 spawn 后关闭自身的承载副本。标准流与 runner 的私有管理通道保持独立。
+普通 spawn 可以請求 [subprocess 控制管道](../subprocess/README.zh.md#using-a-control-pipe)。Node 目標在所有受支援的主機上均收到 fd 7；Windows 描述符編號依賴 CRT 初始化。POSIX runner 在 `execve` 時保留該描述符；Windows Job 和 ACL runner 在 Node 初始化前透過子程序的 CRT 啟動表建立它，並在 spawn 後關閉自身的承載副本。標準流與 runner 的私有管理通道保持獨立。
 
 <a id="running-terminal-sessions"></a>
-### 运行终端会话
+### 執行終端工作階段
 
-`spawnTerminal` 分配真实 PTY 并桥接 UTF-8 文本；你可以检查当前前台进程组并向其发送信号，还可以等待一次 `terminate()` 操作。在受支持的 Linux 宿主上，原始终端 argv 直接在 user-systemd scope 内运行；node-pty PID、会话 leader、控制终端、前台 `inputWaiting` 与就绪状态保持不变，而 scope 会拥有已重新设定父进程或调用 `setsid` 的后代。在 fallback 宿主上，清理会保留根进程树和可观察会话中的精确身份，但无法重新发现每个已经逃逸的后代。Linux 的精确输入等待要求前台线程的 fd 0 标识 shell 的控制终端，且线程当前的 syscall 正在等待该 fd；如果内核拒绝 syscall 探测，上层 PTY 后端会改用空闲推断。在 Windows 上，SIGINT 以 Ctrl-C 输入写入投递，SIGTSTP 与 SIGHUP 不受支持，拆卸会通过进程表验证 shell 已终止，因为被外部终止的 shell 可能永远不会触发 PTY 退出通知。
+`spawnTerminal` 分配真實 PTY 並橋接 UTF-8 文字；你可以檢查目前前臺程序組並向其傳送訊號，還可以等待一次 `terminate()` 操作。在受支援的 Linux 主機上，原始終端 argv 直接在 user-systemd scope 內執行；node-pty PID、工作階段 leader、控制終端、前臺 `inputWaiting` 與就緒狀態保持不變，而 scope 會擁有已重新設定父程序或呼叫 `setsid` 的後代。在 fallback 主機上，清理會保留根程序樹和可觀察工作階段中的精確身份，但無法重新發現每個已經逃逸的後代。Linux 的精確輸入等待要求前臺執行緒的 fd 0 標識 shell 的控制終端，且執行緒目前的 syscall 正在等待該 fd；如果核心拒絕 syscall 探測，上層 PTY 後端會改用空閒推斷。在 Windows 上，SIGINT 以 Ctrl-C 輸入寫入投遞，SIGTSTP 與 SIGHUP 不受支援，拆卸會透過程序表驗證 shell 已終止，因為被外部終止的 shell 可能永遠不會觸發 PTY 退出通知。
 
-使用 `shellActivity: true` 时，普通非登录的 `bash -i` 与 `zsh -i` 会安装私有生命周期记录，同时保留用户启动文件和提示符配置。Bash 需要 4.4 或更高版本，并允许写入提示符 hook；Zsh 观察空的顶层 ZLE 提示符，排除 `vared`、选择和续行提示符。输入、shell 状态迁移和进程观察变化都会推进活动 revision。前台、后台及停止的后代任务阻止空闲判断；原生 Linux 还要求 systemd scope 中恰好只有一个 task，覆盖进程树以外仍归其所有的工作；进程表扫描不完整、自定义 trap 和 Zsh 异步文件描述符 handler 会返回 unknown。进程表枚举失败会拒绝本次观察；活动保持 unknown，清理保留所有权，直到进程表可读并能完成验证。进程清理成功后删除私有文件。其他 shell、Windows、自定义参数以及经 sandbox 包装的可执行文件仍可使用，但活动为 unknown。
+使用 `shellActivity: true` 時，普通非登入的 `bash -i` 與 `zsh -i` 會安裝私有生命週期記錄，同時保留使用者啟動檔案和提示符設定。Bash 需要 4.4 或更高版本，並允許寫入提示符 hook；Zsh 觀察空的頂層 ZLE 提示符，排除 `vared`、選擇和續行提示符。輸入、shell 狀態遷移和程序觀察變化都會推進活動 revision。前臺、後臺及停止的後代任務阻止空閒判斷；原生 Linux 還要求 systemd scope 中恰好只有一個 task，覆蓋程序樹以外仍歸其所有的工作；程序表掃描不完整、自定義 trap 和 Zsh 非同步檔案描述符 handler 會返回 unknown。程序表列舉失敗會拒絕本次觀察；活動保持 unknown，清理保留所有權，直到程序表可讀並能完成驗證。程序清理成功後刪除私有檔案。其他 shell、Windows、自定義參數以及經 sandbox 包裝的可執行檔案仍可使用，但活動為 unknown。
 
-启用后，根进程退出不会终止仍在运行的后代。明确为空的 Linux 受管范围或完整且为空的 Linux 会话可允许回收保留的记录；macOS 无法在根进程退出后确认未观察到的进程范围，会将该记录保持为 unknown。原有 fallback 可见性限制仍然适用：shell 生命周期记录不能让已逃逸且未观察到的后代变得可发现。这些记录协调普通 shell 行为，不用于防御同一用户的恶意进程。
+啟用後，根程序退出不會終止仍在執行的後代。明確為空的 Linux 受管範圍或完整且為空的 Linux 工作階段可允許回收保留的記錄；macOS 無法在根程序退出後確認未觀察到的程序範圍，會將該記錄保持為 unknown。原有 fallback 可見性限制仍然適用：shell 生命週期記錄不能讓已逃逸且未觀察到的後代變得可發現。這些記錄協調普通 shell 行為，不用於防禦同一使用者的惡意程序。
 
-### 关闭行为
+### 關閉行為
 
-正常 dispose 会终止每个仍在运行的受管范围与终端会话并等待其完全停稳。在 JavaScript 可观察的宿主退出期间——直接 `process.exit()`、默认未捕获异常、默认未处理 rejection——同步最终清理会请求 Linux scope 终止其成员，同步终止每个 Windows runner 以关闭其唯一 Job handle，并为 fallback 使用既有 PGID、`taskkill` 或已捕获身份操作。它不创建 Promise 或定时器，也不声称已经完全停稳。同一退出阶段会删除未持有任何已完成 spill 文件的每进程私有 spill 目录；已完成的 spill 文件作为完整输出恢复产物保留，直到外部机制清理。未处理的 `SIGTERM`/`SIGINT`/`SIGHUP`、`SIGKILL`、fatal OOM、native crash 与断电需要外部 supervisor。
+正常 dispose 會終止每個仍在執行的受管範圍與終端工作階段並等待其完全停穩。在 JavaScript 可觀察的主機退出期間——直接 `process.exit()`、預設未捕捉異常、預設未處理 rejection——同步最終清理會請求 Linux scope 終止其成員，同步終止每個 Windows runner 以關閉其唯一 Job handle，併為 fallback 使用既有 PGID、`taskkill` 或已捕捉身份操作。它不建立 Promise 或定時器，也不聲稱已經完全停穩。同一退出階段會刪除未持有任何已完成 spill 檔案的每程序私有 spill 目錄；已完成的 spill 檔案作為完整輸出恢復產物保留，直到外部機制清理。未處理的 `SIGTERM`/`SIGINT`/`SIGHUP`、`SIGKILL`、fatal OOM、native crash 與斷電需要外部 supervisor。
 
-Linux 普通进程和终端进程即使在 bootstrap 消费启动请求前被取消，也会保留实际观察到的终止信号。如果没有请求对应的终止信号，未消费的请求仍会报启动失败；已记录的 pre-exec 错误始终优先。`waitForExit()` 独立证明 scope 已为空，其中也包括 payload 在进入该 scope 的 cgroup 前就被杀死、manager 因此让它保持 active 却没有任何进程的 scope。状态查询期间若发出终止信号，会重新查询后再判定清理是否成功。请求终止后，启动请求已消费且 scope 进程数为零即可证明完全停稳，无需等待直接进程的退出通知。如果最终 scope 信号发送失败，直接进程接受 `SIGKILL` 或被独立确认已不存在，owner 才可以等待一次尚未送达的直接进程停稳通知，再重新查询尚未证明为空的 active 范围。此等待独立于输出排空和整个范围的停稳。新取得的 scope 状态必须证明范围已为空；仍有进程存活或进程数未知时，仍报告信号失败。
+Linux 普通程序和終端程序即使在 bootstrap 消費啟動請求前被取消，也會保留實際觀察到的終止訊號。如果沒有請求對應的終止訊號，未消費的請求仍會報啟動失敗；已記錄的 pre-exec 錯誤始終優先。`waitForExit()` 獨立證明 scope 已為空，其中也包括 payload 在進入該 scope 的 cgroup 前就被殺死、manager 因此讓它保持 active 卻沒有任何程序的 scope。狀態查詢期間若發出終止訊號，會重新查詢後再判定清理是否成功。請求終止後，啟動請求已消費且 scope 程序數為零即可證明完全停穩，無需等待直接程序的退出通知。如果最終 scope 訊號傳送失敗，直接程序接受 `SIGKILL` 或被獨立確認已不存在，owner 才可以等待一次尚未送達的直接程序停穩通知，再重新查詢尚未證明為空的 active 範圍。此等待獨立於輸出排空和整個範圍的停穩。新取得的 scope 狀態必須證明範圍已為空；仍有程序存活或程序數未知時，仍報告訊號失敗。
 
-### 可能出错的地方
+### 可能出錯的地方
 
-无法解析的可执行文件会明确报出稳定错误。当 spawn 或提供方故障使 direct outcome 无法产生时，`done` 会 reject；该 rejection 不能证明 target 是否已经开始执行。若所选 owner 无法再证明其范围为空，`waitForExit()` 会 reject，清理仍会尝试终止。越过保留尾部的读取是 `lossy` 的，并在 spill 文件存在时指向它。fallback 进程组或已观察终端 session 可能遗漏在观察前逃逸的后代——见下文限制。
+無法解析的可執行檔案會明確報出穩定錯誤。當 spawn 或提供者故障使 direct outcome 無法產生時，`done` 會 reject；該 rejection 不能證明 target 是否已經開始執行。若所選 owner 無法再證明其範圍為空，`waitForExit()` 會 reject，清理仍會嘗試終止。越過保留尾部的讀取是 `lossy` 的，並在 spill 檔案存在時指向它。fallback 程序組或已觀察終端 session 可能遺漏在觀察前逃逸的後代——見下文限制。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中说明。
+本節解釋提供者背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中說明。
 
-### 设计理念
+### 設計理念
 
-每次 spawn 都为信号发送与完全停稳选择同一个 owner。受支持的 Linux 普通命令与终端启动使用临时 user-systemd scope，受支持的 Windows 普通命令使用由 helper 持有、关闭时终止成员的 Job。macOS、旧版或不可用的 user-systemd，以及不可用的 Windows 原生支持使用既有 detached 进程组、`taskkill` 或终端会话观察，并只告警一次。native 路径可能已经启动命令后，本提供方绝不会通过 fallback 重放该命令。
+每次 spawn 都為訊號傳送與完全停穩選擇同一個 owner。受支援的 Linux 普通命令與終端啟動使用臨時 user-systemd scope，受支援的 Windows 普通命令使用由 helper 持有、關閉時終止成員的 Job。macOS、舊版或不可用的 user-systemd，以及不可用的 Windows 原生支援使用既有 detached 程序組、`taskkill` 或終端工作階段觀察，並只告警一次。native 路徑可能已經啟動命令後，本提供者絕不會透過 fallback 重放該命令。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 服务接线：存活句柄集合、dispose、宿主退出最终清理、可执行文件查找 |
-| [`src/spawn.ts`](src/spawn.ts) | 共享进程管道：直接结果、保尾收集、spill 文件与 fallback spawn |
-| [`src/managed-owner.ts`](src/managed-owner.ts) | 每个普通句柄使用的私有信号与等待 owner |
-| [`src/linux-scope.ts`](src/linux-scope.ts) | Linux user-systemd 能力检查、scope 启动、信号发送与完全停稳 |
-| [`src/linux-execve.ts`](src/linux-execve.ts) | Linux libc 进程映像替换与继承标准文件描述符保留 |
-| [`src/windows-job.ts`](src/windows-job.ts) | Windows Job 能力检查与 helper 启动 |
-| [`src/runner-launch.ts`](src/runner-launch.ts) | source、built 与 packaged 私有 runner 选择 |
-| [`src/spawn-runner.ts`](src/spawn-runner.ts) | Linux 一次性 exec bootstrap 与 Windows Job runner |
-| [`src/runner-protocol.ts`](src/runner-protocol.ts) | 严格定义的 Linux launch／startup 文件与 Windows IPC 消息 |
-| [`src/terminal.ts`](src/terminal.ts) | `node-pty` 终端句柄：Linux scope 绑定、前台检查与 fallback 清理 |
-| [`src/process-inspector.ts`](src/process-inspector.ts) | POSIX 进程树与会话检查 |
-| [`src/windows-inspector.ts`](src/windows-inspector.ts) | 经 koffi 的 Windows Toolhelp32 进程表检查 |
-| — | 不发布运行时不变式伴生入口；除所属 seam 强制执行的约定外，本包不公开独立的事件序列或可变数据关系。 |
+| [`src/index.ts`](src/index.ts) | 服務接線：存活控制代碼集合、dispose、主機退出最終清理、可執行檔案查詢 |
+| [`src/spawn.ts`](src/spawn.ts) | 共享程序管道：直接結果、保尾收集、spill 檔案與 fallback spawn |
+| [`src/managed-owner.ts`](src/managed-owner.ts) | 每個普通控制代碼使用的私有訊號與等待 owner |
+| [`src/linux-scope.ts`](src/linux-scope.ts) | Linux user-systemd 能力檢查、scope 啟動、訊號傳送與完全停穩 |
+| [`src/linux-execve.ts`](src/linux-execve.ts) | Linux libc 程序映像替換與繼承標準檔案描述符保留 |
+| [`src/windows-job.ts`](src/windows-job.ts) | Windows Job 能力檢查與 helper 啟動 |
+| [`src/runner-launch.ts`](src/runner-launch.ts) | source、built 與 packaged 私有 runner 選擇 |
+| [`src/spawn-runner.ts`](src/spawn-runner.ts) | Linux 一次性 exec bootstrap 與 Windows Job runner |
+| [`src/runner-protocol.ts`](src/runner-protocol.ts) | 嚴格定義的 Linux launch／startup 檔案與 Windows IPC 訊息 |
+| [`src/terminal.ts`](src/terminal.ts) | `node-pty` 終端控制代碼：Linux scope 繫結、前臺檢查與 fallback 清理 |
+| [`src/process-inspector.ts`](src/process-inspector.ts) | POSIX 程序樹與工作階段檢查 |
+| [`src/windows-inspector.ts`](src/windows-inspector.ts) | 經 koffi 的 Windows Toolhelp32 程序表檢查 |
+| — | 不釋出執行時不變式伴生入口；除所屬 seam 強制執行的約定外，本包不公開獨立的事件序列或可變資料關係。 |
 
 ### 主流程
 
-一次 spawn 会同步校验最终 argv、cwd 与环境，在用户命令可能运行前选择 containment，并在目标身份保持私有的情况下返回句柄。Linux 普通命令与终端启动使用私有的一次性请求；scope 内的 bootstrap 会恢复目标 cwd 与环境、解析可执行文件、清除 fd 0 至 fd 2 及可选控制 fd 7 的 close-on-exec 标记，再以原始 argv 进入 libc `execve()`。Windows 普通命令会隔离 runner 的 fd 0 至 fd 2、把 fd 3 留给 IPC，并用 fd 4 至 fd 6 承载 target stdio，在请求控制时还使用 fd 7；runner 把这些 CRT 描述符解析成 OS handle，以 suspended 状态创建 target，将其加入 Job、恢复运行，再关闭自身的标准流载体及可选 fd-7 载体。`done` 会在 direct command 及其 stdio 屏障结算后完成，`waitForExit()` 则分别等待所选 scope、Job、进程组或已观察会话变空。
+一次 spawn 會同步驗證最終 argv、cwd 與環境，在使用者命令可能執行前選擇 containment，並在目標身份保持私有的情況下返回控制代碼。Linux 普通命令與終端啟動使用私有的一次性請求；scope 內的 bootstrap 會恢復目標 cwd 與環境、解析可執行檔案、清除 fd 0 至 fd 2 及可選控制 fd 7 的 close-on-exec 標記，再以原始 argv 進入 libc `execve()`。Windows 普通命令會隔離 runner 的 fd 0 至 fd 2、把 fd 3 留給 IPC，並用 fd 4 至 fd 6 承載 target stdio，在請求控制時還使用 fd 7；runner 把這些 CRT 描述符解析成 OS handle，以 suspended 狀態建立 target，將其加入 Job、恢復執行，再關閉自身的標準流載體及可選 fd-7 載體。`done` 會在 direct command 及其 stdio 屏障結算後完成，`waitForExit()` 則分別等待所選 scope、Job、程序組或已觀察工作階段變空。
 
-### 安全不变式
+### 安全不變式
 
-spill 文件以 `0600` 权限、`O_EXCL` 与随机名称在 `0700` 每进程目录下创建，可抵御共享临时目录中的符号链接植入；打开、追加或最终关闭失败时不公布 spill 路径，且绝不中断收集，因为收集运行在流的 `'data'` 监听器内，抛出的错误会杀死宿主进程。fallback 进程身份携带启动时间，因此清理绝不会跟随 PID 复用。选定的 native 路径失败时会报告错误，而不会通过 fallback 重放 argv；受管范围只有在清理完成后才从存活集合移除，否则失败仍保持可观察。宿主退出最终清理不创建 Promise 或定时器，保留宿主退出码与诊断，分别包含每个目标的失败，也不会声称已经完全停稳。
+spill 檔案以 `0600` 權限、`O_EXCL` 與隨機名稱在 `0700` 每程序目錄下建立，可抵禦共享臨時目錄中的符號連結植入；開啟、追加或最終關閉失敗時不公佈 spill 路徑，且絕不中斷收集，因為收集執行在流的 `'data'` 監聽器內，丟擲的錯誤會殺死主機程序。fallback 程序身份攜帶啟動時間，因此清理絕不會跟隨 PID 複用。選定的 native 路徑失敗時會報告錯誤，而不會透過 fallback 重放 argv；受管範圍只有在清理完成後才從存活集合移除，否則失敗仍保持可觀察。主機退出最終清理不建立 Promise 或定時器，保留主機結束代碼與診斷，分別包含每個目標的失敗，也不會聲稱已經完全停穩。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当提供方级约定不够用时阅读以下页面。它们从穷尽式类型参考逐步进入抽象约定，以及宿主机制背后的决策。
+當提供者級約定不夠用時閱讀以下頁面。它們從窮盡式型別參考逐步進入抽象約定，以及主機制背後的決策。
 
-- [子进程子系统](../../../docs/subsystems/subprocess.zh.md)——spawn spec、输出读取器、结果与完整的 `DSH_*` 环境。
-- [dsh-subprocess](../subprocess/README.zh.md)——本提供方实现的抽象约定。
-- [dsh-bash-local](../../shell/bash-local/README.zh.md)——最大的消费方及其请求的具体 stdio 形态。
-- [subprocess seam Agent Note](../../../.agents/notes/archived/architecture/2026-07-26-subprocess-seam.md)——进程部分为何成为独立的 seam。
-- [同步子进程退出清理](../../../.agents/notes/archived/bug-fix/2026-08-11-synchronous-subprocess-exit-cleanup.md)——宿主退出最终清理决策及其失败模式。
+- [子程序子系統](../../../docs/subsystems/subprocess.zh.md)——spawn spec、輸出讀取器、結果與完整的 `DSH_*` 環境。
+- [dsh-subprocess](../subprocess/README.zh.md)——本提供者實作的抽象約定。
+- [dsh-bash-local](../../shell/bash-local/README.zh.md)——最大的消費方及其請求的具體 stdio 形態。
+- [subprocess seam Agent Note](../../../.agents/notes/archived/architecture/2026-07-26-subprocess-seam.md)——程序部分為何成為獨立的 seam。
+- [同步子程序退出清理](../../../.agents/notes/archived/bug-fix/2026-08-11-synchronous-subprocess-exit-cleanup.md)——主機退出最終清理決策及其失敗模式。
 
 -----
 
-终端分配通过 TERM 和 node-pty 使用调用者指定的 `terminalType`。动态 resize 更新已有 PTY。输出背压会暂停原生读取，待消费者排空后恢复；显式终止会恢复暂停的读取，以接收退出通知。
+終端分配透過 TERM 和 node-pty 使用呼叫者指定的 `terminalType`。動態 resize 更新已有 PTY。輸出背壓會暫停原生讀取，待消費者排空後恢復；顯式終止會恢復暫停的讀取，以接收退出通知。
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-通过消费方 seam（例如 bash 执行器家族）间接影响，它们负责所 spawn 进程的输出与生命周期的全部面向模型渲染。
+透過消費方 seam（例如 bash 執行器家族）間接影響，它們負責所 spawn 程序的輸出與生命週期的全部面向模型渲染。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接导致 KV Cache 失效；请求前缀变更由上述消费方负责。
+不會直接導致 KV Cache 失效；請求字首變更由上述消費方負責。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本提供方何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用平台对比或任务积压。
+這些限制說明本提供者何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用平臺對比或任務積壓。
 
-- **Linux 直接进程退出没有独立截止时间**——直接 `SIGKILL` 获得确认后，不可中断的内核 I/O 可能让 dispose 无限期等待；`graceMs` 和 scope 查询的轮询预算不限制此等待。
-- **native ownership 有明确宿主要求**——Linux 需要可读的 user manager 与 `systemd-run --expand-environment=no`；旧版 systemd 使用带告警的 PGID fallback。macOS 因没有受支持的公开 persistent owner，始终使用该 fallback。
-- **native 选择具有有界的每次 spawn 成本**——Linux 会重复检查 bootstrap 入口、libc `execve`/`fcntl` bindings、存活的 user manager 与 literal-argv scope 支持，直到这套完整探测首次成功；后续符合条件的普通命令或终端 spawn 只重新检查存活的 user manager。Windows 会在每次普通 spawn 前重新检查 runner 入口、bindings 与当前 Job 支持。Linux 深度探测的成功状态与 fallback 告警去重会在提供方生命周期内持续保留。所有探测都会在用户命令可能运行前完成，子进程探测的超时为 5 秒。每次 Linux 启动都会创建私有请求目录，以 50 毫秒间隔检查尚未确定的 scope 建立状态；scope 已建立且仍 active 后，查询间隔按指数增长，最多为 5 秒。Windows 普通命令会保留一个 runner 与一条 IPC 通道，直到 Job 报告活动进程数为零。目标会直接继承标准句柄，不使用 named-pipe stdio 或结果文件。
-- **Windows Job inheritance 有明确排除项**——普通后代默认继承 Job，但 breakaway 进程不在保证范围。目标只在 Job 分配后启动；runner 若在 create-to-assignment 极窄区间遭外力终止，可能留下 suspended target。
-- **Windows 终端信号是控制台级的**——SIGINT 以 `\x03` Ctrl-C 输入写入投递，由 conhost 转为控制台级 CTRL_C 事件；SIGTSTP 与 SIGHUP 被拒绝（不可用）；不带 `/F` 的 `taskkill` 无法终止控制台进程，因此拆卸的 TERM 档是 `/F` 升级前的宽限等待。Windows 就绪没有精确的 stdin-wait 档：prompt-marker 快路径把 shell pid 作为伪前台进程组比较，其余由静默与计时档覆盖。
-- **fallback 终端 ownership 仍依赖观察**——在 macOS 或缺少可用 user-systemd 的 Linux 上，子进程如果在任何前台检查快照之前重新设定父进程，或离开自有终端会话，就可能逃出进程表扫描。本地提供方不会新增持续进程表监视器；受支持的 Linux native 模式改由 scope membership 持有这些后代。
-- **进程内清理要求退出阶段仍能执行 JavaScript**——直接 `process.exit()`、默认未捕获异常和默认未处理 rejection 会发出 Node 同步 `exit` 事件。未安装 handler 时，`SIGTERM`、`SIGINT` 或 `SIGHUP` 的默认 OS 处置不会发出该事件；应用只有安装执行正常 dispose 或调用 `process.exit()` 的 handler 才能覆盖这些信号。`SIGKILL`、fatal OOM、`process.abort()`、native crash、断电，以及任何无法运行 JavaScript 的故障，都需要外部 supervisor、容器 init 或等价的 OS owner 负责。
-- **凭据清除依赖名称启发式规则**——只匹配 `*KEY*`／`*PASSWORD*`／`*SECRET*`／`*TOKEN*`；名称不同的 secret（例如 `*PASSPHRASE*`）会继续传递，对误删变量引入白名单属于已记录的后续工作。
-- **不会删除已完成的 spill 文件**——有界的完整输出恢复文件会在 OS tmpdir 下累积，直到外部机制进行清理；每进程私有 spill 目录仅在未持有任何已完成 spill 文件时于 JavaScript 可观察的退出阶段删除。
-- **被删除的 spill 目录不会重建**——每进程私有目录只创建一次；被外部清理工具删除后，该进程内之后的每次 spill 都降级为内存尾部并记录一条 `error`，直到宿主重启。在 `ENOENT` 时重新创建一个新的随机目录是待办工作。
+- **Linux 直接程序退出沒有獨立截止時間**——直接 `SIGKILL` 獲得確認後，不可中斷的核心 I/O 可能讓 dispose 無限期等待；`graceMs` 和 scope 查詢的輪詢預算不限制此等待。
+- **native ownership 有明確主機要求**——Linux 需要可讀的 user manager 與 `systemd-run --expand-environment=no`；舊版 systemd 使用帶告警的 PGID fallback。macOS 因沒有受支援的公開 persistent owner，始終使用該 fallback。
+- **native 選擇具有有界的每次 spawn 成本**——Linux 會重複檢查 bootstrap 入口、libc `execve`/`fcntl` bindings、存活的 user manager 與 literal-argv scope 支援，直到這套完整探測首次成功；後續符合條件的普通命令或終端 spawn 只重新檢查存活的 user manager。Windows 會在每次普通 spawn 前重新檢查 runner 入口、bindings 與目前 Job 支援。Linux 深度探測的成功狀態與 fallback 告警去重會在提供者生命週期內持續保留。所有探測都會在使用者命令可能執行前完成，子程序探測的超時為 5 秒。每次 Linux 啟動都會建立私有請求目錄，以 50 毫秒間隔檢查尚未確定的 scope 建立狀態；scope 已建立且仍 active 後，查詢間隔按指數增長，最多為 5 秒。Windows 普通命令會保留一個 runner 與一條 IPC 通道，直到 Job 報告活動程序數為零。目標會直接繼承標準控制代碼，不使用 named-pipe stdio 或結果檔案。
+- **Windows Job inheritance 有明確排除項**——普通後代預設繼承 Job，但 breakaway 程序不在保證範圍。目標只在 Job 分配後啟動；runner 若在 create-to-assignment 極窄區間遭外力終止，可能留下 suspended target。
+- **Windows 終端訊號是控制檯級的**——SIGINT 以 `\x03` Ctrl-C 輸入寫入投遞，由 conhost 轉為控制檯級 CTRL_C 事件；SIGTSTP 與 SIGHUP 被拒絕（不可用）；不帶 `/F` 的 `taskkill` 無法終止控制檯程序，因此拆卸的 TERM 檔是 `/F` 升級前的寬限等待。Windows 就緒沒有精確的 stdin-wait 檔：prompt-marker 快路徑把 shell pid 作為偽前臺程序組比較，其餘由靜默與計時檔覆蓋。
+- **fallback 終端 ownership 仍依賴觀察**——在 macOS 或缺少可用 user-systemd 的 Linux 上，子程序如果在任何前臺檢查快照之前重新設定父程序，或離開自有終端工作階段，就可能逃出程序表掃描。本地提供者不會新增持續程序表監視器；受支援的 Linux native 模式改由 scope membership 持有這些後代。
+- **程序內清理要求退出階段仍能執行 JavaScript**——直接 `process.exit()`、預設未捕捉異常和預設未處理 rejection 會發出 Node 同步 `exit` 事件。未安裝 handler 時，`SIGTERM`、`SIGINT` 或 `SIGHUP` 的預設 OS 處置不會發出該事件；應用只有安裝執行正常 dispose 或呼叫 `process.exit()` 的 handler 才能覆蓋這些訊號。`SIGKILL`、fatal OOM、`process.abort()`、native crash、斷電，以及任何無法執行 JavaScript 的故障，都需要外部 supervisor、容器 init 或等價的 OS owner 負責。
+- **憑證清除依賴名稱啟發式規則**——只匹配 `*KEY*`／`*PASSWORD*`／`*SECRET*`／`*TOKEN*`；名稱不同的 secret（例如 `*PASSPHRASE*`）會繼續傳遞，對誤刪變數引入白名單屬於已記錄的後續工作。
+- **不會刪除已完成的 spill 檔案**——有界的完整輸出恢復檔案會在 OS tmpdir 下累積，直到外部機制進行清理；每程序私有 spill 目錄僅在未持有任何已完成 spill 檔案時於 JavaScript 可觀察的退出階段刪除。
+- **被刪除的 spill 目錄不會重建**——每程序私有目錄只建立一次；被外部清理工具刪除後，該程序內之後的每次 spill 都降級為記憶體尾部並記錄一條 `error`，直到主機重新啟動。在 `ENOENT` 時重新建立一個新的隨機目錄是待辦工作。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

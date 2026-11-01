@@ -4,7 +4,7 @@
 #   pnpm run verify-translation-pairing --write native/README.md
 /native:
   en: 3bd55efe1dcf04bf
-  zh: 9f97675df13f772b
+  zh: 36a0b69dd8bb89ab
 /native/workspace-and-release-boundary:
   en: f4671495c42b485f
-  zh: 91f78f3ca9e1274e
+  zh: ae7528f37538b126

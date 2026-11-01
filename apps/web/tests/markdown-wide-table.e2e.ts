@@ -75,7 +75,7 @@ const WIDTHS = [1680, 1100, 640]
 const SENTENCE = 'This cell carries one full sentence so the unwrapped table is far wider than the message column.'
 /** Unbroken path-like token (no scheme, so GFM does not autolink it and no anchor joins the tab order). */
 const LONG_TOKEN = 'workspace/deepseek-harness/packages/client/ui-primitives/src/markdown/render.tsx/'.repeat(3)
-const CJK_SENTENCE = '这个单元格包含一段较长的中文说明，用来验证长内容在窄列宽下按最小可读宽度换行而不是把列压缩到无法阅读。'
+const CJK_SENTENCE = '這個單元格包含一段較長的中文說明，用來驗證長內容在窄列寬下按最小可讀寬度換行而不是把列壓縮到無法閱讀。'
 
 /** The assistant markdown includes fitting and overflowing wide tables. */
 function tablesMarkdown(): string {
@@ -105,7 +105,7 @@ function tablesMarkdown(): string {
     `| ${LONG_CELL_MARKER} | Value |`,
     '| --- | --- |',
     `| path | ${LONG_TOKEN} |`,
-    `| 说明 | ${CJK_SENTENCE} |`,
+    `| 說明 | ${CJK_SENTENCE} |`,
     '',
     TAIL_MARKER,
   ].join('\n')

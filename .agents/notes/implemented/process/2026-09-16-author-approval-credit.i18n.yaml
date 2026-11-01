@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-16-author-approval-credit.md
 /agent-note-author-approval-credit:
   en: 58068bcf9dbf6d30
-  zh: ad51b869c8f3e791
+  zh: 6f0a20105b352842
 /agent-note-author-approval-credit/problem:
   en: 13def594e495779d
-  zh: d5ceaa0d156ba043
+  zh: 5a31ccd6ccd3667a
 /agent-note-author-approval-credit/decision:
   en: 5670829131121899
-  zh: 7df21c9b22c4978d
+  zh: 0307b16153d6a4ce
 /agent-note-author-approval-credit/alternatives-considered:
   en: 8ab9e11e49044029
-  zh: c7930455d747ceb5
+  zh: 94a5316968d25cbc
 /agent-note-author-approval-credit/consequences:
   en: 70ad19025f7fe6d4
-  zh: c73aa8be25724790
+  zh: aed88b86f7985c95
 /agent-note-author-approval-credit/verification:
   en: 0617e23e217b0a67
-  zh: 82576f05a59d8db7
+  zh: 340123208274cad6

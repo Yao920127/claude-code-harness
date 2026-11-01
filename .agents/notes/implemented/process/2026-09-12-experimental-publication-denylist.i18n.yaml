@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-12-experimental-publication-denylist.md
 /agent-note-publish-experimental-packages-with-explicit-private-exceptions:
   en: 20aed7271477745f
-  zh: 81b50a3ba89b7935
+  zh: 8fddd5795e37c88b
 /agent-note-publish-experimental-packages-with-explicit-private-exceptions/problem:
   en: c267b50c3004619f
-  zh: 91830d04d2972d46
+  zh: 4951c36bc9a04693
 /agent-note-publish-experimental-packages-with-explicit-private-exceptions/decision:
   en: 3cf968834876a655
-  zh: 7f7bad8b931a5ed2
+  zh: 1b768c6b5f416e5b
 /agent-note-publish-experimental-packages-with-explicit-private-exceptions/alternatives-considered:
   en: 61369830fb32e695
-  zh: 445eb44e1ae3457a
+  zh: ea67ca1d81594eda
 /agent-note-publish-experimental-packages-with-explicit-private-exceptions/consequences:
   en: 23f4d725196f1c2d
-  zh: ebd9455778d8a89f
+  zh: 5ac331c4f2d8c898

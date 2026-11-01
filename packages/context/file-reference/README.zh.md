@@ -1,5 +1,5 @@
 ---
-description: "面向宿主驱动 UI 的文件引用发现与 @file mention 语法，供选择该 seam 或为其搭配提供方的用户与维护者阅读。"
+description: "面向主機驅動 UI 的檔案引用發現與 @file mention 語法，供選擇該 seam 或為其搭配提供者的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,104 +9,104 @@ kind: "package-reference"
 
 ## 概述
 
-宿主驱动 UI 使用 `dsh-file-reference` 提供 `@file` 补全：UI 为指定 agent（智能体）请求路径候选，模型输入 `@path` 或 `@"path with spaces"`，选中候选后，匹配的 mention 作为普通提示词文本插入。seam 本身不拥有文件系统访问——具体提供方（如 `@deepseek-ai/dsh-file-reference-local`）负责提供候选、排序、缓存与失效。选中候选绝不读取或附带文件内容；模型必须调用文件系统工具才能查看文件。Session Controller 通过 `fileReferences/list` Remote 向浏览器消费方暴露同一发现能力。
+主機驅動 UI 使用 `dsh-file-reference` 提供 `@file` 補全：UI 為指定 agent（智慧代理）請求路徑候選，模型輸入 `@path` 或 `@"path with spaces"`，選中候選後，匹配的 mention 作為普通提示詞文字插入。seam 本身不擁有檔案系統存取——具體提供者（如 `@deepseek-ai/dsh-file-reference-local`）負責提供候選、排序、快取與失效。選中候選絕不讀取或附帶檔案內容；模型必須呼叫檔案系統工具才能檢視檔案。Session Controller 透過 `fileReferences/list` Remote 向瀏覽器消費方暴露同一發現能力。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当宿主驱动 UI（Web 或终端）需要提供 `@file` 补全时选择本包，并搭配一个命名空间与 agent 实际生效的 `read` 工具一致的提供方。单独挂载该 seam 而没有提供方时，UI 只能得到空的补全列表。
+當主機驅動 UI（Web 或終端）需要提供 `@file` 補全時選擇本包，並搭配一個名稱空間與 agent 實際生效的 `read` 工具一致的提供者。單獨掛載該 seam 而沒有提供者時，UI 只能得到空的補全列表。
 
-### mention 语法
+### mention 語法
 
-输入开头或空白后的 `@path` token 会触发补全；其他 token 内部的 `@`（如电子邮件地址）不会。`@"path with spaces"` 打开带引号的 mention，目录候选在其尾斜杠后保持引号打开，使补全可以继续深入下一层。格式化器会拒绝含有语法无法安全表示的控制字符或内嵌引号的路径。 已完成的目录 chip 在末尾斜杠之后闭合引号。相对引用从工作区根目录解析，绝对引用保留主机路径。
+輸入開頭或空白後的 `@path` token 會觸發補全；其他 token 內部的 `@`（如電子郵件地址）不會。`@"path with spaces"` 開啟帶引號的 mention，目錄候選在其尾斜槓後保持引號開啟，使補全可以繼續深入下一層。格式化器會拒絕含有語法無法安全表示的控制字元或內嵌引號的路徑。 已完成的目錄 chip 在末尾斜槓之後閉合引號。相對引用從工作區根目錄解析，絕對引用保留主機路徑。
 
-### 获取候选
+### 取得候選
 
-`ctx.fileReferences.list(agent, query, signal)` 返回指定 agent 工作目录中仅含路径的文件与目录候选，由提供方确定性地排序。目录 mention 呈现时带尾随 `/`，使补全可以继续深入下一层。浏览器消费方通过 Session Controller 适配器的 `ctx.remote.fileReferences.list` 调用同一发现能力；末位 signal 参数可取消慢速自动补全。
+`ctx.fileReferences.list(agent, query, signal)` 返回指定 agent 工作目錄中僅含路徑的檔案與目錄候選，由提供者確定性地排序。目錄 mention 呈現時帶尾隨 `/`，使補全可以繼續深入下一層。瀏覽器消費方透過 Session Controller 介面卡的 `ctx.remote.fileReferences.list` 呼叫同一發現能力；末位 signal 參數可取消慢速自動補全。
 
-### 搭配提供方
+### 搭配提供者
 
-本地文件系统请挂载 `@deepseek-ai/dsh-file-reference-local`；其他命名空间（远程或虚拟文件系统）需要发现能力与生效工具一致的提供方。当指定 agent 可以调用 `read` 时，提供方可以安装稳定的 `FILE_REFERENCE_PROMPT` 指引，告诉模型先读取被引用文件、再声称检查过它。
+本地檔案系統請掛載 `@deepseek-ai/dsh-file-reference-local`；其他名稱空間（遠端或虛擬檔案系統）需要發現能力與生效工具一致的提供者。當指定 agent 可以呼叫 `read` 時，提供者可以安裝穩定的 `FILE_REFERENCE_PROMPT` 指引，告訴模型先讀取被引用檔案、再聲稱檢查過它。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释该 seam 的设计；可观察行为见[使用本包](#use-this-package)。
+本節解釋該 seam 的設計；可觀察行為見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-本包把抽象发现服务与共享、浏览器安全的 mention 语法分开，由提供方负责命名空间访问、排序、缓存与失效。该服务保持 wire 中立；`dsh-api-session-controller` 持有 `fileReferences/list` Remote 适配器，并在解析 Agent 后委派给当前提供方。
+本包把抽象發現服務與共享、瀏覽器安全的 mention 語法分開，由提供者負責名稱空間存取、排序、快取與失效。該服務保持 wire 中立；`dsh-api-session-controller` 持有 `fileReferences/list` Remote 介面卡，並在解析 Agent 後委派給目前提供者。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 抽象 `FileReferenceService` 与 `FILE_REFERENCE_PROMPT` |
-| [`src/grammar.ts`](src/grammar.ts) | `activeAtToken` 识别与 `formatFileMention` 渲染 |
-| [`src/types.ts`](src/types.ts) | 仅含路径的结果类型 `FileReferenceCandidate` |
-| — | 不发布运行时不变式伴生入口；接口不保留 candidate 或 lifecycle 状态；具体提供方负责自己的 cache 与 invalidation 关系。 |
+| [`src/index.ts`](src/index.ts) | 抽象 `FileReferenceService` 與 `FILE_REFERENCE_PROMPT` |
+| [`src/grammar.ts`](src/grammar.ts) | `activeAtToken` 識別與 `formatFileMention` 渲染 |
+| [`src/types.ts`](src/types.ts) | 僅含路徑的結果型別 `FileReferenceCandidate` |
+| — | 不釋出執行時不變式伴生入口；介面不保留 candidate 或 lifecycle 狀態；具體提供者負責自己的 cache 與 invalidation 關係。 |
 
 ### 主要流程
 
-UI 通过 `activeAtToken` 识别活动 `@` token，用查询文本调用 `list`，再渲染排序后的候选。选中后，`formatFileMention` 发出匹配的提示词写法（`@path`、`@"path with spaces"`，或带引号目录的开放形式 `@"dir/`）。任何环节都不读取文件内容；当指定 agent 拥有 `read` 工具时，提供方还可以安装稳定的 `FILE_REFERENCE_PROMPT` 提示词段。
+UI 透過 `activeAtToken` 識別活動 `@` token，用查詢文字呼叫 `list`，再渲染排序後的候選。選中後，`formatFileMention` 發出匹配的提示詞寫法（`@path`、`@"path with spaces"`，或帶引號目錄的開放形式 `@"dir/`）。任何環節都不讀取檔案內容；當指定 agent 擁有 `read` 工具時，提供者還可以安裝穩定的 `FILE_REFERENCE_PROMPT` 提示詞段。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-包级约定不够用时阅读以下页面。它们从随附提供方进入共享引用表面，以及候选所指向的工具。
+包級約定不夠用時閱讀以下頁面。它們從隨附提供者進入共享引用表面，以及候選所指向的工具。
 
-- [本地文件引用提供方](../file-reference-local/README.zh.md)——本 seam 的随附本地工作区实现。
-- [会话引用子系统](../../../docs/subsystems/session-reference.zh.md)——宿主 UI 背后的共享文件引用与会话引用约定。
-- [上下文组地图](../README.zh.md)——相邻的请求上下文包。
-- [文件系统工具目录](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-fs)——被引用路径所对应的 `read` 工具。
+- [本地檔案引用提供者](../file-reference-local/README.zh.md)——本 seam 的隨附本地工作區實作。
+- [工作階段引用子系統](../../../docs/subsystems/session-reference.zh.md)——主機 UI 背後的共享檔案引用與工作階段引用約定。
+- [上下文組地圖](../README.zh.md)——相鄰的請求上下文包。
+- [檔案系統工具目錄](../../../docs/tool-catalog.zh.md#deepseek-aidsh-tool-fs)——被引用路徑所對應的 `read` 工具。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接影响模型体验：本包的发现 seam 与语法把文件引用指引委托给组合的提供方，由它负责呈现。
+間接影響模型體驗：本包的發現 seam 與語法把檔案引用指引委託給組合的提供者，由它負責呈現。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-接口与语法本身不增加请求 token；提供方拥有的提示词段决定可复用前缀是否改变。
+介面與語法本身不增加請求 token；提供者擁有的提示詞段決定可複用字首是否改變。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该 seam 何时不合适。它们是当前包约束。
+這些限制說明該 seam 何時不合適。它們是目前包約束。
 
-- **路径候选仅供参考**：该 seam 不保证后续面向模型的文件系统工具能够访问同一命名空间；部署时必须让提供方与实际生效的 `read` 实现对齐。
-- **没有文件内容引用对象**：所选文件仍是普通提示词文本，其内容必须经过模型显式调用工具后才对模型可见。
+- **路徑候選僅供參考**：該 seam 不保證後續面向模型的檔案系統工具能夠存取同一名稱空間；部署時必須讓提供者與實際生效的 `read` 實作對齊。
+- **沒有檔案內容引用物件**：所選檔案仍是普通提示詞文字，其內容必須經過模型顯式呼叫工具後才對模型可見。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

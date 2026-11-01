@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的共享 Workspace 浏览器与选择器插件：分组或扁平的会话行、管理操作、由 slot 组合的 Session 行 action 与目录选择。"
+description: "dsh Web 用戶端的共享 Workspace 瀏覽器與選擇器外掛：分組或扁平的工作階段行、管理操作、由 slot 組合的 Session 行 action 與目錄選擇。"
 kind: "package-reference"
 ---
 
@@ -9,95 +9,95 @@ kind: "package-reference"
 
 ## 概述
 
-本包让用户浏览分组或扁平的 Session 列表、为新 Session 选择 Workspace，并通过添加、重命名、重排序、搜索、fork、归档、确认后永久删除 Session 和删除 Workspace 来管理 Workspace 与 Session；Session 行菜单及其悬停按钮是可由客户端插件扩展的 slot 列表。待处理交互显示为警告点，subagent 来源的 Session 则保持隐藏。处于空闲状态且未归档、其 Session 有活动定时任务的 Session 行会显示时钟标记，其悬浮卡片会列出这些任务。规范化后仍有差异的文件夹路径会保留为独立 Workspace。添加 Workspace 需要组合目录选择器；没有目录选择器时，添加操作不可用。
+本包讓使用者瀏覽分組或扁平的 Session 列表、為新 Session 選擇 Workspace，並透過新增、重新命名、重排序、搜尋、fork、歸檔、確認後永久刪除 Session 和刪除 Workspace 來管理 Workspace 與 Session；Session 行選單及其懸停按鈕是可由用戶端外掛擴充功能的 slot 列表。待處理互動顯示為警告點，subagent 來源的 Session 則保持隱藏。處於空閒狀態且未歸檔、其 Session 有活動排程任務的 Session 行會顯示時鐘標記，其懸浮卡片會列出這些任務。規範化後仍有差異的資料夾路徑會保留為獨立 Workspace。新增 Workspace 需要組合目錄選擇器；沒有目錄選擇器時，新增操作不可用。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-用侧边栏浏览 Workspace 及其 Session、重排它们并新建会话；在 Session Intent 主视觉区用选择器为新会话选择 Workspace。打开的 Workspace 默认显示五条空闲的非空白 Session。正在运行的 Session（包括有子会话正在运行的父会话）始终按原顺序显示，不占用这五条配额；当前选中的空白**新会话**在首条提示词落地前也作为额外行。每次点击**展开其余**最多再显示五条空闲 Session；全部显示后，**收起**恢复初始行数，但仍显示正在运行的 Session。关闭再打开 Workspace 也会恢复该折叠投影。
+用側邊欄瀏覽 Workspace 及其 Session、重排它們並新建工作階段；在 Session Intent 主視覺區用選擇器為新工作階段選擇 Workspace。開啟的 Workspace 預設顯示五條空閒的非空白 Session。正在執行的 Session（包括有子工作階段正在執行的父工作階段）始終按原順序顯示，不佔用這五條配額；目前選中的空白**新工作階段**在首條提示詞落實前也作為額外行。每次點選**展開其餘**最多再顯示五條空閒 Session；全部顯示後，**收起**恢復初始行數，但仍顯示正在執行的 Session。關閉再開啟 Workspace 也會恢復該摺疊投影。
 
-### 重排序与视图选项
+### 重排序與檢視選項
 
-分组和平铺视图都先显示置顶 Session，再显示普通 Session。**最近更新**在各分区内严格按最近一次用户提示词或 steering（中途引导）时间降序排列，置顶时间不影响它。**手动排序**使用同一条完整 Session 序列中的相对位置，包括隐藏的归档项。返回最近更新会丢弃手动布局，再次进入手动排序时冻结当时的时间顺序。浏览器默认采用最近更新，并在重新加载后记住所选模式。
+分組和平鋪檢視都先顯示置頂 Session，再顯示普通 Session。**最近更新**在各分割槽內嚴格按最近一次使用者提示詞或 steering（中途引導）時間降序排列，置頂時間不影響它。**手動排序**使用同一條完整 Session 序列中的相對位置，包括隱藏的歸檔項。返回最近更新會丟棄手動佈局，再次進入手動排序時凍結當時的時間順序。瀏覽器預設採用最近更新，並在重新載入後記住所選模式。
 
-置顶把 Session 移到完整保存序列的首位，但不切换所选模式。它在手动模式下排在置顶区最前，在最近更新模式下则不一定。取消置顶不改变保存的位置。拖拽置顶行或普通行都修改同一条完整序列并选择手动模式，隐藏的归档成员始终保留。缺失的置顶成员按置顶数组顺序补到头部。新增的普通 fork 在完整序列中插在来源之前，不继承置顶成员关系；可见置顶行仍排在普通行之前。其他缺失成员按最近更新时间追加，缺失归档项放在最后。补齐仅在内存中完成，直到一次 Session 顺序写入保存完整结果。单纯切换归档筛选既不改变保存的位置，也不改变成员关系。
+置頂把 Session 移到完整儲存序列的首位，但不切換所選模式。它在手動模式下排在置頂區最前，在最近更新模式下則不一定。取消置頂不改變儲存的位置。拖拽置頂行或普通行都修改同一條完整序列並選擇手動模式，隱藏的歸檔成員始終保留。缺失的置頂成員按置頂陣列順序補到頭部。新增的普通 fork 在完整序列中插在來源之前，不繼承置頂成員關係；可見置頂行仍排在普通行之前。其他缺失成員按最近更新時間追加，缺失歸檔項放在最後。補齊僅在記憶體中完成，直到一次 Session 順序寫入儲存完整結果。單純切換歸檔篩選既不改變儲存的位置，也不改變成員關係。
 
-当前选中的空白**新会话**保留临时首位且无法拖拽；首条提示词落地后，它成为可拖拽的普通行，在手动排序中保留该位置，在最近更新中按当前时间戳排列。折叠分组的拖拽使用目标 Session 身份，并保持来源行可见。真实 Workspace、Ungrouped 与单列表的 Session 显示顺序都保留在浏览器本地；Workspace 分组的拖拽顺序仍由 Host 持久化。[会话置顶与归档决定](../../../.agents/notes/implemented/feature/2026-09-18-session-pin-and-sidebar-archive.zh.md)记录排序与恢复规则。
+目前選中的空白**新工作階段**保留臨時首位且無法拖拽；首條提示詞落實後，它成為可拖拽的普通行，在手動排序中保留該位置，在最近更新中按目前時間戳排列。摺疊分組的拖拽使用目標 Session 身份，並保持來源行可見。真實 Workspace、Ungrouped 與單列表的 Session 顯示順序都保留在瀏覽器本地；Workspace 分組的拖拽順序仍由 Host 持久化。[工作階段置頂與歸檔決定](../../../.agents/notes/implemented/feature/2026-09-18-session-pin-and-sidebar-archive.zh.md)記錄排序與恢復規則。
 
-### 工作区层级
+### 工作區層級
 
-选择**添加工作区**并选取目录，即可注册工作区并打开 Session。**视图选项 → 分组方式**默认为**按工作区**，将工作区作为同级分组显示。选择**按工作区树**后，每个 Workspace 会位于最近的已注册祖先之下，之后添加的 Workspace 也会自动归入。每个 Workspace 保留自己的 Session 和行操作，子 Workspace 显示在父级自己的 Session 之前。祖先默认展开，已有的折叠偏好除外。保存的折叠状态也会隐藏当前 Session；如果后代 Workspace 包含当前 Session，祖先文件夹图标仍保持高亮。各层级的高亮和点击区域保持整行同宽，仅内容缩进。拖拽 Workspace 仅重排同级项目；落在后代行上时，由最近的兼容祖先接收，因此无需先折叠父级就能将其他工作区拖到其后。选择搜索结果会展开全部祖先。分组方式和展开状态保存在当前浏览器中；切换模式会保留各 Workspace 的展开偏好，单列表视图保持平铺。
+選擇**新增工作區**並選取目錄，即可註冊工作區並開啟 Session。**檢視選項 → 分組方式**預設為**按工作區**，將工作區作為同級分組顯示。選擇**按工作區樹**後，每個 Workspace 會位於最近的已註冊祖先之下，之後新增的 Workspace 也會自動歸入。每個 Workspace 保留自己的 Session 和行操作，子 Workspace 顯示在父級自己的 Session 之前。祖先預設展開，已有的摺疊偏好除外。儲存的摺疊狀態也會隱藏目前 Session；如果後代 Workspace 包含目前 Session，祖先資料夾圖示仍保持高亮。各層級的高亮和點選區域保持整行同寬，僅內容縮排。拖拽 Workspace 僅重排同級專案；落在後代行上時，由最近的相容祖先接收，因此無需先摺疊父級就能將其他工作區拖到其後。選擇搜尋結果會展開全部祖先。分組方式和展開狀態儲存在目前瀏覽器中；切換模式會保留各 Workspace 的展開偏好，單列表檢視保持平鋪。
 
-层级仅使用已注册的规范路径，不扫描项目，也不解析符号链接别名。嵌套不会改变 Session 的工作目录、日志或 Workspace 归属。删除父 Workspace 后，子 Workspace 仍保持注册，并归入下一个已注册祖先；没有祖先时显示在根层级。
+層級僅使用已註冊的規範路徑，不掃描專案，也不解析符號連結別名。巢狀不會改變 Session 的工作目錄、日誌或 Workspace 歸屬。刪除父 Workspace 後，子 Workspace 仍保持註冊，並歸入下一個已註冊祖先；沒有祖先時顯示在根層級。
 
-### 搜索
+### 搜尋
 
-折叠搜索是视图和添加操作旁的一枚区头按钮：激活后输入框会扩展并占据区头。非空白查询会以单一扁平结果列表替代任一浏览模式——不区分大小写的标题和 Workspace 子串匹配项会立即显示，经 250 ms 防抖的 Host 请求则会加入经过排序的当前对话内容匹配项及其摘要片段。每次新查询都会中止前一个请求；内容搜索失败时，元数据匹配项仍会显示，不另给警告。列表最多显示 20 条结果。选择未归档结果会清空并收起搜索、打开 Session，并在当前浏览模式中将其行滚动到可见区域；分组浏览还会按需展开所属 Workspace 和完整 Session 列表。已归档结果提供取消归档操作；尝试打开时会说明限制，不清空查询，也不导航。
+摺疊搜尋是檢視和新增操作旁的一枚區頭按鈕：啟用後輸入框會擴充功能並佔據區頭。非空白查詢會以單一扁平結果列表替代任一瀏覽模式——不區分大小寫的標題和 Workspace 子串匹配項會立即顯示，經 250 ms 防抖的 Host 請求則會加入經過排序的目前對話內容匹配項及其摘要片段。每次新查詢都會中止前一個請求；內容搜尋失敗時，中繼資料匹配項仍會顯示，不另給警告。列表最多顯示 20 條結果。選擇未歸檔結果會清空並收起搜尋、開啟 Session，並在目前瀏覽模式中將其行滾動到可見區域；分組瀏覽還會按需展開所屬 Workspace 和完整 Session 列表。已歸檔結果提供取消歸檔操作；嘗試開啟時會說明限制，不清空查詢，也不導航。
 
-### 管理会话
+### 管理工作階段
 
-Session 行内的 Rename 操作打开一个以该行显示标题预填的对话框；确认未修改的标题是有意允许的——这正是把当前自动标题钉住、不再被重新生成覆盖的手势。双击标题也会打开 Rename；对于未归档 Session，先发生的点击会打开其对话。Rename 使用临时 `workspaceOperation` reference，并等待首次历史打开。行内 Fork 在源会话最后一个已完成轮次处 fork，通过 Session Controller 递增继承的持久化标题，不 retain 子会话、不打开其历史，也不改变选择。Workspace 行内的 Delete 操作会打开确认框，说明保留边界；成功后该分组被移除，其 Session 则留在 Ungrouped 下。Pin、Rename、Fork、Archive 本身就是 `sidebar.workspaces.session.menu.item` 列表的条目（pin 与 archive 同时也是 `sidebar.workspaces.session.row.action` 的条目），因此客户端插件的 action 由其 `order` 决定落在哪个位置。
+Session 行內的 Rename 操作開啟一個以該行顯示標題預填的對話方塊；確認未修改的標題是有意允許的——這正是把目前自動標題釘住、不再被重新生成覆蓋的手勢。雙擊標題也會開啟 Rename；對於未歸檔 Session，先發生的點選會開啟其對話。Rename 使用臨時 `workspaceOperation` reference，並等待首次歷史開啟。行內 Fork 在源工作階段最後一個已完成輪次處 fork，透過 Session Controller 遞增繼承的持久化標題，不 retain 子工作階段、不開啟其歷史，也不改變選擇。Workspace 行內的 Delete 操作會開啟確認框，說明保留邊界；成功後該分組被移除，其 Session 則留在 Ungrouped 下。Pin、Rename、Fork、Archive 本身就是 `sidebar.workspaces.session.menu.item` 列表的條目（pin 與 archive 同時也是 `sidebar.workspaces.session.row.action` 的條目），因此用戶端外掛的 action 由其 `order` 決定落在哪個位置。
 
-对静止的 Session，Archive 不经确认对话框直接提交，并保留 Session 的记账位置。仍有工作在跑的 Session 是唯一会先询问的情形：Host 拒绝普通归档并列出这些工作，侧栏随即打开"停止并归档"对话框，按族列出——进行中的回合、运行中的子代理、后台任务、定时提醒，各带名称——并写明恢复路径；确认后请 Host 按停止按钮同样的方式停止这些工作，归档集合持久化后即完成归档，停止在后台收敛；取消则让 Session 继续运行并保持可见。视图选项以一组显式三选一控制显隐：隐藏已归档（默认项）隐藏已归档 Session，全部对话（显示已归档）将其纳入列表，仅显示已归档则隐藏普通 Session，并丢弃没有归档 Session 的 Workspace；树形分组下，被丢弃 Workspace 的子级挂到最近一个仍显示的祖先下。可见的归档行置灰，并提供无障碍说明，告知取消归档后才能打开；Rename、Fork 与取消归档仍然可用。归档成功后的提示提供"撤销"动作，并在归档行仍被隐藏时附带"筛选已归档会话"动作，后者直接把筛选切到全部对话（显示已归档）；停止并归档显示同样的提示但措辞不同，撤销只恢复 Session，不会让被停止的工作继续。取消归档移除归档标记，但不恢复置顶，也不改变保存的位置。列表为空时显示居中的"图标在上、文字在下"占位；仅显示已归档视图用自己的文案（暂无已归档会话），并附"查看其他会话"文字按钮，点击把筛选切回隐藏已归档。
+對靜止的 Session，Archive 不經確認對話方塊直接提交，並保留 Session 的記帳位置。仍有工作在跑的 Session 是唯一會先詢問的情形：Host 拒絕普通歸檔並列出這些工作，側欄隨即開啟"停止並歸檔"對話方塊，按族列出——進行中的回合、執行中的子代理、後臺任務、定時提醒，各帶名稱——並寫明恢復路徑；確認後請 Host 按停止按鈕同樣的方式停止這些工作，歸檔集合持久化後即完成歸檔，停止在後臺收斂；取消則讓 Session 繼續執行並保持可見。檢視選項以一組顯式三選一控制顯隱：隱藏已歸檔（預設項）隱藏已歸檔 Session，全部對話（顯示已歸檔）將其納入列表，僅顯示已歸檔則隱藏普通 Session，並丟棄沒有歸檔 Session 的 Workspace；樹形分組下，被丟棄 Workspace 的子級掛到最近一個仍顯示的祖先下。可見的歸檔行置灰，並提供無障礙說明，告知取消歸檔後才能開啟；Rename、Fork 與取消歸檔仍然可用。歸檔成功後的提示提供"撤銷"動作，並在歸檔行仍被隱藏時附帶"篩選已歸檔工作階段"動作，後者直接把篩選切到全部對話（顯示已歸檔）；停止並歸檔顯示同樣的提示但措辭不同，撤銷只恢復 Session，不會讓被停止的工作繼續。取消歸檔移除歸檔標記，但不恢復置頂，也不改變儲存的位置。列表為空時顯示居中的"圖示在上、文字在下"佔位；僅顯示已歸檔檢視用自己的文案（暫無已歸檔工作階段），並附"檢視其他工作階段"文字按鈕，點選把篩選切回隱藏已歸檔。
 
-会话更新时间使用 tertiary 文本色，包括已归档行。标题宽于所在行时，静止状态以省略号裁切。把指针停在行上，标题会滚动到远端——例如 fork 递增后的标题——并在揭示时不显示省略号；指针离开后标题回到开头。
+工作階段更新時間使用 tertiary 文字色，包括已歸檔行。標題寬於所在行時，靜止狀態以省略號裁切。把指標停在行上，標題會滾動到遠端——例如 fork 遞增後的標題——並在揭示時不顯示省略號；指標離開後標題回到開頭。
 
-快捷键速查提供新建会话、搜索会话、添加工作区、重命名会话、分叉会话和归档会话。桌面默认使用平台的主修饰键，搜索为 Mod+K；Windows 和 macOS Web 使用[快捷键服务的平台默认值](../shortcuts/README.zh.md)；Linux Web 在用户配置前不绑定这些命令。按钮提示和会话行菜单显示当前有效绑定。点击菜单项操作该行，按快捷键操作主会话。Windows 和 macOS Desktop 的绑定也可从终端输入区域和模态对话框中执行；其他环境遵循命令的区域和模态限制。搜索和重命名的打开请求归本包管理，输入草稿保留在浏览器中。目录选择或工作区接纳尚未结束时，目录选择器拒绝重复打开。分叉捕获源会话，并使用会话行相同的 Host 操作选择最近已完成轮次，不读取更早的 Client 历史。没有会话或会话为空时不可用；没有已完成轮次的源会话由 Host 拒绝。快捷键分叉被拒绝时保留当前选择、显示本地化提示，并允许重试；非预期失败还会保留诊断日志。
+快捷鍵速查提供新建工作階段、搜尋工作階段、新增工作區、重新命名工作階段、分叉工作階段和歸檔工作階段。桌面預設使用平臺的主修飾鍵，搜尋為 Mod+K；Windows 和 macOS Web 使用[快捷鍵服務的平臺預設值](../shortcuts/README.zh.md)；Linux Web 在使用者設定前不繫結這些命令。按鈕提示和工作階段行選單顯示目前有效繫結。點選選單項操作該行，按快捷鍵操作主工作階段。Windows 和 macOS Desktop 的繫結也可從終端輸入區域和模態對話方塊中執行；其他環境遵循命令的區域和模態限制。搜尋和重新命名的開啟請求歸本包管理，輸入草稿保留在瀏覽器中。目錄選擇或工作區接納尚未結束時，目錄選擇器拒絕重複開啟。分叉捕捉源工作階段，並使用工作階段行相同的 Host 操作選擇最近已完成輪次，不讀取更早的 Client 歷史。沒有工作階段或工作階段為空時不可用；沒有已完成輪次的源工作階段由 Host 拒絕。快捷鍵分叉被拒絕時保留目前選擇、顯示在地化提示，並允許重試；非預期失敗還會保留診斷日誌。
 
-### 待处理交互
+### 待處理互動
 
-Session 行渲染运行时的实时 `pendingInteraction` 分类：审批显示**等待审批**，计划审阅显示**计划待审**，普通问题显示**等待回答**。交互待处理期间，该行使用共享 warning 橙点，并以**待批准**、**计划待审**或**待回答**替换尾部更新时间；悬停详情仍保留完整状态和相对时间。待处理交互的优先级高于共享 ongoing loading；已完成但未查看的 Session 使用 done，idle 在行内不显示点，在悬停详情中使用共享 idle 灰点。 行首 seat 仅在该行的主状态为 idle 时渲染——没有待处理交互、没有自身或后代活动、也没有未查看的完成提醒——因此该处的占用方不会与行自身的状态点同时出现。归档行该格整体留空：既不显示状态点也不挂 seat，其活动状态只出现在悬浮卡片上。
+Session 行渲染執行時的即時 `pendingInteraction` 分類：審批顯示**等待審批**，計劃審閱顯示**計劃待審**，普通問題顯示**等待回答**。互動待處理期間，該行使用共享 warning 橙點，並以**待批准**、**計劃待審**或**待回答**替換尾部更新時間；懸停詳情仍保留完整狀態和相對時間。待處理互動的優先順序高於共享 ongoing loading；已完成但未檢視的 Session 使用 done，idle 在行內不顯示點，在懸停詳情中使用共享 idle 灰點。 行首 seat 僅在該行的主狀態為 idle 時渲染——沒有待處理互動、沒有自身或後代活動、也沒有未檢視的完成提醒——因此該處的佔用方不會與行自身的狀態點同時出現。歸檔行該格整體留空：既不顯示狀態點也不掛 seat，其活動狀態只出現在懸浮卡片上。
 
-### 活动 Schedule 标识
+### 活動 Schedule 標識
 
-当成组的与平铺的 Session 行所对应的 Session 存在活动定时任务时，该行显示时钟标记。它是行首 `sidebar.session.row.leading` seat 的占用方，因此仅在该行主状态为 idle 时渲染，绝不与行自身的状态点同时出现；归档行该格同样留空，搜索结果没有该 seat，也不显示标记。它不是按钮，没有 Tab stop，点击其所在区域不会打开整行。标记自身的读取及其「活动」条件的确切含义由 [ui-schedule](../ui-schedule/README.zh.md) 负责。
+當成組的與平鋪的 Session 行所對應的 Session 存在活動排程任務時，該行顯示時鐘標記。它是行首 `sidebar.session.row.leading` seat 的佔用方，因此僅在該行主狀態為 idle 時渲染，絕不與行自身的狀態點同時出現；歸檔行該格同樣留空，搜尋結果沒有該 seat，也不顯示標記。它不是按鈕，沒有 Tab stop，點選其所在區域不會開啟整行。標記自身的讀取及其「活動」條件的確切含義由 [ui-schedule](../ui-schedule/README.zh.md) 負責。
 
 -----
 
-`ctx.uiWorkspace.openSession(target)` 会同步替换其拥有的 `mainView` reference，并让主区域返回 Conversation，而不等待 `reference.ready`，因此历史加载会显示在已经选中的 Session 视图内。目标可以是已知 Session id，也可以是持久的直接父子 subagent 地址；显式地址不要求预先加载 parent catalog。`openWorkspace(id, beforeOpen?)` 仅在请求未被后续导航替代时打开结果；新会话使用 `openWorkspace`。`forkSession(id)` 创建子会话，不导航，也不替代尚未完成的导航。可选的同步准备回调在目标被 retain 后执行，并且仅对仍有效的 Workspace 请求执行，因此过期请求不会搬移 composer 草稿。后续导航或 owner 释放会阻止晚到的 UI 提交，但不取消底层 Session 创建。启动恢复会 retain 主 reference，不改变已选面板，也不取消后续导航。归档主 Session 会释放其 reference 并清除主选择。选择失败时保留当前全局面板。Session 行读取 `usePanelInfo`，在全局面板活跃时不显示 Session 选中样式；仅把焦点移到搜索框或目录选择器不会离开该面板。
+`ctx.uiWorkspace.openSession(target)` 會同步替換其擁有的 `mainView` reference，並讓主區域返回 Conversation，而不等待 `reference.ready`，因此歷史載入會顯示在已經選中的 Session 檢視內。目標可以是已知 Session id，也可以是持久的直接父子 subagent 地址；顯式地址不要求預先載入 parent catalog。`openWorkspace(id, beforeOpen?)` 僅在請求未被後續導航替代時開啟結果；新工作階段使用 `openWorkspace`。`forkSession(id)` 建立子工作階段，不導航，也不替代尚未完成的導航。可選的同步準備回呼在目標被 retain 後執行，並且僅對仍有效的 Workspace 請求執行，因此過期請求不會搬移 composer 草稿。後續導航或 owner 釋放會阻止晚到的 UI 提交，但不取消底層 Session 建立。啟動恢復會 retain 主 reference，不改變已選面板，也不取消後續導航。歸檔主 Session 會釋放其 reference 並清除主選擇。選擇失敗時保留目前全域面板。Session 行讀取 `usePanelInfo`，在全域面板活躍時不顯示 Session 選中樣式；僅把焦點移到搜尋框或目錄選擇器不會離開該面板。
 
-导航和启动恢复通过所选 Session 的 `follow` 获取投影，不会另行刷新该 Session 或其父会话的投影。
+導航和啟動恢復透過所選 Session 的 `follow` 取得投影，不會另行重新整理該 Session 或其父工作階段的投影。
 
-新建会话尝试获取列表中第一个符合条件的空白会话；启动恢复尝试已保存的空白会话。若该写锁被占用，导航直接新建 Session，不再尝试其他空白会话。其他获取错误会中止请求：显式新建会话或在 hero 中选择工作区时，失败以短暂提示展示，引用 Host 的错误码和消息（例如 preset 挂载失败），非 Host 拒绝的失败则显示其自身消息；已被后续导航或 owner 销毁取代的请求不弹提示，启动恢复仍只报告到控制台。已释放的空白会话被复用时保留 slash 命令状态。后续导航会取消尚未完成的启动选择。
+新建工作階段嘗試取得列表中第一個符合條件的空白工作階段；啟動恢復嘗試已儲存的空白工作階段。若該寫鎖被佔用，導航直接新建 Session，不再嘗試其他空白工作階段。其他取得錯誤會中止請求：顯式新建工作階段或在 hero 中選擇工作區時，失敗以短暫提示展示，引用 Host 的錯誤碼和訊息（例如 preset 掛載失敗），非 Host 拒絕的失敗則顯示其自身訊息；已被後續導航或 owner 銷燬取代的請求不彈提示，啟動恢復仍只報告到控制檯。已釋放的空白工作階段被複用時保留 slash 命令狀態。後續導航會取消尚未完成的啟動選擇。
 
-Host 的工作区基线已列出永久默认工作区，因此启动恢复会选中一个工作区，并创建或复用其空白 Session。默认工作区的行菜单只提供重命名，不提供删除。Workspace 和 Session 的启动基线都为空时（即 Host 未能准备默认工作区），启动流程会再调用一次 `workspaces.initializeDefault`。选中 Session 后输入框才可编辑，不会自动提交消息。后续导航或所属上下文销毁会阻止启动流程选中其结果。默认工作区创建失败时显示短暂提示，引导用户通过“选择工作区”选择文件夹，直到下次启动才重试。Session 创建失败沿用普通的恢复错误处理。登记成功的工作区在 Session 创建或后续提交失败时仍然保留。
+Host 的工作區基線已列出永久預設工作區，因此啟動恢復會選中一個工作區，並建立或複用其空白 Session。預設工作區的行選單隻提供重新命名，不提供刪除。Workspace 和 Session 的啟動基線都為空時（即 Host 未能準備預設工作區），啟動流程會再呼叫一次 `workspaces.initializeDefault`。選中 Session 後輸入框才可編輯，不會自動提交訊息。後續導航或所屬上下文銷燬會阻止啟動流程選中其結果。預設工作區建立失敗時顯示短暫提示，引導使用者透過“選擇工作區”選擇資料夾，直到下次啟動才重試。Session 建立失敗沿用普通的恢復錯誤處理。登記成功的工作區在 Session 建立或後續提交失敗時仍然保留。
 
-首次使用的目录名与其存储标题都是固定的，都不跟随读者语言：`workspaces.initializeDefault` 不携带任何名称，同一安装环境在切换语言后仍只有一个磁盘路径和一个存储标题。仍保留该自动标题的工作区，在本包展示它的所有位置——侧栏行及其悬浮卡片、搜索结果元信息、hero 选择器菜单、重命名与删除对话框——都通过控制器的 `workspaceDisplayTitle` 显示为本地化的默认名称。重命名对话框以屏幕上的标签作为初值，而判断确认是否需要保存用的是存储标题，因此对这类工作区直接确认未改动的初值即可固定该名称，该行不再跟随语言；重名检查按工作区身份而非标题排除目标自身。
+首次使用的目錄名與其儲存標題都是固定的，都不跟隨讀者語言：`workspaces.initializeDefault` 不攜帶任何名稱，同一安裝環境在切換語言後仍只有一個磁碟路徑和一個儲存標題。仍保留該自動標題的工作區，在本包展示它的所有位置——側欄行及其懸浮卡片、搜尋結果元資訊、hero 選擇器選單、重新命名與刪除對話方塊——都透過控制器的 `workspaceDisplayTitle` 顯示為在地化的預設名稱。重新命名對話方塊以螢幕上的標籤作為初值，而判斷確認是否需要儲存用的是儲存標題，因此對這類工作區直接確認未改動的初值即可固定該名稱，該行不再跟隨語言；重名檢查按工作區身份而非標題排除目標自身。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本包是一条组合：两个目标 slot 都由其他插件声明，因此 `apply` 使用 `slots.inject()` 在各自的声明生命周期内完成注册，并在目标 slot 的声明恢复后重新注册。
+本包是一條組合：兩個目標 slot 都由其他外掛宣告，因此 `apply` 使用 `slots.inject()` 在各自的宣告生命週期內完成註冊，並在目標 slot 的宣告恢復後重新註冊。
 
-浏览器入口还为每个 Session 行声明两个 root 作用域的 `list` 子 slot：`sidebar.session.row.leading` 仅在该行主状态为 idle 时渲染、归档行留空，`sidebar.session.row.hover` 仅在该行的悬浮卡片打开时挂载。两者只接收行的 Session 身份，占用方据此读取自己的数据；Session 作用域的 slot 会强制建立 Session 绑定，从而激活并保留列表中每个 Session。
+瀏覽器入口還為每個 Session 行宣告兩個 root 作用域的 `list` 子 slot：`sidebar.session.row.leading` 僅在該行主狀態為 idle 時渲染、歸檔行留空，`sidebar.session.row.hover` 僅在該行的懸浮卡片開啟時掛載。兩者只接收行的 Session 身份，佔用方據此讀取自己的資料；Session 作用域的 slot 會強制建立 Session 繫結，從而啟用並保留列表中每個 Session。
 
-### 目录流子 slot
+### 目錄流子 slot
 
-每个注册各自声明一个**目录流子 slot**（`single` kind：`conversation.hero.workspace.directoryFlow`／`sidebar.workspaces.directoryFlow`），由组合的选择器包 client half 填入其选取交互——`-native` 后端的无渲染 OS 选择器驱动，`-browse` 组合下则是应用内浏览对话框。平铺显示的**添加工作区…** 操作仅在当前界面的 slot 被占用时渲染；slot 为空意味着该组合没有目录选择能力。本包持有触发与接纳：占用方通过 slot 的属主交互约定（`open`/`busy`/`onPicked`/`onCancel`/`onError`）每次打开上报一个所选路径，owner 通过对象层接纳它，并等待 Workspace 列表投影刷新后才选中已提交的 Workspace。
+每個註冊各自宣告一個**目錄流子 slot**（`single` kind：`conversation.hero.workspace.directoryFlow`／`sidebar.workspaces.directoryFlow`），由組合的選擇器包 client half 填入其選取互動——`-native` 後端的無渲染 OS 選擇器驅動，`-browse` 組合下則是應用內瀏覽對話方塊。平鋪顯示的**新增工作區…** 操作僅在目前介面的 slot 被佔用時渲染；slot 為空意味著該組合沒有目錄選擇能力。本包持有觸發與接納：佔用方透過 slot 的屬主互動約定（`open`/`busy`/`onPicked`/`onCancel`/`onError`）每次開啟上報一個所選路徑，owner 透過物件層接納它，並等待 Workspace 列表投影重新整理後才選中已提交的 Workspace。
 
 ### Session 行 action
 
-Session 行的 "..." 菜单和行尾悬停按钮是 WorkspaceBrowser 注册项声明的两个 `list` slot：`sidebar.workspaces.session.menu.item` 与 `sidebar.workspaces.session.row.action`。每一个菜单行、每一个悬停按钮都是条目，本包自己的 action 也不例外：`apply` 以客户端插件注册自己 action 的同一方式注册 `pin`（菜单 100、按钮 200）、`rename`（200）、`fork`（300）、`archive`（菜单 400、按钮 100），因此插件 action 落在其 `order` 所指的位置，以另一个 `priority` 复用内置 id 则遮蔽该 action。
+Session 行的 "..." 選單和行尾懸停按鈕是 WorkspaceBrowser 註冊項宣告的兩個 `list` slot：`sidebar.workspaces.session.menu.item` 與 `sidebar.workspaces.session.row.action`。每一個選單行、每一個懸停按鈕都是條目，本包自己的 action 也不例外：`apply` 以用戶端外掛註冊自己 action 的同一方式註冊 `pin`（選單 100、按鈕 200）、`rename`（200）、`fork`（300）、`archive`（選單 400、按鈕 100），因此外掛 action 落在其 `order` 所指的位置，以另一個 `priority` 複用內建 id 則遮蔽該 action。
 
-条目只接收行身份（`sessionId`、`displayTitle`），其余一切自己负责：用自己注入的 hook 读自己关心的 Host 状态（置顶与归档集合，以每次 Workspace 快照只派生一次的 Set 形式），自己决定是否显示（Host 规定归档与置顶互斥，所以 pin 在归档行上不渲染），整套行为放在注册项自己的 `inject` face 里（置顶成功后顺带把会话推到保存顺序最前，归档成功后发提示），浮层也自己带——重命名对话框、停止并归档对话框和行 action 的提示是本包注册在 `shell.overlay` 的条目，由 action 注入的请求驱动。菜单条目渲染一个 `role="menuitem"` 的按钮（本包自己的行用 ui-primitives 的 `MenuItemButton`，它带宿主样式，开启新分组的行加 `separatorBefore`，分隔线随行一起出现和消失），并通过 slot 级 `useMenuOpenState` hook（菜单自身的打开状态，从该行的渲染出现处绑定）关闭菜单；悬停按钮条目渲染一个图标按钮，按钮条会拦住点击、不让它打开该行。browser 不再向行传任何 action 回调，它剩下的动作只有搜索结果里的恢复按钮和标题双击，后者发出的是同一个重命名请求。
+條目只接收行身份（`sessionId`、`displayTitle`），其餘一切自己負責：用自己注入的 hook 讀自己關心的 Host 狀態（置頂與歸檔集合，以每次 Workspace 快照只派生一次的 Set 形式），自己決定是否顯示（Host 規定歸檔與置頂互斥，所以 pin 在歸檔行上不渲染），整套行為放在註冊項自己的 `inject` face 裡（置頂成功後順帶把工作階段推到儲存順序最前，歸檔成功後發提示），浮層也自己帶——重新命名對話方塊、停止並歸檔對話方塊和行 action 的提示是本包註冊在 `shell.overlay` 的條目，由 action 注入的請求驅動。選單條目渲染一個 `role="menuitem"` 的按鈕（本包自己的行用 ui-primitives 的 `MenuItemButton`，它帶主機樣式，開啟新分組的行加 `separatorBefore`，分隔線隨行一起出現和消失），並透過 slot 級 `useMenuOpenState` hook（選單自身的開啟狀態，從該行的渲染出現處繫結）關閉選單；懸停按鈕條目渲染一個圖示按鈕，按鈕條會攔住點選、不讓它開啟該行。browser 不再向行傳任何 action 回呼，它剩下的動作只有搜尋結果裡的恢復按鈕和標題雙擊，後者發出的是同一個重新命名請求。
 
-#### 打包客户端插件
+#### 打包用戶端外掛
 
-按照 Client 依赖规则，将 `ui-workspace`、`ui-slots`、`ui-renderer`、`client-locale` 与 `ui-primitives` 声明为浏览器／类型开发依赖。纯类型的 `ui-workspace/client` import 会加载本包的 `SlotMap` 声明；缺少该 import 时，独立编译的插件不会知道这些 slot key。Component 保持模块级稳定身份；用户可见文案由贡献包自己的 locale namespace 持有。
+按照 Client 依賴規則，將 `ui-workspace`、`ui-slots`、`ui-renderer`、`client-locale` 與 `ui-primitives` 宣告為瀏覽器／型別開發依賴。純型別的 `ui-workspace/client` import 會載入本包的 `SlotMap` 宣告；缺少該 import 時，獨立編譯的外掛不會知道這些 slot key。Component 保持模組級穩定身份；使用者可見文案由貢獻包自己的 locale namespace 持有。
 
 ```tsx
 import type { Context } from '@deepseek-ai/cordis'
@@ -120,7 +120,7 @@ declare module '@deepseek-ai/dsh-client-ui-slots' {
 }
 
 const en: LocaleDictOf<typeof NS> = { export: 'Export {title}' }
-const zh: LocaleDictOf<typeof NS> = { export: '导出 {title}' }
+const zh: LocaleDictOf<typeof NS> = { export: '匯出 {title}' }
 
 interface ExportRowInjected {
   exportSession: (sessionId: SessionId) => void
@@ -156,69 +156,69 @@ export function apply(ctx: Context): void {
 }
 ```
 
-即使 owner 通常已经存在，也必须使用 `ctx.slots.inject()`：它等待声明，在声明折叠时移除贡献项，并在声明恢复后重新注册。注册项的 `inject` factory 可以闭包使用插件已声明的 Cordis service；Component 只接收投影后的数据和 callback。悬停按钮以同样方式注册到 `sidebar.workspaces.session.row.action`，渲染一个图标按钮。
+即使 owner 通常已經存在，也必須使用 `ctx.slots.inject()`：它等待宣告，在宣告摺疊時移除貢獻項，並在宣告恢復後重新註冊。註冊項的 `inject` factory 可以閉包使用外掛已宣告的 Cordis service；Component 只接收投影后的資料和 callback。懸停按鈕以同樣方式註冊到 `sidebar.workspaces.session.row.action`，渲染一個圖示按鈕。
 
-#### 动态客户端包
+#### 動態用戶端包
 
-动态加载的 browser half 采用同一套组件协议，能拿到哪些模块取决于它走哪条 lane。Module Loader 包（`factory(require)`，即真实 Loader/Web fixture 那种）把 `@deepseek-ai/dsh-client-ui-primitives` 当作隐式 baseline external：通过 loader 的 `require` 解析 `MenuItemButton`，不要把 primitive 列为运行时依赖或打包另一份副本，仅在源码编译需要其类型时声明开发依赖。`cordis-client-runner` 闭包（生成的 Client Slot catalog 面向的读者）无法 import 任何东西：它用 `React.createElement` 渲染自己的 `role="menuitem"` `<button>`，样式经 `styles.insert` 注入，并通过同一个 `useMenuOpenState` hook 关闭菜单，catalog 里的示例就是这个写法。
+動態載入的 browser half 採用同一套元件協定，能拿到哪些模組取決於它走哪條 lane。Module Loader 包（`factory(require)`，即真實 Loader/Web fixture 那種）把 `@deepseek-ai/dsh-client-ui-primitives` 當作隱式 baseline external：透過 loader 的 `require` 解析 `MenuItemButton`，不要把 primitive 列為執行時依賴或打包另一份副本，僅在原始碼編譯需要其型別時宣告開發依賴。`cordis-client-runner` 閉包（生成的 Client Slot catalog 面向的讀者）無法 import 任何東西：它用 `React.createElement` 渲染自己的 `role="menuitem"` `<button>`，樣式經 `styles.insert` 注入，並透過同一個 `useMenuOpenState` hook 關閉選單，catalog 裡的範例就是這個寫法。
 
-### 视图状态
+### 檢視狀態
 
-Workspace 基线就绪后，浏览器持久化的展开状态和 Session 顺序记录只保留当前 Workspace id、Ungrouped 和单列表记账。`WorkspaceView.sessionIds` 提供真实 Workspace 的成员关系，而不提供 Session 显示顺序。视图操作接收完整记账顺序，而不是筛选后的行。尚无 Session 摘要的新成员会等待摘要，已保存的位置则在摘要暂时缺失时保留。归档显隐仅在派生行时应用。置顶和拖拽写入完整顺序，普通派生不执行写入。当前选中的空白 Session 仍是一次显式位置写入；Workspace 重连时同样如此，此时保留其他已保存成员，直到基线确定成员关系。侧边栏收成窄栏或搜索替代列表主体时，排序仍保持挂载。最近更新从当前摘要派生，不读取已保存位置；时间相同时按 Session id 稳定排序。
+Workspace 基線就緒後，瀏覽器持久化的展開狀態和 Session 順序記錄只保留目前 Workspace id、Ungrouped 和單列表記帳。`WorkspaceView.sessionIds` 提供真實 Workspace 的成員關係，而不提供 Session 顯示順序。檢視操作接收完整記帳順序，而不是篩選後的行。尚無 Session 摘要的新成員會等待摘要，已儲存的位置則在摘要暫時缺失時保留。歸檔顯隱僅在派生行時應用。置頂和拖拽寫入完整順序，普通派生不執行寫入。目前選中的空白 Session 仍是一次顯式位置寫入；Workspace 重連時同樣如此，此時保留其他已儲存成員，直到基線確定成員關係。側邊欄收成窄欄或搜尋替代列表主體時，排序仍保持掛載。最近更新從目前摘要派生，不讀取已儲存位置；時間相同時按 Session id 穩定排序。
 
-侧边栏隐藏持久化摘要中带有 `origin: 'subagent'` 的行。可见普通行的共享 ongoing loading 来自其已加载 parent 目录中正在运行的直接 child，绝不来自摘要谱系。Child 活动状态使用最新 UI status，尚无该状态时使用 Session 摘要。
+側邊欄隱藏持久化摘要中帶有 `origin: 'subagent'` 的行。可見普通行的共享 ongoing loading 來自其已載入 parent 目錄中正在執行的直接 child，絕不來自摘要譜系。Child 活動狀態使用最新 UI status，尚無該狀態時使用 Session 摘要。
 
-行动画由 [AnimatedRows](src/client/rows/AnimatedRows.tsx) 负责。它仅在 React 提交改变行成员或顺序时读取更新前后的位置，并使用浏览器原生位移与透明度动画。被移除的行以不可交互的副本在滚动列表外淡出，不会延迟 React 卸载，也不会扩大列表的滚动范围。初始加载、拖拽提交、展开其余会话和视图选项变化直接完成。动画组件不使用布局观察器或轮询，也不会因仅内容更新或滚动而测量位置。
+行動畫由 [AnimatedRows](src/client/rows/AnimatedRows.tsx) 負責。它僅在 React 提交改變行成員或順序時讀取更新前後的位置，並使用瀏覽器原生位移與透明度動畫。被移除的行以不可互動的副本在滾動列表外淡出，不會延遲 React 解除安裝，也不會擴大列表的滾動範圍。初始載入、拖拽提交、展開其餘工作階段和檢視選項變化直接完成。動畫元件不使用佈局觀察器或輪詢，也不會因僅內容更新或滾動而測量位置。
 
-### 悬浮卡片
+### 懸浮卡片
 
-Workspace 与 Session 悬浮卡片会复制对应行被截断的值：激活 Workspace 卡片会写入其完整目录路径，激活非空白 Session 卡片则会写入其完整显示标题。临时的空白「新会话」卡片保持只读，因为其本地化标签是占位文案，并非会话内容。 Session 卡片在卡片打开期间还会在相对时间与行尾状态行之间渲染 `sidebar.session.row.hover` seat，与行自身状态无关。
+Workspace 與 Session 懸浮卡片會複製對應行被截斷的值：啟用 Workspace 卡片會寫入其完整目錄路徑，啟用非空白 Session 卡片則會寫入其完整顯示標題。臨時的空白「新工作階段」卡片保持只讀，因為其在地化標籤是佔位文案，並非工作階段內容。 Session 卡片在卡片開啟期間還會在相對時間與行尾狀態行之間渲染 `sidebar.session.row.hover` seat，與行自身狀態無關。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖侧边栏宿主、主视觉区界面与选取后端。
+以下頁面覆蓋側邊欄主機、主視覺區介面與選取後端。
 
-- [ui-sidebar](../ui-sidebar/README.zh.md)——承载 `sidebar.workspaces` 子 slot 的侧边栏外壳。
-- [ui-conversation](../ui-conversation/README.zh.md)——承载 Session Intent 主视觉区选择器子 slot 的聊天界面。
-- [directory-picker-native](../../host/directory-picker-native/README.zh.md)——填充目录流子 slot 的 OS 选择器后端。
-- [Workspace Controller](../../api/workspace-controller/README.zh.md)——负责 Workspace、成员关系与 Workspace 分组顺序的 Host 变更和框架无关 Client 投影。
+- [ui-sidebar](../ui-sidebar/README.zh.md)——承載 `sidebar.workspaces` 子 slot 的側邊欄外殼。
+- [ui-conversation](../ui-conversation/README.zh.md)——承載 Session Intent 主視覺區選擇器子 slot 的聊天介面。
+- [directory-picker-native](../../host/directory-picker-native/README.zh.md)——填充目錄流子 slot 的 OS 選擇器後端。
+- [Workspace Controller](../../api/workspace-controller/README.zh.md)——負責 Workspace、成員關係與 Workspace 分組順序的 Host 變更和框架無關 Client 投影。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无。该包是浏览器端 UI 插件层，不注册任何面向模型的内容。
+無。該包是瀏覽器端 UI 外掛層，不註冊任何面向模型的內容。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；该包既不组装也不发送提供方请求。
+無；該包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义搜索深度、归档界面与选取载体；它们是当前包约束。
+這些限制定義搜尋深度、歸檔介面與選取載體；它們是目前包約束。
 
-- **没有模糊内容搜索或事件深链接**：内容后端采用字面 token/短语匹配，选择结果会打开 Session，而不是匹配的事件。
-- **没有 Session 删除**：会话可以归档但绝不会被删除；已归档的行通过「已归档会话」视图筛选与搜索结果中的取消归档操作原位恢复，删除 Workspace 注册记录不会删除 Session。
-- **待处理的用户交互不会聚合到折叠的分组上**：折叠分组内正在等待的行不会点亮分组头指示，只有展开该分组后才可见。
-- **原生文件夹选择依赖本地 Host 载体**：在 `-native` 组合下，进程内部署或远程浏览器部署无法打开本地操作系统对话框；可远程的选取是 `-browse` 组合的应用内流程。
+- **沒有模糊內容搜尋或事件深連結**：內容後端採用字面 token/短語匹配，選擇結果會開啟 Session，而不是匹配的事件。
+- **沒有 Session 刪除**：工作階段可以歸檔但絕不會被刪除；已歸檔的行透過「已歸檔工作階段」檢視篩選與搜尋結果中的取消歸檔操作原位恢復，刪除 Workspace 註冊記錄不會刪除 Session。
+- **待處理的使用者互動不會聚合到摺疊的分組上**：摺疊分組內正在等待的行不會點亮分組頭指示，只有展開該分組後才可見。
+- **原生資料夾選擇依賴本地 Host 載體**：在 `-native` 組合下，程序內部署或遠端瀏覽器部署無法開啟本地作業系統對話方塊；可遠端的選取是 `-browse` 組合的應用內流程。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。这是一个纯消费方插件，只向两个由宿主声明的 slot 注册展示组件，并注册自身的 locale dictionaries；inject face 由无状态 RPC 包装层和一次 create-and-open 调用组成；本插件不发出 Cordis 事件，也不持有跨插件可变状态。
+**執行時不變式：** 不釋出伴生入口。這是一個純消費方外掛，只向兩個由主機宣告的 slot 註冊展示元件，並註冊自身的 locale dictionaries；inject face 由無狀態 RPC 包裝層和一次 create-and-open 呼叫組成；本外掛不發出 Cordis 事件，也不持有跨外掛可變狀態。

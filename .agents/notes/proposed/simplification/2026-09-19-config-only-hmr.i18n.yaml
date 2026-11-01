@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/proposed/simplification/2026-09-19-config-only-hmr.md
 /agent-note-limit-dsh-hmr-to-live-profile-configuration:
   en: c46e2d07a9e6143f
-  zh: f75300d70300c324
+  zh: ccad3b4f7c45bede
 /agent-note-limit-dsh-hmr-to-live-profile-configuration/problem:
   en: e81dd5edb54b05ad
-  zh: 601b28ef74134ac1
+  zh: 5122f6a9d17c731c
 /agent-note-limit-dsh-hmr-to-live-profile-configuration/proposal:
   en: 15a88d4c7db728e2
-  zh: 6fb1a28c03930a5e
+  zh: 87eb8c5a220a6be5
 /agent-note-limit-dsh-hmr-to-live-profile-configuration/alternatives-considered:
   en: 9ca293c37f4df4af
-  zh: c8e1a8815e1c9d3f
+  zh: 98c38c280f92e924
 /agent-note-limit-dsh-hmr-to-live-profile-configuration/acceptance-criteria:
   en: ea1dbf4681f60fcf
-  zh: fa7b9f7888bfc24f
+  zh: 2d85628c3ac69b03
 /agent-note-limit-dsh-hmr-to-live-profile-configuration/risks:
   en: de00ca4e66cff7d0
-  zh: fb82e77bd554c1f6
+  zh: aa790fd582e1cbf2

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/process/2026-09-06-python-runtime-windows-hosted.md
 /agent-note-windows-python-runtime-ci-stays-on-github-hosted-windows:
   en: d36b4627e3216a22
-  zh: aabdaed56959936a
+  zh: b76c9d0eec65f2d3
 /agent-note-windows-python-runtime-ci-stays-on-github-hosted-windows/problem:
   en: 81d36185575e6d77
-  zh: 19003ab154d93394
+  zh: 8b0a2e06a7f64128
 /agent-note-windows-python-runtime-ci-stays-on-github-hosted-windows/decision:
   en: 1169dd58149ad6b4
-  zh: aeebaf9ca8769de6
+  zh: c9a9ccf9e62655f0
 /agent-note-windows-python-runtime-ci-stays-on-github-hosted-windows/alternatives-considered:
   en: 817e77f011ea35c8
-  zh: 2087bc653620a60f
+  zh: 97c117b26a38e01e
 /agent-note-windows-python-runtime-ci-stays-on-github-hosted-windows/consequences:
   en: c31f88bace48ff9e
-  zh: 4698cd5ee3152e87
+  zh: 515adaee78d89a2e

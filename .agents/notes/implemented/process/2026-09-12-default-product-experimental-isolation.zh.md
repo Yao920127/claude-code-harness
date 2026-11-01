@@ -1,4 +1,4 @@
-# Agent Note: 将实验包隔离在默认产品之外
+# Agent Note: 將實驗包隔離在預設產品之外
 
 Status: implemented
 
@@ -6,34 +6,34 @@ Status: implemented
 
 ## Problem
 
-在 npm 上公开可用不意味着实验包属于默认产品。直接 manifest 检查会漏掉依赖别名、传递安装路径、仅声明为开发依赖的运行时导入，以及由配置加载的插件。发布 smoke 会一起安装所有 tarball，因此消费者目录中存在实验包并不能说明默认产品需要它。
+在 npm 上公開可用不意味著實驗包屬於預設產品。直接 manifest 檢查會漏掉依賴別名、傳遞安裝路徑、僅宣告為開發依賴的執行時匯入，以及由設定載入的外掛。釋出 smoke 會一起安裝所有 tarball，因此消費者目錄中存在實驗包並不能說明預設產品需要它。
 
 ## Decision
 
-[`verify-default-product-isolation`](../../../../scripts/verify-default-product-isolation.ts) 在静态 CI 和包 hygiene 中运行。它从所有应用与 Python runtime 出发，遍历运行时依赖、可选依赖和 peer，解析 workspace 与 npm 别名，并按 npm 前缀或仓库目录识别实验包。发布 denylist 的成员关系不影响此分类。启动器在 `OPTIONAL_BUNDLES` 里点名的组合包是唯一声明的例外（[随安装提供的可选组合包](2026-09-15-shipped-optional-bundles.zh.md)）。
+[`verify-default-product-isolation`](../../../../scripts/verify-default-product-isolation.ts) 在靜態 CI 和包 hygiene 中執行。它從所有應用與 Python runtime 出發，遍歷執行時依賴、可選依賴和 peer，解析 workspace 與 npm 別名，並按 npm 字首或儲存庫目錄識別實驗包。釋出 denylist 的成員關係不影響此分類。啟動器在 `OPTIONAL_BUNDLES` 裡點名的組合包是唯一宣告的例外（[隨安裝提供的可選組合包](2026-09-15-shipped-optional-bundles.zh.md)）。
 
-源码检查还读取所选包的运行时导入、安装自带的 profile bundle 列表、bundle patch、随产品提供的 Agent preset，以及声明的配置树。它使用生产 patch 解析器加载默认 Web 各层，并使用启动时的同一个 patch 引擎完成组合。检查对象包括最终 entry 和应用 patch 后的 Include 树，因此仅按 id 覆盖 group 的 patch 也无法隐藏替换后的插件。禁用的插件行仍纳入检查；普通插件配置数据不会被解释为另一个 Loader entry 列表。默认入口缺失会使检查失败。
+原始碼檢查還讀取所選包的執行時匯入、安裝自帶的 profile bundle 列表、bundle patch、隨產品提供的 Agent preset，以及宣告的設定樹。它使用生產 patch 解析器載入預設 Web 各層，並使用啟動時的同一個 patch 引擎完成組合。檢查物件包括最終 entry 和應用 patch 後的 Include 樹，因此僅按 id 覆蓋 group 的 patch 也無法隱藏替換後的外掛。停用的外掛行仍納入檢查；普通外掛設定資料不會被解釋為另一個 Loader entry 列表。預設入口缺失會使檢查失敗。
 
-默认 Web 源码图从实际 HTML 入口中的 module script 出发，包括内联模块和本地引用的 Worker 入口。独立的实验预览可以存在而不加入此图；默认入口导入它时检查会失败。源码中的 Cordis 配置文件引用会将 Desktop patch 纳入同一证明。
+預設 Web 原始碼圖從實際 HTML 入口中的 module script 出發，包括內聯模組和本地引用的 Worker 入口。獨立的實驗預覽可以存在而不加入此圖；預設入口匯入它時檢查會失敗。原始碼中的 Cordis 設定檔引用會將 Desktop patch 納入同一證明。
 
-[Host 启动 smoke](../../../../apps/cli/tests/profiles/web/tests/web-default-isolation.expected.e2e.ts) 在独立 Harness home 中通过构建后的 `dsh` 导出启动真实 Web profile。测试专用观察器在就绪后读取实际 Loader 行、注册的 fiber、注册回调所属模块和 Node 已加载模块缓存。[Chromium smoke](../../../../apps/web/tests/default-product-isolation.e2e.ts) 启动实际交付的页面，读取真实 Client Loader、registry 和模块缓存，并要求所有交付 entry 均已激活。两项检查都会拒绝其显式负例命令挂载的真实实验插件。现有 expected-output 和 Web CI lane 在完整构建后执行这些测试。
+[Host 啟動 smoke](../../../../apps/cli/tests/profiles/web/tests/web-default-isolation.expected.e2e.ts) 在獨立 Harness home 中透過建置後的 `dsh` 匯出啟動真實 Web profile。測試專用觀察器在就緒後讀取實際 Loader 行、註冊的 fiber、註冊回呼所屬模組和 Node 已載入模組快取。[Chromium smoke](../../../../apps/web/tests/default-product-isolation.e2e.ts) 啟動實際交付的頁面，讀取真實 Client Loader、registry 和模組快取，並要求所有交付 entry 均已啟用。兩項檢查都會拒絕其顯式負例命令掛載的真實實驗外掛。現有 expected-output 和 Web CI lane 在完整建置後執行這些測試。
 
-构建输入检查覆盖浏览器打包的两个阶段。[Client preset](../../../../packages/client/tsdown.client.ts) 在原始路径被折叠进 `lib/client.js` 前，拒绝非实验输出中的实验输入。[Web 图检查](../../../../scripts/web-product-bundle-isolation.ts) 从 `index.html` 沿真实 Vite 输出边遍历，覆盖延迟加载 chunk、Worker、CSS 依赖和资源。独立 preview 不属于产品图。缺少必需的模块或资源输入记录会使构建失败；失败的 Web 构建无法产生成功的完整 Client 构建记录。Notices 生成器通过显式分析标记检查其部分依赖图，该标记要求禁用输出写入。其他内存内产品构建仍执行这些检查。
+建置輸入檢查覆蓋瀏覽器打包的兩個階段。[Client preset](../../../../packages/client/tsdown.client.ts) 在原始路徑被摺疊進 `lib/client.js` 前，拒絕非實驗輸出中的實驗輸入。[Web 圖檢查](../../../../scripts/web-product-bundle-isolation.ts) 從 `index.html` 沿真實 Vite 輸出邊遍歷，覆蓋延遲載入 chunk、Worker、CSS 依賴和資源。獨立 preview 不屬於產品圖。缺少必需的模組或資源輸入記錄會使建置失敗；失敗的 Web 建置無法產生成功的完整 Client 建置記錄。Notices 生成器透過顯式分析標記檢查其部分依賴圖，該標記要求停用輸出寫入。其他記憶體內產品建置仍執行這些檢查。
 
-[`verify-packed-install`](../../../../scripts/release/verify-packed-install.ts) 从 `@deepseek-ai/dsh` 遍历已安装依赖图，通过解析后的 manifest 名称识别别名和外部传递依赖。开发依赖以及安装在产品旁边的不相关 tarball 不参与遍历。缺失必需依赖会失败；允许省略可选依赖，但其名称不得指向实验包。
+[`verify-packed-install`](../../../../scripts/release/verify-packed-install.ts) 從 `@deepseek-ai/dsh` 遍歷已安裝依賴圖，透過解析後的 manifest 名稱識別別名和外部傳遞依賴。開發依賴以及安裝在產品旁邊的不相關 tarball 不參與遍歷。缺失必需依賴會失敗；允許省略可選依賴，但其名稱不得指向實驗包。
 
-此检查执行现有的[实验包依赖隔离规则](../architecture/2026-08-18-experimental-agent-teams-packages.zh.md)。[发布策略](2026-09-12-experimental-publication-denylist.zh.md) 独立决定显式消费者可以安装哪些实验包。
+此檢查執行現有的[實驗包依賴隔離規則](../architecture/2026-08-18-experimental-agent-teams-packages.zh.md)。[釋出策略](2026-09-12-experimental-publication-denylist.zh.md) 獨立決定顯式消費者可以安裝哪些實驗包。
 
 ## Alternatives considered
 
-**只检查直接依赖名称。** 别名、运行时源码导入和配置加载的插件可以绕过该检查。
+**只檢查直接依賴名稱。** 別名、執行時原始碼匯入和設定載入的外掛可以繞過該檢查。
 
-**拒绝任何已安装的实验 tarball。** 发布 smoke 有意安装整个发布族，包括可选启用的包。只有默认入口的依赖图能够回答这些包是否成为产品依赖。
+**拒絕任何已安裝的實驗 tarball。** 釋出 smoke 有意安裝整個釋出族，包括可選啟用的包。只有預設入口的依賴圖能夠回答這些包是否成為產品依賴。
 
-**将全部 Web 源码视为默认入口。** 即使默认 HTML 和运行时导入从未到达独立的实验预览，这也会错误拒绝它。
+**將全部 Web 原始碼視為預設入口。** 即使預設 HTML 和執行時匯入從未到達獨立的實驗預覽，這也會錯誤拒絕它。
 
-**只检查最终 Vite 模块路径。** 稳定的 `lib/client.js` 路径可能包含前一阶段从实验包打入的代码。每个打包阶段都必须检查实际输入。
+**只檢查最終 Vite 模組路徑。** 穩定的 `lib/client.js` 路徑可能包含前一階段從實驗包打入的程式碼。每個打包階段都必須檢查實際輸入。
 
 ## Consequences
 
-实验包可以发布而不加入默认安装或组合。源码、最终组合、构建输入、安装依赖和运行时 registry 检查提供相互独立的证据。SDK 的[源码启动兼容 patch](../../../../apps/cli/src/sdk-source.cordis.patch.yml) 通过计算出的文件路径选择，不在静态配置发现范围内。运行时 smoke 观察启动和 Client 激活；它们不替代后续每条用户触发路径的测试，也不替代显式安装的 profile 扩展测试。
+實驗包可以釋出而不加入預設安裝或組合。原始碼、最終組合、建置輸入、安裝依賴和執行時 registry 檢查提供相互獨立的證據。SDK 的[原始碼啟動相容 patch](../../../../apps/cli/src/sdk-source.cordis.patch.yml) 透過計算出的檔案路徑選擇，不在靜態設定發現範圍內。執行時 smoke 觀察啟動和 Client 啟用；它們不替代後續每條使用者觸發路徑的測試，也不替代顯式安裝的 profile 擴充功能測試。

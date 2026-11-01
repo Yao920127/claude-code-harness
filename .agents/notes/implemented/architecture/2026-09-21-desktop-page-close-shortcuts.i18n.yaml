@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-21-desktop-page-close-shortcuts.md
 /agent-note-desktop-close-shortcuts-follow-page-focus:
   en: e6ce0bc9592af8ba
-  zh: b43fa4c48c634e27
+  zh: 0b0dde5f7d7bc0bf
 /agent-note-desktop-close-shortcuts-follow-page-focus/problem:
   en: feb9d491ad4a9016
-  zh: 291f0e6c913b0b19
+  zh: b9544bf65b77692e
 /agent-note-desktop-close-shortcuts-follow-page-focus/decision:
   en: c587d88575b6ce7e
-  zh: 2287cf4d6d2e7587
+  zh: e2de5c5a6536dd58
 /agent-note-desktop-close-shortcuts-follow-page-focus/alternatives-considered:
   en: 10c7bb2fc87bdd16
-  zh: 796ecde8bcf09d34
+  zh: d85b8f63cc18fa64
 /agent-note-desktop-close-shortcuts-follow-page-focus/consequences:
   en: aea659e749840caa
-  zh: e75d757165055a55
+  zh: d403a29c4ce53006

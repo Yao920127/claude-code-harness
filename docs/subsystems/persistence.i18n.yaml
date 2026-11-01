@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/persistence.md
 /session-persistence:
   en: b3d66086d8863a84
-  zh: dd532fd7c9947b35
+  zh: 67fd8146cf716ccf
 /session-persistence/sessionhandle-one-open-channel-onto-a-stored-session:
   en: 283765de86ff454d
-  zh: ef8fcf55a3071243
+  zh: 4bca1fdb4e1a58d4
 /session-persistence/the-flush-checkpoint:
   en: a751d1952a47d938
-  zh: f0ae8447fdc26dfb
+  zh: ff8f04c689b1f9f2
 /session-persistence/crash-recovery-preserves-an-interrupted-turn:
   en: 534044a0ce482d52
-  zh: d2e8a7dfeb066946
+  zh: 2585a1063f6cf83c
 /session-persistence/sessionlocation-refusal-diagnostics-artifact-target:
   en: 886589f052a916d7
-  zh: 2ca126aa700c933c
+  zh: 1e0090648d4b0eb2
 /session-persistence/sessionheader-metadata-beside-the-log:
   en: 5795ae03d2d163cd
-  zh: a46ceeb22cfbb6a1
+  zh: c2c429ae1719a77e
 /session-persistence/format-refusal-logs-a-build-cannot-faithfully-read:
   en: fa822e9185bf758b
-  zh: 7fcdbe2f69f848b9
+  zh: 6c1208bcee85b83c
 /session-persistence/createsessionoptions-seeding-and-metadata:
   en: 627c1f7798802ae7
-  zh: ebfe7fb5a7f981b9
+  zh: b34aa18097b8d481
 /session-persistence/preparation-and-restoration-ownership:
   en: 8a37d5ec058058e5
-  zh: 9c54c2c06c167c0b
+  zh: f347cf508baff20f
 /session-persistence/lightweight-source-revisions:
   en: 142ff3bed547efcf
-  zh: a73ca5ea4743d3e8
+  zh: e8592318fab6be2f
 /session-persistence/the-backend:
   en: adcd78909565b046
-  zh: a09bcb6ec0ebad9e
+  zh: d4e15347cbac1277

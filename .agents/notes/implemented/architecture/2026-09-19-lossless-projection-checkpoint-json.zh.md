@@ -1,24 +1,24 @@
-# Agent Note: 无损投影检查点 JSON
+# Agent Note: 無損投影檢查點 JSON
 
 Status: implemented
 
 [English](2026-09-19-lossless-projection-checkpoint-json.md) | 中文
 
-## 问题
+## 問題
 
-投影检查点可以包含不透明扩展数据和消息元数据。名为 `__proto__` 的 JSON 键是普通记录数据。Zod JSON 解析器在重建对象时丢弃该自有键，因此重新打开有效检查点可能得到与回放 Session 日志不同的投影状态。
+投影檢查點可以包含不透明擴充功能資料和訊息中繼資料。名為 `__proto__` 的 JSON 鍵是普通記錄資料。Zod JSON 解析器在重建物件時丟棄該自有鍵，因此重新開啟有效檢查點可能得到與回放 Session 日誌不同的投影狀態。
 
-## 决策
+## 決策
 
-检查点值 schema 使用 `dsh-util-values` 中既有的 `isJsonValue` 谓词。它执行与检查点写入器 `snapshotJsonValue` 相同的无损 JSON 规则，不重建有效对象。校验仍拒绝非 JSON 和有损值。Storage-domain 表值是不可变的借用记录；校验器不提供防御性复制保证。
+檢查點值 schema 使用 `dsh-util-values` 中既有的 `isJsonValue` 謂詞。它執行與檢查點寫入器 `snapshotJsonValue` 相同的無損 JSON 規則，不重建有效物件。驗證仍拒絕非 JSON 和有損值。Storage-domain 表值是不可變的借用記錄；驗證器不提供防禦性複製保證。
 
-## 备选方案
+## 備選方案
 
-- **保留 `z.json()`。** 其对象重建会移除有效自有键，因此校验成功仍可能改变检查点值。
-- **用 `snapshotJsonValue` 校验并复制。** 这能保留键，但会复制已经不可变的存储值。只读谓词符合 storage-domain 的借用值约定。
+- **保留 `z.json()`。** 其物件重建會移除有效自有鍵，因此驗證成功仍可能改變檢查點值。
+- **用 `snapshotJsonValue` 驗證並複製。** 這能保留鍵，但會複製已經不可變的儲存值。只讀謂詞符合 storage-domain 的借用值約定。
 
-## 影响
+## 影響
 
-Domain 读取保留检查点值中的每个有效自有键，包括嵌套的 `__proto__` 和 `constructor` 属性。Projection 的 `stateSchema` 仍拥有其 hydration 值；不透明字段必须使用保留其键的校验器。借用值校验器不生成独立副本，也不投影为 JSON Schema。
+Domain 讀取保留檢查點值中的每個有效自有鍵，包括巢狀的 `__proto__` 和 `constructor` 屬性。Projection 的 `stateSchema` 仍擁有其 hydration 值；不透明欄位必須使用保留其鍵的驗證器。借用值驗證器不生成獨立副本，也不投影為 JSON Schema。
 
-存储 JSON 表示未变，因此 domain 版本不变；本修改修正其读取器。回归测试打开真实写入器生成的合成 fixture，再通过 `StorageDomain` 写入、关闭并重新打开。Session 格式版本与历史代际不变。[前代恢复与 Session 格式绑定](2026-09-02-projcache-cross-version-read-compat.zh.md) 继续负责缓存版本与身份兼容性。
+儲存 JSON 表示未變，因此 domain 版本不變；本修改修正其讀取器。迴歸測試開啟真實寫入器生成的合成 fixture，再透過 `StorageDomain` 寫入、關閉並重新開啟。Session 格式版本與歷史代際不變。[前代恢復與 Session 格式繫結](2026-09-02-projcache-cross-version-read-compat.zh.md) 繼續負責快取版本與身份相容性。

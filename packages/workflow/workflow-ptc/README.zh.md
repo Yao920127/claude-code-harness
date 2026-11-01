@@ -1,5 +1,5 @@
 ---
-description: "通过共享的沙箱化 PTC Node 进程运行时执行工作流编排，保留工作流钩子、subagent 路由和调用方拥有的取消能力。"
+description: "透過共享的沙箱化 PTC Node 程序執行時執行工作流編排，保留工作流掛鉤、subagent 路由和呼叫方擁有的取消能力。"
 kind: "package-reference"
 ---
 
@@ -9,162 +9,162 @@ kind: "package-reference"
 
 ## 概述
 
-在全新 Node 进程中按调用 Session 的文件沙箱策略运行 JavaScript 工作流。脚本保留 `agent()`、`parallel()`、`pipeline()`、`phase()` 和 `log()` 钩子，委派的工作由 subagent 完成。同一个执行提供方服务 PTC 与工作流，包括需显式启用的 Ralph 循环。运行没有整体经过时间截止；取消会停止受管进程并释放子 agent。所选沙箱与子进程提供方决定强制能力和清理限制。
+在全新 Node 程序中按呼叫 Session 的檔案沙箱策略執行 JavaScript 工作流。腳本保留 `agent()`、`parallel()`、`pipeline()`、`phase()` 和 `log()` 掛鉤，委派的工作由 subagent 完成。同一個執行提供者服務 PTC 與工作流，包括需顯式啟用的 Ralph 迴圈。執行沒有整體經過時間截止；取消會停止受管程序並釋放子 agent。所選沙箱與子程序提供者決定強制能力和清理限制。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-在提供 subagent、沙箱策略和 [Node PTC 运行时](../../ptc-runtime/ptc-runtime-node/README.zh.md)的组合中挂载本引擎。它为 `dsh-tool-workflow` 及显式启用时的 `dsh-tool-ralph` 提供工作流执行。Ralph 在已发布默认组合中保持禁用。引擎在加载时拒绝非 TypeScript 的 PTC 提供方。Python PTC 组合必须禁用 `workflow-ptc`、`tool-workflow` 以及任何已启用的 `tool-ralph` 条目。
+在提供 subagent、沙箱策略和 [Node PTC 執行時](../../ptc-runtime/ptc-runtime-node/README.zh.md)的組合中掛載本引擎。它為 `dsh-tool-workflow` 及顯式啟用時的 `dsh-tool-ralph` 提供工作流執行。Ralph 在已釋出預設組合中保持停用。引擎在載入時拒絕非 TypeScript 的 PTC 提供者。Python PTC 組合必須停用 `workflow-ptc`、`tool-workflow` 以及任何已啟用的 `tool-ralph` 條目。
 
-### 最小配置
+### 最小設定
 
-上述依赖可用后，挂载引擎及其面向模型的消费方：
+上述依賴可用後，掛載引擎及其面向模型的消費方：
 
 ```yaml
 - name: '@deepseek-ai/dsh-workflow-ptc'
 - name: '@deepseek-ai/dsh-tool-workflow'
 ```
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `provider` | `spawn` | `agent()` 调用使用的宿主侧 subagent 提供方。 |
-| `maxConcurrentAgents` | `0` | 并发 `agent()` 上限；`0` 根据可用 CPU 并行度解析。 |
-| `maxTotalAgents` | `1000` | 一次运行最多启动的 `agent()` 调用数。 |
-| `maxItemsPerCall` | `4096` | 一次 `parallel()` 或 `pipeline()` 调用接受的条目数。 |
-| `syncTimeoutMs` | `5000` | 脚本最初同步片段的 VM 超时时间，单位为毫秒。 |
+| `provider` | `spawn` | `agent()` 呼叫使用的主機側 subagent 提供者。 |
+| `maxConcurrentAgents` | `0` | 並行 `agent()` 上限；`0` 根據可用 CPU 並行度解析。 |
+| `maxTotalAgents` | `1000` | 一次執行最多啟動的 `agent()` 呼叫數。 |
+| `maxItemsPerCall` | `4096` | 一次 `parallel()` 或 `pipeline()` 呼叫接受的條目數。 |
+| `syncTimeoutMs` | `5000` | 腳本最初同步片段的 VM 超時時間，單位為毫秒。 |
 
-负责运行的消费方可以为一次运行设置 `WorkflowStartRequest.subagentProvider` 并降低 `WorkflowStartRequest.maxTotalAgents`。脚本钩子不能更改这两项选择。进程堆、输出、控制通信和终止限制由 Node PTC 提供方负责；引擎不增加整体经过时间定时器。生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-workflow-ptc)定义可接受的引擎字段。
+負責執行的消費方可以為一次執行設定 `WorkflowStartRequest.subagentProvider` 並降低 `WorkflowStartRequest.maxTotalAgents`。腳本掛鉤不能更改這兩項選擇。程序堆、輸出、控制通訊和終止限制由 Node PTC 提供者負責；引擎不增加整體經過時間定時器。生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-workflow-ptc)定義可接受的引擎欄位。
 
-Node PTC 提供方的 `maxPendingCalls` 也限制工作流并发：子 agent 启动、结果等待与资源释放会占用这些名额。进度批次至多再占用一个名额。设置 `maxConcurrentAgents` 时应预留余量。
+Node PTC 提供者的 `maxPendingCalls` 也限制工作流並行：子 agent 啟動、結果等待與資源釋放會佔用這些名額。進度批次至多再佔用一個名額。設定 `maxConcurrentAgents` 時應預留餘量。
 
-### 结果与失败
+### 結果與失敗
 
-脚本支持顶层 `await`；`meta` 和 `args` 作为 JSON 数据传入。每次 `agent()` 调用使用配置的 subagent 提供方及运行固定的父级。最终的无损 JSON 返回值成为运行结果；普通子 agent 失败使 `agent()` 以 `null` 兑现。
+腳本支援頂層 `await`；`meta` 和 `args` 作為 JSON 資料傳入。每次 `agent()` 呼叫使用設定的 subagent 提供者及執行固定的父級。最終的無損 JSON 回傳值成為執行結果；普通子 agent 失敗使 `agent()` 以 `null` 兌現。
 
-无效元数据、无法解析的正文、不可用的提供方路由或高于上限的单次运行上限，在运行发布前被拒绝。执行期间，钩子误用与超出协作式上限会使工作流失败。进程失败、所需约束不可用，以及超出 PTC 输出或控制限制也会使运行失败。
+無效中繼資料、無法解析的正文、不可用的提供者路由或高於上限的單次執行上限，在執行釋出前被拒絕。執行期間，掛鉤誤用與超出協作式上限會使工作流失敗。程序失敗、所需約束不可用，以及超出 PTC 輸出或控制限制也會使執行失敗。
 
-### 文件策略与取消
+### 檔案策略與取消
 
-引擎为 PTC 执行解析调用 Session 的常设文件策略与 cwd。VM 保留文档说明的辅助 API，但它不是安全边界：触达 Node 的代码仍受所选 OS 文件策略约束。程序可见的环境为空。文件策略不限制网络访问。
+引擎為 PTC 執行解析呼叫 Session 的常設檔案策略與 cwd。VM 保留文件說明的輔助 API，但它不是安全邊界：觸達 Node 的程式碼仍受所選 OS 檔案策略約束。程式可見的環境為空。檔案策略不限制網路存取。
 
-工作流向 PTC 请求 `timeoutMs: null`。最初的 VM 片段仍受 `syncTimeoutMs` 限制，调用方的中止信号仍然生效，包括外层工具的截止。取消立即中止 PTC 进程及待启动或活跃的 subagent。调用方必须释放每次运行并等待子 agent 清理；不另设工作流清理定时器。
+工作流向 PTC 請求 `timeoutMs: null`。最初的 VM 片段仍受 `syncTimeoutMs` 限制，呼叫方的中止訊號仍然生效，包括外層工具的截止。取消立即中止 PTC 程序及待啟動或活躍的 subagent。呼叫方必須釋放每次執行並等待子 agent 清理；不另設工作流清理定時器。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-工作流引擎负责编排；PTC 提供方负责进程启动、OS 约束、分帧传输与受管进程清理。
+工作流引擎負責編排；PTC 提供者負責程序啟動、OS 約束、分幀傳輸與受管程序清理。
 
-### 设计理念
+### 設計理念
 
-一个自包含的 guest 程序在 PTC Node 进程中运行既有 VM 与工作流辅助函数。Host 绑定将该程序连接到 `ctx.subagents` 和工作流观察器。引擎在运行启动时捕获运行时与 subagent 服务，因此已接受的运行在引擎卸载后仍保有依赖。
+一個自包含的 guest 程式在 PTC Node 程序中執行既有 VM 與工作流輔助函式。Host 繫結將該程式連線到 `ctx.subagents` 和工作流觀察器。引擎在執行啟動時捕捉執行時與 subagent 服務，因此已接受的執行在引擎解除安裝後仍保有依賴。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 引擎配置、请求校验与运行创建 |
-| [`src/host.ts`](src/host.ts) | PTC 执行、子 agent 归属、结算与资源释放 |
-| [`src/guest.ts`](src/guest.ts) | 基于 PTC Host 绑定的 guest 适配器 |
-| [`src/guest-source.ts`](src/guest-source.ts) | 自包含 guest 程序源码 |
-| [`src/runtime.ts`](src/runtime.ts) | VM 求值、辅助函数约定与组合器 |
-| [`src/realm.ts`](src/realm.ts) | 跨 VM realm 的无损 JSON 物化 |
-| [`src/meta.ts`](src/meta.ts) | 元数据校验与规范化 |
-| — | 不发布运行时不变式伴生入口；工作流服务负责事件配对，PTC 负责受管进程观测。 |
+| [`src/index.ts`](src/index.ts) | 引擎設定、請求驗證與執行建立 |
+| [`src/host.ts`](src/host.ts) | PTC 執行、子 agent 歸屬、結算與資源釋放 |
+| [`src/guest.ts`](src/guest.ts) | 基於 PTC Host 繫結的 guest 介面卡 |
+| [`src/guest-source.ts`](src/guest-source.ts) | 自包含 guest 程式原始碼 |
+| [`src/runtime.ts`](src/runtime.ts) | VM 求值、輔助函式約定與組合器 |
+| [`src/realm.ts`](src/realm.ts) | 跨 VM realm 的無損 JSON 物化 |
+| [`src/meta.ts`](src/meta.ts) | 中繼資料驗證與規範化 |
+| — | 不釋出執行時不變式伴生入口；工作流服務負責事件配對，PTC 負責受管程序觀測。 |
 
-### 值与子 agent 归属
+### 值與子 agent 歸屬
 
-guest 在 PTC 传输前将出站值物化为无损 JSON。特殊原型、函数、symbol、循环、稀疏数组、非有限数与嵌套 `undefined` 被拒绝。子 agent 结果以 JSON 返回；同进程观察事件保留自身的克隆和回调异常隔离规则。
+guest 在 PTC 傳輸前將出站值物化為無損 JSON。特殊原型、函式、symbol、迴圈、稀疏陣列、非有限數與巢狀 `undefined` 被拒絕。子 agent 結果以 JSON 返回；同程序觀察事件保留自身的克隆和回呼異常隔離規則。
 
-Host 分别跟踪待完成的提供方启动与已发布子 agent。共享中止信号关闭这两条路径；取消后才就绪的子 agent 会被释放。每个已发布子 agent 的资源释放由所有清理路径共享。PTC 停止程序后，进行中的 Host 绑定仍由工作流适配器负责。
+Host 分別跟蹤待完成的提供者啟動與已釋出子 agent。共享中止訊號關閉這兩條路徑；取消後才就緒的子 agent 會被釋放。每個已釋出子 agent 的資源釋放由所有清理路徑共享。PTC 停止程式後，進行中的 Host 繫結仍由工作流介面卡負責。
 
-### 取消与结果
+### 取消與結果
 
-第一个被接受的终态拥有运行结果。取消立即停止进程，不等待 guest 确认。进程结算与子 agent 清理仍是两项独立义务；公开资源释放操作等待两者。既有工作流开始／结束配对与子 agent 生命周期投影保持不变。
+第一個被接受的終態擁有執行結果。取消立即停止程序，不等待 guest 確認。程序結算與子 agent 清理仍是兩項獨立義務；公開資源釋放操作等待兩者。既有工作流開始／結束配對與子 agent 生命週期投影保持不變。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-共享执行保证与工作流约定见以下参考。
+共享執行保證與工作流約定見以下參考。
 
-- [工作流子系统](../../../docs/subsystems/workflow.zh.md)——请求、结果和事件定义。
-- [工作流服务](../workflow/README.zh.md)——调用方拥有的运行与清理。
-- [Node PTC 运行时](../../ptc-runtime/ptc-runtime-node/README.zh.md)——文件策略、进程限制与部署选择。
-- [workflow 工具](../tool-workflow/README.zh.md)——面向模型的脚本编排。
-- [Ralph 工具](../tool-ralph/README.zh.md)——需显式启用的固定全新 agent 迭代。
-- [工作流沙箱复用](../../../.agents/notes/implemented/architecture/2026-09-13-workflow-ptc-sandbox-reuse.zh.md)——执行归属与取舍。
+- [工作流子系統](../../../docs/subsystems/workflow.zh.md)——請求、結果和事件定義。
+- [工作流服務](../workflow/README.zh.md)——呼叫方擁有的執行與清理。
+- [Node PTC 執行時](../../ptc-runtime/ptc-runtime-node/README.zh.md)——檔案策略、程序限制與部署選擇。
+- [workflow 工具](../tool-workflow/README.zh.md)——面向模型的腳本編排。
+- [Ralph 工具](../tool-ralph/README.zh.md)——需顯式啟用的固定全新 agent 迭代。
+- [工作流沙箱複用](../../../.agents/notes/implemented/architecture/2026-09-13-workflow-ptc-sandbox-reuse.zh.md)——執行歸屬與取捨。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 子 agent 请求
+### 子 agent 請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-脚本每次调用 `agent()`，都会把提示词原样发送给 subagent 提供方，并附带可选模型或结构化输出 schema。每个子 agent 看到该提供方自己的上下文；phase 与 log 叙述只留在观察器事件中。
+腳本每次呼叫 `agent()`，都會把提示詞原樣傳送給 subagent 提供者，並附帶可選模型或結構化輸出 schema。每個子 agent 看到該提供者自己的上下文；phase 與 log 敘述只留在觀察器事件中。
 
-#### Token 影响
+#### Token 影響
 
-每个子 agent 消耗自己的模型上下文。协作式并发、agent 总数与条目上限限制普通脚本的扇出；子 agent 历史不会直接加入父级历史。
+每個子 agent 消耗自己的模型上下文。協作式並行、agent 總數與條目上限限制普通腳本的扇出；子 agent 歷史不會直接加入父級歷史。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与父级请求缓存及同级子 agent 相互独立。每个子 agent 只能在自己的提供方、模型、提示词和 schema 下复用逐字节相同的前缀。
+與父級請求快取及同級子 agent 相互獨立。每個子 agent 只能在自己的提供者、模型、提示詞和 schema 下複用逐位元組相同的字首。
 
-### 父级工具结果（间接）
+### 父級工具結果（間接）
 
-#### 模型看到什么
+#### 模型看到什麼
 
-工具消费方呈现最终 JSON 值与子 agent 数量，或工作流失败。中间子 agent 输出仍可供脚本使用。脚本解析、辅助函数误用、子 agent 基础设施失败与 PTC 执行失败会产生错误；普通子 agent 失败产生 `null`，由脚本处理。
+工具消費方呈現最終 JSON 值與子 agent 數量，或工作流失敗。中間子 agent 輸出仍可供腳本使用。腳本解析、輔助函式誤用、子 agent 基礎設施失敗與 PTC 執行失敗會產生錯誤；普通子 agent 失敗產生 `null`，由腳本處理。
 
-#### Token 影响
+#### Token 影響
 
-引擎不直接向父级增加 token。PTC 限制外层程序结果，工具消费方负责其面向模型的渲染与保留。
+引擎不直接向父級增加 token。PTC 限制外層程式結果，工具消費方負責其面向模型的渲染與保留。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新增可见内容位于可复用请求前缀之后。
+僅追加；新增可見內容位於可複用請求字首之後。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-这些限制界定工作流执行与清理。
+這些限制界定工作流執行與清理。
 
-- **文件约束与清理继承提供方限制**——Node PTC 与子进程提供方定义强制能力完整度和受管进程范围。
-- **工作流上限是协作式的**——辅助函数计数器限制普通脚本；它们不是 Host 强制的安全配额或后代 token 预算。
-- **没有整体经过时间截止**——运行可以持续到完成、失败或取消。调用方截止仍然适用。
-- **子 agent 清理遵循提供方约定**——适配器等待资源释放与待完成启动，不另设放弃等待的定时器。
-- **VM 不是安全边界**——不提供的全局变量用于指导脚本作者；OS 策略约束触达 Node 的代码。
-- **跨 realm 错误在脚本内无法通过 `instanceof Error`**——根据 `name` 与 `code` 等稳定字段分支。
+- **檔案約束與清理繼承提供者限制**——Node PTC 與子程序提供者定義強制能力完整度和受管程序範圍。
+- **工作流上限是協作式的**——輔助函式計數器限制普通腳本；它們不是 Host 強制的安全配額或後代 token 預算。
+- **沒有整體經過時間截止**——執行可以持續到完成、失敗或取消。呼叫方截止仍然適用。
+- **子 agent 清理遵循提供者約定**——介面卡等待資源釋放與待完成啟動，不另設放棄等待的定時器。
+- **VM 不是安全邊界**——不提供的全域變數用於指導腳本作者；OS 策略約束觸達 Node 的程式碼。
+- **跨 realm 錯誤在腳本內無法透過 `instanceof Error`**——根據 `name` 與 `code` 等穩定欄位分支。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

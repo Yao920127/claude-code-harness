@@ -4,79 +4,79 @@
 #   pnpm run verify-translation-pairing --write packages/spill/spill-policy/README.md
 /:
   en: 07748986630e8da3
-  zh: 4ff004a12b883fdf
+  zh: 9c60aa2c065351f3
 /deepseek-ai-dsh-spill-policy:
   en: e3d75c128bb2f4b9
   zh: 15daa9f8f3efaabd
 /deepseek-ai-dsh-spill-policy/summary:
   en: 225c013f0f230c37
-  zh: 30634801496c205f
+  zh: 17e3390a13013f71
 /deepseek-ai-dsh-spill-policy/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-spill-policy/use-this-package:
   en: 52e3b36ee5b98e7f
-  zh: 98380821aa7cde9d
+  zh: abefdd423d368771
 /deepseek-ai-dsh-spill-policy/use-this-package/minimal-configuration:
   en: a5d85ae7f7962b9e
-  zh: 73c44a9413c3c8cf
+  zh: 8ecbb84408bd820e
 /deepseek-ai-dsh-spill-policy/use-this-package/what-the-model-sees:
   en: 7cb5bba705975712
-  zh: 26adbdee1252d2bb
+  zh: 6b38c646ca784aee
 /deepseek-ai-dsh-spill-policy/use-this-package/which-results-are-affected:
   en: c419117e6b5f84f8
-  zh: 1a43afb623346603
+  zh: 58a126575e1b89ec
 /deepseek-ai-dsh-spill-policy/use-this-package/best-effort-failure-behavior:
   en: b4d94d99a8a9e52f
-  zh: d5cec6295cbf5ef6
+  zh: 376109e65b931204
 /deepseek-ai-dsh-spill-policy/use-this-package/the-durable-log-copy:
   en: b72e6e88ada5a957
-  zh: 5c6167651618738a
+  zh: 97587aab7daa7ca1
 /deepseek-ai-dsh-spill-policy/understand-the-implementation:
   en: bb7cedc768113c0e
-  zh: ca05828dfe63b233
+  zh: ad31efe05c1a704b
 /deepseek-ai-dsh-spill-policy/understand-the-implementation/design-philosophy:
   en: a8e0d6d0651401c0
-  zh: 0e159fc19caf9300
+  zh: 684baaa61e42faf9
 /deepseek-ai-dsh-spill-policy/understand-the-implementation/the-two-arms:
   en: a9233181feb1afb4
-  zh: e54f1498a0dea843
+  zh: f0a0924d65b3a206
 /deepseek-ai-dsh-spill-policy/understand-the-implementation/shared-notice-ownership:
   en: 916aa902ea376c42
-  zh: 51fbf25c1f1560d7
+  zh: da9d20546de45438
 /deepseek-ai-dsh-spill-policy/understand-the-implementation/source-map:
   en: 9a63af71cc19194d
-  zh: 0937a72b5444cff2
+  zh: 7c54ac4371f74363
 /deepseek-ai-dsh-spill-policy/understand-the-implementation/failure-modes:
   en: 5640d59fdf0e064f
-  zh: 7f92c52a1bdf5bff
+  zh: 3a95a17609ca543c
 /deepseek-ai-dsh-spill-policy/further-exploration:
   en: 2b5860d2cc9a6523
-  zh: 006157ad7bc92891
+  zh: ce93c5130153c2dd
 /deepseek-ai-dsh-spill-policy/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-spill-policy/model-experience/oversized-text-and-image-results:
   en: 99c96010474af9cf
-  zh: 9a25fa709f21a494
+  zh: 281fba15fa9ee220
 /deepseek-ai-dsh-spill-policy/model-experience/oversized-text-and-image-results/what-the-model-sees:
   en: a701c098db84aff5
-  zh: 2b04abc792def1a2
+  zh: 6d58735915002730
 /deepseek-ai-dsh-spill-policy/model-experience/oversized-text-and-image-results/token-effect:
   en: 02ec4218006ecb65
-  zh: 62f1d481ebf0c665
+  zh: 18b38255f72aa90c
 /deepseek-ai-dsh-spill-policy/model-experience/oversized-text-and-image-results/kv-cache-effect:
   en: f5d5f97a153f7c70
-  zh: bee82b41983a66a0
+  zh: f701955906c940e1
 /deepseek-ai-dsh-spill-policy/known-limitations-and-deferred-work:
   en: bd38d2abae4cb4e6
-  zh: 29acb530988ee2bd
+  zh: 8ac9ae0936324ea0
 /deepseek-ai-dsh-spill-policy/known-limitations-and-deferred-work/dev-note:
   en: a63e51f03bdb279f
-  zh: 191a48d3bfc4a792
+  zh: df60ff94959ba354
 /deepseek-ai-dsh-spill-policy/known-limitations-and-deferred-work/dev-note/future-per-tool-configuration:
   en: 7e6c4300e87f3f07
-  zh: 7b97be5218905ecc
+  zh: d40c409cf4048b9d
 /deepseek-ai-dsh-spill-policy/known-limitations-and-deferred-work/dev-note/future-earlier-spill:
   en: dbb9f9fe93996893
-  zh: d9d3c1a46ea67595
+  zh: 56dfffc1302338e3

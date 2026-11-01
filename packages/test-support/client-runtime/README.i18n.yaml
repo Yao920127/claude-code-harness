@@ -4,64 +4,64 @@
 #   pnpm run verify-translation-pairing --write packages/test-support/client-runtime/README.md
 /:
   en: 6fd77b7a27000bf1
-  zh: 4a9606aa75285111
+  zh: 7c126bf6c3fa358f
 /deepseek-ai-dsh-client-test-runtime:
   en: edb01d7d9545062d
   zh: de5e5ac8a9ff2f9b
 /deepseek-ai-dsh-client-test-runtime/summary:
   en: ff69de920b4ab273
-  zh: 225437473535326a
+  zh: 536a4d0b6d5cb8ae
 /deepseek-ai-dsh-client-test-runtime/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-test-runtime/use-this-package:
   en: 12afbb217bc06678
-  zh: c07f001ed8bb3300
+  zh: 6da4cc1fc9e9c446
 /deepseek-ai-dsh-client-test-runtime/use-this-package/setting-up-a-feature-spec:
   en: db486a54e1ff92ca
-  zh: b7cbb4078eedce4e
+  zh: cb775666ca3e9de1
 /deepseek-ai-dsh-client-test-runtime/use-this-package/local-dom-snapshots:
   en: 1abbbed6cc4cf57b
-  zh: ab3975178b589653
+  zh: 64df03b371df33ad
 /deepseek-ai-dsh-client-test-runtime/use-this-package/scripting-remote-answers-and-failures:
   en: cbcfc9a331783c98
-  zh: 1cc2f8e21a3d0dd4
+  zh: 6a3d82d14bc4b8d2
 /deepseek-ai-dsh-client-test-runtime/use-this-package/whole-client-tier:
   en: 1442fc215c8128e8
-  zh: 8439861b08e46ea2
+  zh: 06577d5e6dfae178
 /deepseek-ai-dsh-client-test-runtime/use-this-package/roster-and-startup-behavior:
   en: 964236f295b61c0c
-  zh: 863a9342b1169ad8
+  zh: 33dbe95f59e181ec
 /deepseek-ai-dsh-client-test-runtime/use-this-package/when-to-use-it:
   en: eb2f9bc90acb7a62
-  zh: cb59a2134bc83106
+  zh: c04205cc9d6949a5
 /deepseek-ai-dsh-client-test-runtime/use-this-package/what-can-go-wrong:
   en: c6bfe837a9221cf5
-  zh: 8d8fadea54f9e295
+  zh: efda270a65a2a7de
 /deepseek-ai-dsh-client-test-runtime/understand-the-implementation:
   en: 70d19a7761d06ac9
-  zh: 2a3e648ee3dc51c1
+  zh: c15553e8a1e8e0c6
 /deepseek-ai-dsh-client-test-runtime/understand-the-implementation/design:
   en: 3264640018c1a0e8
-  zh: d777e0b8ad8b602f
+  zh: 5e2d80291ca94acc
 /deepseek-ai-dsh-client-test-runtime/understand-the-implementation/source-map:
   en: 1c38acf76aef7251
-  zh: 6c104a965263f443
+  zh: d1082d550d79725e
 /deepseek-ai-dsh-client-test-runtime/understand-the-implementation/lifecycle:
   en: b42779f364504719
-  zh: a10bad7ea1161388
+  zh: 22515fb1b303a8d5
 /deepseek-ai-dsh-client-test-runtime/further-exploration:
   en: 7da91d03f5e40b35
-  zh: c35021982fdde126
+  zh: 3b7aa794d530e72e
 /deepseek-ai-dsh-client-test-runtime/model-experience:
   en: 53b590e95981d312
-  zh: 326a89a5a4e15155
+  zh: c9784a7300869b1f
 /deepseek-ai-dsh-client-test-runtime/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: f57cc48a1b5cbfa9
+  zh: fa87630fc3310087
 /deepseek-ai-dsh-client-test-runtime/known-limitations-and-deferred-work:
   en: da5c7983453b2515
-  zh: 7f558354e84abff5
+  zh: 34ce7e919bad25f6
 /deepseek-ai-dsh-client-test-runtime/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

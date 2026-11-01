@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/boot/README.md
 /:
   en: f463eb944808754a
-  zh: f0cf7b9bb1fbff54
+  zh: ec04003657486c7a
 /boot-shared-app-bin-boot-glue:
   en: 2caa275142cc783b
-  zh: 0bd2855793c7c647
+  zh: c24515b03f90f84a
 /boot-shared-app-bin-boot-glue/summary:
   en: 444512f85b296a2c
-  zh: a30cddc443061060
+  zh: 77f8dcea80202c71
 /boot-shared-app-bin-boot-glue/table-of-contents:
   en: 09848f4d056e4fc1
-  zh: 8df6139cff0288f6
+  zh: 3ab179e03f688394
 /boot-shared-app-bin-boot-glue/packages:
   en: f1285935114d8d71
-  zh: 71698b9aca926726
+  zh: dc56aaef1841b5ce
 /boot-shared-app-bin-boot-glue/related-documentation:
   en: 77af4b40ee7b98a3
-  zh: e9b4e817823b973d
+  zh: f0b062e3b64c7a96
 /boot-shared-app-bin-boot-glue/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

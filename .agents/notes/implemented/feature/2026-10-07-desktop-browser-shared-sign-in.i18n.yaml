@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-10-07-desktop-browser-shared-sign-in.md
 /agent-note-shared-persistent-desktop-browser-sign-in:
   en: 2c2b373c165f71c8
-  zh: f60988765920b3ba
+  zh: 85aa056141ecc8cf
 /agent-note-shared-persistent-desktop-browser-sign-in/problem:
   en: f791b89f2ab3ba12
-  zh: b31861838f34020e
+  zh: 90da96a9d08f73d8
 /agent-note-shared-persistent-desktop-browser-sign-in/decision:
   en: a4cb505441c99f36
-  zh: 45ec0072bb3f35be
+  zh: 652624ab234aadf8
 /agent-note-shared-persistent-desktop-browser-sign-in/alternatives-considered:
   en: e06f6bc4b20b8048
-  zh: ca7bc80822245e5f
+  zh: c03fc930c4f6c827
 /agent-note-shared-persistent-desktop-browser-sign-in/consequences:
   en: c6cdc98d56833120
-  zh: 04d622b88df82ae1
+  zh: 6dee9ab276e9d0af

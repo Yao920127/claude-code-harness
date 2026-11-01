@@ -1,42 +1,42 @@
-# Agent Note: 基于句柄的会话持久化
+# Agent Note: 基於控制代碼的工作階段持久化
 
 Status: implemented
 
 [English](2026-08-27-handle-based-session-persistence.md) | 中文
 
-## 问题
+## 問題
 
-先前的持久化 seam 承担的远不止存储。一个共享协调器订阅 `session/created`/`session/event`/`session/flush`/`session/disposed`，并接管任何已发布的会话（无主认领、HMR 重新播种、已存储前缀接管）；一个带独占预留的有界已准备 Session LRU 用同一个缓存服务恢复与只读观察；提交式崩溃修复内嵌在 `load`/`prepare` 中；乐观的 revision 读取/复核/再读取循环充当所有权的替身，因此持续的外部写入方可能使读取活锁，而且没有任何机制排除第二个写入方。服务表面（十二个方法）把存储与 Session 构造和生命周期混在一起。跨进程写所有权——下一步——在那种形态里没有诚实的归宿：所有权属于一条有明确持有者的逐会话通道，而不属于一个全局监听器。
+先前的持久化 seam 承擔的遠不止儲存。一個共享協調器訂閱 `session/created`/`session/event`/`session/flush`/`session/disposed`，並接管任何已釋出的工作階段（無主認領、HMR 重新播種、已儲存字首接管）；一個帶獨佔預留的有界已準備 Session LRU 用同一個快取服務恢復與只讀觀察；提交式崩潰修復內嵌在 `load`/`prepare` 中；樂觀的 revision 讀取/複核/再讀取迴圈充當所有權的替身，因此持續的外部寫入方可能使讀取活鎖，而且沒有任何機制排除第二個寫入方。服務表面（十二個方法）把儲存與 Session 建構和生命週期混在一起。跨程序寫所有權——下一步——在那種形態裡沒有誠實的歸宿：所有權屬於一條有明確持有者的逐工作階段通道，而不屬於一個全域監聽器。
 
-## 决策
+## 決策
 
-**该 seam 是五个返回或供给逐会话句柄的服务方法。**`create(header)` 存储一个新会话并返回其持有的写句柄；`open(id, 'read' | 'write')` 打开一个已有会话；`stat(id)`/`list()` 观察快照（`header`、不透明 `revision`、可选的 `eventCount`/`sizeBytes` 提示——JSONL 后端提供 `sizeBytes`），而不读取日志；服务级 `flush()` 是一道后端范围的持久性屏障，排空并 flush 每一个活跃写句柄，逐会话聚合失败而不中途放弃清扫。该 seam 不承载原始工件导出：WebUI 的 ZIP 下载在 dsh-session-log-export 中从读句柄序列化逻辑日志（header 行 + 事件），因此每个后端的导出完全一致，仅 JSONL 可用的 501 路径也随之消失。`SessionHandle` 承载 `read(offset?, length?)`（经过验证的连续前缀切片，绝不返回撕裂尾部，逐句柄单调）、`append`（连续；完成时的持久化是尽力而为的，交付的 JSONL 后端恰好会立即持久化每个批次）、`flush`（持久性屏障，同时把空会话实体化）以及幂等且不可取消的 `close`。一种句柄类型同时服务两种访问——在读句柄上执行修改是运行时的 `SessionReadOnlyError`，这是本代码库其他 seam 的既定惯例，而非类型层面的拆分。单写者所有权由注册表在进程内强制（`SessionAlreadyOwnedError`）；持久的跨进程租约是计划在同一形态上叠加的下一层。
+**該 seam 是五個返回或供給逐工作階段控制代碼的服務方法。**`create(header)` 儲存一個新工作階段並返回其持有的寫控制代碼；`open(id, 'read' | 'write')` 開啟一個已有工作階段；`stat(id)`/`list()` 觀察快照（`header`、不透明 `revision`、可選的 `eventCount`/`sizeBytes` 提示——JSONL 後端提供 `sizeBytes`），而不讀取日誌；服務級 `flush()` 是一道後端範圍的永續性屏障，排空並 flush 每一個活躍寫控制代碼，逐工作階段聚合失敗而不中途放棄清掃。該 seam 不承載原始工件匯出：WebUI 的 ZIP 下載在 dsh-session-log-export 中從讀控制代碼序列化邏輯日誌（header 行 + 事件），因此每個後端的匯出完全一致，僅 JSONL 可用的 501 路徑也隨之消失。`SessionHandle` 承載 `read(offset?, length?)`（經過驗證的連續字首切片，絕不返回撕裂尾部，逐控制代碼單調）、`append`（連續；完成時的持久化是盡力而為的，交付的 JSONL 後端恰好會立即持久化每個批次）、`flush`（永續性屏障，同時把空工作階段實體化）以及冪等且不可取消的 `close`。一種控制代碼型別同時服務兩種存取——在讀控制代碼上執行修改是執行時的 `SessionReadOnlyError`，這是本程式碼庫其他 seam 的既定慣例，而非型別層面的拆分。單寫者所有權由註冊表在程序內強制（`SessionAlreadyOwnedError`）；持久的跨程序租約是計劃在同一形態上疊加的下一層。
 
-**agent 生命周期负责获取句柄；后端负责事件驱动的流程。**agent-loop——会话在生产环境中唯一的发布点——在发布之前获取句柄（新建会话用 `create`，并通过它追加构造 seed；恢复用 `open(id, 'write')`），并在与排空循环相同的记忆化 teardown 中关闭它。由于持久化已保证每个会话 id 只有一个活跃写句柄，后端一次性安装会话监听器并按 id 路由：`session/event` 进入持有句柄的有界 write-behind 窗口（内部调度策略，而非配置），`session/flush` 作为持久性与错误观察屏障，`session/disposed` 作为最终排空并关闭。写路径没有任何部分跨越包边界——没有写入器组件，没有批处理配置，没有排空注册表。根 fiber 的 dispose 会并发运行每个 fiber 的 disposer，因此 `close()` 本身会经由仍然打开的存储排空已路由的缓冲；后端 teardown 的关闭清扫使应用关闭无论哪个 fiber 先解退都不丢数据。该排空只保证已发出并缓冲的事件；turn 中途的根 dispose 仍会按设计丢失该 turn 尚未发出的剩余部分——下一次恢复的 `interruptedTurnClosers` 会持久地修复这段尾部。在生命周期之外发布的会话不再隐式持久化；生产环境中没有任何地方那样做。
+**agent 生命週期負責取得控制代碼；後端負責事件驅動的流程。**agent-loop——工作階段在生產環境中唯一的釋出點——在釋出之前取得控制代碼（新建工作階段用 `create`，並透過它追加建構 seed；恢復用 `open(id, 'write')`），並在與排空迴圈相同的記憶化 teardown 中關閉它。由於持久化已保證每個工作階段 id 只有一個活躍寫控制代碼，後端一次性安裝工作階段監聽器並按 id 路由：`session/event` 進入持有控制代碼的有界 write-behind 視窗（內部排程策略，而非設定），`session/flush` 作為永續性與錯誤觀察屏障，`session/disposed` 作為最終排空並關閉。寫路徑沒有任何部分跨越包邊界——沒有寫入器元件，沒有批處理設定，沒有排空註冊表。根 fiber 的 dispose 會並行執行每個 fiber 的 disposer，因此 `close()` 本身會經由仍然開啟的儲存排空已路由的緩衝；後端 teardown 的關閉清掃使應用關閉無論哪個 fiber 先解退都不丟資料。該排空只保證已發出並緩衝的事件；turn 中途的根 dispose 仍會按設計丟失該 turn 尚未發出的剩餘部分——下一次恢復的 `interruptedTurnClosers` 會持久地修復這段尾部。在生命週期之外發布的工作階段不再隱式持久化；生產環境中沒有任何地方那樣做。
 
-**语义崩溃修复移出了持久化。**恢复通过其写句柄读取物理上有效的日志，计算 `interruptedTurnClosers`，并把它们（连同构造器的 `session/end-seed` 标记）作为普通批次通过同一句柄追加——修复不是特殊的存储入口。只读观察方（session-query）仅在内存中配平被中断的冷日志，并拥有以 `stat().revision` 为键的冷 Session 缓存；持久化侧的已准备缓存与 revision 收敛循环被删除。
+**語義崩潰修復移出了持久化。**恢復透過其寫控制代碼讀取物理上有效的日誌，計算 `interruptedTurnClosers`，並把它們（連同建構器的 `session/end-seed` 標記）作為普通批次透過同一控制代碼追加——修復不是特殊的儲存入口。只讀觀察方（session-query）僅在記憶體中配平被中斷的冷日誌，並擁有以 `stat().revision` 為鍵的冷 Session 快取；持久化側的已準備快取與 revision 收斂迴圈被刪除。
 
-**可见性与新鲜度是显式的。**已创建的会话自 `create` 起即可在进程内被观察到；物理实体化（纯粹的优化）可以推迟到第一次 append 或 flush，其他进程只能看到已实体化的会话，实体化之前崩溃意味着该会话从未存在。一旦某次 append 或 flush 完成，其后在同一后端实例上开始的读取至少能观察到该前缀——这正是 `message-feedback` 持久目标检查所依赖的保证。
+**可見性與新鮮度是顯式的。**已建立的工作階段自 `create` 起即可在程序內被觀察到；物理實體化（純粹的最佳化）可以推遲到第一次 append 或 flush，其他程序只能看到已實體化的工作階段，實體化之前崩潰意味著該工作階段從未存在。一旦某次 append 或 flush 完成，其後在同一後端實例上開始的讀取至少能觀察到該字首——這正是 `message-feedback` 持久目標檢查所依賴的保證。
 
-**revision 简化为逐实例变更令牌。**令牌相等可视为日志未变；所有权变动绝不会改变令牌。JSONL 通过一次 `fs.stat` 派生尽力而为的令牌与 `sizeBytes`；存储介质能够廉价统计事件数的后端可以改为提供 `eventCount` 提示。Session listing 保持零正文读取的 metadata/cache 操作：它信任缓存的非空 projection，只在当前 cache identity 匹配时保留缓存的空值，否则用 `blank: false` 表示可见的未知回退。冷空白探测及其探测限制配置均不再存在。
+**revision 簡化為逐實例變更權杖。**權杖相等可視為日誌未變；所有權變動絕不會改變權杖。JSONL 透過一次 `fs.stat` 派生盡力而為的權杖與 `sizeBytes`；儲存介質能夠廉價統計事件數的後端可以改為提供 `eventCount` 提示。Session listing 保持零正文讀取的 metadata/cache 操作：它信任快取的非空 projection，只在目前 cache identity 匹配時保留快取的空值，否則用 `blank: false` 表示可見的未知退回。冷空白探測及其探測限制設定均不再存在。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**类型化的读/写句柄类（或重载）。**不作为该 seam 的风格采纳：本代码库的 seam 偏好带访问标记的单一类型加运行时拒绝，而拆分会为一个编译期检查让每个面向消费方的类型翻倍。
+**型別化的讀/寫控制代碼類（或過載）。**不作為該 seam 的風格採納：本程式碼庫的 seam 偏好帶存取標記的單一型別加執行時拒絕，而拆分會為一個編譯期檢查讓每個面向消費方的型別翻倍。
 
-**在句柄旁保留协调器的接管/HMR 写路径。**不采纳：接管的存在是为了事后猜测所有权；当生命周期显式移交句柄后，无法服务旧句柄的重载后端会向写入器响亮地失败，而不是静默地重新认领日志，而没有句柄的会话是一个由持久化缺席暴露、而非被接管掩盖的组合缺陷。
+**在控制代碼旁保留協調器的接管/HMR 寫路徑。**不採納：接管的存在是為了事後猜測所有權；當生命週期顯式移交控制代碼後，無法服務舊控制代碼的過載後端會向寫入器響亮地失敗，而不是靜默地重新認領日誌，而沒有控制代碼的工作階段是一個由持久化缺席暴露、而非被接管掩蓋的組合缺陷。
 
-**在句柄旁提供服务级 `append(id, events)`。**不采纳：按 id 寻址的写路径绕过所有权；每次写入都流经持有句柄，使未来的租约检查恰好只有一扇门。
+**在控制代碼旁提供服務級 `append(id, events)`。**不採納：按 id 定址的寫路徑繞過所有權；每次寫入都流經持有控制代碼，使未來的租約檢查恰好只有一扇門。
 
-**由持久化持有批处理配置。**不采纳：批处理窗口是写路径内部的调度策略，而非随部署变化的选择，因此它是 provider 常量，任何地方都不存在配置旋钮。
+**由持久化持有批處理設定。**不採納：批處理視窗是寫路徑內部的排程策略，而非隨部署變化的選擇，因此它是 provider 常數，任何地方都不存在設定旋鈕。
 
-## 后果
+## 後果
 
-恢复、fork、subagent、ACP、webhook 与 SDK 会话全部经由一个显式获取点持久化，且 dispose 可证明地释放写所有权（teardown 之后重新以写模式打开可以成功）。代价：在有活跃会话时重载后端插件会使它们的句柄失效——写入会响亮地失败，直到会话重启，而以前接管会静默重连；测试中 `ctx.sessions.create` + `flush` 在没有句柄时什么也不持久化（测试通过 `create`/`append`/`close` 播种）；只有当紧邻其前没有观察读解析过同一产物时，恢复才重新读取冷日志——一个有界的 provider 内部 memo（按会话 id + stat 修订号，任何本地修改都使其失效）服务观察后提升与授权后恢复这两类交接，而不恢复已删除的 borrow/reservation 生命周期；session-query reader 自己的已准备缓存仍是其上方具备 pin 能力的一层（后续可考虑二者收敛）；空的已创建会话在显式 flush 之前对其他进程不可见（ACP 为其可恢复空会话承诺强制执行一次 flush）。句柄所有权不改变序列化的 Session 表示。
+恢復、fork、subagent、ACP、webhook 與 SDK 工作階段全部經由一個顯式取得點持久化，且 dispose 可證明地釋放寫所有權（teardown 之後重新以寫模式開啟可以成功）。代價：在有活躍工作階段時過載後端外掛會使它們的控制代碼失效——寫入會響亮地失敗，直到工作階段重新啟動，而以前接管會靜默重連；測試中 `ctx.sessions.create` + `flush` 在沒有控制代碼時什麼也不持久化（測試透過 `create`/`append`/`close` 播種）；只有當緊鄰其前沒有觀察讀解析過同一產物時，恢復才重新讀取冷日誌——一個有界的 provider 內部 memo（按工作階段 id + stat 修訂號，任何本地修改都使其失效）服務觀察後提升與授權後恢復這兩類交接，而不恢復已刪除的 borrow/reservation 生命週期；session-query reader 自己的已準備快取仍是其上方具備 pin 能力的一層（後續可考慮二者收斂）；空的已建立工作階段在顯式 flush 之前對其他程序不可見（ACP 為其可恢復空工作階段承諾強制執行一次 flush）。控制代碼所有權不改變序列化的 Session 表示。
 
-## 相关
+## 相關
 
-- [作为抽象服务的会话持久化](2026-06-14-session-persistence.zh.md)——本 Note 重塑的 seam；其接口列表已反映句柄 API。
-- [持久化 export() 与预发布读取路径精简](../../archived/simplification/2026-08-27-persistence-export-and-pre-release-trims.md)——预备性的移除，包括已退役的冷空白探测。
-- [保留可忽略的外部会话事件](2026-08-30-retain-ignorable-external-session-events.zh.md)——读取侧的拒绝约定，现经由 `storage-contract` 辅助函数共享。
-- [为会话持久化写入批处理设定上界](../../archived/architecture/2026-08-08-bounded-session-persistence-write-batching.md)——被路由写路径作为内部调度策略保留的批处理语义。
+- [作為抽象服務的工作階段持久化](2026-06-14-session-persistence.zh.md)——本 Note 重塑的 seam；其介面列表已反映控制代碼 API。
+- [持久化 export() 與預釋出讀取路徑精簡](../../archived/simplification/2026-08-27-persistence-export-and-pre-release-trims.md)——預備性的移除，包括已退役的冷空白探測。
+- [保留可忽略的外部工作階段事件](2026-08-30-retain-ignorable-external-session-events.zh.md)——讀取側的拒絕約定，現經由 `storage-contract` 輔助函式共享。
+- [為工作階段持久化寫入批處理設定上界](../../archived/architecture/2026-08-08-bounded-session-persistence-write-batching.md)——被路由寫路徑作為內部排程策略保留的批處理語義。

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-09-producer-owned-message-sources.md
 /agent-note-producer-owned-message-sources-at-the-v4-edge:
   en: 57c1c2cecb09ee0f
-  zh: 30b6a2c42ce573ca
+  zh: 3e10c1951c860f95
 /agent-note-producer-owned-message-sources-at-the-v4-edge/problem:
   en: 4633a3379711846d
-  zh: aca05b06105b2683
+  zh: 80bd3845f460da30
 /agent-note-producer-owned-message-sources-at-the-v4-edge/decision:
   en: a6f3c4040206a623
-  zh: f44c3343e36cac01
+  zh: 1a164e74afacca81
 /agent-note-producer-owned-message-sources-at-the-v4-edge/alternatives-considered:
   en: 99e30ba3f8782544
-  zh: 3b443115115389f8
+  zh: 53ec03bd15e3acdf
 /agent-note-producer-owned-message-sources-at-the-v4-edge/consequences:
   en: 18b1b6ccbf1f299b
-  zh: 1bc741beb049185e
+  zh: b2c67b8d0b80eff9

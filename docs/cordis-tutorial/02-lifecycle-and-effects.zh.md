@@ -1,14 +1,14 @@
-# 2. 生命周期与 effect
+# 2. 生命週期與 effect
 
 [English](02-lifecycle-and-effects.md) | 中文
 
-Cordis 插件可能因修改配置、热重载、显式资源释放或所需服务消失而卸载。通过 Cordis API 建立的注册属于 effect，会在所属插件卸载时撤销；在这些 API 之外管理的资源必须包装在 `ctx.effect()` 中。
+Cordis 外掛可能因修改設定、熱過載、顯式資源釋放或所需服務消失而解除安裝。透過 Cordis API 建立的註冊屬於 effect，會在所屬外掛解除安裝時撤銷；在這些 API 之外管理的資源必須包裝在 `ctx.effect()` 中。
 
 ## Effect
 
-对于 Cordis 尚未管理的资源，例如定时器、连接或 watcher，应将其包装在 `ctx.effect()` 中并返回 disposer（资源释放函数）：
+對於 Cordis 尚未管理的資源，例如定時器、連線或 watcher，應將其包裝在 `ctx.effect()` 中並返回 disposer（資源釋放函式）：
 
-创建 `lifecycle.ts`，将它放在 `tmp/cordis-tutorial` 中：
+建立 `lifecycle.ts`，將它放在 `tmp/cordis-tutorial` 中：
 
 ```ts
 import type { Context } from '@deepseek-ai/cordis'
@@ -42,13 +42,13 @@ export function apply(ctx: Context) {
 }
 ```
 
-让 `cordis.yml` 指向该文件：
+讓 `cordis.yml` 指向該檔案：
 
 ```yaml
 - name: './lifecycle.ts'
 ```
 
-运行（`node --import tsx ../../vendor/cordis/bin.js`）后会得到：
+執行（`node --import tsx ../../vendor/cordis/bin.js`）後會得到：
 
 ```
 heartbeat plugin loading
@@ -59,40 +59,40 @@ heartbeat cleaned up
 disposed
 ```
 
-请留意三点：
+請留意三點：
 
-- `ctx.plugin(heartbeat)` 会把一个**来自代码**的函数挂载为插件，这与 YAML loader 为每个配置项执行的操作相同。函数插件不需要 `apply` 方法：Cordis 会直接调用该函数，其名称只用于诊断。只有对象形态才要求 `apply` 方法，例如 `ctx.plugin({ apply(ctx) { /* ... */ } })`。调用会返回一个 **fiber**，即一个已加载插件实例的运行时句柄。
-- effect 主体在加载期间运行；它返回的 disposer 在卸载期间运行。对于生命周期与插件一致的资源，你绝不需要自行调用 disposer。
-- `fiber.dispose()` 会等该插件的所有清理工作（包括异步 disposer）完成后才结束，并递归卸载它挂载的所有子插件。
+- `ctx.plugin(heartbeat)` 會把一個**來自程式碼**的函式掛載為外掛，這與 YAML loader 為每個設定項執行的操作相同。函式外掛不需要 `apply` 方法：Cordis 會直接呼叫該函式，其名稱只用於診斷。只有物件形態才要求 `apply` 方法，例如 `ctx.plugin({ apply(ctx) { /* ... */ } })`。呼叫會返回一個 **fiber**，即一個已載入外掛實例的執行時控制代碼。
+- effect 主體在載入期間執行；它返回的 disposer 在解除安裝期間執行。對於生命週期與外掛一致的資源，你絕不需要自行呼叫 disposer。
+- `fiber.dispose()` 會等該外掛的所有清理工作（包括非同步 disposer）完成後才結束，並遞迴解除安裝它掛載的所有子外掛。
 
-## Fiber 状态机
+## Fiber 狀態機
 
-每个已加载插件实例都拥有一个 fiber，并在以下状态之间转换：
+每個已載入外掛實例都擁有一個 fiber，並在以下狀態之間轉換：
 
 ```
 PENDING → LOADING → ACTIVE → UNLOADING → DISPOSED
                  ↘ FAILED
 ```
 
-- **PENDING**：已经声明，但所需服务（第 3 章）尚不可用。
-- **LOADING / ACTIVE**：`apply` 正在运行／已经完成。
-- **FAILED**：`apply` 或配置校验抛出异常。
-- **UNLOADING / DISPOSED**：disposer 正在运行／一切均已拆除。
+- **PENDING**：已經宣告，但所需服務（第 3 章）尚不可用。
+- **LOADING / ACTIVE**：`apply` 正在執行／已經完成。
+- **FAILED**：`apply` 或設定驗證丟擲異常。
+- **UNLOADING / DISPOSED**：disposer 正在執行／一切均已拆除。
 
-你会在[第 6 章](06-composition-and-hmr.zh.md)再次遇到 PENDING，它通常就是「为什么我的插件没有输出」的答案。
+你會在[第 6 章](06-composition-and-hmr.zh.md)再次遇到 PENDING，它通常就是「為什麼我的外掛沒有輸出」的答案。
 
-## 已经属于 effect 的操作
+## 已經屬於 effect 的操作
 
-你很少需要亲自编写 `ctx.effect()`，因为内置注册 API 本身已经是 effect：
+你很少需要親自編寫 `ctx.effect()`，因為內建註冊 API 本身已經是 effect：
 
-- `ctx.on(event, listener)`：监听器会在卸载时移除（[第 4 章](04-events.zh.md)）。
-- `ctx.plugin(child)`：子插件会随父插件一同 dispose（资源释放）。
-- 服务注册属于 effect。`ctx.tools.register(...)` 等 harness 注册表也会把返回的 disposer 附着到调用插件上，因此会自动撤销（[第 7 章](07-into-the-harness.zh.md)）。
+- `ctx.on(event, listener)`：監聽器會在解除安裝時移除（[第 4 章](04-events.zh.md)）。
+- `ctx.plugin(child)`：子外掛會隨父外掛一同 dispose（資源釋放）。
+- 服務註冊屬於 effect。`ctx.tools.register(...)` 等 harness 註冊表也會把返回的 disposer 附著到呼叫外掛上，因此會自動撤銷（[第 7 章](07-into-the-harness.zh.md)）。
 
-对于 Cordis 不管理的资源，应在 `ctx.effect()` 内获取它，并返回用于释放资源的 disposer。此后 Cordis 会在卸载期间调用该释放逻辑，热重载时也不例外。
+對於 Cordis 不管理的資源，應在 `ctx.effect()` 內取得它，並返回用於釋放資源的 disposer。此後 Cordis 會在解除安裝期間呼叫該釋放邏輯，熱過載時也不例外。
 
-有一项顺序注意事项：disposer 会按注册顺序的逆序启动，但多个**异步** disposer 会并发运行。如果拆除步骤必须按顺序执行，请把它们放在同一个 disposer 中，并在其中依次等待每步完成。
+有一項順序注意事項：disposer 會按註冊順序的逆序啟動，但多個**非同步** disposer 會並行執行。如果拆除步驟必須按順序執行，請把它們放在同一個 disposer 中，並在其中依次等待每步完成。
 
-下一章：[服务](03-services.zh.md)：插件如何共享功能。
+下一章：[服務](03-services.zh.md)：外掛如何共享功能。
 
 [![](https://img.shields.io/badge/powered_by-dsh-4D6BFE?style=flat-square&logo=deepseek&logoColor=white)](https://github.com/deepseek-ai/deepseek-harness)

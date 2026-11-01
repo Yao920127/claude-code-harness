@@ -170,7 +170,7 @@ Replace the hedge with the actual bound and the failure behavior when it is exce
 
 ## Authoring-language slips
 
-**Leaked:** "The renderer runs on the client 端; see the 设计稿 for spacing. ---- 私有 ----"
+**Leaked:** "The renderer runs on the client 端; see the 設計稿 for spacing. ---- 私有 ----"
 
 **Fixed:** "The renderer runs on the client side; spacing follows the Figma frame `widget-badges`."
 
@@ -178,7 +178,7 @@ Working-language fragments and session separators are transcription residue. The
 
 ### Authoring-language slip inside a paired fence
 
-**Leaked in both files:** `// 更新这里 before returning` inside a verbatim code block.
+**Leaked in both files:** `// 更新這裡 before returning` inside a verbatim code block.
 
 **Fixed in both files:** `// Update this before returning.`
 

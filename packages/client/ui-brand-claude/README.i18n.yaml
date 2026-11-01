@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-brand-claude/README.md
 /:
   en: 80b2ae9612def80a
-  zh: 0ade9811575c89c7
+  zh: e72d7d03a6ed74df
 /deepseek-ai-dsh-client-ui-brand-claude:
   en: db566fe0af329029
   zh: f24e69dabeeada6f
 /deepseek-ai-dsh-client-ui-brand-claude/summary:
   en: 0b3d5aca4f1debfb
-  zh: 9af53dd3803773a7
+  zh: bae2d040f42b60ad
 /deepseek-ai-dsh-client-ui-brand-claude/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-brand-claude/use-this-package:
   en: bc512efc8168f7c5
-  zh: 746f35eca3b6ebec
+  zh: bebfbdc77a22317b
 /deepseek-ai-dsh-client-ui-brand-claude/understand-the-implementation:
   en: bd32914d99027ce0
-  zh: fedd668030d2cf6c
+  zh: 0a5a08560ecbb0ca
 /deepseek-ai-dsh-client-ui-brand-claude/further-exploration:
   en: 23e606ea9ee6b522
-  zh: 9dcd9c306a046b8b
+  zh: 83372d57a00d0119
 /deepseek-ai-dsh-client-ui-brand-claude/model-experience:
   en: 618008c7641070e7
-  zh: 7233febb4d92ccfb
+  zh: c9ecf3434c4e6cce
 /deepseek-ai-dsh-client-ui-brand-claude/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: f57cc48a1b5cbfa9
+  zh: fa87630fc3310087
 /deepseek-ai-dsh-client-ui-brand-claude/known-limitations-and-deferred-work:
   en: 7e43346275c193d7
-  zh: 202964eaa632df0a
+  zh: b1f16557c50a9a6c
 /deepseek-ai-dsh-client-ui-brand-claude/known-limitations-and-deferred-work/dev-note:
   en: 298e72af3c43e1bd
-  zh: 46ba9e38ad62fdc9
+  zh: 5c7d48cc690f0f62

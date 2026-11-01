@@ -19,10 +19,10 @@ function mount(text: string, streaming = false) {
 
 it('loads Desktop inline and hover previews through the file route after streaming settles', () => {
   vi.useFakeTimers()
-  const path = '/work/测试 图片#100%.png'
+  const path = '/work/測試 圖片#100%.png'
   const src = fileMediaUrl('dsh-app://app/', path)!
   const images = { resolve: (value: string) => fileMediaUrl('dsh-app://app/', value), labels }
-  const text = `![图片](<${encodeURI(path).replace('#', '%23')}>)\n\n[打开图片](<${encodeURI(path).replace('#', '%23')}>)`
+  const text = `![圖片](<${encodeURI(path).replace('#', '%23')}>)\n\n[開啟圖片](<${encodeURI(path).replace('#', '%23')}>)`
   const openFile = vi.fn()
   const content = (streaming: boolean) => <MarkdownDelegateProvider fileImages={images} openFile={openFile}>
     <MarkdownText text={text} streaming={streaming} />
@@ -31,14 +31,14 @@ it('loads Desktop inline and hover previews through the file route after streami
   expect(view.container.querySelector('img')).toBeNull()
   view.rerender(content(false))
   expect(screen.getByRole('img').getAttribute('src')).toBe(src)
-  const trigger = screen.getByRole('button', { name: 'View full image: 图片' })
+  const trigger = screen.getByRole('button', { name: 'View full image: 圖片' })
   trigger.focus()
   fireEvent.click(trigger)
   expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toBe(src)
   fireEvent.keyDown(window, { key: 'Escape' })
   expect(screen.queryByRole('dialog')).toBeNull()
   expect(document.activeElement).toBe(trigger)
-  const link = screen.getByRole('button', { name: '打开图片' })
+  const link = screen.getByRole('button', { name: '開啟圖片' })
   fireEvent.pointerEnter(link.parentElement!)
   act(() => { vi.advanceTimersByTime(500) })
   expect(screen.getByAltText(path).getAttribute('src')).toBe(src)
@@ -49,10 +49,10 @@ it('loads Desktop inline and hover previews through the file route after streami
 })
 
 it('opens inline images in the shared lightbox, restores focus, and never opens the sidebar', () => {
-  const { openFile } = mount('![Compare](<.artifacts/对比 image.png>)')
+  const { openFile } = mount('![Compare](<.artifacts/對比 image.png>)')
   const trigger = screen.getByRole('button', { name: 'View full image: Compare' })
   trigger.focus()
-  expect(new URL(screen.getByRole('img').getAttribute('src')!).searchParams.get('path')).toBe('/workspace/.artifacts/对比 image.png')
+  expect(new URL(screen.getByRole('img').getAttribute('src')!).searchParams.get('path')).toBe('/workspace/.artifacts/對比 image.png')
   fireEvent.click(trigger)
   expect(screen.getByRole('dialog', { name: 'Image preview' })).toBeTruthy()
   fireEvent.keyDown(window, { key: 'Tab' })
@@ -65,7 +65,7 @@ it('opens inline images in the shared lightbox, restores focus, and never opens 
 
 it('loads a link preview only after hover dwell and keeps its existing sidebar activation', () => {
   vi.useFakeTimers()
-  const { openFile } = mount('[View comparison](.artifacts/对比%20image.png)')
+  const { openFile } = mount('[View comparison](.artifacts/對比%20image.png)')
   const link = screen.getByRole('button', { name: 'View comparison' })
   expect(screen.queryByRole('img')).toBeNull()
   fireEvent.pointerEnter(link.parentElement!)
@@ -73,13 +73,13 @@ it('loads a link preview only after hover dwell and keeps its existing sidebar a
   expect(screen.queryByRole('img')).toBeNull()
   act(() => { vi.advanceTimersByTime(1) })
   const image = screen.getByRole('img')
-  expect(new URL(image.getAttribute('src')!).searchParams.get('path')).toBe('/workspace/.artifacts/对比 image.png')
+  expect(new URL(image.getAttribute('src')!).searchParams.get('path')).toBe('/workspace/.artifacts/對比 image.png')
   fireEvent.load(image)
   expect(screen.queryByText('Loading image')).toBeNull()
   fireEvent.pointerDown(link)
   fireEvent.click(link)
   expect(screen.queryByRole('img')).toBeNull()
-  expect(openFile).toHaveBeenCalledWith('.artifacts/对比 image.png', undefined)
+  expect(openFile).toHaveBeenCalledWith('.artifacts/對比 image.png', undefined)
 })
 
 it('supports keyboard previews, Escape dismissal, and an inert failure state', () => {
@@ -112,10 +112,10 @@ it('keeps image-only links as one activation target', () => {
 })
 
 it.each([parseGfm, parseGfmWithMath])('recovers standalone bare-space paths without promoting code or escaped syntax', (parse) => {
-  const source = '![图](/work/test workspace/测试文件/图.png)'
-  expect(parse(source).children[0]).toMatchObject({ children: [{ type: 'image', url: '/work/test workspace/测试文件/图.png' }] })
+  const source = '![圖](/work/test workspace/測試檔案/圖.png)'
+  expect(parse(source).children[0]).toMatchObject({ children: [{ type: 'image', url: '/work/test workspace/測試檔案/圖.png' }] })
   for (const example of ['`' + source + '`', '```md\n' + source + '\n```', '\\' + source, 'Example: ' + source,
-    '![图](https://example.com/test image.png)', '![图](/work/test (image).png)']) {
+    '![圖](https://example.com/test image.png)', '![圖](/work/test (image).png)']) {
     expect(JSON.stringify(parse(example))).not.toContain('"type":"image"')
   }
 })
@@ -142,7 +142,7 @@ it('labels empty-alt image activation and retains a localized failure descriptio
 
 it.each([parseGfm, parseGfmWithMath])('uses the shared image categories for bare-space recovery', (parse) => {
   for (const extension of ['avif', 'tif', 'tiff', 'heic', 'heif']) {
-    expect(parse(`![图](/work/test dir/photo.${extension})`).children[0])
+    expect(parse(`![圖](/work/test dir/photo.${extension})`).children[0])
       .toMatchObject({ children: [{ type: 'image', url: `/work/test dir/photo.${extension}` }] })
   }
   expect(JSON.stringify(parse('![report](/work/test dir/report.pdf)'))).not.toContain('"type":"image"')

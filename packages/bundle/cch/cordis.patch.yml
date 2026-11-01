@@ -12,7 +12,7 @@
 # The interface starts in Traditional Chinese; a language chosen in Settings overrides it.
 - id: locale
   config:
-    preference: zh-TW
+    preference: zh
 
 - id: llm-deepseek
   disabled: true

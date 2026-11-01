@@ -1,10 +1,10 @@
-- textbox "筛选选项":
-  - /placeholder: 搜索…
-- listbox "/permission 匹配项":
-  - option "仅可查看"
-  - option "工作区内修改" [selected]
-  - option "完全权限"
+- textbox "篩選選項":
+  - /placeholder: 搜尋…
+- listbox "/permission 匹配項":
+  - option "僅可檢視"
+  - option "工作區內修改" [selected]
+  - option "完全權限"
   - option "Auto review EXP":
     - text: Auto review
     - superscript: EXP
-    - text: 无沙箱运行；每次原生工具调用和 PTC 内层调用前由同一模型进行实验性审查。
+    - text: 無沙箱執行；每次原生工具呼叫和 PTC 內層呼叫前由同一模型進行實驗性審查。

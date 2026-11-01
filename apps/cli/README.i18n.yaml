@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write apps/cli/README.md
 /deepseek-ai-dsh:
   en: ebdc75fa0da18801
-  zh: 5c6cd2554b8f8a98
+  zh: af9e3c2e48176715
 /deepseek-ai-dsh/entry-modes:
   en: ed963b4a66081f51
-  zh: df1bd3780f152d9e
+  zh: 0adb5ca5871b0ae9
 /deepseek-ai-dsh/the-cch-profile:
   en: c23f4b26c0bec1f3
-  zh: e815925b2236af54
+  zh: 624f49961a4e27bc
 /deepseek-ai-dsh/app-arguments:
   en: cc03e6b75206661b
-  zh: 99e41f4143198352
+  zh: 2e051084d53a9a69
 /deepseek-ai-dsh/profiles:
   en: 79cad979b0f7895c
-  zh: b0f922a4b43accf8
+  zh: c713c19fa3483f93
 /deepseek-ai-dsh/optional-overlays:
   en: 3a40ddc44e55f79c
-  zh: 8d3949132e1ef93c
+  zh: 9606967485881f13
 /deepseek-ai-dsh/development:
   en: 99a36e4f7ea3f9c7
-  zh: 07ca2934de700caa
+  zh: 7dfa8ae17cf6a759

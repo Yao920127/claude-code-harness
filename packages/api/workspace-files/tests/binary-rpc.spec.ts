@@ -38,8 +38,8 @@ function read(path: string, options: WorkspaceByteReadOptions, signal = new Abor
 
 it('returns complete binary contents through the ordinary Remote endpoint', async () => {
   const data = new Uint8Array([0, 128, 255, 1])
-  await writeFile(join(harness.workspace, '字节.bin'), data)
-  expect(await read('字节.bin', {})).toMatchObject({ ok: true, value: { offset: 0, eof: true, bytes: 4, data } })
+  await writeFile(join(harness.workspace, '位元組.bin'), data)
+  expect(await read('位元組.bin', {})).toMatchObject({ ok: true, value: { offset: 0, eof: true, bytes: 4, data } })
   expect(harness.ctx.get('agents')).toBeUndefined()
 })
 

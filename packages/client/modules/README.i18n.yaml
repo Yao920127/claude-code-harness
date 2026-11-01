@@ -4,67 +4,67 @@
 #   pnpm run verify-translation-pairing --write packages/client/modules/README.md
 /:
   en: 97d39db1617684ea
-  zh: de11ba354583a044
+  zh: 7e92d2360fb5092b
 /deepseek-ai-dsh-client-modules:
   en: ee2f6f3ccafafa13
   zh: 3a37d4c4b69708dd
 /deepseek-ai-dsh-client-modules/summary:
   en: ab7ece5891dd6289
-  zh: b9b5baab328be517
+  zh: 6a959587c1ae3cd8
 /deepseek-ai-dsh-client-modules/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-modules/use-this-package:
   en: 25f536f156ec0bcc
-  zh: a522355b3e0edeae
+  zh: d0c47ccb92b61dca
 /deepseek-ai-dsh-client-modules/use-this-package/declaring-a-client-plugin:
   en: d4a7f865f4593724
-  zh: 4313eb8fe9cd5c98
+  zh: 56f28db406809efa
 /deepseek-ai-dsh-client-modules/use-this-package/what-the-browser-loads:
   en: 1383d68472b3c057
-  zh: 94dd7d9abbdbccf3
+  zh: dbb7134e9e8306f4
 /deepseek-ai-dsh-client-modules/use-this-package/live-plugin-composition:
   en: 45740a56e931d094
-  zh: b3362af77c804459
+  zh: 2208c0d61991afbd
 /deepseek-ai-dsh-client-modules/use-this-package/sharing-modules:
   en: 0aaf0693db8bb203
-  zh: 9f4738cdc6b55c26
+  zh: 0e4eb5390fd50f1f
 /deepseek-ai-dsh-client-modules/use-this-package/build-requirements:
   en: b6a4d3b901c89efe
-  zh: 615b5f3eec41f281
+  zh: f8c2cb57d5661b89
 /deepseek-ai-dsh-client-modules/understand-the-implementation:
   en: 7ab11d2c2bdc6eaa
-  zh: 54c3c9091cf59711
+  zh: 14551cb330ac84fc
 /deepseek-ai-dsh-client-modules/understand-the-implementation/design-concept:
   en: 49dcadc166c2d06e
-  zh: bbf67c6dc47f4ead
+  zh: 0e6afa406045726d
 /deepseek-ai-dsh-client-modules/understand-the-implementation/lazy-cjs-model:
   en: 6d16b74acb333e3b
-  zh: fcb3a20cc8c39e4a
+  zh: e36bb0f7222930d9
 /deepseek-ai-dsh-client-modules/understand-the-implementation/incremental-composition:
   en: 1b54c654b3f7344d
-  zh: c20d3499b51f0b4d
+  zh: 9ba5923abc7e58ff
 /deepseek-ai-dsh-client-modules/understand-the-implementation/boot-manifest-injection:
   en: 253d9f265cd83ed0
-  zh: 9d0f8df84d9d3ac9
+  zh: a030640b2a015c6f
 /deepseek-ai-dsh-client-modules/understand-the-implementation/entry-ownership:
   en: ae59769034d692fa
-  zh: f71914d6f39b033a
+  zh: 8cf55849273a0b7f
 /deepseek-ai-dsh-client-modules/understand-the-implementation/source-map:
   en: fabe9db8c44e2d90
-  zh: 89ca94a8161f57ed
+  zh: 328b4c6a34e9640f
 /deepseek-ai-dsh-client-modules/further-exploration:
   en: 7e5b283efe4f1d16
-  zh: 79472b64a0d759fe
+  zh: 940e810345e3a9f5
 /deepseek-ai-dsh-client-modules/model-experience:
   en: abb2fc0416e1482c
-  zh: 0e8a913d424a0c28
+  zh: 6d3b791833299232
 /deepseek-ai-dsh-client-modules/model-experience/kv-cache-effect:
   en: ca75c51c89c2c9b0
-  zh: de54f3467ef3b9be
+  zh: fd98dc40dee37895
 /deepseek-ai-dsh-client-modules/known-limitations-and-deferred-work:
   en: d0908712f037c479
-  zh: 14034e5df3c34e7f
+  zh: 6dc1037d748a201e
 /deepseek-ai-dsh-client-modules/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

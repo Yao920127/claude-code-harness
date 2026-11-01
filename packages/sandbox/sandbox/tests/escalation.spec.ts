@@ -88,7 +88,7 @@ describe('approveEscalation', () => {
     expect(seen[0]).toMatchObject({
       displayReason: {
         en: 'Allow this operation with workspace-write permissions: the user asked to write in the workspace',
-        zh: '允许本次操作使用 workspace-write 权限：the user asked to write in the workspace',
+        zh: '允許本次操作使用 workspace-write 權限：the user asked to write in the workspace',
       },
     })
   })

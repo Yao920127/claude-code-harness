@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-09-22-platform-browser-storage.md
 /agent-note-account-scoped-platform-browser-storage:
   en: ade088e230a39dd2
-  zh: 437a9be5fe2ef704
+  zh: 7a5078cf5be9c4c6
 /agent-note-account-scoped-platform-browser-storage/problem:
   en: 84cfcf61f58fab58
-  zh: 14844d5e3d3638fe
+  zh: 15894d25468f252b
 /agent-note-account-scoped-platform-browser-storage/decision:
   en: 7c8ec7ea318f3689
-  zh: 2c45ac28670dfda1
+  zh: 12d77400f23aa233
 /agent-note-account-scoped-platform-browser-storage/alternatives-considered:
   en: 101fa0ff0b01b096
-  zh: 6c6b0a4136531d6b
+  zh: 0974e3623558e078
 /agent-note-account-scoped-platform-browser-storage/consequences:
   en: 0aa0a16abba90b43
-  zh: 6fcb59f3ecea2e54
+  zh: f9d20a09e9e5da3d

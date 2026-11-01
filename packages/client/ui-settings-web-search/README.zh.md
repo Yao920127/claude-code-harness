@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端插件页上的搜索来源设置页：由哪个提供方回答网页搜索，以及它读取的密钥。"
+description: "dsh Web 用戶端外掛頁上的搜尋來源設定頁：由哪個提供者回答網頁搜尋，以及它讀取的金鑰。"
 kind: "package-reference"
 ---
 
@@ -9,71 +9,71 @@ kind: "package-reference"
 
 ## 概述
 
-在侧栏打开**插件**，在官方分组里选择**搜索来源**，即可选择由哪个提供方回答网页搜索，并保存该提供方读取的密钥。页面暂存输入、只在保存时写入；密钥通过凭据域写入而不进设置文件，其明文从不出现在任何响应里。页面只在 Host 服务 `web` 命名空间期间存在。
+在側欄開啟**外掛**，在官方分組裡選擇**搜尋來源**，即可選擇由哪個提供者回答網頁搜尋，並儲存該提供者讀取的金鑰。頁面暫存輸入、只在儲存時寫入；金鑰透過憑證域寫入而不進設定檔案，其明文從不出現在任何回應裡。頁面只在 Host 服務 `web` 名稱空間期間存在。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-**搜索来源**页面列出每个出厂提供方；第一个选项恢复为组合默认值，被覆盖的选择带**已覆盖**标签和**恢复默认**。读取已保存密钥的提供方会显示按该提供方出厂引用（例如 `OPENAI_API_KEY`）寻址的 **API Key** 控件，一次保存同时写入选择与密钥。密钥每次加载都是空的，只报告是否已配置；留空保存等于保留现有密钥，而当凭据不能从这里写入时该控件会被禁用。Exa 与 Perplexity 从启动环境读取密钥，页面会说明这一点；Claude Code 使用 Host 的登录，无需密钥。点击**保存**之前不会写入任何内容；离开页面即丢弃草稿。选择从下一次搜索起生效。
+**搜尋來源**頁面列出每個出廠提供者；第一個選項恢復為組合預設值，被覆蓋的選擇帶**已覆蓋**標籤和**恢復預設**。讀取已儲存金鑰的提供者會顯示按該提供者出廠引用（例如 `OPENAI_API_KEY`）定址的 **API Key** 控制元件，一次儲存同時寫入選擇與金鑰。金鑰每次載入都是空的，只報告是否已設定；留空儲存等於保留現有金鑰，而當憑證不能從這裡寫入時該控制元件會被停用。Exa 與 Perplexity 從啟動環境讀取金鑰，頁面會說明這一點；Claude Code 使用 Host 的登入，無需金鑰。點選**儲存**之前不會寫入任何內容；離開頁面即丟棄草稿。選擇從下一次搜尋起生效。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-宿主半侧是一个空的 `apply`，只为让本包占一条 Loader 行，客户端模块系统据此送出浏览器半侧。浏览器半侧通过 `ctx.configForms.get` 绑定 `web` 命名空间，用 `ui-primitives` 的共享 `SettingsFormModel` 在 `SearchProviderCardController` 里维护暂存表单。它暂存 `searchProvider`，并把生效提供方的密钥作为表单里唯一的密文控件，其引用取自 `search-providers.ts` 中的出厂提供方表：写入走该引用下的 `remote.credentials.set`，是否成功由 `remote.credentials.describe` 回读判定；请求途中引用已变化时，回答会被丢弃。scope 变化时、以及 Host 对所监视引用发出 `credentials/reference-updated` 时，控制器都会重读凭据，因为在模型页写入的密钥不会改变任何设置节。页面通过 `ctx.configForms.whileServed` 把 `SearchProviderCard` 注册进插件页的 `plugins.item` slot。
+主機半側是一個空的 `apply`，只為讓本包占一條 Loader 行，用戶端模組系統據此送出瀏覽器半側。瀏覽器半側透過 `ctx.configForms.get` 繫結 `web` 名稱空間，用 `ui-primitives` 的共享 `SettingsFormModel` 在 `SearchProviderCardController` 裡維護暫存表單。它暫存 `searchProvider`，並把生效提供者的金鑰作為表單裡唯一的密文控制元件，其引用取自 `search-providers.ts` 中的出廠提供者表：寫入走該引用下的 `remote.credentials.set`，是否成功由 `remote.credentials.describe` 回讀判定；請求途中引用已變化時，回答會被丟棄。scope 變化時、以及 Host 對所監視引用發出 `credentials/reference-updated` 時，控制器都會重讀憑證，因為在模型頁寫入的金鑰不會改變任何設定節。頁面透過 `ctx.configForms.whileServed` 把 `SearchProviderCard` 註冊進外掛頁的 `plugins.item` slot。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——插件页以及本页注册进去的 `plugins.item` slot。
-- [ui-settings](../ui-settings/README.zh.md)——本页依赖的设置 scope 与"命名空间被服务期间"的监视。
-- [ui-primitives](../ui-primitives/README.zh.md)——本页渲染的设置表单模型与字段。
-- [credentials](../../credentials/README.zh.md)——密钥写入所经的凭据引用 seam。
-- [web](../../web/web/README.zh.md)——注册 `web` 命名空间并选择搜索提供方的 web 服务。
+- [ui-plugin-manager](../ui-plugin-manager/README.zh.md)——外掛頁以及本頁註冊進去的 `plugins.item` slot。
+- [ui-settings](../ui-settings/README.zh.md)——本頁依賴的設定 scope 與"名稱空間被服務期間"的監視。
+- [ui-primitives](../ui-primitives/README.zh.md)——本頁渲染的設定表單模型與欄位。
+- [credentials](../../credentials/README.zh.md)——金鑰寫入所經的憑證引用 seam。
+- [web](../../web/web/README.zh.md)——註冊 `web` 名稱空間並選擇搜尋提供者的 web 服務。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，本包是浏览器侧的设置界面，不注册任何模型面。
+無，本包是瀏覽器側的設定介面，不註冊任何模型面。
 
-#### KV 缓存影响
+#### KV 快取影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- **提供方专属字段**——各提供方自己的命名空间（例如 `web-search-deepseek` 中 DeepSeek 提供方的接口地址与单次请求搜索次数）保持组合值，需在 `cordis.yml` 中修改；本页只编辑提供方选择及其密钥。
-- **运行时不变量：**不发布伴生。本页没有自己拥有的关系：它显示的内容派生自设置镜像与凭据域，它写入的内容由 Host 校验。
+- **提供者專屬欄位**——各提供者自己的名稱空間（例如 `web-search-deepseek` 中 DeepSeek 提供者的介面地址與單次請求搜尋次數）保持組合值，需在 `cordis.yml` 中修改；本頁只編輯提供者選擇及其金鑰。
+- **執行時不變數：**不釋出伴生。本頁沒有自己擁有的關係：它顯示的內容派生自設定映像與憑證域，它寫入的內容由 Host 驗證。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者工作上下文——点击展开</summary>
+<summary>維護者工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>

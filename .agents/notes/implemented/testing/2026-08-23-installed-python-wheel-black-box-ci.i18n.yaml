@@ -4,31 +4,31 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-08-23-installed-python-wheel-black-box-ci.md
 /agent-note-installed-wheel-python-runtime-pull-request-validation:
   en: e7a926cb3fc87ca2
-  zh: 9d4df26986ee2c25
+  zh: 6be5ac5277c110eb
 /agent-note-installed-wheel-python-runtime-pull-request-validation/problem:
   en: a8679e0c46ab5294
-  zh: 1c3b4edd7263d8a9
+  zh: 3947c8fcb665703e
 /agent-note-installed-wheel-python-runtime-pull-request-validation/decision:
   en: a15c7c13f167e5ac
   zh: a15c7c13f167e5ac
 /agent-note-installed-wheel-python-runtime-pull-request-validation/decision/installed-artifact-boundary:
   en: 57b22736a43ce8ef
-  zh: b80a12ade299258a
+  zh: 676110fa1bb4b944
 /agent-note-installed-wheel-python-runtime-pull-request-validation/decision/keyless-behavior:
   en: c1b78f6c3cedd4d2
-  zh: 03e267c73af6036b
+  zh: fe40113b447a2b61
 /agent-note-installed-wheel-python-runtime-pull-request-validation/decision/real-deepseek-api:
   en: 0f98f5b5f78b5603
-  zh: 95ee8bafa66d6b1b
+  zh: 18c195f9bdca971f
 /agent-note-installed-wheel-python-runtime-pull-request-validation/decision/required-targets:
   en: 4eafb728b9b3d596
-  zh: e127fdfe44659767
+  zh: 5a958e133f6f6ccf
 /agent-note-installed-wheel-python-runtime-pull-request-validation/existing-decisions-and-supersession:
   en: 04aa439d4e607324
-  zh: f4c1d24b6a418cc4
+  zh: c1a4b47d50fc4375
 /agent-note-installed-wheel-python-runtime-pull-request-validation/alternatives-considered:
   en: 360a7e4cd0f6e1ec
-  zh: 53beb38864ff052d
+  zh: 86637ce622deb999
 /agent-note-installed-wheel-python-runtime-pull-request-validation/consequences:
   en: 6161aae704abdd20
-  zh: 4c81c9f6d1bef7d4
+  zh: aed7fd4a31f66e27

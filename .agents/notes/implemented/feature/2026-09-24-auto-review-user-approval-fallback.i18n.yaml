@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-24-auto-review-user-approval-fallback.md
 /agent-note-auto-review-asks-the-user-after-a-denial:
   en: 5591f8e34bda222a
-  zh: 7d433ca541e6988f
+  zh: 5f6eacb39f0011c9
 /agent-note-auto-review-asks-the-user-after-a-denial/problem:
   en: ed725dff16cd2339
-  zh: 555d4ba70af96790
+  zh: 512fdbf2d6d75e3b
 /agent-note-auto-review-asks-the-user-after-a-denial/decision:
   en: 4782a7609717bac3
-  zh: f3ebb3581b807f3f
+  zh: fdf565f4dd2c0953
 /agent-note-auto-review-asks-the-user-after-a-denial/alternatives-considered:
   en: 01f71dd10849f925
-  zh: 8b79a7e149a9a60c
+  zh: 633c8a41151a3ec1
 /agent-note-auto-review-asks-the-user-after-a-denial/consequences:
   en: 822a4241ddf39448
-  zh: dd05997932eed142
+  zh: 85440cce5860060a

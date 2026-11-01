@@ -4,43 +4,43 @@
 #   pnpm run verify-translation-pairing --write packages/util/deque/README.md
 /:
   en: d0d9e1665b0ea874
-  zh: 6a8366be71b5d6d9
+  zh: ca22d9c8a0d8ee94
 /deepseek-ai-dsh-deque:
   en: b495ce86332048e5
   zh: 141499abfe5ddc03
 /deepseek-ai-dsh-deque/summary:
   en: 321f05cea32f6f72
-  zh: c47b11b14c151ae0
+  zh: e03e7855d9f23aad
 /deepseek-ai-dsh-deque/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-deque/use-this-package:
   en: bbff250eba0f1b89
   zh: 0a618f05cc88ee2b
 /deepseek-ai-dsh-deque/use-this-package/when-to-use-it:
   en: e9c6c998f8d0542a
-  zh: edc2133eaf273054
+  zh: 9bce78667a3c642b
 /deepseek-ai-dsh-deque/use-this-package/entry-point:
   en: 3e3fca15c9656d45
-  zh: 43e70c7381fc21f9
+  zh: 477dd8b03291f640
 /deepseek-ai-dsh-deque/understand-the-implementation:
   en: 1439df275cf4305f
-  zh: 09fb7ae6048c065c
+  zh: 8e25a46c49486570
 /deepseek-ai-dsh-deque/understand-the-implementation/source-map:
   en: f3f22e80f9919ff5
-  zh: 839ed17098fdfee9
+  zh: 4e2806bf22231d35
 /deepseek-ai-dsh-deque/further-exploration:
   en: 0b3c7ebb1012b51a
-  zh: f35eb5cebe4ddeba
+  zh: 5703a2cbee935847
 /deepseek-ai-dsh-deque/model-experience:
   en: 8347ed3429dab61e
-  zh: c634a286fa463342
+  zh: 619bda3217172a89
 /deepseek-ai-dsh-deque/model-experience/kv-cache-effect:
   en: e7ba08477bf22c4e
-  zh: f365439c69beb722
+  zh: a81e2385816c777e
 /deepseek-ai-dsh-deque/known-limitations-and-deferred-work:
   en: ade2165d7c740ba7
-  zh: 05296ebd057e9beb
+  zh: bd5683287de8e675
 /deepseek-ai-dsh-deque/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: 3bb0c20c93f16f98
+  zh: d99d99afa6683405

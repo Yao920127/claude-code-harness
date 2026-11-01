@@ -1,45 +1,45 @@
-# Agent Note: CI fixture 的完成与隔离
+# Agent Note: CI fixture 的完成與隔離
 
 Status: implemented
 
 [English](2026-09-08-ci-completion-observations.md) | 中文
 
-## 问题
+## 問題
 
-参考 CI 运行 (run 34206953049)报告：轮询一秒后 webhook 创建的 Session 仍不存在，五秒读取期限内 PowerShell 输出为空。HTTP 接受、UI 投影状态、进程启动和持久化完成是不同的观察。测试需要明确的完成条件，并用对照阻止中间状态满足该条件。[完成等待决策](2026-09-08-ci-readiness-and-completion.zh.md)拥有这些条件与 lane 预算；这些 fixture 通过受控延迟使顺序与清理可观察。
+參考 CI 執行 (run 34206953049)報告：輪詢一秒後 webhook 建立的 Session 仍不存在，五秒讀取期限內 PowerShell 輸出為空。HTTP 接受、UI 投影狀態、程序啟動和持久化完成是不同的觀察。測試需要明確的完成條件，並用對照阻止中間狀態滿足該條件。[完成等待決策](2026-09-08-ci-readiness-and-completion.zh.md)擁有這些條件與 lane 預算；這些 fixture 透過受控延遲使順序與清理可觀察。
 
-## 决策
+## 決策
 
-[GitHub 评审浏览器测试](../../../../apps/web/tests/github-ready-review.e2e.ts)在 HTTP 202 后阻塞真实 Workspace 创建，验证 Agent 和模型请求均不存在，再释放创建并等待对应 Session 的 `turn/end`。即使测试超时，清理也会释放屏障、恢复方法并移除事件监听器。Workspace 归属、请求数量、提示词内容和浏览器预期保留原有断言。
+[GitHub 評審瀏覽器測試](../../../../apps/web/tests/github-ready-review.e2e.ts)在 HTTP 202 後阻塞真實 Workspace 建立，驗證 Agent 和模型請求均不存在，再釋放建立並等待對應 Session 的 `turn/end`。即使測試超時，清理也會釋放屏障、恢復方法並移除事件監聽器。Workspace 歸屬、請求數量、提示詞內容和瀏覽器預期保留原有斷言。
 
-[PowerShell 执行器测试](../../../../packages/shell/pwsh-local/tests/executor.spec.ts)用私有文件屏障控制启动与消费式读取。测试决定后续输出何时可用；最终 stdin／环境变量输出在 `done` 后读取。轮询使用当前测试预算，每个创建的 Context 都在插件初始化前登记。清理在等待释放前同时取得 Context 与目录，完成释放后才删除目录。
+[PowerShell 執行器測試](../../../../packages/shell/pwsh-local/tests/executor.spec.ts)用私有檔案屏障控制啟動與消費式讀取。測試決定後續輸出何時可用；最終 stdin／環境變數輸出在 `done` 後讀取。輪詢使用目前測試預算，每個建立的 Context 都在外掛初始化前登記。清理在等待釋放前同時取得 Context 與目錄，完成釋放後才刪除目錄。
 
-[排队图片测试](../../../../apps/web/tests/queue-image.e2e.ts)分别阻塞接纳和附件读取，再捕获已接纳行中加载完成的缩略图。清理共享一个 Promise，释放保留的请求，并在关闭浏览器前等待其 handler 完成。
+[排隊圖片測試](../../../../apps/web/tests/queue-image.e2e.ts)分別阻塞接納和附件讀取，再捕捉已接納行中載入完成的縮圖。清理共享一個 Promise，釋放保留的請求，並在關閉瀏覽器前等待其 handler 完成。
 
-[详情 Session 生命周期测试](../../../../apps/web/tests/details-session-lifecycle.e2e.ts)在关闭状态出现后等待框架已捕获的动画 Promise，再检查轨道宽度为零。取消的过渡同样进入该断言；动画结束不能让持续非零的轨道通过。
+[詳情 Session 生命週期測試](../../../../apps/web/tests/details-session-lifecycle.e2e.ts)在關閉狀態出現後等待框架已捕捉的動畫 Promise，再檢查軌道寬度為零。取消的過渡同樣進入該斷言；動畫結束不能讓持續非零的軌道透過。
 
-[整队列 steering 测试](../../../../apps/web/tests/steering.e2e.ts)等待 steering 操作可用以及 composer 显示队列 steering 提示。模型流屏障在测试观察 steering 时阻止后续问题 composer 接管。清理在关闭浏览器前释放该屏障。
+[整佇列 steering 測試](../../../../apps/web/tests/steering.e2e.ts)等待 steering 操作可用以及 composer 顯示佇列 steering 提示。模型流屏障在測試觀察 steering 時阻止後續問題 composer 接管。清理在關閉瀏覽器前釋放該屏障。
 
-[Workspace 管理测试](../../../../apps/web/tests/workspace-management.e2e.ts)在下一次目录对话框操作前等待恢复后的 composer 焦点。归档用例通过 Session controller 为已知 seed id 设置显式用户标题，再用该精确标题跨重载定位行。无关的恢复行无法匹配该定位器；持久化归档断言仍检查 seed id 和保留的日志。
+[Workspace 管理測試](../../../../apps/web/tests/workspace-management.e2e.ts)在下一次目錄對話方塊操作前等待恢復後的 composer 焦點。歸檔案例透過 Session controller 為已知 seed id 設定顯式使用者標題，再用該精確標題跨過載定位行。無關的恢復行無法匹配該定位器；持久化歸檔斷言仍檢查 seed id 和保留的日誌。
 
-[Node 运行时测试](../../../../packages/ptc-runtime/ptc-runtime-node/tests/runtime.spec.ts)执行真实受管进程、绑定传输、经过时间截止与取消。[沙箱 Node 决策](../architecture/2026-09-11-sandboxed-node-ptc-runtime.zh.md)取代 worker ELU 预算及其受控样本测试；真实进程与传输证据仍然必要。
+[Node 執行時測試](../../../../packages/ptc-runtime/ptc-runtime-node/tests/runtime.spec.ts)執行真實受管程序、繫結傳輸、經過時間截止與取消。[沙箱 Node 決策](../architecture/2026-09-11-sandboxed-node-ptc-runtime.zh.md)取代 worker ELU 預算及其受控樣本測試；真實程序與傳輸證據仍然必要。
 
-[分离启动测试](../../../../packages/host/open-in-app/tests/launch-detached.spec.ts)控制观察时间，并通过真实 launcher 登记的回调发送迟到进程事件。测试检查仅完成一次、仅 unref 一次且不终止子进程。[Resolver 测试](../../../../packages/host/open-in-app/tests/resolver.spec.ts)保留真实进程的环境变量和提前退出用例。
+[分離啟動測試](../../../../packages/host/open-in-app/tests/launch-detached.spec.ts)控制觀察時間，並透過真實 launcher 登記的回呼傳送遲到程序事件。測試檢查僅完成一次、僅 unref 一次且不終止子程序。[Resolver 測試](../../../../packages/host/open-in-app/tests/resolver.spec.ts)保留真實程序的環境變數和提前退出案例。
 
-[LSP 背压测试](../../../../packages/lsp/lsp-stdio/tests/instance.spec.ts)保留真实暂停读取的 fixture 与大型原生管道写入。接受 abort 错误前，测试验证待处理写入回调已完成、捕获的子进程也已结束；`instance.dead` 在释放开始时就可能为真。
+[LSP 背壓測試](../../../../packages/lsp/lsp-stdio/tests/instance.spec.ts)保留真實暫停讀取的 fixture 與大型原生管道寫入。接受 abort 錯誤前，測試驗證待處理寫入回呼已完成、捕捉的子程序也已結束；`instance.dead` 在釋放開始時就可能為真。
 
-### 已构建 Client 的导入分类
+### 已建置 Client 的匯入分類
 
-[Node import sweep](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus-check.ts)只有在 Node 针对某个 `.css` 文件报告 `ERR_UNKNOWN_FILE_EXTENSION` 时才接受 Dockkit bundle，其他每个错误以及每个意外成功的豁免导入都会失败；该豁免覆盖哪些样式表由[样式表豁免决策](../bug-fix/2026-09-10-built-bundle-css-exemption.zh.md)拥有。限定范围的 resolve/load hook 覆盖预期 CSS 失败、其他样式表、其他扩展名、任意失败、其他错误码和陈旧豁免，不修改共享构建产物。
+[Node import sweep](../../../../packages/experimental/webworker-runtime/tests/compile/transform-corpus-check.ts)只有在 Node 針對某個 `.css` 檔案報告 `ERR_UNKNOWN_FILE_EXTENSION` 時才接受 Dockkit bundle，其他每個錯誤以及每個意外成功的豁免匯入都會失敗；該豁免覆蓋哪些樣式表由[樣式表豁免決策](../bug-fix/2026-09-10-built-bundle-css-exemption.zh.md)擁有。限定範圍的 resolve/load hook 覆蓋預期 CSS 失敗、其他樣式表、其他副檔名、任意失敗、其他錯誤碼和陳舊豁免，不修改共享建置產物。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**生产超时、重试或套件串行化。** 拒绝，因为均不能建立缺少的完成观察。
+**生產超時、重試或套件序列化。** 拒絕，因為均不能建立缺少的完成觀察。
 
-**从接受或预览推断完成。** HTTP 202 和乐观图片可能早于被断言的操作。
+**從接受或預覽推斷完成。** HTTP 202 和樂觀圖片可能早於被斷言的操作。
 
-**用受控样本代替真实执行。** 不采纳，因为仅靠定时器样本无法验证进程启动、控制传输或受管清理。
+**用受控樣本代替真實執行。** 不採納，因為僅靠定時器樣本無法驗證程序啟動、控制傳輸或受管清理。
 
-## 影响
+## 影響
 
-每个 fixture 拥有自己的时钟、屏障、回调、进程和临时路径。受控观察补充真实 worker、子进程、浏览器和持久化路径。产品行为、生产时序、基准预算、CI 调度和录制预期均保持不变。
+每個 fixture 擁有自己的時鐘、屏障、回呼、程序和臨時路徑。受控觀察補充真實 worker、子程序、瀏覽器和持久化路徑。產品行為、生產時序、基準預算、CI 排程和錄製預期均保持不變。

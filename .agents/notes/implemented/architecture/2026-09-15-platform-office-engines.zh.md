@@ -1,4 +1,4 @@
-# Agent Note: 每个平台使用一个 Office 引擎
+# Agent Note: 每個平臺使用一個 Office 引擎
 
 Status: implemented
 
@@ -6,26 +6,26 @@ Status: implemented
 
 ## Problem
 
-在可用的原生引擎之外安装 WASM，会为应用下载和安装资源增加第二份 LibreOffice 载荷。[独立 kit 归属](2026-09-14-independent-libreoffice-kit.zh.md)中最初的回退策略要求固定平台的 Desktop 和 Python 分发物也携带这份额外载荷。
+在可用的原生引擎之外安裝 WASM，會為應用下載和安裝資源增加第二份 LibreOffice 載荷。[獨立 kit 歸屬](2026-09-14-independent-libreoffice-kit.zh.md)中最初的退回策略要求固定平臺的 Desktop 和 Python 分發物也攜帶這份額外載荷。
 
 ## Decision
 
-Harness 从已安装 kit API 的 `optionalDependencies` 中选择一个引擎。声明了 `@deepseek-ai/libreoffice-kit-${platform}-${arch}` 的目标要求该原生包，其余目标要求共享 WASM 包。受支持的原生目标集合由 kit 发布版本决定，不由 Harness 中的操作系统分支决定。已声明的原生包缺失表示安装不完整，不会改选 WASM。provider 不直接依赖 WASM。
+Harness 從已安裝 kit API 的 `optionalDependencies` 中選擇一個引擎。宣告瞭 `@deepseek-ai/libreoffice-kit-${platform}-${arch}` 的目標要求該原生包，其餘目標要求共享 WASM 包。受支援的原生目標集合由 kit 釋出版本決定，不由 Harness 中的作業系統分支決定。已宣告的原生包缺失表示安裝不完整，不會改選 WASM。provider 不直接依賴 WASM。
 
-Python sidecar 组装仅复制所选引擎及其依赖闭包。wheel 打包和运行时查找依据同一份 kit 清单选择；迁移目录后的转换冒烟检查所选后端。Desktop 在签名和完整性封装前将 npm 安装结果过滤为该引擎。引擎编译、解析器兼容性、npm 平台元数据、资格验证与发布仍由 kit 仓库负责。
+Python sidecar 組裝僅複製所選引擎及其依賴閉包。wheel 打包和執行時查詢依據同一份 kit 清單選擇；遷移目錄後的轉換冒煙檢查所選後端。Desktop 在簽名和完整性封裝前將 npm 安裝結果過濾為該引擎。引擎編譯、解析器相容性、npm 平臺中繼資料、資格驗證與釋出仍由 kit 儲存庫負責。
 
 ## Alternatives considered
 
-**在每个原生引擎旁保留 WASM。** 这能容忍可选原生包缺失，却会增大每个支持原生引擎的分发物。固定平台分发物要求其已声明的原生引擎存在且经过测试。
+**在每個原生引擎旁保留 WASM。** 這能容忍可選原生包缺失，卻會增大每個支援原生引擎的分發物。固定平臺分發物要求其已宣告的原生引擎存在且經過測試。
 
-**在所有平台移除 WASM。** 没有已发布原生引擎的目标仍需转换能力。共享 WASM 包为这些目标提供转换，无需引入新的原生发布目标。
+**在所有平臺移除 WASM。** 沒有已釋出原生引擎的目標仍需轉換能力。共享 WASM 包為這些目標提供轉換，無需引入新的原生髮布目標。
 
-**将 Python Office 伴随目录设为可选。** 运行时承载共享的 `dsh` CLI 及其 Web profile，而不只有默认 SDK profile。强制携带目标引擎使已安装 wheel 具备完整的内置 profile 集合，并在启动前报告载荷不完整。SDK 和 headless 用户也承担引擎的下载与安装体积。
+**將 Python Office 伴隨目錄設為可選。** 執行時承載共享的 `dsh` CLI 及其 Web profile，而不只有預設 SDK profile。強制攜帶目標引擎使已安裝 wheel 具備完整的內建 profile 集合，並在啟動前報告載荷不完整。SDK 和 headless 使用者也承擔引擎的下載與安裝體積。
 
 ## Consequences
 
-声明了原生目标的分发物省去 WASM 资源，其余目标保留 WASM 的资源和字体要求。锁定的 kit 声明了 macOS/Windows ARM64 和 x64 原生包，因此当前 Linux 分发物选择 WASM；kit 发布版本可以新增 Linux 原生目标，无需修改 Harness 的选择规则。这不扩展 Harness 支持的发布平台。Harness 的 sidecar、wheel 和运行时解析测试覆盖已声明原生目标与 WASM 选择，包括原生包缺失。新包字节在发布前需要 kit 资格验证和匹配的依赖完整性记录。
+宣告瞭原生目標的分發物省去 WASM 資源，其餘目標保留 WASM 的資源和字型要求。鎖定的 kit 宣告瞭 macOS/Windows ARM64 和 x64 原生包，因此目前 Linux 分發物選擇 WASM；kit 釋出版本可以新增 Linux 原生目標，無需修改 Harness 的選擇規則。這不擴充功能 Harness 支援的釋出平臺。Harness 的 sidecar、wheel 和執行時解析測試覆蓋已宣告原生目標與 WASM 選擇，包括原生包缺失。新包位元組在釋出前需要 kit 資格驗證和匹配的依賴完整性記錄。
 
-新增引擎包标识还需要更新 `scripts/gen-third-party-notices.ts` 中的 `LIBREOFFICE_PACKAGES`、`pnpm-workspace.yaml` 中适用的 `minimumReleaseAgeExclude` 条目，以及 [kit 归属记录](2026-09-14-independent-libreoffice-kit.zh.md)中的包列表。许可证允许列表仍使用明确的包标识。
+新增引擎包標識還需要更新 `scripts/gen-third-party-notices.ts` 中的 `LIBREOFFICE_PACKAGES`、`pnpm-workspace.yaml` 中適用的 `minimumReleaseAgeExclude` 條目，以及 [kit 歸屬記錄](2026-09-14-independent-libreoffice-kit.zh.md)中的包列表。許可證允許列表仍使用明確的包標識。
 
-[公开 Python 发布工作流](../../../../.github/workflows/python-release.yml)拒绝任何大于等于 100,000,000 字节的 wheel。只选择一个引擎会减少载荷，但不能据此认定运行时 wheel 已满足此限制；npm 引擎发布、本地转换与 wheel 上传资格是不同的验证。
+[公開 Python 釋出工作流](../../../../.github/workflows/python-release.yml)拒絕任何大於等於 100,000,000 位元組的 wheel。只選擇一個引擎會減少載荷，但不能據此認定執行時 wheel 已滿足此限制；npm 引擎釋出、本地轉換與 wheel 上傳資格是不同的驗證。

@@ -4,46 +4,46 @@
 #   pnpm run verify-translation-pairing --write packages/bundle/sdk-minimal/README.md
 /:
   en: ae5bdac5add26503
-  zh: 93cd37d41c05fc9c
+  zh: 26e5ed06417b6c74
 /deepseek-ai-dsh-sdk-minimal:
   en: 807c43eedba7d53e
   zh: 9f1efe5d6ac393f7
 /deepseek-ai-dsh-sdk-minimal/summary:
   en: 1885da605fd804b8
-  zh: 742cbfdd2a4a224b
+  zh: b7c3f8268c021e9c
 /deepseek-ai-dsh-sdk-minimal/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-sdk-minimal/use-this-package:
   en: 107f4613e077f9ad
-  zh: e7d89433a98b296b
+  zh: 711391192d4a01d0
 /deepseek-ai-dsh-sdk-minimal/understand-the-implementation:
   en: 281b8d6f1aa0e526
-  zh: 070c2a66b1b2feee
+  zh: a79c372a356222c9
 /deepseek-ai-dsh-sdk-minimal/understand-the-implementation/source-map:
   en: d992e946f4928fa3
-  zh: 46d6b3d1aabdc3f4
+  zh: 06cbefd05cf7e64b
 /deepseek-ai-dsh-sdk-minimal/further-exploration:
   en: 6909fc128c321153
-  zh: 7d2a0866efdc5a69
+  zh: 1a0d7d2a0af3c420
 /deepseek-ai-dsh-sdk-minimal/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-sdk-minimal/model-experience/minimal-coding-agent-composition:
   en: bd87e16b0c6e0506
-  zh: c8ee5e3b4578754e
+  zh: c40e7357ee8d4954
 /deepseek-ai-dsh-sdk-minimal/model-experience/minimal-coding-agent-composition/what-the-model-sees:
   en: fa9af6239831a097
-  zh: 6951e08b165cb282
+  zh: e23b8f8191a4e7e8
 /deepseek-ai-dsh-sdk-minimal/model-experience/minimal-coding-agent-composition/token-effect:
   en: 65613fb41fcc3151
-  zh: fc20a732aca8282c
+  zh: 8b742ff4857e7fc4
 /deepseek-ai-dsh-sdk-minimal/model-experience/minimal-coding-agent-composition/kv-cache-effect:
   en: 904ae09b5fdb87c1
-  zh: de6fcaaa12bd9733
+  zh: 150991acb66dc381
 /deepseek-ai-dsh-sdk-minimal/known-limitations-and-deferred-work:
   en: 8f74b1b4f39eda83
-  zh: af96ec4cb42810c5
+  zh: 57a9c454627fb8cf
 /deepseek-ai-dsh-sdk-minimal/known-limitations-and-deferred-work/dev-note:
   en: e67f633dc6fe7773
-  zh: e88aeb617ffb74ea
+  zh: bb8387ee0e2ab0bd

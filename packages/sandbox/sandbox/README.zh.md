@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的进程沙箱服务约定，用于组合、使用或扩展与宿主共享文件系统和内核的子进程限制机制。"
+description: "面向使用者與維護者的程序沙箱服務約定，用於組合、使用或擴充功能與主機共享檔案系統和核心的子程序限制機制。"
 kind: "package-reference"
 ---
 
@@ -9,31 +9,31 @@ kind: "package-reference"
 
 ## 概述
 
-使用 `dsh-sandbox`，可以让子进程及其派生的所有进程在逐调用文件访问策略下运行。命令可以禁止写入（`read-only`）、只写入工作区（`workspace-write`），或不受限制地运行（`danger-full-access`）。无法强制执行所请求的模式时，调用以 `SANDBOX_UNAVAILABLE` 失败，绝不会不受限制地运行。调用被拒绝后，模型可以请求一个严格更宽的模式，交由人类批准一次。这种限制只适用于与宿主共享内核和文件系统的进程；需要隔离整个环境时，请使用容器、microVM 或远程执行器。
+使用 `dsh-sandbox`，可以讓子程序及其派生的所有程序在逐呼叫檔案存取策略下執行。命令可以禁止寫入（`read-only`）、只寫入工作區（`workspace-write`），或不受限制地執行（`danger-full-access`）。無法強制執行所請求的模式時，呼叫以 `SANDBOX_UNAVAILABLE` 失敗，絕不會不受限制地執行。呼叫被拒絕後，模型可以請求一個嚴格更寬的模式，交由人類批准一次。這種限制只適用於與主機共享核心和檔案系統的程序；需要隔離整個環境時，請使用容器、microVM 或遠端執行器。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-将此服务与一个后端和一个受限消费方组合，消费方运行的每条命令都会在你解析的策略下执行——你只看到隔离结果及其强制执行完整度，永远看不到 runner。
+將此服務與一個後端和一個受限消費方組合，消費方執行的每條命令都會在你解析的策略下執行——你只看到隔離結果及其強制執行完整度，永遠看不到 runner。
 
-### 何时选择
+### 何時選擇
 
-当组合需要在宿主机上隔离子进程时选择本包：本地后端与受限执行器都实现这个约定，因此在 `ctx.sandbox` 后挂载 `sandbox-local`、在 `ctx.shell` 后挂载受限执行器，就能使每次 bash 或 pwsh 调用默认在限制下运行。当进程必须在隔离环境中运行时请另选方案——容器、microVM 或远程执行器会替换整个 `ctx.shell`/`ctx.fs` 能力，而不是在这里添加后端。
+當組合需要在主機上隔離子程序時選擇本包：本地後端與受限執行器都實作這個約定，因此在 `ctx.sandbox` 後掛載 `sandbox-local`、在 `ctx.shell` 後掛載受限執行器，就能使每次 bash 或 pwsh 呼叫預設在限制下執行。當程序必須在隔離環境中執行時請另選方案——容器、microVM 或遠端執行器會替換整個 `ctx.shell`/`ctx.fs` 能力，而不是在這裡新增後端。
 
-### 隔离命令
+### 隔離命令
 
-挂载服务、后端与受限执行器；随附的组合由[基础组合包（base bundle）](../../bundle/base/cordis.patch.yml)定义。
+掛載服務、後端與受限執行器；隨附的組合由[基礎組合包（base bundle）](../../bundle/base/cordis.patch.yml)定義。
 
 ```yaml
 - id: sandbox
@@ -47,139 +47,139 @@ kind: "package-reference"
   name: '@deepseek-ai/dsh-bash-sandbox'      # the confined executor behind ctx.shell
 ```
 
-使用该组合时，bash 调用在 `workspace-write` 下受限运行：工作区内写入成功，工作区外写入被拒绝，模型可以通过下面的升权流程恢复。
+使用該組合時，bash 呼叫在 `workspace-write` 下受限執行：工作區內寫入成功，工作區外寫入被拒絕，模型可以透過下面的升權流程恢復。
 
-### 模式与强制执行
+### 模式與強制執行
 
-模式指明命令可以执行的文件操作；强制执行完整度报告后端对这些操作的管辖程度。
+模式指明命令可以執行的檔案操作；強制執行完整度報告後端對這些操作的管轄程度。
 
 | 模式 | 效果 |
 |---|---|
-| `read-only` | 拒绝写入，必需 sink（如 `/dev/null`）除外 |
-| `workspace-write` | 允许写入工作区根目录及后端定义的临时区域 |
-| `danger-full-access` | 绕过隔离；消费方直接 spawn 原始 argv |
+| `read-only` | 拒絕寫入，必需 sink（如 `/dev/null`）除外 |
+| `workspace-write` | 允許寫入工作區根目錄及後端定義的臨時區域 |
+| `danger-full-access` | 繞過隔離；消費方直接 spawn 原始 argv |
 
-强制执行逐调用报告：`full` 表示后端管辖模式承诺的每个文件操作，`partial` 表示活动后端或较旧的内核 ABI 只管辖子集——Windows ACL 档与较旧的 Landlock ABI 是当前的部分强制执行情形，需要绝对边界的消费方可以拒绝或向上暴露它们。
+強制執行逐呼叫報告：`full` 表示後端管轄模式承諾的每個檔案操作，`partial` 表示活動後端或較舊的核心 ABI 只管轄子集——Windows ACL 檔與較舊的 Landlock ABI 是目前的部分強制執行情形，需要絕對邊界的消費方可以拒絕或向上暴露它們。
 
-### 被拒绝的调用与升权
+### 被拒絕的呼叫與升權
 
-受限调用被拒绝时，操作会报告指明模式的拒绝标记——`[sandbox: file access denied under <mode> mode]`——组合声明升权能力时还会给出升权提示。模型可以用 `sandbox_permissions`（足以放行的最窄更宽模式）加 `justification` 重试一次完全相同的调用；审批服务为操作取得同意。请求保留审计原因，同时提供英文和中文展示文案，模型给出的理由保持原样。缺失的译文遵循语言服务的回退链，最终回退到英文；请求方负责自己的展示译文。更宽的模式需要审批，且只作用于该次调用。重复指定调用的生效模式无需审批即可成功；更窄的目标仍然无效。
+受限呼叫被拒絕時，操作會報告指明模式的拒絕標記——`[sandbox: file access denied under <mode> mode]`——組合宣告升權能力時還會給出升權提示。模型可以用 `sandbox_permissions`（足以放行的最窄更寬模式）加 `justification` 重試一次完全相同的呼叫；審批服務為操作取得同意。請求保留審計原因，同時提供英文和中文展示文案，模型給出的理由保持原樣。缺失的譯文遵循語言服務的退回鏈，最終退回到英文；請求方負責自己的展示譯文。更寬的模式需要審批，且只作用於該次呼叫。重複指定呼叫的生效模式無需審批即可成功；更窄的目標仍然無效。
 
-### 故障关闭行为
+### 故障關閉行為
 
-没有后端能强制执行所请求的模式时，调用以 `SANDBOX_UNAVAILABLE` 失败，而不是不受限制地运行；错误文本会指明缺失的平台 runner。启动后失败的后端还会报告结构化的 runner 失败签名，因此损坏的沙箱可以与命令失败区分开。
+沒有後端能強制執行所請求的模式時，呼叫以 `SANDBOX_UNAVAILABLE` 失敗，而不是不受限制地執行；錯誤文字會指明缺失的平臺 runner。啟動後失敗的後端還會報告結構化的 runner 失敗簽名，因此損壞的沙箱可以與命令失敗區分開。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释约定背后的设计决策，并指出实现它们的代码位置；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋約定背後的設計決策，並指出實作它們的程式碼位置；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-- **同一执行环境。** 文件系统、子进程与沙箱提供方使用同一文件系统和内核。远端组合替换这三个提供方，并在该环境中异步解析限制。
-- **策略随调用传递。** `SandboxPolicy` 逐调用携带，绝不在提供方上固定：两个消费方可以同时按不同策略隔离，获批的升权重试只是用更宽策略发起的新调用。默认与解析是消费方显式步骤。
-- **故障关闭。** `confine()` 异步返回用于强制执行限制的 argv，或以 `SandboxUnavailableError` 拒绝；绝不允许静默无限制放行，功能探测用于仲裁多 runner 链。
-- **统一的拒绝与升权词汇。** 标记与提示文本以及严格更宽阶梯都放在这里，使 bash 与 fs 家族不会漂移。
+- **同一執行環境。** 檔案系統、子程序與沙箱提供者使用同一檔案系統和核心。遠端組合替換這三個提供者，並在該環境中非同步解析限制。
+- **策略隨呼叫傳遞。** `SandboxPolicy` 逐呼叫攜帶，絕不在提供者上固定：兩個消費方可以同時按不同策略隔離，獲批的升權重試只是用更寬策略發起的新呼叫。預設與解析是消費方顯式步驟。
+- **故障關閉。** `confine()` 非同步返回用於強制執行限制的 argv，或以 `SandboxUnavailableError` 拒絕；絕不允許靜默無限制放行，功能探測用於仲裁多 runner 鏈。
+- **統一的拒絕與升權詞彙。** 標記與提示文字以及嚴格更寬階梯都放在這裡，使 bash 與 fs 家族不會漂移。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`SandboxProvider` 服务、模式/强制执行/策略类型、故障关闭错误 |
-| [`src/escalation.ts`](src/escalation.ts) | 升权词汇：更宽模式阶梯、参数校验、拒绝与提示标记、审批编排 |
-| [`src/roots.ts`](src/roots.ts) | 可写根目录推导，Seatbelt profile 与进程内 fs 栅栏共享 |
-| — | 不发布运行时不变式伴生入口；除所属 seam 强制执行的约定外，本包不公开独立的事件序列或可变数据关系。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`SandboxProvider` 服務、模式/強制執行/策略型別、故障關閉錯誤 |
+| [`src/escalation.ts`](src/escalation.ts) | 升權詞彙：更寬模式階梯、參數驗證、拒絕與提示標記、審批編排 |
+| [`src/roots.ts`](src/roots.ts) | 可寫根目錄推導，Seatbelt profile 與程序內 fs 柵欄共享 |
+| — | 不釋出執行時不變式伴生入口；除所屬 seam 強制執行的約定外，本包不公開獨立的事件序列或可變資料關係。 |
 
-### 升权编排
+### 升權編排
 
-阶梯是封闭表——`read-only` 可升权到 `workspace-write` 或 `danger-full-access`，`workspace-write` 只能升权到 `danger-full-access`——在执行时检查，绝不写入工具 schema，schema 的枚举保持封闭的目标词汇。[`approveEscalation`](src/escalation.ts) 在请求重复当前模式时无需审批就返回该模式，拒绝更窄或不支持的目标，并为更宽模式请求审批。调用方先校验 `sandbox_permissions`/`justification` 配对。
+階梯是封閉表——`read-only` 可升權到 `workspace-write` 或 `danger-full-access`，`workspace-write` 只能升權到 `danger-full-access`——在執行時檢查，絕不寫入工具 schema，schema 的列舉保持封閉的目標詞彙。[`approveEscalation`](src/escalation.ts) 在請求重複目前模式時無需審批就返回該模式，拒絕更窄或不支援的目標，併為更寬模式請求審批。呼叫方先驗證 `sandbox_permissions`/`justification` 配對。
 
-### 可写根目录
+### 可寫根目錄
 
-`workspace-write` 意味着「工作区根目录加宿主临时区域」：`writableRoots` 以规范化方式推导该白名单，解析符号链接并去重，使 Seatbelt profile 与进程内 fs 栅栏授予完全相同的根目录。
+`workspace-write` 意味著「工作區根目錄加主機臨時區域」：`writableRoots` 以規範化方式推導該白名單，解析符號連結並去重，使 Seatbelt profile 與程序內 fs 柵欄授予完全相同的根目錄。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-先从子系统参考文档了解穷尽式约定，再看实现它的后端、消费方与策略来源。
+先從子系統參考文件瞭解窮盡式約定，再看實作它的後端、消費方與策略來源。
 
-- [进程沙箱子系统](../../../docs/subsystems/sandbox.zh.md)——完整词汇、逐调用策略与分类方言。
-- [子进程沙箱决策](../../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)——能力边界、升权设计与延期阶段。
-- [本地沙箱后端](../sandbox-local/README.zh.md)——`ctx.sandbox` 背后的各平台 runner。
-- [Bash 沙箱执行器](../../shell/bash-sandbox/README.zh.md)——受限的 bash 消费方。
-- [沙箱策略包](../sandbox-policy/README.zh.md)——逐调用模式与工作区根目录的来源。
+- [程序沙箱子系統](../../../docs/subsystems/sandbox.zh.md)——完整詞彙、逐呼叫策略與分類方言。
+- [子程序沙箱決策](../../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)——能力邊界、升權設計與延期階段。
+- [本地沙箱後端](../sandbox-local/README.zh.md)——`ctx.sandbox` 背後的各平臺 runner。
+- [Bash 沙箱執行器](../../shell/bash-sandbox/README.zh.md)——受限的 bash 消費方。
+- [沙箱策略包](../sandbox-policy/README.zh.md)——逐呼叫模式與工作區根目錄的來源。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 间接的限制错误
+### 間接的限制錯誤
 
-#### 模型看到什么
+#### 模型看到什麼
 
-通过 [`dsh-bash-sandbox`](../../shell/bash-sandbox/README.zh.md) 和 [`dsh-tool-bash`](../../shell/tool-bash/README.zh.md)，请求的受限模式没有可用后端时会产生错误码 `SANDBOX_UNAVAILABLE` 及下方精确错误；执行期 runner 失败会追加 ` Runner failure: <detail>`。
+透過 [`dsh-bash-sandbox`](../../shell/bash-sandbox/README.zh.md) 和 [`dsh-tool-bash`](../../shell/tool-bash/README.zh.md)，請求的受限模式沒有可用後端時會產生錯誤碼 `SANDBOX_UNAVAILABLE` 及下方精確錯誤；執行期 runner 失敗會追加 ` Runner failure: <detail>`。
 
-##### 精确错误
+##### 精確錯誤
 
 ```markdown
 sandbox mode "<mode>" is requested but no sandbox backend is usable on this host; refusing to run the command unconfined. Install bubblewrap or run a Landlock-enforcing kernel (Linux), ensure sandbox-exec is usable (macOS), or ensure the ACL restricted-token runner can start (Windows) — otherwise switch the consumer to danger-full-access.
 ```
 
-#### Token 影响
+#### Token 影響
 
-条件性错误文本对该次调用可见，并保留在历史中直到压缩（compaction）。
+條件性錯誤文字對該次呼叫可見，並保留在歷史中直到壓縮（compaction）。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；新可见内容位于可复用请求前缀之后，不会使现有 KV Cache 条目失效。
+僅追加；新可見內容位於可複用請求字首之後，不會使現有 KV Cache 條目失效。
 
-### 升权请求与结果
+### 升權請求與結果
 
-#### 模型看到什么
+#### 模型看到什麼
 
-被拒绝的调用会呈现标记 `[sandbox: file access denied under <mode> mode]`，组合声明升权能力时还会呈现提示 `[sandbox: escalation available — retry this exact <subject> once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]`。重试携带 `sandbox_permissions` 与 `justification`；用户的 `allowed-once`／`rejected`／`cancelled` 决定成为该调用的结果文本。
+被拒絕的呼叫會呈現標記 `[sandbox: file access denied under <mode> mode]`，組合宣告升權能力時還會呈現提示 `[sandbox: escalation available — retry this exact <subject> once with sandbox_permissions (the narrowest wider mode that suffices) + justification; the approval prompt asks the user]`。重試攜帶 `sandbox_permissions` 與 `justification`；使用者的 `allowed-once`／`rejected`／`cancelled` 決定成為該呼叫的結果文字。
 
-#### Token 影响
+#### Token 影響
 
-只有被拒绝调用的错误与任何升权结果文本可见；两者都会保留在历史中直到压缩。
+只有被拒絕呼叫的錯誤與任何升權結果文字可見；兩者都會保留在歷史中直到壓縮。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加；升权文本位于保留前缀之后，不会使已缓存条目失效。
+僅追加；升權文字位於保留字首之後，不會使已快取條目失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该 seam 何时不合适，或何时需要特别运维。它们是当前包约束，不是通用沙箱对比或任务积压。
+這些限制說明該 seam 何時不合適，或何時需要特別運維。它們是目前包約束，不是通用沙箱對比或任務積壓。
 
-- **文件操作是完整的策略词汇**——该 seam 不表达网络、进程、系统调用、设备或凭据限制。
-- **只支持与宿主共享文件系统和内核的限制**——容器、microVM 与远程执行需要替换能力实现，而不是在此添加提供方。
-- **拒绝报告是一种 stderr 方言**——该 seam 返回后端签名，而非类型化运行时拒绝通道，需要分类的消费方必须从子进程输出推断。
-- **Runner 诊断使用带内通道**——退出状态与 stderr 证据无法证明匹配行由哪个进程写入，因此故意模仿 runner 的受限子进程可能造成错误的可用性或诊断归因；这无法绕过隔离，带外 runner 状态通道暂缓实现。
-- **每个上下文只有一个提供方**——同时组合不同沙箱机制需要提供方级阶梯或独立 Cordis 上下文；调用方逐调用选择策略，而非后端标识。
+- **檔案操作是完整的策略詞彙**——該 seam 不表達網路、程序、系統呼叫、裝置或憑證限制。
+- **只支援與主機共享檔案系統和核心的限制**——容器、microVM 與遠端執行需要替換能力實作，而不是在此新增提供者。
+- **拒絕報告是一種 stderr 方言**——該 seam 返回後端簽名，而非型別化執行時拒絕通道，需要分類的消費方必須從子程序輸出推斷。
+- **Runner 診斷使用帶內通道**——退出狀態與 stderr 證據無法證明匹配行由哪個程序寫入，因此故意模仿 runner 的受限子程序可能造成錯誤的可用性或診斷歸因；這無法繞過隔離，帶外 runner 狀態通道暫緩實作。
+- **每個上下文只有一個提供者**——同時組合不同沙箱機制需要提供者級階梯或獨立 Cordis 上下文；呼叫方逐呼叫選擇策略，而非後端標識。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：未决方向与开放问题。它明确不具权威性——已交付的行为、限制与既定理由以上文、包代码和相关 Agent Note 为准。
+本開發備註是維護者的工作上下文：未決方向與開放問題。它明確不具權威性——已交付的行為、限制與既定理由以上文、包程式碼和相關 Agent Note 為準。
 
-#### 未来：消费方与环境
+#### 未來：消費方與環境
 
-[沙箱决策](../../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)列出延期阶段——可选的 `subagent-acp` 消费方（隔离子 agent（智能体），默认不隔离）与环境一致的能力组示例。两者均未决定；该笔记列为延期的 Windows 链已通过 `sandbox-local` 的 ACL 受限令牌档交付。
+[沙箱決策](../../../.agents/notes/implemented/feature/2026-07-06-sandbox.zh.md)列出延期階段——可選的 `subagent-acp` 消費方（隔離子 agent（智慧代理），預設不隔離）與環境一致的能力組範例。兩者均未決定；該筆記列為延期的 Windows 鏈已透過 `sandbox-local` 的 ACL 受限權杖檔交付。
 
 </details>

@@ -1,5 +1,5 @@
 ---
-description: "面向交互式组合的按需 /compact 命令：它做什么、你会看到什么，以及如何挂载。"
+description: "面向互動式組合的按需 /compact 命令：它做什麼、你會看到什麼，以及如何掛載。"
 kind: "package-reference"
 ---
 
@@ -9,49 +9,49 @@ kind: "package-reference"
 
 ## 概述
 
-`dsh-command-compact` 为聊天 UI 添加 `/compact` 命令：输入它，对话就会按需压缩（compaction）——即使尚未触发自动压力，较早历史也会被替换为一条摘要。该命令适用于任何压缩后端，且不消耗模型轮次；完成后你会看到压缩了多少历史项以及估算节省的 token 数。当 agent（智能体）正在执行轮次或压缩已在运行时，它会告诉你压缩暂不可用。运行期间你发送的提示词会保持排队，并在压缩结束后才开始。
+`dsh-command-compact` 為聊天 UI 新增 `/compact` 命令：輸入它，對話就會按需壓縮（compaction）——即使尚未觸發自動壓力，較早歷史也會被替換為一條摘要。該命令適用於任何壓縮後端，且不消耗模型輪次；完成後你會看到壓縮了多少歷史項以及估算節省的 token 數。當 agent（智慧代理）正在執行輪次或壓縮已在執行時，它會告訴你壓縮暫不可用。執行期間你傳送的提示詞會保持排隊，並在壓縮結束後才開始。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当对话已经很长、想立即压缩时，在聊天 UI 中输入 `/compact`。随附 `dsh` 基础配置把该命令挂载在默认后端旁，因此它通常已经可用。
+當對話已經很長、想立即壓縮時，在聊天 UI 中輸入 `/compact`。隨附 `dsh` 基礎設定把該命令掛載在預設後端旁，因此它通常已經可用。
 
 ### 使用命令
 
-| 输入 | 结果 |
+| 輸入 | 結果 |
 |---|---|
-| `/compact` | 即使未达到自动压力，也压缩一段有效、平衡的较早范围，然后报告被替换的历史项数量与估算 token 数。 |
-| `/compact`，但没有可压缩历史 | `No compactable history yet.`——不会有任何改变。 |
-| `/compact <anything>` | `Usage: /compact (no arguments)`——该命令不接受参数。 |
+| `/compact` | 即使未達到自動壓力，也壓縮一段有效、平衡的較早範圍，然後報告被替換的歷史項數量與估算 token 數。 |
+| `/compact`，但沒有可壓縮歷史 | `No compactable history yet.`——不會有任何改變。 |
+| `/compact <anything>` | `Usage: /compact (no arguments)`——該命令不接受參數。 |
 
-### 你会看到什么
+### 你會看到什麼
 
-命令会把每个预期失败转换为可直接展示的稳定消息；左列的情形产生右列的消息。
+命令會把每個預期失敗轉換為可直接展示的穩定訊息；左列的情形產生右列的訊息。
 
-| 情形 | 你看到的消息 |
+| 情形 | 你看到的訊息 |
 |---|---|
-| 压缩已在运行，或 agent 正在轮次中 | `Compaction is unavailable because this process has an active compaction, or the agent is not idle.` |
-| 压缩过程中历史发生了变化 | `The history selected for compaction changed before it could be replaced. The attempt is recorded in the session log.` |
-| 无法产生有用的摘要 | `Compaction could not produce a useful summary. The attempt is recorded in the session log.` |
-| 压缩未干净地完成 | `Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.` |
-| 会话无法保存 | `Compaction finished, but the session could not be saved.` |
+| 壓縮已在執行，或 agent 正在輪次中 | `Compaction is unavailable because this process has an active compaction, or the agent is not idle.` |
+| 壓縮過程中歷史發生了變化 | `The history selected for compaction changed before it could be replaced. The attempt is recorded in the session log.` |
+| 無法產生有用的摘要 | `Compaction could not produce a useful summary. The attempt is recorded in the session log.` |
+| 壓縮未乾淨地完成 | `Compaction did not finish cleanly; some session history may have changed. Inspect the current session state before retrying.` |
+| 工作階段無法儲存 | `Compaction finished, but the session could not be saved.` |
 
-取消命令会停止等待：后端完成必需的清理，命令以 `Compaction cancelled.` 结算，UI 停止等待。除这些预期情形外的失败会以错误形式呈现，而不会被静默转换。
+取消命令會停止等待：後端完成必需的清理，命令以 `Compaction cancelled.` 結算，UI 停止等待。除這些預期情形外的失敗會以錯誤形式呈現，而不會被靜默轉換。
 
-### 组合命令
+### 組合命令
 
-挂载命令注册表、一个压缩后端与本插件：
+掛載命令註冊表、一個壓縮後端與本外掛：
 
 ```yaml
 - id: commands
@@ -62,95 +62,95 @@ kind: "package-reference"
   name: '@deepseek-ai/dsh-command-compact'
 ```
 
-随附 `dsh` 基础配置把它挂载在默认后端旁，Web 客户端提供命令适配器。未组合命令适配器的自动化接口只保留自动压缩。
+隨附 `dsh` 基礎設定把它掛載在預設後端旁，Web 用戶端提供命令介面卡。未組合命令介面卡的自動化介面只保留自動壓縮。
 
-### 对话会发生什么
+### 對話會發生什麼
 
-命令成功时，所选较早范围会被替换为一条摘要，近期历史不受影响；命令会报告压缩的项目数与估算 token 数。压缩运行期间你提交的提示词会被接受，并只在压缩结束后才开始——不会被丢失或重排。命令生命周期记录在会话日志中，但绝不进入模型历史。
+命令成功時，所選較早範圍會被替換為一條摘要，近期歷史不受影響；命令會報告壓縮的專案數與估算 token 數。壓縮執行期間你提交的提示詞會被接受，並只在壓縮結束後才開始——不會被丟失或重排。命令生命週期記錄在工作階段日誌中，但絕不進入模型歷史。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释命令背后的设计决策；可观察行为已在[使用本包](#use-this-package)中完整说明。
+本節解釋命令背後的設計決策；可觀察行為已在[使用本包](#use-this-package)中完整說明。
 
-### 设计理念
+### 設計理念
 
-该命令建立在三项承诺之上：
+該命令建立在三項承諾之上：
 
-- **与后端无关的控制。** 处理器只依赖 `compactNow(agent, signal)`，因此可与任何 `CompactionEngine` 实现协作。调用该命令的 agent 就是操作的确切目标，发起分发的 UI 会通过 seam 转发取消信号。
-- **命令生命周期不进入模型历史。** `command/run` 与 `command/done` 都是仅日志事件；`sourceEventSeq` 将成功结果与 `compaction/summary` 事件关联，不依赖文本或行相邻关系。
-- **资源销毁必须完全停稳。** 生命周期 effect 会先注销 `/compact`，再等待已开始处理器结算，因此已中止命令的闭合与 flush 工作会在根级资源释放完成前结算完毕。
+- **與後端無關的控制。** 處理器只依賴 `compactNow(agent, signal)`，因此可與任何 `CompactionEngine` 實作協作。呼叫該命令的 agent 就是操作的確切目標，發起分發的 UI 會透過 seam 轉發取消訊號。
+- **命令生命週期不進入模型歷史。** `command/run` 與 `command/done` 都是僅日誌事件；`sourceEventSeq` 將成功結果與 `compaction/summary` 事件關聯，不依賴文字或行相鄰關係。
+- **資源銷燬必須完全停穩。** 生命週期 effect 會先登出 `/compact`，再等待已開始處理器結算，因此已中止命令的閉合與 flush 工作會在根級資源釋放完成前結算完畢。
 
-### 生命周期与关联
+### 生命週期與關聯
 
-每次完成的调用都会记录执行器所属的仅日志事件对 `command/run` / `command/done`；两者都不进入模型历史。成功时，`command/done.sourceEventSeq` 会指明该事务的 `compaction/summary` 事件，让呈现层无须解析结果文本或假定两行相邻，即可将命令生命周期归并到对应检查点中。busy 结果有意限定在进程范围内：活动的未匹配标记会阻塞，而早于最新 `session/end-seed` 的标记已陈旧，不会阻塞。插件会跟踪每个真实处理器 promise，并在排空已开始处理器之前注销 `/compact`，因此根级 teardown 不会越过已中止命令的闭合或 flush 边界。压缩运行期间提交的提示词仍会按 agent 的普通 FIFO 获得接纳，并且只在压缩的显式持久性检查点和接纳预留释放后启动；空闲注入的上下文可以位于 `compaction/start` 与 `compaction/end` 之间，并在检查点之后保持可见。
+每次完成的呼叫都會記錄執行器所屬的僅日誌事件對 `command/run` / `command/done`；兩者都不進入模型歷史。成功時，`command/done.sourceEventSeq` 會指明該事務的 `compaction/summary` 事件，讓呈現層無須解析結果文字或假定兩行相鄰，即可將命令生命週期歸併到對應檢查點中。busy 結果有意限定在程序範圍內：活動的未匹配標記會阻塞，而早於最新 `session/end-seed` 的標記已陳舊，不會阻塞。外掛會跟蹤每個真實處理器 promise，並在排空已開始處理器之前登出 `/compact`，因此根級 teardown 不會越過已中止命令的閉合或 flush 邊界。壓縮執行期間提交的提示詞仍會按 agent 的普通 FIFO 獲得接納，並且只在壓縮的顯式永續性檢查點和接納預留釋放後啟動；空閒注入的上下文可以位於 `compaction/start` 與 `compaction/end` 之間，並在檢查點之後保持可見。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：`/compact` 注册、参数拒绝、错误码映射、生命周期排空 |
-| — | 不发布运行时不变式伴随条目；该命令适配器不拥有任何状态或事件流；压缩 seam 拥有平衡且具持久性的事务，命令注册表拥有注册与分发生命周期。 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：`/compact` 註冊、參數拒絕、錯誤碼對映、生命週期排空 |
+| — | 不釋出執行時不變式伴隨條目；該命令介面卡不擁有任何狀態或事件流；壓縮 seam 擁有平衡且具永續性的事務，命令註冊表擁有註冊與分發生命週期。 |
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面；它们从命令逐步进入 seam、随附后端与设计决策。
+當包級約定不夠用時閱讀以下頁面；它們從命令逐步進入 seam、隨附後端與設計決策。
 
-- [压缩 seam](../compaction/README.zh.md)——本命令触发的压缩约定。
-- [压缩基础后端](../compaction-basic/README.zh.md)——自动与按需压缩的随附后端。
-- [命令包](../../interaction/commands/README.zh.md)——聊天命令背后的注册表与分发约定。
-- [压缩子系统参考](../../../docs/subsystems/compaction.zh.md)——压缩词汇、结果与服务行为。
-- [排队手动压缩 Agent Note](../../../.agents/notes/implemented/feature/2026-07-30-queued-manual-compaction.zh.md)——按需压缩如何与运行中的轮次串行化。
+- [壓縮 seam](../compaction/README.zh.md)——本命令觸發的壓縮約定。
+- [壓縮基礎後端](../compaction-basic/README.zh.md)——自動與按需壓縮的隨附後端。
+- [命令包](../../interaction/commands/README.zh.md)——聊天命令背後的註冊表與分發約定。
+- [壓縮子系統參考](../../../docs/subsystems/compaction.zh.md)——壓縮詞彙、結果與服務行為。
+- [排隊手動壓縮 Agent Note](../../../.agents/notes/implemented/feature/2026-07-30-queued-manual-compaction.zh.md)——按需壓縮如何與執行中的輪次序列化。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 用户 `/compact` 控制
+### 使用者 `/compact` 控制
 
-#### 模型看到的内容
+#### 模型看到的內容
 
-斜杠输入与直接结果绝不会进入模型请求。已获接纳的压缩会另外在独立的 `compaction/* { turn: null }` 标记对内，用后端的 user 角色检查点替换一段较早范围。
+斜槓輸入與直接結果絕不會進入模型請求。已獲接納的壓縮會另外在獨立的 `compaction/* { turn: null }` 標記對內，用後端的 user 角色檢查點替換一段較早範圍。
 
-#### Token 影响
+#### Token 影響
 
-命令生命周期不会增加模型 token。成功压缩会用一份带框架的摘要替换所选范围，从而减少后续请求；摘要生成本身需要一次辅助请求。
+命令生命週期不會增加模型 token。成功壓縮會用一份帶框架的摘要替換所選範圍，從而減少後續請求；摘要生成本身需要一次輔助請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-命令发现与簿记不会影响缓存。已获接纳的 surface 替换会从第一个被遮蔽的历史 token 起使复用失效。
+命令發現與簿記不會影響快取。已獲接納的 surface 替換會從第一個被遮蔽的歷史 token 起使複用失效。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明该命令何时不合适；它们是当前包约束。
+這些限制說明該命令何時不合適；它們是目前包約束。
 
-- **仅限空闲状态**——当轮次或已获接纳的唤醒提示词拥有优先权时，`/compact` 会报告压缩暂不可用；命令本身不会排队。
-- **不接受范围或策略参数**——无参数形式使各命令适配器的行为保持稳定。显式范围仍由编程接口 `compactRegion()` 处理。
-- **仅限命令适配器**——没有 `ctx.commands` 的接口无法调用该命令，只能依赖自动压力压缩。
+- **僅限空閒狀態**——當輪次或已獲接納的喚醒提示詞擁有優先權時，`/compact` 會報告壓縮暫不可用；命令本身不會排隊。
+- **不接受範圍或策略參數**——無參數形式使各命令介面卡的行為保持穩定。顯式範圍仍由程式設計介面 `compactRegion()` 處理。
+- **僅限命令介面卡**——沒有 `ctx.commands` 的介面無法呼叫該命令，只能依賴自動壓力壓縮。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文，明确不具权威性；已交付行为以上文、包代码与所链接的 Agent Note 为准。
+本開發備註是維護者的工作上下文，明確不具權威性；已交付行為以上文、包程式碼與所連結的 Agent Note 為準。
 
-- **命令排队，尚未决定**——轮次拥有优先权时提交的 `/compact` 会报告 `busy`；将请求排队而非拒绝仍是开放方向。
-- **范围与策略参数，尚未决定**——无参数形式的稳定性是有意的；增加参数需要在每个命令适配器间共享语法。
+- **命令排隊，尚未決定**——輪次擁有優先權時提交的 `/compact` 會報告 `busy`；將請求排隊而非拒絕仍是開放方向。
+- **範圍與策略參數，尚未決定**——無參數形式的穩定性是有意的；增加參數需要在每個命令介面卡間共享語法。
 
 </details>

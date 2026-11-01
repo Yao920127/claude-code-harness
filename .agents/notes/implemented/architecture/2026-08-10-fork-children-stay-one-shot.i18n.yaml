@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-08-10-fork-children-stay-one-shot.md
 /agent-note-forked-children-preserve-the-parent-request-prefix:
   en: 5254ea4573dedd96
-  zh: ba4ab4517dad0d9f
+  zh: 897c3d0b0d9591b8
 /agent-note-forked-children-preserve-the-parent-request-prefix/problem:
   en: 1fe344c95a0de36d
-  zh: 656c3e0f1117f64e
+  zh: e041a76ba68538c5
 /agent-note-forked-children-preserve-the-parent-request-prefix/decision:
   en: 7461852090348b34
-  zh: ad6c9e0ce65a3e85
+  zh: 2385a41d9391901e
 /agent-note-forked-children-preserve-the-parent-request-prefix/alternatives-considered:
   en: 80504ffd8331e6c5
-  zh: 193261bdde24b4bb
+  zh: 63ab3f0ce8fff036
 /agent-note-forked-children-preserve-the-parent-request-prefix/consequences:
   en: 54c4ce3ee0fee4d2
-  zh: 8a63fb3486c76551
+  zh: 425e4f68d6fdc32c
 /agent-note-forked-children-preserve-the-parent-request-prefix/consequences/accepted-risks:
   en: f634caa9973eaedb
-  zh: 820291096c8e7352
+  zh: fdcf82e3248443a0

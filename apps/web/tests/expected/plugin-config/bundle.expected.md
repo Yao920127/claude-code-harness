@@ -1,19 +1,19 @@
-- button "返回插件列表": 插件列表
-- button "夹具操作"
-- button "卸载 @fixture/live-client": 卸载
-- switch "启用 @fixture/live-client" [checked]
+- button "返回外掛列表": 外掛列表
+- button "夾具操作"
+- button "解除安裝 @fixture/live-client": 解除安裝
+- switch "啟用 @fixture/live-client" [checked]
 - heading "@fixture/live-client" [level=3]
-- text: v0.0.1 夹具标签
+- text: v0.0.1 夾具標籤
 - paragraph:
   - code: "@fixture/live-client"
-- heading "包含的组件" [level=4]
-- text: 共 1 个 · 1 运行中
+- heading "包含的元件" [level=4]
+- text: 共 1 個 · 1 執行中
 - list:
   - listitem:
-    - button "配置 @fixture/live-client": "@fixture/live-client"
+    - button "設定 @fixture/live-client": "@fixture/live-client"
     - code: fixture-live-client
-    - text: 运行中
-    - switch "启用组件 @fixture/live-client" [checked]
-- region "夹具区块":
-  - heading "夹具区块" [level=4]
-  - paragraph: 来自夹具的区块内容
+    - text: 執行中
+    - switch "啟用元件 @fixture/live-client" [checked]
+- region "夾具區塊":
+  - heading "夾具區塊" [level=4]
+  - paragraph: 來自夾具的區塊內容

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-22-standard-acp-automation-controls.md
 /agent-note-standard-acp-v1-automation-controls:
   en: e6a4b457afbf12ac
-  zh: b1d83f4892e05f99
+  zh: b57c4c4147fd4d8a
 /agent-note-standard-acp-v1-automation-controls/problem:
   en: ba88135e9528b4c7
-  zh: 8bc1be92b1f5178e
+  zh: 98546b0d7ac4c131
 /agent-note-standard-acp-v1-automation-controls/decision:
   en: 0a2b2a83aca7d189
-  zh: 8de789db33953283
+  zh: b9fcd9b65a1c477a
 /agent-note-standard-acp-v1-automation-controls/per-session-ownership:
   en: 5b98c5e68eccfe76
-  zh: c22dc47ad8003f22
+  zh: 7ead909272464e04
 /agent-note-standard-acp-v1-automation-controls/persistent-session-controls:
   en: 122752f1cb116417
-  zh: 96971bcc1fed4a8a
+  zh: 3fd06e9d955a23ad
 /agent-note-standard-acp-v1-automation-controls/standard-configuration-options:
   en: 61cb15891965c67a
-  zh: a0a958094b60951f
+  zh: f20a50bf0a853c06
 /agent-note-standard-acp-v1-automation-controls/standard-mcp-mapping:
   en: 57acbe1c89af4c6b
-  zh: 3417e3d4b1874d94
+  zh: aa0330400ff801c1
 /agent-note-standard-acp-v1-automation-controls/semantic-update-projection:
   en: 8e5128cd34629af3
-  zh: 6132e78ddf9b3cf9
+  zh: 50c90e04a5e19fe6
 /agent-note-standard-acp-v1-automation-controls/alternatives-considered:
   en: fc94c87f43787d95
-  zh: 17850ecc35e6ab9d
+  zh: c3e21110634d32bd
 /agent-note-standard-acp-v1-automation-controls/verification:
   en: 08e2b98606d9d362
-  zh: 99d6aef7c89e287f
+  zh: 9923901760be5ce8
 /agent-note-standard-acp-v1-automation-controls/consequences:
   en: 9f839d4720f07d28
-  zh: 5164ae3eb5b52385
+  zh: 49ce438d51fbc0c3

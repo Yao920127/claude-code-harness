@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-07-19-zstandard-jsonl-session-logs.md
 /agent-note-zstandard-jsonl-session-logs:
   en: b46a6b48493de93e
-  zh: 0e394abf1d11fd43
+  zh: f6f96e9aaf122603
 /agent-note-zstandard-jsonl-session-logs/problem:
   en: da8b3d94d10b5bc4
-  zh: da9c6d98a300b7bb
+  zh: e0a77b71ddc2a6bb
 /agent-note-zstandard-jsonl-session-logs/decision:
   en: a15c7c13f167e5ac
-  zh: 63bcc2ef60c2f344
+  zh: d9422e529969db9c
 /agent-note-zstandard-jsonl-session-logs/decision/configuration-and-suffix-ownership:
   en: 1f29970aecc71980
-  zh: 94414765645bace0
+  zh: 2f52a539ad2da0a8
 /agent-note-zstandard-jsonl-session-logs/decision/frame-and-write-path:
   en: da213ed32dfa6000
-  zh: a0f3cd11684dbdc9
+  zh: 4976082e640d1d64
 /agent-note-zstandard-jsonl-session-logs/decision/read-listing-and-crash-recovery:
   en: 63d4fe7d9c2a0a8a
-  zh: 2c4ef3e6aad73195
+  zh: f7df3e6a34ffbe2b
 /agent-note-zstandard-jsonl-session-logs/decision/consumers-and-verification:
   en: 6d9d16d610b80e55
-  zh: efa083ffaa7301e0
+  zh: 4bb0a039b47320cc
 /agent-note-zstandard-jsonl-session-logs/alternatives-considered:
   en: c5f447029fb644f7
-  zh: 5b84162e87bc6c86
+  zh: 686fe4f1c739db7c
 /agent-note-zstandard-jsonl-session-logs/consequences:
   en: e721552f16340e4c
-  zh: d5be8c3ffd1c7cc2
+  zh: 1c50a9d180ca6d03

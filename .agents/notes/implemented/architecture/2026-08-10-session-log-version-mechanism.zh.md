@@ -1,40 +1,40 @@
-# Agent Note: Session log 版本机制：单调整数、升级器链、逐事件可忽略标记
+# Agent Note: Session log 版本機制：單調整數、升級器鏈、逐事件可忽略標記
 
 Status: implemented
 
 [English](2026-08-10-session-log-version-mechanism.md) | 中文
 
-## 问题
+## 問題
 
-Session log 在发布后必须能升级格式，而最先发布的运行时决定了此后一切的下限：第一个发布版的读取器缺少哪种拒绝和降级行为，用户手里已经装上的副本就永远补不上。发布 issue #1901 的最低要求是老运行时读到新 Session 格式时明确报不支持，而不是读错。改动前的读取器在两个方向上都做反了：`assertVersion` 对任何版本不匹配抛出同一条不区分方向的消息；JSONL 解码器把不认识的事件类型原样放行，重建时静默跳过，恢复出一个内容残缺的会话且没有任何诊断。
+Session log 在釋出後必須能升級格式，而最先發布的執行時決定了此後一切的下限：第一個釋出版的讀取器缺少哪種拒絕和降級行為，使用者手裡已經裝上的副本就永遠補不上。釋出 issue #1901 的最低要求是老執行時讀到新 Session 格式時明確報不支援，而不是讀錯。改動前的讀取器在兩個方向上都做反了：`assertVersion` 對任何版本不匹配丟擲同一條不區分方向的訊息；JSONL 解碼器把不認識的事件型別原樣放行，重建時靜默跳過，恢復出一個內容殘缺的工作階段且沒有任何診斷。
 
-## 决定
+## 決定
 
-**一个单调递增的整数，不分大小版本。**某一步能不能自动升级是那一步自己的属性，由它的升级器存在与否表达，不该由两级编号方案提前承诺；设计时很少能预知下一个变更算不算"大"。
+**一個單調遞增的整數，不分大小版本。**某一步能不能自動升級是那一步自己的屬性，由它的升級器存在與否表達，不該由兩級編號方案提前承諾；設計時很少能預知下一個變更算不算"大"。
 
-**升不升版本由写入方决定，与读取方能力无关。**当且仅当老运行时无法在语义上完全正确地处理新日志时才必须升版本。"解析不报错"不是标准：静默跳过影响重建的内容就是读错。只有结构性变更够得上这条线：header 形状、事件信封、核心事件语义、surface 机制（`SurfaceEventType` 集合、`SurfaceOp` 变体）。拿不准就升：近似恒等的升级器几乎没有成本，漏升一次会让老读取器静默读坏。
+**升不升版本由寫入方決定，與讀取方能力無關。**當且僅當老執行時無法在語義上完全正確地處理新日誌時才必須升版本。"解析不報錯"不是標準：靜默跳過影響重建的內容就是讀錯。只有結構性變更夠得上這條線：header 形狀、事件信封、核心事件語義、surface 機制（`SurfaceEventType` 集合、`SurfaceOp` 變體）。拿不準就升：近似恆等的升級器幾乎沒有成本，漏升一次會讓老讀取器靜默讀壞。
 
-**读取规则按方向区分。**版本相等：正常读。比读取器新：拒绝，说明方向（"由更新的 harness 写入，请升级"），并给出原始日志文件的路径，用户仍能看到文本（`SessionFormatUnsupportedError`，与 `SessionPersistenceCorruptionError` 区分，因为数据没有损坏）。比读取器旧：每个事件正文操作先在内存中运行完整相邻链，并保持源路径、字节与 inode 不变。读句柄可以直接使用该 current 逻辑结果；写 open 则在 append 前把最终 current generation 排他发布到其规范版本文件名。仅 header 的列表保持不变更，并报告数值最高的规范 generation。catalog 生成与模块初始化会拒绝缺失的相邻步骤，因此已发布第一方 build 绝不会暴露不完整历史链。保留的低 generation 不是自动 fallback，也不构成 downgrade compatibility 承诺。
+**讀取規則按方向區分。**版本相等：正常讀。比讀取器新：拒絕，說明方向（"由更新的 harness 寫入，請升級"），並給出原始日誌檔案的路徑，使用者仍能看到文字（`SessionFormatUnsupportedError`，與 `SessionPersistenceCorruptionError` 區分，因為資料沒有損壞）。比讀取器舊：每個事件正文操作先在記憶體中執行完整相鄰鏈，並保持源路徑、位元組與 inode 不變。讀控制代碼可以直接使用該 current 邏輯結果；寫 open 則在 append 前把最終 current generation 排他釋出到其規範版本檔名。僅 header 的列表保持不變更，並報告數值最高的規範 generation。catalog 生成與模組初始化會拒絕缺失的相鄰步驟，因此已釋出第一方 build 絕不會暴露不完整歷史鏈。保留的低 generation 不是自動 fallback，也不構成 downgrade compatibility 承諾。
 
-**逐事件的 `ignorable` 标记吸收词汇表增长，普通的新增事件永远不用升版本。**事件词汇表由挂载了哪些插件决定，单个版本整数描述不了它。读取器遇到不认识的事件类型时拒绝解读日志，除非该事件的信封带 `ignorable: true`。默认为必需：忘写标记的后果是把一个本可恢复的会话拒绝过头（体验问题），而默认可忽略会让同样的疏忽静默恢复出残缺会话（安全事故）。架构保证了这条规则成立：模型可见内容只经四种带 `surfaceOp` 标记的 surface 事件加 `request/header`、`request/context` 折叠进入重建，危险的未知事件恰好是那些不进 surface 但改变日志其余部分解读方式的事件（`session/end-seed` 是现存例子）。
+**逐事件的 `ignorable` 標記吸收詞彙表增長，普通的新增事件永遠不用升版本。**事件詞彙表由掛載了哪些外掛決定，單個版本整數描述不了它。讀取器遇到不認識的事件型別時拒絕解讀日誌，除非該事件的信封帶 `ignorable: true`。預設為必需：忘寫標記的後果是把一個本可恢復的工作階段拒絕過頭（體驗問題），而預設可忽略會讓同樣的疏忽靜默恢復出殘缺工作階段（安全事故）。架構保證了這條規則成立：模型可見內容只經四種帶 `surfaceOp` 標記的 surface 事件加 `request/header`、`request/context` 摺疊進入重建，危險的未知事件恰好是那些不進 surface 但改變日誌其餘部分解讀方式的事件（`session/end-seed` 是現存例子）。
 
-[已接受兼容性检查点](../../../../docs/session-format-status.zh.md#finalization-record)阻止已接受转换复用原来的头版本递增来授权后续破坏性变更。向后兼容的演进在相同 Session 版本上使用新的确认记录；破坏性变更要求更高的写入器版本。检查点不改变未知事件协议。
+[已接受相容性檢查點](../../../../docs/session-format-status.zh.md#finalization-record)阻止已接受轉換複用原來的頭版本遞增來授權後續破壞性變更。向後相容的演進在相同 Session 版本上使用新的確認記錄；破壞性變更要求更高的寫入器版本。檢查點不改變未知事件協定。
 
-### 写入器与发布真源
+### 寫入器與釋出真源
 
-`SESSION_FORMAT_VERSION` 拥有工作区写入器版本号；[发布状态参考](../../../../docs/session-format-status.zh.md)拥有唯一的双语 `latestReleasedVersion` 与 `evidenceTag` 记录。发布状态独立于源码开发而变化，因此通过比较这两个事实推导状态，而不另行维护 `released` 布尔值。一般文档链接到这些真源；固定版本约定与历史证据保留明确版本号。
+`SESSION_FORMAT_VERSION` 擁有工作區寫入器版本號；[釋出狀態參考](../../../../docs/session-format-status.zh.md)擁有唯一的雙語 `latestReleasedVersion` 與 `evidenceTag` 記錄。釋出狀態獨立於原始碼開發而變化，因此透過比較這兩個事實推導狀態，而不另行維護 `released` 布林值。一般文件連結到這些真源；固定版本約定與歷史證據保留明確版本號。
 
-[文档标准检查](../../../../scripts/doc-standard.spec.ts)在不访问网络的情况下，校验记录结构、双语一致性、证据链接一致性及本地发布版本与写入器版本的大小关系。它证明内部一致性，而非发布事实或记录新鲜度。[发布流程](../process/2026-08-10-npm-release-sequences.zh.md)要求发布操作者在更高格式交付后核实发布并更新记录。这让兼容性评审不依赖凭据与 GitHub 可用性，同时明确人工维护新鲜度的义务。
+[文件標準檢查](../../../../scripts/doc-standard.spec.ts)在不存取網路的情況下，驗證記錄結構、雙語一致性、證據連結一致性及本地釋出版本與寫入器版本的大小關係。它證明內部一致性，而非釋出事實或記錄新鮮度。[釋出流程](../process/2026-08-10-npm-release-sequences.zh.md)要求釋出操作者在更高格式交付後核實釋出並更新記錄。這讓相容性評審不依賴憑證與 GitHub 可用性，同時明確人工維護新鮮度的義務。
 
-## 影响
+## 影響
 
-v0（0812 发布）交付的内容：分方向的拒绝并带原始日志路径；基于生成的已知词汇清单（`KNOWN_SESSION_EVENT_TYPES`，由 `gen-persistence-catalog` 从所有 `SessionEventMap` 声明合并生成，`verify-persistence-catalog` 保证新鲜）的未知事件守卫；`ignorable` 信封字段被种子校验、JSONL 和 BFF 线上 schema 接受。V1 添加静态相邻 catalog、恒等 v0-to-v1 迁移边、仅 header descriptor、精确代际 JSONL 发布与[已发布 Session 格式](2026-08-31-released-session-format-migrations.zh.md)定义的当前专用恢复。[历史 Session 只读迁移准备](2026-09-05-read-only-session-migration-preparation.zh.md)负责内存恢复与写入发布之间的 JSONL 时序。V2 让物理 codec 对普通事件词汇与 payload 新增项保持中立：相邻迁移边冻结 released source 与 target 清单，同版本恢复则应用已安装的 known-event set 与当前 payload 语义。第一方 writer 不通过 `Session.append` 设置 `ignorable`，而一个仓库外插件仍依赖该字段；同版本保留由[外部插件保留决策](2026-08-30-retain-ignorable-external-session-events.zh.md)定义，更严格的历史规则由 [alpha 迁移拒绝决策](2026-08-31-alpha-historical-unknown-event-refusal.zh.md)定义。未知类型守卫仍只在读取侧生效，因为 append 时的词汇拒绝会中断活跃 Session 的持久化。JSONL 会在当前 header 或事件解析前从最小原始 header 分类外来版本，因此结构完全不同的未来格式会报告升级方向而不是"损坏"。
+v0（0812 釋出）交付的內容：分方向的拒絕並帶原始日誌路徑；基於生成的已知詞彙清單（`KNOWN_SESSION_EVENT_TYPES`，由 `gen-persistence-catalog` 從所有 `SessionEventMap` 宣告合併生成，`verify-persistence-catalog` 保證新鮮）的未知事件守衛；`ignorable` 信封欄位被種子驗證、JSONL 和 BFF 線上 schema 接受。V1 新增靜態相鄰 catalog、恆等 v0-to-v1 遷移邊、僅 header descriptor、精確代際 JSONL 釋出與[已釋出 Session 格式](2026-08-31-released-session-format-migrations.zh.md)定義的目前專用恢復。[歷史 Session 只讀遷移準備](2026-09-05-read-only-session-migration-preparation.zh.md)負責記憶體恢復與寫入釋出之間的 JSONL 時序。V2 讓物理 codec 對普通事件詞彙與 payload 新增項保持中立：相鄰遷移邊凍結 released source 與 target 清單，同版本恢復則應用已安裝的 known-event set 與目前 payload 語義。第一方 writer 不透過 `Session.append` 設定 `ignorable`，而一個儲存庫外外掛仍依賴該欄位；同版本保留由[外部外掛保留決策](2026-08-30-retain-ignorable-external-session-events.zh.md)定義，更嚴格的歷史規則由 [alpha 遷移拒絕決策](2026-08-31-alpha-historical-unknown-event-refusal.zh.md)定義。未知型別守衛仍只在讀取側生效，因為 append 時的詞彙拒絕會中斷活躍 Session 的持久化。JSONL 會在目前 header 或事件解析前從最小原始 header 分類外來版本，因此結構完全不同的未來格式會報告升級方向而不是"損壞"。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-- **大小两级版本号**：能否转换这一位信息属于每一步的升级器，把它预先固化进编号形状会做出错误承诺。
-- **未知事件默认可忽略**：把忘写标记的后果从可见的过度拒绝反转成静默损坏。
-- **在仅 header 列表期间迁移**：让便宜清单改变存储，而且需要读取事件正文才能计算 header 无法证明的事实。列表返回 descriptor，事件正文读取负责发布。
-- **插件运行时注册已知事件类型**：不予采用，因为该方案会让已知集依赖插件组合，而且只注册事件名称，无法判定省略事件是否安全。持久化的 `ignorable` 标记把该分类保留在每条记录中；[外部插件保留决策](2026-08-30-retain-ignorable-external-session-events.zh.md)定义当前消费方约束。
-- **重复发布标记或运行时状态服务**：为不控制 Session 执行的维护信息增加另一个可变真源。写入器常量与发布记录已经足够。
-- **依赖网络的文档门禁或发布自动化**：网络查询会把本地文档检查耦合到凭据与 GitHub 可用性；记录一致性不需要运行时服务或发布工作流变更。核实发布仍是发布操作者的明确义务。
+- **大小兩級版本號**：能否轉換這一位資訊屬於每一步的升級器，把它預先固化進編號形狀會做出錯誤承諾。
+- **未知事件預設可忽略**：把忘寫標記的後果從可見的過度拒絕反轉成靜默損壞。
+- **在僅 header 列表期間遷移**：讓便宜清單改變儲存，而且需要讀取事件正文才能計算 header 無法證明的事實。列表返回 descriptor，事件正文讀取負責釋出。
+- **外掛執行時註冊已知事件型別**：不予採用，因為該方案會讓已知集依賴外掛組合，而且只註冊事件名稱，無法判定省略事件是否安全。持久化的 `ignorable` 標記把該分類保留在每條記錄中；[外部外掛保留決策](2026-08-30-retain-ignorable-external-session-events.zh.md)定義目前消費方約束。
+- **重複釋出標記或執行時狀態服務**：為不控制 Session 執行的維護資訊增加另一個可變真源。寫入器常數與釋出記錄已經足夠。
+- **依賴網路的文件門禁或釋出自動化**：網路查詢會把本地文件檢查耦合到憑證與 GitHub 可用性；記錄一致性不需要執行時服務或釋出工作流變更。核實釋出仍是釋出操作者的明確義務。

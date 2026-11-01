@@ -1,43 +1,43 @@
-# Agent Note: 通过 Host settings 持久化 Web 用户偏好
+# Agent Note: 透過 Host settings 持久化 Web 使用者偏好
 
 Status: implemented
 
 [English](2026-08-06-host-backed-web-preferences.md) | 中文
 
-## 问题
+## 問題
 
-Web 的 Appearance、Language 和繁忙态 Enter 偏好原本存在浏览器 `localStorage` 中。浏览器存储以 origin 为作用域，因此换一个端口重新打开 `dsh web` 会选中另一个存储分区并丢失选择，即使两个进程使用同一个 DSH home。这些是用户级产品偏好；会话选择、草稿、折叠展开状态和其他瞬态浏览器状态仍保留在页面内。
+Web 的 Appearance、Language 和繁忙態 Enter 偏好原本存在瀏覽器 `localStorage` 中。瀏覽器儲存以 origin 為作用域，因此換一個埠重新開啟 `dsh web` 會選中另一個儲存分割槽並丟失選擇，即使兩個程序使用同一個 DSH home。這些是使用者級產品偏好；工作階段選擇、草稿、摺疊展開狀態和其他瞬態瀏覽器狀態仍保留在頁面內。
 
-第一版主题实现只把 Appearance 移入 Host settings，但会在提供 `ThemeRuntime` 之前等待初始 RPC。缓慢或不可用的 settings 请求因而会挂起组装后的页面。该实现还在读取后才建立订阅，可能错过此窗口内的失效通知；它写入时不携带 namespace revision，并且允许已释放插件所排队的写入到达 Host。
+第一版主題實作只把 Appearance 移入 Host settings，但會在提供 `ThemeRuntime` 之前等待初始 RPC。緩慢或不可用的 settings 請求因而會掛起組裝後的頁面。該實作還在讀取後才建立訂閱，可能錯過此視窗內的失效通知；它寫入時不攜帶 namespace revision，並且允許已釋放外掛所排隊的寫入到達 Host。
 
-## 决策
+## 決策
 
-对应 Host Config schema 声明 volatile 语言、主题和忙碌时 Enter 偏好。ConfigEditor 将显式选择保存到活跃 profile patch。经过认证的 settings API 投影这些 Config 字段，并对 secret 角色字段脱敏。
+對應 Host Config schema 宣告 volatile 語言、主題和忙碌時 Enter 偏好。ConfigEditor 將顯式選擇儲存到活躍 profile patch。經過認證的 settings API 投影這些 Config 欄位，並對 secret 角色欄位脫敏。
 
-`dsh-client-ui-settings` 持有一个浏览器全局的 settings describe 镜像，并提供 `ctx.configForms.get(entryId)` 作为该镜像上的逐 namespace selector。镜像在开始后台读取之前安装 `settings/document-updated` 和 `connection/reset` 监听器，因此任何 settings 传输都不会阻塞插件激活，失效通知也不会掉入先读取、后订阅的空档。每个共享条目表单会发布一个供领域服务订阅的快照 store（状态、分节值、revision、可写性、host／内存模式），自身不再增加协议读取或监听器。默认解码器会对照该 namespace 自身的序列化 wire schema（经同包的 `ctx.settingsSchema` 服务还原）校验每个传入分节，因此各领域无需携带手写的 wire 校验器。领域服务把 scope 当作普通的构造函数协作者接收，立即发布各自的暂定默认值：由浏览器派生的 locale、系统主题和 Queue；随后采纳已获接受的 Host 分节，但不将其写回；不带 scope 构造的服务——独立词典或政策 fixture（测试前置数据）——则仅停留在进程本地。共享读取与失效生命周期由后续的 [settings describe 镜像决策](../../archived/architecture/2026-08-17-settings-describe-mirror.md)规定。
+`dsh-client-ui-settings` 持有一個瀏覽器全域的 settings describe 映像，並提供 `ctx.configForms.get(entryId)` 作為該映像上的逐 namespace selector。映像在開始後臺讀取之前安裝 `settings/document-updated` 和 `connection/reset` 監聽器，因此任何 settings 傳輸都不會阻塞外掛啟用，失效通知也不會掉入先讀取、後訂閱的空檔。每個共享條目表單會釋出一個供領域服務訂閱的快照 store（狀態、分節值、revision、可寫性、host／記憶體模式），自身不再增加協定讀取或監聽器。預設解碼器會對照該 namespace 自身的序列化 wire schema（經同包的 `ctx.settingsSchema` 服務還原）驗證每個傳入分節，因此各領域無需攜帶手寫的 wire 驗證器。領域服務把 scope 當作普通的建構函式協作者接收，立即釋出各自的暫定預設值：由瀏覽器派生的 locale、系統主題和 Queue；隨後採納已獲接受的 Host 分節，但不將其寫回；不帶 scope 建構的服務——獨立詞典或政策 fixture（測試前置資料）——則僅停留在程序本地。共享讀取與失效生命週期由後續的 [settings describe 映像決策](../../archived/architecture/2026-08-17-settings-describe-mirror.md)規定。
 
-用户修改立即更新实时偏好，并通过共享条目表单排队提交带修订号检查的修改。提供者为每个条目持有一个写入队列；消费者在卸载时释放订阅。提供者销毁时跳过排队工作、禁止迟到发布，并等待正在执行的操作结束。
+使用者修改立即更新即時偏好，並透過共享條目表單排隊提交帶修訂號檢查的修改。提供者為每個條目持有一個寫入佇列；消費者在解除安裝時釋放訂閱。提供者銷燬時跳過排隊工作、禁止遲到釋出，並等待正在執行的操作結束。
 
-Client 在非 loopback 页面禁用 Host 持久化，因此这些页面的偏好仍只保留在进程内，尽管 Connection 认证完整 API。动态第三方主题 id 仍是内置 Host schema 之外的进程内扩展；移除其中一个会重置实时注册表，但不会替换上一个持久化的内置偏好。
+Client 在非 loopback 頁面停用 Host 持久化，因此這些頁面的偏好仍只保留在程序內，儘管 Connection 認證完整 API。動態第三方主題 id 仍是內建 Host schema 之外的程序內擴充功能；移除其中一個會重置即時註冊表，但不會替換上一個持久化的內建偏好。
 
-## 曾考虑的替代方案
+## 曾考慮的替代方案
 
-**保留 `localStorage`，并在不同端口间复制值。** 一个 origin 无法枚举另一个 origin 的存储，而 Host 中继会围绕浏览器特有格式重新实现一套 settings 服务。
+**保留 `localStorage`，並在不同埠間複製值。** 一個 origin 無法列舉另一個 origin 的儲存，而 Host 中繼會圍繞瀏覽器特有格式重新實作一套 settings 服務。
 
-**将 Host settings 镜像到 `localStorage`。** 第二个权威来源会要求另外定义启动与失效时的冲突规则，同时依然保留造成该缺陷的分区。Host settings 文档是唯一的持久化真源。
+**將 Host settings 映像到 `localStorage`。** 第二個權威來源會要求另外定義啟動與失效時的衝突規則，同時依然保留造成該缺陷的分割槽。Host settings 文件是唯一的持久化真源。
 
-**等待初始读取，以避免暂定渲染。** 绘制页面不以配置可用为前置条件。后台读取可能引发一次实时收敛，但它会隔离失败，并保留既有的浏览器／系统／默认回落路径。
+**等待初始讀取，以避免暫定渲染。** 繪製頁面不以設定可用為前置條件。後臺讀取可能引發一次即時收斂，但它會隔離失敗，並保留既有的瀏覽器／系統／預設回落路徑。
 
-**让每个领域拥有自己的 settings 控制器。** 并发、revision、失败、失效与释放规则完全一致；此前的主题实现已因复制这些规则产生生命周期漂移。由领域持有 schema，可以避免把产品政策放入共享运行时。
+**讓每個領域擁有自己的 settings 控制器。** 並行、revision、失敗、失效與釋放規則完全一致；此前的主題實作已因複製這些規則產生生命週期漂移。由領域持有 schema，可以避免把產品政策放入共享執行時。
 
-**带成对 sync/persist 回调的逐字段偏好控制器。** 第一版共享生命周期经领域提供的 `sync` 回调同步单个标量字段，服务则经注入的 `persist` 回调写回。这对相互依赖的回调迫使构造分两阶段完成——写入器先默认为无操作，稍后经 `bindPersistence` 替换——namespace 每新增一个字段，本都得再携带一个自己的控制器和一次全文档读取，且每个领域都重新声明了一个已注册 wire schema 本已表达的手写校验器。namespace scope 发布一份供服务订阅的快照并直接接受写入，因此这对回调与第二个构造阶段都不存在。
+**帶成對 sync/persist 回呼的逐欄位偏好控制器。** 第一版共享生命週期經領域提供的 `sync` 回呼同步單個標量欄位，服務則經注入的 `persist` 回呼寫回。這對相互依賴的回呼迫使建構分兩階段完成——寫入器先預設為無操作，稍後經 `bindPersistence` 替換——namespace 每新增一個欄位，本都得再攜帶一個自己的控制器和一次全文件讀取，且每個領域都重新宣告瞭一個已註冊 wire schema 本已表達的手寫驗證器。namespace scope 釋出一份供服務訂閱的快照並直接接受寫入，因此這對回呼與第二個建構階段都不存在。
 
-**把每个 `localStorage` 条目都移入 settings。** 当前会话、草稿、面板展开状态、trajectory 显示状态和类似条目属于浏览器实例状态，而非用户配置。将它们提升为设置，会在没有产品契约的情况下，跨标签页和端口同步短暂导航状态。
+**把每個 `localStorage` 條目都移入 settings。** 目前工作階段、草稿、面板展開狀態、trajectory 顯示狀態和類似條目屬於瀏覽器實例狀態，而非使用者設定。將它們提升為設定，會在沒有產品契約的情況下，跨標籤頁和埠同步短暫導航狀態。
 
-## 后果
+## 後果
 
-外观、语言和忙碌时 Enter 偏好跟随活跃 profile，跨刷新、端口和回环 origin 保持一致。ConfigEditor 和 volatile HMR 应用 profile 更改；表单镜像通过 settings 失效通知跟随已接受值。旧浏览器偏好键保持不使用。
+外觀、語言和忙碌時 Enter 偏好跟隨活躍 profile，跨重新整理、埠和迴環 origin 保持一致。ConfigEditor 和 volatile HMR 應用 profile 更改；表單映像透過 settings 失效通知跟隨已接受值。舊瀏覽器偏好鍵保持不使用。
 
-启动时可能会在后台读取结算前短暂显示领域默认值。短暂的读取失败会保留该默认值或上一个正确的进程内值；重连时会重试。写入被拒时，界面可能会在本地值立即变化后明显恢复为持久化偏好。
+啟動時可能會在後臺讀取結算前短暫顯示領域預設值。短暫的讀取失敗會保留該預設值或上一個正確的程序內值；重連時會重試。寫入被拒時，介面可能會在本地值立即變化後明顯恢復為持久化偏好。
 
-聚焦的单元测试覆盖 schema 注册、先监听后读取的顺序、非阻塞激活、经 schema 校验的分节接受、携带 revision 的有序写入、陈旧响应隔离、故障恢复、释放时完全停稳，以及远程端仅内存模式。以 namespace 为粒度的 scope 也承载多字段分节，因此后续的配置表面可以沿用同一份生命周期，而不必手搭 describe/mutate 同步。无密钥 Web settings 场景通过 UI 写入全部三项偏好，校验 YAML 文档并确认旧 `localStorage` 为空，重新加载，再使用同一个 DSH home 在不同端口上启动另一个 Host。
+聚焦的單元測試覆蓋 schema 註冊、先監聽後讀取的順序、非阻塞啟用、經 schema 驗證的分節接受、攜帶 revision 的有序寫入、陳舊回應隔離、故障恢復、釋放時完全停穩，以及遠端端僅記憶體模式。以 namespace 為粒度的 scope 也承載多欄位分節，因此後續的設定表面可以沿用同一份生命週期，而不必手搭 describe/mutate 同步。無金鑰 Web settings 情境透過 UI 寫入全部三項偏好，驗證 YAML 文件並確認舊 `localStorage` 為空，重新載入，再使用同一個 DSH home 在不同埠上啟動另一個 Host。

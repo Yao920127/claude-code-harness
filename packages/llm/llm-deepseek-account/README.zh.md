@@ -1,5 +1,5 @@
 ---
-description: "DeepSeek 账号 authentication and model discovery."
+description: "DeepSeek 帳號 authentication and model discovery."
 kind: "package-reference"
 ---
 
@@ -9,23 +9,23 @@ kind: "package-reference"
 
 ## 概述
 
-为 `deepseek-account` 注册独立的鉴权和模型发现插件。通过 [llm-deepseek](../llm-deepseek/README.zh.md) 共用 Messages 请求实现；本包拥有凭据解析和目录可用性判断。
+為 `deepseek-account` 註冊獨立的授權驗證和模型發現外掛。透過 [llm-deepseek](../llm-deepseek/README.zh.md) 共用 Messages 請求實作；本包擁有憑證解析和目錄可用性判斷。
 
-鉴权解析返回 `x-dsh-auth-token` 和捕获同一 token 的失败回调。HTTP 401 的分类和凭据失效处理由此提供方负责；被拒绝的旧请求不能清除替换后的登录。
+授權驗證解析返回 `x-dsh-auth-token` 和捕捉同一 token 的失敗回呼。HTTP 401 的分類和憑證失效處理由此提供者負責；被拒絕的舊請求不能清除替換後的登入。
 
-## 目录
+## 目錄
 
 - [使用此包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与后续工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與後續工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 <a id="use-this-package"></a>
 ## 使用此包
 
-账号 token 仅由 `deepseekAccount.resolveToken(baseURL)` 提供，目标地址必须满足账号服务的来源校验。未登录或目标不允许账号鉴权时，请求以 `ACCOUNT_SIGN_IN_REQUIRED` 失败，目录为空；不会回退到 API key。其他凭据查询错误继续向调用者报告。
+帳號 token 僅由 `deepseekAccount.resolveToken(baseURL)` 提供，目標地址必須滿足帳號服務的來源驗證。未登入或目標不允許帳號授權驗證時，請求以 `ACCOUNT_SIGN_IN_REQUIRED` 失敗，目錄為空；不會退回到 API key。其他憑證查詢錯誤繼續向呼叫者報告。
 
 ```yaml
 - id: llm-deepseek-account
@@ -34,46 +34,46 @@ kind: "package-reference"
     reasoningEffort: high
 ```
 
-账号请求的 HTTP 401 与响应正文无关：映射为 `ACCOUNT_TOKEN_INVALID`，并要求账号服务仅在当前 token 仍与请求所用 token 相同时清除凭据。403 和其他错误不会触发清除。账号模块负责退登后打断任务，本插件不遍历 Agent。
+帳號請求的 HTTP 401 與回應正文無關：對映為 `ACCOUNT_TOKEN_INVALID`，並要求帳號服務僅在目前 token 仍與請求所用 token 相同時清除憑證。403 和其他錯誤不會觸發清除。帳號模組負責退登後打斷任務，本外掛不遍歷 Agent。
 
-`models` 是该 provider 独立的可配置目录；默认值和协议能力来自共享传输包。目录判断不探测推理端点。设置命名空间采用 Cordis entry id，没有 entry 时采用插件名。产品保留 official 的 `llm-deepseek` entry id，账号使用 `llm-deepseek-account`。
+`models` 是該 provider 獨立的可設定目錄；預設值和協定能力來自共享傳輸包。目錄判斷不探測推理端點。設定名稱空間採用 Cordis entry id，沒有 entry 時採用外掛名。產品保留 official 的 `llm-deepseek` entry id，帳號使用 `llm-deepseek-account`。
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
-注册和监听随插件生命周期释放。共享 Host 绑定提供附件访问、请求扩展、匿名标识和重试策略的原子更新；本包只注册自己的路由。无需 invariant companion：目录直接由同一次配置和凭据读取派生，不维护独立副本。
+註冊和監聽隨外掛生命週期釋放。共享 Host 繫結提供附件存取、請求擴充功能、匿名標識和重試策略的原子更新；本包只註冊自己的路由。無需 invariant companion：目錄直接由同一次設定和憑證讀取派生，不維護獨立副本。
 
-共享传输判定为 `QUOTA` 的失败请求离开本提供方前会被改写为 `ACCOUNT_QUOTA`，HTTP 402 响应与流内 SSE 错误都适用。共享传输与 `deepseek-official` 路由保留 `QUOTA`，因此账号路由的充值操作不会出现在 API Key 或第三方失败上。
+共享傳輸判定為 `QUOTA` 的失敗請求離開本提供者前會被改寫為 `ACCOUNT_QUOTA`，HTTP 402 回應與流內 SSE 錯誤都適用。共享傳輸與 `deepseek-official` 路由保留 `QUOTA`，因此帳號路由的充值操作不會出現在 API Key 或第三方失敗上。
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
 [LLM streaming](../../../docs/subsystems/llm-streaming.zh.md) · [Messages](../llm-deepseek/README.zh.md)
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 已鉴权的模型请求
+### 已授權驗證的模型請求
 
 #### What the model sees
 
-`deepseek-account` 请求不包含本插件添加的模型可见文本；请求由共享 Messages 传输序列化。
+`deepseek-account` 請求不包含本外掛新增的模型可見文字；請求由共享 Messages 傳輸序列化。
 
 #### Token effect
 
-鉴权和目录过滤不增加输入 token；实际调用的 token 由所选模型与请求内容决定。
+授權驗證和目錄過濾不增加輸入 token；實際呼叫的 token 由所選模型與請求內容決定。
 
 #### KV Cache effect
 
-凭据与目录可用性不进入模型输入；协议传输拥有请求前缀的序列化。
+憑證與目錄可用性不進入模型輸入；協定傳輸擁有請求字首的序列化。
 
-## 已知限制与后续工作
+## 已知限制與後續工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
-- 目录是配置元数据，不验证远端是否接受模型；实际调用仍可能失败。
+- 目錄是設定中繼資料，不驗證遠端是否接受模型；實際呼叫仍可能失敗。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
-注册与鉴权的测试也覆盖共享传输包中的 Loader 组合场景。
+註冊與授權驗證的測試也覆蓋共享傳輸包中的 Loader 組合情境。

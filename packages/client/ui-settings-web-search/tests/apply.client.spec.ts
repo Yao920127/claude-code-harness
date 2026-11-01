@@ -64,7 +64,7 @@ describe('ui-settings-web-search apply', () => {
     await vi.waitFor(() => { expect(slots.entries('plugins.item')).toHaveLength(1) })
     const entry = slots.entries('plugins.item')[0]!
     expect(entry.options).toMatchObject({ id: 'web-search-provider', order: 39 })
-    expect(resolveSlotLabel(entry.options.label)).toBe('搜索来源')
+    expect(resolveSlotLabel(entry.options.label)).toBe('搜尋來源')
     expect(entry.locale).toBe(NS)
     const face = (entry.inject as () => Pick<SearchProviderCardFace, 'hooks'>)()
     expect(Object.keys(face.hooks)).toEqual(['searchProviderCard'])

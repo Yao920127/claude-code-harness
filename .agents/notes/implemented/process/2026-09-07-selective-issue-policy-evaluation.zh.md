@@ -1,43 +1,43 @@
-# Agent Note: Issue 策略的选择性求值
+# Agent Note: Issue 策略的選擇性求值
 
 Status: implemented
 
 [English](2026-09-07-selective-issue-policy-evaluation.md) | 中文
 
-## 问题
+## 問題
 
-信息型 Issue 引用提供背景，解决型引用则带有 Priority 义务。两者都要求 Project 访问，会让无关的看板配置或 App 可用性阻止仅提供背景的 PR（Pull Request）。在确定强制范围之前读取被引用 Issue，也会为不可能因策略而失败的 PR 消耗凭据与 API 请求。
+資訊型 Issue 引用提供背景，解決型引用則帶有 Priority 義務。兩者都要求 Project 存取，會讓無關的看板設定或 App 可用性阻止僅提供背景的 PR（Pull Request）。在確定強制範圍之前讀取被引用 Issue，也會為不可能因策略而失敗的 PR 消耗憑證與 API 請求。
 
-生命周期事件有独立成本：批准、评论、推送、标签变更或指派变更不一定需要执行 Project 状态交接。为已知无操作的事件分配 runner，会占用容量而不改变 Issue。
+生命週期事件有獨立成本：批准、評論、推送、標籤變更或指派變更不一定需要執行 Project 狀態交接。為已知無操作的事件分配 runner，會佔用容量而不改變 Issue。
 
-## 决策
+## 決策
 
-[Issue policy](../../../../.github/workflows/issue-policy.yml)保留必需 job 与受信任的默认分支实现。强制范围判定先于引用读取与 Project App token 创建：草稿 PR、Bot/App 作者，以及既无评审请求也无已提交评审的人类 PR 均不需要策略校验。
+[Issue policy](../../../../.github/workflows/issue-policy.yml)保留必需 job 與受信任的預設分支實作。強制範圍判定先於引用讀取與 Project App token 建立：草稿 PR、Bot/App 作者，以及既無評審請求也無已提交評審的人類 PR 均不需要策略驗證。
 
-工作流在调用命令前检查受信任检出中的选择性预检能力标记。缺少标记的检出对人类 PR 执行完整旧版校验，并保留旧版 Bot/App 豁免。这支持 PR 工作流 YAML 与缺少预检功能的默认分支代码配合执行；执行错误不会触发回退。
+工作流在呼叫命令前檢查受信任檢出中的選擇性預檢能力標記。缺少標記的檢出對人類 PR 執行完整舊版驗證，並保留舊版 Bot/App 豁免。這支援 PR 工作流 YAML 與缺少預檢功能的預設分支程式碼配合執行；執行錯誤不會觸發退回。
 
-强制范围内的 PR 通过仓库 REST 读取解析引用。信息型引用无需 Project 访问即可证明 Issue 身份。只有解决型引用指向的实际 Issue 需要读取 Project Priority；PR 编号既不能满足 Issue 引用要求，也不会引发 Project 查询。[所属参考文档](../../../../.github/issue-management/README.zh.md)定义元数据校验与失败行为。
+強制範圍內的 PR 透過儲存庫 REST 讀取解析引用。資訊型引用無需 Project 存取即可證明 Issue 身份。只有解決型引用指向的實際 Issue 需要讀取 Project Priority；PR 編號既不能滿足 Issue 引用要求，也不會引發 Project 查詢。[所屬參考文件](../../../../.github/issue-management/README.zh.md)定義中繼資料驗證與失敗行為。
 
-[Issue lifecycle](../../../../.github/workflows/issue-lifecycle.yml)订阅与状态相关的 PR 事件，并过滤仅标题编辑。它不订阅 PR 推送、PR 标签变更或 Issue 指派变更。job 条件在 runner 分配前排除 approved/commented 评审。请求修改的评审保留其状态命令。
+[Issue lifecycle](../../../../.github/workflows/issue-lifecycle.yml)訂閱與狀態相關的 PR 事件，並過濾僅標題編輯。它不訂閱 PR 推送、PR 標籤變更或 Issue 指派變更。job 條件在 runner 分配前排除 approved/commented 評審。請求修改的評審保留其狀態命令。
 
-本调度决策部分取代[事件驱动评审状态](2026-08-10-event-directed-pr-review-status.zh.md)中无操作 job 的调度方式，但不取代交接语义或人工状态归属保护。[Project 局部规划字段](2026-09-02-project-local-issue-planning-fields.zh.md)仍拥有对每个被引用 Issue（包括信息型引用）仅在 PR 打开时、仅对空值初始化 Start Date 的规则。校验读取豁免不豁免该生命周期 mutation。
+本排程決策部分取代[事件驅動評審狀態](2026-08-10-event-directed-pr-review-status.zh.md)中無操作 job 的排程方式，但不取代交接語義或人工狀態歸屬保護。[Project 區域性規劃欄位](2026-09-02-project-local-issue-planning-fields.zh.md)仍擁有對每個被引用 Issue（包括資訊型引用）僅在 PR 開啟時、僅對空值初始化 Start Date 的規則。驗證讀取豁免不豁免該生命週期 mutation。
 
-## 考虑过的替代方案
+## 考慮過的替代方案
 
-**读取每个被引用 Issue 的 Project 字段。** 信息型引用不约束 Priority，因此这些查询只增加失败依赖，不贡献校验结果。
+**讀取每個被引用 Issue 的 Project 欄位。** 資訊型引用不約束 Priority，因此這些查詢只增加失敗依賴，不貢獻驗證結果。
 
-**为批准与评论保留成功的无操作生命周期 job。** 这可以保持绿色 job 展示，却会为没有生命周期命令的事件分配 runner。生命周期与保留的必需策略 job 相互独立。
+**為批准與評論保留成功的無操作生命週期 job。** 這可以保持綠色 job 展示，卻會為沒有生命週期命令的事件分配 runner。生命週期與保留的必需策略 job 相互獨立。
 
-**删除必需策略 job 或重新设计检查权威来源。** 选择性读取和生命周期调度可以减少可避免的工作，无需改变 GitHub 期待的必需检查。检查权威来源的重新设计不属于本决策。
+**刪除必需策略 job 或重新設計檢查權威來源。** 選擇性讀取和生命週期排程可以減少可避免的工作，無需改變 GitHub 期待的必需檢查。檢查權威來源的重新設計不屬於本決策。
 
-## 影响
+## 影響
 
-仅含信息型引用的校验需要仓库访问，但不需要 Project 凭据。解决型校验在所需 Project 读取或字段检查失败时仍会失败。预检与最终校验各自读取实时 REST 状态，重复仓库请求而不缓存结论。避免 Project 读取与 token 创建不保证减少 API 请求总数。必需策略 job 仍分配 runner；它并非零成本的必需检查。
+僅含資訊型引用的驗證需要儲存庫存取，但不需要 Project 憑證。解決型驗證在所需 Project 讀取或欄位檢查失敗時仍會失敗。預檢與最終驗證各自讀取即時 REST 狀態，重複儲存庫請求而不快取結論。避免 Project 讀取與 token 建立不保證減少 API 請求總數。必需策略 job 仍分配 runner；它並非零成本的必需檢查。
 
-维护者手动管理 Project 自定义 Priority 字段。原生 Issue 字段的 skill 指引不会更新该值。不提供 Priority 同步或字段迁移，也不改变[不检查展示形式的策略](2026-09-03-semantic-issue-templates-and-policy.zh.md)。
+維護者手動管理 Project 自定義 Priority 欄位。原生 Issue 欄位的 skill 指引不會更新該值。不提供 Priority 同步或欄位遷移，也不改變[不檢查展示形式的策略](2026-09-03-semantic-issue-templates-and-policy.zh.md)。
 
-被省略的生命周期事件不能修复过时的 Project 状态。事件重放和并发写入仍有生命周期与规划字段文档记录的竞态。实际 Actions 分钟节省与 GitHub App 实际访问权限需要运营观察，不能从模拟 API 测试推断。
+被省略的生命週期事件不能修復過時的 Project 狀態。事件重放和並行寫入仍有生命週期與規劃欄位文件記錄的競態。實際 Actions 分鐘節省與 GitHub App 實際存取權限需要運營觀察，不能從模擬 API 測試推斷。
 
-## 验证
+## 驗證
 
-[策略测试](../../../../.github/issue-management/policy.test.mjs)验证早期豁免、仅使用 REST 的信息型引用、实际 Issue 过滤、解决型 Priority 读取及失败，以及生命周期命令选择。[工作流测试](../../../../scripts/ci-workflow.spec.ts)验证 Project token 条件、保留的必需 job、精简后的订阅及 runner 级生命周期过滤。本地 fixture 不能证明实际 webhook 交付或计费结果。
+[策略測試](../../../../.github/issue-management/policy.test.mjs)驗證早期豁免、僅使用 REST 的資訊型引用、實際 Issue 過濾、解決型 Priority 讀取及失敗，以及生命週期命令選擇。[工作流測試](../../../../scripts/ci-workflow.spec.ts)驗證 Project token 條件、保留的必需 job、精簡後的訂閱及 runner 級生命週期過濾。本地 fixture 不能證明實際 webhook 交付或計費結果。

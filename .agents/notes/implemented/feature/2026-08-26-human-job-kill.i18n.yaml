@@ -4,19 +4,19 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-08-26-human-job-kill.md
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path:
   en: d47dedfab1caa170
-  zh: 00bb8cd62ed79d54
+  zh: 4f53d51c9e575e94
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path/problem:
   en: 3690502ccc80b5a3
-  zh: cfd3c378e3921864
+  zh: a33e335fae0227e0
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path/decision:
   en: ccd3751d2ecaba5c
-  zh: f8f820f9492a9bf3
+  zh: 39e36fc875574341
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path/alternatives-considered:
   en: 74a385c561d8854a
-  zh: c131a4e386d9b976
+  zh: 58e470c60a3405a7
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path/testing:
   en: 094513090d51adfc
-  zh: b6598110da6c5793
+  zh: f92ad0ed64daad56
 /agent-note-human-job-kill-an-unclaimed-terminal-report-instead-of-a-second-cancellation-path/consequences:
   en: 0bcec15bd9c760fe
-  zh: 754269206f110f69
+  zh: fcbaec517f11419b

@@ -1,23 +1,23 @@
-- dialog "设置":
+- dialog "設定":
   - navigation:
-    - text: 设置
-    - button "通用设置"
+    - text: 設定
+    - button "通用設定"
     - button "模型"
-    - button "内置插件"
-    - button "Agent 预设"
-  - button "打开配置文件"
-  - button "关闭"
+    - button "內建外掛"
+    - button "Agent 預設"
+  - button "開啟設定檔"
+  - button "關閉"
   - heading "模型" [level=2]
-  - paragraph: 填入各提供商的 API 密钥即可使用其模型。
+  - paragraph: 填入各提供商的 API 金鑰即可使用其模型。
   - list:
     - listitem:
       - text: DeepSeek
-      - img "API 密钥缺失"
-      - button "编辑 DeepSeek (deepseek-official)": 编辑
-  - tablist "添加方式":
+      - img "API 金鑰缺失"
+      - button "編輯 DeepSeek (deepseek-official)": 編輯
+  - tablist "新增方式":
     - tab "第三方模型提供商" [selected]
-    - tab "自定义模型 API"
-  - paragraph: 从内置目录中选择 OpenAI、Anthropic、Kimi 等提供商，填入其 API 密钥即可使用。
+    - tab "自定義模型 API"
+  - paragraph: 從內建目錄中選擇 OpenAI、Anthropic、Kimi 等提供商，填入其 API 金鑰即可使用。
   - tabpanel "第三方模型提供商":
     - text: 提供商
     - combobox "提供商":
@@ -60,9 +60,9 @@
       - option "xiaomi-token-plan-sgp"
       - option "zai"
       - option "zai-coding-cn"
-    - text: API 密钥
-    - textbox "API 密钥":
-      - /placeholder: 输入 API 密钥，或留空使用环境认证
-    - group: 自定义设置
+    - text: API 金鑰
+    - textbox "API 金鑰":
+      - /placeholder: 輸入 API 金鑰，或留空使用環境認證
+    - group: 自定義設定
     - button "取消"
-    - button "保存"
+    - button "儲存"

@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-git/README.md
 /:
   en: 8ce348a28fc7b7b3
-  zh: a8000be43dd1e1c7
+  zh: cde8b3a822d69f56
 /deepseek-ai-dsh-client-ui-git:
   en: dc9f3277fdab6f81
   zh: faaff42659d3a07c
 /deepseek-ai-dsh-client-ui-git/summary:
   en: 9263df6d9e781417
-  zh: 59a8c77f676fb168
+  zh: 2c0ef4c81e1853a9
 /deepseek-ai-dsh-client-ui-git/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 1fa9a72d1ee045cc
+  zh: 50facf9b23b627cc
 /deepseek-ai-dsh-client-ui-git/use-this-package:
   en: 60b97564af842c16
-  zh: 26116d52f64111fd
+  zh: 23469a6c517aceec
 /deepseek-ai-dsh-client-ui-git/understand-the-implementation:
   en: aa77ac47e8862beb
-  zh: 956cf2bcdd413da7
+  zh: cddcb04a673d660f
 /deepseek-ai-dsh-client-ui-git/further-exploration:
   en: 9b6e04c3c3c69a9e
-  zh: 5e5759842884b2b4
+  zh: 3c8ca3052b88d2f2
 /deepseek-ai-dsh-client-ui-git/model-experience:
   en: 7182a2c31cbe1472
-  zh: 6a314f28e3d07f3c
+  zh: 2e4feb57f98aca99
 /deepseek-ai-dsh-client-ui-git/model-experience/kv-cache-effect:
   en: 7090018a3460b508
-  zh: 6a72ad2c012a8043
+  zh: d4a693dc07636923
 /deepseek-ai-dsh-client-ui-git/known-limitations-and-deferred-work:
   en: 940004926877bab6
-  zh: 862de7cbfbf12639
+  zh: 83ad5ff1d8c4b23b
 /deepseek-ai-dsh-client-ui-git/known-limitations-and-deferred-work/dev-note:
   en: 71a854ca7e45e54a
-  zh: 6756a48822f95c31
+  zh: d4724d6d7de01519

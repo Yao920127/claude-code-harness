@@ -4,49 +4,49 @@
 #   pnpm run verify-translation-pairing --write packages/client/ui-user-questions/README.md
 /:
   en: b50469addda9db2d
-  zh: ae560611295a5f4d
+  zh: bbb934fd256b2be2
 /deepseek-ai-dsh-client-ui-user-questions:
   en: f109e91b29d71f55
   zh: 73200984bad7f908
 /deepseek-ai-dsh-client-ui-user-questions/summary:
   en: 7e81c6a53759ff37
-  zh: b83f666c4ef4cbd3
+  zh: 9034f2984335911b
 /deepseek-ai-dsh-client-ui-user-questions/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-client-ui-user-questions/use-this-package:
   en: 4aa048dcb7282f12
-  zh: d2731da0870aa6a0
+  zh: c71ea91141abb6ff
 /deepseek-ai-dsh-client-ui-user-questions/use-this-package/answering:
   en: 8b6f37bfb11a2c3a
-  zh: 59d8951211f9b21b
+  zh: 35ee6ebc27026b95
 /deepseek-ai-dsh-client-ui-user-questions/use-this-package/the-plan-review-card:
   en: 6b12f1362c614a39
-  zh: 27d9cf54d4cbd5d2
+  zh: 54835c6ac2ca9e9d
 /deepseek-ai-dsh-client-ui-user-questions/use-this-package/failure-and-recovery:
   en: da530ef485c07417
-  zh: b07525cfcd5034f0
+  zh: 4a96e3f9f5492177
 /deepseek-ai-dsh-client-ui-user-questions/understand-the-implementation:
   en: 77e1b2585acdf67b
-  zh: d433ec185c6b8f57
+  zh: 5015156d706294ed
 /deepseek-ai-dsh-client-ui-user-questions/understand-the-implementation/intent-surface-election:
   en: 7f3e0e2460317462
-  zh: cb6b9410410e2f29
+  zh: f3b2cda4313af8f5
 /deepseek-ai-dsh-client-ui-user-questions/understand-the-implementation/copy-and-locale:
   en: 1a144dbf8bf39d43
-  zh: 66bccf9c343395c7
+  zh: f69ba098a5a84f01
 /deepseek-ai-dsh-client-ui-user-questions/further-exploration:
   en: 70e1ae005fa86e3c
-  zh: 9c779d63b3f921cc
+  zh: 977ed2e58c8c9977
 /deepseek-ai-dsh-client-ui-user-questions/model-experience:
   en: 198421eb8ed8923f
-  zh: 84f719be6e6dfe62
+  zh: ff15b7732827fb7a
 /deepseek-ai-dsh-client-ui-user-questions/model-experience/kv-cache-effect:
   en: 1032ba29b7d7f9d7
-  zh: 01f1dbf4c2164fd2
+  zh: d06406955a5ea790
 /deepseek-ai-dsh-client-ui-user-questions/known-limitations-and-deferred-work:
   en: beb6dc6d1496e799
-  zh: d92150a88a797c21
+  zh: 7107f166418e09bf
 /deepseek-ai-dsh-client-ui-user-questions/known-limitations-and-deferred-work/dev-note:
   en: 7c763299daed17e4
-  zh: fb410b366b407ec7
+  zh: 084f19c2b09dda15

@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/simplification/2026-09-06-agent-request-freeze-evidence.md
 /agent-note-reuse-only-loop-proven-message-freezes:
   en: 7ec7e2c8c1eb46bb
-  zh: 93a619878774a795
+  zh: 3712f2b2fdff063c
 /agent-note-reuse-only-loop-proven-message-freezes/problem:
   en: af6aa6181efb2163
-  zh: 3f1630947294db0a
+  zh: 51e1158587312942
 /agent-note-reuse-only-loop-proven-message-freezes/decision:
   en: 64e5058366d82142
-  zh: 073f4e1856c58294
+  zh: d04626731875fa6c
 /agent-note-reuse-only-loop-proven-message-freezes/measurement-evidence:
   en: 731e00bb5059b1f3
-  zh: 118464dc6e640431
+  zh: 51fc898ade20ba1c
 /agent-note-reuse-only-loop-proven-message-freezes/measurement-evidence/standard-hosted-ci-calibration:
   en: 22ad93c82afc0572
-  zh: 86e43487e7791148
+  zh: 3469a7b96fd074fc
 /agent-note-reuse-only-loop-proven-message-freezes/alternatives-considered:
   en: 8a00552d7797826c
-  zh: 765a6b84eb663bab
+  zh: 9639013995272767
 /agent-note-reuse-only-loop-proven-message-freezes/consequences:
   en: 5947b38f7722d4db
-  zh: 147b5ea3d681ebd7
+  zh: fdf04e6078acb05e

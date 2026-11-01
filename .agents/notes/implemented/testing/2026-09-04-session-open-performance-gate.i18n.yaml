@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/testing/2026-09-04-session-open-performance-gate.md
 /agent-note-required-ci-performance-gate-for-opening-large-sessions:
   en: 3e87960dd29e5814
-  zh: 7abaea0b9397e16d
+  zh: fea1bcc7348cbe08
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/problem:
   en: 00ba1f66195351e2
-  zh: a738b81adceda351
+  zh: 10c7cae8d50bf4eb
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/decision:
   en: 75679c69eeeb1e02
-  zh: 49ea45fa46ae3fcb
+  zh: c3ef6c772a4b0433
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/calibration-evidence:
   en: f1001a139470f6b7
-  zh: b7b46f96b84b1271
+  zh: 614481e0f4fc79fa
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/calibration-evidence/indexed-traversal-of-stored-json-arrays:
   en: 4ff4df8437e978a8
-  zh: 642ac8ab685c7a11
+  zh: eaf7a2f6d6aafe48
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/alternatives-considered:
   en: 5debbc2a0382ed13
-  zh: 415d11776f73f871
+  zh: 225b35530696f173
 /agent-note-required-ci-performance-gate-for-opening-large-sessions/consequences:
   en: 845730942e93aa38
-  zh: f8d6cd2a8e5e6859
+  zh: edd22bbef9288dc7

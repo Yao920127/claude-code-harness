@@ -1,5 +1,5 @@
 ---
-description: "dsh Web 客户端的 ask_user_question 功能：接管编辑器的提问 UI 与 plan-review 审批卡片。"
+description: "dsh Web 用戶端的 ask_user_question 功能：接管編輯器的提問 UI 與 plan-review 審批卡片。"
 kind: "package-reference"
 ---
 
@@ -9,99 +9,99 @@ kind: "package-reference"
 
 ## 概述
 
-当 agent（智能体）在 Web 客户端中提问时，本包会用交互式提问界面接管聊天编辑器。用户可以在问题之间导航、选择一个或多个选项、输入自定义答案、跳过问题，并提交一批结构化答案。选择单选项后会立即前进，而草稿会在当前页面的生命周期内跨会话导航保留。若唯一的问题声明了受支持的呈现意图，则可使用专用界面，包括带 `Request changes` 和 `Approve` 操作的 plan-review 卡片。
+當 agent（智慧代理）在 Web 用戶端中提問時，本包會用互動式提問介面接管聊天編輯器。使用者可以在問題之間導航、選擇一個或多個選項、輸入自定義答案、跳過問題，並提交一批結構化答案。選擇單選項後會立即前進，而草稿會在目前頁面的生命週期內跨工作階段導航保留。若唯一的問題宣告瞭受支援的呈現意圖，則可使用專用介面，包括帶 `Request changes` 和 `Approve` 操作的 plan-review 卡片。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当 agent 提问时，编辑器变成提问界面：回答每个问题、用翻页器导航，或跳过它。选择单选选项后会立即前进；Enter 继续流程，并在所有问题均已回答或跳过后提交，而 Shift+Enter 改为换行（IME 组合输入期间按 Enter 只会确认输入候选，不会前进）。
+當 agent 提問時，編輯器變成提問介面：回答每個問題、用翻頁器導航，或跳過它。選擇單選選項後會立即前進；Enter 繼續流程，並在所有問題均已回答或跳過後提交，而 Shift+Enter 改為換行（IME 組合輸入期間按 Enter 只會確認輸入候選，不會前進）。
 
 ### 作答
 
-用户打开或编辑自定义答案时，多选题草稿会保留已选中的标签，因此提交项可以同时携带 `selected` 与 `custom`；单选题的自定义答案仍保持互斥。问题详情复用助手输出的 `MarkdownText` 原语，包括其 GFM 渲染与不受信任内容策略。限高卡片保持标题、导航与提交动作固定，超长的详情与选项共享内部滚动区。「跳过」会保留其他草稿，并为该项发出既有的空 `{ selected: [] }` 结果；关闭则以 `ASK_CANCELLED` 拒绝整个等待。
+使用者開啟或編輯自定義答案時，多選題草稿會保留已選中的標籤，因此提交項可以同時攜帶 `selected` 與 `custom`；單選題的自定義答案仍保持互斥。問題詳情複用助手輸出的 `MarkdownText` 原語，包括其 GFM 渲染與不受信任內容策略。限高卡片保持標題、導航與提交動作固定，超長的詳情與選項共享內部滾動區。「跳過」會保留其他草稿，併為該項發出既有的空 `{ selected: [] }` 結果；關閉則以 `ASK_CANCELLED` 拒絕整個等待。
 
 ### plan-review 卡片
 
-`plan-review` 意图——由 `dsh-plan-mode` 在 `exit_plan_mode` 审阅上设置——渲染紧凑审批卡片：顶部为带“查看全文”链接的“计划待审”条带，正文显示计划标题和两行纯文本摘要，底部提供“要求修改”和“同意执行”。条带使用共享 warning 状态点，并在任一操作结算期间切换为 ongoing loading。通过链接或聊天历史中的常驻卡片可在侧边栏阅读完整计划。“同意执行”用提问方的批准标签回答；“要求修改”以 `ASK_CANCELLED` 拒绝等待，让编辑器归位供用户输入反馈，不会提交批准。卡片不单列拒绝按钮。
+`plan-review` 意圖——由 `dsh-plan-mode` 在 `exit_plan_mode` 審閱上設定——渲染緊湊審批卡片：頂部為帶“檢視全文”連結的“計劃待審”條帶，正文顯示計劃標題和兩行純文字摘要，底部提供“要求修改”和“同意執行”。條帶使用共享 warning 狀態點，並在任一操作結算期間切換為 ongoing loading。透過連結或聊天曆史中的常駐卡片可在側邊欄閱讀完整計劃。“同意執行”用提問方的批准標籤回答；“要求修改”以 `ASK_CANCELLED` 拒絕等待，讓編輯器歸位供使用者輸入回饋，不會提交批准。卡片不單列拒絕按鈕。
 
-### 失败与恢复
+### 失敗與恢復
 
-通用提问流程把当前题号、已选标签、自定义文本和显式跳过状态保存在非持久化 slot 存储中；该存储归属对应 Session generation，并以待处理请求的本地渲染标识为键。从 Session A 切换到 B 时，如果没有其他引用持有 A，A 就会结束，因此返回 A 时会得到空的问题草稿；如果另一个引用继续持有 A 的 generation，该草稿也会保留。不同的请求标识读取空草稿，并在首次编辑时替换旧值；成功回答或取消会清除相符的值。请求是否仍在等待由主机保持权威。
+通用提問流程把目前題號、已選標籤、自定義文字和顯式跳過狀態儲存在非持久化 slot 儲存中；該儲存歸屬對應 Session generation，並以待處理請求的本地渲染標識為鍵。從 Session A 切換到 B 時，如果沒有其他引用持有 A，A 就會結束，因此返回 A 時會得到空的問題草稿；如果另一個引用繼續持有 A 的 generation，該草稿也會保留。不同的請求標識讀取空草稿，並在首次編輯時替換舊值；成功回答或取消會清除相符的值。請求是否仍在等待由主機保持權威。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本包是一条归属规则：渲染提问是宿主的 UI 能力，拥有该工具则是 agent 的能力，因此 `tool-ask-user` 行属于需要它的各个 preset（以及没有 preset 的 TUI 组装）。
+本包是一條歸屬規則：渲染提問是主機的 UI 能力，擁有該工具則是 agent 的能力，因此 `tool-ask-user` 行屬於需要它的各個 preset（以及沒有 preset 的 TUI 組裝）。
 
-### 意图界面选择
+### 意圖介面選擇
 
-卡片接管声明了意图、以 `detail` 携带计划、提供了被指名的批准标签的单个问题，要求除批准外最多一个选项，且非多选。次要操作返回编辑器供用户提出修改要求。更多选项或多选问题仍由通用流程处理。
+卡片接管宣告瞭意圖、以 `detail` 攜帶計劃、提供了被指名的批准標籤的單個問題，要求除批准外最多一個選項，且非多選。次要操作返回編輯器供使用者提出修改要求。更多選項或多選問題仍由通用流程處理。
 
-### 文案与 locale
+### 文案與 locale
 
-编辑器外框文案（翻页器、按钮、占位符、校验提示）是双语的：插件在 `dsh-client-locale` 的 `question` 命名空间下注册 zh/en 词典，并通过 inject face 把绑定的翻译函数和 locale 快照源交给该条目，因此切换语言会重新渲染已挂载的编辑器。问题与选项文本来自模型并原样渲染；载体失败消息也不经翻译直接显示。
+編輯器外框文案（翻頁器、按鈕、預留位置、驗證提示）是雙語的：外掛在 `dsh-client-locale` 的 `question` 名稱空間下注冊 zh/en 詞典，並透過 inject face 把繫結的翻譯函式和 locale 快照源交給該條目，因此切換語言會重新渲染已掛載的編輯器。問題與選項文字來自模型並原樣渲染；載體失敗訊息也不經翻譯直接顯示。
 
-计划审批通过 `conversation.plan-review.actions` 插槽提供请求键、完整正文和可选的调用标识。计划插件从历史中打开已记录计划，并把没有调用标识的审批作为临时侧边栏预览打开。打开文档不会回答或关闭审批。
+計劃審批透過 `conversation.plan-review.actions` 插槽提供請求鍵、完整正文和可選的呼叫標識。計劃外掛從歷史中開啟已記錄計劃，並把沒有呼叫標識的審批作為臨時側邊欄預覽開啟。開啟文件不會回答或關閉審批。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-以下页面覆盖编辑器宿主、工具 seam 与 plan-mode 消费方。
+以下頁面覆蓋編輯器主機、工具 seam 與 plan-mode 消費方。
 
-- [ui-conversation](../ui-conversation/README.zh.md)——拥有 `conversation.composer` 链的聊天界面。
-- [tool-ask-user](../../interaction/tool-ask-user/README.zh.md)——面向模型的工具；本 UI 会渲染其 schema 与答案。
-- [ui-plan](../ui-plan/README.zh.md)——设置 `plan-review` 意图的 plan-mode 界面。
-- [user-questions](../../interaction/user-questions/README.zh.md)——Host 侧提问 seam 及其应答方 waterfall（瀑布式事件）。
+- [ui-conversation](../ui-conversation/README.zh.md)——擁有 `conversation.composer` 鏈的聊天介面。
+- [tool-ask-user](../../interaction/tool-ask-user/README.zh.md)——面向模型的工具；本 UI 會渲染其 schema 與答案。
+- [ui-plan](../ui-plan/README.zh.md)——設定 `plan-review` 意圖的 plan-mode 介面。
+- [user-questions](../../interaction/user-questions/README.zh.md)——Host 側提問 seam 及其應答方 waterfall（瀑布式事件）。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-间接影响模型体验：本包在 Web 客户端呈现 `dsh-tool-ask-user` 所拥有的模型可见 schema 与答案渲染。
+間接影響模型體驗：本包在 Web 用戶端呈現 `dsh-tool-ask-user` 所擁有的模型可見 schema 與答案渲染。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-不会直接失效；模型可见的工具调用与结果由 `dsh-tool-ask-user` 拥有。
+不會直接失效；模型可見的工具呼叫與結果由 `dsh-tool-ask-user` 擁有。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制定义草稿持久性与编辑器归属；它们是当前包约束。
+這些限制定義草稿永續性與編輯器歸屬；它們是目前包約束。
 
-- **未提交草稿的生命周期限于当前页面与会话**：只要该会话作用域仍留在页面内，会话导航就会保留草稿；完整刷新页面、会话被裁剪，或待处理请求以新的本地标识重新交付时，则从空草稿开始。存储从不把草稿写入主机、`localStorage` 或磁盘。
-- **每次只有一个请求拥有编辑器**：后续待处理请求仍留在会话快照中，并在较早请求落定后显示。
+- **未提交草稿的生命週期限於目前頁面與工作階段**：只要該工作階段作用域仍留在頁面內，工作階段導航就會保留草稿；完整重新整理頁面、工作階段被裁剪，或待處理請求以新的本地標識重新交付時，則從空草稿開始。儲存從不把草稿寫入主機、`localStorage` 或磁碟。
+- **每次只有一個請求擁有編輯器**：後續待處理請求仍留在工作階段快照中，並在較早請求落定後顯示。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。工具与 slot 注册都是由各自注册表持有和观察的 effect；Host 待处理表通过公开的 wire protocol 测试。
+**執行時不變式：** 不釋出伴生入口。工具與 slot 註冊都是由各自註冊表持有和觀察的 effect；Host 待處理表透過公開的 wire protocol 測試。

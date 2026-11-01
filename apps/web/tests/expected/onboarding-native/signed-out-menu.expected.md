@@ -1,4 +1,4 @@
 - menu:
-  - menuitem "设置"
-  - menuitem "联系我们"
-  - menuitem "登录"
+  - menuitem "設定"
+  - menuitem "聯絡我們"
+  - menuitem "登入"

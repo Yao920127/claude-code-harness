@@ -449,7 +449,7 @@ describe('apply (plugin lifecycle)', () => {
 describe('server instruction limits', () => {
   it('counts the complete attributed UTF-8 text before publishing tools', async () => {
     const ctx = await mountRegistry()
-    const text = '服务器指南'
+    const text = '伺服器指南'
     const spy = vi.spyOn(MockClient.prototype, 'getInstructions').mockReturnValue(text)
     const exactBytes = Buffer.byteLength(`### MCP server: srv\n\n${text}`)
     try {

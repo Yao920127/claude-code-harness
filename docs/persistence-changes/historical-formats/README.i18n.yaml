@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/persistence-changes/historical-formats/README.md
 /:
   en: 1257a74512f9daed
-  zh: 74e1378126c7dd99
+  zh: f9d99881ef838747
 /session-persistence-formats:
   en: a740a4786e0488d6
   zh: c17883a78695cf67
 /session-persistence-formats/summary:
   en: f1592445394a7daf
-  zh: 2a1c5f7fa307db45
+  zh: 439eaf217ebd1776
 /session-persistence-formats/table-of-contents:
   en: 14c57f30e676f6e3
-  zh: b1a0ccf26fab3727
+  zh: e3f1dd3f96b41243
 /session-persistence-formats/format-references:
   en: 45dba01dd6d69c80
-  zh: c366d1a3991118c9
+  zh: 06163ad9cbece54f
 /session-persistence-formats/scope-and-evidence:
   en: b220062139ddac1e
-  zh: 7c4c0efe05dafa9c
+  zh: c16a3181d0fa2bf3
 /session-persistence-formats/maintain-coverage:
   en: 0be8010f3fd20d2d
-  zh: b6e3af11c81e8702
+  zh: daa5ede334b60d8a
 /session-persistence-formats/dev-note:
   en: b75c8458928b72b9
-  zh: 003ba4e17b4b5269
+  zh: 65940114a1aedb39

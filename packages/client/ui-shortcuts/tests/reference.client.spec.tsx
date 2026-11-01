@@ -112,7 +112,7 @@ it.each(['macos', 'windows'] as const)('shows the reference, filters labels and 
   expect(screen.queryByRole('tooltip')).toBeNull()
   act(() => { catalog.set([]) })
   expect(opener.hasAttribute('aria-keyshortcuts')).toBe(false)
-  expect(makeTranslate(zh)('title')).toBe('快捷键')
+  expect(makeTranslate(zh)('title')).toBe('快捷鍵')
 })
 
 
@@ -255,8 +255,8 @@ it.each((['web', 'desktop'] as const).flatMap(runtime => (['invalid', 'future'] 
   const text = screen.getByRole('alert').textContent
   expect(text).toContain(runtime === 'web' ? 'dsh.keybindings.v1' : 'userData/keybindings.json')
   expect(text).toContain(error === 'future'
-    ? dictionary === en ? 'Upgrade Harness' : '升级 Harness'
-    : dictionary === en ? 'Back up and repair' : '先备份并修复')
+    ? dictionary === en ? 'Upgrade Harness' : '升級 Harness'
+    : dictionary === en ? 'Back up and repair' : '先備份並修復')
   expect(text).toContain(dictionary['using-accepted'])
   const reset = screen.getByRole('button', { name: dictionary['reset-all'] })
   expect(reset.hasAttribute('disabled')).toBe(true)
@@ -278,9 +278,9 @@ it('shows mounted fixed actions as searchable read-only rows and follows their l
   expect(screen.queryByRole('button', { name: 'Edit shortcut for Stop reply' })).toBeNull()
   act(() => { store.actions.search('response.stop') })
   expect(screen.getAllByRole('listitem')).toHaveLength(1)
-  act(() => { fixedCatalog.set([{ ...stop, label: '停止回复' }]) })
+  act(() => { fixedCatalog.set([{ ...stop, label: '停止回覆' }]) })
   expect(screen.queryByText('Stop reply')).toBeNull()
-  expect(screen.getByText('停止回复')).toBeTruthy()
+  expect(screen.getByText('停止回覆')).toBeTruthy()
   act(() => { fixedCatalog.set([]) })
   expect(screen.queryAllByRole('listitem')).toHaveLength(0)
 })

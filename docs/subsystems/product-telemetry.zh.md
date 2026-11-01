@@ -1,14 +1,14 @@
-# 产品埋点
+# 產品追蹤點
 
 [English](product-telemetry.md) | 中文
 
-[产品埋点插件](../../packages/host/product-telemetry-otel/README.zh.md) 通过 OTLP/HTTP 发送明确选定的分析事件。`productTelemetry` 服务仅负责提交；产品消费方决定事件发生时机与获准采集的字段。不自动采集 Session 数据或标识。
+[產品追蹤點外掛](../../packages/host/product-telemetry-otel/README.zh.md) 透過 OTLP/HTTP 傳送明確選定的分析事件。`productTelemetry` 服務僅負責提交；產品消費方決定事件發生時機與獲准採集的欄位。不自動採集 Session 資料或標識。
 
-`ProductTelemetryRecord` 要求事件名称、字符串 body 和 Unix 毫秒时间戳。属性接受字符串、数字、布尔标量，以及这些值组成的单层对象（`ProductTelemetryScalar`）。可选的严重程度使用 OTel 严重程度数字，默认为 INFO。记录入队时填写观测时间。
+`ProductTelemetryRecord` 要求事件名稱、字串 body 和 Unix 毫秒時間戳。屬性接受字串、數字、布林標量，以及這些值組成的單層物件（`ProductTelemetryScalar`）。可選的嚴重程度使用 OTel 嚴重程度數字，預設為 INFO。記錄入隊時填寫觀測時間。
 
-入队同步完成，不代表送达确认。SDK 负责批量发送与重试；发送失败会产生本地诊断。配置、退出和丢失限制见包 README。
+入隊同步完成，不代表送達確認。SDK 負責批次傳送與重試；傳送失敗會產生本地診斷。設定、退出和丟失限制見包 README。
 
-## 记录类型
+## 記錄型別
 
 ```ts type-equiv
 /** Scalar values accepted by the collector's Arrow attributes map. */

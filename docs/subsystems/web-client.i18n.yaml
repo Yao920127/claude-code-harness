@@ -4,34 +4,34 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/web-client.md
 /web-client-architecture:
   en: 4936655bc5d3ba5b
-  zh: 062419330dea65b3
+  zh: 0f75db6cb0edbe56
 /web-client-architecture/layers-and-ownership:
   en: c0454bca818f86ee
-  zh: 427582150fd3b976
+  zh: 9717784ba9600eea
 /web-client-architecture/browser-boot:
   en: 5ac7d3aed7bf273a
-  zh: e34869c8ad64052d
+  zh: d9df687a1f0ba21a
 /web-client-architecture/remote-communication:
   en: 426b09164210b77a
-  zh: ce576099ee668984
+  zh: c34260c10c8bdf1d
 /web-client-architecture/client-models:
   en: 13be17c2a2790ae9
-  zh: f5af715d0ae222be
+  zh: de4260ef72804d17
 /web-client-architecture/client-models/sessions:
   en: e010ab37d059025f
-  zh: f857a2fc2720a28f
+  zh: 731e8182135e3d2a
 /web-client-architecture/client-models/workspaces:
   en: c063711f8247c240
-  zh: 5e54758bbaf1670c
+  zh: 7083f3bc1dba5a37
 /web-client-architecture/conversation-and-presentation:
   en: 9e0d6a3dfdbc4c12
-  zh: 0eea67d515ec56ef
+  zh: 0ad8bcfafe76b382
 /web-client-architecture/data-paths:
   en: a254278432416473
-  zh: 567c2d3c6a20b304
+  zh: 39fc966c16b520f8
 /web-client-architecture/reconnection:
   en: 478f461e261b1ca5
-  zh: 626791d04656faee
+  zh: 342692d7f637eaf2
 /web-client-architecture/package-boundaries:
   en: 3e64e8c28f0c4cb1
-  zh: 47aa81c2ace5ba89
+  zh: 6e543f311c6f5c84

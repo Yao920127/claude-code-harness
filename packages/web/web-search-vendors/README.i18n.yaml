@@ -4,55 +4,55 @@
 #   pnpm run verify-translation-pairing --write packages/web/web-search-vendors/README.md
 /:
   en: 34200bcd60315062
-  zh: 0c84f5a10f93cfbf
+  zh: b76cb49112dda239
 /deepseek-ai-dsh-web-search-vendors:
   en: 8c7905993ab00c78
   zh: a89a05cc3d28bffc
 /deepseek-ai-dsh-web-search-vendors/summary:
   en: 5135fa85b1e09401
-  zh: c94b625f36b059ed
+  zh: cae48f616aafcb59
 /deepseek-ai-dsh-web-search-vendors/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-web-search-vendors/use-this-package:
   en: 36577ce1522e1616
-  zh: 44f99a77ac916667
+  zh: d8ccb27d97582a17
 /deepseek-ai-dsh-web-search-vendors/use-this-package/when-to-choose-it:
   en: 5cd1e84c7043ecf7
-  zh: 04968adc2ef6a73f
+  zh: 4d2e4a7a5040d02a
 /deepseek-ai-dsh-web-search-vendors/use-this-package/minimal-configuration:
   en: 1c4e7c4b55ed3ed6
-  zh: 313131e282f62028
+  zh: e45a4a58fe7778d5
 /deepseek-ai-dsh-web-search-vendors/use-this-package/what-a-search-returns:
   en: a43bd43b85c662c6
-  zh: 3b7569f7442b638a
+  zh: a5eb7abe93401286
 /deepseek-ai-dsh-web-search-vendors/use-this-package/failures-and-recovery:
   en: 6a52a10217f34162
-  zh: 63e9c5bb3c583dae
+  zh: 354b007c3e9eceec
 /deepseek-ai-dsh-web-search-vendors/understand-the-implementation:
   en: 7010601542a84afe
-  zh: 7d7dbdaf7076ad77
+  zh: 03107bb7015851d3
 /deepseek-ai-dsh-web-search-vendors/understand-the-implementation/design-philosophy:
   en: 01c3b37721ff9ee7
-  zh: 2659960331973690
+  zh: 79af9598ce25b15c
 /deepseek-ai-dsh-web-search-vendors/understand-the-implementation/source-map:
   en: 4b6372105ac8ccc9
-  zh: 3faa8b2d53ff61db
+  zh: 324253c1964b5d43
 /deepseek-ai-dsh-web-search-vendors/further-exploration:
   en: 48d0dba274f18ba0
-  zh: b49466b43bdd3e95
+  zh: 518450b3a1b54be2
 /deepseek-ai-dsh-web-search-vendors/model-experience:
   en: aa46780b41c7a9b9
-  zh: 8cacbd7a53b95295
+  zh: 78a4f81e73db23d9
 /deepseek-ai-dsh-web-search-vendors/model-experience/kv-cache-effect:
   en: 40294c1c31b74824
-  zh: 751091f575d9d135
+  zh: c0c11b9165e8c4b8
 /deepseek-ai-dsh-web-search-vendors/known-limitations-and-deferred-work:
   en: a82d16e268bd3ab1
-  zh: 4ada6ba0d6c40302
+  zh: 77cd81623eba5122
 /deepseek-ai-dsh-web-search-vendors/known-limitations-and-deferred-work/dev-note:
   en: 7f775cc79dbce94b
-  zh: 426439dfd3e40ab9
+  zh: d103990af5f673cb
 /deepseek-ai-dsh-web-search-vendors/known-limitations-and-deferred-work/dev-note/future-live-vendor-settings:
   en: 1621f1c59438d2da
-  zh: 3801d5b7945ec5c6
+  zh: e61aea93b8945f21

@@ -32,7 +32,7 @@ it.each([false, true])('keeps concurrent physical spill files private while reta
       const fork = ctx.plugin(locators, { root, locatorRoot })
       disposers.push(() => fork.dispose())
       await fork
-      const content = `physical UTF-8 内容 ${index}`
+      const content = `physical UTF-8 內容 ${index}`
       const ref = await ctx.spillStore.saveText({
         owner: { sessionId: SessionId('same-session') },
         source: { kind: 'tool', toolName: 'bash', callId: ToolCallId('same-call'), label: 'result' },

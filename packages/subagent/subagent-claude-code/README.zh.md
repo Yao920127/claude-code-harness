@@ -1,5 +1,5 @@
 ---
-description: "面向用户与维护者的一次性 Claude Code subagent 提供方，用于选择产品后端、安装 Profile bundle 或配置无人值守的 Claude Code 委派。"
+description: "面向使用者與維護者的一次性 Claude Code subagent 提供者，用於選擇產品後端、安裝 Profile bundle 或設定無人值守的 Claude Code 委派。"
 kind: "package-bundle"
 ---
 
@@ -9,27 +9,27 @@ kind: "package-bundle"
 
 ## 概述
 
-当委派任务应在父工作区中以全新、无人值守的 Claude Code 会话运行时，安装这个 Profile Bundle。每次运行接受一个自包含文本任务，并返回最终答案或安全的失败诊断；推理、工具通信、stderr、用量信息和工作区差异不会进入父 Session。Claude 原生设置与身份验证继续是权威来源，而 Profile 配置选择模型、环境和 `permissionMode`。针对平台锁定的运行时仅在需要时启动，并且绝不会回退到宿主 `claude` 可执行文件。当隔离和真实 Claude Code 行为比续接或提示更重要时，选择本包。
+當委派任務應在父工作區中以全新、無人值守的 Claude Code 工作階段執行時，安裝這個 Profile Bundle。每次執行接受一個自包含文字任務，並返回最終答案或安全的失敗診斷；推理、工具通訊、stderr、用量資訊和工作區差異不會進入父 Session。Claude 原生設定與身份驗證繼續是權威來源，而 Profile 設定選擇模型、環境和 `permissionMode`。針對平臺鎖定的執行時僅在需要時啟動，並且絕不會退回到主機 `claude` 可執行檔案。當隔離和真實 Claude Code 行為比續接或提示更重要時，選擇本包。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-当委派应以父级工作区中的真实 Claude Code 会话运行时，挂载本提供方。常用路径是显式的：把 Bundle 安装进 Profile，可选地配置提供方行，并通过委派工具行把它暴露给模型。
+當委派應以父級工作區中的真實 Claude Code 工作階段執行時，掛載本提供者。常用路徑是顯式的：把 Bundle 安裝進 Profile，可選地設定提供者行，並透過委派工具行把它暴露給模型。
 
-### 安装 Bundle
+### 安裝 Bundle
 
-把包安装进目标 Profile，然后重启该 Profile。安装会把锁定的 Agent SDK 与一个兼容的平台 CLI 载荷带入 Profile；声明的 patch 层只注册休眠的提供方，不启动任何 Claude 进程。
+把包安裝進目標 Profile，然後重新啟動該 Profile。安裝會把鎖定的 Agent SDK 與一個相容的平臺 CLI 載荷帶入 Profile；宣告的 patch 層只註冊休眠的提供者，不啟動任何 Claude 程序。
 
 ```sh
 dsh plugin --profile <name> add @deepseek-ai/dsh-subagent-claude-code
@@ -37,31 +37,31 @@ dsh plugin --profile <name> remove @deepseek-ai/dsh-subagent-claude-code
 dsh --profile <name>
 ```
 
-移除包后，下一次 Profile 启动会撤回提供方及其私有运行时闭包。安装决定 Host 可用性，而不是模型权限：模型只能通过你组合的委派工具行触达提供方。
+移除包後，下一次 Profile 啟動會撤回提供者及其私有執行時閉包。安裝決定 Host 可用性，而不是模型權限：模型只能透過你組合的委派工具行觸達提供者。
 
-### 配置
+### 設定
 
-| 字段 | 默认值 | 含义 |
+| 欄位 | 預設值 | 含義 |
 |---|---|---|
-| `providerName` | `claude-code` | `ctx.subagents` 上的非空注册名称；每个已挂载实例都需要唯一值 |
-| `model` | Claude 原生设置 | 为本提供方实例的每次运行固定的可选非空模型名称；省略时不发送 SDK 覆盖 |
-| `env` | `{}` | 叠加在已清理凭据的父环境之上的显式 SDK/CLI 环境 |
-| `permissionMode` | `dontAsk` | 为本提供方实例的每次运行固定的原生非交互权限策略 |
-| `disposeGraceMs` | `3000` | 共享 managed-range owner 各终止层级之间的宽限 |
+| `providerName` | `claude-code` | `ctx.subagents` 上的非空註冊名稱；每個已掛載實例都需要唯一值 |
+| `model` | Claude 原生設定 | 為本提供者實例的每次執行固定的可選非空模型名稱；省略時不傳送 SDK 覆蓋 |
+| `env` | `{}` | 疊加在已清理憑證的父環境之上的顯式 SDK/CLI 環境 |
+| `permissionMode` | `dontAsk` | 為本提供者實例的每次執行固定的原生非互動權限策略 |
+| `disposeGraceMs` | `3000` | 共享 managed-range owner 各終止層級之間的寬限 |
 
-| `permissionMode` 值 | 原生行为 |
+| `permissionMode` 值 | 原生行為 |
 |---|---|
-| `dontAsk` | 不弹出提示，直接拒绝尚未获授权的操作 |
-| `acceptEdits` | 接受文件编辑；其余权限提示由无人值守回调拒绝 |
-| `auto` | 由 Claude Code 原生分类器允许或拒绝权限请求 |
-| `plan` | 使用原生规划模式，拒绝执行审批，并把完整计划作为最终答案返回 |
-| `bypassPermissions` | 显式设置 SDK 的危险确认并跳过权限检查 |
+| `dontAsk` | 不彈出提示，直接拒絕尚未獲授權的操作 |
+| `acceptEdits` | 接受檔案編輯；其餘權限提示由無人值守回呼拒絕 |
+| `auto` | 由 Claude Code 原生分類器允許或拒絕權限請求 |
+| `plan` | 使用原生規劃模式，拒絕執行審批，並把完整計劃作為最終答案返回 |
+| `bypassPermissions` | 顯式設定 SDK 的危險確認並跳過權限檢查 |
 
-生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-claude-code)是每个受支持字段及其 JSDoc 的穷尽式真源。已配置的 `model` 会原样传给该提供方实例的每次 query；省略时保留原生模型选择。具有凭证特征的环境变量会在显式 `env` 覆盖生效前被移除，因此供子进程使用的 API 密钥必须在该配置中显式提供。提供方省略 SDK 的 `settingSources` 选项，因此 Claude Code 会相对于父会话 cwd 读取宿主机常规的用户、项目与本地设置。它不会复制或过滤这些文件、创建或修改登录状态、检查 `PATH`，也不会回退到宿主 `claude` 可执行文件。
+生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-claude-code)是每個受支援欄位及其 JSDoc 的窮盡式真源。已設定的 `model` 會原樣傳給該提供者實例的每次 query；省略時保留原生模型選擇。具有憑證特徵的環境變數會在顯式 `env` 覆蓋生效前被移除，因此供子程序使用的 API 金鑰必須在該設定中顯式提供。提供者省略 SDK 的 `settingSources` 選項，因此 Claude Code 會相對於父工作階段 cwd 讀取主機常規的使用者、專案與本地設定。它不會複製或過濾這些檔案、建立或修改登入狀態、檢查 `PATH`，也不會退回到主機 `claude` 可執行檔案。
 
 ### 暴露工具
 
-每个委派工具行指名一个提供方，并需要独立的 `toolName`，因此模型看到的是静态工具，而不是动态提供方选择器。完整 Agent Preset 携带对应的默认工具行并设置 `disabled: true`；复制一个 preset 后删除该字段，即可只向由该副本组装的 agent（智能体）暴露 `subagent_claude_code`。
+每個委派工具行指名一個提供者，並需要獨立的 `toolName`，因此模型看到的是靜態工具，而不是動態提供者選擇器。完整 Agent Preset 攜帶對應的預設工具行並設定 `disabled: true`；複製一個 preset 後刪除該欄位，即可只向由該副本組裝的 agent（智慧代理）暴露 `subagent_claude_code`。
 
 ```yaml
 - id: jobs
@@ -77,121 +77,121 @@ dsh --profile <name>
     maxDepth: provider-managed
 ```
 
-`one-shot` 策略会让省略 `run_in_background` 或传入 `false` 的调用继续在前台等待，而显式传入 `true` 会返回由父 agent 拥有的 job id，供 `job_output` 或 `job_kill` 使用；base host（基础宿主）与完整 preset 已提供通用作业注册表和控制工具。
+`one-shot` 策略會讓省略 `run_in_background` 或傳入 `false` 的呼叫繼續在前臺等待，而顯式傳入 `true` 會返回由父 agent 擁有的 job id，供 `job_output` 或 `job_kill` 使用；base host（基礎主機）與完整 preset 已提供通用作業註冊表和控制工具。
 
-### 你会得到什么
+### 你會得到什麼
 
-前台调用会把严格的最终 Claude Code 答案交给模型；运行失败时则返回带停止原因与可选安全诊断的错误。后台调用先返回 job id；随后通用作业控制面会送达完成通知，并通过 `job_output` 公开同一最终答案或失败状态。Claude Code 的推理、工具活动、中间消息、stderr 与工作区差异绝不会进入父级会话。
+前臺呼叫會把嚴格的最終 Claude Code 答案交給模型；執行失敗時則返回帶停止原因與可選安全診斷的錯誤。後臺呼叫先返回 job id；隨後通用作業控制面會送達完成通知，並透過 `job_output` 公開同一最終答案或失敗狀態。Claude Code 的推理、工具活動、中間訊息、stderr 與工作區差異絕不會進入父級工作階段。
 
-### 失败与恢复
+### 失敗與恢復
 
-省略 optional dependencies、当前平台不受支持或所选载荷缺失的安装会让提供方保持休眠，并在第一次委派时于 SDK 启动边界报告安全的 `query-start` / `unknown` 失败事实；不存在宿主 CLI 回退。原始产品错误只保留在内部 cause 链与提供方 Host 日志中。被取消的运行以 `aborted` 结算。
+省略 optional dependencies、目前平臺不受支援或所選載荷缺失的安裝會讓提供者保持休眠，並在第一次委派時於 SDK 啟動邊界報告安全的 `query-start` / `unknown` 失敗事實；不存在主機 CLI 退回。原始產品錯誤只保留在內部 cause 鏈與提供者 Host 日誌中。被取消的執行以 `aborted` 結算。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-本节解释提供方如何驱动真实 Claude Code CLI，以及可观察行为从何而来；完整约定见[使用本包](#use-this-package)。
+本節解釋提供者如何驅動真實 Claude Code CLI，以及可觀察行為從何而來；完整約定見[使用本包](#use-this-package)。
 
-### 设计理念
+### 設計理念
 
-- **每次运行一个全新 query。** 每次运行都拥有独立的 SDK query、取消控制器、CLI 进程与不持久化的产品会话；没有续接、恢复或池化。
-- **原生设置是权威。** 提供方故意省略 SDK 的 `settingSources` 选项，因此 Claude Code 读取宿主机常规的用户、项目与本地设置；可选 `model` 与必需的 `permissionMode` 是仅有的 query 级覆盖。
-- **刻意无人值守。** `AskUserQuestion` 被禁用，除 bypass 模式外权限提示都会被拒绝，因此 query 绝不会等待用户界面。
+- **每次執行一個全新 query。** 每次執行都擁有獨立的 SDK query、取消控制器、CLI 程序與不持久化的產品工作階段；沒有續接、恢復或池化。
+- **原生設定是權威。** 提供者故意省略 SDK 的 `settingSources` 選項，因此 Claude Code 讀取主機常規的使用者、專案與本地設定；可選 `model` 與必需的 `permissionMode` 是僅有的 query 級覆蓋。
+- **刻意無人值守。** `AskUserQuestion` 被停用，除 bypass 模式外權限提示都會被拒絕，因此 query 絕不會等待使用者介面。
 
-### 源码地图
+### 原始碼地圖
 
-| 文件 | 职责 |
+| 檔案 | 職責 |
 |---|---|
-| [`src/index.ts`](src/index.ts) | 插件入口：配置 schema、提供方注册 |
-| [`src/run.ts`](src/run.ts) | SDK query 生命周期、结果接受与权限处理 |
-| [`src/process.ts`](src/process.ts) | dispose（资源释放）时的 managed-range 逐级终止 |
-| [`cordis.patch.yml`](cordis.patch.yml) | 注册休眠提供方的 Profile patch 层 |
+| [`src/index.ts`](src/index.ts) | 外掛入口：設定 schema、提供者註冊 |
+| [`src/run.ts`](src/run.ts) | SDK query 生命週期、結果接受與權限處理 |
+| [`src/process.ts`](src/process.ts) | dispose（資源釋放）時的 managed-range 逐級終止 |
+| [`cordis.patch.yml`](cordis.patch.yml) | 註冊休眠提供者的 Profile patch 層 |
 
-### 运行流程
+### 執行流程
 
-一次启动只接受非空的文本块序列，并根据父会话确定子级 cwd。它创建私有 `AbortController`，用精确拼接的任务调用官方 SDK `query()`，并仅在 SDK 的 custom-spawn 钩子已经提供由子进程 seam 管理的活动 CLI 句柄后发布运行。提供方完整迭代消息流，只接受满足 `subtype: "success"`、`is_error: false` 且 `result` 非空白、随后迭代器正常结束的 `result` 消息。其余一切结果都映射为带固定类别的 `error` 诊断，命名生命周期阶段与已观测进程结果——类别集合见 [`src/run.ts`](src/run.ts)。本地取消会在结果竞态中胜出并映射为 `aborted`，且不附带失败诊断。
+一次啟動只接受非空的文字塊序列，並根據父工作階段確定子級 cwd。它建立私有 `AbortController`，用精確拼接的任務呼叫官方 SDK `query()`，並僅在 SDK 的 custom-spawn 掛鉤已經提供由子程序 seam 管理的活動 CLI 控制代碼後釋出執行。提供者完整迭代訊息流，只接受滿足 `subtype: "success"`、`is_error: false` 且 `result` 非空白、隨後迭代器正常結束的 `result` 訊息。其餘一切結果都對映為帶固定類別的 `error` 診斷，命名生命週期階段與已觀測程序結果——類別集合見 [`src/run.ts`](src/run.ts)。本地取消會在結果競態中勝出並對映為 `aborted`，且不附帶失敗診斷。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当包级约定不够用时阅读以下页面。它们从本提供方逐步进入它接入的 seam 与兄弟产品提供方。
+當包級約定不夠用時閱讀以下頁面。它們從本提供者逐步進入它接入的 seam 與兄弟產品提供者。
 
-- [Subagent 子系统](../../../docs/subsystems/subagent.zh.md)——服务约定、提供方约定与终态结果语义。
-- [dsh-subagent seam](../subagent/README.zh.md)——本提供方注册于其上的注册表与启动 API。
-- [Codex subagent 提供方](../subagent-codex/README.zh.md)——经官方 app-server 协议的兄弟产品后端。
-- [Claude Code 与 Codex 后端](../../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)——产品提供方的设计记录。
-- [生成配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-claude-code)——每个受支持配置字段及其源声明。
+- [Subagent 子系統](../../../docs/subsystems/subagent.zh.md)——服務約定、提供者約定與終態結果語義。
+- [dsh-subagent seam](../subagent/README.zh.md)——本提供者註冊於其上的註冊表與啟動 API。
+- [Codex subagent 提供者](../subagent-codex/README.zh.md)——經官方 app-server 協定的兄弟產品後端。
+- [Claude Code 與 Codex 後端](../../../.agents/notes/implemented/feature/2026-08-04-claude-code-and-codex-subagent-backends.zh.md)——產品提供者的設計記錄。
+- [生成設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-subagent-claude-code)——每個受支援設定欄位及其源宣告。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-### 子级请求
+### 子級請求
 
-#### 模型看到什么
+#### 模型看到什麼
 
-Claude Code 子级会在一个全新的 SDK query 中接收独立文本任务。它的工作区是父会话 cwd；所选提供方实例会固定已配置的模型、环境与非交互权限模式，而省略的模型及其余产品设置来自 Claude 原生配置。可执行版本来自 Bundle 锁定的 SDK 平台载荷。
+Claude Code 子級會在一個全新的 SDK query 中接收獨立文字任務。它的工作區是父工作階段 cwd；所選提供者實例會固定已設定的模型、環境與非互動權限模式，而省略的模型及其餘產品設定來自 Claude 原生設定。可執行版本來自 Bundle 鎖定的 SDK 平臺載荷。
 
-#### Token 影响
+#### Token 影響
 
-子级需为独立的 Claude Code 上下文和 query 承担 token 成本。子级 token 不会进入父级上下文。
+子級需為獨立的 Claude Code 上下文和 query 承擔 token 成本。子級 token 不會進入父級上下文。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-与父级请求缓存相互独立。能否复用只取决于 Claude Code 自身的模型、指令、工具、原生设置和全新 query。
+與父級請求快取相互獨立。能否複用只取決於 Claude Code 自身的模型、指令、工具、原生設定和全新 query。
 
-### 父级调度与结果（间接）
+### 父級排程與結果（間接）
 
-#### 模型看到什么
+#### 模型看到什麼
 
-通过 `dsh-tool-subagent`，前台调用会让父级模型看到符合严格成功条件的 Claude Code 最终答案；若结果未完成，错误中会包含终止原因和可选的安全诊断。该诊断可以区分粗粒度行动类别、生命周期阶段和已观测的进程结果，而不复制原始产品文本或版本专属 subtype 名称。后台调用会先返回 job id；随后通用作业控制面会送达完成通知，通过 `job_output` 公开同一最终答案或失败状态详情，并允许 `job_kill` 请求取消。Claude Code 的推理、工具活动、中间消息、stderr、工作区差异、用量信息、产品标识符、工具输入和原始协议载荷均不会复制到父会话。
+透過 `dsh-tool-subagent`，前臺呼叫會讓父級模型看到符合嚴格成功條件的 Claude Code 最終答案；若結果未完成，錯誤中會包含終止原因和可選的安全診斷。該診斷可以區分粗粒度行動類別、生命週期階段和已觀測的程序結果，而不複製原始產品文字或版本專屬 subtype 名稱。後臺呼叫會先返回 job id；隨後通用作業控制面會送達完成通知，透過 `job_output` 公開同一最終答案或失敗狀態詳情，並允許 `job_kill` 請求取消。Claude Code 的推理、工具活動、中間訊息、stderr、工作區差異、用量資訊、產品識別符號、工具輸入和原始協定載荷均不會複製到父工作階段。
 
-#### Token 影响
+#### Token 影響
 
-前台输入会增加工具结果中保留的最终答案或错误内容。后台输入还会包含启动确认、完成通知，以及 `job_output`、`job_kill` 或后续状态结果；子任务 token 仍不会进入父级上下文。本提供方自身不添加父级工具 schema。
+前臺輸入會增加工具結果中保留的最終答案或錯誤內容。後臺輸入還會包含啟動確認、完成通知，以及 `job_output`、`job_kill` 或後續狀態結果；子任務 token 仍不會進入父級上下文。本提供者自身不新增父級工具 schema。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-仅追加：前台会在可复用的父请求前缀后增加一个结果，后台则会继续追加 Job 启动确认、通知以及后续控制或收集结果。后台调度可能增加一个由通知唤醒的轮次，但这些消息都不会改写更早的前缀。
+僅追加：前臺會在可複用的父請求字首後增加一個結果，後臺則會繼續追加 Job 啟動確認、通知以及後續控制或收集結果。後臺排程可能增加一個由通知喚醒的輪次，但這些訊息都不會改寫更早的字首。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制说明本提供方何时不合适，或何时需要特别的运维注意。它们是当前包约束，不是通用 Claude Code 对比或任务积压。
+這些限制說明本提供者何時不合適，或何時需要特別的運維注意。它們是目前包約束，不是通用 Claude Code 對比或任務積壓。
 
-- **每次运行均新建一个 query 和一个进程**——不支持续接、恢复、池化、进度流或产品会话持久化。
-- **静态选择实例**——Profile 配置项固定提供方名称、可选模型与工具绑定；调用无法动态选择或修改提供方与模型，而且每个公开工具都需要唯一的 `toolName`。
-- **宿主设置有意保持权威**——省略 `model` 时由项目与用户设置选择模型；原生设置始终保留其余工具和行为，本提供方不提供经过筛选或与宿主环境隔离的生产模式。
-- **身份验证与账户状态仍由原生机制管理**——Bundle 会提供 CLI，但不会创建账户、登录或改写 Claude 设置；配置与身份验证失败会公开其生命周期阶段与安全的 `unknown` 回退，而不会增加单独的公开分类。
-- **委派时必须存在 SDK 平台载荷**——省略 optional dependencies 的安装、不受支持的平台以及缺失或损坏的载荷都会在第一次 query 时失败；不会回退到宿主 CLI。
-- **没有人工交互路径**——`AskUserQuestion` 被禁用，权限提示会被拒绝，MCP elicitation 会被拒绝，阻塞对话会以拒绝方式失败而不会挂起。
-- **assistant 载荷仅包含最终文本**——失败运行可以额外公开独立的安全诊断；推理、中间消息、工具通信、用量信息、stderr 和工作区差异仍只保留在产品内部，通用 Job id、通知与状态来自共享作业运行时。
-- **没有可选的共享能力**——对于本提供方，共享服务会拒绝 `agentOptions`、输出 schema、子任务角色设定、工具筛选和 harness 深度强制约束。
-- **没有按实际经过时间触发的超时或副作用回滚**——长时间运行的工作由调用方取消，且取消前已更改的文件或外部系统不会恢复原状。
+- **每次執行均新建一個 query 和一個程序**——不支援續接、恢復、池化、進度流或產品工作階段持久化。
+- **靜態選擇實例**——Profile 設定項固定提供者名稱、可選模型與工具繫結；呼叫無法動態選擇或修改提供者與模型，而且每個公開工具都需要唯一的 `toolName`。
+- **主機設定有意保持權威**——省略 `model` 時由專案與使用者設定選擇模型；原生設定始終保留其餘工具和行為，本提供者不提供經過篩選或與主機環境隔離的生產模式。
+- **身份驗證與帳戶狀態仍由原生機制管理**——Bundle 會提供 CLI，但不會建立帳戶、登入或改寫 Claude 設定；設定與身份驗證失敗會公開其生命週期階段與安全的 `unknown` 退回，而不會增加單獨的公開分類。
+- **委派時必須存在 SDK 平臺載荷**——省略 optional dependencies 的安裝、不受支援的平臺以及缺失或損壞的載荷都會在第一次 query 時失敗；不會退回到主機 CLI。
+- **沒有人工互動路徑**——`AskUserQuestion` 被停用，權限提示會被拒絕，MCP elicitation 會被拒絕，阻塞對話會以拒絕方式失敗而不會掛起。
+- **assistant 載荷僅包含最終文字**——失敗執行可以額外公開獨立的安全診斷；推理、中間訊息、工具通訊、用量資訊、stderr 和工作區差異仍只保留在產品內部，通用 Job id、通知與狀態來自共享作業執行時。
+- **沒有可選的共享能力**——對於本提供者，共享服務會拒絕 `agentOptions`、輸出 schema、子任務角色設定、工具篩選和 harness 深度強制約束。
+- **沒有按實際經過時間觸發的超時或副作用復原**——長時間執行的工作由呼叫方取消，且取消前已更改的檔案或外部系統不會恢復原狀。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-本开发备注是维护者的工作上下文：开放问题与尚未决定的探索方向。它明确不具权威性——已交付的行为与限制以上文和包代码为准。
+本開發備註是維護者的工作上下文：開放問題與尚未決定的探索方向。它明確不具權威性——已交付的行為與限制以上文和包程式碼為準。
 
-- **载荷体积披露**——当前 darwin-arm64 平台载荷压缩后约 92 MB、解包后约 325 MB；这些是披露数字，不是安装阈值。
-- **版本锁定的协议**——运行时依赖锁定为 Agent SDK 0.3.291；升级会锁定新的 SDK 版本，并需要重新运行无密钥真实产品与 loader 组合证据。
+- **載荷體積披露**——目前 darwin-arm64 平臺載荷壓縮後約 92 MB、解包後約 325 MB；這些是披露數字，不是安裝閾值。
+- **版本鎖定的協定**——執行時依賴鎖定為 Agent SDK 0.3.291；升級會鎖定新的 SDK 版本，並需要重新執行無金鑰真實產品與 loader 組合證據。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。生命周期配对属于共享 subagent 服务，受管范围的所有权属于 subprocess 服务。
+**執行時不變式：** 不釋出伴生入口。生命週期配對屬於共享 subagent 服務，受管範圍的所有權屬於 subprocess 服務。

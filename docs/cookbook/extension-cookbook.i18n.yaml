@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write docs/cookbook/extension-cookbook.md
 /cookbook-extension-plugin-shapes:
   en: 1d31f2923d4b4e42
-  zh: 194aaeceaa020e8e
+  zh: 820a00259fc0e838
 /cookbook-extension-plugin-shapes/a-tool-plugin:
   en: 39704ef102f2f2f7
-  zh: 8771f9c19450b347
+  zh: 37b4933e3b788655
 /cookbook-extension-plugin-shapes/a-hook-plugin-permission-gate-example:
   en: 9e67a75370812101
-  zh: e8a77dd7bd758ea8
+  zh: 34db70cd9596a894
 /cookbook-extension-plugin-shapes/a-ui-plugin:
   en: 0084c11d8d57beba
-  zh: ba867efbd90908d3
+  zh: 0c0d52158dc02483
 /cookbook-extension-plugin-shapes/an-external-protocol-driver:
   en: fc5e0d074214eaaf
-  zh: aac2bf67d6e7b30a
+  zh: 430da3521d949d7a
 /cookbook-extension-plugin-shapes/runnable-wirings:
   en: f0a28d07c0bb4d1b
-  zh: 840962f512cb4031
+  zh: b3ed88b3f3dbbdd5
 /cookbook-extension-plugin-shapes/the-feature-mechanism-map:
   en: 2d4511fc000afc42
-  zh: d4875bf1e3f2808f
+  zh: 3a53911847b42fe0

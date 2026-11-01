@@ -62,7 +62,7 @@ describe('renderModuleGraph', () => {
     const chinese = renderModuleGraph(packages, 'zh')
 
     expect(english).toContain('# Shared-instance dependency graph')
-    expect(chinese).toContain('# 共享实例依赖关系图')
+    expect(chinese).toContain('# 共享實例依賴關係圖')
     expect(chinese).toContain('[English](module-graph.md) | 中文')
     for (const output of [english, chinese]) {
       expect(output).toContain('pkg_consumer --> pkg_provider')

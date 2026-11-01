@@ -4,22 +4,22 @@
 #   pnpm run verify-translation-pairing --write packages/subprocess/README.md
 /:
   en: 8a625c05bd33b1ae
-  zh: ca401fbbcb64368f
+  zh: f73ce3a425c599f1
 /subprocess-subprocess-capability-family:
   en: 5e231b038b3a2641
-  zh: 4cc7da13fb30c672
+  zh: 7aa859ec064ab22c
 /subprocess-subprocess-capability-family/summary:
   en: cccfd01eaced10a3
-  zh: b7372e340927a6ea
+  zh: f8ff5a182d8e63ef
 /subprocess-subprocess-capability-family/table-of-contents:
   en: 1eb35b015a6c423f
-  zh: a8a3dceee2c9e943
+  zh: a405d18b591d96df
 /subprocess-subprocess-capability-family/packages:
   en: a8043895aaaef16a
-  zh: 2171b5d972662b0d
+  zh: 2bb38cfd9113440c
 /subprocess-subprocess-capability-family/related-documentation:
   en: 6ad442808d72f9a0
-  zh: 482e8a1b15f4c7ba
+  zh: 472c8312fa4385f9
 /subprocess-subprocess-capability-family/dev-note:
   en: 5de1d6304e00c58f
-  zh: 8d8225361cfa29e5
+  zh: fa64cc86b57521fe

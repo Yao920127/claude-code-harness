@@ -1,5 +1,5 @@
 ---
-description: "应用内目录浏览表面：填充工作区目录流程的 Miller 分栏「选择工作区目录」对话框；供 Web 拾取体验的用户与维护者阅读。"
+description: "應用內目錄瀏覽表面：填充工作區目錄流程的 Miller 分欄「選擇工作區目錄」對話方塊；供 Web 拾取體驗的使用者與維護者閱讀。"
 kind: "package-reference"
 ---
 
@@ -9,81 +9,81 @@ kind: "package-reference"
 
 ## 概述
 
-本包提供 Web GUI 的应用内目录浏览表面：一个「选择工作区目录」对话框，通过本地宿主列出、导航并创建文件夹，不涉及任何操作系统选择框。它填充 `ui-workspace` 声明的两个目录流程槽位，用一行 cordis.yml 组合出浏览拾取交互的客户端一侧。当浏览器为远程或进程内、没有本地操作系统选择器时选择它；本地部署可优先选择 [`-native`](../ui-directory-picker-native/README.zh.md) 表面。
+本包提供 Web GUI 的應用內目錄瀏覽表面：一個「選擇工作區目錄」對話方塊，透過本地主機列出、導航並建立資料夾，不涉及任何作業系統選擇框。它填充 `ui-workspace` 宣告的兩個目錄流程槽位，用一行 cordis.yml 組合出瀏覽拾取互動的用戶端一側。當瀏覽器為遠端或程序內、沒有本地作業系統選擇器時選擇它；本地部署可優先選擇 [`-native`](../ui-directory-picker-native/README.zh.md) 表面。
 
-## 目录
+## 目錄
 
 - [使用本包](#use-this-package)
-- [理解实现](#understand-the-implementation)
-- [进一步探索](#further-exploration)
-- [模型体验](#model-experience)
-- [已知限制与延期工作](#known-limitations-and-deferred-work)
-- [开发备注](#dev-note)
+- [理解實作](#understand-the-implementation)
+- [進一步探索](#further-exploration)
+- [模型體驗](#model-experience)
+- [已知限制與延期工作](#known-limitations-and-deferred-work)
+- [開發備註](#dev-note)
 
 -----
 
 <a id="use-this-package"></a>
 ## 使用本包
 
-与 `ui-workspace` 及宿主后端 [`dsh-host-directory-picker-browse`](../../host/directory-picker-browse/README.zh.md) 一起挂载本插件；一行 cordis.yml 随即组合出完整的浏览拾取交互。当工作区流程发起目录请求时，用户看到应用内对话框：头部承载路径面包屑与可编辑路径区，未选中行时是一整栏层级，选中后该行分为层级与子项两栏。
+與 `ui-workspace` 及主機後端 [`dsh-host-directory-picker-browse`](../../host/directory-picker-browse/README.zh.md) 一起掛載本外掛；一行 cordis.yml 隨即組合出完整的瀏覽拾取互動。當工作區流程發起目錄請求時，使用者看到應用內對話方塊：頭部承載路徑麵包屑與可編輯路徑區，未選中行時是一整欄層級，選中後該行分為層級與子項兩欄。
 
-### 导航与创建
+### 導航與建立
 
-逐级进入文件夹、直接编辑路径，或用前缀过滤最后一栏；宿主标记的隐藏条目默认不显示，直到页脚开关揭开。**新建文件夹**打开一个嵌套创建对话框，目标为选中的文件夹，并选中它创建出来的那个；**打开**采纳选中的文件夹，没有选中时回落到当前层级。确认一个目录即为选中的路径；关闭对话框即为取消。
+逐級進入資料夾、直接編輯路徑，或用字首過濾最後一欄；主機標記的隱藏條目預設不顯示，直到頁尾開關揭開。**新建資料夾**開啟一個巢狀建立對話方塊，目標為選中的資料夾，並選中它建立出來的那個；**開啟**採納選中的資料夾，沒有選中時回落到目前層級。確認一個目錄即為選中的路徑；關閉對話方塊即為取消。
 
 -----
 
 <a id="understand-the-implementation"></a>
-## 理解实现
+## 理解實作
 
 <details>
-<summary>实现细节——点击展开</summary>
+<summary>實作細節——點選展開</summary>
 
-对话框是 680×500 的 Miller 分栏视图（在较矮或较窄的视口中限制尺寸），经 `ctx.workspaces` 驱动宿主的 `listDirectory` 与 `createDirectory` 原语。两处注册经嵌套的 `ctx.slots.inject()` 调用作为一次事务性效果安装，因为任一声明条目都可能晚些激活或替换其声明；对话框文案注册在本包自己的 locale 命名空间下，让两份字典作为一个单元落地。浏览类失败留在对话框自己的提示区内，因此本填充从不驱动持有方的 `onError` 分支。node 半部是一个空 `apply`，让插件留在宿主名单上。
+對話方塊是 680×500 的 Miller 分欄檢視（在較矮或較窄的視口中限制尺寸），經 `ctx.workspaces` 驅動主機的 `listDirectory` 與 `createDirectory` 原語。兩處註冊經巢狀的 `ctx.slots.inject()` 呼叫作為一次事務性效果安裝，因為任一宣告條目都可能晚些啟用或替換其宣告；對話方塊文案註冊在本包自己的 locale 名稱空間下，讓兩份字典作為一個單元落實。瀏覽類失敗留在對話方塊自己的提示區內，因此本填充從不驅動持有方的 `onError` 分支。node 半部是一個空 `apply`，讓外掛留在主機名單上。
 
 </details>
 
 -----
 
 <a id="further-exploration"></a>
-## 进一步探索
+## 進一步探索
 
-当拾取面不够用时阅读以下页面。它们从浏览器半部进入宿主后端与它所填充的槽位。
+當拾取面不夠用時閱讀以下頁面。它們從瀏覽器半部進入主機後端與它所填充的槽位。
 
-- [dsh-host-directory-picker-browse](../../host/directory-picker-browse/README.zh.md)——本表面驱动的目录列出后端。
-- [ui-workspace](../ui-workspace/README.zh.md)——声明目录流程槽位并拥有拾取对话。
-- [ui-directory-picker-native](../ui-directory-picker-native/README.zh.md)——面向本地部署的原生操作系统选择器替代方案。
-- [Web 客户端架构](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——浏览器插件行如何加载并注册槽位。
+- [dsh-host-directory-picker-browse](../../host/directory-picker-browse/README.zh.md)——本表面驅動的目錄列出後端。
+- [ui-workspace](../ui-workspace/README.zh.md)——宣告目錄流程槽位並擁有拾取對話。
+- [ui-directory-picker-native](../ui-directory-picker-native/README.zh.md)——面向本地部署的原生作業系統選擇器替代方案。
+- [Web 用戶端架構](../../../.agents/notes/implemented/architecture/2026-07-19-gui-web-client-architecture.zh.md)——瀏覽器外掛行如何載入並註冊槽位。
 
 -----
 
 <a id="model-experience"></a>
-## 模型体验
+## 模型體驗
 
-无，因为目录浏览器属于浏览器界面；本包中的任何内容都不会进入模型请求。
+無，因為目錄瀏覽器屬於瀏覽器介面；本包中的任何內容都不會進入模型請求。
 
-#### KV Cache 影响
+#### KV Cache 影響
 
-无；本包既不组装也不发送提供方请求。
+無；本包既不組裝也不傳送提供者請求。
 
-## 已知限制与延期工作
+## 已知限制與延期工作
 
 <a id="known-limitations-and-deferred-work"></a>
 
 
-这些限制界定了当前浏览表面。它们是当前包约束，不是通用文件浏览器对比或任务积压。
+這些限制界定了目前瀏覽表面。它們是目前包約束，不是通用檔案瀏覽器對比或任務積壓。
 
-- **无搜索、无多选、无重命名或删除**——对话框只负责列出与创建目录；到达目标靠导航、编辑路径，或用前缀过滤最后一栏。
-- **隐藏条目的过滤在客户端**——宿主始终列出隐藏条目并加标记，因此开关只改变对话框渲染什么。
+- **無搜尋、無多選、無重新命名或刪除**——對話方塊只負責列出與建立目錄；到達目標靠導航、編輯路徑，或用字首過濾最後一欄。
+- **隱藏條目的過濾在用戶端**——主機始終列出隱藏條目並加標記，因此開關只改變對話方塊渲染什麼。
 
 <a id="dev-note"></a>
-### 开发备注
+### 開發備註
 
 <details>
-<summary>维护者的工作上下文——点击展开</summary>
+<summary>維護者的工作上下文——點選展開</summary>
 
-无。
+無。
 
 </details>
 
-**运行时不变式：** 不发布伴生入口。插件只注册一个工作区目录流程持有方，其资源释放由 HMR（热模块替换）安全规范验证；它显示的每个目录列表都会按需从 Host 重新读取，而不会保存在本包中。
+**執行時不變式：** 不釋出伴生入口。外掛只註冊一個工作區目錄流程持有方，其資源釋放由 HMR（熱模組替換）安全規範驗證；它顯示的每個目錄列表都會按需從 Host 重新讀取，而不會儲存在本包中。

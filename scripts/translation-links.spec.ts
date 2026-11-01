@@ -26,12 +26,12 @@ function fixture(): string {
   writeFileSync(join(root, 'docs/guide.md'), '# Guide\n')
   writeFileSync(join(root, 'docs/guide.zh.md'), '# 指南\n')
   writeFileSync(join(root, 'docs/reference.md'), '# Overview\n')
-  writeFileSync(join(root, 'docs/reference.zh.md'), '# 概览\n')
+  writeFileSync(join(root, 'docs/reference.zh.md'), '# 概覽\n')
   writeFileSync(join(root, 'docs/unpaired.md'), '# Only\n')
   writeFileSync(join(root, 'docs/section/index.md'), '# Section\n')
-  writeFileSync(join(root, 'docs/section/index.zh.md'), '# 章节\n')
+  writeFileSync(join(root, 'docs/section/index.zh.md'), '# 章節\n')
   writeFileSync(join(root, 'packages/outside.md'), '# Outside\n')
-  writeFileSync(join(root, 'packages/outside.zh.md'), '# 范围外\n')
+  writeFileSync(join(root, 'packages/outside.zh.md'), '# 範圍外\n')
   return root
 }
 
@@ -59,7 +59,7 @@ describe('translation link locale validation', () => {
   it('rejects a Chinese link to the English sibling with an exact diagnostic', () => {
     const root = fixture()
     expect(translationLinkLocaleViolations(
-      '# 指南\n\n正文。\n\n[概览](reference.md?view=full#overview)\n',
+      '# 指南\n\n正文。\n\n[概覽](reference.md?view=full#overview)\n',
       linkContext(root, 'docs/guide.zh.md'),
     )).toEqual([{
       sourcePath: 'docs/guide.zh.md',
@@ -71,7 +71,7 @@ describe('translation link locale validation', () => {
 
   it('rewrites an encoded exact filename without changing its query or fragment suffix', () => {
     const root = fixture()
-    const input = '[概览](reference%2Emd?view=full&amp;mode=all#overview)\n'
+    const input = '[概覽](reference%2Emd?view=full&amp;mode=all#overview)\n'
     expect(translationLinkLocaleViolations(
       input,
       linkContext(root, 'docs/guide.zh.md'),
@@ -80,7 +80,7 @@ describe('translation link locale validation', () => {
       expectedUrl: 'reference.zh.md?view=full&amp;mode=all#overview',
     })
     expect(rewriteTranslationLinkLocales(input, linkContext(root, 'docs/guide.zh.md'))).toEqual({
-      content: '[概览](reference.zh.md?view=full&amp;mode=all#overview)\n',
+      content: '[概覽](reference.zh.md?view=full&amp;mode=all#overview)\n',
       rewritten: 1,
     })
   })
@@ -166,17 +166,17 @@ describe('translation link locale validation', () => {
     const root = fixture()
     const staged = new Set(['docs/reference.md', 'docs/reference.zh.md'])
     expect(translationLinkLocaleViolations(
-      '[概览](reference.md)\n',
+      '[概覽](reference.md)\n',
       linkContext(root, 'docs/guide.zh.md', path => staged.has(path)),
     )).toHaveLength(1)
     staged.delete('docs/reference.zh.md')
     expect(translationLinkLocaleViolations(
-      '[概览](reference.md)\n',
+      '[概覽](reference.md)\n',
       linkContext(root, 'docs/guide.zh.md', path => staged.has(path)),
     )).toHaveLength(1)
     staged.delete('docs/reference.md')
     expect(translationLinkLocaleViolations(
-      '[概览](reference.md)\n',
+      '[概覽](reference.md)\n',
       linkContext(root, 'docs/guide.zh.md', path => staged.has(path)),
     )).toEqual([])
   })
@@ -185,12 +185,12 @@ describe('translation link locale validation', () => {
 describe('translation link rewriting and normalization', () => {
   it('rewrites only the destination while preserving the suffix and title', () => {
     const root = fixture()
-    const input = '[概览](reference.md?view=full&amp;mode=all#overview "reference.md title")\n'
+    const input = '[概覽](reference.md?view=full&amp;mode=all#overview "reference.md title")\n'
     expect(rewriteTranslationLinkLocales(
       input,
       linkContext(root, 'docs/guide.zh.md'),
     )).toEqual({
-      content: '[概览](reference.zh.md?view=full&amp;mode=all#overview "reference.md title")\n',
+      content: '[概覽](reference.zh.md?view=full&amp;mode=all#overview "reference.md title")\n',
       rewritten: 1,
     })
   })
@@ -198,15 +198,15 @@ describe('translation link rewriting and normalization', () => {
   it('rewrites link definitions without changing their labels', () => {
     const root = fixture()
     expect(rewriteTranslationLinkLocales(
-      '[概览][ref]\n\n[ref]: <reference.md#overview> "title"\n',
+      '[概覽][ref]\n\n[ref]: <reference.md#overview> "title"\n',
       linkContext(root, 'docs/guide.zh.md'),
-    ).content).toBe('[概览][ref]\n\n[ref]: <reference.zh.md#overview> "title"\n')
+    ).content).toBe('[概覽][ref]\n\n[ref]: <reference.zh.md#overview> "title"\n')
   })
 
   it('uses only the first duplicate reference definition', () => {
     const root = fixture()
     expect(translationLinkLocaleViolations(
-      '[概览][ref]\n\n[ref]: reference.zh.md\n[ref]: reference.md\n',
+      '[概覽][ref]\n\n[ref]: reference.zh.md\n[ref]: reference.md\n',
       linkContext(root, 'docs/guide.zh.md'),
     )).toEqual([])
   })

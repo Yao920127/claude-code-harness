@@ -4,88 +4,88 @@
 #   pnpm run verify-translation-pairing --write packages/todo/tool-todo/README.md
 /:
   en: 94e53ef3423c197f
-  zh: ad579992506261fa
+  zh: 41f7828c0f235694
 /deepseek-ai-dsh-tool-todo:
   en: 06114b7b88112609
   zh: a53c75adeeecf917
 /deepseek-ai-dsh-tool-todo/summary:
   en: b6b3f4e412f33da2
-  zh: b4dbbe1a1e093179
+  zh: f207ab12f89ad0ba
 /deepseek-ai-dsh-tool-todo/table-of-contents:
   en: d152484eb41ac6b4
-  zh: 09388d293f9be9cb
+  zh: de9abc8870a17a5c
 /deepseek-ai-dsh-tool-todo/use-this-package:
   en: d10c650faab8695d
-  zh: 6018b5a53501d88b
+  zh: 922f665680f309a5
 /deepseek-ai-dsh-tool-todo/use-this-package/when-to-choose-it:
   en: c964ee10289fcd21
-  zh: 4c1e68220906eb06
+  zh: fe8037907607e797
 /deepseek-ai-dsh-tool-todo/use-this-package/minimal-configuration:
   en: 02ee43b537f8ab85
-  zh: a20116a4fcc36a33
+  zh: 18ed424e248b2234
 /deepseek-ai-dsh-tool-todo/use-this-package/what-each-call-does:
   en: 415a6775984f539d
-  zh: 04e6f16e7c81b8ba
+  zh: 6ac025324d4d9513
 /deepseek-ai-dsh-tool-todo/use-this-package/single-owner:
   en: f051cbd97dab2436
-  zh: 18976a8affed8cab
+  zh: 1b8d0f79f9fda77b
 /deepseek-ai-dsh-tool-todo/understand-the-implementation:
   en: 8d94a7381bca3fa9
-  zh: f4bd2866fff6fa8d
+  zh: a71d26ab0e3b9a97
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/design-philosophy:
   en: 79e0ce717098e5eb
-  zh: ec34658fb269c2e1
+  zh: 21383237aa01d518
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/source-map:
   en: d53829e90f7f63ca
-  zh: fc3006d788a84013
+  zh: 3bc69e935efd5387
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/export-shape:
   en: 35b4f6c718e60dab
-  zh: 9bffe86c88a7ad6d
+  zh: 2841d349de6c3c89
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/session-projection:
   en: 2d49c8af46b16dd2
-  zh: 71a3073433b579d4
+  zh: 376638e1ce45b6ff
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/durable-log-invariant:
   en: 3234e0405b88e314
-  zh: 135a5b12d810e6dd
+  zh: 624bbb24b0f752af
 /deepseek-ai-dsh-tool-todo/understand-the-implementation/call-mechanics:
   en: d55f6a32b05ed686
-  zh: c815f930a2acebda
+  zh: 66f384dc801ef9ee
 /deepseek-ai-dsh-tool-todo/further-exploration:
   en: 38488722b03c25dd
-  zh: 23efe2cce1e29917
+  zh: 59ac54b059d1e472
 /deepseek-ai-dsh-tool-todo/model-experience:
   en: 215e7ba838619b7b
-  zh: a311da3843709f90
+  zh: 73cadbe559f27b3c
 /deepseek-ai-dsh-tool-todo/model-experience/tool-schema:
   en: e4c7376d4f29dbd5
   zh: 6b7a9eaf69c9ea53
 /deepseek-ai-dsh-tool-todo/model-experience/tool-schema/what-the-model-sees:
   en: 1d761e1652e9fc94
-  zh: f847760856f74c8b
+  zh: 328f93b09a0bc959
 /deepseek-ai-dsh-tool-todo/model-experience/tool-schema/token-effect:
   en: a0a8f5ec3db0f500
-  zh: eac37a524c6e777e
+  zh: e7943b1cd8b4dc04
 /deepseek-ai-dsh-tool-todo/model-experience/tool-schema/kv-cache-effect:
   en: b385b04c94496e5b
-  zh: 3a361ac90ef5f037
+  zh: f044f80722381a9a
 /deepseek-ai-dsh-tool-todo/model-experience/tool-call-history-and-result:
   en: 9717b983b6a857e3
-  zh: 611a2dadf7c0c706
+  zh: f6966ecf95fd931b
 /deepseek-ai-dsh-tool-todo/model-experience/tool-call-history-and-result/what-the-model-sees:
   en: 05644654d1bce8c6
-  zh: ea2a42470fbb2ee1
+  zh: 3071fccfbc2623a2
 /deepseek-ai-dsh-tool-todo/model-experience/tool-call-history-and-result/token-effect:
   en: 7763a0e875faf53d
-  zh: fe33c3973215dc53
+  zh: 2b67c12d039def7f
 /deepseek-ai-dsh-tool-todo/model-experience/tool-call-history-and-result/kv-cache-effect:
   en: f5d5f97a153f7c70
-  zh: a5411047e008a0c1
+  zh: d90c60b5b097213c
 /deepseek-ai-dsh-tool-todo/known-limitations-and-deferred-work:
   en: 71e2aed21b2545c3
-  zh: 775300a3618a861a
+  zh: 5b72e31a804b4142
 /deepseek-ai-dsh-tool-todo/known-limitations-and-deferred-work/dev-note:
   en: ac1d08360a93382b
-  zh: 703a65fbcc38edc7
+  zh: 4739522f2f9cb5e0
 /deepseek-ai-dsh-tool-todo/known-limitations-and-deferred-work/dev-note/future-cross-agent-and-shared-lists:
   en: 071b9c5be71f799f
-  zh: dee15fe922a3ab95
+  zh: fdf31b42a463a0df

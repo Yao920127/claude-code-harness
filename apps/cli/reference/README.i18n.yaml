@@ -4,28 +4,28 @@
 #   pnpm run verify-translation-pairing --write apps/cli/reference/README.md
 /dsh-cli-behavior-reference:
   en: d25712a65d21ab45
-  zh: b1c57b706bc64085
+  zh: 3d75636c63e98b2c
 /dsh-cli-behavior-reference/profile-boot:
   en: e3a159750f5f9ed3
-  zh: e02d9004fcc239f9
+  zh: 1cbfc21019a75849
 /dsh-cli-behavior-reference/profile-boot/app-arguments:
   en: 241e5525aa09a33b
-  zh: 398f853143097154
+  zh: 8bb080e12ebfed89
 /dsh-cli-behavior-reference/profile-boot/config-schema-dump:
   en: a356f8a68f3b3685
-  zh: c718713b5d709295
+  zh: ae70c11925fd4506
 /dsh-cli-behavior-reference/startup-diagnostics:
   en: d6368bf97a02bd57
-  zh: 2ab7888a108961ce
+  zh: 320ca530f49eb1c5
 /dsh-cli-behavior-reference/plugin-management:
   en: 9980ff1600fa9460
-  zh: cc66ba45e27b5540
+  zh: a73cc9070e6daa97
 /dsh-cli-behavior-reference/web-profile:
-  en: 12bba432c07573bf
-  zh: ab6b365cfb95003f
+  en: a820b52ee2c3f3ef
+  zh: be7b90b142016355
 /dsh-cli-behavior-reference/shared-deployment-behavior:
   en: 24e3da3716d261fe
-  zh: 060611966db4ca69
+  zh: 8127ee3ab5ede357
 /dsh-cli-behavior-reference/source-execution:
   en: 05c2b23790f7b296
-  zh: 51f809020fb230a1
+  zh: e5a7e5a32bdb00d5

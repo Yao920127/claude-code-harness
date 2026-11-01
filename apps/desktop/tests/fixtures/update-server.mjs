@@ -31,7 +31,7 @@ export async function createUpdateServer() {
         if (policyMode === 'stall') return
         if (policyMode === 'failure') { response.writeHead(503).end('{"code":500}'); return }
         response.end(JSON.stringify(policyMode === 'force' ? {
-          code: 40005, data: { show_content: { title: '需要更新', detail: '现有任务继续运行，请更新后继续操作。' },
+          code: 40005, data: { show_content: { title: '需要更新', detail: '現有任務繼續執行，請更新後繼續操作。' },
             desktop_app_link: 'https://downloads.example.com/desktop' },
         } : { code: 0, data: { biz_code: 0, biz_data: null } }))
         return

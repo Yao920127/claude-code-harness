@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-26-permanent-session-deletion.md
 /agent-note-permanent-session-deletion:
   en: 02f1f65fc94bd9f7
-  zh: 5219ca692c011fe2
+  zh: 19ac6f1bc65b7548
 /agent-note-permanent-session-deletion/problem:
   en: e5f9de5e00bfd195
-  zh: 3fdae8e920a0af79
+  zh: c3a11c14b3c0457b
 /agent-note-permanent-session-deletion/decision:
   en: 387873bce6992ecd
-  zh: 1f8876d4834ddd12
+  zh: e302ec1aac265c07
 /agent-note-permanent-session-deletion/alternatives-considered:
   en: 74a0a1a2b23deb60
-  zh: f91e83c5ad494aff
+  zh: 6d694785f9e94657
 /agent-note-permanent-session-deletion/consequences:
   en: c99462a12b4e39dd
-  zh: 3448d829a7434ef6
+  zh: 193f09632bc88316

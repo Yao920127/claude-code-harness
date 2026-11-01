@@ -4,25 +4,25 @@
 #   pnpm run verify-translation-pairing --write docs/subsystems/session-query.md
 /session-query:
   en: 041684440d88fbbc
-  zh: 376e7f0b173b238d
+  zh: 1b3311328a61cde3
 /session-query/logical-records:
   en: 839a70b2761c16f1
-  zh: 883277abce68c750
+  zh: 3c0afc2f920c56dc
 /session-query/provider-independent-filters-and-documents:
   en: a1818c567b28613c
-  zh: 5dd442cf5ce0438e
+  zh: f91bc2eeb60dc9ee
 /session-query/full-text-search-pages:
   en: 192dc8ec7f3a9d28
-  zh: c18aef45c61610b9
+  zh: 80b0766bd62e14f3
 /session-query/session-lineage:
   en: c4b3e9e77a1b07d8
-  zh: e510802ab034ceac
+  zh: addd81d3180e6887
 /session-query/bounded-event-reads:
   en: 2f4a5fa959be3554
-  zh: 3590a7f6aeeb7e02
+  zh: e372a6ab410bb6d3
 /session-query/event-relationships:
   en: 2ec376e3a10ee5fa
-  zh: 3a7706de112f6e17
+  zh: 804ee88badba73a6
 /session-query/errors:
   en: 34e775125232d999
-  zh: 0c5c608760c4865d
+  zh: 8b8a613ef1d885dd

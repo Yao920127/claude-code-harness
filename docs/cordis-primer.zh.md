@@ -1,51 +1,51 @@
-# Cordis 入门
+# Cordis 入門
 
 [English](cordis-primer.md) | 中文
 
-Cordis 是 DeepSeek Harness 底层以 vendor 方式引入的插件框架。本文介绍 harness 插件作者在阅读[子系统页面](subsystems/core.zh.md)上生成的服务/事件参考之前需要了解的 Cordis 核心概念；[Cordis 教程](cordis-tutorial/index.zh.md)则通过实践逐一讲解这些概念。vendor 源码与同步流程见 [vendor/README.md](../vendor/README.md)。
+Cordis 是 DeepSeek Harness 底層以 vendor 方式引入的外掛框架。本文介紹 harness 外掛作者在閱讀[子系統頁面](subsystems/core.zh.md)上生成的服務/事件參考之前需要了解的 Cordis 核心概念；[Cordis 教學](cordis-tutorial/index.zh.md)則透過實踐逐一講解這些概念。vendor 原始碼與同步流程見 [vendor/README.md](../vendor/README.md)。
 
-## 五个核心概念
+## 五個核心概念
 
-- **插件是实现 Service 的对象。** 它可以是一个带有可选 `inject` 和 `apply(ctx)` 字段的函数，也可以是一个 `Service` 子类，其生命周期由 Cordis 挂载到当前上下文中。
-- **上下文是服务的容器。** 一个服务占据一个稳定的 `ctx.<key>`（如 `ctx.tools`、`ctx.llm`、`ctx.sessions`）；其他插件通过 key 查找服务，而非导入具体实现。
-- **通过 `inject` 声明服务依赖。** 插件声明所需的服务后，会等待这些服务就绪才启动；加载顺序通过服务依赖表达，而非手动编排启动序列。
-- **类型化事件用于通信。** 服务通过 TypeScript 声明合并注册事件名，然后以 `emit`、`waterfall`（瀑布式事件）、`parallel`、`serial` 或 `bail` 方式分发，分别对应监听者观察、包装、并行扇出、按序执行或停在首个 bail 值。
-- **注册是可逆的副作用。** 提示词片段、工具 schema、适配器、提供方和监听器通过 `ctx.effect()` 或 `ctx.on()` 安装，reload 和 teardown 时会按预期撤销。
+- **外掛是實作 Service 的物件。** 它可以是一個帶有可選 `inject` 和 `apply(ctx)` 欄位的函式，也可以是一個 `Service` 子類，其生命週期由 Cordis 掛載到目前上下文中。
+- **上下文是服務的容器。** 一個服務佔據一個穩定的 `ctx.<key>`（如 `ctx.tools`、`ctx.llm`、`ctx.sessions`）；其他外掛透過 key 查詢服務，而非匯入具體實作。
+- **透過 `inject` 宣告服務依賴。** 外掛宣告所需的服務後，會等待這些服務就緒才啟動；載入順序透過服務依賴表達，而非手動編排啟動序列。
+- **型別化事件用於通訊。** 服務透過 TypeScript 宣告合併註冊事件名，然後以 `emit`、`waterfall`（瀑布式事件）、`parallel`、`serial` 或 `bail` 方式分發，分別對應監聽者觀察、包裝、並行扇出、按序執行或停在首個 bail 值。
+- **註冊是可逆的副作用。** 提示詞片段、工具 schema、介面卡、提供者和監聽器透過 `ctx.effect()` 或 `ctx.on()` 安裝，reload 和 teardown 時會按預期撤銷。
 
 <a id="dispatch-modes"></a>
 
-## 分发模式
+## 分發模式
 
-每个事件具有以下分发模式之一，且只能通过对应方法分发。
+每個事件具有以下分發模式之一，且只能透過對應方法分發。
 
-| 模式 | 是否 await？ | 分发顺序 | 是否有返回值？ |
+| 模式 | 是否 await？ | 分發順序 | 是否有回傳值？ |
 |---|---|---|---|
-| `emit` | 否 | 监听器按注册顺序观察 | 否 |
-| `waterfall` | 否 | 监听器按注册顺序观察 | 是 |
-| `parallel` | 是 | 所有监听器并行观察事件 | 否 |
-| `serial` | 是 | 监听器按注册顺序观察 | 是 |
-| `bail` | 否 | 监听器按注册顺序观察，直到某个监听器返回 bail 值 | 是 |
+| `emit` | 否 | 監聽器按註冊順序觀察 | 否 |
+| `waterfall` | 否 | 監聽器按註冊順序觀察 | 是 |
+| `parallel` | 是 | 所有監聽器並行觀察事件 | 否 |
+| `serial` | 是 | 監聽器按註冊順序觀察 | 是 |
+| `bail` | 否 | 監聽器按註冊順序觀察，直到某個監聽器返回 bail 值 | 是 |
 
-分发模式是事件公开约定的一部分。新的 harness 事件通过 `@mode` 标签记录模式，以便生成的目录可以将声明与分发调用点做交叉校验。
+分發模式是事件公開約定的一部分。新的 harness 事件透過 `@mode` 標籤記錄模式，以便生成的目錄可以將宣告與分發呼叫點做交叉驗證。
 
 <a id="cordis-waterfall-semantics"></a>
 
-## Cordis Waterfall 语义
+## Cordis Waterfall 語義
 
-`ctx.waterfall` 是环绕中间件。监听器接收 `(...args, next)`。调用 `next()` 会执行下游监听器；下游返回值通过 `next()` 返回当前包装层，可由该层包装后继续向外返回。不调用 `next()` 直接返回则短路。
+`ctx.waterfall` 是環繞中介軟體。監聽器接收 `(...args, next)`。呼叫 `next()` 會執行下游監聽器；下游回傳值透過 `next()` 返回目前包裝層，可由該層包裝後繼續向外返回。不呼叫 `next()` 直接返回則短路。
 
-协作式监听器通常修改一个共享的请求或决策对象，然后委托。监听器也可以选择完全替换结果，下游监听器将只看到替换后的结果。仅当监听器必须在普通注册之前运行时才使用 `prepend: true`。
+協作式監聽器通常修改一個共享的請求或決策物件，然後委託。監聽器也可以選擇完全替換結果，下游監聽器將只看到替換後的結果。僅當監聽器必須在普通註冊之前執行時才使用 `prepend: true`。
 
-对于单决策事件，短路是设计意图。策略监听器在拥有决策权时可以不调用 `next()` 直接返回，而仅做标注或观察的监听器则必须委托。
+對於單決策事件，短路是設計意圖。策略監聽器在擁有決策權時可以不呼叫 `next()` 直接返回，而僅做標註或觀察的監聽器則必須委託。
 
 <a id="loader-configuration"></a>
 
-## Loader 配置
+## Loader 設定
 
-`@deepseek-ai/cordis-plugin-include` 将 `!!js` 解析为表达式节点。Loader 在声明的注入激活后，基于该插件上下文（`ctx.serviceName`）插值条目的 `config`，并在每次挂载决策时基于 loader 上下文插值其 `disabled` 字段；Include 会保留嵌套行表达式，直到目标行激活。其余条目元数据保持字面值。由环境选择插件时，请使用 overlay。
+`@deepseek-ai/cordis-plugin-include` 將 `!!js` 解析為表示式節點。Loader 在宣告的注入啟用後，基於該外掛上下文（`ctx.serviceName`）插值條目的 `config`，並在每次掛載決策時基於 loader 上下文插值其 `disabled` 欄位；Include 會保留巢狀行表示式，直到目標行啟用。其餘條目中繼資料保持字面值。由環境選擇外掛時，請使用 overlay。
 
-## 实践规则
+## 實踐規則
 
-将行为封装为插件：工具流水线事件属于 `ctx.tools`，模型流式输出属于 `ctx.llm`，实时 agent（智能体）协调属于 `ctx.agents`。拦截和策略优先使用事件；直接能力调用优先使用服务方法。
+將行為封裝為外掛：工具流水線事件屬於 `ctx.tools`，模型流式輸出屬於 `ctx.llm`，即時 agent（智慧代理）協調屬於 `ctx.agents`。攔截和策略優先使用事件；直接能力呼叫優先使用服務方法。
 
-每个注册都应有对应的 disposer（资源释放函数）：要么从 `ctx.effect()` 返回一个，要么使用 Cordis 提供的辅助方法自动处理。如果 teardown 顺序有要求，请将相关工作放在同一个 effect 中，以确保资源按预期顺序释放。
+每個註冊都應有對應的 disposer（資源釋放函式）：要麼從 `ctx.effect()` 返回一個，要麼使用 Cordis 提供的輔助方法自動處理。如果 teardown 順序有要求，請將相關工作放在同一個 effect 中，以確保資源按預期順序釋放。

@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-06-11-content-block-vocabulary.md
 /agent-note-provider-neutral-content-block-vocabulary-owned-by-dsh-llm:
   en: 64935f5c8e315004
-  zh: 6a9cbb4578eaa437
+  zh: 52a3f2b6e18f1c9d
 /agent-note-provider-neutral-content-block-vocabulary-owned-by-dsh-llm/problem:
   en: 4e81df7bca1c1638
-  zh: f7483d180a613237
+  zh: fbb50fb517744ee5
 /agent-note-provider-neutral-content-block-vocabulary-owned-by-dsh-llm/decision:
   en: 9526dfcf4da1d000
-  zh: ea2bf79a02b26b39
+  zh: 27c127d8f1ba384c
 /agent-note-provider-neutral-content-block-vocabulary-owned-by-dsh-llm/alternatives-considered:
   en: 1de2e19e711105e6
-  zh: a2cd5a64cc4e9e73
+  zh: 03de97294daf5ad0
 /agent-note-provider-neutral-content-block-vocabulary-owned-by-dsh-llm/consequences:
   en: 999d10e69e447e44
-  zh: 38370da5b900ac30
+  zh: 22d5d2921f26571b

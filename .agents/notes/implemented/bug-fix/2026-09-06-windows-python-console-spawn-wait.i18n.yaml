@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/bug-fix/2026-09-06-windows-python-console-spawn-wait.md
 /agent-note-wait-for-the-windows-python-console-runtime:
   en: 97ffbd17152279cc
-  zh: 9a223670f273471b
+  zh: 7f55ef1ed7453db4
 /agent-note-wait-for-the-windows-python-console-runtime/problem:
   en: 26ea75714d6fbbea
-  zh: 49441436e362a868
+  zh: 3440c32eba6a1858
 /agent-note-wait-for-the-windows-python-console-runtime/decision:
   en: 6ef15038eb5e0786
-  zh: 92e319fbb8133d52
+  zh: 1e7e08c8414da035
 /agent-note-wait-for-the-windows-python-console-runtime/alternatives-considered:
   en: 2cc100a4b8724d40
-  zh: 6ba47c76f304a460
+  zh: d59507246915defc
 /agent-note-wait-for-the-windows-python-console-runtime/consequences:
   en: ec5c2a7082012ed5
-  zh: 32027ea20bd32acf
+  zh: 9e11e6fcfa357a9a

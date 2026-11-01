@@ -4,16 +4,16 @@
 #   pnpm run verify-translation-pairing --write .agents/notes/implemented/feature/2026-09-25-claude-code-model-route.md
 /agent-note-claude-code-as-a-model-route:
   en: 5d64dca37c0530b1
-  zh: 8737ed8d464adf83
+  zh: b69f9275d49ae11a
 /agent-note-claude-code-as-a-model-route/problem:
   en: 83f8cefad25f1607
-  zh: baf3e874e52795fb
+  zh: 640df54497f5cd28
 /agent-note-claude-code-as-a-model-route/decision:
   en: 92ad670e46fa655f
-  zh: 7f71d022c61ee04e
+  zh: c0e78112360772cc
 /agent-note-claude-code-as-a-model-route/alternatives-considered:
   en: c408bfa3e6e46e8e
-  zh: 14d2d6f53bd12872
+  zh: ee78edc851ac4876
 /agent-note-claude-code-as-a-model-route/consequences:
   en: 441f69c64311033f
-  zh: 4b9ba05da4c04327
+  zh: b99db1b09a1f95ee

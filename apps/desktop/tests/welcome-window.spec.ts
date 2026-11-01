@@ -6,7 +6,7 @@ import { needsWelcome, WELCOME_IPC } from '../src/welcome-api.ts'
 const electron = vi.hoisted(() => ({
   create: vi.fn<(options: unknown) => ReturnType<typeof createWindow>>(),
   root: '/desktop-app',
-  handlers: new Map<string, (event: unknown, value?: unknown) => Promise<unknown>>(),
+  handlers: new Map<string, (event: unknown, ...values: unknown[]) => Promise<unknown>>(),
 }))
 vi.mock('electron', () => ({
   app: { getAppPath: () => electron.root },

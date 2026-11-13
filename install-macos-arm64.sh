@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build the unsigned Apple silicon disk image of Claude Code Harness and install
-# the app into /Applications (or --dest). Run from anywhere inside the checkout:
+# the app into /Applications (or --dest). Run from the repository root:
 #
-#   apps/desktop/scripts/install-macos-arm64.sh [--skip-build] [--dmg PATH] [--dest DIR] [--no-launch]
+#   ./install-macos-arm64.sh [--skip-build] [--dmg PATH] [--dest DIR] [--no-launch]
 #
 #   --skip-build  install the newest DMG already in apps/desktop/release/mac-arm64/
 #   --dmg PATH    install this DMG instead of building one
@@ -17,8 +17,7 @@ readonly PRODUCT_NAME='Claude Code Harness'
 readonly DEFAULT_APP_ID='com.yao920127.claude-code-harness'
 readonly MIN_NODE_22_MINOR=19
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RELEASE_DIR="$REPO_ROOT/apps/desktop/release/mac-arm64"
 
 skip_build=0

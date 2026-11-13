@@ -295,11 +295,13 @@ Apple 工具使用 macOS 目前活動網路服務的 HTTP/HTTPS 代理。設定�
 pnpm run package:desktop:win:x64:unsigned
 ```
 
-該命令要求設定 `DSH_DESKTOP_APP_ID` 並具備常規建置依賴，包括編譯原生模組所需的 Python 和 Visual C++ 建置工具。Python 不在 `PATH` 中時，將 `PYTHON` 設定為其可執行檔案路徑。命令將安裝檔寫入 `.desktop-build/targets/win-x64/unsigned-artifacts/`，省略自動更新設定，清除簽名憑證，且不生成釋出完成記錄。它不需要 EV 憑證或更新源地址。簽名打包和上傳命令仍遵循正式釋出要求。
+該命令要求設定 `DSH_DESKTOP_APP_ID` 並具備常規建置依賴，包括編譯原生模組所需的 Python 和 Visual C++ 建置工具。Python 不在 `PATH` 中時，將 `PYTHON` 設定為其可執行檔案路徑。命令將安裝檔寫入 `apps/desktop/release/win-x64/`，省略自動更新設定，清除簽名憑證，且不生成釋出完成記錄。它不需要 EV 憑證或更新源地址。簽名打包和上傳命令仍遵循正式釋出要求。
 
 ### 未簽名 macOS 測試磁碟映像
 
-在 Apple 晶片上，`pnpm run package:desktop:mac:arm64:unsigned` 無需 Apple Developer 憑證或公證即可建置臨時簽名（ad hoc）的 DMG 和 ZIP。由於 iCloud 桌面等同步資料夾會新增 `codesign` 拒絕的 Finder 中繼資料，命令在系統臨時目錄下的私有目錄中組裝、簽名並冒煙測試應用，然後將 DMG、ZIP 和 blockmap 複製到 `.desktop-build/targets/mac-arm64/unsigned-artifacts/`。Gatekeeper 會阻止下載副本的首次啟動；接收者需從 Finder 右鍵選單開啟，或在系統設定中允許。
+在 Apple 晶片上，`pnpm run package:desktop:mac:arm64:unsigned` 無需 Apple Developer 憑證或公證即可建置臨時簽名（ad hoc）的 DMG 和 ZIP。由於 iCloud 桌面等同步資料夾會新增 `codesign` 拒絕的 Finder 中繼資料，命令在系統臨時目錄下的私有目錄中組裝、簽名並冒煙測試應用，然後將 DMG、ZIP 和 blockmap 複製到 `apps/desktop/release/mac-arm64/`；該目錄位於隱藏的 `.desktop-build` 之外，Finder 可直接看到。Gatekeeper 會阻止下載副本的首次啟動；接收者需從 Finder 右鍵選單開啟，或在系統設定中允許。
+
+在 Apple 晶片上，`pnpm run install:desktop:mac:arm64` 會執行 [`scripts/install-macos-arm64.sh`](scripts/install-macos-arm64.sh)：檢查 Xcode Command Line Tools、Node `^22.19 || >=24` 與 pnpm，安裝依賴、建置、打包未簽名 DMG，結束執行中的副本，再把 app 複製到 `/Applications`；只有該目錄不可寫入時才要求 `sudo`。`--skip-build` 安裝 `apps/desktop/release/mac-arm64/` 中最新的 DMG，`--dmg <path>` 安裝指定映像檔，`--dest <dir>` 改變安裝目錄，`--no-launch` 安裝後不開啟 app。`DSH_DESKTOP_APP_ID` 可覆寫 bundle identifier；多次安裝間請保持不變，app 才能保留設定。
 
 ### Windows 安裝介面
 

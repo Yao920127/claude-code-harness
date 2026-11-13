@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-claude-code-usage",
   "description": "Claude Code plan usage in the Web sidebar foot: five-hour and weekly limit use with reset times",
-  "version": "0.1.7-rc.2",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },

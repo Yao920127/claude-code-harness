@@ -1595,7 +1595,7 @@ export interface Config {
 
 - `inject`: `llm` · `subprocess` · `sessions` · `agents`
 - `refs`: `EffortLevel` (`@anthropic-ai/claude-agent-sdk`) · [`RetryPolicyConfig`](../packages/llm/llm/src/index.ts)
-- `source`: [`packages/llm/llm-claude-code/src/index.ts:53`](../packages/llm/llm-claude-code/src/index.ts)
+- `source`: [`packages/llm/llm-claude-code/src/index.ts:54`](../packages/llm/llm-claude-code/src/index.ts)
 
 ```ts config-catalog
 /** Deployment-owned route identity, models, permissions, environment, and process release. */
@@ -1641,6 +1641,10 @@ export interface Config {
   retryPolicy?: RetryPolicyConfig
   /** Milliseconds one plan-usage read answers app windows before Claude Code is asked again. */
   usageFreshMs?: number
+  /** Total-pixel budget of one image sent to Claude Code; larger images are downscaled proportionally. */
+  requestImagePixelBudget?: number
+  /** Encoded-byte target of one image sent to Claude Code. */
+  requestImageMaxBytes?: number
 }
 
 /** One selectable model advertised by the route. */

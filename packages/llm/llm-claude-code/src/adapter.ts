@@ -11,8 +11,9 @@
  */
 
 import {
-  query as officialQuery, type EffortLevel, type Options, type Query, type SDKControlGetUsageResponse,
+  query as officialQuery, type EffortLevel, type Options, type Query, type SDKControlGetUsageResponse, type SDKUserMessage,
 } from '@anthropic-ai/claude-agent-sdk'
+import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import type { Agent } from '@deepseek-ai/dsh-agent'
 import type { Session, SessionId } from '@deepseek-ai/dsh-session'
 import { LlmAdapter, LlmError } from '@deepseek-ai/dsh-llm'
@@ -21,6 +22,7 @@ import type {
   LlmModelInfo,
   LlmProviderInfo,
   LlmResolvedModelInfo,
+  ModelModality,
   ResolvedRetryPolicy,
   StreamChunk,
 } from '@deepseek-ai/dsh-llm'
@@ -29,6 +31,7 @@ import { scrubbedParentEnv, type SubprocessHandle, type SubprocessSpawnSpec } fr
 import type { ApprovalService } from '@deepseek-ai/dsh-user-approval'
 import { approvalCallback } from './approval.ts'
 import { BROWSER_MCP_SERVER, BROWSER_TOOL_ID, browserToolServer } from './browser-tool.ts'
+import { imagePromptMessage, type ClaudeCodeImageBudget } from './images.ts'
 import { modelEntries, modelReasoning, NATIVE_MODEL_ID, type ClaudeCodeModelEntry } from './models.ts'
 import { resolvePermissionMode, type ClaudeCodeRoutePermissionMode, type SessionPermissions } from './permissions.ts'
 import { planTurn, type ClaudeCodeTurnPlan } from './request.ts'
@@ -58,6 +61,10 @@ export interface ClaudeCodeAdapterOptions {
   readonly disposeGraceMs: number
   /** Retry policy captured with the route registration. */
   readonly retryPolicy: ResolvedRetryPolicy
+  /** Current durable attachment service, when the composition mounts one; image prompts need it. */
+  readonly attachments: () => AttachmentStore | undefined
+  /** Per-image pixel and byte budgets for images sent to Claude Code. */
+  readonly imageBudget: ClaudeCodeImageBudget
   /** Shared subprocess spawn operation owning the CLI process tree. */
   readonly spawn: (spec: SubprocessSpawnSpec) => SubprocessHandle
   /** Current approval service, when the composition mounts one. */
@@ -74,6 +81,9 @@ export interface ClaudeCodeAdapterOptions {
    */
   readonly appBrowser: () => ((session: Session, url: string) => number) | undefined
 }
+
+/** Input every Claude model accepts through Claude Code. */
+const INPUT_MODALITIES: readonly ModelModality[] = ['text', 'image']
 
 /** Claude Code turns as model calls on one or more harness provider routes. */
 export class ClaudeCodeAdapter extends LlmAdapter {
@@ -98,7 +108,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       id: entry.id,
       name: entry.name,
       ...entry.description === undefined ? {} : { description: entry.description },
-      inputModalities: ['text'],
+      inputModalities: INPUT_MODALITIES,
     }))
   }
 
@@ -111,7 +121,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
       provider,
       id: model,
       name: entry?.name ?? model,
-      inputModalities: ['text'],
+      inputModalities: INPUT_MODALITIES,
       ...reasoning === undefined ? {} : { reasoning },
     }
   }
@@ -217,7 +227,7 @@ export class ClaudeCodeAdapter extends LlmAdapter {
     const translator = new ClaudeCodeStreamTranslator()
     try {
       query = officialQuery({
-        prompt: plan.prompt,
+        prompt: await this.prompt(plan, controller.signal),
         options: this.queryOptions(options, plan, session, cwd, controller, agent, (handle) => { child = handle }),
       })
       for await (const message of query) yield * translator.accept(message)
@@ -237,6 +247,23 @@ export class ClaudeCodeAdapter extends LlmAdapter {
         await child.waitForExit()
       }
     }
+  }
+
+  /**
+   * The native prompt for one turn: plain text, or one user message carrying the marked images.
+   * @param plan - the derived turn.
+   * @param signal - cancels attachment reads.
+   * @returns the prompt argument for the SDK query.
+   */
+  private async prompt(plan: ClaudeCodeTurnPlan, signal: AbortSignal): Promise<string | AsyncIterable<SDKUserMessage>> {
+    if (plan.images.length === 0) return plan.prompt
+    const message = await imagePromptMessage(plan.prompt, plan.images, this.options.attachments(), this.options.imageBudget, signal)
+    // The SDK closes the native input once this one-message stream ends and the turn finishes.
+    // oxlint-disable-next-line typescript/require-await -- the SDK accepts only an async iterable of messages
+    async function* single(): AsyncGenerator<SDKUserMessage, void> {
+      yield message
+    }
+    return single()
   }
 
   private queryOptions(

@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pick a Claude model in the composer's model selector under any agent preset; making it the default model selection starts every new Session with Claude Code. The selector lists the models Claude Code reports for your account — for example `Claude (Claude Code settings)`, which sends no model so your Claude Code settings (such as `"model": "opus"`) choose it, `Claude Sonnet 5`, and `Claude Fable 5.1` — and reads that list from a short-lived Claude Code process the first time a selector asks. The settings entry's description names the account's recommended model, which applies only when no setting selects one. For a model that accepts an effort setting, the selector's Effort row offers the levels Claude Code reports for it — Low, Medium, High, Extra high (`xhigh`), and Max — and starts at Medium, or at the configured `defaultEffort`; the chosen level passes to Claude Code as its `effort` option. A model that reports no levels shows no Effort row.
+The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pick a Claude model in the composer's model selector under any agent preset; making it the default model selection starts every new Session with Claude Code. The selector lists the models Claude Code reports for your account — for example `Claude (Claude Code settings)`, which sends no model so your Claude Code settings (such as `"model": "opus"`) choose it, `Claude Sonnet 5.5`, and `Claude Fable 5.2` — and reads that list from a short-lived Claude Code process the first time a selector asks. The settings entry's description names the account's recommended model, which applies only when no setting selects one. For a model that accepts an effort setting, the selector's Effort row offers the levels Claude Code reports for it — Low, Medium, High, Extra high (`xhigh`), and Max — and starts at Medium, or at the configured `defaultEffort`; the chosen level passes to Claude Code as its `effort` option. A model that reports no levels shows no Effort row.
 
 ### Configuration
 
@@ -54,6 +54,8 @@ The Bundle patch inserts one row, `llm-claude-code`. In the Web application, pic
 | `disposeGraceMs` | `3000` | Grace between the managed process's termination tiers |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | Model-request retry policy; the default never retries, because a failed turn may already have changed files |
 | `usageFreshMs` | `60000` | Milliseconds one plan-usage read answers app windows before Claude Code is asked again |
+| `requestImagePixelBudget` | `2458624` (1568²) | Total-pixel budget of one image sent to Claude Code; larger images are downscaled proportionally |
+| `requestImageMaxBytes` | `5242880` | Encoded-byte target of one image sent to Claude Code |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-llm-claude-code) is the exhaustive source for every accepted field.
 
@@ -81,7 +83,8 @@ When the composition mounts the app Browser (`ctx.sidebarBrowser`), each convers
 | Turn stopped by a Claude Code limit | `CLAUDE_CODE_LIMIT` | Send a narrower request |
 | Claude Code execution error or other API error | `CLAUDE_CODE_EXECUTION`, `CLAUDE_CODE_ERROR` | Read the message, then send again |
 | Process failure or missing platform payload | `CLAUDE_CODE_PROCESS` | Reinstall the Bundle with optional dependencies |
-| Sampling options or images in the request | `UNSUPPORTED_OPTION`, `UNSUPPORTED_CONTENT` | Send text without sampling overrides |
+| Sampling options in the request | `UNSUPPORTED_OPTION` | Send the request without sampling overrides |
+| Image in a composition without the attachment service | `UNSUPPORTED_CONTENT` | Mount `attachment`, or send text |
 
 Cancelling the harness turn aborts the Claude Code turn and waits for its process tree to exit.
 
@@ -117,7 +120,7 @@ Cancelling the harness turn aborts the Claude Code turn and waits for its proces
 
 ### Request flow
 
-`planTurn()` maps the request's effort to a Claude Code level, and refuses temperature, stop sequences, an effort outside `low`, `medium`, `high`, `xhigh`, and `max`, images, and a conversation-request `maxTokens`, and ignores harness tool schemas. It finds the newest assistant message whose replay state this build reads and sends the person-authored text of the trailing user messages after it as the prompt; plugin-inserted user messages such as runtime-context snapshots are dropped, unless the trailing messages hold nothing else. Messages between that point and the trailing user messages — all of them when no replay state exists — are quoted once in a `<conversation_history>` block ahead of the prompt. An auxiliary call (`purpose` set, such as a Session title) sends every message, appends its system prompt, never resumes, and runs with no tools, one turn, and no persisted native transcript. [`src/models.ts`](src/models.ts) names the discovered models and keeps each one's reported effort levels: the native default is labeled by the Claude Code settings that choose it, and every alias stays listed.
+`planTurn()` maps the request's effort to a Claude Code level, and refuses temperature, stop sequences, an effort outside `low`, `medium`, `high`, `xhigh`, and `max`, and a conversation-request `maxTokens`, and ignores harness tool schemas. It finds the newest assistant message whose replay state this build reads and sends the person-authored text of the trailing user messages after it as the prompt; plugin-inserted user messages such as runtime-context snapshots are dropped, unless the trailing messages hold nothing else. Messages between that point and the trailing user messages — all of them when no replay state exists — are quoted once in a `<conversation_history>` block ahead of the prompt. An auxiliary call (`purpose` set, such as a Session title) sends every message, appends its system prompt, never resumes, and runs with no tools, one turn, and no persisted native transcript. [`src/models.ts`](src/models.ts) names the discovered models and keeps each one's reported effort levels: the native default is labeled by the Claude Code settings that choose it, and every alias stays listed.
 
 The adapter resolves the workspace from the request's Session, or from the initiating Agent when the request names none, and fails with `NO_WORKSPACE` before starting Claude Code when neither has one. The SDK's custom spawn hook places the platform CLI under `ctx.subprocess`; the stream's `finally` closes the query, terminates the managed range, and waits for whole-tree exit.
 
@@ -144,11 +147,11 @@ Partial-message events stream top-level text and thinking deltas. A top-level to
 
 #### What the model sees
 
-Claude Code's model sees Claude Code's own `claude_code` system prompt, the native transcript restored by `resume`, and one prompt: the trailing person-authored user messages' text joined by blank lines. When the native transcript lacks earlier messages, the prompt starts with a `<conversation_history>` block holding one `<user>`, `<assistant>`, or `<tool result>` element per earlier message with text; assistant tool calls render as `[tool call <name>: <arguments>]`, reasoning is omitted, and plugin-inserted user messages are dropped.
+Claude Code's model sees Claude Code's own `claude_code` system prompt, the native transcript restored by `resume`, and one prompt: the trailing person-authored user messages' text joined by blank lines. When the native transcript lacks earlier messages, the prompt starts with a `<conversation_history>` block holding one `<user>`, `<assistant>`, or `<tool result>` element per earlier message with text; assistant tool calls render as `[tool call <name>: <arguments>]`, reasoning is omitted, and plugin-inserted user messages are dropped. Each image occurrence in that text, quoted history included, appears as an `[Image #k]` marker; the prompt then carries, per marker, a handle line naming the image and its read-only host path followed by the image itself, downscaled to the route's image budgets. An offloaded image sends only its placeholder line.
 
 #### Token effect
 
-Each request adds the trailing user text. The quoted history block is sent only on a request whose history the native transcript lacks, and its size equals the quoted messages' text. Harness tool schemas and the harness system prompt add nothing. Claude Code's own tool use, compaction, and system prompt add tokens that Claude Code owns.
+Each request adds the trailing user text and, per image marker, its handle line and image tokens. The quoted history block is sent only on a request whose history the native transcript lacks, and its size equals the quoted messages' text. Harness tool schemas and the harness system prompt add nothing. Claude Code's own tool use, compaction, and system prompt add tokens that Claude Code owns.
 
 #### KV Cache effect
 
@@ -187,7 +190,7 @@ Append-only: each turn adds one assistant message after the reusable prefix and 
 <a id="known-limitations-and-deferred-work"></a>
 
 - **Harness tools stay unused** — the route ignores the preset's tool schemas; Claude Code's own tools, MCP servers, and skills from its settings replace them.
-- **Text-only input** — image attachments fail with `UNSUPPORTED_CONTENT`; the route declares text-only input to model selectors.
+- **No request-level image bound** — each image is downscaled to the per-image budgets, but the route never asks the harness to offload older images; Claude Code keeps images in its own transcript and compacts it itself.
 - **The app browser tool steers, it does not block** — its instructions ask Claude Code not to start an external browser, but a shell `open` command is still permitted by the Session's permissions.
 - **Tool activity is a text line** — top-level tool calls and failed results render as reasoning lines, not as tool cards, and successful tool results stay inside Claude Code.
 - **No question channel** — `AskUserQuestion` is disabled because no harness question bridge exists; Claude Code asks in its answer text instead.

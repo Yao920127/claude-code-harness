@@ -110,10 +110,12 @@ export function modelEntries(models: readonly ModelInfo[]): ClaudeCodeModelEntry
   return models.map((model) => {
     const { label, notes } = labelAndNotes(model)
     if (model.value === NATIVE_MODEL_ID) {
+      // The default entry's description always starts with the recommended model's name (`Fable 5.2`).
+      const recommended = model.description.split(DESCRIPTION_SEPARATOR)[0] as string
       return {
         id: model.value,
         name: NATIVE_MODEL_NAME,
-        description: `The model your Claude Code settings select; ${label} without a setting`,
+        description: `The model your Claude Code settings select; ${recommended} without a setting`,
         ...reportedEfforts(model),
       }
     }

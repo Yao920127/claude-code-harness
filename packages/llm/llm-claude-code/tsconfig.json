@@ -28,6 +28,9 @@
       "path": "../llm"
     },
     {
+      "path": "../../attachment/attachment"
+    },
+    {
       "path": "../../core/agent"
     },
     {

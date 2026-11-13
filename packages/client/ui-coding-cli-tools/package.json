@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-coding-cli-tools",
   "description": "Tool cards for the tool calls Codex, Antigravity, Grok Build, and OpenCode run inside their own model turns",
-  "version": "0.1.7-rc.2",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },

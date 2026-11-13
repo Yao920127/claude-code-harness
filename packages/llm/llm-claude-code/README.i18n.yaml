@@ -21,11 +21,11 @@
   en: 311c7fb42e4c5508
   zh: ee8e0f8fc98104f8
 /deepseek-ai-dsh-llm-claude-code/use-this-package/installing-the-bundle:
-  en: f6c55869843a242f
-  zh: 64f857c91bd0fb98
+  en: 18b045bd5bf92bae
+  zh: 4bd4f109932e1d9d
 /deepseek-ai-dsh-llm-claude-code/use-this-package/configuration:
-  en: 5e6ee56c1a52e9f5
-  zh: fdd33410f5f27cb6
+  en: 3870623dca386144
+  zh: 4f91e3023f6dd73b
 /deepseek-ai-dsh-llm-claude-code/use-this-package/permissions:
   en: 3bba6a854b6ed9c3
   zh: d95ba0a8d66b065f
@@ -36,8 +36,8 @@
   en: d0f898fd8fef5282
   zh: 85da27898354113c
 /deepseek-ai-dsh-llm-claude-code/use-this-package/failure-and-recovery:
-  en: a6aa583f9ff079f4
-  zh: 17966a82f4cacd30
+  en: 4091f35a924abf5f
+  zh: 75b91cafe89e3805
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation:
   en: 42b15ac6321706aa
   zh: 5d7e805402b76143
@@ -48,8 +48,8 @@
   en: 1b066ce06764b250
   zh: 869caae9873cc621
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/request-flow:
-  en: 5bec9efd094e3277
-  zh: 2b97e43a7f4a8b51
+  en: 5bd03b6ad28774f4
+  zh: 772dda0ba9d9a355
 /deepseek-ai-dsh-llm-claude-code/understand-the-implementation/stream-translation:
   en: ccc36cf088d7ea1a
   zh: c58b89f2f0ea6ce6
@@ -63,11 +63,11 @@
   en: de8f74b5559c6b55
   zh: d6f4f0bcb13082d1
 /deepseek-ai-dsh-llm-claude-code/model-experience/claude-code-prompt/what-the-model-sees:
-  en: d7ed2dbe33ec19f9
-  zh: 0812d825b718be56
+  en: 84cd0bd7a88aa869
+  zh: 07e6c925edf70bd3
 /deepseek-ai-dsh-llm-claude-code/model-experience/claude-code-prompt/token-effect:
-  en: 49badc71d67259af
-  zh: 5f3592acac33cf2d
+  en: 564ab4cc0275eb4b
+  zh: 3bed11ad0ab701dd
 /deepseek-ai-dsh-llm-claude-code/model-experience/claude-code-prompt/kv-cache-effect:
   en: af32cffda01dcbab
   zh: 79f238752f76a3cf
@@ -96,8 +96,8 @@
   en: 4da37db427d1ae65
   zh: 1bc64e8087bf65fb
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work:
-  en: a80fd60da1fa39b6
-  zh: 22d430a855a3ef97
+  en: 0f0c06f19df1cf36
+  zh: e9b852917bb29e79
 /deepseek-ai-dsh-llm-claude-code/known-limitations-and-deferred-work/dev-note:
   en: 9c2341d99bdc706a
   zh: ff3ff8e0d1772c12

@@ -1,4 +1,4 @@
-import { join, sep } from 'node:path'
+import { join, relative, resolve, sep } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   desktopTargetBuildPaths,
@@ -32,6 +32,11 @@ describe('desktop build paths', () => {
     expect(arm64.artifacts).toContain(join('targets', 'mac-arm64', 'artifacts'))
     expect(x64.dsh).toContain(join('targets', 'mac-x64', 'dsh'))
     expect(windows.runtime).toContain(join('targets', 'win-x64', 'runtime'))
+  })
+
+  it('writes unsigned artifacts to a visible directory outside the dot-prefixed build root', () => {
+    const { unsignedArtifacts } = desktopTargetBuildPaths('mac-arm64')
+    expect(relative(resolve(import.meta.dirname, '..'), unsignedArtifacts)).toBe(join('release', 'mac-arm64'))
   })
 
   it('shares only the immutable upstream download cache', () => {

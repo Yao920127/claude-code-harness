@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-llm-claude-code",
   "description": "Claude Code model route for the DeepSeek Harness LLM seam: each model call runs one Claude Code turn with the host's own Claude Code sign-in",
-  "version": "0.1.7-rc.2",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -52,6 +52,7 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "workspace:~",
     "@deepseek-ai/dsh-agent": "workspace:*",
+    "@deepseek-ai/dsh-attachment": "workspace:*",
     "@deepseek-ai/dsh-client-ui-sidebar-browser": "workspace:*",
     "@deepseek-ai/dsh-llm": "workspace:*",
     "@deepseek-ai/dsh-sandbox": "workspace:*",
@@ -65,7 +66,7 @@
     "@deepseek-ai/dsh-util-values": "workspace:*"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "0.3.291",
+    "@anthropic-ai/claude-agent-sdk": "0.3.323",
     "@anthropic-ai/sdk": "0.93.0",
     "@deepseek-ai/dsh-brand": "workspace:*",
     "@deepseek-ai/schemastery": "workspace:~",

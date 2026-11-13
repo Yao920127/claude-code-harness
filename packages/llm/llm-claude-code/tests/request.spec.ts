@@ -31,6 +31,16 @@ function assistant(text: string, replay = false) {
   })
 }
 
+function imageMessage(id: string, text?: string) {
+  return createUserMessage({
+    content: [
+      { type: 'image', attachment: { attachmentId: id, mediaType: 'image/png', bytes: 1, width: 1, height: 1 } as ImageAttachmentRef },
+      ...text === undefined ? [] : [{ type: 'text' as const, text }],
+    ],
+    source: { kind: 'user' },
+  })
+}
+
 function request(messages: RequestMessage[], extra: Partial<GenerateOptions> = {}): GenerateOptions {
   return { provider: 'claude-code', model: 'default', messages, ...extra }
 }
@@ -71,13 +81,14 @@ describe('planTurn', () => {
   it('sends a conversation prompt without the harness system prompt', () => {
     expect(planTurn(request([createSystemMessage('Use the bash tool.'), user('hello')], { system: 'x' }))).toEqual({
       prompt: 'hello',
+      images: [],
     })
   })
 
   it('appends an auxiliary caller\'s system prompt and omits empty parts', () => {
     expect(planTurn(request([createSystemMessage('B'), user('q')], { system: 'A', purpose: 'session-title' })))
-      .toEqual({ prompt: 'q', systemAppend: 'A\n\nB' })
-    expect(planTurn(request([createSystemMessage(''), user('q')], { purpose: 'session-title' }))).toEqual({ prompt: 'q' })
+      .toEqual({ prompt: 'q', images: [], systemAppend: 'A\n\nB' })
+    expect(planTurn(request([createSystemMessage(''), user('q')], { purpose: 'session-title' }))).toEqual({ prompt: 'q', images: [] })
   })
 
   it('ignores harness tool schemas', () => {
@@ -97,6 +108,7 @@ describe('planTurn', () => {
     const plan = planTurn(request([user('one'), assistant('first', true), user('two'), user('three')]))
     expect(plan).toEqual({
       prompt: 'two\n\nthree',
+      images: [],
       resume: { kind: 'claude-code', version: 1, sessionId: SESSION, resumeAt: ENTRY },
     })
   })
@@ -163,12 +175,23 @@ describe('planTurn', () => {
     expect(planTurn(request([user('x')], { stop: [] })).prompt).toBe('x')
   })
 
-  it('refuses images and empty prompts', () => {
-    const image = createUserMessage({
-      content: [{ type: 'image', attachment: { attachmentId: 'a', mediaType: 'image/png', bytes: 1, width: 1, height: 1 } as ImageAttachmentRef }],
-      source: { kind: 'user' },
-    })
-    expect(failureCode(() => planTurn(request([image])))).toBe('UNSUPPORTED_CONTENT')
+  it('marks images in reading order across quoted history and the prompt', () => {
+    const first = imageMessage('a')
+    const second = imageMessage('b', 'compare')
+    const plan = planTurn(request([first, assistant('seen'), second]))
+    expect(plan.prompt).toBe('<conversation_history>\n<user>\n[Image #1]\n</user>\n<assistant>\nseen\n</assistant>\n</conversation_history>\n\n[Image #2]compare')
+    expect(plan.images.map(block => block.attachment.attachmentId)).toEqual(['a', 'b'])
+    expect(planTurn(request([user('x')])).images).toEqual([])
+  })
+
+  it('sends a prompt that holds only an image', () => {
+    const plan = planTurn(request([imageMessage('a')]))
+    expect(plan.prompt).toBe('[Image #1]')
+    expect(plan.images).toHaveLength(1)
+  })
+
+  it('refuses empty prompts even when quoted history holds an image', () => {
+    expect(failureCode(() => planTurn(request([imageMessage('a'), assistant('y'), user('  ')])))).toBe('EMPTY_PROMPT')
     expect(failureCode(() => planTurn(request([user('x'), assistant('y', true)])))).toBe('EMPTY_PROMPT')
     expect(failureCode(() => planTurn(request([user('   ')])))).toBe('EMPTY_PROMPT')
   })

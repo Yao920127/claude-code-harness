@@ -114,7 +114,7 @@ describe('desktop macOS release signature', () => {
       DSH_DESKTOP_TARGET_PLATFORM: 'win32',
       DSH_DESKTOP_UNSIGNED: '1',
     }, 'win32', 'x64')
-    expect(portablePath(config.directories.output)).toContain('/targets/win-x64/unsigned-artifacts')
+    expect(portablePath(config.directories.output)).toMatch(/\/apps\/desktop\/release\/win-x64$/u)
     expect(portablePath(config.nsis.include)).toMatch(/\/scripts\/installer\.nsh$/u)
     expect(config).toMatchObject({
       win: { forceCodeSigning: false, signtoolOptions: { sign: undefined } },
@@ -129,7 +129,7 @@ describe('desktop macOS release signature', () => {
     expect(config.dmg.sign).toBe(false)
     expect(config.artifactName).toBe('claude-code-harness-${version}-${os}-${arch}-unsigned.${ext}')
     expect(config.extraMetadata).not.toHaveProperty('dshMandatoryUpdatePolicy')
-    expect(portablePath(config.directories.output)).toContain('/.desktop-build/targets/mac-arm64/')
+    expect(portablePath(config.directories.output)).toMatch(/\/apps\/desktop\/release\/mac-arm64$/u)
     expect(config.asarUnpack).toEqual(expect.arrayContaining(['**/node_modules/@anthropic-ai/claude-agent-sdk-*/**/*']))
     expect(() => createElectronBuilderConfig({ DSH_DESKTOP_APP_ID: 'com.example.cch', DSH_DESKTOP_UNSIGNED: '1' }, 'linux', 'x64'))
       .toThrow(/unsigned builds require Windows or macOS/u)

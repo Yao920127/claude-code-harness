@@ -114,7 +114,7 @@ it('builds unsigned macOS artifacts in private staging, then copies only disk im
   expect(smoke[3].env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR).toBe(staging)
   expect(stages.at(-1)).toBe('exec tsx scripts/smoke-packaged-runtime.ts --unsigned')
   expect(vi.mocked(cpSync).mock.calls.map(([, to]) => String(to).split(/[\\/]/u).slice(-3).join('/'))).toEqual([
-    'mac-arm64/unsigned-artifacts/claude.dmg', 'mac-arm64/unsigned-artifacts/claude.zip', 'mac-arm64/unsigned-artifacts/claude.zip.blockmap'])
+    'release/mac-arm64/claude.dmg', 'release/mac-arm64/claude.zip', 'release/mac-arm64/claude.zip.blockmap'])
   expect(vi.mocked(rmSync).mock.calls.at(-1)![0]).toBe(staging)
   expect(writeFileSync).not.toHaveBeenCalled()
 })

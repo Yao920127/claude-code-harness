@@ -567,45 +567,70 @@ describe('tab switching in ConversationRoot', () => {
     expect(labelOf('trajectory')).toBe('Trajectory')
   })
 
-  it('draws the workflow chart, opens record details, and jumps to the trajectory record', async () => {
-    // jsdom has no DOMMatrixReadOnly; the chart reads only the viewport scale from it.
-    vi.stubGlobal('DOMMatrixReadOnly', class { readonly m22 = 1 })
-    const b = await bench(historySnapshot(FLOW_NODES))
+  it('lists user turns, draws each model call as request, response, and tools, and expands details', async () => {
+    const requests: TrajectorySnapshot['requests'] = [{
+      purpose: 'assistant', turn: 1, step: 2, startSeq: 4, resultSeq: 4, startedAt: 3_500, completedAt: 4_000, status: 'complete',
+      requestConfig: { provider: 'claude-code', model: 'claude-fable-5-2' },
+      prompt: {
+        config: { provider: 'claude-code', model: 'claude-fable-5-2' },
+        system: 'You are helpful.',
+        tools: [{ name: 'bash', description: 'Run a command', parameters: { type: 'object' } }],
+      },
+    }]
+    const b = await bench(historySnapshot(FLOW_NODES, { requests }))
     const view = mount(b)
     fireEvent.click(screen.getByRole('tab', { name: 'Workflow' }))
     expect(screen.queryByTestId('chat-body')).toBeNull()
     expect(screen.getByRole('toolbar', { name: '工作流工具欄' })).toBeTruthy()
     expect(view.container.querySelector('[data-conversation-composer-overlay]')).toBeTruthy()
-    const node = (kind: string) => view.container.querySelectorAll(`.react-flow__node [data-flow-node="${kind}"]`)
-    const kinds = () => [...view.container.querySelectorAll('.react-flow__node [data-flow-node]')]
-      .map(element => element.getAttribute('data-flow-node'))
-    expect(kinds()).toEqual(['input', 'model', 'tool', 'model', 'input', 'model'])
-    // The legend names each role with its color.
-    expect(screen.getByRole('list', { name: '角色顏色' }).textContent).toBe('使用者助手工具子工具上下文')
-    // The answering reply shows what it said and its token counts on the node.
-    expect(node('model')[1]!.textContent).toContain('One file.')
-    expect(node('model')[1]!.textContent).toContain('輸入 1,200 · 輸出 34 tok')
-    expect(screen.getByText('bash')).toBeTruthy()
-    expect(screen.getByText('第 1 輪')).toBeTruthy()
-    expect(screen.getByText('第 2 輪')).toBeTruthy()
 
-    fireEvent.click(node('tool')[0]!)
-    const details = screen.getByRole('complementary', { name: '事件詳情' })
-    expect(details.textContent).toContain('第 1 輪 · 第 1 步')
-    expect(details.textContent).toContain('已完成')
-    expect(details.textContent).toContain('a.ts')
-    expect(details.textContent).toContain('工具執行本身不消耗模型 token')
-    fireEvent.click(node('model')[1]!)
-    const reply = screen.getByRole('complementary', { name: '事件詳情' })
-    expect(reply.textContent).toContain('做了什麼One file.')
+    // Totals: two user turns, three model calls, one tool call.
+    const stats = screen.getByRole('toolbar', { name: '工作流工具欄' }).querySelector('dl')!
+    expect([...stats.querySelectorAll('dd')].map(value => value.textContent).slice(0, 3)).toEqual(['2', '3', '1'])
+
+    // The newest turn is selected until another is picked.
+    const list = screen.getByRole('navigation', { name: '使用者對話列表' })
+    const turnButtons = list.querySelectorAll('button')
+    expect([...turnButtons].map(button => button.querySelector('span span')!.textContent))
+      .toEqual(['第 1 輪：list files', '第 2 輪：thanks'])
+    expect(turnButtons[1]!.getAttribute('aria-current')).toBe('true')
+    expect(screen.getByRole('heading', { level: 2, name: '第 2 輪：thanks' })).toBeTruthy()
+
+    fireEvent.click(turnButtons[0]!)
+    expect(turnButtons[0]!.getAttribute('aria-current')).toBe('true')
+    const calls = view.container.querySelectorAll('article')
+    expect([...calls].map(call => call.getAttribute('aria-label'))).toEqual(['模型呼叫 #1', '模型呼叫 #2'])
+    const items = (call: Element) => [...call.querySelectorAll('[data-flow-item]')].map(item => item.getAttribute('data-flow-item'))
+    expect(items(calls[0]!)).toEqual(['request', 'response', 'tool'])
+    expect(items(calls[1]!)).toEqual(['request', 'response'])
+    expect(calls[0]!.textContent).toContain('bash')
+    expect(calls[0]!.textContent).toContain('a.ts')
+    // The answering call shows its token figures and the request's model and tool catalog.
+    expect(calls[1]!.textContent).toContain('輸入 2,000 · 未快取 1,200 · 快取讀取 800 · 輸出 34')
+    expect(calls[1]!.textContent).toContain('claude-fable-5-2')
+    expect(calls[1]!.textContent).toContain('工具定義 1')
+
+    const requestItem = calls[1]!.querySelector('[data-flow-item="request"]')!
+    fireEvent.click(requestItem)
+    expect(requestItem.getAttribute('aria-expanded')).toBe('true')
+    const requestPanel = screen.getByRole('region', { name: '呼叫詳情' })
+    expect(requestPanel.textContent).toContain('系統提示詞You are helpful.')
+    expect(requestPanel.textContent).toContain('工具定義 · 1')
+    fireEvent.click(requestItem)
+    expect(screen.queryByRole('region', { name: '呼叫詳情' })).toBeNull()
+
+    fireEvent.click(calls[1]!.querySelector('[data-flow-item="response"]')!)
+    const reply = screen.getByRole('region', { name: '呼叫詳情' })
     expect(reply.textContent).toContain('輸入1,200 tok')
-    expect(reply.textContent).toContain('快取讀取800 tok')
-    expect(reply.textContent).toContain('輸出34 tok')
     expect(reply.textContent).toContain('合計2,034 tok')
+    expect(reply.textContent).toContain('One file.')
     fireEvent.click(screen.getByRole('button', { name: '關閉詳情' }))
-    expect(screen.queryByRole('complementary', { name: '事件詳情' })).toBeNull()
+    expect(screen.queryByRole('region', { name: '呼叫詳情' })).toBeNull()
 
-    fireEvent.click(node('tool')[0]!)
+    fireEvent.click(calls[0]!.querySelector('[data-flow-item="tool"]')!)
+    const tool = screen.getByRole('region', { name: '呼叫詳情' })
+    expect(tool.textContent).toContain('已完成')
+    expect(tool.textContent).toContain('工具執行本身不消耗模型 token')
     fireEvent.click(screen.getByRole('button', { name: '在軌跡中檢視' }))
     expect(screen.getByRole('toolbar', { name: '軌跡工具欄' })).toBeTruthy()
     expect(b.loadOlder).not.toHaveBeenCalled()

@@ -38,7 +38,7 @@ dsh plugin --profile <name> add @deepseek-ai/dsh-llm-claude-code
 dsh --profile <name>
 ```
 
-Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agent preset 下在輸入框的模型選擇器裡選擇 Claude 模型；把它設為預設模型選擇後，每個新 Session 都會以 Claude Code 開始。選擇器列出 Claude Code 為你的帳號報告的模型——例如 `Claude (Claude Code settings)`（不傳送模型，由你的 Claude Code 設定決定，例如 `"model": "opus"`）、`Claude Sonnet 5` 以及 `Claude Fable 5.1`——並在選擇器首次請求時從一個短暫的 Claude Code 程序讀取該列表。設定項的說明寫出帳號的推薦模型，它只在沒有設定選擇模型時生效。對於接受推理強度設定的模型，選擇器的 Effort 行提供 Claude Code 為它報告的等級——Low、Medium、High、Extra high（`xhigh`）與 Max——並從 Medium（或設定的 `defaultEffort`）開始；所選等級作為 `effort` 選項傳給 Claude Code。沒有報告等級的模型不顯示 Effort 行。
+Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agent preset 下在輸入框的模型選擇器裡選擇 Claude 模型；把它設為預設模型選擇後，每個新 Session 都會以 Claude Code 開始。選擇器列出 Claude Code 為你的帳號報告的模型——例如 `Claude (Claude Code settings)`（不傳送模型，由你的 Claude Code 設定決定，例如 `"model": "opus"`）、`Claude Sonnet 5.5` 以及 `Claude Fable 5.2`——並在選擇器首次請求時從一個短暫的 Claude Code 程序讀取該列表。設定項的說明寫出帳號的推薦模型，它只在沒有設定選擇模型時生效。對於接受推理強度設定的模型，選擇器的 Effort 行提供 Claude Code 為它報告的等級——Low、Medium、High、Extra high（`xhigh`）與 Max——並從 Medium（或設定的 `defaultEffort`）開始；所選等級作為 `effort` 選項傳給 Claude Code。沒有報告等級的模型不顯示 Effort 行。
 
 ### 設定
 
@@ -54,6 +54,8 @@ Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agen
 | `disposeGraceMs` | `3000` | 受管程序各終止層級之間的寬限時間 |
 | `retryPolicy` | `{ mode: normal, maxRetries: 0 }` | 模型請求重試策略；預設從不重試，因為失敗的回合可能已經修改了檔案 |
 | `usageFreshMs` | `60000` | 一次方案用量讀取在再次詢問 Claude Code 前供應用視窗使用的毫秒數 |
+| `requestImagePixelBudget` | `2458624`（1568²） | 傳給 Claude Code 的單張圖片總像素預算；更大的圖片會按比例縮小 |
+| `requestImageMaxBytes` | `5242880` | 傳給 Claude Code 的單張圖片編碼位元組目標 |
 
 生成的[設定目錄](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-claude-code)是每個可接受欄位的完整來源。
 
@@ -81,7 +83,8 @@ Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agen
 | 回合因 Claude Code 限制而停止 | `CLAUDE_CODE_LIMIT` | 傳送範圍更小的請求 |
 | Claude Code 執行錯誤或其他 API 錯誤 | `CLAUDE_CODE_EXECUTION`、`CLAUDE_CODE_ERROR` | 閱讀訊息後重新傳送 |
 | 程序失敗或缺少平臺載荷 | `CLAUDE_CODE_PROCESS` | 連同可選依賴重新安裝 Bundle |
-| 請求中帶有采樣選項或圖片 | `UNSUPPORTED_OPTION`、`UNSUPPORTED_CONTENT` | 傳送不含取樣覆蓋的文字 |
+| 請求中帶有取樣選項 | `UNSUPPORTED_OPTION` | 傳送不含取樣覆蓋的請求 |
+| 組合未掛載附件服務時傳送圖片 | `UNSUPPORTED_CONTENT` | 掛載 `attachment`，或傳送文字 |
 
 取消 harness 回合會中止 Claude Code 回合，並等待其程序樹退出。
 
@@ -117,7 +120,7 @@ Bundle 補丁插入一行 `llm-claude-code`。在 Web 應用中，於任何 agen
 
 ### 請求流程
 
-`planTurn()` 把請求的推理強度對映為 Claude Code 等級，並拒絕 temperature、停止序列、`low`、`medium`、`high`、`xhigh` 與 `max` 以外的推理強度、圖片，以及對話請求中的 `maxTokens`，並忽略 harness 工具 schema。它找到本建置可讀取 replay 狀態的最新助手訊息，並把其後結尾使用者訊息中由人撰寫的文字作為提示傳送；外掛插入的使用者訊息（例如 runtime-context 快照）會被捨棄，除非結尾訊息中沒有其他內容。從該位置到結尾使用者訊息之間的訊息——沒有 replay 狀態時則為全部訊息——會在提示前的 `<conversation_history>` 塊中引用一次。輔助呼叫（設定了 `purpose`，例如 Session 標題）傳送所有訊息、附加其系統提示、從不續接，並以無工具、單回合且不持久化原生記錄的方式執行。[`src/models.ts`](src/models.ts) 為發現的模型命名，並保留每個模型報告的推理強度等級：原生預設項以決定它的 Claude Code 設定命名，所有別名都保留在列表中。
+`planTurn()` 把請求的推理強度對映為 Claude Code 等級，並拒絕 temperature、停止序列、`low`、`medium`、`high`、`xhigh` 與 `max` 以外的推理強度，以及對話請求中的 `maxTokens`，並忽略 harness 工具 schema。它找到本建置可讀取 replay 狀態的最新助手訊息，並把其後結尾使用者訊息中由人撰寫的文字作為提示傳送；外掛插入的使用者訊息（例如 runtime-context 快照）會被捨棄，除非結尾訊息中沒有其他內容。從該位置到結尾使用者訊息之間的訊息——沒有 replay 狀態時則為全部訊息——會在提示前的 `<conversation_history>` 塊中引用一次。輔助呼叫（設定了 `purpose`，例如 Session 標題）傳送所有訊息、附加其系統提示、從不續接，並以無工具、單回合且不持久化原生記錄的方式執行。[`src/models.ts`](src/models.ts) 為發現的模型命名，並保留每個模型報告的推理強度等級：原生預設項以決定它的 Claude Code 設定命名，所有別名都保留在列表中。
 
 adapter 從請求的 Session 解析工作區；請求未指定 Session 時則從發起呼叫的 Agent 解析，兩者都沒有工作區時，會在啟動 Claude Code 之前以 `NO_WORKSPACE` 失敗。SDK 的自定義 spawn 掛鉤把平臺 CLI 置於 `ctx.subprocess` 之下；流的 `finally` 會關閉查詢、終止受管範圍，並等待整個程序樹退出。
 
@@ -144,11 +147,11 @@ adapter 從請求的 Session 解析工作區；請求未指定 Session 時則從
 
 #### 模型看到的內容
 
-Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系統提示、由 `resume` 恢復的原生記錄，以及一個提示：結尾由人撰寫的使用者訊息文字，以空行連線。原生記錄缺少更早的訊息時，提示以 `<conversation_history>` 塊開頭，每條含文字的早先訊息對應一個 `<user>`、`<assistant>` 或 `<tool result>` 元素；助手工具呼叫渲染為 `[tool call <name>: <arguments>]`，推理內容被省略，外掛插入的使用者訊息被捨棄。
+Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系統提示、由 `resume` 恢復的原生記錄，以及一個提示：結尾由人撰寫的使用者訊息文字，以空行連線。原生記錄缺少更早的訊息時，提示以 `<conversation_history>` 塊開頭，每條含文字的早先訊息對應一個 `<user>`、`<assistant>` 或 `<tool result>` 元素；助手工具呼叫渲染為 `[tool call <name>: <arguments>]`，推理內容被省略，外掛插入的使用者訊息被捨棄。文字中每一處圖片（包含引用歷史）都以 `[Image #k]` 標記呈現；提示隨後為每個標記附上一行說明，寫出圖片名稱與唯讀主機路徑，接著是依路由圖片預算縮小後的圖片本身。已卸載的圖片只傳送其佔位文字。
 
 #### Token 影響
 
-每次請求加入結尾使用者文字。引用歷史塊只在原生記錄缺少該歷史的請求中傳送，其大小等於被引用訊息的文字。harness 工具 schema 與 harness 系統提示不增加任何內容。Claude Code 自己的工具使用、壓縮和系統提示所增加的 token 由 Claude Code 負責。
+每次請求加入結尾使用者文字，以及每個圖片標記的說明行與圖片 token。引用歷史塊只在原生記錄缺少該歷史的請求中傳送，其大小等於被引用訊息的文字。harness 工具 schema 與 harness 系統提示不增加任何內容。Claude Code 自己的工具使用、壓縮和系統提示所增加的 token 由 Claude Code 負責。
 
 #### KV Cache 影響
 
@@ -187,7 +190,7 @@ Claude Code 的模型看到 Claude Code 自己的 `claude_code` 系統提示、�
 <a id="known-limitations-and-deferred-work"></a>
 
 - **harness 工具不會被使用**——路由忽略 preset 的工具 schema；由 Claude Code 自己的工具、MCP 伺服器和其設定中的技能取代。
-- **僅支援文字輸入**——圖片附件會以 `UNSUPPORTED_CONTENT` 失敗；路由向模型選擇器宣告僅接受文字輸入。
+- **沒有請求層級的圖片上限**——每張圖片會依單張預算縮小，但路由從不要求 harness 卸載較舊的圖片；Claude Code 把圖片保留在自己的記錄中並自行壓縮。
 - **應用瀏覽器工具只引導、不阻止**——其說明要求 Claude Code 不要啟動外部瀏覽器，但只要 Session 權限允許，shell 的 `open` 命令仍可執行。
 - **工具活動是一行文字**——頂層工具呼叫與失敗結果渲染為推理行而非工具卡片，成功的工具結果留在 Claude Code 內部。
 - **沒有提問通道**——由於不存在 harness 提問橋接，`AskUserQuestion` 被停用；Claude Code 改為在回答文字中提問。

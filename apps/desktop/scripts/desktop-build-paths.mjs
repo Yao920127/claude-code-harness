@@ -4,6 +4,8 @@ import { join, resolve } from 'node:path'
 
 const APP_ROOT = resolve(import.meta.dirname, '..')
 const BUILD_ROOT = join(APP_ROOT, '.desktop-build')
+/** Visible home of unsigned disk images and installers, which people open from Finder. */
+const RELEASE_ROOT = join(APP_ROOT, 'release')
 const SUPPORTED_TARGETS = new Set(['mac-arm64', 'mac-x64', 'win-x64'])
 
 /**
@@ -47,9 +49,10 @@ export function desktopTargetBuildPaths(target) {
   return {
     root,
     artifacts: join(root, 'artifacts'),
-    // A synced folder such as an iCloud Desktop re-adds Finder metadata that codesign rejects,
-    // so an unsigned build may write its artifacts elsewhere.
-    unsignedArtifacts: process.env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR || join(root, 'unsigned-artifacts'),
+    // Unsigned artifacts live outside the dot-prefixed build root so Finder shows them. A synced folder
+    // such as an iCloud Desktop re-adds Finder metadata that codesign rejects, so an unsigned build may
+    // write its artifacts elsewhere.
+    unsignedArtifacts: process.env.DSH_DESKTOP_UNSIGNED_ARTIFACTS_DIR || join(RELEASE_ROOT, target),
     runtime: join(root, 'runtime'),
     packageSet: join(root, 'package-set'),
     dsh: join(root, 'dsh'),

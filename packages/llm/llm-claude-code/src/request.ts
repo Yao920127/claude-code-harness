@@ -13,15 +13,17 @@
 
 import type { EffortLevel } from '@anthropic-ai/claude-agent-sdk'
 import { LlmError } from '@deepseek-ai/dsh-llm'
-import type { ContentBlock, GenerateOptions, RequestMessage } from '@deepseek-ai/dsh-llm'
+import type { ContentBlock, GenerateOptions, ImageBlock, RequestMessage } from '@deepseek-ai/dsh-llm'
 import { assertNever } from '@deepseek-ai/dsh-util-values'
 import { effortLevel } from './models.ts'
 import { readReplay, type ClaudeCodeReplay } from './replay.ts'
 
 /** One Claude Code turn derived from a harness request. */
 export interface ClaudeCodeTurnPlan {
-  /** Text sent as the native user prompt. */
+  /** Text sent as the native user prompt; the k-th image occurrence appears as `[Image #k]`. */
   readonly prompt: string
+  /** Image occurrences the prompt text marks, in marker order; `images[k - 1]` is `[Image #k]`. */
+  readonly images: readonly ImageBlock[]
   /** An auxiliary caller's system prompt appended to Claude Code's own; absent for conversation turns. */
   readonly systemAppend?: string
   /** Native chain entry to resume after; absent starts a fresh native conversation. */
@@ -64,13 +66,28 @@ function requestEffort(options: GenerateOptions): Pick<ClaudeCodeTurnPlan, 'effo
   return { effort }
 }
 
+/** Collects image occurrences while prompt text is rendered, numbering each marker. */
+class ImageMarkers {
+  readonly blocks: ImageBlock[] = []
+
+  /**
+   * Record one image occurrence.
+   * @param block - the image block.
+   * @returns the marker that stands for it in the prompt text.
+   */
+  mark(block: ImageBlock): string {
+    this.blocks.push(block)
+    return `[Image #${this.blocks.length}]`
+  }
+}
+
 /**
- * Render the text Claude Code can receive from one content list.
+ * Render the text Claude Code receives for one content list.
  * @param content - message content blocks.
- * @returns the joined text; merge-extensible blocks without a text rendering contribute nothing.
- * @throws {LlmError} code `UNSUPPORTED_CONTENT` for an image block.
+ * @param images - collector that numbers each image occurrence.
+ * @returns the joined text with image markers; merge-extensible blocks without a text rendering contribute nothing.
  */
-function contentText(content: readonly ContentBlock[]): string {
+function contentText(content: readonly ContentBlock[], images: ImageMarkers): string {
   const parts: string[] = []
   for (const block of content) {
     switch (block.type) {
@@ -81,10 +98,8 @@ function contentText(content: readonly ContentBlock[]): string {
         parts.push(`[tool call ${block.name}: ${block.arguments}]`)
         break
       case 'image':
-        throw new LlmError(
-          'llm-claude-code: images are not supported; this route declares text-only input',
-          'UNSUPPORTED_CONTENT',
-        )
+        parts.push(images.mark(block))
+        break
       default:
         // Reasoning stays with the model that produced it; tool-change blocks
         // and other merge-extensible blocks have no prompt rendering here.
@@ -127,28 +142,58 @@ function sentInConversation(message: RequestMessage): boolean {
 /**
  * Join the text of prompt messages.
  * @param messages - the trailing user messages.
+ * @param images - collector that numbers each image occurrence.
  * @returns their text separated by blank lines.
  */
-function promptText(messages: readonly RequestMessage[]): string {
-  return messages.map(message => contentText(message.content)).join('\n\n')
+function promptText(messages: readonly RequestMessage[], images: ImageMarkers): string {
+  return messages.map(message => contentText(message.content, images)).join('\n\n')
 }
 
 /**
  * Quote earlier conversation the native transcript does not hold.
  * @param messages - conversation messages preceding the prompt.
+ * @param images - collector that numbers each image occurrence.
  * @returns the quoted block, or an empty string when no message has text.
  */
-function historyText(messages: readonly RequestMessage[]): string {
+function historyText(messages: readonly RequestMessage[], images: ImageMarkers): string {
   const entries: string[] = []
   for (const message of messages) {
     const label = roleLabel(message)
     if (label === undefined) continue
-    const text = contentText(message.content)
+    const text = contentText(message.content, images)
     if (text.trim().length === 0) continue
     entries.push(`<${label}>\n${text}\n</${label}>`)
   }
   if (entries.length === 0) return ''
   return `<conversation_history>\n${entries.join('\n')}\n</conversation_history>\n\n`
+}
+
+/** Rendered prompt text and its image markers. */
+interface RenderedPrompt {
+  /** Quoted history followed by the trailing prompt text. */
+  readonly text: string
+  /** Image occurrences in marker order. */
+  readonly images: readonly ImageBlock[]
+  /** Whether the trailing messages, excluding quoted history, hold text or an image. */
+  readonly hasPrompt: boolean
+}
+
+/**
+ * Render quoted history and the trailing prompt, numbering images in reading order.
+ * @param history - messages quoted ahead of the prompt.
+ * @param trailing - the trailing user messages sent as the prompt.
+ * @returns the joined text, its images, and whether the trailing part is non-empty.
+ */
+function renderPrompt(history: readonly RequestMessage[], trailing: readonly RequestMessage[]): RenderedPrompt {
+  const images = new ImageMarkers()
+  const quoted = historyText(history, images)
+  const quotedImages = images.blocks.length
+  const prompt = promptText(trailing, images)
+  return {
+    text: quoted + prompt,
+    images: images.blocks,
+    hasPrompt: prompt.trim().length > 0 || images.blocks.length > quotedImages,
+  }
 }
 
 /**
@@ -159,10 +204,12 @@ function historyText(messages: readonly RequestMessage[]): string {
  * system prompt, and never resumes: it answers from its own messages alone.
  * A conversation turn whose trailing user messages hold no person-authored
  * text, such as one woken by a plugin notice, sends those messages instead.
+ * Every image occurrence in the sent text, quoted history included, becomes
+ * an `[Image #k]` marker whose block is listed in `images`.
  * @param options - the assembled request.
- * @returns the prompt, system text, and optional native resume cursor.
- * @throws {LlmError} code `UNSUPPORTED_OPTION` or `UNSUPPORTED_CONTENT` for input this route cannot send,
- *   and code `EMPTY_PROMPT` when the request carries no trailing user text.
+ * @returns the prompt, its images, system text, and optional native resume cursor.
+ * @throws {LlmError} code `UNSUPPORTED_OPTION` for an option this route cannot honor,
+ *   and code `EMPTY_PROMPT` when the request carries no trailing user text or image.
  */
 export function planTurn(options: GenerateOptions): ClaudeCodeTurnPlan {
   assertSupportedOptions(options)
@@ -174,7 +221,7 @@ export function planTurn(options: GenerateOptions): ClaudeCodeTurnPlan {
   let conversation = options.messages
   const first = conversation[0]
   if (first?.role === 'system') {
-    if (auxiliary) systemParts.push(contentText(first.content))
+    if (auxiliary) systemParts.push(contentText(first.content, new ImageMarkers()))
     conversation = conversation.slice(1)
   }
 
@@ -195,17 +242,18 @@ export function planTurn(options: GenerateOptions): ClaudeCodeTurnPlan {
   let promptStart = pending.length
   while (promptStart > 0 && pending[promptStart - 1]?.role === 'user') promptStart--
   const trailing = pending.slice(promptStart)
-  const sent = auxiliary ? trailing : trailing.filter(sentInConversation)
-  let prompt = promptText(sent)
-  if (prompt.trim().length === 0) prompt = promptText(trailing)
-  if (prompt.trim().length === 0) {
+  const history = pending.slice(0, promptStart)
+  const sentHistory = auxiliary ? history : history.filter(sentInConversation)
+  let rendered = renderPrompt(sentHistory, auxiliary ? trailing : trailing.filter(sentInConversation))
+  if (!rendered.hasPrompt) rendered = renderPrompt(sentHistory, trailing)
+  if (!rendered.hasPrompt) {
     throw new LlmError('llm-claude-code: the request carries no trailing user text to send', 'EMPTY_PROMPT')
   }
-  const history = pending.slice(0, promptStart)
 
   const systemAppend = systemParts.filter(part => part.trim().length > 0).join('\n\n')
   return {
-    prompt: historyText(auxiliary ? history : history.filter(sentInConversation)) + prompt,
+    prompt: rendered.text,
+    images: rendered.images,
     ...systemAppend.length === 0 ? {} : { systemAppend },
     ...resume === undefined ? {} : { resume },
     ...effort,

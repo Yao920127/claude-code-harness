@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-git",
   "description": "Source Control page for the Web right Sidebar: stage, commit, pull, and push without Git commands, plus GitHub sign-in, cloning, and publishing through the GitHub CLI",
-  "version": "0.1.7-rc.2",
+  "version": "2.0.0",
   "publishConfig": {
     "access": "public"
   },

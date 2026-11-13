@@ -1,5 +1,6 @@
 import { PassThrough } from 'node:stream'
-import type { ModelInfo, Options, Query, SDKMessage, SdkMcpToolDefinition, SpawnOptions } from '@anthropic-ai/claude-agent-sdk'
+import type { ModelInfo, Options, Query, SDKMessage, SDKUserMessage, SdkMcpToolDefinition, SpawnOptions } from '@anthropic-ai/claude-agent-sdk'
+import type { AttachmentStore, ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment'
 import { Context } from '@deepseek-ai/cordis'
 import { afterEach, describe, expect, it, type Mock, vi } from 'vitest'
 import type { Agent } from '@deepseek-ai/dsh-agent'
@@ -12,7 +13,7 @@ import * as plugin from '../src/index.ts'
 import { ClaudeCodeAdapter, type ClaudeCodeAdapterOptions } from '../src/adapter.ts'
 import { replayEnvelope, type ClaudeCodeChainEntryId, type ClaudeCodeSessionId } from '../src/replay.ts'
 
-type QueryFactory = (params: { prompt: string; options: Options }) => Query
+type QueryFactory = (params: { prompt: string | AsyncIterable<SDKUserMessage>; options: Options }) => Query
 
 const queryMock = vi.hoisted(() => vi.fn<QueryFactory>())
 
@@ -126,6 +127,8 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     env: { EXTRA: '1' },
     disposeGraceMs: 1_000,
     retryPolicy: resolveRetryPolicy({ mode: 'normal', maxRetries: 0 }, 'test'),
+    attachments: () => undefined,
+    imageBudget: { maxPixels: 1_000_000, maxBytes: 1_000_000 },
     spawn,
     discoveryCwd: '/home/user',
     onDiscoveryError: vi.fn(),
@@ -137,6 +140,14 @@ function adapter(overrides: Partial<ClaudeCodeAdapterOptions> = {}, configuredMo
     ...overrides,
   }
   return { adapter: new ClaudeCodeAdapter(options), child, spawn, options }
+}
+
+function requestImage(attachment: ImageAttachmentRef, bytes: number[], width: number, height: number): RequestImageAttachment {
+  return {
+    variantId: 'variant' as RequestImageAttachment['variantId'],
+    attachment, data: new Uint8Array(bytes), mediaType: 'image/png', bytes: bytes.length, width, height,
+    depth: 'uchar', space: 'srgb', hasAlpha: false,
+  }
 }
 
 function request(extra: Partial<GenerateOptions> = {}): GenerateOptions {
@@ -170,11 +181,11 @@ describe('ClaudeCodeAdapter metadata', () => {
     expect(route.providerInfo('claude-code')).toEqual({ id: 'claude-code', name: 'Claude Code' })
     expect(route.providerRetryPolicy()).toMatchObject({ mode: 'normal', maxRetries: 0 })
     await expect(route.listModels('claude-code')).resolves.toEqual([
-      { provider: 'claude-code', id: 'default', name: 'Claude Code', description: 'native', inputModalities: ['text'] },
-      { provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text'] },
+      { provider: 'claude-code', id: 'default', name: 'Claude Code', description: 'native', inputModalities: ['text', 'image'] },
+      { provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text', 'image'] },
     ])
     await expect(route.resolveModel('claude-code', 'opus')).resolves.toEqual({
-      provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text'],
+      provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text', 'image'],
     })
     await expect(route.resolveModel('claude-code', 'claude-x')).resolves.toMatchObject({ name: 'claude-x' })
   })
@@ -200,6 +211,15 @@ describe('ClaudeCodeAdapter model discovery', () => {
     expect(spawn).toHaveBeenCalledTimes(1)
     expect(child.terminate).toHaveBeenCalled()
     await expect(route.resolveModel('claude-code', 'claude-fable-5-1[1m]')).resolves.toMatchObject({ name: 'Claude Fable 5.1' })
+  })
+
+  it('names the recommended model when the native default description is only its name', async () => {
+    const { adapter: route } = adapter({}, false)
+    queryMock.mockImplementation(discoveryQuery([
+      { value: 'default', resolvedModel: 'claude-fable-5-2', displayName: 'Default (recommended)', description: 'Fable 5.2' },
+    ] as never))
+    const listed = await route.listModels('claude-code')
+    expect(listed[0]?.description).toBe('The model your Claude Code settings select; Fable 5.2 without a setting')
   })
 
   it('offers each model the effort levels Claude Code reports, ascending, defaulting to the route default', async () => {
@@ -232,7 +252,7 @@ describe('ClaudeCodeAdapter model discovery', () => {
     // This double fails before the SDK spawns a process.
     queryMock.mockImplementation(() => ({ close: vi.fn(), supportedModels: () => Promise.reject(new Error('not signed in')) }) as never)
     await expect(route.listModels('claude-code')).resolves.toEqual([
-      { provider: 'claude-code', id: 'default', name: 'Claude Code', inputModalities: ['text'] },
+      { provider: 'claude-code', id: 'default', name: 'Claude Code', inputModalities: ['text', 'image'] },
     ])
     expect(options.onDiscoveryError).toHaveBeenCalledWith(expect.objectContaining({ message: 'not signed in' }))
     expect(spawn).not.toHaveBeenCalled()
@@ -278,6 +298,31 @@ describe('ClaudeCodeAdapter control requests', () => {
 })
 
 describe('ClaudeCodeAdapter.stream', () => {
+  it('sends a prompt that marks images as one user message carrying each image', async () => {
+    const ref = { attachmentId: 'sha256:abc', mediaType: 'image/png', bytes: 3, width: 4, height: 2, name: 'shot.png' } as ImageAttachmentRef
+    const attachments = {
+      imageHostPath: () => '/store/abc.png',
+      readImageRequest: vi.fn(async () => requestImage(ref, [1, 2, 3], 4, 2)),
+    } as Partial<AttachmentStore> as AttachmentStore
+    const { adapter: route } = adapter({ attachments: () => attachments })
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    const message = createUserMessage({
+      content: [{ type: 'text', text: 'what is this ' }, { type: 'image', attachment: ref }],
+      source: { kind: 'user' },
+    })
+    await collect(route.stream(request({ sessionId: 's' as SessionId, messages: [message] })))
+    const prompt = queryMock.mock.calls[0]?.[0].prompt
+    expect(typeof prompt).not.toBe('string')
+    const sent: SDKUserMessage[] = []
+    for await (const item of prompt as AsyncIterable<SDKUserMessage>) sent.push(item)
+    expect(sent).toHaveLength(1)
+    expect(sent[0]?.message.content).toEqual([
+      { type: 'text', text: 'what is this [Image #1]' },
+      { type: 'text', text: expect.stringMatching(/^\[Image #1\] Image "shot\.png" \(sha256:abc\); request preview 4x2px\. Normalized copy .*"\/store\/abc\.png"/) as string },
+      { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'AQID' } },
+    ])
+  })
+
   it('runs one native turn in the Session workspace and releases the process', async () => {
     const { adapter: route, child, spawn } = adapter()
     queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
@@ -506,6 +551,18 @@ describe('llm-claude-code plugin', () => {
     expect(spawn).toHaveBeenCalled()
   })
 
+  it('reads image prompts through the mounted attachment service within the configured budget', async () => {
+    const ctx = await host()
+    const ref = { attachmentId: 'sha256:img', mediaType: 'image/png', bytes: 1, width: 4000, height: 3000 } as ImageAttachmentRef
+    const readImageRequest = vi.fn(async () => requestImage(ref, [0], 1, 1))
+    ctx.provide('attachments', { imageHostPath: () => undefined, readImageRequest } as never)
+    await ctx.plugin(plugin, plugin.Config({ requestImagePixelBudget: 1_200_000, requestImageMaxBytes: 2_000 }))
+    queryMock.mockImplementation(scriptedQuery(turn, spawnOptions))
+    const message = createUserMessage({ content: [{ type: 'image', attachment: ref }], source: { kind: 'user' } })
+    await collect(ctx.llm.stream(request({ sessionId: 's' as SessionId, messages: [message] })))
+    expect(readImageRequest).toHaveBeenCalledWith(ref, { width: 1264, height: 948, maxBytes: 2_000 }, expect.anything())
+  })
+
   it('opens pages through the app Browser channel when it is mounted', async () => {
     const ctx = await host()
     const open = vi.fn(() => 2)
@@ -550,7 +607,7 @@ describe('llm-claude-code plugin', () => {
     expect(() => { plugin.apply(ctx, plugin.Config({ disposeGraceMs: 0 })) }).toThrow('disposeGraceMs')
     await ctx.plugin(plugin, plugin.Config({ models: [{ id: 'opus', name: 'Opus' }] }))
     await expect(ctx.llm.listModels('claude-code')).resolves.toEqual([
-      { provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text'] },
+      { provider: 'claude-code', id: 'opus', name: 'Opus', inputModalities: ['text', 'image'] },
     ])
     expect(queryMock).not.toHaveBeenCalled()
   })

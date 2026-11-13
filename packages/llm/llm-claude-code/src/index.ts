@@ -12,6 +12,7 @@ import { isAbsolute } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
 import type {} from '@deepseek-ai/dsh-agent'
+import type {} from '@deepseek-ai/dsh-attachment'
 import { resolveRetryPolicy, RetryPolicySchema, type RetryPolicyConfig } from '@deepseek-ai/dsh-llm'
 import type {} from '@deepseek-ai/dsh-session'
 import type {} from '@deepseek-ai/dsh-subprocess'
@@ -92,6 +93,10 @@ export interface Config {
   retryPolicy?: RetryPolicyConfig
   /** Milliseconds one plan-usage read answers app windows before Claude Code is asked again. */
   usageFreshMs?: number
+  /** Total-pixel budget of one image sent to Claude Code; larger images are downscaled proportionally. */
+  requestImagePixelBudget?: number
+  /** Encoded-byte target of one image sent to Claude Code. */
+  requestImageMaxBytes?: number
 }
 
 export const Config: z<Config> = z.object({
@@ -110,6 +115,9 @@ export const Config: z<Config> = z.object({
   disposeGraceMs: z.number().default(3_000),
   retryPolicy: RetryPolicySchema.default({ mode: 'normal', maxRetries: 0 }),
   usageFreshMs: z.natural().min(1).default(60_000),
+  // Anthropic resizes an image whose long edge exceeds 1568 px, so larger request versions mostly cost upload bytes.
+  requestImagePixelBudget: z.natural().min(1).default(1568 * 1568),
+  requestImageMaxBytes: z.natural().min(1).default(5 * 1024 * 1024),
 })
 
 /**
@@ -141,6 +149,11 @@ export function apply(ctx: Context, config: Config): void {
     env: config.env as Record<string, string>,
     disposeGraceMs,
     retryPolicy: resolveRetryPolicy(config.retryPolicy, 'llm-claude-code.retryPolicy'),
+    attachments: () => ctx.get('attachments'),
+    imageBudget: {
+      maxPixels: config.requestImagePixelBudget as number,
+      maxBytes: config.requestImageMaxBytes as number,
+    },
     spawn: spec => ctx.subprocess.spawn(spec),
     approval: () => ctx.get('approval'),
     initiator: () => ctx.agents.currentInitiator(),
